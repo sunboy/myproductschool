@@ -9,9 +9,10 @@ import {
   useReducer,
 } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Check, RotateCcw, ChevronDown, Keyboard } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, RotateCcw, ChevronDown, Keyboard, BookOpen, Zap, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LumaSymbol } from "@/components/luma-symbol";
+import DisplayCards, { type DisplayCardProps } from "@/components/ui/display-cards";
 import { PRODUCT_75, P75_DOMAINS, type P75Card, type P75Domain } from "@/lib/product75";
 
 /* ─── Card status ────────────────────────────────────────────── */
@@ -77,6 +78,32 @@ const DOMAIN_COLORS: Record<P75Domain, string> = {
   Research:     "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
   Strategy:     "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
   Execution:    "bg-teal-500/10 text-teal-600 dark:text-teal-400",
+};
+
+/* ─── Domain icon map ────────────────────────────────────────── */
+const DOMAIN_ICONS: Record<P75Domain, React.ReactNode> = {
+  Metrics:      <TrendingUp className="size-4 text-foreground/70" />,
+  Growth:       <Zap className="size-4 text-emerald-400" />,
+  Payments:     <BookOpen className="size-4 text-amber-400" />,
+  Engagement:   <Zap className="size-4 text-violet-400" />,
+  Retention:    <TrendingUp className="size-4 text-rose-400" />,
+  Monetization: <BookOpen className="size-4 text-orange-400" />,
+  Research:     <BookOpen className="size-4 text-cyan-400" />,
+  Strategy:     <TrendingUp className="size-4 text-indigo-400" />,
+  Execution:    <Zap className="size-4 text-teal-400" />,
+};
+
+/* ─── Domain title color for display cards ───────────────────── */
+const DOMAIN_TITLE_COLORS: Record<P75Domain, string> = {
+  Metrics:      "text-foreground",
+  Growth:       "text-emerald-500",
+  Payments:     "text-amber-500",
+  Engagement:   "text-violet-500",
+  Retention:    "text-rose-500",
+  Monetization: "text-orange-500",
+  Research:     "text-cyan-500",
+  Strategy:     "text-indigo-500",
+  Execution:    "text-teal-500",
 };
 
 /* ─── Progress ring (SVG) ────────────────────────────────────── */
@@ -253,6 +280,50 @@ function Flashcard({
   );
 }
 
+/* ─── Deck Preview (21st.dev Display Cards) ──────────────────── */
+function DeckPreview({
+  deck,
+  currentIndex,
+  statusMap,
+  onCardClick,
+}: {
+  deck: P75Card[];
+  currentIndex: number;
+  statusMap: StatusMap;
+  onCardClick: (index: number) => void;
+}) {
+  // Show up to 3 upcoming cards from current position
+  const previewCards: DisplayCardProps[] = [];
+  for (let i = 0; i < 3 && i < deck.length; i++) {
+    const cardIdx = (currentIndex + i) % deck.length;
+    const card = deck[cardIdx];
+    const status = statusMap[card.id];
+    const statusLabel = status === "mastered" ? "Mastered" : status === "learning" ? "Learning" : "Unseen";
+
+    const baseClassName = i === 0
+      ? "[grid-area:stack] hover:-translate-y-10 before:absolute before:w-[100%] before:outline-1 before:rounded-xl before:outline-border before:h-[100%] before:content-[''] before:bg-blend-overlay before:bg-background/50 grayscale-[100%] hover:before:opacity-0 before:transition-opacity before:duration:700 hover:grayscale-0 before:left-0 before:top-0"
+      : i === 1
+      ? "[grid-area:stack] translate-x-12 translate-y-10 hover:-translate-y-1 before:absolute before:w-[100%] before:outline-1 before:rounded-xl before:outline-border before:h-[100%] before:content-[''] before:bg-blend-overlay before:bg-background/50 grayscale-[100%] hover:before:opacity-0 before:transition-opacity before:duration:700 hover:grayscale-0 before:left-0 before:top-0"
+      : "[grid-area:stack] translate-x-24 translate-y-20 hover:translate-y-10";
+
+    previewCards.push({
+      className: `${baseClassName} cursor-pointer`,
+      icon: DOMAIN_ICONS[card.domain],
+      title: card.domain,
+      description: card.term,
+      date: statusLabel,
+      titleClassName: DOMAIN_TITLE_COLORS[card.domain],
+      iconClassName: DOMAIN_TITLE_COLORS[card.domain],
+    });
+  }
+
+  return (
+    <div onClick={() => onCardClick(currentIndex)} className="cursor-pointer">
+      <DisplayCards cards={previewCards} />
+    </div>
+  );
+}
+
 /* ─── Domain dropdown ────────────────────────────────────────── */
 function DomainDropdown({
   value,
@@ -353,6 +424,7 @@ export default function FlashcardsPage() {
   const [domain, setDomain] = useState<P75Domain | "all">("all");
   const [unmasteredOnly, setUnmasteredOnly] = useState(false);
   const [showKeys, setShowKeys] = useState(false);
+  const [studyMode, setStudyMode] = useState(false);
 
   const prefersReduced = useRef(
     typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -394,15 +466,20 @@ export default function FlashcardsPage() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (!studyMode) {
+        if (e.key === "Enter") setStudyMode(true);
+        return;
+      }
       if (e.key === " ") { e.preventDefault(); dispatch({ type: "FLIP" }); }
       else if (e.key === "ArrowRight") dispatch({ type: "NAVIGATE", dir: "next", total: deck.length });
       else if (e.key === "ArrowLeft") dispatch({ type: "NAVIGATE", dir: "prev", total: deck.length });
       else if (e.key === "1") handleMark("mastered");
       else if (e.key === "2") handleMark("learning");
+      else if (e.key === "Escape") setStudyMode(false);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [deck.length, handleMark]);
+  }, [deck.length, handleMark, studyMode]);
 
   /* Reset index when deck changes */
   useEffect(() => {
@@ -411,6 +488,16 @@ export default function FlashcardsPage() {
   }, [domain, unmasteredOnly]);
 
   const deckComplete = deck.length === 0 && unmasteredOnly;
+
+  function handleStartStudy(index?: number) {
+    if (index !== undefined) {
+      // Navigate to specific index first
+      for (let i = 0; i < index; i++) {
+        dispatch({ type: "NAVIGATE", dir: "next", total: deck.length });
+      }
+    }
+    setStudyMode(true);
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -454,11 +541,18 @@ export default function FlashcardsPage() {
       {showKeys && (
         <div className="border-b border-border bg-muted/30">
           <div className="mx-auto max-w-3xl px-4 py-3 flex flex-wrap gap-4">
-            <KeyHint k="Space" label="Flip" />
-            <KeyHint k="←" label="Previous" />
-            <KeyHint k="→" label="Next" />
-            <KeyHint k="1" label="Got it" />
-            <KeyHint k="2" label="Still learning" />
+            {studyMode ? (
+              <>
+                <KeyHint k="Space" label="Flip" />
+                <KeyHint k="←" label="Previous" />
+                <KeyHint k="→" label="Next" />
+                <KeyHint k="1" label="Got it" />
+                <KeyHint k="2" label="Still learning" />
+                <KeyHint k="Esc" label="Back to deck" />
+              </>
+            ) : (
+              <KeyHint k="Enter" label="Start studying" />
+            )}
           </div>
         </div>
       )}
@@ -480,6 +574,17 @@ export default function FlashcardsPage() {
           >
             Unmastered only
           </button>
+
+          {/* Back to deck button when in study mode */}
+          {studyMode && (
+            <button
+              onClick={() => setStudyMode(false)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-accent/40 bg-accent/10 text-sm font-medium text-accent-foreground transition-colors cursor-pointer hover:bg-accent/20"
+            >
+              <ArrowLeft size={12} />
+              Deck view
+            </button>
+          )}
 
           {/* Status pills (read-only) */}
           <div className="ml-auto flex items-center gap-3">
@@ -507,9 +612,58 @@ export default function FlashcardsPage() {
             <CompletionScreen
               total={PRODUCT_75.length}
               mastered={masteredCount}
-              onReset={() => dispatch({ type: "RESET" })}
+              onReset={() => { dispatch({ type: "RESET" }); setStudyMode(false); }}
             />
+          ) : !studyMode ? (
+            /* ── DECK PREVIEW (Display Cards) ── */
+            <div className="w-full flex flex-col items-center gap-8 py-8">
+              <div className="text-center space-y-2">
+                <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-accent">
+                  Product 75
+                </p>
+                <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-[-0.02em]">
+                  {deck.length} cards in your deck
+                </h2>
+                <p className="text-[15px] text-muted-foreground leading-[1.7] max-w-md mx-auto">
+                  {domain !== "all" ? `Filtered to ${domain}. ` : ""}
+                  Hover to preview, click to start studying.
+                </p>
+              </div>
+
+              {deck.length > 0 && (
+                <div className="py-8">
+                  <DeckPreview
+                    deck={deck}
+                    currentIndex={study.currentIndex}
+                    statusMap={study.statusMap}
+                    onCardClick={() => handleStartStudy()}
+                  />
+                </div>
+              )}
+
+              <Button
+                onClick={() => handleStartStudy()}
+                className="bg-foreground text-background hover:bg-foreground/90 cursor-pointer h-10 px-6"
+              >
+                Start studying
+                <ArrowRight size={14} className="ml-1.5" />
+              </Button>
+
+              {/* Progress bar */}
+              <div className="w-full max-w-md space-y-2">
+                <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-success transition-all duration-700"
+                    style={{ width: `${(masteredCount / PRODUCT_75.length) * 100}%` }}
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground font-mono text-center">
+                  {Math.round((masteredCount / PRODUCT_75.length) * 100)}% of Product 75 mastered
+                </p>
+              </div>
+            </div>
           ) : currentCard ? (
+            /* ── STUDY MODE (Flip cards) ── */
             <>
               {/* Card counter */}
               <p className="text-sm text-muted-foreground font-mono">
