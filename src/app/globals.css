@@ -49,6 +49,17 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --animate-marquee: marquee var(--duration) linear infinite;
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand: var(--brand);
+  @keyframes marquee {
+  from {
+    transform: translateX(0);
+    }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
 }
 
 :root {
@@ -88,6 +99,8 @@
   --sidebar-accent-foreground: #09090B;
   --sidebar-border: #E4E4E7;
   --sidebar-ring: #09090B;
+  --brand: hsl(266 100% 50%);
+  --brand-foreground: hsl(270 100% 98%);
 }
 
 .dark {
@@ -126,6 +139,8 @@
   --sidebar-accent-foreground: #FAFAFA;
   --sidebar-border: #27272A;
   --sidebar-ring: #FAFAFA;
+  --brand: hsl(266 70% 60%);
+  --brand-foreground: hsl(270 100% 98%);
 }
 
 @layer base {

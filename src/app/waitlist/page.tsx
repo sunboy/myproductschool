@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { LumaSymbolLarge } from "@/components/luma-symbol";
+import { NumberTicker } from "@/components/ui/number-ticker";
 import {
   BookOpen,
   MessageSquareText,
@@ -20,44 +21,7 @@ interface WaitlistPageProps {
 }
 
 /* ─── Animated Counter ──────────────────────────────────────────── */
-function AnimatedCounter({ target }: { target: number }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  const hasAnimated = useRef(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated.current) {
-          hasAnimated.current = true;
-          const duration = 1600;
-          const steps = 60;
-          const increment = target / steps;
-          let current = 0;
-          const interval = setInterval(() => {
-            current += increment;
-            if (current >= target) {
-              setCount(target);
-              clearInterval(interval);
-            } else {
-              setCount(Math.floor(current));
-            }
-          }, duration / steps);
-        }
-      },
-      { threshold: 0.3 }
-    );
-
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [target]);
-
-  return (
-    <span ref={ref} className="font-mono text-5xl font-bold tabular-nums">
-      {count.toLocaleString()}
-    </span>
-  );
-}
+/* AnimatedCounter replaced by NumberTicker from 21st.dev/magicui */
 
 /* ─── Main Page ─────────────────────────────────────────────────── */
 export default function WaitlistPage({ variant = "A" }: WaitlistPageProps) {
@@ -246,7 +210,7 @@ export default function WaitlistPage({ variant = "A" }: WaitlistPageProps) {
           style={{ animationDelay: "400ms" }}
         >
           <p className="tracking-tight text-foreground">
-            <AnimatedCounter target={waitlistCount} />
+            <NumberTicker value={waitlistCount} className="font-mono text-5xl font-bold text-foreground" />
           </p>
           <p className="mt-2 text-base text-muted-foreground sm:text-lg">
             engineers already on the waitlist

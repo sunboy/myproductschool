@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LumaSymbol } from "@/components/luma-symbol";
+import { NumberTicker } from "@/components/ui/number-ticker";
 import {
   LayoutDashboard,
   Globe,
@@ -535,7 +536,7 @@ function QuickStats({ loading }: { loading: boolean }) {
           </span>
         </div>
         <p className="text-2xl font-bold text-foreground font-mono tabular-nums">
-          {USER.streak}
+          <NumberTicker value={USER.streak} className="text-2xl font-bold text-foreground" />
         </p>
         <p className="text-xs text-muted-foreground mt-0.5 font-mono">
           days
@@ -551,7 +552,7 @@ function QuickStats({ loading }: { loading: boolean }) {
           </span>
         </div>
         <p className="text-2xl font-bold text-foreground font-mono tabular-nums">
-          {USER.challengesCompleted}
+          <NumberTicker value={USER.challengesCompleted} className="text-2xl font-bold text-foreground" />
         </p>
         <p className="text-xs text-muted-foreground mt-0.5 font-mono tabular-nums">
           of {USER.challengesTotal} total
@@ -567,7 +568,7 @@ function QuickStats({ loading }: { loading: boolean }) {
           </span>
         </div>
         {USER.productIQUnlocked ? (
-          <p className="text-2xl font-bold text-foreground font-mono tabular-nums">82</p>
+          <p className="text-2xl font-bold text-foreground font-mono tabular-nums"><NumberTicker value={82} className="text-2xl font-bold text-foreground" /></p>
         ) : (
           <div>
             <p className="text-sm font-semibold text-muted-foreground">

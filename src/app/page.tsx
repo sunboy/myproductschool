@@ -33,6 +33,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { LumaSymbol, LumaSymbolLarge } from "@/components/luma-symbol";
+import { TestimonialsSection } from "@/components/blocks/testimonials-with-marquee";
+import { NumberTicker } from "@/components/ui/number-ticker";
 
 /* ═══════════════════════════════════════════════════════════════════
    HOOKS
@@ -142,45 +144,7 @@ function StickyNav() {
    ANIMATED COUNTER
    ═══════════════════════════════════════════════════════════════════ */
 
-function AnimatedCounter({ target }: { target: number }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  const hasAnimated = useRef(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated.current) {
-          hasAnimated.current = true;
-          const duration = 1600;
-          const steps = 60;
-          const increment = target / steps;
-          let current = 0;
-          const interval = setInterval(() => {
-            current += increment;
-            if (current >= target) {
-              setCount(target);
-              clearInterval(interval);
-            } else {
-              setCount(Math.floor(current));
-            }
-          }, duration / steps);
-        }
-      },
-      { threshold: 0.3 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [target]);
-
-  return (
-    <span ref={ref} className="font-mono tabular-nums">
-      {count.toLocaleString()}
-    </span>
-  );
-}
+/* AnimatedCounter replaced by NumberTicker from 21st.dev/magicui */
 
 /* ═══════════════════════════════════════════════════════════════════
    VOCABULARY CARD CAROUSEL (Section 7)
@@ -781,51 +745,33 @@ export default function LandingPage({ variant = "growth" }: LandingPageProps) {
       </RevealSection>
 
       {/* ══════════════════════════════════════════════════════════
-         SECTION 9 — SOCIAL PROOF
+         SECTION 9 — SOCIAL PROOF (21st.dev Testimonials with Marquee)
          ══════════════════════════════════════════════════════════ */}
-      <RevealSection className="border-t border-border px-6 py-16 sm:py-24">
-        <div className="mx-auto max-w-4xl">
+      <div className="border-t border-border">
+        <div className="mx-auto max-w-4xl px-6 pt-16 sm:pt-24">
           <SectionLabel number="08" text="Social Proof" />
-          <div className="grid gap-6 sm:grid-cols-3">
-            {testimonials.map((t) => (
-              <div
-                key={t.name}
-                className="rounded-lg border border-border bg-card p-6 transition-colors duration-200 hover:border-foreground"
-              >
-                <div className="flex gap-0.5">
-                  {Array.from({ length: t.stars }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-4 w-4 fill-accent text-accent"
-                      strokeWidth={1}
-                    />
-                  ))}
-                </div>
-                <p className="mt-4 text-[15px] leading-[1.7] text-muted-foreground">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="mt-4 border-t border-border pt-4">
-                  <p className="text-sm font-semibold text-foreground">
-                    {t.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {t.role}, {t.company}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-10 text-center">
-            <p className="text-3xl font-bold tracking-[-0.02em] text-foreground sm:text-4xl">
-              <AnimatedCounter target={2847} />
-            </p>
-            <p className="mt-2 text-[15px] leading-[1.7] text-muted-foreground">
-              engineers have already started
-            </p>
-          </div>
         </div>
-      </RevealSection>
+        <TestimonialsSection
+          title="Engineers who leveled up"
+          description="Real feedback from engineers who practiced with Luma."
+          testimonials={testimonials.map((t) => ({
+            author: {
+              name: t.name,
+              handle: `${t.role}, ${t.company}`,
+              avatar: `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(t.name)}&backgroundColor=09090b&textColor=fafafa`,
+            },
+            text: t.quote,
+          }))}
+        />
+        <div className="mx-auto max-w-4xl px-6 pb-16 sm:pb-24 text-center">
+          <p className="text-3xl font-bold tracking-[-0.02em] text-foreground sm:text-4xl">
+            <NumberTicker value={2847} className="font-mono text-3xl sm:text-4xl font-bold tracking-[-0.02em] text-foreground" />
+          </p>
+          <p className="mt-2 text-[15px] leading-[1.7] text-muted-foreground">
+            engineers have already started
+          </p>
+        </div>
+      </div>
 
       {/* ══════════════════════════════════════════════════════════
          SECTION 10 — PRICING
