@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Terra School - Dashboard</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&amp;family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-fixed": "#f8e0a8",
+              "surface-tint": "#4a7c59",
+              "on-tertiary-container": "#554020",
+              "tertiary": "#705c30",
+              "surface-variant": "#e4e0d8",
+              "surface-container": "#f0ece4",
+              "primary-fixed": "#c8e8d0",
+              "surface-dim": "#dbd7cf",
+              "secondary-fixed": "#f0e8db",
+              "primary-fixed-dim": "#8ecf9e",
+              "primary": "#4a7c59",
+              "on-surface": "#2e3230",
+              "surface-bright": "#faf6f0",
+              "on-primary-container": "#d8f0de",
+              "on-secondary": "#ffffff",
+              "surface-variant": "#e4e0d8",
+              "inverse-surface": "#2e3230",
+              "primary-container": "#78a886",
+              "outline-variant": "#c4c8bc",
+              "on-tertiary": "#ffffff",
+              "on-primary": "#ffffff",
+              "error": "#b83230",
+              "on-secondary-container": "#5e5548",
+              "surface-container-low": "#f5f1ea",
+              "secondary": "#6b6358",
+              "secondary-fixed-dim": "#d4ccbf",
+              "on-tertiary-fixed": "#221a05",
+              "on-primary-fixed-variant": "#2a6038",
+              "tertiary-fixed-dim": "#dcc48e",
+              "surface": "#faf6f0",
+              "inverse-primary": "#8ecf9e",
+              "surface-container-highest": "#e4e0d8",
+              "secondary-container": "#f0e8db",
+              "on-error": "#ffffff",
+              "on-error-container": "#690005",
+              "on-surface-variant": "#4a4e4a",
+              "on-primary-fixed": "#002110",
+              "inverse-on-surface": "#f5f0e8",
+              "on-background": "#2e3230",
+              "on-tertiary-fixed-variant": "#554020",
+              "error-container": "#ffdad8",
+              "outline": "#74796e",
+              "background": "#faf6f0",
+              "on-secondary-fixed-variant": "#4a4538",
+              "on-secondary-fixed": "#1e1a13"
+            },
+            fontFamily: {
+              "headline": ["Literata"],
+              "body": ["Nunito Sans"],
+              "label": ["Nunito Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .radar-chart-bg {
+            background: radial-gradient(circle, rgba(74, 124, 89, 0.1) 0%, rgba(74, 124, 89, 0) 70%);
+        }
+        body {
+            background-color: #faf6f0;
+            color: #2e3230;
+        }
+    </style>
+</head>
+<body class="font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="bg-[#faf6f0] dark:bg-stone-950 text-[#4a7c59] dark:text-emerald-400 docked full-width top-0 z-50 border-b border-stone-200 dark:border-stone-800/50 shadow-sm flex justify-between items-center px-6 h-16 w-full fixed">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-bold text-[#4a7c59] dark:text-emerald-500 font-headline tracking-tight">Terra School</span>
+<nav class="hidden md:flex items-center gap-6 h-full">
+<a class="text-[#4a7c59] dark:text-emerald-400 border-b-2 border-[#4a7c59] h-full flex items-center px-2 font-['Literata'] font-semibold tracking-tight cursor-pointer active:scale-95 duration-200">Dashboard</a>
+<a class="text-stone-600 dark:text-stone-400 hover:bg-[#4a7c59]/5 dark:hover:bg-emerald-900/20 transition-colors h-full flex items-center px-2 font-['Literata'] font-semibold tracking-tight cursor-pointer active:scale-95 duration-200">Courses</a>
+<a class="text-stone-600 dark:text-stone-400 hover:bg-[#4a7c59]/5 dark:hover:bg-emerald-900/20 transition-colors h-full flex items-center px-2 font-['Literata'] font-semibold tracking-tight cursor-pointer active:scale-95 duration-200">Community</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="bg-surface-container border-none rounded-full pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary w-64" placeholder="Search resources..." type="text"/>
+</div>
+<button class="material-symbols-outlined p-2 rounded-full hover:bg-[#4a7c59]/5 cursor-pointer">notifications</button>
+<button class="material-symbols-outlined p-2 rounded-full hover:bg-[#4a7c59]/5 cursor-pointer">account_circle</button>
+</div>
+</header>
+<!-- SideNavBar (Navigation Rail / Side Bar) -->
+<aside class="bg-[#faf6f0] dark:bg-stone-950 text-stone-500 dark:text-stone-400 h-full w-72 border-r border-stone-200 dark:border-stone-800/50 fixed left-0 top-16 h-[calc(100vh-64px)] flex flex-col p-4 z-40 hidden md:flex">
+<div class="mb-8 px-4 py-6 rounded-2xl bg-surface-container">
+<div class="flex items-center gap-3">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="Female professional portrait profile picture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7mb6Zyank0xufVzodNJ4YuCO9sIZgbCnP-r1UJFBygwKtO3C5I2ZoBDJaowue-pIMrEXL4tlEt4URtbnKDBgE1omOjVadbAy2noVl57NOCscHXcPC0ozVE4wWF90WRGV7pvRX68NLB8Y3Z_6H6q-k2GagPSIykplxiWQpPT4VG6jKlcudotkspZGOPH9aLAC9_pDBf7BNAPUoXNAqdLXnbsjzgG8cDm3yZcCABzb7pwNiW1mU55z_pgwSKQCmsJmiT8h4bNTbHWU"/>
+<div>
+<h3 class="font-headline font-bold text-on-surface leading-tight">Sarah Chen</h3>
+<p class="text-xs text-outline font-medium uppercase tracking-wider">Product Designer</p>
+</div>
+</div>
+<div class="mt-4 flex flex-col gap-1">
+<span class="text-xs font-bold text-primary">Learning Path</span>
+<div class="w-full bg-outline-variant/30 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[65%]"></div>
+</div>
+<span class="text-[10px] text-right text-outline">65% to Senior Architect</span>
+</div>
+</div>
+<nav class="flex flex-col gap-2 flex-grow">
+<a class="flex items-center gap-4 px-4 py-3 bg-[#4a7c59]/10 dark:bg-emerald-900/30 text-[#4a7c59] dark:text-emerald-300 rounded-r-full font-bold transition-all duration-300">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-['Nunito_Sans'] font-medium text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-stone-500 dark:text-stone-400 hover:pl-6 transition-all duration-300 hover:text-[#4a7c59] dark:hover:text-emerald-400">
+<span class="material-symbols-outlined" data-icon="workspace_premium">workspace_premium</span>
+<span class="font-['Nunito_Sans'] font-medium text-sm">Challenges</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-stone-500 dark:text-stone-400 hover:pl-6 transition-all duration-300 hover:text-[#4a7c59] dark:hover:text-emerald-400">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-['Nunito_Sans'] font-medium text-sm">Community</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-stone-500 dark:text-stone-400 hover:pl-6 transition-all duration-300 hover:text-[#4a7c59] dark:hover:text-emerald-400">
+<span class="material-symbols-outlined" data-icon="library_books">library_books</span>
+<span class="font-['Nunito_Sans'] font-medium text-sm">Resources</span>
+</a>
+</nav>
+<button class="mt-auto bg-primary text-on-primary w-full py-4 rounded-xl font-bold shadow-sm hover:shadow-md active:scale-[0.98] transition-all">
+            Submit Challenge
+        </button>
+</aside>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-12 px-6 md:ml-72 min-h-screen">
+<div class="max-w-6xl mx-auto space-y-8">
+<!-- Luma Greeting Section -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<span class="text-primary font-bold tracking-widest text-xs uppercase mb-2 block">Monday, October 24</span>
+<h1 class="font-headline text-4xl md:text-5xl font-bold text-on-surface">Good morning, Sarah.</h1>
+<p class="text-secondary mt-3 text-lg max-w-xl font-body">Luma here. You're 3 lessons away from completing the "Growth Loops" module. Shall we dive back in?</p>
+</div>
+<div class="flex gap-3">
+<button class="bg-surface-container-high hover:bg-surface-variant text-on-surface px-6 py-3 rounded-xl font-bold transition-colors">View Schedule</button>
+<button class="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold shadow-sm hover:shadow-md transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-xl">play_circle</span>
+                        Resume Learning
+                    </button>
+</div>
+</section>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- ProductIQ Score Radar Chart Card -->
+<div class="md:col-span-7 lg:col-span-8 bg-surface-container-low rounded-xl p-8 shadow-[0_4px_20px_rgba(46,50,48,0.06)] flex flex-col relative overflow-hidden">
+<div class="flex justify-between items-start mb-8 z-10">
+<div>
+<h2 class="font-headline text-2xl font-bold text-on-surface">ProductIQ Score</h2>
+<p class="text-sm text-secondary">Based on your last 12 challenges</p>
+</div>
+<div class="text-right">
+<span class="text-4xl font-headline font-extrabold text-primary">84</span>
+<span class="text-sm font-bold text-tertiary block">+4.2 pts</span>
+</div>
+</div>
+<!-- Visual Radar Chart Mockup -->
+<div class="flex-grow flex items-center justify-center relative py-10">
+<div class="absolute inset-0 radar-chart-bg rounded-full scale-125 opacity-30"></div>
+<div class="relative w-64 h-64 border-2 border-outline-variant/30 rounded-full flex items-center justify-center">
+<div class="w-48 h-48 border border-outline-variant/30 rounded-full flex items-center justify-center">
+<div class="w-32 h-32 border border-outline-variant/30 rounded-full"></div>
+</div>
+<!-- Radar Shape -->
+<svg class="absolute w-full h-full drop-shadow-lg" viewbox="0 0 100 100">
+<polygon fill="rgba(74, 124, 89, 0.4)" points="50,10 85,30 80,75 50,90 15,70 20,30" stroke="#4a7c59" stroke-width="2"></polygon>
+<circle cx="50" cy="10" fill="#4a7c59" r="3"></circle>
+<circle cx="85" cy="30" fill="#4a7c59" r="3"></circle>
+<circle cx="80" cy="75" fill="#4a7c59" r="3"></circle>
+<circle cx="50" cy="90" fill="#4a7c59" r="3"></circle>
+<circle cx="15" cy="70" fill="#4a7c59" r="3"></circle>
+<circle cx="20" cy="30" fill="#4a7c59" r="3"></circle>
+</svg>
+<!-- Labels -->
+<span class="absolute -top-6 text-[10px] font-bold uppercase text-outline tracking-tighter">Strategic Thinking</span>
+<span class="absolute top-1/4 -right-12 text-[10px] font-bold uppercase text-outline tracking-tighter">Execution</span>
+<span class="absolute bottom-1/4 -right-12 text-[10px] font-bold uppercase text-outline tracking-tighter">Growth</span>
+<span class="absolute -bottom-6 text-[10px] font-bold uppercase text-outline tracking-tighter">Empathy</span>
+<span class="absolute bottom-1/4 -left-12 text-[10px] font-bold uppercase text-outline tracking-tighter">Data Analysis</span>
+<span class="absolute top-1/4 -left-12 text-[10px] font-bold uppercase text-outline tracking-tighter">UI Design</span>
+</div>
+</div>
+<div class="mt-8 grid grid-cols-3 gap-4 border-t border-outline-variant/20 pt-6 z-10">
+<div class="text-center">
+<p class="text-[10px] text-outline font-bold uppercase">Rank</p>
+<p class="font-headline font-bold text-on-surface">Top 12%</p>
+</div>
+<div class="text-center border-x border-outline-variant/20 px-2">
+<p class="text-[10px] text-outline font-bold uppercase">Streaks</p>
+<p class="font-headline font-bold text-on-surface">14 Days</p>
+</div>
+<div class="text-center">
+<p class="text-[10px] text-outline font-bold uppercase">Badges</p>
+<p class="font-headline font-bold text-on-surface">24 Unlocked</p>
+</div>
+</div>
+</div>
+<!-- Upcoming Challenge Card -->
+<div class="md:col-span-5 lg:col-span-4 space-y-6">
+<!-- Current Mission -->
+<div class="bg-primary text-on-primary rounded-xl p-6 shadow-lg relative overflow-hidden h-full flex flex-col">
+<div class="absolute top-0 right-0 w-32 h-32 bg-on-primary-container/10 rounded-bl-full"></div>
+<span class="bg-on-primary-container text-primary font-bold text-[10px] px-2 py-1 rounded-md mb-4 w-fit uppercase">Featured Challenge</span>
+<h3 class="font-headline text-2xl font-bold mb-2">The Marketplace Retention Loop</h3>
+<p class="text-on-primary/80 text-sm mb-6 font-body">Analyze the Cohort data for a hypothetical delivery app and propose 3 structural changes to improve D30 retention.</p>
+<div class="mt-auto space-y-4">
+<div class="flex items-center gap-2 text-xs font-bold">
+<span class="material-symbols-outlined text-sm">timer</span>
+                                45 min estimated
+                            </div>
+<button class="w-full bg-surface-bright text-primary py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+                                Start Challenge
+                                <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Community Activity Asymmetric Card -->
+<div class="md:col-span-12 lg:col-span-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-2 bg-surface-container rounded-xl p-8">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline text-xl font-bold text-on-surface">Recent Submissions</h2>
+<a class="text-primary text-sm font-bold hover:underline" href="#">View All Community</a>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-4 bg-surface p-4 rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-colors cursor-pointer group">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="Male portrait avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4B6_PeMcxHXsswKSqMk9M9ow9qDR9hAAAP8X7TgYCbqznjRbzu-lTdLOMZ0SzxrfPll3E8QbIzpOX4FefQeDkp56fY3cSXz40ZeYK4NqBlYifCj4cklDVcYtDT0A2HWYbhXEdGy9uyVmPZEzGw2Bh0L8syotLF5jgWuzDzGgh9lT1IZItD8eWAu-AHce2qbz4X9MJ90Q59GVdhr3CZJ5_KtEY1w5EXg77nR4vWg-n27uez3jTrGw-6RmecBCVGdROS4aEBJCHzWg"/>
+<div class="flex-grow">
+<h4 class="font-bold text-sm text-on-surface group-hover:text-primary transition-colors">Marcus J. <span class="font-normal text-outline">shared a case study on</span> FinTech UX</h4>
+<p class="text-xs text-outline">2 hours ago • 14 comments • 42 likes</p>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary">chevron_right</span>
+</div>
+<div class="flex items-center gap-4 bg-surface p-4 rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-colors cursor-pointer group">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="Female portrait avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuUG7-AMJuFgUijjS3Ot7OrVSm-KwMFCURbwQJDKrc0bp0VFQ4me_TMWoSFVqHMKTyd9JSEhL6T7-bk5U2Css1AuXpsBMI25Xs7woUf4STlz0nniXM5Q3sCtnp4_x5isi-m8GW8-BYk2Y8v7LV5fxLcJfL8Mm9vzYp7aP0yJ6g7M4JPK5RMO1592Ip1p4L34F6MX5itn8f-eduZUni178Z3oFsuyc-29OzaK-kd7hO6cqncklZYIv-yzRF1mGzOyXhlDgc3jJ-UX0"/>
+<div class="flex-grow">
+<h4 class="font-bold text-sm text-on-surface group-hover:text-primary transition-colors">Elena Rose <span class="font-normal text-outline">asked for feedback on</span> Onboarding Flow</h4>
+<p class="text-xs text-outline">5 hours ago • 28 comments • 15 likes</p>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Learning Path Mini-Card -->
+<div class="bg-tertiary-fixed text-on-tertiary-fixed-variant rounded-xl p-8 flex flex-col">
+<h3 class="font-headline text-xl font-bold mb-4">Milestone Progress</h3>
+<div class="flex-grow flex flex-col justify-center">
+<div class="relative pt-1">
+<div class="flex mb-2 items-center justify-between">
+<div>
+<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-tertiary-container text-on-tertiary-container">
+                                          Phase 2: Mechanics
+                                        </span>
+</div>
+<div class="text-right">
+<span class="text-xs font-semibold inline-block text-tertiary">
+                                          8/12 Lessons
+                                        </span>
+</div>
+</div>
+<div class="overflow-hidden h-2 mb-4 text-xs flex rounded-full bg-on-tertiary-fixed-variant/10">
+<div class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-tertiary" style="width:66%"></div>
+</div>
+<p class="text-sm font-medium">Next: "Incentive Structures &amp; Variable Rewards"</p>
+</div>
+</div>
+<div class="mt-6 pt-6 border-t border-on-tertiary-fixed-variant/10">
+<p class="text-xs opacity-75">Estimated completion</p>
+<p class="font-bold">Next Thursday, Oct 27</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar for Mobile -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-[#faf6f0] dark:bg-stone-950 flex justify-around items-center h-16 z-50 px-4 border-t border-stone-200 dark:border-stone-800/50">
+<a class="flex flex-col items-center gap-1 text-[#4a7c59] dark:text-emerald-400">
+<span class="material-symbols-outlined" data-icon="dashboard" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-[10px] font-bold">Dashboard</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-stone-500">
+<span class="material-symbols-outlined" data-icon="workspace_premium">workspace_premium</span>
+<span class="text-[10px] font-medium">Challenges</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-stone-500">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="text-[10px] font-medium">Community</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-stone-500">
+<span class="material-symbols-outlined" data-icon="library_books">library_books</span>
+<span class="text-[10px] font-medium">Resources</span>
+</a>
+</nav>
+<!-- Contextual FAB (Only on Dashboard/Home) -->
+<button class="fixed bottom-20 right-6 md:bottom-8 md:right-8 bg-tertiary text-on-tertiary w-14 h-14 rounded-2xl shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 group">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">add</span>
+<span class="absolute right-full mr-4 bg-inverse-surface text-inverse-on-surface px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">New Submission</span>
+</button>
+</body></html>

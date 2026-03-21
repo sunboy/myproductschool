@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Post-Submission Review | Terra School</title>
+<!-- Google Fonts: Literata (Serif) & Nunito Sans (Sans) -->
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&amp;family=Nunito+Sans:ital,opsz,wght@0,200..1000;1,200..1000&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-fixed": "#f8e0a8",
+              "surface-tint": "#4a7c59",
+              "on-tertiary-container": "#554020",
+              "tertiary": "#705c30",
+              "surface-variant": "#e4e0d8",
+              "surface-container": "#f0ece4",
+              "primary-fixed": "#c8e8d0",
+              "surface-dim": "#dbd7cf",
+              "secondary-fixed": "#f0e8db",
+              "primary-fixed-dim": "#8ecf9e",
+              "primary": "#4a7c59",
+              "on-surface": "#2e3230",
+              "surface-bright": "#faf6f0",
+              "on-primary-container": "#d8f0de",
+              "on-secondary": "#ffffff",
+              "surface-container-lowest": "#ffffff",
+              "surface-container-high": "#eae6de",
+              "tertiary-container": "#c4a66a",
+              "inverse-surface": "#2e3230",
+              "primary-container": "#78a886",
+              "outline-variant": "#c4c8bc",
+              "on-tertiary": "#ffffff",
+              "on-primary": "#ffffff",
+              "error": "#b83230",
+              "on-secondary-container": "#5e5548",
+              "surface-container-low": "#f5f1ea",
+              "secondary": "#6b6358",
+              "secondary-fixed-dim": "#d4ccbf",
+              "on-tertiary-fixed": "#221a05",
+              "on-primary-fixed-variant": "#2a6038",
+              "tertiary-fixed-dim": "#dcc48e",
+              "surface": "#faf6f0",
+              "inverse-primary": "#8ecf9e",
+              "surface-container-highest": "#e4e0d8",
+              "secondary-container": "#f0e8db",
+              "on-error": "#ffffff",
+              "on-error-container": "#690005",
+              "on-surface-variant": "#4a4e4a",
+              "on-primary-fixed": "#002110",
+              "inverse-on-surface": "#f5f0e8",
+              "on-background": "#2e3230",
+              "on-tertiary-fixed-variant": "#554020",
+              "error-container": "#ffdad8",
+              "outline": "#74796e",
+              "background": "#faf6f0",
+              "on-secondary-fixed-variant": "#4a4538",
+              "on-secondary-fixed": "#1e1a13"
+            },
+            fontFamily: {
+              "headline": ["Literata"],
+              "body": ["Nunito Sans"],
+              "label": ["Nunito Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background-color: #faf6f0;
+            color: #2e3230;
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Literata', serif;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-[#faf6f0] flex justify-between items-center px-6 h-16 w-full docked full-width top-0 z-50 border-b border-stone-200 shadow-sm sticky">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary cursor-pointer">arrow_back</span>
+<span class="text-2xl font-bold text-[#4a7c59] font-['Literata'] tracking-tight">Terra School</span>
+</div>
+<div class="hidden md:flex items-center space-x-8 h-full">
+<a class="flex items-center h-full px-2 text-[#4a7c59] border-b-2 border-[#4a7c59] font-['Literata'] font-semibold tracking-tight transition-colors" href="#">Dashboard</a>
+<a class="flex items-center h-full px-2 text-stone-600 font-['Literata'] font-semibold tracking-tight hover:bg-[#4a7c59]/5 transition-colors" href="#">Challenges</a>
+<a class="flex items-center h-full px-2 text-stone-600 font-['Literata'] font-semibold tracking-tight hover:bg-[#4a7c59]/5 transition-colors" href="#">Community</a>
+<a class="flex items-center h-full px-2 text-stone-600 font-['Literata'] font-semibold tracking-tight hover:bg-[#4a7c59]/5 transition-colors" href="#">Resources</a>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative flex items-center bg-surface-container rounded-full px-4 py-1.5 border border-outline-variant/30">
+<span class="material-symbols-outlined text-on-surface-variant text-sm mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm p-0 w-32 md:w-48" placeholder="Search..." type="text"/>
+</div>
+<span class="material-symbols-outlined text-stone-600 cursor-pointer p-2 hover:bg-[#4a7c59]/5 rounded-full transition-colors">notifications</span>
+<span class="material-symbols-outlined text-stone-600 cursor-pointer p-2 hover:bg-[#4a7c59]/5 rounded-full transition-colors">account_circle</span>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar (Desktop Only) -->
+<aside class="hidden md:flex fixed left-0 top-16 h-[calc(100vh-64px)] w-72 flex-col p-4 bg-[#faf6f0] border-r border-stone-200 z-40 transition-all duration-300">
+<div class="flex items-center gap-4 mb-8 px-4 py-2">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="Close up of a professional user avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJGZiiRi-cYatHnXSAd1VLSjj1EESy39q-YcjDN_LbYSg6k0XxCvfSOFYjTJtJvyzsC4najTaP1lYuDaGrcfIjI6HJ9VAjxFtzCd8RnunJ93Gkeut7OMIkMmeXtS2r00A6eBEWFsf88LciSShycTGVNcnmJjpeDTXAeZsRS0qA4FU52nYFJadjl4b0eQuEdCggXEMuhvVBjdEsgk1glxLK6F__iL9Yyk7hSWL3KjCedn_PZt-FTj1IReCIwAvrKyxrlHz8FFrdRJY"/>
+</div>
+<div class="flex flex-col">
+<span class="font-['Literata'] font-bold text-on-surface leading-tight">Learning Path</span>
+<span class="text-xs text-stone-500 font-['Nunito_Sans']">Product Designer</span>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-4 px-4 py-3 bg-[#4a7c59]/10 text-[#4a7c59] rounded-r-full font-bold font-['Nunito_Sans'] text-sm transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-stone-500 hover:text-[#4a7c59] hover:pl-6 transition-all font-['Nunito_Sans'] text-sm" href="#">
+<span class="material-symbols-outlined">workspace_premium</span>
+<span>Challenges</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-stone-500 hover:text-[#4a7c59] hover:pl-6 transition-all font-['Nunito_Sans'] text-sm" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span>Community</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-stone-500 hover:text-[#4a7c59] hover:pl-6 transition-all font-['Nunito_Sans'] text-sm" href="#">
+<span class="material-symbols-outlined">library_books</span>
+<span>Resources</span>
+</a>
+</nav>
+<button class="mt-auto mb-4 mx-4 py-3 px-6 bg-primary text-on-primary rounded-lg font-['Nunito_Sans'] font-semibold text-sm active:scale-95 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">send</span>
+                Submit Challenge
+            </button>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-72 bg-background overflow-y-auto p-4 md:p-8">
+<!-- Content Grid: Dual Pane -->
+<div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Pane: Case Context -->
+<section class="lg:col-span-5 space-y-6">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-2xl font-bold text-on-surface">Case Context</h2>
+<span class="px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed rounded-full text-xs font-bold uppercase tracking-wider">Project ID: TS-882</span>
+</div>
+<div class="bg-surface-container p-6 rounded-xl shadow-[0_4px_20px_rgba(46,50,48,0.06)] space-y-4">
+<div class="aspect-video w-full rounded-lg bg-stone-300 overflow-hidden relative group">
+<img class="w-full h-full object-cover" data-alt="Lush green forest landscape for environmental context" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_Ykg5F6o5XkhE-BgxTWy_xcVqOMSBEN22LEnueqwVFdTvOxYFuubURCIzZyyomG_-rFCPnjaPzvbKf83il6azzQTvLVVw9-qU6QFSFf05EE0M7UZJHb3PbB2nFbeCbhLFDt9aXJqgziqROaR4A7j7v85kXqy6Z1_X8Mp2xxz7wXmAkV11q9A_CU4nypQnTDB4fAK-O6ei1THr7pAonzuO_MUAR7TcKU7JUIpSxczWDp47AURL2QHFrOjjtoWmAQRGUpEzDNVPTfY"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
+</div>
+<h3 class="text-xl font-bold text-primary">Urban Reforestation Initiative</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed">
+                            Evaluating the feasibility of a high-density vertical micro-forest in the Sector 7 Industrial Corridor. The submission focuses on bio-diversity impact and structural irrigation efficiencies.
+                        </p>
+<div class="flex flex-wrap gap-2 pt-2">
+<span class="text-xs px-2 py-1 bg-surface-variant text-on-surface-variant rounded-md border border-outline-variant/30">Sustainability</span>
+<span class="text-xs px-2 py-1 bg-surface-variant text-on-surface-variant rounded-md border border-outline-variant/30">Engineering</span>
+<span class="text-xs px-2 py-1 bg-surface-variant text-on-surface-variant rounded-md border border-outline-variant/30">Urban Planning</span>
+</div>
+</div>
+<!-- Submission Details List -->
+<div class="space-y-3">
+<div class="flex items-center gap-3 p-4 bg-surface-container-low rounded-lg border border-outline-variant/20">
+<span class="material-symbols-outlined text-primary">description</span>
+<div class="flex-1">
+<p class="text-xs font-bold text-stone-500 uppercase">File Attached</p>
+<p class="text-sm font-semibold text-on-surface">Reforestation_V3_Final.pdf</p>
+</div>
+<span class="material-symbols-outlined text-stone-400 cursor-pointer">download</span>
+</div>
+<div class="flex items-center gap-3 p-4 bg-surface-container-low rounded-lg border border-outline-variant/20">
+<span class="material-symbols-outlined text-primary">calendar_today</span>
+<div class="flex-1">
+<p class="text-xs font-bold text-stone-500 uppercase">Submission Date</p>
+<p class="text-sm font-semibold text-on-surface">Oct 14, 2023 · 14:32 PM</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Pane: Review & Feedback -->
+<section class="lg:col-span-7 space-y-6">
+<h2 class="text-2xl font-bold text-on-surface">Submission Review</h2>
+<!-- Score Summary Card -->
+<div class="bg-surface-container p-6 rounded-xl shadow-[0_4px_20px_rgba(46,50,48,0.06)] border-t-4 border-primary">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h3 class="text-lg font-bold text-on-surface">Luma's Analysis</h3>
+<p class="text-sm text-stone-500">AI-Assisted Evaluation</p>
+</div>
+<div class="text-right">
+<span class="text-4xl font-extrabold text-primary">88</span>
+<span class="text-lg text-stone-400 font-bold">/100</span>
+</div>
+</div>
+<!-- Progress Bars for Metrics -->
+<div class="space-y-4">
+<div>
+<div class="flex justify-between text-xs font-bold text-on-surface mb-1 uppercase tracking-tighter">
+<span>Structural Viability</span>
+<span>92%</span>
+</div>
+<div class="w-full bg-surface-variant h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 92%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-xs font-bold text-on-surface mb-1 uppercase tracking-tighter">
+<span>Ecological Impact</span>
+<span>85%</span>
+</div>
+<div class="w-full bg-surface-variant h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 85%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-xs font-bold text-on-surface mb-1 uppercase tracking-tighter">
+<span>Cost Efficiency</span>
+<span>76%</span>
+</div>
+<div class="w-full bg-surface-variant h-2 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full rounded-full" style="width: 76%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Material Accordions / Expansion Panels -->
+<div class="space-y-3">
+<!-- Step 1 -->
+<div class="bg-white rounded-lg border border-outline-variant/30 overflow-hidden">
+<div class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-container transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-xs font-bold">01</div>
+<span class="font-bold text-on-surface">Data Integrity Check</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs text-primary font-bold">PASSED</span>
+<span class="material-symbols-outlined text-stone-400 transition-transform group-hover:translate-y-0.5">expand_more</span>
+</div>
+</div>
+<div class="px-16 pb-4 pt-0 text-sm text-on-surface-variant leading-relaxed">
+                                All baseline measurements for soil pH and atmospheric moisture content align with local meteorological datasets. No anomalies detected in primary telemetry.
+                            </div>
+</div>
+<!-- Step 2 -->
+<div class="bg-white rounded-lg border border-outline-variant/30 overflow-hidden">
+<div class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-container transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-xs font-bold">02</div>
+<span class="font-bold text-on-surface">Material Resistance Analysis</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs text-primary font-bold">PASSED</span>
+<span class="material-symbols-outlined text-stone-400">expand_more</span>
+</div>
+</div>
+<div class="px-16 pb-4 pt-0 text-sm text-on-surface-variant hidden">
+                                Detailed stress testing of proposed polymer scaffolding.
+                            </div>
+</div>
+<!-- Step 3 (Attention State) -->
+<div class="bg-white rounded-lg border-2 border-tertiary/20 overflow-hidden shadow-sm">
+<div class="flex items-center justify-between p-4 cursor-pointer bg-tertiary/5 hover:bg-tertiary/10 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container text-xs font-bold">03</div>
+<span class="font-bold text-on-surface">Cost-to-Benefit Projection</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs text-tertiary font-bold">REQUIRES REVIEW</span>
+<span class="material-symbols-outlined text-tertiary font-bold">expand_less</span>
+</div>
+</div>
+<div class="px-16 pb-6 pt-2 text-sm text-on-surface-variant leading-relaxed">
+<p class="mb-3">The ROI model assumes a 15-year maintenance-free cycle. However, current supply chain volatility for Bio-Enrichment Medium X may increase initial CAPEX by 14%.</p>
+<div class="bg-tertiary-fixed/30 p-3 rounded-md border border-tertiary/10 flex items-start gap-3">
+<span class="material-symbols-outlined text-tertiary text-lg">lightbulb</span>
+<p class="text-xs font-semibold text-on-tertiary-fixed-variant">Luma suggests: "Consider decentralized sourcing for nutrient-rich substrate to hedge against logistics bottlenecks."</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Final Action Buttons -->
+<div class="flex flex-col sm:flex-row gap-4 pt-6">
+<button class="flex-1 py-4 bg-primary text-on-primary rounded-xl font-bold hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">verified</span>
+                            Approve Submission
+                        </button>
+<button class="flex-1 py-4 bg-surface-container border border-outline text-on-surface rounded-xl font-bold hover:bg-surface-container-high transition-all active:scale-95 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">edit_note</span>
+                            Request Revision
+                        </button>
+</div>
+</section>
+</div>
+</main>
+</div>
+<!-- Mobile Bottom NavBar (Hidden on Desktop) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-[#faf6f0] h-16 flex justify-around items-center px-2 z-50 border-t border-stone-200">
+<button class="flex flex-col items-center justify-center w-full text-primary">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center w-full text-stone-500">
+<span class="material-symbols-outlined">workspace_premium</span>
+<span class="text-[10px]">Quests</span>
+</button>
+<button class="flex flex-col items-center justify-center w-full text-stone-500">
+<span class="material-symbols-outlined">groups</span>
+<span class="text-[10px]">Society</span>
+</button>
+<button class="flex flex-col items-center justify-center w-full text-stone-500">
+<span class="material-symbols-outlined">library_books</span>
+<span class="text-[10px]">Library</span>
+</button>
+</nav>
+</body></html>

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Material Product 75 — Core Metrics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&amp;family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary": "#ffffff",
+              "surface-container": "#f0ece4",
+              "on-surface-variant": "#4a4e4a",
+              "on-primary-fixed": "#002110",
+              "surface-container-highest": "#e4e0d8",
+              "surface-bright": "#faf6f0",
+              "surface-dim": "#dbd7cf",
+              "surface-container-low": "#f5f1ea",
+              "on-secondary-fixed": "#1e1a13",
+              "on-primary-container": "#d8f0de",
+              "tertiary-fixed": "#f8e0a8",
+              "tertiary-fixed-dim": "#dcc48e",
+              "on-tertiary-container": "#554020",
+              "surface-container-lowest": "#ffffff",
+              "secondary-container": "#f0e8db",
+              "inverse-on-surface": "#f5f0e8",
+              "surface-tint": "#4a7c59",
+              "primary-fixed": "#c8e8d0",
+              "on-secondary-fixed-variant": "#4a4538",
+              "on-error-container": "#690005",
+              "error-container": "#ffdad8",
+              "on-background": "#2e3230",
+              "primary": "#4a7c59",
+              "on-secondary": "#ffffff",
+              "on-primary-fixed-variant": "#2a6038",
+              "tertiary-container": "#c4a66a",
+              "surface-container-high": "#eae6de",
+              "secondary-fixed": "#f0e8db",
+              "inverse-surface": "#2e3230",
+              "background": "#faf6f0",
+              "primary-container": "#78a886",
+              "on-tertiary-fixed": "#221a05",
+              "on-error": "#ffffff",
+              "surface-variant": "#e4e0d8",
+              "error": "#b83230",
+              "secondary": "#6b6358",
+              "on-tertiary": "#ffffff",
+              "primary-fixed-dim": "#8ecf9e",
+              "outline": "#74796e",
+              "on-tertiary-fixed-variant": "#554020",
+              "surface": "#faf6f0",
+              "on-surface": "#2e3230",
+              "outline-variant": "#c4c8bc",
+              "on-secondary-container": "#5e5548",
+              "inverse-primary": "#8ecf9e",
+              "tertiary": "#705c30",
+              "secondary-fixed-dim": "#d4ccbf"
+            },
+            fontFamily: {
+              "headline": ["Literata"],
+              "body": ["Nunito Sans"],
+              "label": ["Nunito Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      body {
+        font-family: 'Nunito Sans', sans-serif;
+        background-color: #faf6f0;
+        color: #2e3230;
+      }
+      h1, h2, h3 {
+        font-family: 'Literata', serif;
+      }
+      .custom-shadow {
+        box-shadow: 0 4px 20px rgba(46, 50, 48, 0.06);
+      }
+    </style>
+</head>
+<body class="bg-background text-on-background">
+<!-- TopAppBar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#faf6f0] dark:bg-stone-950 border-b border-stone-200 dark:border-stone-800 shadow-sm dark:shadow-none">
+<div class="flex items-center gap-8">
+<span class="font-['Literata'] text-2xl font-bold text-[#4a7c59] dark:text-[#6fb082] tracking-tight">Terra</span>
+<div class="hidden md:flex gap-6">
+<a class="text-[#4a7c59] dark:text-[#6fb082] font-bold border-b-2 border-[#4a7c59] font-['Literata'] font-semibold text-lg" href="#">Ecologies</a>
+<a class="text-stone-600 dark:text-stone-400 font-['Nunito_Sans'] font-medium text-lg hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors px-2" href="#">Analytics</a>
+<a class="text-stone-600 dark:text-stone-400 font-['Nunito_Sans'] font-medium text-lg hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors px-2" href="#">Archive</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex items-center bg-surface-container-low px-4 py-1.5 rounded-full border border-outline-variant">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm font-label ml-2 w-48" placeholder="Search metrics..." type="text"/>
+</div>
+<button class="material-symbols-outlined p-2 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 rounded-full transition-colors" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined p-2 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 rounded-full transition-colors" data-icon="settings">settings</button>
+<img alt="User profile" class="w-8 h-8 rounded-full border-2 border-primary ml-2" data-alt="Close up of a professional user avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxvW_Vc1fx67yD7i1xmWDGHlocS38iaiXys-RCbTBlWehNhtaZ7DFxmiFSuZemgVSRa1bs6fmx8-U1T2Q6GTMy18fsJ_fRiRHtWg-KwSrp7uQ1FpBb0arqXRWP-BavZrtd8xlmu8gSy3tANKuRdSKkhfzodMRbxHxKuTgtaqxiSMlNYK1j5LCmdaoqqvp4SUsewtaRTNhASpy28ffnuyzR0A-zKcEppDoc2L6-BsUmHkHUZrh81djwCixipxqvAVDCX7A0Rp7jU0g"/>
+</div>
+</nav>
+<main class="pt-24 pb-20 px-6 max-w-7xl mx-auto">
+<!-- Hero Section for Part 2 -->
+<header class="mb-16 text-center">
+<span class="inline-block px-4 py-1.5 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold tracking-widest uppercase mb-4">Material Product 75</span>
+<h1 class="text-5xl md:text-6xl text-primary font-bold mb-6 max-w-3xl mx-auto leading-tight">Master the 75 Core Ecosystem Metrics.</h1>
+<p class="text-on-surface-variant text-lg max-w-2xl mx-auto font-body">Rooted in organic growth principles, our framework covers the complete lifecycle of product health, from initial seeding to evergreen retention.</p>
+</header>
+<!-- Bento Grid for Metric Categories -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-24">
+<!-- Acquisition Category -->
+<div class="md:col-span-8 bg-surface-bright p-8 rounded-xl custom-shadow border border-outline-variant/30 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+<div class="flex justify-between items-start mb-8">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="energy_savings_leaf">energy_savings_leaf</span>
+<h2 class="text-3xl font-bold text-on-surface">Acquisition</h2>
+</div>
+<p class="text-on-surface-variant max-w-md">Measuring the fertility of your growth channels and the cost of new seedling entry.</p>
+</div>
+<span class="bg-primary text-on-primary text-sm font-bold px-3 py-1 rounded-full">18 Metrics</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<div class="bg-surface-container p-4 rounded-lg border border-outline-variant/20 hover:border-primary/40 transition-colors">
+<p class="font-headline font-bold text-primary text-lg mb-1">CAC</p>
+<p class="text-xs text-on-surface-variant leading-relaxed">Cost per Acquired Customer across organic channels.</p>
+</div>
+<div class="bg-surface-container p-4 rounded-lg border border-outline-variant/20 hover:border-primary/40 transition-colors">
+<p class="font-headline font-bold text-primary text-lg mb-1">Viral Coeff.</p>
+<p class="text-xs text-on-surface-variant leading-relaxed">The rate at which existing seeds plant new ones.</p>
+</div>
+<div class="bg-surface-container p-4 rounded-lg border border-outline-variant/20 hover:border-primary/40 transition-colors">
+<p class="font-headline font-bold text-primary text-lg mb-1">ROAS</p>
+<p class="text-xs text-on-surface-variant leading-relaxed">Return on ad spend within the ecosystem.</p>
+</div>
+</div>
+</div>
+<!-- Retention Category -->
+<div class="md:col-span-4 bg-tertiary-fixed text-on-tertiary-container p-8 rounded-xl custom-shadow relative overflow-hidden group">
+<div class="flex flex-col h-full">
+<span class="material-symbols-outlined text-4xl mb-6" data-icon="nest_eco_leaf" style="font-variation-settings: 'FILL' 1;">nest_eco_leaf</span>
+<h2 class="text-3xl font-bold mb-3">Retention</h2>
+<p class="text-sm opacity-80 mb-8 font-body">Tracking long-term vitality and churn protection strategies.</p>
+<div class="mt-auto space-y-3">
+<div class="flex justify-between items-center border-b border-on-tertiary-container/10 pb-2">
+<span class="text-sm font-bold">LTV</span>
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+</div>
+<div class="flex justify-between items-center border-b border-on-tertiary-container/10 pb-2">
+<span class="text-sm font-bold">Churn Rate</span>
+<span class="material-symbols-outlined text-sm" data-icon="water_drop">water_drop</span>
+</div>
+<div class="flex justify-between items-center border-b border-on-tertiary-container/10 pb-2">
+<span class="text-sm font-bold">Stickiness</span>
+<span class="material-symbols-outlined text-sm" data-icon="auto_awesome">auto_awesome</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Analytics & Revenue -->
+<div class="md:col-span-5 bg-surface-container-highest p-8 rounded-xl border border-outline-variant/40 custom-shadow">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-primary" data-icon="analytics" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<h3 class="text-2xl font-bold">Monetization</h3>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-4 bg-surface-bright p-4 rounded-lg border border-outline-variant/20">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary" data-icon="payments">payments</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">ARPU</p>
+<p class="text-xs text-on-surface-variant">Average Revenue Per Unit</p>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-surface-bright p-4 rounded-lg border border-outline-variant/20">
+<div class="w-12 h-12 rounded-full bg-tertiary/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-tertiary" data-icon="request_quote">request_quote</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">MRR / ARR</p>
+<p class="text-xs text-on-surface-variant">Recurring Revenue Streams</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Engagement & Satisfaction -->
+<div class="md:col-span-7 bg-[#4a7c59] text-[#faf6f0] p-8 rounded-xl custom-shadow flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div class="max-w-md">
+<h3 class="text-2xl font-bold mb-4 font-headline">User Delight &amp; Engagement</h3>
+<p class="text-primary-container leading-relaxed font-body">Beyond the numbers, we measure the pulse of the community. How deeply do they root themselves in your experience?</p>
+</div>
+<span class="material-symbols-outlined text-5xl opacity-30" data-icon="volunteer_activism">volunteer_activism</span>
+</div>
+<div class="flex gap-4 mt-8">
+<div class="flex-1 bg-white/10 p-4 rounded-lg backdrop-blur-sm border border-white/5">
+<p class="text-xs uppercase tracking-widest font-bold mb-1 opacity-70">Metric 42</p>
+<p class="font-headline font-bold text-xl">DAU/MAU</p>
+</div>
+<div class="flex-1 bg-white/10 p-4 rounded-lg backdrop-blur-sm border border-white/5">
+<p class="text-xs uppercase tracking-widest font-bold mb-1 opacity-70">Metric 58</p>
+<p class="font-headline font-bold text-xl">NPS Score</p>
+</div>
+<div class="flex-1 bg-white/10 p-4 rounded-lg backdrop-blur-sm border border-white/5">
+<p class="text-xs uppercase tracking-widest font-bold mb-1 opacity-70">Metric 64</p>
+<p class="font-headline font-bold text-xl">Session Depth</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Sample Challenge Section -->
+<section class="mt-32">
+<div class="text-center mb-12">
+<h2 class="text-4xl font-bold text-primary mb-4">Sample Challenge</h2>
+<p class="text-on-surface-variant max-w-2xl mx-auto font-body">Experience the Terra feedback loop. See how Luma analyzes user intuition against Material Product standards.</p>
+</div>
+<div class="bg-surface-container rounded-3xl p-8 md:p-12 custom-shadow border border-outline-variant/30">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+<!-- User Answer -->
+<div class="bg-surface-bright p-6 rounded-2xl border border-outline-variant/20 flex flex-col">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container" data-icon="person">person</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Your Response</p>
+<p class="text-xs text-on-surface-variant">Scenario: Dropping retention rates</p>
+</div>
+</div>
+<div class="flex-grow">
+<p class="text-on-surface italic font-body leading-relaxed mb-6">
+                                "I would probably look at the onboarding flow again. Maybe the users are getting confused at the start? I'd check if the emails are being sent out correctly and if we can offer a discount to people who are about to leave."
+                            </p>
+</div>
+<div class="p-3 bg-error-container/30 rounded-lg flex gap-3 items-center">
+<span class="material-symbols-outlined text-error" data-icon="warning">warning</span>
+<p class="text-xs text-on-error-container font-medium">Lacks specific metric-driven triggers.</p>
+</div>
+</div>
+<!-- Luma Feedback -->
+<div class="bg-primary text-on-primary p-6 rounded-2xl shadow-xl flex flex-col transform md:scale-105">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-full bg-on-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-white" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<div>
+<p class="text-sm font-bold text-white">Luma Feedback</p>
+<p class="text-xs text-primary-container">System Analysis v.75</p>
+</div>
+</div>
+<div class="flex-grow">
+<h4 class="font-headline text-xl font-bold mb-4">The "Root-Cause" Approach</h4>
+<p class="text-primary-container text-sm leading-relaxed font-body mb-6">
+                                "Shift focus from 'discounts' to <strong>Cohorted Activation</strong>. Analyze <strong>Metric 12 (Time-to-Value)</strong> against <strong>Metric 34 (Feature Adoption Rate)</strong>. If users don't hit the 'Aha Moment' within 24 hours, the churn is structural, not price-sensitive."
+                            </p>
+<div class="space-y-3">
+<div class="flex items-center gap-2 text-xs font-bold bg-on-primary/10 p-2 rounded">
+<span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
+                                    Identification of Metric 12
+                                </div>
+<div class="flex items-center gap-2 text-xs font-bold bg-on-primary/10 p-2 rounded">
+<span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
+                                    Strategic cohort separation
+                                </div>
+</div>
+</div>
+<button class="mt-8 bg-on-primary text-primary font-bold py-3 rounded-xl hover:bg-primary-fixed transition-colors text-sm">Review Metric 12 Guide</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Animated Style Vocabulary Cards -->
+<section class="mt-32">
+<h3 class="text-3xl font-bold text-center mb-12">The Lexicon of Growth</h3>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+<!-- Card 1 -->
+<div class="aspect-square bg-surface-container-low p-6 rounded-2xl flex flex-col justify-center items-center text-center border border-outline-variant/30 hover:bg-primary-container/20 transition-all cursor-pointer group">
+<span class="material-symbols-outlined text-primary mb-3 text-3xl transition-transform group-hover:scale-125" data-icon="compost">compost</span>
+<p class="font-bold text-sm text-on-surface">Activation</p>
+<p class="text-[10px] text-on-surface-variant mt-2">Initial germination</p>
+</div>
+<!-- Card 2 -->
+<div class="aspect-square bg-surface-container-low p-6 rounded-2xl flex flex-col justify-center items-center text-center border border-outline-variant/30 hover:bg-primary-container/20 transition-all cursor-pointer group">
+<span class="material-symbols-outlined text-primary mb-3 text-3xl transition-transform group-hover:scale-125" data-icon="filter_vintage">filter_vintage</span>
+<p class="font-bold text-sm text-on-surface">Virality</p>
+<p class="text-[10px] text-on-surface-variant mt-2">Cross-pollination</p>
+</div>
+<!-- Card 3 -->
+<div class="aspect-square bg-surface-container-low p-6 rounded-2xl flex flex-col justify-center items-center text-center border border-outline-variant/30 hover:bg-primary-container/20 transition-all cursor-pointer group">
+<span class="material-symbols-outlined text-primary mb-3 text-3xl transition-transform group-hover:scale-125" data-icon="landscape">landscape</span>
+<p class="font-bold text-sm text-on-surface">Scale</p>
+<p class="text-[10px] text-on-surface-variant mt-2">Expanding horizons</p>
+</div>
+<!-- Card 4 -->
+<div class="aspect-square bg-surface-container-low p-6 rounded-2xl flex flex-col justify-center items-center text-center border border-outline-variant/30 hover:bg-primary-container/20 transition-all cursor-pointer group">
+<span class="material-symbols-outlined text-primary mb-3 text-3xl transition-transform group-hover:scale-125" data-icon="psychology">psychology</span>
+<p class="font-bold text-sm text-on-surface">Cognition</p>
+<p class="text-[10px] text-on-surface-variant mt-2">Mental model fit</p>
+</div>
+<!-- Card 5 -->
+<div class="aspect-square bg-surface-container-low p-6 rounded-2xl flex flex-col justify-center items-center text-center border border-outline-variant/30 hover:bg-primary-container/20 transition-all cursor-pointer group">
+<span class="material-symbols-outlined text-primary mb-3 text-3xl transition-transform group-hover:scale-125" data-icon="waves">waves</span>
+<p class="font-bold text-sm text-on-surface">Frequency</p>
+<p class="text-[10px] text-on-surface-variant mt-2">Engagement rhythm</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer Simulation -->
+<footer class="bg-surface-dim pt-20 pb-10 px-6 border-t border-outline-variant/20">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="text-center md:text-left">
+<span class="font-headline text-2xl font-bold text-primary">Terra Organic</span>
+<p class="text-sm text-on-surface-variant mt-2">The metric-driven ecosystem for sustainable products.</p>
+</div>
+<div class="flex gap-8">
+<a class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors" href="#">Terms</a>
+<a class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors" href="#">Contact</a>
+</div>
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full border border-outline flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all cursor-pointer">
+<span class="material-symbols-outlined text-lg" data-icon="share">share</span>
+</div>
+<div class="w-10 h-10 rounded-full border border-outline flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all cursor-pointer">
+<span class="material-symbols-outlined text-lg" data-icon="language">language</span>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto mt-12 pt-8 border-t border-outline-variant/10 text-center text-xs text-on-surface-variant/50 font-body">
+            © 2024 Terra Organic Design System. All rights reserved.
+        </div>
+</footer>
+</body></html>

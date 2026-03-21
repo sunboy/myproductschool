@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Terra - Immersive Discussion Spotlight</title>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,700;0,900;1,400&amp;family=Nunito+Sans:wght@300;400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+          tailwind.config = {
+            darkMode: "class",
+            theme: {
+              extend: {
+                colors: {
+                  "primary-fixed-dim": "#8ecf9e",
+                  "surface-tint": "#4a7c59",
+                  "primary": "#4a7c59",
+                  "tertiary-fixed-dim": "#dcc48e",
+                  "on-primary-fixed": "#002110",
+                  "secondary": "#6b6358",
+                  "on-primary-fixed-variant": "#2a6038",
+                  "tertiary-fixed": "#f8e0a8",
+                  "surface-container-high": "#eae6de",
+                  "on-tertiary-fixed-variant": "#554020",
+                  "on-primary-container": "#d8f0de",
+                  "on-tertiary": "#ffffff",
+                  "on-error-container": "#690005",
+                  "secondary-fixed-dim": "#d4ccbf",
+                  "on-secondary-container": "#5e5548",
+                  "on-secondary": "#ffffff",
+                  "surface-container-highest": "#e4e0d8",
+                  "on-background": "#2e3230",
+                  "secondary-container": "#f0e8db",
+                  "on-error": "#ffffff",
+                  "inverse-surface": "#2e3230",
+                  "inverse-primary": "#8ecf9e",
+                  "on-surface-variant": "#4a4e4a",
+                  "error": "#b83230",
+                  "on-secondary-fixed-variant": "#4a4538",
+                  "tertiary-container": "#c4a66a",
+                  "surface": "#faf6f0",
+                  "on-surface": "#2e3230",
+                  "surface-container": "#f0ece4",
+                  "outline": "#74796e",
+                  "surface-container-lowest": "#ffffff",
+                  "primary-fixed": "#c8e8d0",
+                  "surface-variant": "#e4e0d8",
+                  "surface-bright": "#faf6f0",
+                  "outline-variant": "#c4c8bc",
+                  "on-tertiary-container": "#554020",
+                  "secondary-fixed": "#f0e8db",
+                  "on-secondary-fixed": "#1e1a13",
+                  "on-primary": "#ffffff",
+                  "background": "#faf6f0",
+                  "surface-dim": "#dbd7cf",
+                  "on-tertiary-fixed": "#221a05",
+                  "inverse-on-surface": "#f5f0e8",
+                  "primary-container": "#78a886",
+                  "tertiary": "#705c30",
+                  "error-container": "#ffdad8",
+                  "surface-container-low": "#f5f1ea"
+                },
+                fontFamily: {
+                  "headline": ["Literata"],
+                  "body": ["Nunito Sans"],
+                  "label": ["Nunito Sans"]
+                },
+                borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+              },
+            },
+          }
+        </script>
+<style>
+        body { font-family: 'Nunito Sans', sans-serif; }
+        h1, h2, h3 { font-family: 'Literata', serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen overflow-hidden">
+<header class="bg-[#faf6f0] border-b border-stone-200 flex justify-between items-center w-full px-6 py-3 fixed top-0 z-50">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black text-[#4a7c59] font-serif">Terra</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-stone-500 hover:text-[#4a7c59] font-sans" href="#">Dashboard</a>
+<a class="text-[#4a7c59] font-bold border-b-2 border-[#4a7c59] pb-1 font-sans" href="#">Practice</a>
+<a class="text-stone-500 hover:text-[#4a7c59] font-sans" href="#">Interview Prep</a>
+<a class="text-stone-500 hover:text-[#4a7c59] font-sans" href="#">Domain</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-stone-500 hover:bg-stone-100 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-primary-container overflow-hidden border border-outline-variant">
+<img alt="User profile avatar" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcQcEoFqK3C2cNH1WiEkfYAmO9eMiRZoh1MuaJQhVbyWGRdvgPcNyKbxeiuSVJuee91hdbB-XT33RYWr6khbJSBM0HK1vdZheIBvwP0rg6kcUbfQUlnPUCL0kfVHceUx2PRj94GXlB03EUx5dgw0f2AJR8tfxZHUOhhxuthd4U3NYZiA1cqk6qsqBpZHXgjcj00l9Vxp9T2y88WzKvM9elILpmL2csqtzMh4bIz5vVGqO3J9U_bm267gXx2rzk8K2SL75U6n8rvz4"/>
+</div>
+</div>
+</header>
+<div class="pt-[60px] h-screen flex flex-row">
+<aside class="w-80 border-r border-outline-variant/30 bg-surface-container-lowest overflow-y-auto hide-scrollbar flex flex-col">
+<div class="p-6 border-b border-outline-variant/30">
+<div class="flex items-center gap-2 mb-1">
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Uber</span>
+<span class="text-xs font-bold text-stone-400">Weekend Dropoff</span>
+</div>
+<h2 class="text-xl font-black text-on-surface">Discussions</h2>
+</div>
+<div class="flex-1">
+<div class="p-4 space-y-1">
+<a class="block p-4 rounded-xl bg-primary/5 border-l-4 border-primary shadow-sm group" href="#">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-xs text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-[10px] font-black text-primary uppercase tracking-widest">Selected Pick</span>
+</div>
+<p class="text-sm font-bold text-on-surface leading-snug">The key metric here isn't just gross volume, but the re-engagement rate...</p>
+<p class="text-[10px] text-stone-400 mt-2 font-medium">Sarah Jenkins • 142 upvotes</p>
+</a>
+<a class="block p-4 rounded-xl hover:bg-surface-container transition-colors group" href="#">
+<p class="text-sm font-bold text-stone-600 group-hover:text-primary leading-snug">Does anyone have thoughts on whether we should prioritize the driver app experience first?</p>
+<p class="text-[10px] text-stone-400 mt-2 font-medium">Arjun Mehta • 28 upvotes</p>
+</a>
+<a class="block p-4 rounded-xl hover:bg-surface-container transition-colors group" href="#">
+<p class="text-sm font-bold text-stone-600 group-hover:text-primary leading-snug">Great challenge! I'm trying to frame the solution using the CIRCLES method.</p>
+<p class="text-[10px] text-stone-400 mt-2 font-medium">Elena Volkov • 15 upvotes</p>
+</a>
+<div class="pt-4 px-4 pb-2">
+<h4 class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Community Top Picks</h4>
+</div>
+<a class="block p-4 rounded-xl hover:bg-surface-container transition-colors group" href="#">
+<p class="text-sm font-bold text-stone-600 group-hover:text-primary leading-snug">Impact of Weekend Surcharges on Retained Users</p>
+<p class="text-[10px] text-stone-400 mt-1">by dev_marcus</p>
+</a>
+<a class="block p-4 rounded-xl hover:bg-surface-container transition-colors group" href="#">
+<p class="text-sm font-bold text-stone-600 group-hover:text-primary leading-snug">Comparing Uber Weekend UX to Lyft Pink Strategies</p>
+<p class="text-[10px] text-stone-400 mt-1">by elena_v</p>
+</a>
+<a class="block p-4 rounded-xl hover:bg-surface-container transition-colors group" href="#">
+<p class="text-sm font-bold text-stone-600 group-hover:text-primary leading-snug">A Data-Driven Framework for "Magic Moments" in Ride Sharing</p>
+<p class="text-[10px] text-stone-400 mt-1">by product_guru</p>
+</a>
+</div>
+</div>
+<div class="p-6 bg-surface-container-low border-t border-outline-variant/30">
+<div class="flex justify-between items-end mb-4">
+<div>
+<p class="text-[10px] font-black text-stone-400 uppercase">Active Now</p>
+<p class="text-2xl font-black text-tertiary">43</p>
+</div>
+<div class="text-right">
+<p class="text-[10px] font-black text-stone-400 uppercase">Total</p>
+<p class="text-2xl font-black text-primary">1.2k</p>
+</div>
+</div>
+<div class="text-[10px] text-stone-500 italic">
+                Focus on constructive feedback. Ensure technical claims are backed by logic.
+            </div>
+</div>
+</aside>
+<main class="flex-1 bg-background overflow-y-auto hide-scrollbar flex flex-col items-center py-12 px-6">
+<div class="max-w-3xl w-full space-y-12">
+<article class="space-y-8">
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<img alt="Expert profile" class="w-12 h-12 rounded-full border-2 border-tertiary-container shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBf3xZzG9Lizuj_7CgcLL-ER0cO7oSUfYRGh-8S4uUx_3uH_CqQFJzFpzWRzAxi5iRIy94oVsCnnZJjOlGszC1t1CYJHgGTaNVCX7_PQeluwRbl-hUX-SbS4XkcOLV7QqAsC2H76KS_pF1jo-vNRmLcOeCD50kvRpAnRx8Te2rQ9Abym_4G_eaifJ7U-adJbbf7Ld3EUeh1JlNAkPLsIFCjMdCXniBareGlt1TnBiassaVMhrpoWScO_UKTTxda1tNiX2_sNFOlw6Y"/>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="text-lg font-bold text-on-surface">Sarah Jenkins</h3>
+<span class="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded">Senior PM @ Google</span>
+</div>
+<p class="text-xs text-stone-400">Featured Expert Pick • 2 hours ago</p>
+</div>
+<div class="ml-auto flex items-center gap-2 bg-surface-container rounded-full px-4 py-1">
+<button class="material-symbols-outlined text-stone-400 hover:text-primary transition-colors text-lg">expand_less</button>
+<span class="text-primary font-black text-sm">142</span>
+<button class="material-symbols-outlined text-stone-400 hover:text-error transition-colors text-lg">expand_more</button>
+</div>
+</div>
+<h1 class="text-4xl font-black text-on-surface leading-tight font-serif">
+                        Supply-side elasticity specifically for leisure vs. commuter routes.
+                    </h1>
+</div>
+<div class="prose prose-stone max-w-none">
+<p class="text-xl text-stone-600 leading-relaxed font-light">
+                        The key metric here isn't just gross volume, but the <strong class="text-on-surface font-bold">re-engagement rate</strong> of users who experienced a drop-off. If we're seeing high attrition after a single failed attempt on the weekend, we need to look at the supply-side elasticity specifically for leisure vs. commuter routes.
+                    </p>
+</div>
+<div class="flex items-center gap-6 pt-4 border-t border-outline-variant/30">
+<div class="flex items-center gap-2 text-primary font-bold text-sm">
+<span class="material-symbols-outlined">chat_bubble</span> 12 Replies
+                    </div>
+<button class="flex items-center gap-2 text-stone-500 hover:text-primary font-bold text-sm transition-colors">
+<span class="material-symbols-outlined">share</span> Share Discussion
+                    </button>
+<button class="flex items-center gap-2 text-stone-500 hover:text-primary font-bold text-sm transition-colors">
+<span class="material-symbols-outlined">bookmark</span> Save
+                    </button>
+</div>
+</article>
+<section class="bg-white rounded-2xl border-2 border-primary/10 shadow-xl overflow-hidden">
+<div class="bg-surface-container-low px-6 py-3 border-b border-outline-variant flex gap-4">
+<button class="p-1 hover:bg-white rounded transition-colors"><span class="material-symbols-outlined text-base">format_bold</span></button>
+<button class="p-1 hover:bg-white rounded transition-colors"><span class="material-symbols-outlined text-base">format_italic</span></button>
+<button class="p-1 hover:bg-white rounded transition-colors"><span class="material-symbols-outlined text-base">link</span></button>
+<button class="p-1 hover:bg-white rounded transition-colors"><span class="material-symbols-outlined text-base">format_list_bulleted</span></button>
+<button class="p-1 hover:bg-white rounded transition-colors ml-auto"><span class="material-symbols-outlined text-base">code</span></button>
+</div>
+<div class="p-6">
+<textarea class="w-full border-none focus:ring-0 text-lg min-h-[140px] resize-none text-stone-700 bg-transparent placeholder:text-stone-300" placeholder="Contribute your perspective to this spotlight..."></textarea>
+<div class="flex items-center justify-between mt-6">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-stone-400 cursor-pointer hover:text-primary">alternate_email</span>
+<span class="material-symbols-outlined text-stone-400 cursor-pointer hover:text-primary">image</span>
+</div>
+<button class="bg-primary text-on-primary px-10 py-3 rounded-full text-sm font-black shadow-lg hover:shadow-primary/20 hover:scale-[1.02] transition-all">Reply to Sarah</button>
+</div>
+</div>
+</section>
+<section class="space-y-8 pb-20">
+<div class="flex items-center justify-between">
+<h4 class="text-sm font-black uppercase tracking-widest text-stone-400">Thread Activity</h4>
+<button class="text-xs font-bold text-primary flex items-center gap-1">
+                        Sort by Most Helpful <span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+</div>
+<div class="space-y-8">
+<div class="flex gap-4">
+<img alt="User avatar" class="w-10 h-10 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnmzxTJQmQgkw-TZV7AjHXINrH-fldZljqsZYZu4gzMfqPoIf3l6O5wvURiR_EjPA-p9I0gboN9fxDlgRMBp_Eg3d9eTek0_hBbVdnC3WOPHE6k2ySJ3ibEST0nHS2_cCm2-IJBkB9Vf4XzJ88tkxc9ba6McL8uCPczptHN25jt1OxN9JCXLdENw3vme4enntYAOdj7JzKnFoGalu5gp0HaquThGUIO2Cc__i6ekSjpsMts9-qSep3cQVA38aR8W0f5_wnzkq9_xM"/>
+<div class="flex-1 space-y-2">
+<div class="flex items-center gap-2">
+<span class="font-bold text-sm text-on-surface">Marcus Liao</span>
+<span class="text-[10px] text-stone-400">2 hours ago</span>
+</div>
+<p class="text-stone-600 text-sm leading-relaxed">I agree with Arjun. The surge pricing mechanics might be tuned too aggressively for weekends, causing churn. We need to normalize for these peaks.</p>
+<div class="flex items-center gap-4 pt-2">
+<button class="flex items-center gap-1 text-[10px] font-bold text-stone-400 hover:text-primary"><span class="material-symbols-outlined text-sm">thumb_up</span> 12</button>
+<button class="text-[10px] font-bold text-stone-400 hover:text-primary">Reply</button>
+</div>
+</div>
+</div>
+<div class="flex gap-4">
+<img alt="User avatar" class="w-10 h-10 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNEuTQ1YmcD1Xkv0d4lA5e_-hb-jy6gvmnYwC5P9Q0NIeAuOQdEKzSdaMOWYTV1uu_l_gIXkZ7_PukgTZk-vi2NpO3N2YCaBzGTJ1u-RRb_UGLyTtmiVJxQr-IfNftSnh6sEbPz-IZXUv6P6nii8OFWr3nQcgrtJqB9tV27QpnZ2eMMQWcwShhtGNx3i3yiggQvkiAMCn2mekL_OJ2F6CAkDscMEvY5k7pIrndxe3UjHgjcYUcbA8j0Nes7ewm6og1tgGSCO_QoFg"/>
+<div class="flex-1 space-y-2">
+<div class="flex items-center gap-2">
+<span class="font-bold text-sm text-on-surface">Elena Volkov</span>
+<span class="text-[10px] text-stone-400">1 hour ago</span>
+</div>
+<p class="text-stone-600 text-sm leading-relaxed">Has anyone looked at the 'wait time' vs 'abandonment' correlation specifically during these weekend windows?</p>
+<div class="flex items-center gap-4 pt-2">
+<button class="flex items-center gap-1 text-[10px] font-bold text-stone-400 hover:text-primary"><span class="material-symbols-outlined text-sm">thumb_up</span> 5</button>
+<button class="text-[10px] font-bold text-stone-400 hover:text-primary">Reply</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+
+</body></html>

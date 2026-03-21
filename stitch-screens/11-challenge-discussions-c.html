@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Terra - Weekend Dropoff Conversation Stream</title>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,700;0,900;1,400&amp;family=Nunito+Sans:wght@300;400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+          tailwind.config = {
+            darkMode: "class",
+            theme: {
+              extend: {
+                colors: {
+                  "primary-fixed-dim": "#8ecf9e",
+                  "surface-tint": "#4a7c59",
+                  "primary": "#4a7c59",
+                  "tertiary-fixed-dim": "#dcc48e",
+                  "on-primary-fixed": "#002110",
+                  "secondary": "#6b6358",
+                  "on-primary-fixed-variant": "#2a6038",
+                  "tertiary-fixed": "#f8e0a8",
+                  "surface-container-high": "#eae6de",
+                  "on-tertiary-fixed-variant": "#554020",
+                  "on-primary-container": "#d8f0de",
+                  "on-tertiary": "#ffffff",
+                  "on-error-container": "#690005",
+                  "secondary-fixed-dim": "#d4ccbf",
+                  "on-secondary-container": "#5e5548",
+                  "on-secondary": "#ffffff",
+                  "surface-container-highest": "#e4e0d8",
+                  "on-background": "#2e3230",
+                  "secondary-container": "#f0e8db",
+                  "on-error": "#ffffff",
+                  "inverse-surface": "#2e3230",
+                  "inverse-primary": "#8ecf9e",
+                  "on-surface-variant": "#4a4e4a",
+                  "error": "#b83230",
+                  "on-secondary-fixed-variant": "#4a4538",
+                  "tertiary-container": "#c4a66a",
+                  "surface": "#faf6f0",
+                  "on-surface": "#2e3230",
+                  "surface-container": "#f0ece4",
+                  "outline": "#74796e",
+                  "surface-container-lowest": "#ffffff",
+                  "primary-fixed": "#c8e8d0",
+                  "surface-variant": "#e4e0d8",
+                  "surface-bright": "#faf6f0",
+                  "outline-variant": "#c4c8bc",
+                  "on-tertiary-container": "#554020",
+                  "secondary-fixed": "#f0e8db",
+                  "on-secondary-fixed": "#1e1a13",
+                  "on-primary": "#ffffff",
+                  "background": "#faf6f0",
+                  "surface-dim": "#dbd7cf",
+                  "on-tertiary-fixed": "#221a05",
+                  "inverse-on-surface": "#f5f0e8",
+                  "primary-container": "#78a886",
+                  "tertiary": "#705c30",
+                  "error-container": "#ffdad8",
+                  "surface-container-low": "#f5f1ea"
+                },
+                fontFamily: {
+                  "headline": ["Literata"],
+                  "body": ["Nunito Sans"],
+                  "label": ["Nunito Sans"]
+                },
+                borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+              },
+            },
+          }
+    </script>
+<style>
+        body { font-family: 'Nunito Sans', sans-serif; }
+        h1, h2, h3 { font-family: 'Literata', serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .stream-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .stream-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .stream-scroll::-webkit-scrollbar-thumb {
+            background: #e4e0d8;
+            border-radius: 10px;
+        }
+        #stats-drawer:checked ~ #stats-panel {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen overflow-hidden flex flex-col">
+<input class="hidden" id="stats-drawer" type="checkbox"/>
+<header class="bg-[#faf6f0] border-b border-stone-200 flex justify-between items-center w-full px-6 py-3 shrink-0 relative z-50">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black text-[#4a7c59] font-serif">Terra</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-stone-500 hover:text-[#4a7c59] font-sans" href="#">Dashboard</a>
+<a class="text-[#4a7c59] font-bold border-b-2 border-[#4a7c59] pb-1 font-sans" href="#">Practice</a>
+<a class="text-stone-500 hover:text-[#4a7c59] font-sans" href="#">Interview Prep</a>
+<a class="text-stone-500 hover:text-[#4a7c59] font-sans" href="#">Domain</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+<input class="bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-sm w-48 focus:ring-2 focus:ring-primary" placeholder="Search..." type="text"/>
+</div>
+<label class="cursor-pointer p-2 text-[#4a7c59] bg-primary/10 hover:bg-primary/20 rounded-full transition-colors flex items-center justify-center" for="stats-drawer">
+<span class="material-symbols-outlined">analytics</span>
+</label>
+<div class="h-8 w-8 rounded-full bg-primary-container flex items-center justify-center overflow-hidden border border-outline-variant">
+<img alt="User profile avatar" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcQcEoFqK3C2cNH1WiEkfYAmO9eMiRZoh1MuaJQhVbyWGRdvgPcNyKbxeiuSVJuee91hdbB-XT33RYWr6khbJSBM0HK1vdZheIBvwP0rg6kcUbfQUlnPUCL0kfVHceUx2PRj94GXlB03EUx5dgw0f2AJR8tfxZHUOhhxuthd4U3NYZiA1cqk6qsqBpZHXgjcj00l9Vxp9T2y88WzKvM9elILpmL2csqtzMh4bIz5vVGqO3J9U_bm267gXx2rzk8K2SL75U6n8rvz4"/>
+</div>
+</div>
+</header>
+<div class="flex flex-1 relative overflow-hidden">
+<main class="flex-1 flex flex-col min-w-0 bg-[#faf6f0]">
+<div class="flex-1 overflow-y-auto stream-scroll pb-40">
+<div class="sticky top-0 z-40 bg-[#faf6f0]/95 backdrop-blur-md px-6 py-4 border-b border-outline-variant/30">
+<div class="flex items-center justify-between mb-4">
+<div>
+<h1 class="text-xl font-black text-primary font-serif">Weekend Dropoff</h1>
+<div class="flex items-center gap-2 mt-1">
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest">Uber</span>
+<span class="text-stone-500 text-[10px]">• 1.2k Comments</span>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="px-3 py-1 text-[10px] font-bold border border-outline-variant rounded-full text-stone-500 hover:bg-stone-100">Most Helpful</button>
+<button class="px-3 py-1 text-[10px] font-bold border border-outline-variant rounded-full text-stone-500 hover:bg-stone-100">Newest</button>
+</div>
+</div>
+<div class="space-y-3">
+<div class="bg-tertiary-container/20 border-l-4 border-tertiary p-4 rounded-r-xl shadow-sm relative overflow-hidden group hover:bg-tertiary-container/30 transition-colors">
+<div class="flex items-start gap-4">
+<div class="bg-tertiary text-white p-2 rounded-full shrink-0">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="font-bold text-xs">Sarah Jenkins</span>
+<span class="bg-primary/10 text-primary text-[9px] font-bold px-1.5 py-0.5 rounded">Senior PM @ Google</span>
+<span class="text-stone-400 text-[9px]">2h ago</span>
+</div>
+<p class="text-on-surface text-xs leading-relaxed line-clamp-2">
+                                        The key metric here isn't just gross volume, but the <strong>re-engagement rate</strong>... specifically for leisure vs. commuter routes.
+                                    </p>
+<button class="text-primary text-[10px] font-bold mt-2 flex items-center gap-1 group-hover:translate-x-1 transition-transform">Read Full Insight <span class="material-symbols-outlined text-xs">arrow_forward</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="px-6 py-8 space-y-8 max-w-3xl mx-auto">
+<div class="flex items-start gap-4">
+<img alt="User avatar" class="w-10 h-10 rounded-full shrink-0 border-2 border-white shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsKOlZ1wXnjhnU6_ZOmako3qGBhTTxWYA51D3rfqh3gGFqGQ6FmcQArUz7t5VLGmLMua-O0Zlwx3_q_CuypI2sDdX9Z7OxoQp3G1sSroq2GWI1QheXIp6hsS5hTrCqDHXmQFWvVgmMGGTQyAz3Tm-9HTa5AT7iGBrwtagfA7g4RbM6OR-Pfhi0mNiCoMtSQwU6F3Q2OMZmpbMnA6E0tBUL5ylYqK1oGzeiNqK7UWkNm5Xb8CbbCpKLtAK8Mw6kI2oyuPWipb6NCR0"/>
+<div class="flex-1">
+<div class="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-outline-variant/20">
+<div class="flex items-center gap-2 mb-2">
+<span class="font-bold text-sm text-stone-800">Arjun Mehta</span>
+<span class="text-stone-400 text-[10px]">Product Analyst • 5h ago</span>
+</div>
+<p class="text-on-surface text-sm leading-relaxed">
+                                    Does anyone have thoughts on whether we should prioritize the driver app experience first? If the weekend drop-off is caused by driver reluctance, solving the rider UX won't help much.
+                                </p>
+</div>
+<div class="flex items-center gap-4 mt-2 px-2">
+<button class="flex items-center gap-1 text-[11px] font-bold text-stone-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xs">expand_less</span> 28
+                                </button>
+<button class="text-[11px] font-bold text-stone-400 hover:text-primary transition-colors">Reply</button>
+<button class="text-[11px] font-bold text-stone-400 hover:text-primary transition-colors">Share</button>
+</div>
+<div class="mt-4 flex items-start gap-3 pl-2 border-l-2 border-stone-200 ml-4">
+<img alt="User avatar" class="w-8 h-8 rounded-full shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnmzxTJQmQgkw-TZV7AjHXINrH-fldZljqsZYZu4gzMfqPoIf3l6O5wvURiR_EjPA-p9I0gboN9fxDlgRMBp_Eg3d9eTek0_hBbVdnC3WOPHE6k2ySJ3ibEST0nHS2_cCm2-IJBkB9Vf4XzJ88tkxc9ba6McL8uCPczptHN25jt1OxN9JCXLdENw3vme4enntYAOdj7JzKnFoGalu5gp0HaquThGUIO2Cc__i6ekSjpsMts9-qSep3cQVA38aR8W0f5_wnzkq9_xM"/>
+<div>
+<div class="bg-surface-container-low p-3 rounded-2xl rounded-tl-none border border-outline-variant/10">
+<div class="flex items-center gap-2 mb-1">
+<span class="font-bold text-[11px] text-stone-700">Marcus Liao</span>
+<span class="text-stone-400 text-[9px]">2h ago</span>
+</div>
+<p class="text-stone-600 text-xs">I agree with Arjun. The surge pricing mechanics might be tuned too aggressively for weekends, causing churn.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<img alt="User avatar" class="w-10 h-10 rounded-full shrink-0 border-2 border-white shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNEuTQ1YmcD1Xkv0d4lA5e_-hb-jy6gvmnYwC5P9Q0NIeAuOQdEKzSdaMOWYTV1uu_l_gIXkZ7_PukgTZk-vi2NpO3N2YCaBzGTJ1u-RRb_UGLyTtmiVJxQr-IfNftSnh6sEbPz-IZXUv6P6nii8OFWr3nQcgrtJqB9tV27QpnZ2eMMQWcwShhtGNx3i3yiggQvkiAMCn2mekL_OJ2F6CAkDscMEvY5k7pIrndxe3UjHgjcYUcbA8j0Nes7ewm6og1tgGSCO_QoFg"/>
+<div class="flex-1">
+<div class="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-outline-variant/20">
+<div class="flex items-center gap-2 mb-2">
+<span class="font-bold text-sm text-stone-800">Elena Volkov</span>
+<span class="text-stone-400 text-[10px]">PM Intern • 10h ago</span>
+</div>
+<p class="text-on-surface text-sm leading-relaxed">
+                                    Great challenge! I'm trying to frame the solution using the CIRCLES method. Anyone want to collaborate on a draft?
+                                </p>
+</div>
+<div class="flex items-center gap-4 mt-2 px-2">
+<button class="flex items-center gap-1 text-[11px] font-bold text-stone-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xs">expand_less</span> 15
+                                </button>
+<button class="text-[11px] font-bold text-stone-400 hover:text-primary transition-colors">Reply</button>
+</div>
+</div>
+</div>
+<div class="p-6 rounded-xl border-2 border-dashed border-outline/20 text-stone-400 text-center text-xs">
+                        Keep the conversation constructive and technical.
+                    </div>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 lg:left-0 right-0 z-50 p-4 bg-gradient-to-t from-[#faf6f0] via-[#faf6f0] to-transparent pointer-events-none">
+<div class="max-w-3xl mx-auto pointer-events-auto">
+<div class="bg-white rounded-2xl shadow-xl border border-primary/20 overflow-hidden ring-4 ring-primary/5">
+<div class="flex items-center gap-3 p-3">
+<img alt="User profile avatar" class="h-8 w-8 rounded-full border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcQcEoFqK3C2cNH1WiEkfYAmO9eMiRZoh1MuaJQhVbyWGRdvgPcNyKbxeiuSVJuee91hdbB-XT33RYWr6khbJSBM0HK1vdZheIBvwP0rg6kcUbfQUlnPUCL0kfVHceUx2PRj94GXlB03EUx5dgw0f2AJR8tfxZHUOhhxuthd4U3NYZiA1cqk6qsqBpZHXgjcj00l9Vxp9T2y88WzKvM9elILpmL2csqtzMh4bIz5vVGqO3J9U_bm267gXx2rzk8K2SL75U6n8rvz4"/>
+<div class="flex-1 relative">
+<textarea class="w-full bg-surface-container-low border-none rounded-full py-2 px-4 text-sm focus:ring-1 focus:ring-primary placeholder:text-stone-400 resize-none min-h-[40px] flex items-center" placeholder="Post your insights..." rows="1"></textarea>
+</div>
+<button class="bg-primary text-white p-2 rounded-full hover:scale-105 transition-transform flex items-center justify-center">
+<span class="material-symbols-outlined text-xl">send</span>
+</button>
+</div>
+<div class="px-14 pb-3 flex gap-4 text-stone-400">
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined text-lg">image</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined text-lg">alternate_email</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined text-lg">format_bold</span></button>
+<button class="hover:text-primary transition-colors ml-auto"><span class="material-symbols-outlined text-lg">code</span></button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<aside class="fixed right-0 top-0 h-full w-80 bg-white border-l border-stone-200 shadow-2xl translate-x-full transition-transform duration-300 ease-in-out z-[60] overflow-y-auto p-6 stream-scroll" id="stats-panel">
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-xl font-bold text-stone-800">Community Insights</h2>
+<label class="cursor-pointer text-stone-400 hover:text-stone-800" for="stats-drawer">
+<span class="material-symbols-outlined">close</span>
+</label>
+</div>
+<div class="mb-10">
+<h3 class="text-xs font-black text-stone-400 uppercase tracking-widest mb-4">Discussion Stats</h3>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30">
+<p class="text-[10px] font-bold text-stone-400 uppercase">Comments</p>
+<p class="text-2xl font-black text-primary">1.2k</p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30">
+<p class="text-[10px] font-bold text-stone-400 uppercase">Active</p>
+<p class="text-2xl font-black text-tertiary">43</p>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-between text-[11px] font-bold text-stone-500">
+<span>Contribution Score</span>
+<span class="text-primary">+850</span>
+</div>
+</div>
+<div class="mb-10">
+<h3 class="text-xs font-black text-stone-400 uppercase tracking-widest mb-4">Top Solutions</h3>
+<div class="space-y-6">
+<a class="block group" href="#">
+<p class="text-xs font-bold text-primary group-hover:underline line-clamp-2 mb-1">Impact of Weekend Surcharges on Retained Users</p>
+<div class="flex items-center justify-between text-[10px] text-stone-400">
+<span>by dev_marcus</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">thumb_up</span> 84</span>
+</div>
+</a>
+<a class="block group" href="#">
+<p class="text-xs font-bold text-stone-700 group-hover:underline line-clamp-2 mb-1">Comparing Uber Weekend UX to Lyft Pink Strategies</p>
+<div class="flex items-center justify-between text-[10px] text-stone-400">
+<span>by elena_v</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">thumb_up</span> 52</span>
+</div>
+</a>
+</div>
+<button class="w-full mt-6 py-2.5 bg-primary text-white text-[11px] font-bold rounded-lg shadow-sm hover:opacity-90 transition-opacity">
+                    View All Solutions
+                </button>
+</div>
+<div class="p-4 bg-secondary-container/30 rounded-xl border border-secondary-container text-on-secondary-container">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-sm">info</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Guidelines</span>
+</div>
+<p class="text-[11px] leading-relaxed">
+                    Ensure technical claims are backed by logic. Be kind to beginners!
+                </p>
+</div>
+</aside>
+</div>
+<label class="fixed inset-0 bg-stone-900/20 backdrop-blur-[2px] z-50 opacity-0 pointer-events-none transition-opacity duration-300 stats-drawer-checked:opacity-100 stats-drawer-checked:pointer-events-auto" for="stats-drawer"></label>
+<style>
+        #stats-drawer:checked ~ label[for="stats-drawer"] {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    </style>
+
+</body></html>

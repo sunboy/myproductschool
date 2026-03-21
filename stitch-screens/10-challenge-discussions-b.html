@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Terra - Comment Analysis Grid</title>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,700;0,900;1,400&amp;family=Nunito+Sans:wght@300;400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary-fixed-dim": "#8ecf9e",
+              "surface-tint": "#4a7c59",
+              "primary": "#4a7c59",
+              "tertiary-fixed-dim": "#dcc48e",
+              "on-primary-fixed": "#002110",
+              "secondary": "#6b6358",
+              "on-primary-fixed-variant": "#2a6038",
+              "tertiary-fixed": "#f8e0a8",
+              "surface-container-high": "#eae6de",
+              "on-tertiary-fixed-variant": "#554020",
+              "on-primary-container": "#d8f0de",
+              "on-tertiary": "#ffffff",
+              "on-error-container": "#690005",
+              "secondary-fixed-dim": "#d4ccbf",
+              "on-secondary-container": "#5e5548",
+              "on-secondary": "#ffffff",
+              "surface-container-highest": "#e4e0d8",
+              "on-background": "#2e3230",
+              "secondary-container": "#f0e8db",
+              "on-error": "#ffffff",
+              "inverse-surface": "#2e3230",
+              "inverse-primary": "#8ecf9e",
+              "on-surface-variant": "#4a4e4a",
+              "error": "#b83230",
+              "on-secondary-fixed-variant": "#4a4538",
+              "tertiary-container": "#c4a66a",
+              "surface": "#faf6f0",
+              "on-surface": "#2e3230",
+              "surface-container": "#f0ece4",
+              "outline": "#74796e",
+              "surface-container-lowest": "#ffffff",
+              "primary-fixed": "#c8e8d0",
+              "surface-variant": "#e4e0d8",
+              "surface-bright": "#faf6f0",
+              "outline-variant": "#c4c8bc",
+              "on-tertiary-container": "#554020",
+              "secondary-fixed": "#f0e8db",
+              "on-secondary-fixed": "#1e1a13",
+              "on-primary": "#ffffff",
+              "background": "#faf6f0",
+              "surface-dim": "#dbd7cf",
+              "on-tertiary-fixed": "#221a05",
+              "inverse-on-surface": "#f5f0e8",
+              "primary-container": "#78a886",
+              "tertiary": "#705c30",
+              "error-container": "#ffdad8",
+              "surface-container-low": "#f5f1ea"
+            },
+            fontFamily: {
+              "headline": ["Literata"],
+              "body": ["Nunito Sans"],
+              "label": ["Nunito Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Nunito Sans', sans-serif; }
+        h1, h2, h3 { font-family: 'Literata', serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c4c8bc;
+            border-radius: 10px;
+        }#editor-toggle:checked ~ #full-screen-editor {
+            display: flex;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col overflow-hidden">
+<input class="hidden" id="editor-toggle" type="checkbox"/>
+<header class="bg-[#faf6f0] border-b border-stone-200 flex justify-between items-center w-full px-6 py-3 shrink-0 z-50">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black text-[#4a7c59] font-serif">Terra</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-stone-500 hover:text-[#4a7c59] font-sans" href="#">Dashboard</a>
+<a class="text-[#4a7c59] font-bold border-b-2 border-[#4a7c59] pb-1 font-sans" href="#">Practice</a>
+<a class="text-stone-500 hover:text-[#4a7c59] font-sans" href="#">Interview Prep</a>
+<a class="text-stone-500 hover:text-[#4a7c59] font-sans" href="#">Domain</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+<input class="bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-sm w-64 focus:ring-2 focus:ring-primary" placeholder="Global search..." type="text"/>
+</div>
+<div class="h-8 w-8 rounded-full bg-primary-container flex items-center justify-center overflow-hidden border border-outline-variant">
+<img alt="User profile avatar" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcQcEoFqK3C2cNH1WiEkfYAmO9eMiRZoh1MuaJQhVbyWGRdvgPcNyKbxeiuSVJuee91hdbB-XT33RYWr6khbJSBM0HK1vdZheIBvwP0rg6kcUbfQUlnPUCL0kfVHceUx2PRj94GXlB03EUx5dgw0f2AJR8tfxZHUOhhxuthd4U3NYZiA1cqk6qsqBpZHXgjcj00l9Vxp9T2y88WzKvM9elILpmL2csqtzMh4bIz5vVGqO3J9U_bm267gXx2rzk8K2SL75U6n8rvz4"/>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<aside class="w-64 p-4 flex flex-col gap-2 bg-[#faf6f0] border-r border-stone-200 hidden lg:flex shrink-0">
+<div class="mb-6 px-4">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-lg font-serif text-[#4a7c59]">Weekend Dropoff</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 bg-secondary-container rounded text-[10px] font-bold uppercase tracking-wider text-on-secondary-container w-fit">
+                Uber
+            </div>
+</div>
+<a class="flex items-center gap-3 text-stone-500 px-4 py-3 hover:bg-stone-100 rounded-xl font-sans text-sm font-medium" href="#">
+<span class="material-symbols-outlined">description</span> Description
+        </a>
+<a class="flex items-center gap-3 bg-[#4a7c59]/10 text-[#4a7c59] rounded-xl px-4 py-3 font-sans text-sm font-medium" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span> Grid Analysis
+        </a>
+<a class="flex items-center gap-3 text-stone-500 px-4 py-3 hover:bg-stone-100 rounded-xl font-sans text-sm font-medium" href="#">
+<span class="material-symbols-outlined">history</span> Version History
+        </a>
+<div class="mt-auto p-4 bg-surface-container rounded-xl border border-outline-variant/30">
+<p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-3">Live Insights</p>
+<div class="space-y-3">
+<div class="flex justify-between items-end">
+<span class="text-xs text-stone-600">Total Comments</span>
+<span class="text-sm font-black text-primary">1,248</span>
+</div>
+<div class="flex justify-between items-end">
+<span class="text-xs text-stone-600">Active Users</span>
+<span class="text-sm font-black text-tertiary">43</span>
+</div>
+<div class="flex justify-between items-end">
+<span class="text-xs text-stone-600">Expert Picks</span>
+<span class="text-sm font-black text-on-tertiary-fixed-variant">04</span>
+</div>
+</div>
+</div>
+</aside>
+<main class="flex-1 flex flex-col min-w-0 bg-white">
+<div class="px-6 py-4 border-b border-stone-200 bg-surface-container-low flex items-center justify-between gap-4 overflow-x-auto">
+<div class="flex items-center gap-4 shrink-0">
+<h2 class="text-xl font-black text-on-surface whitespace-nowrap">Comment Analysis Grid</h2>
+<div class="h-6 w-px bg-stone-300 mx-2"></div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-stone-400 text-sm">filter_list</span>
+<select class="text-xs font-bold border-none bg-transparent focus:ring-0 text-stone-600 p-0 cursor-pointer">
+<option>All Roles</option>
+<option>Product Manager</option>
+<option>Engineer</option>
+<option>Analyst</option>
+</select>
+</div>
+</div>
+<div class="flex items-center gap-3 ml-auto">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-sm">search</span>
+<input class="w-full pl-10 pr-4 py-1.5 bg-white border-outline-variant rounded-full text-xs focus:ring-primary focus:border-primary" placeholder="Filter by content keywords..." type="text"/>
+</div>
+<button class="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary text-xs font-bold rounded-lg hover:bg-primary/20">
+<span class="material-symbols-outlined text-sm">download</span> Export CSV
+                </button>
+</div>
+</div>
+<div class="flex-1 overflow-auto custom-scrollbar">
+<table class="w-full border-collapse text-left">
+<thead class="sticky top-0 z-20 bg-surface-container-highest shadow-sm">
+<tr>
+<th class="p-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-outline-variant w-12 text-center">Pin</th>
+<th class="p-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-outline-variant cursor-pointer hover:bg-stone-200 transition-colors">
+<div class="flex items-center gap-1">User <span class="material-symbols-outlined text-xs">arrow_drop_down</span></div>
+</th>
+<th class="p-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-outline-variant">Role</th>
+<th class="p-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-outline-variant cursor-pointer hover:bg-stone-200 transition-colors">
+<div class="flex items-center gap-1">Preview <span class="material-symbols-outlined text-xs">unfold_more</span></div>
+</th>
+<th class="p-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-outline-variant text-center cursor-pointer hover:bg-stone-200 transition-colors">
+<div class="flex justify-center items-center gap-1">Votes <span class="material-symbols-outlined text-xs">swap_vert</span></div>
+</th>
+<th class="p-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-outline-variant text-right cursor-pointer hover:bg-stone-200 transition-colors">
+<div class="flex justify-end items-center gap-1">Posted <span class="material-symbols-outlined text-xs">schedule</span></div>
+</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-stone-100">
+<tr class="bg-tertiary-fixed/30 hover:bg-tertiary-fixed/50 transition-colors border-l-4 border-l-tertiary-container">
+<td class="p-4 text-center">
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+</td>
+<td class="p-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<img alt="" class="w-6 h-6 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBf3xZzG9Lizuj_7CgcLL-ER0cO7oSUfYRGh-8S4uUx_3uH_CqQFJzFpzWRzAxi5iRIy94oVsCnnZJjOlGszC1t1CYJHgGTaNVCX7_PQeluwRbl-hUX-SbS4XkcOLV7QqAsC2H76KS_pF1jo-vNRmLcOeCD50kvRpAnRx8Te2rQ9Abym_4G_eaifJ7U-adJbbf7Ld3EUeh1JlNAkPLsIFCjMdCXniBareGlt1TnBiassaVMhrpoWScO_UKTTxda1tNiX2_sNFOlw6Y"/>
+<span class="text-xs font-bold text-on-surface">Sarah Jenkins</span>
+</div>
+</td>
+<td class="p-4 whitespace-nowrap">
+<span class="text-[10px] font-black bg-primary/10 text-primary px-2 py-0.5 rounded">Senior PM @ Google</span>
+</td>
+<td class="p-4 max-w-md">
+<p class="text-xs text-stone-600 line-clamp-1">The key metric here isn't just gross volume, but the re-engagement rate of users who experienced a drop-off...</p>
+</td>
+<td class="p-4 text-center">
+<span class="text-xs font-black text-primary">142</span>
+</td>
+<td class="p-4 text-right whitespace-nowrap">
+<span class="text-[10px] font-bold text-stone-400 uppercase">2 hours ago</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-4 text-center">
+<span class="material-symbols-outlined text-stone-200 group-hover:text-stone-400 text-sm cursor-pointer">keep</span>
+</td>
+<td class="p-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<img alt="" class="w-6 h-6 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsKOlZ1wXnjhnU6_ZOmako3qGBhTTxWYA51D3rfqh3gGFqGQ6FmcQArUz7t5VLGmLMua-O0Zlwx3_q_CuypI2sDdX9Z7OxoQp3G1sSroq2GWI1QheXIp6hsS5hTrCqDHXmQFWvVgmMGGTQyAz3Tm-9HTa5AT7iGBrwtagfA7g4RbM6OR-Pfhi0mNiCoMtSQwU6F3Q2OMZmpbMnA6E0tBUL5ylYqK1oGzeiNqK7UWkNm5Xb8CbbCpKLtAK8Mw6kI2oyuPWipb6NCR0"/>
+<span class="text-xs font-bold text-on-surface">Arjun Mehta</span>
+</div>
+</td>
+<td class="p-4 whitespace-nowrap">
+<span class="text-[10px] font-black bg-stone-100 text-stone-500 px-2 py-0.5 rounded uppercase">Product Analyst</span>
+</td>
+<td class="p-4 max-w-md">
+<p class="text-xs text-stone-600 line-clamp-1">Does anyone have thoughts on whether we should prioritize the driver app experience first?</p>
+</td>
+<td class="p-4 text-center">
+<span class="text-xs font-black text-stone-600">28</span>
+</td>
+<td class="p-4 text-right whitespace-nowrap">
+<span class="text-[10px] font-bold text-stone-400 uppercase">5 hours ago</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-4 text-center">
+<span class="material-symbols-outlined text-stone-200 group-hover:text-stone-400 text-sm cursor-pointer">keep</span>
+</td>
+<td class="p-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<img alt="" class="w-6 h-6 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnmzxTJQmQgkw-TZV7AjHXINrH-fldZljqsZYZu4gzMfqPoIf3l6O5wvURiR_EjPA-p9I0gboN9fxDlgRMBp_Eg3d9eTek0_hBbVdnC3WOPHE6k2ySJ3ibEST0nHS2_cCm2-IJBkB9Vf4XzJ88tkxc9ba6McL8uCPczptHN25jt1OxN9JCXLdENw3vme4enntYAOdj7JzKnFoGalu5gp0HaquThGUIO2Cc__i6ekSjpsMts9-qSep3cQVA38aR8W0f5_wnzkq9_xM"/>
+<span class="text-xs font-bold text-on-surface">Marcus Liao</span>
+</div>
+</td>
+<td class="p-4 whitespace-nowrap">
+<span class="text-[10px] font-black bg-stone-100 text-stone-500 px-2 py-0.5 rounded uppercase">Software Engineer</span>
+</td>
+<td class="p-4 max-w-md">
+<p class="text-xs text-stone-600 line-clamp-1">I agree with Arjun. The surge pricing mechanics might be tuned too aggressively for weekends...</p>
+</td>
+<td class="p-4 text-center">
+<span class="text-xs font-black text-stone-600">12</span>
+</td>
+<td class="p-4 text-right whitespace-nowrap">
+<span class="text-[10px] font-bold text-stone-400 uppercase">2 hours ago</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-4 text-center">
+<span class="material-symbols-outlined text-stone-200 group-hover:text-stone-400 text-sm cursor-pointer">keep</span>
+</td>
+<td class="p-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<img alt="" class="w-6 h-6 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNEuTQ1YmcD1Xkv0d4lA5e_-hb-jy6gvmnYwC5P9Q0NIeAuOQdEKzSdaMOWYTV1uu_l_gIXkZ7_PukgTZk-vi2NpO3N2YCaBzGTJ1u-RRb_UGLyTtmiVJxQr-IfNftSnh6sEbPz-IZXUv6P6nii8OFWr3nQcgrtJqB9tV27QpnZ2eMMQWcwShhtGNx3i3yiggQvkiAMCn2mekL_OJ2F6CAkDscMEvY5k7pIrndxe3UjHgjcYUcbA8j0Nes7ewm6og1tgGSCO_QoFg"/>
+<span class="text-xs font-bold text-on-surface">Elena Volkov</span>
+</div>
+</td>
+<td class="p-4 whitespace-nowrap">
+<span class="text-[10px] font-black bg-stone-100 text-stone-500 px-2 py-0.5 rounded uppercase">PM Intern</span>
+</td>
+<td class="p-4 max-w-md">
+<p class="text-xs text-stone-600 line-clamp-1">Great challenge! I'm trying to frame the solution using the CIRCLES method. Anyone want to collaborate?</p>
+</td>
+<td class="p-4 text-center">
+<span class="text-xs font-black text-stone-600">15</span>
+</td>
+<td class="p-4 text-right whitespace-nowrap">
+<span class="text-[10px] font-bold text-stone-400 uppercase">10 hours ago</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-4 text-center"><span class="material-symbols-outlined text-stone-200 group-hover:text-stone-400 text-sm cursor-pointer">keep</span></td>
+<td class="p-4 text-xs font-bold">Liam Chen</td>
+<td class="p-4 text-[10px] uppercase font-black text-stone-400">Analyst</td>
+<td class="p-4 text-xs text-stone-500 italic">Exploring data availability for driver idle times...</td>
+<td class="p-4 text-center text-xs font-black text-stone-600">08</td>
+<td class="p-4 text-right text-[10px] font-bold text-stone-400">12 hours ago</td>
+</tr>
+</tbody>
+</table>
+</div>
+</main>
+</div>
+<label class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center cursor-pointer hover:scale-110 active:scale-95 transition-all z-[60]" for="editor-toggle">
+<span class="material-symbols-outlined text-3xl">add_comment</span>
+</label>
+<div class="fixed inset-0 bg-white z-[100] hidden flex-col" id="full-screen-editor">
+<div class="p-6 border-b border-stone-200 flex justify-between items-center bg-surface-container-low">
+<div class="flex items-center gap-4">
+<label class="p-2 hover:bg-stone-200 rounded-full cursor-pointer" for="editor-toggle">
+<span class="material-symbols-outlined text-stone-600">close</span>
+</label>
+<h1 class="text-2xl font-black text-primary">Compose Discussion</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-xs font-bold text-stone-400">Draft saved automatically</span>
+<button class="bg-primary text-on-primary px-8 py-3 rounded-xl font-black shadow-lg hover:opacity-90">Post to Challenge</button>
+</div>
+</div>
+<div class="flex-1 p-12 max-w-4xl mx-auto w-full overflow-y-auto">
+<div class="mb-8">
+<input class="w-full text-4xl font-black font-headline border-none focus:ring-0 placeholder:text-stone-200 p-0 mb-4" placeholder="Title of your insight (optional)" type="text"/>
+<div class="flex gap-4 p-2 bg-surface-container-low rounded-lg border border-outline-variant/30 w-fit">
+<button class="p-1 hover:bg-white rounded transition-colors"><span class="material-symbols-outlined text-sm font-bold">format_bold</span></button>
+<button class="p-1 hover:bg-white rounded transition-colors"><span class="material-symbols-outlined text-sm italic">format_italic</span></button>
+<button class="p-1 hover:bg-white rounded transition-colors"><span class="material-symbols-outlined text-sm">link</span></button>
+<div class="w-px bg-stone-300 mx-1"></div>
+<button class="p-1 hover:bg-white rounded transition-colors"><span class="material-symbols-outlined text-sm">format_list_bulleted</span></button>
+<button class="p-1 hover:bg-white rounded transition-colors"><span class="material-symbols-outlined text-sm">code</span></button>
+</div>
+</div>
+<textarea class="w-full h-full border-none focus:ring-0 text-lg leading-relaxed text-on-surface placeholder:text-stone-300 p-0 resize-none min-h-[400px]" placeholder="Share your insights or ask a question... Use the CIRCLES method or STAR framework for better impact."></textarea>
+</div>
+<div class="p-6 border-t border-stone-100 flex items-center justify-center gap-12 text-stone-400 text-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">info</span>
+<span>Guidelines: Be constructive and data-driven.</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">markdown</span>
+<span>Markdown supported</span>
+</div>
+</div>
+</div>
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 flex justify-around items-center py-3 px-2 z-50">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">table_chart</span>
+<span class="text-[10px] font-bold">Grid</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-stone-400" href="#">
+<span class="material-symbols-outlined">filter_alt</span>
+<span class="text-[10px] font-bold">Filter</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-stone-400" href="#">
+<span class="material-symbols-outlined">sort</span>
+<span class="text-[10px] font-bold">Sort</span>
+</a>
+</nav>
+
+</body></html>

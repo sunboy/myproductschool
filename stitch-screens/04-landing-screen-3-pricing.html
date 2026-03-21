@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Invest in Your Career | MyProductSchool</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:wght@400;600;700;800&amp;family=Nunito+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container": "#f0ece4",
+              "on-background": "#2e3230",
+              "on-primary": "#ffffff",
+              "on-primary-container": "#d8f0de",
+              "surface-container-highest": "#e4e0d8",
+              "secondary-container": "#f0e8db",
+              "outline": "#74796e",
+              "on-error": "#ffffff",
+              "on-secondary-fixed": "#1e1a13",
+              "inverse-primary": "#8ecf9e",
+              "primary-fixed": "#c8e8d0",
+              "on-secondary": "#ffffff",
+              "inverse-surface": "#2e3230",
+              "surface-container-high": "#eae6de",
+              "on-tertiary-fixed": "#221a05",
+              "on-error-container": "#690005",
+              "surface-container-low": "#f5f1ea",
+              "surface": "#faf6f0",
+              "error": "#b83230",
+              "on-surface-variant": "#4a4e4a",
+              "on-secondary-container": "#5e5548",
+              "tertiary-fixed": "#f8e0a8",
+              "inverse-on-surface": "#f5f0e8",
+              "tertiary-container": "#c4a66a",
+              "surface-container-lowest": "#ffffff",
+              "secondary-fixed": "#f0e8db",
+              "tertiary": "#705c30",
+              "on-surface": "#2e3230",
+              "on-primary-fixed-variant": "#2a6038",
+              "background": "#faf6f0",
+              "surface-tint": "#4a7c59",
+              "on-tertiary-container": "#554020",
+              "error-container": "#ffdad8",
+              "primary-container": "#78a886",
+              "surface-dim": "#dbd7cf",
+              "on-tertiary": "#ffffff",
+              "tertiary-fixed-dim": "#dcc48e",
+              "secondary-fixed-dim": "#d4ccbf",
+              "on-tertiary-fixed-variant": "#554020",
+              "on-secondary-fixed-variant": "#4a4538",
+              "surface-bright": "#faf6f0",
+              "primary": "#4a7c59",
+              "surface-variant": "#e4e0d8",
+              "primary-fixed-dim": "#8ecf9e",
+              "outline-variant": "#c4c8bc",
+              "on-primary-fixed": "#002110",
+              "secondary": "#6b6358"
+            },
+            fontFamily: {
+              "headline": ["Literata"],
+              "body": ["Nunito Sans"],
+              "label": ["Nunito Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background-color: #faf6f0;
+            color: #2e3230;
+        }
+        h1, h2, h3, .brand-font {
+            font-family: 'Literata', serif;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background selection:bg-primary-fixed selection:text-on-primary-fixed">
+<nav class="bg-[#faf6f0] dark:bg-stone-950 border-b border-stone-200/50 dark:border-stone-800 shadow-sm dark:shadow-none sticky top-0 z-50">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+<div class="flex items-center gap-8">
+<span class="font-['Literata'] text-xl font-bold text-emerald-900 dark:text-emerald-100">MyProductSchool</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="font-['Nunito_Sans'] font-medium text-sm tracking-tight text-stone-600 dark:text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-200 transition-colors duration-200" href="#">Dashboard</a>
+<a class="font-['Nunito_Sans'] font-medium text-sm tracking-tight text-stone-600 dark:text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-200 transition-colors duration-200" href="#">Practice</a>
+<a class="font-['Nunito_Sans'] font-medium text-sm tracking-tight text-stone-600 dark:text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-200 transition-colors duration-200" href="#">Interview Prep</a>
+<a class="font-['Nunito_Sans'] font-medium text-sm tracking-tight text-stone-600 dark:text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-200 transition-colors duration-200" href="#">Domain</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-stone-600 cursor-pointer hover:bg-stone-100 p-2 rounded-full transition-all" data-icon="account_circle">account_circle</span>
+</div>
+</div>
+</nav>
+<main class="max-w-7xl mx-auto px-6 py-16 md:py-24">
+<header class="text-center mb-16 space-y-4">
+<h1 class="text-4xl md:text-5xl font-bold text-on-background tracking-tight">Invest in Your Career</h1>
+<p class="text-on-surface-variant max-w-2xl mx-auto text-lg leading-relaxed font-body">
+                Bridge the gap between engineering and product. Choose the path that fits your growth pace.
+            </p>
+</header>
+<section class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-24">
+<div class="bg-surface-container-low p-8 rounded-xl flex flex-col h-full border border-outline-variant/30 hover:shadow-lg transition-shadow duration-300">
+<div class="mb-8">
+<h3 class="text-2xl font-bold mb-2">Free</h3>
+<p class="text-on-surface-variant text-sm">Fundamentals for curious explorers.</p>
+</div>
+<div class="mb-8">
+<span class="text-4xl font-bold">$0</span>
+<span class="text-on-surface-variant">/forever</span>
+</div>
+<ul class="space-y-4 mb-12 flex-grow">
+<li class="flex items-start gap-3 text-sm">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="check_circle">check_circle</span>
+<span>Basic Product Frameworks</span>
+</li>
+<li class="flex items-start gap-3 text-sm">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="check_circle">check_circle</span>
+<span>Weekly "Rooted" Newsletter</span>
+</li>
+<li class="flex items-start gap-3 text-sm">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="check_circle">check_circle</span>
+<span>Public Community Access</span>
+</li>
+</ul>
+<button class="w-full py-4 rounded-lg bg-surface-container-highest text-on-surface font-semibold hover:bg-surface-variant transition-colors">
+                    Current Plan
+                </button>
+</div>
+<div class="bg-surface-container-highest p-8 rounded-xl flex flex-col h-full border-2 border-primary relative shadow-xl transform md:-translate-y-4">
+<div class="absolute top-0 right-8 -translate-y-1/2 bg-primary text-on-primary text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full">
+                    Recommended
+                </div>
+<div class="mb-8">
+<h3 class="text-2xl font-bold mb-2">Pro</h3>
+<p class="text-on-surface-variant text-sm">Complete transition toolkit for engineers.</p>
+</div>
+<div class="mb-8">
+<span class="text-4xl font-bold">$29</span>
+<span class="text-on-surface-variant">/mo</span>
+</div>
+<ul class="space-y-4 mb-12 flex-grow">
+<li class="flex items-start gap-3 text-sm">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-semibold">Advanced Domain Simulations</span>
+</li>
+<li class="flex items-start gap-3 text-sm">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span>AI-Powered Interview Coach</span>
+</li>
+<li class="flex items-start gap-3 text-sm">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span>Direct Mentorship Channel</span>
+</li>
+<li class="flex items-start gap-3 text-sm">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span>Certified PM Case Studies</span>
+</li>
+</ul>
+<button class="w-full py-4 rounded-lg bg-primary text-on-primary font-semibold hover:bg-primary-container hover:text-on-primary-fixed transition-colors">
+                    Upgrade to Pro
+                </button>
+</div>
+</section>
+<section class="mb-24">
+<div class="text-center mb-12">
+<p class="font-label text-xs uppercase tracking-widest text-on-surface-variant mb-4">Loved by Engineers at</p>
+<div class="flex flex-wrap justify-center items-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+<span class="font-headline text-2xl font-bold italic tracking-tighter">Stripe</span>
+<span class="font-headline text-2xl font-bold italic tracking-tighter">Linear</span>
+<span class="font-headline text-2xl font-bold italic tracking-tighter">Vercel</span>
+<span class="font-headline text-2xl font-bold italic tracking-tighter">Figma</span>
+<span class="font-headline text-2xl font-bold italic tracking-tighter">Notion</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white/50 p-6 rounded-lg border border-outline-variant/20 shadow-sm">
+<p class="italic text-on-surface mb-6 leading-relaxed">"The domain-specific practice was the edge I needed to move from Senior SWE to Product Manager at my current company."</p>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="Sarah J." data-alt="Portrait of a professional man in a studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJC9DLNeGvz0G21O_AmQ369KL7IoDbl2Qpi5j43_a-l1cWwY4WblcqaGy9R-v0mjxMJ5mkTequO57dCuEMsQ6ZkuLiGMsX1yEeYjZD4fp-ODfCzs_weWh0iCf4HDtuc344LsMcpvS8aklg4S81I_IWS5610rr8MI9trgdLudAZKE_Bby5FxyUhJ0-iEXjm5B5SCvHIpX033qfTJobGH5_mwm_xZ6eUy4lNhS3U7JHuDAR8jpzhXGoS2qjm5Vjji8-zAuHP8dbUDvs"/>
+</div>
+<div>
+<p class="font-bold text-xs">Alex Chen</p>
+<p class="text-[10px] text-on-surface-variant">Lead Engineer → PM</p>
+</div>
+</div>
+</div>
+<div class="bg-white/50 p-6 rounded-lg border border-outline-variant/20 shadow-sm">
+<p class="italic text-on-surface mb-6 leading-relaxed">"Finally, a product school that speaks 'engineer'. The frameworks are logical, structured, and immediately applicable."</p>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="Sarah J." data-alt="Professional woman smiling with warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB91ml0F3dGooaQsRzOgKfCQdQGyDkHaSbOgCe63ttupD-j70q6z10uRMfCAvVV07N9UiaT5cqlJ85xRIBRdprIYTDHJ6y3dtOF8gEfIz3unTSRTIOpqWOZTaSu0BzOgWBUX3oMzAqIC7lAxwBYgQXLwvC69err_Rl122fZMi3srj1Y5yFWmvJmSx4gYU4IuoLA_FZSN0iqDh7Zg0_EyvXb6pL6JScU1Ac65uFXCxfFQvnQdOUoMHQPoABMUX13LKDfWgz85VGBvIs"/>
+</div>
+<div>
+<p class="font-bold text-xs">Sarah Jenkins</p>
+<p class="text-[10px] text-on-surface-variant">Product Engineer @ Linear</p>
+</div>
+</div>
+</div>
+<div class="bg-white/50 p-6 rounded-lg border border-outline-variant/20 shadow-sm">
+<p class="italic text-on-surface mb-6 leading-relaxed">"The AI interview coach is terrifyingly good. It helped me refine how I communicate technical complexity to stakeholders."</p>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="Marcus T." data-alt="Close up of a smiling man with glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB0RKSRjj4d5Vxs5K7FCFLxI72TILdXdBdRZjbriwxEOKGWGBowPkwCmqfOdy6eGr3m9AQm_wPKElk6cAJZZu_UuQfaK96m19ezb67470ba9v4qgRDCKJ7HcFHY18FxRCRZdI-06b83uf12nZBEvC548Ph-qOGikS6ZMDSa_jdKOfFKrw8vWqsH40lnXDEJ3UWqFfz7fSFs8ocLdSEcvEDZ5kMAZI6394ZtiYX-5wt9odRjeQyiQFRRs-d-ceImRo7sq7lSyPE2rg"/>
+</div>
+<div>
+<p class="font-bold text-xs">Marcus Thorne</p>
+<p class="text-[10px] text-on-surface-variant">Ex-AWS, Founder</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="max-w-3xl mx-auto mb-24">
+<h2 class="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+<div class="space-y-4">
+<details class="group bg-surface-container-low rounded-lg transition-all">
+<summary class="flex justify-between items-center p-6 cursor-pointer list-none">
+<span class="font-semibold">Can I cancel my Pro subscription at any time?</span>
+<span class="material-symbols-outlined group-open:rotate-180 transition-transform" data-icon="expand_more">expand_more</span>
+</summary>
+<div class="px-6 pb-6 text-on-surface-variant text-sm leading-relaxed">
+                        Yes, you can cancel your subscription at any time through your dashboard. You will retain access to Pro features until the end of your current billing period.
+                    </div>
+</details>
+<details class="group bg-surface-container-low rounded-lg transition-all">
+<summary class="flex justify-between items-center p-6 cursor-pointer list-none">
+<span class="font-semibold">Is this school only for software engineers?</span>
+<span class="material-symbols-outlined group-open:rotate-180 transition-transform" data-icon="expand_more">expand_more</span>
+</summary>
+<div class="px-6 pb-6 text-on-surface-variant text-sm leading-relaxed">
+                        While our curriculum is rooted in engineering principles, it's beneficial for designers, data scientists, and any technical individual looking to master product thinking.
+                    </div>
+</details>
+<details class="group bg-surface-container-low rounded-lg transition-all">
+<summary class="flex justify-between items-center p-6 cursor-pointer list-none">
+<span class="font-semibold">Does the Pro plan include the PM Certification?</span>
+<span class="material-symbols-outlined group-open:rotate-180 transition-transform" data-icon="expand_more">expand_more</span>
+</summary>
+<div class="px-6 pb-6 text-on-surface-variant text-sm leading-relaxed">
+                        The Pro plan includes all required coursework for the certification. Once you complete the curriculum and the final capstone project, you receive your Rooted PM Certification.
+                    </div>
+</details>
+</div>
+</section>
+<section class="bg-primary-container/20 rounded-2xl p-12 text-center border border-primary/20">
+<h2 class="text-4xl font-bold mb-6">Ready to lead?</h2>
+<p class="text-on-surface-variant mb-10 max-w-xl mx-auto text-lg font-body">
+                Join 10,000+ engineers who have bridged the gap between code and customer. Your new career path starts here.
+            </p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center">
+<button class="bg-primary text-on-primary px-10 py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all hover:scale-105">Join the 10k+ Engineers</button>
+<button class="bg-transparent text-primary px-10 py-4 rounded-xl font-bold text-lg border-2 border-primary hover:bg-primary/5 transition-all">Contact Sales</button>
+</div>
+</section>
+</main>
+<footer class="bg-stone-100 dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 py-12">
+<div class="flex flex-col md:flex-row justify-between items-center px-8 w-full max-w-7xl mx-auto gap-4">
+<div class="flex flex-col items-center md:items-start">
+<span class="font-['Literata'] font-semibold text-stone-900 dark:text-stone-100 mb-2">MyProductSchool</span>
+<span class="font-['Nunito_Sans'] text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400">© 2024 MyProductSchool. Rooted in Engineering.</span>
+</div>
+<div class="flex gap-8">
+<a class="font-['Nunito_Sans'] text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors" href="#">Privacy Policy</a>
+<a class="font-['Nunito_Sans'] text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors" href="#">Terms of Service</a>
+<a class="font-['Nunito_Sans'] text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors" href="#">Support</a>
+<a class="font-['Nunito_Sans'] text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors" href="#">Contact</a>
+</div>
+</div>
+</footer>
+</body></html>

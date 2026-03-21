@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MyProductSchool - The LeetCode for Product Sense</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:wght@400;600;700&amp;family=Nunito+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container": "#f0ece4",
+              "on-background": "#2e3230",
+              "on-primary": "#ffffff",
+              "on-primary-container": "#d8f0de",
+              "surface-container-highest": "#e4e0d8",
+              "secondary-container": "#f0e8db",
+              "outline": "#74796e",
+              "on-error": "#ffffff",
+              "on-secondary-fixed": "#1e1a13",
+              "inverse-primary": "#8ecf9e",
+              "primary-fixed": "#c8e8d0",
+              "on-secondary": "#ffffff",
+              "inverse-surface": "#2e3230",
+              "surface-container-high": "#eae6de",
+              "on-tertiary-fixed": "#221a05",
+              "on-error-container": "#690005",
+              "surface-container-low": "#f5f1ea",
+              "surface": "#faf6f0",
+              "error": "#b83230",
+              "on-surface-variant": "#4a4e4a",
+              "on-secondary-container": "#5e5548",
+              "tertiary-fixed": "#f8e0a8",
+              "inverse-on-surface": "#f5f0e8",
+              "tertiary-container": "#c4a66a",
+              "surface-container-lowest": "#ffffff",
+              "secondary-fixed": "#f0e8db",
+              "tertiary": "#705c30",
+              "on-surface": "#2e3230",
+              "on-primary-fixed-variant": "#2a6038",
+              "background": "#faf6f0",
+              "surface-tint": "#4a7c59",
+              "on-tertiary-container": "#554020",
+              "error-container": "#ffdad8",
+              "primary-container": "#78a886",
+              "surface-dim": "#dbd7cf",
+              "on-tertiary": "#ffffff",
+              "tertiary-fixed-dim": "#dcc48e",
+              "secondary-fixed-dim": "#d4ccbf",
+              "on-tertiary-fixed-variant": "#554020",
+              "on-secondary-fixed-variant": "#4a4538",
+              "surface-bright": "#faf6f0",
+              "primary": "#4a7c59",
+              "surface-variant": "#e4e0d8",
+              "primary-fixed-dim": "#8ecf9e",
+              "outline-variant": "#c4c8bc",
+              "on-primary-fixed": "#002110",
+              "secondary": "#6b6358"
+            },
+            fontFamily: {
+              "headline": ["Literata"],
+              "body": ["Nunito Sans"],
+              "label": ["Nunito Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      body {
+        font-family: 'Nunito Sans', sans-serif;
+        background-color: #faf6f0;
+        color: #2e3230;
+      }
+      h1, h2, h3 {
+        font-family: 'Literata', serif;
+      }
+    </style>
+</head>
+<body class="bg-background text-on-surface flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-[#faf6f0] dark:bg-stone-950 border-b border-stone-200/50 dark:border-stone-800 shadow-sm dark:shadow-none fixed top-0 w-full z-50">
+<nav class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+<div class="flex items-center gap-8">
+<a class="font-['Literata'] text-xl font-bold text-emerald-900 dark:text-emerald-100" href="#">MyProductSchool</a>
+<div class="hidden md:flex items-center gap-6">
+<a class="font-['Nunito_Sans'] font-medium text-sm tracking-tight text-emerald-700 dark:text-emerald-400 border-b-2 border-emerald-700 dark:border-emerald-400 pb-1" href="#">Dashboard</a>
+<a class="font-['Nunito_Sans'] font-medium text-sm tracking-tight text-stone-600 dark:text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-200 hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors duration-200" href="#">Practice</a>
+<a class="font-['Nunito_Sans'] font-medium text-sm tracking-tight text-stone-600 dark:text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-200 hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors duration-200" href="#">Interview Prep</a>
+<a class="font-['Nunito_Sans'] font-medium text-sm tracking-tight text-stone-600 dark:text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-200 hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors duration-200" href="#">Domain</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-stone-100 transition-colors">
+<span class="material-symbols-outlined text-stone-600" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</nav>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-24">
+<!-- Hero Section -->
+<section class="max-w-7xl mx-auto px-6 py-12 md:py-20 flex flex-col items-center text-center">
+<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-secondary-container text-on-secondary-container text-xs font-bold uppercase tracking-wider mb-8">
+<span class="material-symbols-outlined text-[16px]" data-icon="auto_awesome" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                AI-Powered Mastery
+            </div>
+<h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-on-surface max-w-4xl leading-tight mb-6">
+                The LeetCode for <span class="text-primary">Product Sense.</span>
+</h1>
+<p class="text-lg md:text-xl text-on-surface-variant max-w-2xl mb-10 font-body leading-relaxed">
+                Master technical product management with our Luma AI coach. Build engineering-native PM skills through simulated case studies, architecture drills, and real-time feedback.
+            </p>
+<div class="flex flex-col sm:flex-row gap-4 mb-20">
+<button class="px-8 py-4 bg-primary text-on-primary font-bold rounded-lg shadow-lg hover:brightness-110 transition-all active:scale-95">
+                    Get Started Free
+                </button>
+<button class="px-8 py-4 bg-surface text-primary border border-outline-variant font-bold rounded-lg hover:bg-surface-container transition-all active:scale-95">
+                    View Case Studies
+                </button>
+</div>
+<!-- Bento Preview / Visual Element -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 w-full mb-24">
+<div class="md:col-span-8 bg-surface-container rounded-xl p-8 relative overflow-hidden group border border-outline-variant/30">
+<div class="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent"></div>
+<div class="relative z-10 flex flex-col md:flex-row items-center gap-8">
+<div class="text-left max-w-sm">
+<h3 class="text-2xl font-bold mb-3">Luma AI Coach</h3>
+<p class="text-on-surface-variant mb-6 text-sm">Interactive whiteboarding sessions that simulate high-stakes interviews at Meta, Google, and Stripe.</p>
+<div class="flex gap-2">
+<span class="px-3 py-1 bg-white/50 rounded-full text-[10px] font-bold">REAL-TIME ANALYSIS</span>
+<span class="px-3 py-1 bg-white/50 rounded-full text-[10px] font-bold">SYSTEM DESIGN</span>
+</div>
+</div>
+<div class="w-full h-48 rounded-lg bg-surface flex items-center justify-center shadow-inner border border-outline-variant/20 relative">
+<img class="absolute inset-0 w-full h-full object-cover opacity-20 rounded-lg" data-alt="Abstract neural network visualization showing AI processing" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBf1JEkDChkSPh6DfeuBBjDZfPOd-J-q_R8FPndRT-EwwoPUgO1xzwx8MgRM_aT74Ok_AQd1SY0UTMPgKRyc9BKM5XvsR17AVmF7NtAkBPy0S_4NW7m-dQ_1UYUsPCZn1Bzm3PHhfIa9iTwq-4dEozYZM8GCLhtYP1FPEM0dbsMADkJPpdlqHqeXCs0rynbNdA-gFIGrHr8AgEgwKGATtbTIM4yZstyqmj-MaBxYthJBabyelW51Q1Jjp-H6hMoy4BT10On-YYJ95o"/>
+<div class="relative flex flex-col items-center gap-3">
+<div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+</div>
+<span class="text-xs font-bold text-primary italic">Analyzing product architecture...</span>
+</div>
+</div>
+</div>
+</div>
+<div class="md:col-span-4 bg-tertiary-fixed rounded-xl p-8 flex flex-col justify-center border border-outline-variant/30">
+<div class="text-on-tertiary-fixed mb-4">
+<span class="material-symbols-outlined text-4xl" data-icon="architecture" style="font-variation-settings: 'FILL' 1;">architecture</span>
+</div>
+<h3 class="text-xl font-bold text-on-tertiary-fixed mb-2 uppercase tracking-tight">Engineering Native</h3>
+<p class="text-on-tertiary-fixed-variant text-sm">Learn to speak the language of engineering. APIs, Database Schemas, and System Trade-offs for PMs.</p>
+</div>
+</div>
+<!-- Logo Cloud -->
+<div class="w-full pt-12 border-t border-outline-variant/20">
+<p class="text-[10px] font-extrabold uppercase tracking-[0.2em] text-on-surface-variant mb-10">Land your dream role at industry leaders</p>
+<div class="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-3xl" data-icon="all_inclusive">all_inclusive</span>
+<span class="font-bold text-xl tracking-tighter">Meta</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-3xl" data-icon="search">search</span>
+<span class="font-bold text-xl tracking-tighter">Google</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-3xl" data-icon="palette">palette</span>
+<span class="font-bold text-xl tracking-tighter">Figma</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-3xl" data-icon="play_circle">play_circle</span>
+<span class="font-bold text-xl tracking-tighter">Netflix</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-stone-100 dark:bg-stone-900 full-width py-12 border-t border-stone-200 dark:border-stone-800 mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-center px-8 w-full max-w-7xl mx-auto gap-4">
+<div class="flex flex-col gap-1 items-center md:items-start">
+<span class="font-['Literata'] font-semibold text-stone-900 dark:text-stone-100">MyProductSchool</span>
+<p class="font-['Nunito_Sans'] text-[10px] uppercase tracking-widest text-stone-500 dark:text-stone-400">© 2024 MyProductSchool. Rooted in Engineering.</p>
+</div>
+<div class="flex gap-6">
+<a class="font-['Nunito_Sans'] text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors" href="#">Privacy Policy</a>
+<a class="font-['Nunito_Sans'] text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors" href="#">Terms of Service</a>
+<a class="font-['Nunito_Sans'] text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors" href="#">Support</a>
+<a class="font-['Nunito_Sans'] text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors" href="#">Contact</a>
+</div>
+</div>
+</footer>
+</body></html>

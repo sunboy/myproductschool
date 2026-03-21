@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Practice Mode | MyProductSchool</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&amp;family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-tertiary-fixed-variant": "#554020",
+                        "inverse-on-surface": "#f5f0e8",
+                        "primary-fixed-dim": "#8ecf9e",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#5e5548",
+                        "inverse-primary": "#8ecf9e",
+                        "background": "#faf6f0",
+                        "error-container": "#ffdad8",
+                        "surface-variant": "#e4e0d8",
+                        "tertiary-fixed-dim": "#dcc48e",
+                        "on-tertiary-fixed": "#221a05",
+                        "primary-container": "#78a886",
+                        "on-primary-fixed": "#002110",
+                        "on-error-container": "#690005",
+                        "secondary-fixed-dim": "#d4ccbf",
+                        "secondary-fixed": "#f0e8db",
+                        "surface-container-highest": "#e4e0d8",
+                        "primary-fixed": "#c8e8d0",
+                        "surface-tint": "#4a7c59",
+                        "surface-container": "#f0ece4",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#2e3230",
+                        "error": "#b83230",
+                        "tertiary-container": "#c4a66a",
+                        "surface": "#faf6f0",
+                        "surface-bright": "#faf6f0",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#f0e8db",
+                        "on-secondary-fixed-variant": "#4a4538",
+                        "on-surface-variant": "#4a4e4a",
+                        "on-primary-fixed-variant": "#2a6038",
+                        "surface-container-high": "#eae6de",
+                        "on-primary": "#ffffff",
+                        "inverse-surface": "#2e3230",
+                        "outline-variant": "#c4c8bc",
+                        "outline": "#74796e",
+                        "on-tertiary-container": "#554020",
+                        "on-primary-container": "#d8f0de",
+                        "tertiary": "#705c30",
+                        "primary": "#4a7c59",
+                        "secondary": "#6b6358",
+                        "tertiary-fixed": "#f8e0a8",
+                        "on-secondary-fixed": "#1e1a13",
+                        "on-surface": "#2e3230",
+                        "surface-container-low": "#f5f1ea",
+                        "surface-dim": "#dbd7cf",
+                        "on-secondary": "#ffffff"
+                    },
+                    fontFamily: {
+                        "headline": ["Literata"],
+                        "body": ["Nunito Sans"],
+                        "label": ["Nunito Sans"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.75rem", // 12px for Terra
+                        "lg": "1rem", 
+                        "xl": "1.5rem", 
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Nunito Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d4ccbf;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-[#faf6f0] text-[#2e3230] min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-[#faf6f0] border-b border-[#e4e0d8] flex justify-between items-center w-full px-6 h-14 sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<span class="font-['Literata'] text-xl font-bold text-[#4a7c59]">MyProductSchool</span>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="font-['Nunito_Sans'] font-medium text-sm text-[#6b6358] hover:text-[#2e3230] transition-colors" href="#">Dashboard</a>
+<a class="font-['Nunito_Sans'] font-medium text-sm text-[#4a7c59] border-b-2 border-[#4a7c59] pb-1" href="#">Practice</a>
+<a class="font-['Nunito_Sans'] font-medium text-sm text-[#6b6358] hover:text-[#2e3230] transition-colors" href="#">Interview Prep</a>
+<a class="font-['Nunito_Sans'] font-medium text-sm text-[#6b6358] hover:text-[#2e3230] transition-colors" href="#">Domain</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-[#6b6358] hover:bg-[#f0ece4] p-2 rounded-full transition-all active:opacity-80 active:scale-[0.99]">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-[#6b6358] hover:bg-[#f0ece4] p-2 rounded-full transition-all active:opacity-80 active:scale-[0.99]">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-[#f0ece4] overflow-hidden border border-[#d4ccbf]">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="Close up of professional smiling male avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBf9lge-Utm6EuZ3tbRcuE2NkcezrMsYcuDtuNeGyDNDGCExaKY-05paGXT5_24tS-0AdXgE_Vs-I3yXRppHKsFAVBtF0hSbDZKJ-WM3LSzRIh3jcZvawDNL3Tb7_1EitvQ2SsWniD2HC0ucFJqFquLmRLSTJZcnpEI6vUxJ9t9Z6MSQzeXdia0O7UOrp4o-lJtY2C81ECoSu1rDYCahtcm7uUz7hI6UuyJ13PBL2t3_72kyx6yAkSiPPZNbvuad4MYH8qKjghI8XM"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar (Luma AI) -->
+<aside class="fixed right-0 top-14 bottom-0 flex flex-col z-40 bg-white border-l border-[#e4e0d8] shadow-sm w-80 transition-transform duration-300 ease-in-out">
+<div class="p-6 border-b border-[#e4e0d8]">
+<div class="flex items-center gap-3 mb-1">
+<div class="w-10 h-10 rounded-xl bg-[#4a7c59]/10 flex items-center justify-center text-[#4a7c59]">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<div>
+<h3 class="font-['Literata'] font-semibold text-[#705c30] text-lg leading-tight">Luma AI</h3>
+<p class="font-['Nunito_Sans'] text-xs text-[#6b6358]">Product Sense Coach</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 p-4 space-y-2">
+<button class="w-full flex items-center gap-3 px-4 py-3 font-['Nunito_Sans'] text-sm bg-[#4a7c59]/10 text-[#4a7c59] font-bold rounded-xl">
+<span class="material-symbols-outlined">smart_toy</span>
+<span>AI Coach Luma</span>
+</button>
+<button class="w-full flex items-center gap-3 px-4 py-3 font-['Nunito_Sans'] text-sm text-[#6b6358] hover:text-[#4a7c59] hover:bg-[#f0ece4] rounded-xl transition-all">
+<span class="material-symbols-outlined">lightbulb</span>
+<span>Hints</span>
+</button>
+<button class="w-full flex items-center gap-3 px-4 py-3 font-['Nunito_Sans'] text-sm text-[#6b6358] hover:text-[#4a7c59] hover:bg-[#f0ece4] rounded-xl transition-all">
+<span class="material-symbols-outlined">check_circle</span>
+<span>Solutions</span>
+</button>
+<button class="w-full flex items-center gap-3 px-4 py-3 font-['Nunito_Sans'] text-sm text-[#6b6358] hover:text-[#4a7c59] hover:bg-[#f0ece4] rounded-xl transition-all">
+<span class="material-symbols-outlined">forum</span>
+<span>Feedback</span>
+</button>
+</nav>
+<div class="p-6">
+<button class="w-full bg-[#4a7c59] text-white font-['Nunito_Sans'] font-bold py-3 rounded-xl hover:opacity-90 transition-all active:scale-[0.98] shadow-sm">
+                Ask Luma
+            </button>
+</div>
+<div class="p-4 border-t border-[#e4e0d8]">
+<button class="w-full flex items-center gap-3 px-4 py-2 font-['Nunito_Sans'] text-sm text-[#6b6358] hover:text-[#4a7c59] rounded-xl transition-all">
+<span class="material-symbols-outlined">help</span>
+<span>Support</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex overflow-hidden mr-80">
+<!-- Left Column: Case Pane -->
+<section class="w-1/2 flex flex-col border-r border-[#e4e0d8] bg-white">
+<div class="p-6 border-b border-[#e4e0d8] flex justify-between items-center bg-[#faf6f0]/30">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<img alt="Uber logo" class="w-5 h-5 rounded shadow-sm" data-alt="Uber corporate logomark black background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3v90PslgEM5tZoQI3wBAX6tOFgZVf4-by9MAwEHiznZU7532IXeQ502rYJdzgvmg5Ub9SWw77ig7hlWr0eLj7tIOj-zP-1QMA78ckqlUO3FKHRpmjGW_Hx0yvfgseEi-Rv2U6C4ZJ_Jv3r_pKvxybBcxAjj-EX7Hfp0nP6B2L43lRfI5rI8l2x2wPex5oqsOS7Yqv524QHec2I-YynuSMuZ9p_68ZB0YSOENAGNjgeVxbOG3O6dUGqhdr-EZW_9DGQ-T53QNCjds"/>
+<span class="text-xs font-bold uppercase tracking-wider text-[#6b6358] font-body">Uber</span>
+</div>
+<h1 class="font-headline text-2xl font-bold text-[#2e3230]">Weekend Dropoff</h1>
+</div>
+<button class="text-[#6b6358] hover:text-[#2e3230]">
+<span class="material-symbols-outlined">fullscreen</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-6 custom-scrollbar space-y-8">
+<div class="prose max-w-none">
+<p class="text-[#4a4e4a] font-body leading-relaxed text-base">
+                        Uber has noticed a significant decline in completed trips during weekend nights (Fridays &amp; Saturdays 10PM–4AM) in metropolitan areas. While app opens remain steady, the conversion from "Open" to "Requested" has dropped by 18% over the last quarter.
+                    </p>
+<p class="text-[#4a4e4a] font-body leading-relaxed text-base">
+                        As the Product Manager for the Driver &amp; Marketplace team, your goal is to diagnose the root cause and propose a structured solution to recover the lost volume.
+                    </p>
+</div>
+<!-- Data Table -->
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<h3 class="text-sm font-bold text-[#6b6358] flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">database</span>
+                            payload: metrics_daily.sql
+                        </h3>
+<span class="text-[10px] bg-[#f0ece4] px-2 py-0.5 rounded text-[#6b6358] font-mono border border-[#d4ccbf]">READ ONLY</span>
+</div>
+<div class="rounded-xl border border-[#e4e0d8] overflow-hidden bg-[#faf6f0]">
+<table class="w-full text-xs text-left font-body">
+<thead class="bg-[#f0ece4] text-[#6b6358] uppercase tracking-tighter">
+<tr>
+<th class="px-4 py-3 font-semibold">date</th>
+<th class="px-4 py-3 font-semibold">metropolitan_id</th>
+<th class="px-4 py-3 font-semibold">app_opens</th>
+<th class="px-4 py-3 font-semibold">requests</th>
+<th class="px-4 py-3 font-semibold">surge_mult</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#e4e0d8] text-[#2e3230]">
+<tr>
+<td class="px-4 py-3">2023-11-03</td>
+<td class="px-4 py-3">NYC_01</td>
+<td class="px-4 py-3">124,500</td>
+<td class="px-4 py-3">82,100</td>
+<td class="px-4 py-3">2.4x</td>
+</tr>
+<tr>
+<td class="px-4 py-3">2023-11-04</td>
+<td class="px-4 py-3">NYC_01</td>
+<td class="px-4 py-3">132,000</td>
+<td class="px-4 py-3">78,400</td>
+<td class="px-4 py-3">2.8x</td>
+</tr>
+<tr>
+<td class="px-4 py-3">2023-11-10</td>
+<td class="px-4 py-3">CHI_02</td>
+<td class="px-4 py-3">98,000</td>
+<td class="px-4 py-3">61,200</td>
+<td class="px-4 py-3">2.1x</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="p-4 bg-[#4a7c59]/5 border-l-4 border-[#4a7c59] rounded-r-xl">
+<p class="text-xs text-[#4a7c59] font-bold mb-1">PROMPT HINT</p>
+<p class="text-sm text-[#4a4e4a] italic">Consider the correlation between surge pricing and wait times during these specific hours.</p>
+</div>
+</div>
+</section>
+<!-- Right Column: Work Pane -->
+<section class="w-1/2 flex flex-col bg-[#faf6f0]">
+<!-- Tabs -->
+<div class="h-14 flex border-b border-[#e4e0d8] bg-white">
+<button class="px-6 h-full text-sm font-bold border-b-2 border-[#4a7c59] text-[#4a7c59] flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">edit_note</span>
+                    Answer
+                </button>
+<button class="px-6 h-full text-sm font-bold text-[#6b6358] hover:text-[#4a7c59] flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">visibility</span>
+                    Review
+                </button>
+<button class="px-6 h-full text-sm font-bold text-[#6b6358] hover:text-[#4a7c59] flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">history</span>
+                    History
+                </button>
+</div>
+<!-- Stepper -->
+<div class="px-6 py-5 flex items-center justify-between border-b border-[#e4e0d8] bg-white">
+<div class="flex items-center gap-1">
+<div class="w-8 h-8 rounded-full bg-[#4a7c59] text-white flex items-center justify-center text-xs font-bold shadow-sm">1</div>
+<div class="w-12 h-0.5 bg-[#4a7c59]"></div>
+<div class="w-8 h-8 rounded-full border-2 border-[#d4ccbf] text-[#6b6358] flex items-center justify-center text-xs font-bold">2</div>
+<div class="w-12 h-0.5 bg-[#e4e0d8]"></div>
+<div class="w-8 h-8 rounded-full border-2 border-[#d4ccbf] text-[#6b6358] flex items-center justify-center text-xs font-bold">3</div>
+<div class="w-12 h-0.5 bg-[#e4e0d8]"></div>
+<div class="w-8 h-8 rounded-full border-2 border-[#d4ccbf] text-[#6b6358] flex items-center justify-center text-xs font-bold">4</div>
+<div class="w-12 h-0.5 bg-[#e4e0d8]"></div>
+<div class="w-8 h-8 rounded-full border-2 border-[#d4ccbf] text-[#6b6358] flex items-center justify-center text-xs font-bold">5</div>
+</div>
+<div class="text-right">
+<span class="block text-[10px] uppercase font-bold text-[#6b6358] tracking-widest">Current Step</span>
+<span class="text-sm font-bold text-[#2e3230]">Clarify &amp; Goal</span>
+</div>
+</div>
+<!-- Editor Area -->
+<div class="flex-1 flex flex-col p-6 space-y-6">
+<!-- Checklist Chips -->
+<div class="flex flex-wrap gap-2">
+<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#4a7c59] text-xs text-[#4a7c59] font-bold cursor-pointer transition-all shadow-sm">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+                        Define North Star
+                    </span>
+<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#d4ccbf] text-xs text-[#6b6358] hover:border-[#4a7c59]/50 cursor-pointer transition-all">
+<span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
+                        Confirm Constraints
+                    </span>
+<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#d4ccbf] text-xs text-[#6b6358] hover:border-[#4a7c59]/50 cursor-pointer transition-all">
+<span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
+                        Clarify Geography
+                    </span>
+</div>
+<div class="flex-1 relative">
+<textarea class="w-full h-full bg-white border-2 border-[#e4e0d8] rounded-xl p-6 text-[#2e3230] font-body focus:ring-2 focus:ring-[#4a7c59] focus:border-[#4a7c59] outline-none transition-all resize-none placeholder-[#d4ccbf]" placeholder="Start typing your response here... (e.g. 'To clarify the problem, I want to understand if this drop-off is unique to Uber or a market trend...')"></textarea>
+<!-- Floating Coach Pill -->
+<button class="absolute bottom-6 right-6 bg-[#2e3230] hover:bg-[#4a4e4a] text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg transition-all active:scale-95">
+<span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+<span class="text-sm font-bold">Coach · 2 hints</span>
+</button>
+</div>
+<!-- Footer Actions -->
+<div class="flex items-center justify-between pt-4 border-t border-[#e4e0d8]">
+<div class="flex items-center gap-4 text-[#6b6358] text-xs">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> Saved 2m ago</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">description</span> 142 words</span>
+</div>
+<div class="flex gap-3">
+<button class="px-5 py-2 rounded-xl border border-[#d4ccbf] text-[#6b6358] font-bold text-sm hover:bg-white hover:border-[#4a7c59] transition-all">Save Draft</button>
+<button class="px-5 py-2 rounded-xl bg-[#4a7c59] text-white font-bold text-sm hover:opacity-90 shadow-sm transition-all flex items-center gap-2">
+                            Next Step
+                            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+</body></html>

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Material Discussions - Terra</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Literata:wght@400;600;700;800&amp;family=Nunito+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary": "#ffffff",
+              "surface-container": "#f0ece4",
+              "on-surface-variant": "#4a4e4a",
+              "on-primary-fixed": "#002110",
+              "surface-container-highest": "#e4e0d8",
+              "surface-bright": "#faf6f0",
+              "surface-dim": "#dbd7cf",
+              "surface-container-low": "#f5f1ea",
+              "on-secondary-fixed": "#1e1a13",
+              "on-primary-container": "#d8f0de",
+              "tertiary-fixed": "#f8e0a8",
+              "tertiary-fixed-dim": "#dcc48e",
+              "on-tertiary-container": "#554020",
+              "surface-container-lowest": "#ffffff",
+              "secondary-container": "#f0e8db",
+              "inverse-on-surface": "#f5f0e8",
+              "surface-tint": "#4a7c59",
+              "primary-fixed": "#c8e8d0",
+              "on-secondary-fixed-variant": "#4a4538",
+              "on-error-container": "#690005",
+              "error-container": "#ffdad8",
+              "on-background": "#2e3230",
+              "primary": "#4a7c59",
+              "on-secondary": "#ffffff",
+              "on-primary-fixed-variant": "#2a6038",
+              "tertiary-container": "#c4a66a",
+              "surface-container-high": "#eae6de",
+              "secondary-fixed": "#f0e8db",
+              "inverse-surface": "#2e3230",
+              "background": "#faf6f0",
+              "primary-container": "#78a886",
+              "on-tertiary-fixed": "#221a05",
+              "on-error": "#ffffff",
+              "surface-variant": "#e4e0d8",
+              "error": "#b83230",
+              "secondary": "#6b6358",
+              "on-tertiary": "#ffffff",
+              "primary-fixed-dim": "#8ecf9e",
+              "outline": "#74796e",
+              "on-tertiary-fixed-variant": "#554020",
+              "surface": "#faf6f0",
+              "on-surface": "#2e3230",
+              "outline-variant": "#c4c8bc",
+              "on-secondary-container": "#5e5548",
+              "inverse-primary": "#8ecf9e",
+              "tertiary": "#705c30",
+              "secondary-fixed-dim": "#d4ccbf"
+            },
+            fontFamily: {
+              "headline": ["Literata"],
+              "body": ["Nunito Sans"],
+              "label": ["Nunito Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background-color: #faf6f0;
+        }
+        h1, h2, h3, .font-headline {
+            font-family: 'Literata', serif;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#faf6f0] border-b border-stone-200 shadow-sm">
+<div class="flex items-center gap-8">
+<span class="font-['Literata'] text-2xl font-bold text-[#4a7c59] tracking-tight">Terra</span>
+<nav class="hidden md:flex items-center gap-6 h-full">
+<a class="text-[#4a7c59] font-bold border-b-2 border-[#4a7c59] h-16 flex items-center" href="#">Ecologies</a>
+<a class="text-stone-600 font-['Nunito_Sans'] hover:bg-stone-100 transition-colors px-3 py-1 rounded-lg" href="#">Dashboard</a>
+<a class="text-stone-600 font-['Nunito_Sans'] hover:bg-stone-100 transition-colors px-3 py-1 rounded-lg" href="#">Analytics</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary w-64" placeholder="Search discussions..." type="text"/>
+</div>
+<button class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-stone-100 rounded-full transition-colors">notifications</button>
+<button class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-stone-100 rounded-full transition-colors">settings</button>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-highest ml-2">
+<img class="w-full h-full object-cover" data-alt="User profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAayYlhowPgCfF_AKwS2w0P40z4jQQzdd5Mb7NuRfyjBpM0hsu5Qr6qY_kjfQLzvCNFSw9zCtatFHrbcVh3bc9uskzFA30rMRebAhRTSrAW7qnW3YoSFQz6XzmgOJgDsL3HSLNZRcXOPWuX5xPQX442iKq0B8ylagYhx-3KEkqksaZW90T7bfCbw7CwySq0doCd5cDzE0CnfOm_qLfCaGL-8DQdpLcrpvG4AI3iae89JM0sxCt2ogGyLfbg9hVMFZlYlLp_kKkF20"/>
+</div>
+</div>
+</header>
+<!-- Sidebar (Shared Component) -->
+<aside class="fixed left-0 top-0 h-screen flex flex-col py-6 z-40 bg-[#faf6f0] w-72 border-r border-stone-200 pt-20 hidden lg:flex">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-primary text-3xl">eco</span>
+<span class="font-['Literata'] text-xl text-[#4a7c59]">Terra Organic</span>
+</div>
+<p class="text-xs text-stone-500 ml-10">Rooted Warmth</p>
+</div>
+<nav class="flex-grow">
+<a class="flex items-center gap-3 text-stone-600 px-4 py-3 mx-2 my-1 hover:bg-stone-200/50 rounded-2xl transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-['Nunito_Sans'] text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 bg-[#4a7c59] text-[#faf6f0] rounded-2xl px-4 py-3 mx-2 my-1 shadow-sm" href="#">
+<span class="material-symbols-outlined">eco</span>
+<span class="font-['Nunito_Sans'] text-sm font-medium">Ecologies</span>
+</a>
+<a class="flex items-center gap-3 text-stone-600 px-4 py-3 mx-2 my-1 hover:bg-stone-200/50 rounded-2xl transition-all" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-['Nunito_Sans'] text-sm font-medium">Analytics</span>
+</a>
+<a class="flex items-center gap-3 text-stone-600 px-4 py-3 mx-2 my-1 hover:bg-stone-200/50 rounded-2xl transition-all" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-['Nunito_Sans'] text-sm font-medium">Archive</span>
+</a>
+<div class="mt-8 px-4">
+<button class="w-full bg-primary-container text-on-primary-fixed-variant py-4 rounded-xl flex items-center justify-center gap-2 font-bold shadow-sm active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">add</span>
+                    New Entry
+                </button>
+</div>
+</nav>
+<div class="mt-auto border-t border-stone-200 pt-4">
+<a class="flex items-center gap-3 text-stone-600 px-4 py-3 mx-2 my-1 hover:bg-stone-200/50 rounded-2xl transition-all" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="font-['Nunito_Sans'] text-sm font-medium">Help</span>
+</a>
+<a class="flex items-center gap-3 text-stone-600 px-4 py-3 mx-2 my-1 hover:bg-stone-200/50 rounded-2xl transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-['Nunito_Sans'] text-sm font-medium">Sign Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="lg:ml-72 pt-24 px-6 pb-20 max-w-7xl mx-auto">
+<!-- Hero Section / Breadcrumbs -->
+<div class="mb-8">
+<div class="flex items-center gap-2 text-sm text-outline mb-4">
+<span>Ecologies</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span>Material Discussions</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-primary font-semibold">Challenge #42: Organic Grid Systems</span>
+</div>
+<h1 class="text-4xl font-bold text-on-surface mb-2">Material Challenge Discussions</h1>
+<p class="text-on-surface-variant max-w-2xl leading-relaxed">Engage with the community on technical design implementation of Material 3 principles within the Terra system.</p>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+<!-- Discussion Thread (8 cols) -->
+<div class="xl:col-span-8 space-y-6">
+<!-- Main Thread Opener -->
+<div class="bg-surface-container-low rounded-xl p-6 shadow-sm border border-outline-variant/30">
+<div class="flex items-start gap-4 mb-4">
+<div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Senior Developer avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB82YZ-mMbbrkC_y2mZF47sfWEUYvnmOr7koMOU6iblgyIR8-N2EX-0K38Bk37xua9aMdro-PagK-XS_6AWv-z-N-bBwQ3o5vV-FOduuVA0pgZGblsCT-rOtlWtyvRc6TNHWo_Bk_0tKLZ1nOlToyf4tzPnrI4-Rf8RPCM7OTnNW4Gz4mlsyzSQSoctCnCJOSkLyiXoS9hwMCodEG5SF7bi_Yygy9pJY8cWqRHJR9Ga83SUP8jRo1jpbBZjaXwN7dP5HYpySWqmQ3M"/>
+</div>
+<div class="flex-grow">
+<div class="flex items-center gap-2 mb-1">
+<span class="font-bold text-on-surface">Alex Rivera</span>
+<span class="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">OP</span>
+<span class="text-xs text-outline">• 4h ago</span>
+</div>
+<div class="flex items-center gap-2 mb-3">
+<span class="bg-secondary-container text-on-secondary-container text-xs px-2 py-0.5 rounded-md font-medium">Senior PM @ Google</span>
+</div>
+<p class="text-on-surface leading-relaxed mb-4">
+                                Has anyone successfully implemented the "Rooted Warmth" philosophy in a data-heavy analytics dashboard? I'm struggling with keeping the organic feel while displaying 50+ nodes in a grid. Thoughts on elevation vs tonal separation for this specific case?
+                            </p>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant text-sm font-bold border border-primary/20 hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">thumb_up</span>
+                                    124
+                                </button>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-highest text-on-surface-variant text-sm font-medium hover:bg-surface-dim transition-colors">
+<span class="material-symbols-outlined text-sm">chat_bubble</span>
+                                    42 Comments
+                                </button>
+<button class="material-symbols-outlined p-1.5 text-outline hover:bg-surface-dim rounded-full transition-colors">share</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Comment Section -->
+<div class="space-y-4 ml-4 md:ml-12 border-l-2 border-surface-container-highest pl-6">
+<!-- Expert Reply -->
+<div class="bg-surface-bright rounded-xl p-5 shadow-sm border-l-4 border-tertiary">
+<div class="flex items-start gap-3 mb-3">
+<div class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Expert designer portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDa8iyrVGfZskCCkkPU4YZ1kAZNEASrFYUya9SeHWa6EqSaQwrgeG1GLVmDGg4bSXstvB6-3SpA6Gvpz6OtKOTEgb6JxNPe_W55yUtUqgVdtzn7FrKIYNMX4LIP0tYJ2pxE4vsltz_y7j2hL0ihGenX-dWFnfgUcpdzHHiLawr5A2CkqiT9wJAdxgXBAcVxJqEiPEGczxsYfN6JUAgsihHlT1lrG7EZFJhIKLGDHMlAwU30-0ruf0Go9a9zI7kYie72xtW72f090BM"/>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-bold text-on-surface text-sm">Sarah Chen</span>
+<span class="bg-tertiary-container text-on-tertiary-container text-[10px] px-2 py-0.5 rounded-full uppercase font-bold">Expert Pick</span>
+<span class="text-xs text-outline">• 2h ago</span>
+</div>
+<span class="text-xs text-tertiary font-semibold">Staff Designer @ Terra</span>
+</div>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-4">
+                            In the Terra Design System, we recommend prioritizing <strong class="text-tertiary">Tonal Separation</strong> for grids. Use <code class="bg-surface-container-high px-1 rounded">surface-container-low</code> for the grid parent and <code <="" atmosphere.="" calm"="" class="bg-surface-bright&lt;/code&gt; for individual cells. Elevation should only be used for hover states to maintain the" p="">
+</code></p><div class="flex items-center gap-4"><code <="" atmosphere.="" calm"="" class="bg-surface-bright&lt;/code&gt; for individual cells. Elevation should only be used for hover states to maintain the" p="">
+<button class="flex items-center gap-1.5 text-xs font-bold text-primary">
+<span class="material-symbols-outlined text-sm">expand_less</span>
+                                UPVOTE (56)
+                            </button>
+<button class="text-xs font-semibold text-outline hover:text-primary transition-colors">REPLY</button>
+</code></div><code <="" atmosphere.="" calm"="" class="bg-surface-bright&lt;/code&gt; for individual cells. Elevation should only be used for hover states to maintain the" p="">
+</code><p></p></div>
+<!-- Regular Reply -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-outline-variant/20">
+<div class="flex items-start gap-3 mb-3">
+<div class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Community member avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDY2RU5FpAmAJcQdSN0l3yyNGOCi8bNvjbpP6W1BhVVYG_xfuK6IJSnEQlUp9AFDZXdpms1ZdcxXKoSQtldBBr-B9lgGLlWQGL5-mP-gqPB8p-asNvbW8MV1wrosMKHWnEmKbIQ9FbP2-NPmm9salyz7q0LpLrwZIUovd1hn8HX4Iray-IQqlJSUQfHD91X327QLlCqac0GhRFL_itEOjRAoJ234IyZ5qNFsMMuxInghiHRuQFxhJnQH1n5aziJSUf_M5xgDiiXqN0"/>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-bold text-on-surface text-sm">Marcus Vogt</span>
+<span class="text-xs text-outline">• 1h ago</span>
+</div>
+<span class="text-xs text-on-surface-variant">Design Engineer</span>
+</div>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-4">
+                            I found that using a 12px radius on cells with a very subtle 2px border in <code class="bg-surface-container-highest px-1 rounded">outline-variant</code> keeps it from looking like a traditional spreadsheet.
+                        </p>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-1.5 text-xs font-bold text-outline hover:text-primary">
+<span class="material-symbols-outlined text-sm">expand_less</span>
+                                UPVOTE (12)
+                            </button>
+<button class="text-xs font-semibold text-outline hover:text-primary transition-colors">REPLY</button>
+</div>
+</div>
+<!-- Threaded Sub-Reply -->
+<div class="ml-8 border-l border-surface-container-highest pl-4 mt-2">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-outline text-sm">person</span>
+</div>
+<div class="flex-grow">
+<div class="flex items-center gap-2 mb-1">
+<span class="font-bold text-on-surface text-xs">James Wilson</span>
+<span class="text-[10px] text-outline">• 30m ago</span>
+</div>
+<p class="text-on-surface-variant text-xs leading-normal">
+                                    Do you have any code snippets for that border styling in Tailwind?
+                                </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Load More / Input -->
+<div class="flex flex-col gap-4 mt-8">
+<div class="bg-white rounded-2xl p-4 shadow-sm border border-outline-variant flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Current user thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMkNySsf1f1zBPV-ZLtIF1tI6OuWa9AHDj93ZH_MyN5dcGvNFtUOnGOWhCYLibRjgtQTLZ2dqWpx7wTZ_bRjQiiR5UEHWgNLVcuesOLjnfvzAko9rcL-oJDaFznkQVj1-b18y_HAAYxVIajSJbH0DshIc8twlSgD9kk4QqbM7trw1qoHJj984Bk37wk4fxViCrIveFdjSPHLRhYwkT3zCfhGLo-vHYsPvXKy5T6t61onDm0b8QFVExeG8FyOfl-C8HvivUljcsqqM"/>
+</div>
+<input class="flex-grow border-none focus:ring-0 text-sm py-2" placeholder="Add to the discussion..." type="text"/>
+<button class="bg-primary text-white px-6 py-2 rounded-xl font-bold text-sm shadow-md hover:opacity-90 transition-opacity">
+                            Post
+                        </button>
+</div>
+</div>
+</div>
+<!-- Sidebar Info (4 cols) -->
+<div class="xl:col-span-4 space-y-6">
+<!-- Expert Picks Highlight -->
+<div class="bg-tertiary-fixed text-on-tertiary-container rounded-3xl p-6 relative overflow-hidden">
+<!-- Background texture/decoration -->
+<div class="absolute -right-8 -top-8 w-32 h-32 bg-tertiary-container opacity-20 rounded-full blur-3xl"></div>
+<div class="relative z-10">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<h3 class="font-headline font-bold text-xl">Expert Picks</h3>
+</div>
+<p class="text-sm font-medium mb-6 opacity-90">Curated insights from the Terra Core team to help you navigate complex design challenges.</p>
+<ul class="space-y-4">
+<li class="flex gap-3">
+<span class="text-xl font-bold opacity-30">01</span>
+<div>
+<h4 class="text-sm font-bold leading-tight">Mastering Tonal Layers</h4>
+<p class="text-xs opacity-70">By Sarah Chen • Staff Designer</p>
+</div>
+</li>
+<li class="flex gap-3">
+<span class="text-xl font-bold opacity-30">02</span>
+<div>
+<h4 class="text-sm font-bold leading-tight">Accessibility in Earth Tones</h4>
+<p class="text-xs opacity-70">By David Miller • A11y Lead</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<!-- Discussion Stats Card -->
+<div class="bg-surface-container rounded-3xl p-6 border border-outline-variant/20">
+<h3 class="font-headline font-bold text-lg mb-4">Community Stats</h3>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-bright p-4 rounded-2xl text-center">
+<span class="block text-2xl font-bold text-primary">1.2k</span>
+<span class="text-[10px] uppercase tracking-wider font-bold text-outline">Participants</span>
+</div>
+<div class="bg-surface-bright p-4 rounded-2xl text-center">
+<span class="block text-2xl font-bold text-tertiary">856</span>
+<span class="text-[10px] uppercase tracking-wider font-bold text-outline">Solutions</span>
+</div>
+</div>
+</div>
+<!-- Tags / Categories -->
+<div class="bg-surface-container-low rounded-3xl p-6 border border-outline-variant/10">
+<h3 class="font-headline font-bold text-lg mb-4">Related Topics</h3>
+<div class="flex flex-wrap gap-2">
+<span class="bg-primary-container text-on-primary-fixed-variant px-3 py-1.5 rounded-full text-xs font-bold">Grid Systems</span>
+<span class="bg-surface-container-highest text-on-surface-variant px-3 py-1.5 rounded-full text-xs font-medium">Terra Palette</span>
+<span class="bg-surface-container-highest text-on-surface-variant px-3 py-1.5 rounded-full text-xs font-medium">Material 3</span>
+<span class="bg-surface-container-highest text-on-surface-variant px-3 py-1.5 rounded-full text-xs font-medium">Warm Neutrals</span>
+<span class="bg-tertiary-fixed-dim text-on-tertiary-container px-3 py-1.5 rounded-full text-xs font-bold">Best Practices</span>
+<span class="bg-surface-container-highest text-on-surface-variant px-3 py-1.5 rounded-full text-xs font-medium">Accessibility</span>
+</div>
+</div>
+<!-- Community Leaderboard -->
+<div class="bg-surface-container-high rounded-3xl p-6">
+<h3 class="font-headline font-bold text-lg mb-4">Top Contributors</h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Top contributor 1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcKzPU_PETZ-zYcC6KTe_6KsjbZMluyEtLVIRM78OeqFR6i3cz4UEjcxauju7oLRmtEHgCpwR3K89o8og9y98dUXaHM-upV3XeTT9ytKefvCp1k_beQ1SjIsMOqYiYdHG60_PrV0BwvMqxy9SSblvsyMA3HTRf_OfDILENy6lmQc73eTuwRmAjF6P0UfHPd464EpGCF31xvRLYU-yq5laNzk0QGwcO_Ig9FUsBTevht1W3zdJy2k32mY0Defom19_aOMDb7J_L1Ek"/>
+<span class="text-sm font-bold">Kevin Heart</span>
+</div>
+<span class="text-xs font-bold text-primary">4.2k XP</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Top contributor 2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuYlnrTE0SiWc-NMl06o7-eUmtVyEjmWm8RrW5Ht7GroR_lZ1HNw2zrSgVxo761-9mZI0nJUkvtlTq7m3pGnPOYjHGhJMkr_2XEqud3XL29d_bKWftjlsVL0uZJUYHa5km3qnWbU5CHtwPPPU6_XAoHiinEfwYH9AKElRPTQ1Vb4GZpeX77sUoCzVSo_iHfQ3RY1xIiChFwuvYrYdd-oXbb7fA_CJi14J-pXLctfvdP56LYqR2z6rmAnJcyBpN__0fB4tfzuvFTrI"/>
+<span class="text-sm font-bold">Lila Thorne</span>
+</div>
+<span class="text-xs font-bold text-primary">3.8k XP</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Top contributor 3" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBO4qi9Ezd32lW59eK20TyW008qOOC9VFLCdDrXvOYDq5SZV96Y7tQ0Hz5UqYPsH7nD0OXxt0g3CvKy5bv-lbDJxwWA4sjZreG7EDH_WZ_4ZtSMUgjgGIjzWvgA4z7FhuqK3VD62tY9yXugYy2Xkdisk7ohS-_eZy1eoQ7i1FEJwE_69hMlB_-1m44HBLVaO2LpH9Ho15zzSgeVabdKkm_98ULsaTboCalyEn73XW_O1l0g6eeUeMutRMJccJ_oymeVn3ckE271zJ4"/>
+<span class="text-sm font-bold">Elena Ruiz</span>
+</div>
+<span class="text-xs font-bold text-primary">2.9k XP</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Nav Bar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-surface-bright flex justify-around items-center h-16 px-4 z-50 border-t border-stone-200">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-[10px] font-bold">Dashboard</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">eco</span>
+<span class="text-[10px] font-medium">Ecologies</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-[10px] font-medium">Analytics</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</a>
+</nav>
+<!-- Contextual FAB (Only on main community screens) -->
+<button class="fixed bottom-20 md:bottom-8 right-6 bg-primary text-on-primary w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl hover:scale-105 transition-transform active:scale-95 z-50">
+<span class="material-symbols-outlined text-3xl">add_comment</span>
+</button>
+</body></html>

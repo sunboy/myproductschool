@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MyProductSchool | Master Product Sense</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:wght@400;600;700;800&amp;family=Nunito+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary-fixed-variant": "#554020",
+              "inverse-on-surface": "#f5f0e8",
+              "primary-fixed-dim": "#8ecf9e",
+              "on-error": "#ffffff",
+              "on-secondary-container": "#5e5548",
+              "inverse-primary": "#8ecf9e",
+              "background": "#faf6f0",
+              "error-container": "#ffdad8",
+              "surface-variant": "#e4e0d8",
+              "tertiary-fixed-dim": "#dcc48e",
+              "on-tertiary-fixed": "#221a05",
+              "primary-container": "#78a886",
+              "on-primary-fixed": "#002110",
+              "on-error-container": "#690005",
+              "secondary-fixed-dim": "#d4ccbf",
+              "secondary-fixed": "#f0e8db",
+              "surface-container-highest": "#e4e0d8",
+              "primary-fixed": "#c8e8d0",
+              "surface-tint": "#4a7c59",
+              "surface-container": "#f0ece4",
+              "on-tertiary": "#ffffff",
+              "on-background": "#2e3230",
+              "error": "#b83230",
+              "tertiary-container": "#c4a66a",
+              "surface": "#faf6f0",
+              "surface-bright": "#faf6f0",
+              "surface-container-lowest": "#ffffff",
+              "secondary-container": "#f0e8db",
+              "on-secondary-fixed-variant": "#4a4538",
+              "on-surface-variant": "#4a4e4a",
+              "on-primary-fixed-variant": "#2a6038",
+              "surface-container-high": "#eae6de",
+              "on-primary": "#ffffff",
+              "inverse-surface": "#2e3230",
+              "outline-variant": "#c4c8bc",
+              "outline": "#74796e",
+              "on-tertiary-container": "#554020",
+              "on-primary-container": "#d8f0de",
+              "tertiary": "#705c30",
+              "primary": "#4a7c59",
+              "secondary": "#6b6358",
+              "tertiary-fixed": "#f8e0a8",
+              "on-secondary-fixed": "#1e1a13",
+              "on-surface": "#2e3230",
+              "surface-container-low": "#f5f1ea",
+              "surface-dim": "#dbd7cf",
+              "on-secondary": "#ffffff"
+            },
+            fontFamily: {
+              "headline": ["Literata"],
+              "body": ["Nunito Sans"],
+              "label": ["Nunito Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background-color: #faf6f0;
+            color: #2e3230;
+        }
+        .serif-text {
+            font-family: 'Literata', serif;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar Navigation Shell -->
+<nav class="bg-stone-950 dark:bg-black text-stone-400 font-['Nunito_Sans'] font-medium text-sm docked full-width top-0 border-b border-stone-800 dark:border-stone-900 shadow-sm flex justify-between items-center w-full px-6 h-14 fixed z-50">
+<div class="flex items-center gap-8">
+<span class="font-['Literata'] text-xl font-bold text-[#4a7c59]">MyProductSchool</span>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-[#4a7c59] border-b-2 border-[#4a7c59] pb-1" href="#">Dashboard</a>
+<a class="text-stone-400 hover:text-stone-200 transition-colors" href="#">Practice</a>
+<a class="text-stone-400 hover:text-stone-200 transition-colors" href="#">Interview Prep</a>
+<a class="text-stone-400 hover:text-stone-200 transition-colors" href="#">Domain</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-3">
+<button class="material-symbols-outlined hover:bg-stone-900/50 transition-all p-2 rounded-full" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined hover:bg-stone-900/50 transition-all p-2 rounded-full" data-icon="settings">settings</button>
+</div>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full border border-stone-800" data-alt="Close up portrait of a smiling user" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7nPEjuNnUPaxg1Mp17AWijkGP7ldKQZQGs0jl8U1uhkEZ1H_PZIEkov41ZB6bkB5TCAjX35IKVKV1OUyF7sRIawGoY57vy2Pvk6YmBUtIRagwPuOpNxy0kLm5sKmf6y_JYf9LhnnFWUJyg6PdUeLM2lu9V0YA54NfdRv7lEpSViVhIkYoGl5EOViDiN3PhuPQnhSPsNyukfxTb_7Y5zM3q1NLbt7S-8oXBDb2fOrsVr7mxYpTt9lZRo2K6KhzaLLvgwUpKfE_lkI"/>
+</div>
+</nav>
+<main class="pt-24 pb-20 px-6 max-w-7xl mx-auto">
+<!-- Hero Section -->
+<section class="grid lg:grid-cols-2 gap-12 items-center mb-32">
+<div class="space-y-8">
+<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-tertiary/10 text-tertiary font-bold text-xs tracking-wider uppercase">
+<span class="material-symbols-outlined text-sm" data-icon="auto_awesome">auto_awesome</span>
+                    Introducing Luma AI
+                </div>
+<h1 class="serif-text text-5xl md:text-7xl font-bold leading-tight text-on-surface">
+                    The <span class="text-primary italic">LeetCode</span> for Product Sense.
+                </h1>
+<p class="text-lg md:text-xl text-on-surface-variant max-w-xl leading-relaxed">
+                    Master product management interviews with Luma, your AI coach. Practice product design, execution, and strategy questions with real-time feedback.
+                </p>
+<div class="flex flex-wrap gap-4">
+<button class="px-8 py-4 bg-primary text-on-primary rounded-xl font-bold hover:opacity-90 transition-all shadow-lg active:scale-95 flex items-center gap-2">
+                        Get Started Free
+                        <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<button class="px-8 py-4 bg-surface-container-high text-primary border border-outline-variant/30 rounded-xl font-bold hover:bg-surface-container-highest transition-all active:scale-95">
+                        View Sample Questions
+                    </button>
+</div>
+</div>
+<!-- Bento Card Visual -->
+<div class="grid grid-cols-6 grid-rows-6 gap-4 h-[500px]">
+<div class="col-span-4 row-span-3 bg-white rounded-xl shadow-[0_4px_20px_rgba(46,50,48,0.06)] p-6 flex flex-col justify-between border border-outline-variant/10">
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+</div>
+<div class="text-right">
+<p class="text-xs font-bold text-tertiary">LUMA COACHING</p>
+<p class="text-sm text-on-surface-variant">Active Session</p>
+</div>
+</div>
+<div>
+<p class="text-on-surface font-medium italic">"How would you improve the Google Maps discovery experience for tourists?"</p>
+<div class="mt-4 flex gap-2">
+<span class="px-2 py-1 rounded bg-surface-container text-[10px] font-bold">PRODUCT DESIGN</span>
+<span class="px-2 py-1 rounded bg-surface-container text-[10px] font-bold">STRATEGY</span>
+</div>
+</div>
+</div>
+<div class="col-span-2 row-span-4 bg-primary text-on-primary rounded-xl p-6 flex flex-col items-center justify-center text-center gap-4 shadow-xl">
+<span class="material-symbols-outlined text-4xl" data-icon="trending_up">trending_up</span>
+<p class="text-4xl font-bold">94%</p>
+<p class="text-xs font-medium leading-tight">Avg. confidence score increase after 10 sessions</p>
+</div>
+<div class="col-span-4 row-span-3 bg-tertiary-container text-on-tertiary-container rounded-xl p-6 overflow-hidden relative">
+<p class="font-bold text-xl serif-text mb-2">Product 75</p>
+<p class="text-sm opacity-90">The ultimate curriculum for senior roles.</p>
+<div class="mt-4 space-y-2">
+<div class="h-2 w-full bg-white/20 rounded-full">
+<div class="h-full w-2/3 bg-white rounded-full"></div>
+</div>
+<p class="text-[10px] font-bold text-right">48/75 COMPLETE</p>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-20 transform rotate-12">
+<span class="material-symbols-outlined text-9xl" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="col-span-2 row-span-2 bg-surface-container-highest rounded-xl p-4 flex items-center justify-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="forum">forum</span>
+<div class="h-8 w-1 bg-primary/20 rounded-full"></div>
+<p class="text-xs font-bold">Real-time Feedback</p>
+</div>
+</div>
+</section>
+<!-- Company Tag Cloud -->
+<section class="mb-32 text-center">
+<p class="text-sm font-bold text-stone-500 uppercase tracking-[0.2em] mb-8">Land your dream role at top companies</p>
+<div class="flex flex-wrap justify-center gap-y-8 gap-x-12 opacity-60 grayscale hover:grayscale-0 transition-all duration-700">
+<div class="flex items-center gap-2 text-2xl font-bold text-on-surface">
+<span class="material-symbols-outlined" data-icon="rocket_launch">rocket_launch</span> Meta
+                </div>
+<div class="flex items-center gap-2 text-2xl font-bold text-on-surface">
+<span class="material-symbols-outlined" data-icon="search">search</span> Google
+                </div>
+<div class="flex items-center gap-2 text-2xl font-bold text-on-surface">
+<span class="material-symbols-outlined" data-icon="pentagon">pentagon</span> Figma
+                </div>
+<div class="flex items-center gap-2 text-2xl font-bold text-on-surface">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span> Shopify
+                </div>
+<div class="flex items-center gap-2 text-2xl font-bold text-on-surface">
+<span class="material-symbols-outlined" data-icon="play_circle">play_circle</span> Netflix
+                </div>
+<div class="flex items-center gap-2 text-2xl font-bold text-on-surface">
+<span class="material-symbols-outlined" data-icon="mail">mail</span> Slack
+                </div>
+</div>
+</section>
+<!-- Product 75 Teaser -->
+<section class="bg-surface-container rounded-3xl p-8 md:p-16 mb-32 border border-outline-variant/20 relative overflow-hidden">
+<div class="grid lg:grid-cols-2 gap-12 relative z-10">
+<div>
+<h2 class="serif-text text-4xl font-bold mb-6 text-on-surface">The "Product 75" Challenge</h2>
+<p class="text-on-surface-variant leading-relaxed mb-8">
+                        The most curated list of 75 questions you need to master to pass any product interview. From RCA to Estimation and Strategy, we've mapped out the entire high-performance curriculum.
+                    </p>
+<ul class="space-y-4 mb-8">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="task_alt" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+<span class="font-medium text-on-surface">15 Product Design Deep-dives</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="task_alt" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+<span class="font-medium text-on-surface">10 Market Sizing &amp; Estimation Drills</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="task_alt" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+<span class="font-medium text-on-surface">20 Root Cause Analysis Scenarios</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="task_alt" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+<span class="font-medium text-on-surface">30 Product Strategy Case Studies</span>
+</li>
+</ul>
+<button class="bg-primary text-on-primary px-8 py-3 rounded-xl font-bold shadow-md hover:translate-y-[-2px] transition-transform">Start the Challenge</button>
+</div>
+<div class="space-y-4">
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-outline-variant/20 flex justify-between items-center group hover:border-primary transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center font-bold text-primary">01</div>
+<div>
+<p class="font-bold text-on-surface">Design an Elevator for the Blind</p>
+<p class="text-xs text-on-surface-variant">Product Design • HARD</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors" data-icon="play_arrow" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-outline-variant/20 flex justify-between items-center group hover:border-primary transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center font-bold text-primary">02</div>
+<div>
+<p class="font-bold text-on-surface">Uber's Revenue is Down 20%</p>
+<p class="text-xs text-on-surface-variant">Execution • RCA • MEDIUM</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors" data-icon="play_arrow" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-outline-variant/20 flex justify-between items-center group hover:border-primary transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center font-bold text-primary">03</div>
+<div>
+<p class="font-bold text-on-surface">Market Size of Pianos in NYC</p>
+<p class="text-xs text-on-surface-variant">Estimation • EASY</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors" data-icon="play_arrow" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+</div>
+<!-- Decorative circle -->
+<div class="absolute -bottom-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
+</section>
+<!-- Pricing Tiers -->
+<section class="mb-32">
+<div class="text-center mb-16">
+<h2 class="serif-text text-4xl font-bold mb-4 text-on-surface">Invest in your career</h2>
+<p class="text-on-surface-variant">Choose the plan that fits your interview timeline.</p>
+</div>
+<div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+<!-- Free Tier -->
+<div class="bg-white p-10 rounded-3xl border border-outline-variant/20 shadow-sm flex flex-col hover:shadow-md transition-shadow">
+<div class="mb-8">
+<h3 class="font-bold text-xl mb-2 text-on-surface">Standard</h3>
+<div class="flex items-baseline gap-1">
+<span class="text-4xl font-bold text-on-surface">$0</span>
+<span class="text-on-surface-variant text-sm">/month</span>
+</div>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="check">check</span>
+                            3 AI Practice Sessions / Week
+                        </li>
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="check">check</span>
+                            Daily "Quick-Fire" Question
+                        </li>
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="check">check</span>
+                            Community Discussion Access
+                        </li>
+<li class="flex items-center gap-3 opacity-40">
+<span class="material-symbols-outlined text-sm" data-icon="close">close</span>
+                            Full Product 75 Curriculum
+                        </li>
+</ul>
+<button class="w-full py-4 border-2 border-primary text-primary rounded-xl font-bold hover:bg-primary/5 transition-colors">Start Free</button>
+</div>
+<!-- Pro Tier -->
+<div class="bg-stone-950 text-stone-200 p-10 rounded-3xl border border-stone-800 shadow-2xl flex flex-col relative overflow-hidden">
+<div class="absolute top-4 right-4 bg-primary text-on-primary text-[10px] font-bold px-2 py-1 rounded">MOST POPULAR</div>
+<div class="mb-8">
+<h3 class="font-bold text-xl mb-2 text-white">Pro</h3>
+<div class="flex items-baseline gap-1 text-white">
+<span class="text-4xl font-bold">$29</span>
+<span class="text-stone-400 text-sm">/month</span>
+</div>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+                            Unlimited AI Practice Sessions
+                        </li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+                            Full "Product 75" Challenge
+                        </li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+                            Advanced Framework Hints
+                        </li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+                            Mock Interview Peer Matching
+                        </li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+                            Priority Support
+                        </li>
+</ul>
+<button class="w-full py-4 bg-primary text-on-primary rounded-xl font-bold shadow-lg hover:bg-primary-container transition-colors">Get Pro Access</button>
+</div>
+</div>
+</section>
+</main>
+<!-- SideNavBar Simulation for AI Coach -->
+<aside class="bg-[#faf6f0] dark:bg-stone-900 text-[#4a7c59] font-['Nunito_Sans'] text-sm fixed right-0 top-14 bottom-0 flex flex-col z-40 w-80 border-l border-stone-200 dark:border-stone-800 shadow-xl translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+<div class="p-6 border-b border-stone-200 dark:border-stone-800 flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl" data-icon="smart_toy">smart_toy</span>
+</div>
+<div>
+<p class="font-['Literata'] font-semibold text-[#705c30]">Luma AI</p>
+<p class="text-stone-500 text-xs">Product Sense Coach</p>
+</div>
+</div>
+<div class="flex-grow py-6 px-4 space-y-2">
+<div class="bg-[#4a7c59]/10 text-[#4a7c59] font-bold rounded-xl px-4 py-3 flex items-center gap-3">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+                AI Coach Luma
+            </div>
+<div class="text-stone-500 hover:text-[#4a7c59] hover:bg-stone-100 dark:hover:bg-stone-800 px-4 py-3 rounded-xl flex items-center gap-3 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="lightbulb">lightbulb</span>
+                Hints
+            </div>
+<div class="text-stone-500 hover:text-[#4a7c59] hover:bg-stone-100 dark:hover:bg-stone-800 px-4 py-3 rounded-xl flex items-center gap-3 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+                Solutions
+            </div>
+<div class="text-stone-500 hover:text-[#4a7c59] hover:bg-stone-100 dark:hover:bg-stone-800 px-4 py-3 rounded-xl flex items-center gap-3 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+                Feedback
+            </div>
+</div>
+<div class="p-6 mt-auto border-t border-stone-200 dark:border-stone-800 space-y-4">
+<button class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2">
+                Ask Luma
+            </button>
+<div class="text-stone-500 hover:text-[#4a7c59] px-4 py-2 flex items-center gap-3 text-xs transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-sm" data-icon="help">help</span>
+                Support
+            </div>
+</div>
+</aside>
+<footer class="bg-stone-950 text-stone-500 py-12 px-6 border-t border-stone-800">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex items-center gap-2">
+<span class="font-['Literata'] text-xl font-bold text-[#4a7c59]">MyProductSchool</span>
+<span class="text-stone-700 mx-2">|</span>
+<p class="text-xs">© 2024 Product Prep Inc.</p>
+</div>
+<div class="flex gap-8 text-sm">
+<a class="hover:text-stone-300" href="#">Privacy</a>
+<a class="hover:text-stone-300" href="#">Terms</a>
+<a class="hover:text-stone-300" href="#">Affiliates</a>
+<a class="hover:text-stone-300" href="#">Careers</a>
+</div>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Post-Submission Review | Terra Engineering</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&amp;family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "inverse-primary": "#8ecf9e",
+              "background": "#faf6f0",
+              "on-secondary-container": "#5e5548",
+              "surface-variant": "#e4e0d8",
+              "error-container": "#ffdad8",
+              "on-tertiary-fixed-variant": "#554020",
+              "inverse-on-surface": "#f5f0e8",
+              "on-error": "#ffffff",
+              "primary-fixed-dim": "#8ecf9e",
+              "on-tertiary-fixed": "#221a05",
+              "tertiary-fixed-dim": "#dcc48e",
+              "secondary-fixed": "#f0e8db",
+              "surface-container-highest": "#e4e0d8",
+              "primary-fixed": "#c8e8d0",
+              "secondary-fixed-dim": "#d4ccbf",
+              "primary-container": "#78a886",
+              "on-primary-fixed": "#002110",
+              "on-error-container": "#690005",
+              "tertiary-container": "#c4a66a",
+              "surface": "#faf6f0",
+              "surface-bright": "#faf6f0",
+              "on-tertiary": "#ffffff",
+              "on-background": "#2e3230",
+              "error": "#b83230",
+              "surface-tint": "#4a7c59",
+              "surface-container": "#f0ece4",
+              "on-secondary-fixed-variant": "#4a4538",
+              "surface-container-high": "#eae6de",
+              "on-surface-variant": "#4a4e4a",
+              "on-primary-fixed-variant": "#2a6038",
+              "surface-container-lowest": "#ffffff",
+              "secondary-container": "#f0e8db",
+              "outline-variant": "#c4c8bc",
+              "outline": "#74796e",
+              "on-tertiary-container": "#554020",
+              "on-primary-container": "#d8f0de",
+              "on-primary": "#ffffff",
+              "inverse-surface": "#2e3230",
+              "primary": "#4a7c59",
+              "tertiary": "#705c30",
+              "on-surface": "#2e3230",
+              "tertiary-fixed": "#f8e0a8",
+              "on-secondary-fixed": "#1e1a13",
+              "surface-dim": "#dbd7cf",
+              "on-secondary": "#ffffff",
+              "surface-container-low": "#f5f1ea",
+              "secondary": "#6b6358"
+            },
+            fontFamily: {
+              "headline": ["Literata"],
+              "body": ["Nunito Sans"],
+              "label": ["Nunito Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Nunito Sans', sans-serif; background-color: #faf6f0; }
+        h1, h2, h3, h4 { font-family: 'Literata', serif; }
+    </style>
+</head>
+<body class="text-on-background bg-background min-h-screen">
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-stone-50/90 backdrop-blur-md border-b border-stone-200 shadow-sm">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-emerald-900 tracking-tight">Terra Engineering</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-stone-600 font-medium hover:text-emerald-600 transition-colors" href="#">Dashboard</a>
+<a class="text-emerald-700 font-bold border-b-2 border-emerald-700 pb-1" href="#">Practice</a>
+<a class="text-stone-600 font-medium hover:text-emerald-600 transition-colors" href="#">Interview Prep</a>
+<a class="text-stone-600 font-medium hover:text-emerald-600 transition-colors" href="#">Domain</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface-container rounded-full border-none focus:ring-2 focus:ring-primary w-64 text-sm" placeholder="Search resources..." type="text"/>
+</div>
+<button class="p-2 hover:bg-stone-100 rounded-lg transition-all text-stone-600">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 hover:bg-stone-100 rounded-lg transition-all text-stone-600">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-primary-container flex items-center justify-center overflow-hidden">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="User profile avatar icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4D714-U315cZrpQVmTYV_EDTRFCSROFDAXn7MwEldBw1jjIOYa7Wc4jruTFIKfFz9hgKCZNaKvFI_GBzK0Ly0TQxance7381FVPBtUZHIGe9ZuNs8mugvcdPrSVovc7cRpeFQd09AOif8bcQSklZnFVG10OmHnLdHerYEcbmHMOgf9JyZ_l4XVd2RpniQ3CZunzSt5jiwgQv3B684YTOEizcLdy1IIfjGoDh8nRTQ-HCzqQFzT6o6gLe61bWNt__S8a6Kejy3i8g"/>
+</div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="pt-16 min-h-screen flex relative">
+<!-- Left Column: Sticky Side-Drawer (Case Context) -->
+<aside class="w-[30%] min-w-[320px] sticky top-16 h-[calc(100vh-64px)] bg-surface-container-low border-r border-outline-variant/30 flex flex-col transition-all duration-300 overflow-hidden" id="side-drawer">
+<div class="p-6 overflow-y-auto flex-1 custom-scrollbar">
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-2xl font-bold text-on-surface">Case Context</h2>
+<button class="p-1.5 hover:bg-surface-variant rounded-lg transition-all text-primary">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+</div>
+<div class="space-y-8">
+<!-- Scenario Card -->
+<section>
+<h3 class="text-sm font-bold uppercase tracking-widest text-secondary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">description</span>
+                            Scenario Text
+                        </h3>
+<div class="bg-surface p-5 rounded-xl border border-outline-variant/20 shadow-sm">
+<p class="text-on-surface-variant leading-relaxed font-body">
+                                Terra Engineering is developing a "Green Grid" infrastructure. You are tasked with designing a distributed sensor network that monitors soil moisture levels across 5,000 hectares. 
+                                <br/><br/>
+                                The primary challenge is power efficiency and intermittent connectivity in remote forested regions. You must propose a framework that balances data latency with battery longevity.
+                            </p>
+</div>
+</section>
+<!-- Framework Bar -->
+<section>
+<h3 class="text-sm font-bold uppercase tracking-widest text-secondary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">architecture</span>
+                            Framework Parameters
+                        </h3>
+<div class="space-y-4">
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-xs font-bold text-on-surface-variant">
+<span>Scalability</span>
+<span>85%</span>
+</div>
+<div class="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[85%] rounded-full"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-xs font-bold text-on-surface-variant">
+<span>Resilience</span>
+<span>92%</span>
+</div>
+<div class="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[92%] rounded-full"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-xs font-bold text-on-surface-variant">
+<span>Cost Efficiency</span>
+<span>60%</span>
+</div>
+<div class="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-tertiary w-[60%] rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Core Metrics -->
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-primary-container/20 p-4 rounded-xl border border-primary/10">
+<span class="block text-xs font-bold text-primary mb-1">Complexity</span>
+<span class="text-lg font-bold text-on-surface">High</span>
+</div>
+<div class="bg-secondary-container/30 p-4 rounded-xl border border-secondary/10">
+<span class="block text-xs font-bold text-secondary mb-1">Priority</span>
+<span class="text-lg font-bold text-on-surface">Critical</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-6 bg-surface-container-high border-t border-outline-variant/20">
+<button class="w-full py-3 px-4 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all">
+<span class="material-symbols-outlined">restart_alt</span>
+                    Re-attempt Challenge
+                </button>
+</div>
+</aside>
+<!-- Right Column: Main Review Content -->
+<section class="flex-1 p-8 md:p-12 max-w-5xl mx-auto">
+<!-- Header Summary -->
+<div class="mb-12">
+<div class="flex items-center gap-3 text-emerald-800 mb-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-bold text-sm uppercase tracking-widest">Submission Completed</span>
+</div>
+<h1 class="text-4xl md:text-5xl font-bold text-on-background mb-4">Post-Submission Review</h1>
+<p class="text-on-surface-variant text-lg max-w-2xl leading-relaxed">
+                    Great work on the "Green Grid" architectural challenge. Here is a detailed breakdown of your performance based on the Terra Engineering standards.
+                </p>
+</div>
+<!-- Bento Grid: Score Summary -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+<!-- Overall Score -->
+<div class="md:col-span-2 bg-white/60 p-8 rounded-[1.5rem] border border-emerald-100 flex items-center gap-8 shadow-sm">
+<div class="relative w-32 h-32 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-stone-100" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-primary" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" stroke-dasharray="364.4" stroke-dashoffset="65.6" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-3xl font-bold text-on-surface">82</span>
+<span class="text-[10px] font-bold text-secondary uppercase">Overall</span>
+</div>
+</div>
+<div>
+<h3 class="text-2xl font-bold text-on-surface mb-2">Expert Rating</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-4">
+                            Your solution demonstrates advanced knowledge of LoRaWAN protocols and low-power mesh topology.
+                        </p>
+<div class="flex gap-2">
+<span class="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full">Systems Thinking</span>
+<span class="px-3 py-1 bg-tertiary/10 text-tertiary text-xs font-bold rounded-full">Architecture</span>
+</div>
+</div>
+</div>
+<!-- Snapshot Stats -->
+<div class="bg-tertiary-container/10 p-8 rounded-[1.5rem] border border-tertiary/10 flex flex-col justify-between shadow-sm">
+<div>
+<span class="material-symbols-outlined text-tertiary text-3xl mb-4">timer</span>
+<h4 class="text-sm font-bold text-secondary uppercase tracking-tighter">Completion Time</h4>
+<p class="text-3xl font-bold text-on-surface">24:12</p>
+</div>
+<p class="text-xs text-on-secondary-container mt-4 font-medium italic">
+                        Faster than 88% of applicants.
+                    </p>
+</div>
+</div>
+<!-- Step-by-Step Breakdown -->
+<div>
+<h2 class="text-2xl font-bold text-on-surface mb-8 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">analytics</span>
+                    Detailed Evaluation
+                </h2>
+<div class="space-y-6">
+<!-- Step Item -->
+<div class="bg-white/40 p-6 rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-all group">
+<div class="flex items-start justify-between">
+<div class="flex gap-6">
+<div class="w-10 h-10 rounded-lg bg-surface flex items-center justify-center border border-outline-variant/30 flex-shrink-0 group-hover:bg-primary-container/20 transition-all">
+<span class="font-bold text-primary">01</span>
+</div>
+<div>
+<h4 class="text-lg font-bold text-on-surface mb-1">Protocol Selection</h4>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-4">
+                                        Evaluation of chosen communication layer for long-range sensor nodes.
+                                    </p>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5 text-emerald-700 font-bold text-xs bg-emerald-50 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-sm">check</span>
+                                            LoRaWAN Optimized
+                                        </div>
+<div class="flex items-center gap-1.5 text-stone-500 font-medium text-xs">
+<span class="material-symbols-outlined text-sm">comment</span>
+                                            2 Expert Notes
+                                        </div>
+</div>
+</div>
+</div>
+<div class="text-right">
+<span class="text-xl font-bold text-on-surface">95/100</span>
+<div class="mt-2 flex justify-end">
+<span class="material-symbols-outlined text-primary">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Step Item -->
+<div class="bg-white/40 p-6 rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-all group">
+<div class="flex items-start justify-between">
+<div class="flex gap-6">
+<div class="w-10 h-10 rounded-lg bg-surface flex items-center justify-center border border-outline-variant/30 flex-shrink-0 group-hover:bg-primary-container/20 transition-all">
+<span class="font-bold text-primary">02</span>
+</div>
+<div>
+<h4 class="text-lg font-bold text-on-surface mb-1">Power Management Strategy</h4>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-4">
+                                        Sleep-cycle implementation and energy harvesting proposal.
+                                    </p>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5 text-tertiary font-bold text-xs bg-tertiary-container/10 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-sm">warning</span>
+                                            High Consumption
+                                        </div>
+<div class="flex items-center gap-1.5 text-stone-500 font-medium text-xs">
+<span class="material-symbols-outlined text-sm">lightbulb</span>
+                                            Suggestion: Pulse Width Modulation
+                                        </div>
+</div>
+</div>
+</div>
+<div class="text-right">
+<span class="text-xl font-bold text-on-surface">62/100</span>
+<div class="mt-2 flex justify-end">
+<span class="material-symbols-outlined text-stone-300">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Step Item -->
+<div class="bg-white/40 p-6 rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-all group">
+<div class="flex items-start justify-between">
+<div class="flex gap-6">
+<div class="w-10 h-10 rounded-lg bg-surface flex items-center justify-center border border-outline-variant/30 flex-shrink-0 group-hover:bg-primary-container/20 transition-all">
+<span class="font-bold text-primary">03</span>
+</div>
+<div>
+<h4 class="text-lg font-bold text-on-surface mb-1">Network Topology</h4>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-4">
+                                        Gateway placement and node redundancy configuration.
+                                    </p>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5 text-emerald-700 font-bold text-xs bg-emerald-50 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-sm">check</span>
+                                            Robust Mesh Design
+                                        </div>
+</div>
+</div>
+</div>
+<div class="text-right">
+<span class="text-xl font-bold text-on-surface">88/100</span>
+<div class="mt-2 flex justify-end">
+<span class="material-symbols-outlined text-stone-300">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Recommendations Area -->
+<div class="mt-16 p-8 bg-emerald-900 rounded-[2rem] text-on-primary-container relative overflow-hidden">
+<div class="absolute top-0 right-0 p-8 opacity-20 transform translate-x-4 -translate-y-4">
+<span class="material-symbols-outlined text-[120px]">psychology</span>
+</div>
+<div class="relative z-10 max-w-xl">
+<h3 class="text-2xl font-bold mb-4">Next Learning Milestones</h3>
+<p class="mb-6 opacity-90 leading-relaxed">
+                        Based on your energy efficiency score, we recommend reviewing our module on "Dynamic Voltage Scaling for IoT".
+                    </p>
+<button class="px-6 py-2.5 bg-background text-emerald-900 rounded-full font-bold hover:bg-on-primary transition-all">
+                        Unlock Advanced Module
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full bg-stone-100 dark:bg-stone-950 border-t border-stone-200 dark:border-stone-800 py-12">
+<div class="max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex flex-col items-center md:items-start">
+<span class="font-serif italic text-lg text-emerald-900">Terra Engineering</span>
+<p class="font-sans text-sm text-stone-500 mt-1">© 2024 Terra Engineering. Rooted in Growth.</p>
+</div>
+<div class="flex gap-8">
+<a class="text-stone-500 hover:text-emerald-600 font-sans text-sm transition-all" href="#">Privacy Policy</a>
+<a class="text-stone-500 hover:text-emerald-600 font-sans text-sm transition-all" href="#">Terms of Service</a>
+<a class="text-stone-500 hover:text-emerald-600 font-sans text-sm transition-all" href="#">Documentation</a>
+<a class="text-stone-500 hover:text-emerald-600 font-sans text-sm transition-all" href="#">Support</a>
+</div>
+</div>
+</footer>
+</body></html>

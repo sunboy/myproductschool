@@ -1,44 +1,35 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Nunito_Sans, Literata } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const nunitoSans = Nunito_Sans({
+  variable: "--font-nunito-sans",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
+const literata = Literata({
+  variable: "--font-literata",
   subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
-  title: "MyProductSchool — Product sense training for engineers",
-  description:
-    "The practice gym for software engineers preparing for PM interviews. Learn frameworks, practice on real scenarios, and get honest feedback from Luma.",
+  title: {
+    default: 'MyProductSchool',
+    template: '%s | MyProductSchool',
+  },
+  description: 'A practice gym for product thinking — for engineers in interviews and on the job.',
+  keywords: ['product sense', 'PM interview prep', 'product thinking', 'software engineers', 'product manager interview'],
   openGraph: {
-    title: "MyProductSchool — Product sense training for engineers",
-    description:
-      "The practice gym for software engineers preparing for PM interviews. Learn frameworks, practice on real scenarios, and get honest feedback from Luma.",
-    url: "https://myproductschool.com",
-    siteName: "MyProductSchool",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "MyProductSchool — Product sense training for engineers",
-      },
-    ],
-    locale: "en_US",
-    type: "website",
+    title: 'MyProductSchool',
+    description: 'A practice gym for product thinking — for engineers in interviews and on the job.',
+    type: 'website',
   },
   twitter: {
-    card: "summary_large_image",
-    title: "MyProductSchool — Product sense training for engineers",
-    description:
-      "The practice gym for software engineers preparing for PM interviews.",
-    images: ["/og-image.png"],
+    card: 'summary_large_image',
+    title: 'MyProductSchool',
+    description: 'A practice gym for product thinking — for engineers in interviews and on the job.',
   },
 };
 
@@ -48,18 +39,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${nunitoSans.variable} ${literata.variable} h-full antialiased`}>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var d=document.documentElement;var m=localStorage.getItem('theme');if(m==='dark'||((!m)&&window.matchMedia('(prefers-color-scheme:dark)').matches)){d.classList.add('dark')}else{d.classList.remove('dark')}}catch(e){}})()`,
-          }}
+        {/* Material Symbols Outlined icon font */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         />
-        <meta name="color-scheme" content="light dark" />
       </head>
-      <body
-        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
-      >
+      <body className="min-h-full flex flex-col bg-background text-on-surface">
         {children}
       </body>
     </html>

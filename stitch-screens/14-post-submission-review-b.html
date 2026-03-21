@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400..900;1,400..900&amp;family=Nunito+Sans:ital,wght@0,200..1000;1,200..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-tertiary-fixed-variant": "#554020",
+            "inverse-on-surface": "#f5f0e8",
+            "primary-fixed-dim": "#8ecf9e",
+            "on-error": "#ffffff",
+            "on-secondary-container": "#5e5548",
+            "inverse-primary": "#8ecf9e",
+            "background": "#faf6f0",
+            "error-container": "#ffdad8",
+            "surface-variant": "#e4e0d8",
+            "tertiary-fixed-dim": "#dcc48e",
+            "on-tertiary-fixed": "#221a05",
+            "primary-container": "#78a886",
+            "on-primary-container": "#d8f0de",
+            "on-primary-fixed": "#002110",
+            "on-error-container": "#690005",
+            "secondary-fixed-dim": "#d4ccbf",
+            "secondary-fixed": "#f0e8db",
+            "surface-container-highest": "#e4e0d8",
+            "primary-fixed": "#c8e8d0",
+            "surface-tint": "#4a7c59",
+            "surface-container": "#f0ece4",
+            "on-tertiary": "#ffffff",
+            "on-background": "#2e3230",
+            "error": "#b83230",
+            "tertiary-container": "#c4a66a",
+            "surface": "#faf6f0",
+            "surface-bright": "#faf6f0",
+            "surface-container-lowest": "#ffffff",
+            "secondary-container": "#f0e8db",
+            "on-secondary-fixed-variant": "#4a4538",
+            "on-surface-variant": "#4a4e4a",
+            "on-primary-fixed-variant": "#2a6038",
+            "surface-container-high": "#eae6de",
+            "on-primary": "#ffffff",
+            "inverse-surface": "#2e3230",
+            "outline-variant": "#c4c8bc",
+            "outline": "#74796e",
+            "on-tertiary-container": "#554020",
+            "tertiary": "#705c30",
+            "primary": "#4a7c59",
+            "secondary": "#6b6358",
+            "tertiary-fixed": "#f8e0a8",
+            "on-secondary-fixed": "#1e1a13",
+            "on-surface": "#2e3230",
+            "surface-container-low": "#f5f1ea",
+            "surface-dim": "#dbd7cf",
+            "on-secondary": "#ffffff"
+          },
+          fontFamily: {
+            "headline": ["Literata"],
+            "body": ["Nunito Sans"],
+            "label": ["Nunito Sans"]
+          },
+          borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      line-height: 1;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+    }
+    body {
+      background-color: #faf6f0;
+    }
+  </style>
+</head>
+<body class="font-body text-on-surface antialiased overflow-hidden">
+<!-- TopNavBar -->
+<nav class="bg-white font-body font-medium text-sm border-b border-outline-variant shadow-sm fixed top-0 left-0 right-0 z-50 flex justify-between items-center w-full px-6 h-14">
+<div class="flex items-center gap-8">
+<span class="font-headline text-xl font-bold text-primary">MyProductSchool</span>
+<div class="hidden md:flex gap-6">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-primary border-b-2 border-primary pb-1" href="#">Practice</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Interview Prep</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Domain</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container transition-all rounded-full active:opacity-80 active:scale-[0.99]">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container transition-all rounded-full active:opacity-80 active:scale-[0.99]">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full border border-outline-variant" data-alt="User profile avatar with professional look" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYE6vxMveHr7pVrthB3a7oq1-Ps47h8QOrJYoxauj_PO7cUc9jm0t51xGH9UV3CHmZFKrdOSreyPyd8T3nIzwXVfvFS6E8RSsVI2a4WpTQEZ13WWPdzhdjwLFbYCbZ2BW4SsM-f9A074WsAkxf92RLoGkv295ZlXvk9WQYHseiLJecwTzhNGl369aYlLjyi5oQNFJdpTweuF6jqfwS8O6gOVHyh9vYPNT17BOubuGNLyNdVqN2gX5tlX-T9ukctiB200aNODrDyYA"/>
+</div>
+</nav>
+<!-- SideNavBar (Right Docked) -->
+<aside class="bg-white font-body text-sm fixed right-0 top-14 bottom-0 flex flex-col z-40 w-80 border-l border-outline-variant shadow-lg transition-transform duration-300 ease-in-out">
+<div class="p-6 border-b border-outline-variant">
+<div class="flex items-center gap-3 mb-1">
+<div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">smart_toy</span>
+</div>
+<h2 class="font-headline font-semibold text-tertiary text-lg">Luma AI</h2>
+</div>
+<p class="text-on-surface-variant text-xs">Product Sense Coach</p>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-2">
+<button class="w-full flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all rounded-xl">
+<span class="material-symbols-outlined">smart_toy</span>
+<span>AI Coach Luma</span>
+</button>
+<button class="w-full flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all rounded-xl">
+<span class="material-symbols-outlined">lightbulb</span>
+<span>Hints</span>
+</button>
+<button class="w-full flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all rounded-xl">
+<span class="material-symbols-outlined">check_circle</span>
+<span>Solutions</span>
+</button>
+<button class="w-full flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary font-bold rounded-xl">
+<span class="material-symbols-outlined">forum</span>
+<span>Feedback</span>
+</button>
+</div>
+<div class="p-4 mt-auto border-t border-outline-variant">
+<button class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-md hover:bg-primary/90 transition-all mb-4">
+        Ask Luma
+      </button>
+<button class="w-full flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-primary transition-all">
+<span class="material-symbols-outlined">help</span>
+<span>Support</span>
+</button>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="fixed inset-0 top-14 right-80 flex overflow-hidden bg-background">
+<!-- Left Column: Case Content -->
+<section class="flex-1 h-full overflow-y-auto p-8 border-r border-outline-variant">
+<div class="max-w-2xl mx-auto space-y-8">
+<header>
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tertiary/10 text-tertiary text-xs font-bold uppercase tracking-wider mb-4">
+<span class="material-symbols-outlined text-sm">history_edu</span>
+            Post-Submission Review
+          </div>
+<h1 class="font-headline text-4xl text-on-surface leading-tight">Design a Peer-to-Peer Car Sharing Experience for Rural Communities</h1>
+<p class="text-on-surface-variant mt-4 leading-relaxed">Review your approach and the AI's breakdown of your product sense across the core dimensions of the framework.</p>
+</header>
+<!-- Bento Grid Stats -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-white p-6 rounded-xl border border-outline-variant">
+<div class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Time Spent</div>
+<div class="text-3xl font-headline text-on-surface">42:15</div>
+<div class="text-primary text-xs mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">bolt</span>
+              Faster than 68% of peers
+            </div>
+</div>
+<div class="bg-white p-6 rounded-xl border border-outline-variant">
+<div class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Confidence Score</div>
+<div class="text-3xl font-headline text-on-surface">High</div>
+<div class="text-on-surface-variant text-xs mt-2">Self-reported during drafting</div>
+</div>
+</div>
+<!-- Case Description Card -->
+<div class="bg-white rounded-xl overflow-hidden border border-outline-variant shadow-sm">
+<div class="h-40 w-full relative">
+<img alt="Rural landscape" class="w-full h-full object-cover opacity-80" data-alt="Quiet rural road with mountains at sunset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsUXSwM24I3QWiexYU1hAHsrIwTFZiW86-e4-N7IS-CLsDsqf45ug7Wvn94yXdYG9ZCOj4tGgfR3X9uEGHpspAA3wQoFXIPZrYD9aUIBTSNK8LdRwVvo_p3B8RnCjjHVqHN8wLTkzH2-_hk2UntVkpAguAjYIFpg2snKrPGqUUti89fzlotPmJQpLoGAkkfsNEVSqW0SkyNYkF5QPBp9LUx_WYWMu-IsB2eMeuEy8AgoPIx6gsslCVn-TcHK50hfVqOkwOibYIRuA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-white to-transparent"></div>
+</div>
+<div class="p-6">
+<h3 class="font-headline text-xl text-on-surface mb-2">The Challenge Context</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed">
+              In rural areas, public transport is often non-existent. You were tasked to explore how a peer-to-peer sharing model could solve mobility issues without the urban density requirements of typical ride-sharing apps.
+            </p>
+</div>
+</div>
+<div class="space-y-4">
+<h4 class="font-headline text-lg text-on-surface">Your Full Submission</h4>
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant text-on-surface-variant text-sm leading-relaxed italic">
+            "I started by defining the goal as maximizing mobility for low-income rural families. The primary user segments are elderly residents who can't drive and young workers who don't own vehicles. The pain points identified were distance to medical facilities and lack of grocery delivery. My solution focuses on a community-trust based verification system..."
+          </div>
+</div>
+</div>
+</section>
+<!-- Right Column: Feedback/Review Pane -->
+<section class="w-[500px] h-full overflow-y-auto bg-surface-container-low p-6">
+<div class="space-y-6">
+<!-- Score Summary -->
+<div class="bg-white p-6 rounded-xl border border-outline-variant shadow-md">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-headline text-xl text-on-surface">Score Summary</h3>
+<div class="text-2xl font-bold text-primary bg-primary/10 px-3 py-1 rounded-lg">84/100</div>
+</div>
+<div class="space-y-4">
+<div class="space-y-1">
+<div class="flex justify-between text-xs font-bold text-on-surface-variant uppercase tracking-tighter">
+<span>Structure</span>
+<span class="text-primary">Great</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[90%]"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-xs font-bold text-on-surface-variant uppercase tracking-tighter">
+<span>User Focus</span>
+<span class="text-primary">Good</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[75%]"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-xs font-bold text-on-surface-variant uppercase tracking-tighter">
+<span>Prioritization</span>
+<span class="text-tertiary">Needs Work</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-tertiary w-[60%]"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-xs font-bold text-on-surface-variant uppercase tracking-tighter">
+<span>Product Vision</span>
+<span class="text-primary">Exceptional</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[95%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Feedback Accordion Section -->
+<div class="space-y-4">
+<h4 class="font-headline text-lg text-on-surface px-1">Step-by-Step Breakdown</h4>
+<!-- Accordion Item: Active -->
+<div class="bg-white border border-outline-variant rounded-xl overflow-hidden ring-1 ring-primary/30">
+<div class="flex items-center justify-between p-4 bg-surface-container-low cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="w-6 h-6 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">01</span>
+<span class="font-bold text-on-surface">Clarify &amp; Goal</span>
+</div>
+<span class="material-symbols-outlined text-primary">expand_less</span>
+</div>
+<div class="p-6 space-y-6">
+<div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase block mb-2">Your Draft</span>
+<p class="text-sm text-on-surface leading-relaxed border-l-2 border-outline pl-4 italic">
+                  "I want to increase rural mobility via sharing, focusing on non-drivers. The goal is accessibility."
+                </p>
+</div>
+<div class="space-y-4">
+<div class="bg-primary/5 p-4 rounded-lg border border-primary/20">
+<div class="flex items-center gap-2 text-primary mb-2 font-bold text-xs uppercase tracking-wide">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    What Worked
+                  </div>
+<ul class="text-sm text-on-surface-variant space-y-2 list-disc pl-4">
+<li>Clear identification of the mobility gap in rural areas.</li>
+<li>Specific focus on the elderly as a core demographic.</li>
+</ul>
+</div>
+<div class="bg-error/5 p-4 rounded-lg border border-error/20">
+<div class="flex items-center gap-2 text-error mb-2 font-bold text-xs uppercase tracking-wide">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">error</span>
+                    Missing Pieces
+                  </div>
+<ul class="text-sm text-on-surface-variant space-y-2 list-disc pl-4">
+<li>Lack of specific success metrics (KPIs) for "accessibility".</li>
+<li>Didn't clarify potential constraints like internet availability.</li>
+</ul>
+</div>
+</div>
+<button class="w-full py-3 px-4 rounded-xl border border-outline-variant hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2 text-on-surface-variant font-bold text-sm">
+<span class="material-symbols-outlined text-lg">refresh</span>
+                Redo this step
+              </button>
+</div>
+</div>
+<!-- Accordion Item: Inactive -->
+<div class="bg-white border border-outline-variant rounded-xl overflow-hidden">
+<div class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="w-6 h-6 rounded-full bg-surface-container-highest text-on-surface-variant text-[10px] font-black flex items-center justify-center">02</span>
+<span class="font-bold">Identify Users</span>
+</div>
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+<!-- Accordion Item: Inactive -->
+<div class="bg-white border border-outline-variant rounded-xl overflow-hidden">
+<div class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="w-6 h-6 rounded-full bg-surface-container-highest text-on-surface-variant text-[10px] font-black flex items-center justify-center">03</span>
+<span class="font-bold">Pain Points</span>
+</div>
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</body></html>

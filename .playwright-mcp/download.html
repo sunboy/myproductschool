@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Terra - MyProductSchool</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:wght@400;600;700;800&amp;family=Nunito+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary": "#ffffff",
+                        "surface-container": "#f0ece4",
+                        "on-surface-variant": "#4a4e4a",
+                        "on-primary-fixed": "#002110",
+                        "surface-container-highest": "#e4e0d8",
+                        "surface-bright": "#faf6f0",
+                        "surface-dim": "#dbd7cf",
+                        "surface-container-low": "#f5f1ea",
+                        "on-secondary-fixed": "#1e1a13",
+                        "on-primary-container": "#d8f0de",
+                        "tertiary-fixed": "#f8e0a8",
+                        "tertiary-fixed-dim": "#dcc48e",
+                        "on-tertiary-container": "#554020",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#f0e8db",
+                        "inverse-on-surface": "#f5f0e8",
+                        "surface-tint": "#4a7c59",
+                        "primary-fixed": "#c8e8d0",
+                        "on-secondary-fixed-variant": "#4a4538",
+                        "on-error-container": "#690005",
+                        "error-container": "#ffdad8",
+                        "on-background": "#2e3230",
+                        "primary": "#4a7c59",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#2a6038",
+                        "tertiary-container": "#c4a66a",
+                        "surface-container-high": "#eae6de",
+                        "secondary-fixed": "#f0e8db",
+                        "inverse-surface": "#2e3230",
+                        "background": "#faf6f0",
+                        "primary-container": "#78a886",
+                        "on-tertiary-fixed": "#221a05",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e4e0d8",
+                        "error": "#b83230",
+                        "secondary": "#6b6358",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#8ecf9e",
+                        "outline": "#74796e",
+                        "on-tertiary-fixed-variant": "#554020",
+                        "surface": "#faf6f0",
+                        "on-surface": "#2e3230",
+                        "outline-variant": "#c4c8bc",
+                        "on-secondary-container": "#5e5548",
+                        "inverse-primary": "#8ecf9e",
+                        "tertiary": "#705c30",
+                        "secondary-fixed-dim": "#d4ccbf"
+                    },
+                    fontFamily: {
+                        "headline": ["Literata"],
+                        "body": ["Nunito Sans"],
+                        "label": ["Nunito Sans"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #faf6f0;
+            font-family: 'Nunito Sans', sans-serif;
+            color: #2e3230;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #4a7c59 0%, #705c30 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background selection:bg-primary-fixed">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#faf6f0] dark:bg-stone-950 border-b border-stone-200 dark:border-stone-800 shadow-sm dark:shadow-none">
+<div class="flex items-center gap-8">
+<span class="font-['Literata'] text-2xl font-bold text-[#4a7c59] dark:text-[#6fb082] tracking-tight">Terra</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-[#4a7c59] dark:text-[#6fb082] font-bold border-b-2 border-[#4a7c59] font-['Literata'] text-lg h-16 flex items-center" href="#">Dashboard</a>
+<a class="text-stone-600 dark:text-stone-400 font-['Nunito_Sans'] font-medium hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors px-3 py-1 rounded-lg" href="#">Ecologies</a>
+<a class="text-stone-600 dark:text-stone-400 font-['Nunito_Sans'] font-medium hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors px-3 py-1 rounded-lg" href="#">Analytics</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden sm:flex items-center bg-surface-container-low rounded-full px-4 py-1.5 border border-outline-variant/30">
+<span class="material-symbols-outlined text-outline text-sm mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-48 font-body" placeholder="Search challenges..." type="text"/>
+</div>
+<button class="p-2 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors rounded-full">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container shadow-sm">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="User profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuzeJm2d2LwO-qJlMY-yXzQQUq-2NQNvCboXTfcFJM2Gt1h3QojAyZW8nySz8da-5xcZaY8QZwg8alrC_P1acflWO9kLX3deoLszKWuJ6bKQ75qESF2VVVfKnh8pjDrqYkQnQWNgeq-Syef9T5eaaKrEAIOFwVDCEKAEJBsAoiACwOFMYOY3SwnxDDRhW-LowqPGzg9G7XhpCxnPN7lTqahWZ5Bb_aaOxputuxINQEHwGFWYS8Z1DDXl3qda6mlGqzKFQz0Lcx3Bc"/>
+</div>
+</div>
+</header>
+<main class="pt-16 min-h-screen">
+<!-- Hero Section -->
+<section class="relative px-6 pt-20 pb-16 overflow-hidden">
+<!-- Background Decorative Elements -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full -z-10 opacity-30">
+<div class="absolute top-20 left-10 w-64 h-64 bg-primary-container rounded-full blur-[100px]"></div>
+<div class="absolute bottom-10 right-10 w-96 h-96 bg-tertiary-fixed rounded-full blur-[120px]"></div>
+</div>
+<div class="max-w-4xl mx-auto text-center space-y-8">
+<!-- Luma AI Mark -->
+<div class="flex justify-center mb-6">
+<div class="w-16 h-16 bg-surface-container-highest rounded-2xl flex items-center justify-center shadow-soft relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-tr from-primary/20 to-tertiary/20"></div>
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">eco</span>
+</div>
+</div>
+<h1 class="font-headline text-5xl md:text-7xl font-bold tracking-tight text-on-background leading-tight">
+                    LeetCode for <br/><span class="text-primary italic">Product Sense</span>
+</h1>
+<p class="font-body text-xl text-secondary max-w-2xl mx-auto leading-relaxed">
+                    The structured way to master product intuition. Solve daily challenges from world-class product teams and grow your rooted warmth in design.
+                </p>
+<div class="flex flex-wrap justify-center gap-4 pt-4">
+<button class="px-8 py-4 bg-primary text-on-primary rounded-xl font-bold shadow-lg hover:bg-primary-container hover:text-on-primary-fixed transition-all active:scale-95">
+                        Start Free Training
+                    </button>
+<button class="px-8 py-4 bg-surface-container-low text-primary border border-primary/20 rounded-xl font-bold hover:bg-surface-container-high transition-all active:scale-95">
+                        Explore Syllabus
+                    </button>
+</div>
+<!-- Company Tag Cloud -->
+<div class="pt-12 space-y-4">
+<p class="font-label text-xs uppercase tracking-widest text-outline font-bold">Trusted by Designers at</p>
+<div class="flex flex-wrap justify-center gap-3">
+<span class="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-full font-label text-sm flex items-center gap-2 border border-outline-variant/20">
+<span class="w-2 h-2 rounded-full bg-primary"></span> Meta
+                        </span>
+<span class="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-full font-label text-sm flex items-center gap-2 border border-outline-variant/20">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span> Google
+                        </span>
+<span class="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-full font-label text-sm flex items-center gap-2 border border-outline-variant/20">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span> Airbnb
+                        </span>
+<span class="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-full font-label text-sm flex items-center gap-2 border border-outline-variant/20">
+<span class="w-2 h-2 rounded-full bg-tertiary-container"></span> Stripe
+                        </span>
+</div>
+</div>
+</div>
+</section>
+<!-- Bento Grid / Content Section -->
+<section class="max-w-7xl mx-auto px-6 py-20">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Gated Challenge Teaser (Bento Main) -->
+<div class="md:col-span-8 bg-surface-container-low rounded-xl overflow-hidden shadow-sm relative group">
+<div class="absolute inset-0 z-0">
+<img alt="Nature Pattern" class="w-full h-full object-cover opacity-20 transition-transform duration-700 group-hover:scale-105" data-alt="Abstract organic green forest patterns" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVf3dhiOW7EikaodlcPM_QXBWLGpl443eifTh-87XzVP4_XjXdNQFSuFLEDpxvMaTDjh8fR7M1peHWDafQUgqZct21lMjXZIk5qKotens6k670rTYLvBWB6xp8WgPvJ_bNuveW0h3Ugrry1P-jWGSX495KS8QRjGzc13vrH8jvx8_UbxOXbz-P5p4LLglx7tekPMvy5Q4LNmJmHc09xZPhj4N78iz59vCqIQKZkWqLuPCCB64AWMzPwhTu_BfcA1O6wukxhfRXa2g"/>
+</div>
+<div class="relative z-10 p-10 h-full flex flex-col justify-between">
+<div>
+<div class="flex items-center gap-3 mb-6">
+<span class="px-3 py-1 bg-tertiary-container text-on-tertiary-container rounded-full text-xs font-bold uppercase tracking-wider">Today's Challenge</span>
+<span class="text-outline font-label text-sm">#142 • Difficulty: Hard</span>
+</div>
+<h3 class="font-headline text-3xl font-bold mb-4 text-on-background">Designing for Earthly Harmony</h3>
+<p class="font-body text-secondary text-lg max-w-xl">How would you redesign the Airbnb booking experience for a zero-carbon footprint traveler? Balance convenience with ecological impact.</p>
+</div>
+<!-- Gated Blur Effect -->
+<div class="mt-8 relative">
+<div class="glass-card rounded-xl p-8 space-y-4 relative overflow-hidden">
+<div class="flex items-center gap-4 blur-sm select-none opacity-40">
+<div class="w-12 h-12 rounded-full bg-surface-dim"></div>
+<div class="space-y-2 flex-1">
+<div class="h-4 bg-surface-dim rounded w-3/4"></div>
+<div class="h-4 bg-surface-dim rounded w-1/2"></div>
+</div>
+</div>
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-surface-container/10 backdrop-blur-[2px]">
+<span class="material-symbols-outlined text-primary text-4xl mb-2">lock</span>
+<p class="font-headline font-bold text-lg text-on-background">Join MyProductSchool to unlock</p>
+<p class="font-body text-sm text-secondary mb-4">500+ real-world PM challenges and expert solutions.</p>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-full font-bold text-sm shadow-md hover:scale-105 transition-transform">
+                                        Unlock Challenge
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Stats / Secondary Card -->
+<div class="md:col-span-4 space-y-6">
+<div class="bg-primary-container/20 rounded-xl p-8 border border-primary/10 h-1/2 flex flex-col justify-center">
+<span class="material-symbols-outlined text-primary text-4xl mb-4">analytics</span>
+<h4 class="font-headline text-2xl font-bold text-on-primary-fixed">12k+ Problems Solved</h4>
+<p class="font-body text-on-primary-fixed-variant mt-2">Our community is growing. Master the sense with real peer data.</p>
+</div>
+<div class="bg-tertiary-container/20 rounded-xl p-8 border border-tertiary/10 h-1/2 flex flex-col justify-center">
+<span class="material-symbols-outlined text-tertiary text-4xl mb-4">military_tech</span>
+<h4 class="font-headline text-2xl font-bold text-on-tertiary-container">Expert Feedback</h4>
+<p class="font-body text-on-tertiary-container mt-2">Get reviewed by senior product leaders from top tech giants.</p>
+</div>
+</div>
+<!-- Bottom Feature Row -->
+<div class="md:col-span-4 bg-surface-container-highest rounded-xl p-8 hover:shadow-lg transition-shadow">
+<div class="flex items-center justify-between mb-6">
+<div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+</div>
+<h5 class="font-headline text-xl font-bold mb-3">Intuition Engine</h5>
+<p class="font-body text-secondary text-sm leading-relaxed">Our AI-driven engine maps your product decisions to core competencies like execution, strategy, and empathy.</p>
+</div>
+<div class="md:col-span-4 bg-surface-container-highest rounded-xl p-8 hover:shadow-lg transition-shadow">
+<div class="flex items-center justify-between mb-6">
+<div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-tertiary shadow-sm">
+<span class="material-symbols-outlined">group</span>
+</div>
+</div>
+<h5 class="font-headline text-xl font-bold mb-3">Peer Reviews</h5>
+<p class="font-body text-secondary text-sm leading-relaxed">Learn by critiquing. Review submissions from others and see how they approach the same organic challenges.</p>
+</div>
+<div class="md:col-span-4 bg-surface-container-highest rounded-xl p-8 hover:shadow-lg transition-shadow">
+<div class="flex items-center justify-between mb-6">
+<div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+</div>
+<h5 class="font-headline text-xl font-bold mb-3">Portfolio Vault</h5>
+<p class="font-body text-secondary text-sm leading-relaxed">Every solution you write is saved into a professional case study vault you can share with future employers.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer-like Bottom Component -->
+<footer class="bg-surface-dim border-t border-outline-variant/30 py-16 px-6">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12">
+<div class="space-y-4 max-w-sm">
+<span class="font-['Literata'] text-2xl font-bold text-[#4a7c59] tracking-tight">Terra Organic</span>
+<p class="font-body text-secondary text-sm leading-relaxed">Building the next generation of product thinkers through rooted warmth and structured practice. Join the school today.</p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-12">
+<div class="space-y-4">
+<h6 class="font-headline font-bold text-on-background">Explore</h6>
+<ul class="font-body text-sm space-y-2 text-secondary">
+<li class="hover:text-primary cursor-pointer transition-colors">Curriculum</li>
+<li class="hover:text-primary cursor-pointer transition-colors">Free Challenges</li>
+<li class="hover:text-primary cursor-pointer transition-colors">Pricing</li>
+</ul>
+</div>
+<div class="space-y-4">
+<h6 class="font-headline font-bold text-on-background">Community</h6>
+<ul class="font-body text-sm space-y-2 text-secondary">
+<li class="hover:text-primary cursor-pointer transition-colors">Slack Group</li>
+<li class="hover:text-primary cursor-pointer transition-colors">Success Stories</li>
+<li class="hover:text-primary cursor-pointer transition-colors">Mentors</li>
+</ul>
+</div>
+<div class="space-y-4">
+<h6 class="font-headline font-bold text-on-background">Resources</h6>
+<ul class="font-body text-sm space-y-2 text-secondary">
+<li class="hover:text-primary cursor-pointer transition-colors">Blog</li>
+<li class="hover:text-primary cursor-pointer transition-colors">Guides</li>
+<li class="hover:text-primary cursor-pointer transition-colors">Help Center</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto pt-16 mt-16 border-t border-outline-variant/20 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="font-body text-xs text-outline">© 2024 Terra Organic Education. Rooted in growth.</p>
+<div class="flex gap-6">
+<span class="material-symbols-outlined text-outline hover:text-primary cursor-pointer transition-colors">public</span>
+<span class="material-symbols-outlined text-outline hover:text-primary cursor-pointer transition-colors">mail</span>
+<span class="material-symbols-outlined text-outline hover:text-primary cursor-pointer transition-colors">share</span>
+</div>
+</div>
+</footer>
+<!-- Floating Action Button - Contextual for Landing -->
+<div class="fixed bottom-8 right-8 z-50">
+<button class="flex items-center gap-3 bg-primary text-white px-6 py-4 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all group">
+<span class="material-symbols-outlined">chat</span>
+<span class="font-bold font-label">Talk to a Mentor</span>
+</button>
+</div>
+</body></html>

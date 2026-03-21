@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400..900;1,400..900&amp;family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary": "#ffffff",
+              "surface-container": "#f0ece4",
+              "on-surface-variant": "#4a4e4a",
+              "on-primary-fixed": "#002110",
+              "surface-container-highest": "#e4e0d8",
+              "surface-bright": "#faf6f0",
+              "surface-dim": "#dbd7cf",
+              "surface-container-low": "#f5f1ea",
+              "on-secondary-fixed": "#1e1a13",
+              "on-primary-container": "#d8f0de",
+              "tertiary-fixed": "#f8e0a8",
+              "tertiary-fixed-dim": "#dcc48e",
+              "on-tertiary-container": "#554020",
+              "surface-container-lowest": "#ffffff",
+              "secondary-container": "#f0e8db",
+              "inverse-on-surface": "#f5f0e8",
+              "surface-tint": "#4a7c59",
+              "primary-fixed": "#c8e8d0",
+              "on-secondary-fixed-variant": "#4a4538",
+              "on-error-container": "#690005",
+              "error-container": "#ffdad8",
+              "on-background": "#2e3230",
+              "primary": "#4a7c59",
+              "on-secondary": "#ffffff",
+              "on-primary-fixed-variant": "#2a6038",
+              "tertiary-container": "#c4a66a",
+              "surface-container-high": "#eae6de",
+              "secondary-fixed": "#f0e8db",
+              "inverse-surface": "#2e3230",
+              "background": "#faf6f0",
+              "primary-container": "#78a886",
+              "on-tertiary-fixed": "#221a05",
+              "on-error": "#ffffff",
+              "surface": "#faf6f0",
+              "on-surface": "#2e3230",
+              "outline": "#74796e",
+              "on-tertiary-fixed-variant": "#554020",
+              "surface-variant": "#e4e0d8",
+              "error": "#b83230",
+              "secondary": "#6b6358",
+              "on-tertiary": "#ffffff",
+              "primary-fixed-dim": "#8ecf9e",
+              "outline-variant": "#c4c8bc",
+              "on-secondary-container": "#5e5548",
+              "inverse-primary": "#8ecf9e",
+              "tertiary": "#705c30",
+              "secondary-fixed-dim": "#d4ccbf"
+            },
+            fontFamily: {
+              "headline": ["Literata"],
+              "body": ["Nunito Sans"],
+              "label": ["Nunito Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #faf6f0;
+            color: #2e3230;
+            font-family: 'Nunito Sans', sans-serif;
+        }
+        .text-headline { font-family: 'Literata', serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#faf6f0] dark:bg-stone-950 border-b border-stone-200 dark:border-stone-800 shadow-sm dark:shadow-none">
+<div class="flex items-center gap-8">
+<span class="font-['Literata'] text-2xl font-bold text-[#4a7c59] dark:text-[#6fb082] tracking-tight">Terra</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-stone-600 dark:text-stone-400 font-['Nunito_Sans'] hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors px-3 py-1 rounded-lg" href="#">Home</a>
+<a class="text-stone-600 dark:text-stone-400 font-['Nunito_Sans'] hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors px-3 py-1 rounded-lg" href="#">Ecologies</a>
+<a class="text-[#4a7c59] dark:text-[#6fb082] font-bold border-b-2 border-[#4a7c59] px-1" href="#">Pricing</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full text-sm focus:ring-2 focus:ring-primary w-64" placeholder="Search eco-systems..." type="text"/>
+</div>
+<button class="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors active:opacity-80">
+<span class="material-symbols-outlined text-[#4a7c59]">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors active:opacity-80">
+<span class="material-symbols-outlined text-[#4a7c59]">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary-fixed overflow-hidden border border-outline-variant">
+<img alt="User profile" data-alt="Professional user profile avatar headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzAU-C4Tpg7_G69jP5q-wqCCV1J4FvbjjNZWv5ksqcwMCBsqvbaMjQ4SQMfaPHmgDiMbLzb79yLnRfnW8Ia4SVUvjz_9X0ghyGhWNC4pOzjN2IUsexOY91FZWM22WV5ag14OP95vo1ux-i1n46XLBIkq5A34SNbh2Wsc2pJqYn1fulQlW45EfM09akAXIoU6kWsuRE41OhwiO2_LmjEYsrFubt8YfSTsJaNV6BWI34yLd8lXd1ypsGBxWbpTY5cYu-12mfDasfe4w"/>
+</div>
+</div>
+</header>
+<main class="pt-32 pb-24 px-6 max-w-7xl mx-auto">
+<!-- Pricing Section -->
+<section class="text-center mb-24">
+<span class="text-tertiary font-bold tracking-widest text-xs uppercase mb-4 block">Investment in Nature</span>
+<h1 class="text-4xl md:text-5xl font-headline font-bold text-on-surface mb-6">Choose Your Growth Path</h1>
+<p class="text-on-surface-variant max-w-2xl mx-auto text-lg leading-relaxed">
+                Whether you're starting a small herb garden or managing a regional reforestation effort, we have a plan rooted in your success.
+            </p>
+<div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+<!-- Seed Plan -->
+<div class="bg-surface-container-low p-8 rounded-xl border border-transparent flex flex-col items-start transition-all hover:shadow-lg">
+<span class="material-symbols-outlined text-primary mb-4 text-3xl">eco</span>
+<h3 class="text-xl font-headline font-bold mb-2">Seed</h3>
+<div class="flex items-baseline gap-1 mb-6">
+<span class="text-4xl font-bold">$0</span>
+<span class="text-on-surface-variant">/mo</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-8 text-left">Ideal for individual enthusiasts exploring organic principles at home.</p>
+<ul class="space-y-4 mb-10 w-full">
+<li class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+<span>Up to 3 small ecologies</span>
+</li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+<span>Basic soil analytics</span>
+</li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+<span>Community forum access</span>
+</li>
+</ul>
+<button class="mt-auto w-full py-3 border border-primary text-primary font-bold rounded-lg hover:bg-primary/5 transition-colors">Start Growing</button>
+</div>
+<!-- Pro Plan (Elevated) -->
+<div class="bg-primary text-on-primary p-8 rounded-xl border border-primary shadow-xl scale-105 flex flex-col items-start relative overflow-hidden">
+<div class="absolute top-0 right-0 bg-tertiary px-4 py-1 rounded-bl-lg text-[10px] font-bold uppercase tracking-tighter">Most Rooted</div>
+<span class="material-symbols-outlined text-primary-fixed mb-4 text-3xl">forest</span>
+<h3 class="text-xl font-headline font-bold mb-2">Sapling</h3>
+<div class="flex items-baseline gap-1 mb-6">
+<span class="text-4xl font-bold">$24</span>
+<span class="text-primary-fixed">/mo</span>
+</div>
+<p class="text-primary-container text-sm mb-8 text-left">For serious growers needing advanced tracking and professional yield optimization.</p>
+<ul class="space-y-4 mb-10 w-full">
+<li class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-primary-fixed text-sm">check_circle</span>
+<span>Unlimited local ecologies</span>
+</li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-primary-fixed text-sm">check_circle</span>
+<span>Advanced micro-climate data</span>
+</li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-primary-fixed text-sm">check_circle</span>
+<span>Yield prediction AI</span>
+</li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-primary-fixed text-sm">check_circle</span>
+<span>Priority specialist support</span>
+</li>
+</ul>
+<button class="mt-auto w-full py-3 bg-surface-container-lowest text-primary font-bold rounded-lg shadow-sm hover:bg-white transition-all active:scale-95">Go Pro Now</button>
+</div>
+<!-- Enterprise Plan -->
+<div class="bg-surface-container-low p-8 rounded-xl border border-transparent flex flex-col items-start transition-all hover:shadow-lg">
+<span class="material-symbols-outlined text-primary mb-4 text-3xl">nature</span>
+<h3 class="text-xl font-headline font-bold mb-2">Oak</h3>
+<div class="flex items-baseline gap-1 mb-6">
+<span class="text-4xl font-bold">$99</span>
+<span class="text-on-surface-variant">/mo</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-8 text-left">Complete ecosystem management for organic farms and environmental organizations.</p>
+<ul class="space-y-4 mb-10 w-full">
+<li class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+<span>Multi-user collaboration</span>
+</li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+<span>IoT sensor integration</span>
+</li>
+<li class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+<span>Custom ecology reporting</span>
+</li>
+</ul>
+<button class="mt-auto w-full py-3 border border-primary text-primary font-bold rounded-lg hover:bg-primary/5 transition-colors">Contact Sales</button>
+</div>
+</div>
+</section>
+<!-- Testimonials (Social Proof) -->
+<section class="mb-32">
+<h2 class="text-3xl font-headline font-bold text-center mb-16">Trusted by Earth's Stewards</h2>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Testimonial 1 -->
+<div class="bg-white p-8 rounded-xl border border-outline-variant/30 flex flex-col shadow-sm">
+<div class="flex gap-1 mb-4">
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="text-on-surface italic mb-8 leading-relaxed">"Terra has completely transformed how I track my soil health. The data is clear, the interface is warm, and my garden has never looked more vibrant."</p>
+<div class="mt-auto flex items-center gap-4">
+<img class="w-12 h-12 rounded-full border-2 border-primary-fixed" data-alt="Portrait of a female botanist smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgWWO7v77z0KSIPXBdcc_Ztigq1XBiF9Wq3d1CASza--3nM9pAg6bPWg_NeusdqNcydzxvUUVHCKZ5nCeSw3NeGlpp66FjLAsdCXI_9cM7S2dIffZsPCr5VkX2TkPzjnsu9nuS0iw2DRK1n9hRFOM4Rwrhc5TBF2K81AFgjpWr-QHDSZz9ryJVAoeCxk9F8Nbshu8dJfEWJh0zOTDh7F0bPXhCy6lG2BCoef5Jic1R8D0885PX8BI6SH6uVIA0_dslmg3MmFAG44U"/>
+<div>
+<p class="font-bold text-sm">Elena Marone</p>
+<p class="text-on-surface-variant text-xs">Community Gardener, Tuscany</p>
+</div>
+</div>
+</div>
+<!-- Testimonial 2 -->
+<div class="bg-white p-8 rounded-xl border border-outline-variant/30 flex flex-col shadow-sm">
+<div class="flex gap-1 mb-4">
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="text-on-surface italic mb-8 leading-relaxed">"We manage 40 acres of organic orchard. Having the Oak plan allowed our whole team to stay synced on irrigation cycles during the drought."</p>
+<div class="mt-auto flex items-center gap-4">
+<img class="w-12 h-12 rounded-full border-2 border-primary-fixed" data-alt="Portrait of a smiling male farmer in a sun hat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB97bedoS0Xmi_WVnzY6j3SQPa4RbWY26czSHFcD4N1cBPw6nk4JuenqrLFNPJKpBo7X3NvcLQcFT34RFVJovpQknRpMmJFciMl8ft2I4H8teqqQpPXsxoSZaYPPutN4Yu4__1Bn4zFgL3CD_UnKsxU33hFYRXWN-TTQRgb7nY0fPxyJHub3Fz6ihdkBxMJt9ZlAzRjrVw6aKe2HHLMzLO4mve_99bHWWZO46Lu05c_p9T8btjiFyo9ffCOEpncp3729wZLJJQwRcc"/>
+<div>
+<p class="font-bold text-sm">Marcus Chen</p>
+<p class="text-on-surface-variant text-xs">Farm Director, Golden Roots</p>
+</div>
+</div>
+</div>
+<!-- Testimonial 3 -->
+<div class="bg-white p-8 rounded-xl border border-outline-variant/30 flex flex-col shadow-sm">
+<div class="flex gap-1 mb-4">
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 0;">star</span>
+</div>
+<p class="text-on-surface italic mb-8 leading-relaxed">"The yield prediction tool in the Sapling plan is surprisingly accurate. It helped us prepare our farmers' market stock weeks in advance."</p>
+<div class="mt-auto flex items-center gap-4">
+<img class="w-12 h-12 rounded-full border-2 border-primary-fixed" data-alt="Close up portrait of a smiling woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqSbpd5nXTQO7IIco1wj5AVKi45sUR-43sbwB8njpKc99L5rpJOI3C75ccARfV_IHeKsX1ZT8zF3RCAQVDvu3wo8NptxPYqvWtYOAzUx7XJNAyNHhqoxUqJBtDQ8C4CUK9DNGYKpmUZ6Qlk9XM-rHGox-5Izv8GwOy9eGpUdkqgY8E6vqaOEthQ-KG0bOfZGxdU3iOw8pwzUlgJXDGrdfSALCCWvB2MnQXlpfKgzKe3YE8cxAMkDVyDSZStOdIYgvw_oeOEa9T480"/>
+<div>
+<p class="font-bold text-sm">Sarah Jenkins</p>
+<p class="text-on-surface-variant text-xs">Homestead Specialist</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- FAQ Accordion -->
+<section class="max-w-3xl mx-auto">
+<h2 class="text-3xl font-headline font-bold text-center mb-12">Common Questions</h2>
+<div class="space-y-4">
+<details class="group bg-surface-container rounded-xl overflow-hidden" open="">
+<summary class="flex justify-between items-center p-6 cursor-pointer list-none">
+<span class="font-bold text-on-surface">Can I change my plan later?</span>
+<span class="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="p-6 pt-0 text-on-surface-variant leading-relaxed">
+                        Yes, you can upgrade or downgrade your plan at any time. Changes take effect at the start of your next billing cycle. If you upgrade, the pro features are unlocked immediately.
+                    </div>
+</details>
+<details class="group bg-surface-container rounded-xl overflow-hidden">
+<summary class="flex justify-between items-center p-6 cursor-pointer list-none">
+<span class="font-bold text-on-surface">What kind of sensors do you support?</span>
+<span class="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="p-6 pt-0 text-on-surface-variant leading-relaxed">
+                        Terra Oak plan supports all major LoRaWAN and WiFi-enabled soil sensors, including brands like GrowPoint, Meter Group, and custom Arduino/Raspberry Pi setups via our API.
+                    </div>
+</details>
+<details class="group bg-surface-container rounded-xl overflow-hidden">
+<summary class="flex justify-between items-center p-6 cursor-pointer list-none">
+<span class="font-bold text-on-surface">Is my data shared with third parties?</span>
+<span class="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="p-6 pt-0 text-on-surface-variant leading-relaxed">
+                        Your ecology data is private to you. We do not sell data. Aggregated, anonymized data may be used to improve our regional growth models, but only if you opt-in to the Open Earth initiative.
+                    </div>
+</details>
+<details class="group bg-surface-container rounded-xl overflow-hidden">
+<summary class="flex justify-between items-center p-6 cursor-pointer list-none">
+<span class="font-bold text-on-surface">Do you offer educational discounts?</span>
+<span class="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="p-6 pt-0 text-on-surface-variant leading-relaxed">
+                        We offer a 50% discount for registered students, schools, and non-profit community gardens. Please contact our support team with your credentials to apply.
+                    </div>
+</details>
+</div>
+</section>
+<!-- Final CTA -->
+<section class="mt-32 bg-secondary-container rounded-3xl p-12 text-center relative overflow-hidden">
+<div class="absolute inset-0 opacity-10 pointer-events-none">
+<div class="absolute -top-12 -left-12 w-64 h-64 rounded-full bg-primary-container blur-3xl"></div>
+<div class="absolute -bottom-12 -right-12 w-64 h-64 rounded-full bg-tertiary-container blur-3xl"></div>
+</div>
+<h2 class="text-3xl font-headline font-bold mb-4">Ready to start your journey?</h2>
+<p class="text-on-secondary-container mb-8 max-w-xl mx-auto">Join over 15,000 gardeners and farmers nurturing the planet with data-driven organic care.</p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center">
+<button class="bg-primary text-on-primary px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-xl transition-all active:scale-95">Get Started Free</button>
+<button class="bg-white border border-outline-variant text-on-surface px-8 py-3 rounded-full font-bold hover:bg-stone-50 transition-all">Schedule Demo</button>
+</div>
+</section>
+</main>
+<footer class="bg-surface-dim pt-20 pb-10 px-6">
+<div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+<div class="col-span-1 md:col-span-1">
+<span class="font-['Literata'] text-2xl font-bold text-[#4a7c59] tracking-tight block mb-6">Terra</span>
+<p class="text-sm text-on-surface-variant leading-relaxed">Nurturing the relationship between humans and soil through warmth, data, and organic wisdom.</p>
+</div>
+<div>
+<h4 class="font-bold mb-6 text-sm uppercase tracking-widest text-on-surface">Ecosystem</h4>
+<ul class="space-y-4 text-sm text-on-surface-variant">
+<li><a class="hover:text-primary transition-colors" href="#">Digital Garden</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Yield Tracking</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Soil Analysis</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Pest Management</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-6 text-sm uppercase tracking-widest text-on-surface">Company</h4>
+<ul class="space-y-4 text-sm text-on-surface-variant">
+<li><a class="hover:text-primary transition-colors" href="#">About Roots</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Sustainablity</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Careers</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Contact</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-6 text-sm uppercase tracking-widest text-on-surface">Community</h4>
+<ul class="space-y-4 text-sm text-on-surface-variant">
+<li><a class="hover:text-primary transition-colors" href="#">Success Stories</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Forum</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Open Earth API</a></li>
+</ul>
+</div>
+</div>
+<div class="max-w-7xl mx-auto pt-8 border-t border-outline-variant/30 flex flex-col md:flex-row justify-between items-center gap-6">
+<p class="text-xs text-on-surface-variant">© 2024 Terra Organic Ecosystems. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="text-on-surface-variant hover:text-primary" href="#"><span class="material-symbols-outlined text-xl">language</span></a>
+<a class="text-on-surface-variant hover:text-primary" href="#"><span class="material-symbols-outlined text-xl">share</span></a>
+<a class="text-on-surface-variant hover:text-primary" href="#"><span class="material-symbols-outlined text-xl">public</span></a>
+</div>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Product 75 Challenge | MyProductSchool</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,600;0,700;1,400&amp;family=Nunito+Sans:wght@300;400;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container": "#f0ece4",
+              "on-background": "#2e3230",
+              "on-primary": "#ffffff",
+              "on-primary-container": "#d8f0de",
+              "surface-container-highest": "#e4e0d8",
+              "secondary-container": "#f0e8db",
+              "outline": "#74796e",
+              "on-error": "#ffffff",
+              "on-secondary-fixed": "#1e1a13",
+              "inverse-primary": "#8ecf9e",
+              "primary-fixed": "#c8e8d0",
+              "on-secondary": "#ffffff",
+              "inverse-surface": "#2e3230",
+              "surface-container-high": "#eae6de",
+              "on-tertiary-fixed": "#221a05",
+              "on-error-container": "#690005",
+              "surface-container-low": "#f5f1ea",
+              "surface": "#faf6f0",
+              "error": "#b83230",
+              "on-surface-variant": "#4a4e4a",
+              "on-secondary-container": "#5e5548",
+              "tertiary-fixed": "#f8e0a8",
+              "inverse-on-surface": "#f5f0e8",
+              "tertiary-container": "#c4a66a",
+              "surface-container-lowest": "#ffffff",
+              "secondary-fixed": "#f0e8db",
+              "tertiary": "#705c30",
+              "on-surface": "#2e3230",
+              "on-primary-fixed-variant": "#2a6038",
+              "background": "#faf6f0",
+              "surface-tint": "#4a7c59",
+              "on-tertiary-container": "#554020",
+              "error-container": "#ffdad8",
+              "primary-container": "#78a886",
+              "surface-dim": "#dbd7cf",
+              "on-tertiary": "#ffffff",
+              "tertiary-fixed-dim": "#dcc48e",
+              "secondary-fixed-dim": "#d4ccbf",
+              "on-tertiary-fixed-variant": "#554020",
+              "on-secondary-fixed-variant": "#4a4538",
+              "surface-bright": "#faf6f0",
+              "primary": "#4a7c59",
+              "surface-variant": "#e4e0d8",
+              "primary-fixed-dim": "#8ecf9e",
+              "outline-variant": "#c4c8bc",
+              "on-primary-fixed": "#002110",
+              "secondary": "#6b6358"
+            },
+            fontFamily: {
+              "headline": ["Literata"],
+              "body": ["Nunito Sans"],
+              "label": ["Nunito Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        vertical-align: middle;
+      }
+      body {
+        background-color: #faf6f0;
+        color: #2e3230;
+      }
+    </style>
+</head>
+<body class="font-body antialiased">
+<!-- TopNavBar -->
+<header class="bg-[#faf6f0] dark:bg-stone-950 border-b border-stone-200/50 dark:border-stone-800 shadow-sm dark:shadow-none sticky top-0 z-50">
+<nav class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+<div class="font-['Literata'] text-xl font-bold text-emerald-900 dark:text-emerald-100">MyProductSchool</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-['Nunito_Sans'] font-medium text-sm tracking-tight text-stone-600 dark:text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-200 transition-colors duration-200" href="#">Dashboard</a>
+<a class="font-['Nunito_Sans'] font-medium text-sm tracking-tight text-emerald-700 dark:text-emerald-400 border-b-2 border-emerald-700 dark:border-emerald-400 pb-1" href="#">Practice</a>
+<a class="font-['Nunito_Sans'] font-medium text-sm tracking-tight text-stone-600 dark:text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-200 transition-colors duration-200" href="#">Interview Prep</a>
+<a class="font-['Nunito_Sans'] font-medium text-sm tracking-tight text-stone-600 dark:text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-200 transition-colors duration-200" href="#">Domain</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors duration-200">
+<span class="material-symbols-outlined text-stone-600 dark:text-stone-400">account_circle</span>
+</button>
+</div>
+</nav>
+</header>
+<main class="max-w-7xl mx-auto px-6 py-12 md:py-20">
+<!-- Hero Section -->
+<div class="grid lg:grid-cols-2 gap-16 items-start">
+<!-- Left Column: Master the Essentials -->
+<div class="space-y-8">
+<div class="space-y-4">
+<span class="inline-block py-1 px-3 bg-primary-fixed text-on-primary-fixed-variant text-xs font-bold tracking-widest uppercase rounded-full">The Product 75 Challenge</span>
+<h1 class="font-headline text-5xl md:text-6xl text-on-surface leading-tight font-bold">Master the Essentials</h1>
+<p class="text-on-surface-variant text-lg leading-relaxed max-w-xl">
+                        A rigorous 75-day curriculum designed by industry leads to bridge the gap between theory and world-class product execution. Deep dive into strategy, metrics, and technical literacy.
+                    </p>
+</div>
+<!-- ProductIQ Score Preview Card -->
+<div class="bg-surface-container-low p-8 rounded-xl border border-outline-variant/30 relative overflow-hidden">
+<div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="space-y-2">
+<h3 class="font-headline text-xl font-bold text-on-surface">ProductIQ Score</h3>
+<p class="text-sm text-on-surface-variant">Your percentile against 5,000+ PM candidates.</p>
+<div class="pt-4 flex items-baseline gap-2">
+<span class="text-4xl font-bold text-primary">742</span>
+<span class="text-sm font-semibold text-tertiary">Top 15%</span>
+</div>
+</div>
+<div class="h-24 w-40 flex items-end gap-1">
+<div class="w-full bg-primary/20 rounded-t-sm h-[40%]"></div>
+<div class="w-full bg-primary/20 rounded-t-sm h-[60%]"></div>
+<div class="w-full bg-primary/40 rounded-t-sm h-[55%]"></div>
+<div class="w-full bg-primary/60 rounded-t-sm h-[80%]"></div>
+<div class="w-full bg-primary rounded-t-sm h-[95%]"></div>
+<div class="w-full bg-surface-variant rounded-t-sm h-[30%]"></div>
+</div>
+</div>
+<!-- Background accent -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+</div>
+<div class="grid grid-cols-2 gap-6">
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
+<div>
+<p class="font-bold text-on-surface">75 Modules</p>
+<p class="text-xs text-on-surface-variant">Daily precision tasks</p>
+</div>
+</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">groups</span>
+<div>
+<p class="font-bold text-on-surface">Peer Reviews</p>
+<p class="text-xs text-on-surface-variant">Weekly sync sessions</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Challenge List -->
+<div class="space-y-6">
+<div class="flex items-center justify-between px-2">
+<h2 class="font-headline text-2xl font-bold text-on-surface">Core Curriculum</h2>
+<span class="text-sm text-tertiary font-bold">12/75 Completed</span>
+</div>
+<div class="space-y-4">
+<!-- Challenge 1 -->
+<div class="group bg-surface hover:bg-surface-container-lowest border border-outline-variant/50 p-6 rounded-lg transition-all duration-300 cursor-pointer flex items-center justify-between shadow-sm hover:shadow-md">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">analytics</span>
+</div>
+<div>
+<div class="flex items-center gap-3 mb-1">
+<h4 class="font-bold text-on-surface">Market Opportunity Analysis</h4>
+<span class="px-2 py-0.5 rounded bg-surface-container text-[10px] font-extrabold uppercase tracking-wider text-on-surface-variant">Med</span>
+</div>
+<p class="text-sm text-on-surface-variant">Quantify TAM/SAM for a vertical SaaS product.</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary group-hover:translate-x-1 transition-all">arrow_forward</span>
+</div>
+<!-- Challenge 2 -->
+<div class="group bg-surface hover:bg-surface-container-lowest border border-outline-variant/50 p-6 rounded-lg transition-all duration-300 cursor-pointer flex items-center justify-between shadow-sm hover:shadow-md">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">architecture</span>
+</div>
+<div>
+<div class="flex items-center gap-3 mb-1">
+<h4 class="font-bold text-on-surface">Technical Feasibility Check</h4>
+<span class="px-2 py-0.5 rounded bg-primary-fixed text-[10px] font-extrabold uppercase tracking-wider text-on-primary-fixed-variant">Easy</span>
+</div>
+<p class="text-sm text-on-surface-variant">Evaluating API constraints for mobile integration.</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary group-hover:translate-x-1 transition-all">arrow_forward</span>
+</div>
+<!-- Challenge 3 -->
+<div class="group bg-surface hover:bg-surface-container-lowest border border-outline-variant/50 p-6 rounded-lg transition-all duration-300 cursor-pointer flex items-center justify-between shadow-sm hover:shadow-md">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div>
+<div class="flex items-center gap-3 mb-1">
+<h4 class="font-bold text-on-surface">Pricing &amp; Packaging Strategy</h4>
+<span class="px-2 py-0.5 rounded bg-tertiary-fixed text-[10px] font-extrabold uppercase tracking-wider text-on-tertiary-fixed-variant">Hard</span>
+</div>
+<p class="text-sm text-on-surface-variant">Modeling unit economics for a B2C subscription.</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary group-hover:translate-x-1 transition-all">arrow_forward</span>
+</div>
+<!-- Challenge 4 -->
+<div class="group bg-surface hover:bg-surface-container-lowest border border-outline-variant/50 p-6 rounded-lg transition-all duration-300 cursor-pointer flex items-center justify-between shadow-sm hover:shadow-md">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<div>
+<div class="flex items-center gap-3 mb-1">
+<h4 class="font-bold text-on-surface">Root Cause Analysis</h4>
+<span class="px-2 py-0.5 rounded bg-surface-container text-[10px] font-extrabold uppercase tracking-wider text-on-surface-variant">Med</span>
+</div>
+<p class="text-sm text-on-surface-variant">Diagnosing a 15% drop in activation rates.</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary group-hover:translate-x-1 transition-all">arrow_forward</span>
+</div>
+</div>
+<button class="w-full py-4 bg-primary text-on-primary font-bold rounded-lg shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2">
+                    Resume My Path
+                    <span class="material-symbols-outlined text-lg">bolt</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-stone-100 dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 py-12">
+<div class="flex flex-col md:flex-row justify-between items-center px-8 w-full max-w-7xl mx-auto gap-4">
+<div class="font-['Literata'] font-semibold text-stone-900 dark:text-stone-100">MyProductSchool</div>
+<div class="flex flex-wrap justify-center gap-6">
+<a class="font-['Nunito_Sans'] text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors" href="#">Privacy Policy</a>
+<a class="font-['Nunito_Sans'] text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors" href="#">Terms of Service</a>
+<a class="font-['Nunito_Sans'] text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors" href="#">Support</a>
+<a class="font-['Nunito_Sans'] text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors" href="#">Contact</a>
+</div>
+<div class="font-['Nunito_Sans'] text-xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+                © 2024 MyProductSchool. Rooted in Engineering.
+            </div>
+</div>
+</footer>
+</body></html>
