@@ -2,7 +2,7 @@ import { getChallengeById } from '@/lib/data/challenges'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { FeedbackDisplay } from '@/components/challenge/FeedbackDisplay'
-import { MOCK_FEEDBACK } from '@/lib/mock-data'
+import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 
 interface FeedbackPageProps {
   params: Promise<{ id: string }>
@@ -32,9 +32,8 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
 
       <FeedbackDisplay
         feedback={feedback}
-        challengeTitle={challenge.title}
-        attemptId={attempt ?? 'mock'}
-        mode="solo"
+        loading={false}
+        feedbackFull={isMock ? MOCK_FEEDBACK_FULL : undefined}
       />
 
       {/* Actions */}

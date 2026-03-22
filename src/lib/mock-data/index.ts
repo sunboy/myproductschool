@@ -365,53 +365,56 @@ Your task:
 
 export const MOCK_FEEDBACK: LumaFeedbackItem[] = [
   {
-    dimension: 'clarity',
-    score: 7,
-    commentary: 'Your response is well-organized and easy to follow. The problem diagnosis section is particularly clear. Consider tightening the metrics section — the relationship between primary and guardrail metrics could be stated more explicitly.',
-    suggestions: [
-      'State your primary metric first, then explain why it\'s the right one',
-      'Explicitly label which metrics are leading vs lagging indicators',
-    ],
-  },
-  {
-    dimension: 'structure',
+    dimension: 'diagnostic_accuracy',
     score: 8,
-    commentary: 'Strong use of numbered sections following the prompt structure. You\'ve demonstrated a logical flow from problem → diagnosis → solution → measurement. One gap: the trade-off analysis at the end felt rushed compared to the proposal section.',
+    commentary: 'Strong identification of the core retention problem and the user segment most likely to churn. You correctly pointed to the 8% follow rate as a symptom rather than the root cause, which shows good diagnostic instinct.',
     suggestions: [
-      'Give trade-offs the same depth as your proposals',
-      'Consider using a 2x2 matrix or explicit "pros/cons" format for trade-offs',
+      'Segment the diagnosis further by user cohort (new vs returning listeners)',
+      'Explicitly name the root cause hypothesis before proposing solutions',
     ],
   },
   {
-    dimension: 'insight',
+    dimension: 'metric_fluency',
     score: 6,
-    commentary: 'Good observations about the user segments, but the insight depth could be stronger. You identified the "8% follow rate" problem but didn\'t probe what behavior users ARE doing — understanding the gap between browsing and committing is key here.',
+    commentary: 'Good instinct on metric selection but the choices lean too heavily on lagging indicators. Revenue and MAU are outcomes — the stronger signal here is the ratio of browsing sessions to follow actions.',
     suggestions: [
-      'What are users doing instead of following? (passive listening? adding to queue?)',
-      'Consider the job-to-be-done: are users discovering podcasts or browsing entertainment?',
-      'Reference comparable discovery problems in music — how did Spotify solve it there?',
+      'Add DAU/MAU ratio or browse-to-follow conversion as a leading indicator',
+      'Explicitly label which metrics are leading vs lagging in your answer',
     ],
   },
   {
-    dimension: 'feasibility',
+    dimension: 'framing_precision',
     score: 7,
-    commentary: 'Your proposals are technically reasonable and scoped appropriately for a PM context. The personalized recommendation feature is well-thought-out. The "social proof" idea (show friend activity) introduces privacy considerations you should acknowledge.',
+    commentary: 'Framework usage is solid — you implicitly used a jobs-to-be-done framing without naming it. Naming the framework explicitly signals product fluency and makes your reasoning easier to follow.',
     suggestions: [
-      'Acknowledge privacy/trust considerations for social features',
-      'Estimate rough effort level for each proposal (small/medium/large)',
+      'Be explicit about which framework you\'re applying (CIRCLES, JTBD, etc.)',
+      'Structure the problem statement before jumping to diagnosis',
     ],
   },
   {
-    dimension: 'tradeoffs',
-    score: 5,
-    commentary: 'Trade-off analysis is the weakest section. You mentioned "may cannibalize music listening" but didn\'t explore it. In practice, podcast and music consumption patterns differ — this trade-off deserves more nuance.',
+    dimension: 'recommendation_strength',
+    score: 7,
+    commentary: 'Recommendations are directionally right and technically reasonable. The personalized discovery feature is well-scoped. However, the social proof idea lacks acknowledgment of the privacy trade-off it introduces.',
     suggestions: [
-      'For each proposal, name one thing you give up by choosing it',
-      'Consider: algorithmic vs editorial trade-offs in discovery',
-      'Address the speed vs quality trade-off: fast experiment vs high-confidence solution',
+      'For each recommendation, name one thing you give up by choosing it',
+      'Add rough effort estimates (small/medium/large) to signal feasibility awareness',
     ],
   },
 ]
+
+export const MOCK_FEEDBACK_FULL = {
+  overall: "Your response demonstrates solid problem decomposition but lacks metric specificity. The diagnosis is accurate and the recommendations are directionally right, but the gap between good and great here is learning to lead with north star metrics and name your frameworks explicitly.",
+  what_worked: ["Accurate persona identification", "Strategic business goal alignment", "Clear problem-to-solution structure"],
+  what_to_fix: ["Metric selection too vague — specify leading indicators", "Recommendations need clearer prioritization rationale"],
+  dimensions: [
+    { dimension: 'diagnostic_accuracy', score: 8, commentary: "Strong identification of the core retention problem.", suggestions: ["Consider segmenting by user cohort"] },
+    { dimension: 'metric_fluency', score: 6, commentary: "Good instinct but metrics are too lagging-focused.", suggestions: ["Add DAU/MAU ratio as leading indicator"] },
+    { dimension: 'framing_precision', score: 7, commentary: "Framework usage is solid.", suggestions: ["Be more explicit about which framework you're using"] },
+    { dimension: 'recommendation_strength', score: 7, commentary: "Recommendations are directionally right.", suggestions: ["Add implementation timeline estimates"] },
+  ],
+  key_insight: "The gap between good and great here is metric specificity — learn to lead with north star metrics.",
+  percentile: 72,
+}
 
 export const MOCK_COMPANIES: CompanyProfile[] = [
   {

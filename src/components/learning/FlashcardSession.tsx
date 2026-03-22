@@ -101,7 +101,7 @@ export function FlashcardSession({ domain, flashcards, conceptMap }: FlashcardSe
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-lg mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link href="/flashcards" className="p-2 rounded-lg hover:bg-surface-container transition-colors">
@@ -109,16 +109,20 @@ export function FlashcardSession({ domain, flashcards, conceptMap }: FlashcardSe
         </Link>
         <div className="flex-1">
           <h1 className="font-headline font-bold text-on-surface">{domain.title}</h1>
-          <p className="text-sm text-on-surface-variant">{currentIndex + 1} of {flashcards.length}</p>
         </div>
       </div>
 
-      {/* Progress bar */}
-      <div className="h-1.5 bg-surface-container-high rounded-full overflow-hidden">
-        <div
-          className="h-full bg-primary rounded-full transition-all duration-300"
-          style={{ width: `${progress}%` }}
-        />
+      {/* Progress indicator */}
+      <div>
+        <div className="flex justify-between items-center mb-1.5">
+          <span className="text-xs font-label text-on-surface-variant">{currentIndex + 1} / {flashcards.length}</span>
+        </div>
+        <div className="h-1 bg-surface-container-highest rounded-full overflow-hidden">
+          <div
+            className="h-full bg-primary-fixed rounded-full transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
       </div>
 
       {/* Concept label */}

@@ -2,7 +2,7 @@ export type Plan = 'free' | 'pro'
 export type Role = 'user' | 'admin'
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced'
 export type ChallengeMode = 'spotlight' | 'workshop' | 'live' | 'solo'
-export type FeedbackDimension = 'clarity' | 'structure' | 'insight' | 'feasibility' | 'tradeoffs'
+export type FeedbackDimension = 'diagnostic_accuracy' | 'metric_fluency' | 'framing_precision' | 'recommendation_strength'
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing'
 
 export interface Profile {
