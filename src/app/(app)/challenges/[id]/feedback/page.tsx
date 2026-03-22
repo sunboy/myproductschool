@@ -39,8 +39,15 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
       {/* Actions */}
       <div className="flex gap-3 flex-wrap pt-2">
         <Link
-          href={`/challenges/${id}`}
+          href={`/challenges/${id}/diagnosis?attempt=${attempt ?? 'mock'}`}
           className="flex items-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+        >
+          <span className="material-symbols-outlined text-sm">psychology</span>
+          See your diagnosis →
+        </Link>
+        <Link
+          href={`/challenges/${id}`}
+          className="flex items-center gap-2 px-4 py-2.5 bg-surface-container border border-outline-variant text-on-surface rounded-xl text-sm font-medium hover:bg-surface-container-high transition-colors"
         >
           <span className="material-symbols-outlined text-sm">refresh</span>
           Try again

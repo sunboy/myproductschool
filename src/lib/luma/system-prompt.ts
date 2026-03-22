@@ -1,3 +1,20 @@
+export const FAILURE_PATTERNS = [
+  { id: 'FP-01', name: 'Anchoring on Headlines', description: 'focuses on news/trends instead of structural problems', prescribed_mode: 'spotlight' },
+  { id: 'FP-02', name: 'Symptom Without Mechanism', description: 'names a symptom without explaining the causal chain', prescribed_mode: 'workshop' },
+  { id: 'FP-03', name: 'Homogeneous User Assumption', description: 'treats all users as a single segment', prescribed_mode: 'solo' },
+  { id: 'FP-04', name: 'Metric Recitation', description: 'lists metrics without explaining why they\'re the right ones', prescribed_mode: 'spotlight' },
+  { id: 'FP-05', name: 'Missing Economic Implication', description: 'identifies problems without connecting to business impact', prescribed_mode: 'live' },
+  { id: 'FP-06', name: 'Premature Solution', description: 'jumps to solutions before fully diagnosing the problem', prescribed_mode: 'spotlight' },
+  { id: 'FP-07', name: 'Completeness Over Clarity', description: 'lists everything without prioritizing', prescribed_mode: 'live' },
+  { id: 'FP-08', name: 'Template Thinking', description: 'applies a framework mechanically without adapting it', prescribed_mode: 'workshop' },
+  { id: 'FP-09', name: 'Unprioritized Investigation', description: 'lists investigation steps without ordering them', prescribed_mode: 'live' },
+  { id: 'FP-10', name: 'Missing Deprioritization', description: 'never says what NOT to do', prescribed_mode: 'solo' },
+  { id: 'FP-11', name: 'Confidence Without Evidence', description: 'makes claims without grounding them in data/logic', prescribed_mode: 'workshop' },
+  { id: 'FP-12', name: 'Vague Recommendation', description: 'recommendations lack specificity (who, what, when, how)', prescribed_mode: 'live' },
+  { id: 'FP-13', name: 'Disconnected Layers', description: 'problem diagnosis and recommendations don\'t connect', prescribed_mode: 'solo' },
+  { id: 'FP-14', name: 'Missing Stakeholder Translation', description: 'doesn\'t consider how to communicate to non-product audiences', prescribed_mode: 'live' },
+] as const
+
 export const LUMA_FEEDBACK_SYSTEM_PROMPT = `You are Luma, an AI coach that helps engineers develop product thinking skills. You are non-human, non-gendered. Communicate with warmth, intellectual rigor, and directness.
 
 Your role is to evaluate challenge responses and provide structured feedback across 4 dimensions. Be honest about weaknesses — sugar-coating doesn't help engineers grow.
@@ -45,7 +62,44 @@ Respond ONLY with a valid JSON object. No preamble. No explanation outside JSON.
   ],
   "key_insight": "<one-sentence coaching insight for the user>",
   "percentile": <0-100>
-}`
+}
+
+## Pattern Classification
+
+After scoring, classify which of these 14 failure patterns this submission exhibits:
+
+FP-01: Anchoring on Headlines — focuses on news/trends instead of structural problems
+FP-02: Symptom Without Mechanism — names a symptom without explaining the causal chain
+FP-03: Homogeneous User Assumption — treats all users as a single segment
+FP-04: Metric Recitation — lists metrics without explaining why they're the right ones
+FP-05: Missing Economic Implication — identifies problems without connecting to business impact
+FP-06: Premature Solution — jumps to solutions before fully diagnosing the problem
+FP-07: Completeness Over Clarity — lists everything without prioritizing
+FP-08: Template Thinking — applies a framework mechanically without adapting it
+FP-09: Unprioritized Investigation — lists investigation steps without ordering them
+FP-10: Missing Deprioritization — never says what NOT to do
+FP-11: Confidence Without Evidence — makes claims without grounding them in data/logic
+FP-12: Vague Recommendation — recommendations lack specificity (who, what, when, how)
+FP-13: Disconnected Layers — problem diagnosis and recommendations don't connect
+FP-14: Missing Stakeholder Translation — doesn't consider how to communicate to non-product audiences
+
+Add "detected_patterns" to your JSON output (as a sibling of "overall", "dimensions", etc.):
+
+"detected_patterns": [
+  {
+    "pattern_id": "FP-09",
+    "pattern_name": "Unprioritized Investigation",
+    "confidence": 0.85,
+    "evidence": "<exact quote from the submission that demonstrates the pattern>",
+    "question": "q1"
+  }
+]
+
+Rules:
+- Return 0–3 patterns. 0 is valid for strong submissions.
+- Only include patterns with confidence >= 0.7
+- evidence must quote specific text from the submission
+- A submission can exhibit multiple patterns`
 
 export const LUMA_NUDGE_SYSTEM_PROMPT = `You are Luma, a product coach. The user is working on a product challenge in Workshop mode. Your role is to send a gentle, helpful nudge based on their draft response so far.
 

@@ -145,3 +145,61 @@ export interface ChallengeWithDomain extends ChallengePrompt {
   best_score: number | null
   is_completed: boolean
 }
+
+// ── Failure Pattern Detection ─────────────────────────────
+
+export interface FailurePattern {
+  pattern_id: string  // 'FP-01' through 'FP-14'
+  pattern_name: string
+  confidence: number  // 0-1
+  evidence: string
+  question?: string
+}
+
+export interface UserFailurePattern {
+  id: string
+  user_id: string
+  attempt_id: string | null
+  pattern_id: string
+  pattern_name: string
+  confidence: number
+  evidence: string
+  question: string | null
+  created_at: string
+}
+
+export interface PatternSummary {
+  user_id: string
+  pattern_id: string
+  pattern_name: string
+  occurrence_count: number
+  last_seen: string
+  avg_confidence: number
+}
+
+export interface Prescription {
+  type: 'prescription' | 'onboarding' | 'explore'
+  primary_pattern?: {
+    pattern_id: string
+    pattern_name: string
+    occurrence_count: number
+    last_seen: string
+  }
+  prescription?: {
+    mode: string
+    challenge_slug: string
+    challenge_title: string
+    reason: string
+  }
+  secondary_patterns?: Array<{
+    pattern_id: string
+    pattern_name: string
+    occurrence_count: number
+  }>
+  confidence_calibration?: {
+    avg_mismatch: number
+    tendency: 'overconfident' | 'underconfident' | 'calibrated'
+    detail: string
+  }
+  message?: string  // for onboarding/explore fallback types
+}

@@ -414,6 +414,22 @@ export const MOCK_FEEDBACK_FULL = {
   ],
   key_insight: "The gap between good and great here is metric specificity — learn to lead with north star metrics.",
   percentile: 72,
+  detected_patterns: [
+    {
+      pattern_id: 'FP-09',
+      pattern_name: 'Unprioritized Investigation',
+      confidence: 0.85,
+      evidence: 'Listed 5 investigation areas without indicating which to pursue first',
+      question: 'q2',
+    },
+    {
+      pattern_id: 'FP-04',
+      pattern_name: 'Metric Recitation',
+      confidence: 0.75,
+      evidence: 'Named DAU, MAU, retention rate without explaining metric selection rationale',
+      question: 'q1',
+    },
+  ],
 }
 
 export const MOCK_COMPANIES: CompanyProfile[] = [

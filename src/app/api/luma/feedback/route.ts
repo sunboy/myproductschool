@@ -4,14 +4,15 @@ import {
   LUMA_FEEDBACK_SYSTEM_PROMPT,
   buildFeedbackUserPrompt
 } from '@/lib/luma/system-prompt'
-import { MOCK_FEEDBACK } from '@/lib/mock-data'
+import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
 export async function POST(req: NextRequest) {
-  const { challengeId, challengeTitle, challengePrompt, response: userResponse } = await req.json()
+  const { challengeId, challengeTitle, challengePrompt, response: userResponse, userId, attemptId } = await req.json()
 
   if (!userResponse?.trim()) {
     return NextResponse.json({ error: 'No response provided' }, { status: 400 })
@@ -19,10 +20,7 @@ export async function POST(req: NextRequest) {
 
   // Mock mode: return fixture feedback as a stream
   if (process.env.USE_MOCK_DATA === 'true' || !process.env.ANTHROPIC_API_KEY) {
-    const mockJson = JSON.stringify(MOCK_FEEDBACK)
-    return new Response(mockJson, {
-      headers: { 'Content-Type': 'application/json' },
-    })
+    return NextResponse.json(MOCK_FEEDBACK_FULL)
   }
 
   try {
@@ -49,6 +47,28 @@ export async function POST(req: NextRequest) {
 
     // Parse and validate the JSON
     const feedback = JSON.parse(content.text)
+
+    // Persist detected patterns to DB
+    if (feedback.detected_patterns?.length && userId) {
+      try {
+        const supabaseAdmin = createAdminClient()
+        await supabaseAdmin.from('user_failure_patterns').insert(
+          feedback.detected_patterns.map((p: { pattern_id: string; pattern_name: string; confidence: number; evidence: string; question?: string }) => ({
+            user_id: userId,
+            attempt_id: attemptId ?? null,
+            pattern_id: p.pattern_id,
+            pattern_name: p.pattern_name,
+            confidence: p.confidence,
+            evidence: p.evidence,
+            question: p.question ?? null,
+          }))
+        )
+      } catch (err) {
+        // Non-fatal: log but don't fail the feedback response
+        console.error('Failed to persist failure patterns:', err)
+      }
+    }
+
     return NextResponse.json(feedback)
   } catch (error) {
     console.error('Luma feedback error:', error)
