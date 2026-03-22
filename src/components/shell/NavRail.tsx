@@ -39,7 +39,10 @@ export function NavRail() {
                   : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
               }`}
             >
-              <span className={active ? 'material-symbols-filled' : 'material-symbols-outlined'}>
+              <span
+                className="material-symbols-outlined"
+                style={{ fontVariationSettings: active ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" : "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
+              >
                 {item.icon}
               </span>
               <span className="text-sm font-medium">{item.label}</span>
@@ -67,7 +70,7 @@ export function NavRail() {
         {/* Pro upgrade chip */}
         <div className="flex">
           <span className="inline-flex items-center gap-1.5 bg-tertiary-container text-on-tertiary-container rounded-full px-3 py-1 text-xs font-semibold font-label">
-            <span className="material-symbols-filled text-sm">workspace_premium</span>
+            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>workspace_premium</span>
             Upgrade to Pro
           </span>
         </div>
