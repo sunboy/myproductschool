@@ -6,6 +6,11 @@ const AUTH_ROUTES = ['/login', '/signup', '/forgot-password', '/reset-password']
 const ADMIN_ROUTES = ['/admin']
 
 export async function middleware(request: NextRequest) {
+  // Bypass auth in mock/testing mode
+  if (process.env.USE_MOCK_DATA === 'true') {
+    return NextResponse.next()
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
