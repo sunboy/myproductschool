@@ -46,6 +46,13 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           See your diagnosis →
         </Link>
         <Link
+          href={`/challenges/${id}/discussion`}
+          className="flex items-center gap-2 px-6 py-3 bg-secondary-container text-on-secondary-container rounded-full font-semibold hover:opacity-90 transition-opacity"
+        >
+          <span className="material-symbols-outlined text-xl">forum</span>
+          Join Discussion
+        </Link>
+        <Link
           href={`/challenges/${id}`}
           className="flex items-center gap-2 px-4 py-2.5 bg-surface-container border border-outline-variant text-on-surface rounded-xl text-sm font-medium hover:bg-surface-container-high transition-colors"
         >

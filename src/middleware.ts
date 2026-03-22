@@ -7,7 +7,7 @@ const ADMIN_ROUTES = ['/admin']
 
 export async function middleware(request: NextRequest) {
   // Bypass auth in mock/testing mode
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || process.env.USE_MOCK_DATA === 'true') {
     return NextResponse.next()
   }
 

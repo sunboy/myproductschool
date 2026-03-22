@@ -203,3 +203,35 @@ export interface Prescription {
   }
   message?: string  // for onboarding/explore fallback types
 }
+
+export interface ChallengeDiscussion {
+  id: string
+  challenge_id: string
+  user_id: string
+  content: string
+  is_expert_pick: boolean
+  upvote_count: number
+  created_at: string
+  username?: string
+  reply_count?: number
+}
+
+export interface AnalyticsSummary {
+  productiq_score: number
+  productiq_delta: number
+  streak_days: number
+  total_attempts: number
+  dimensions: Record<FeedbackDimension, { score: number; delta: number; sparkline: number[] }>
+  weekly_activity: number[]
+  recent_attempts: RecentAttempt[]
+}
+
+export interface RecentAttempt {
+  id: string
+  challenge_title: string
+  domain: string
+  score: number
+  status: 'completed' | 'in_progress'
+  created_at: string
+  trend: number[]
+}

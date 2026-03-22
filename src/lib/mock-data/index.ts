@@ -1,4 +1,4 @@
-import { Domain, Concept, Flashcard, ChallengePrompt, CompanyProfile, LumaFeedbackItem } from '@/lib/types'
+import { Domain, Concept, Flashcard, ChallengePrompt, CompanyProfile, LumaFeedbackItem, AnalyticsSummary, ChallengeDiscussion, RecentAttempt } from '@/lib/types'
 
 export const MOCK_DOMAINS: Domain[] = [
   {
@@ -443,5 +443,73 @@ export const MOCK_COMPANIES: CompanyProfile[] = [
     interview_style: 'Heavy on product sense for technical products, metric deep-dives, and systems thinking. Expect questions about API design tradeoffs and developer experience.',
     notes: 'Stripe PMs are expected to understand the technical stack deeply. Prepare to discuss payment flows, fraud, and global compliance tradeoffs.',
     created_at: '2024-01-01T00:00:00Z',
+  },
+]
+
+export const MOCK_ANALYTICS_SUMMARY: AnalyticsSummary = {
+  productiq_score: 72.4,
+  productiq_delta: 2.4,
+  streak_days: 5,
+  total_attempts: 12,
+  dimensions: {
+    diagnostic_accuracy: { score: 68, delta: 3, sparkline: [55, 60, 58, 62, 65, 68, 70, 68] },
+    metric_fluency: { score: 74, delta: -2, sparkline: [70, 72, 76, 78, 76, 74, 75, 74] },
+    framing_precision: { score: 71, delta: 5, sparkline: [60, 63, 65, 67, 68, 70, 72, 71] },
+    recommendation_strength: { score: 76, delta: 1, sparkline: [72, 73, 74, 75, 76, 77, 76, 76] },
+  },
+  weekly_activity: [2, 1, 3, 0, 2, 1, 2],
+  recent_attempts: [
+    {
+      id: 'attempt-mock-1',
+      challenge_title: 'Spotify podcast discovery drop',
+      domain: 'Metrics & Analytics',
+      score: 74,
+      status: 'completed',
+      created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      trend: [65, 68, 70, 72, 74],
+    },
+    {
+      id: 'attempt-mock-2',
+      challenge_title: 'B2B fintech payments friction',
+      domain: 'Product Strategy',
+      score: 68,
+      status: 'completed',
+      created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      trend: [60, 62, 65, 67, 68],
+    },
+    {
+      id: 'attempt-mock-3',
+      challenge_title: 'UX research design for churn',
+      domain: 'User Research',
+      score: 0,
+      status: 'in_progress',
+      created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+      trend: [55, 58, 60, 0, 0],
+    },
+  ],
+}
+
+export const MOCK_DISCUSSIONS: ChallengeDiscussion[] = [
+  {
+    id: 'd1000000-0000-0000-0000-000000000001',
+    challenge_id: 'c1000000-0000-0000-0000-000000000001',
+    user_id: 'u1000000-0000-0000-0000-000000000001',
+    content: "I started by anchoring on the metric drop — DAU fell 18% over 6 weeks. The key was tracing it back to a specific cohort: new users from the recent referral campaign who never hit the 'aha moment'. They weren't finding relevant content in the first session.",
+    is_expert_pick: true,
+    upvote_count: 12,
+    created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    username: 'Alex R.',
+    reply_count: 3,
+  },
+  {
+    id: 'd1000000-0000-0000-0000-000000000002',
+    challenge_id: 'c1000000-0000-0000-0000-000000000001',
+    user_id: 'u1000000-0000-0000-0000-000000000002',
+    content: "The key insight I missed was stakeholder translation — I diagnosed the problem well but never explained how I'd communicate the investigation plan to the engineering lead. Luma flagged that as FP-14. Will revisit.",
+    is_expert_pick: false,
+    upvote_count: 8,
+    created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+    username: 'Priya S.',
+    reply_count: 1,
   },
 ]
