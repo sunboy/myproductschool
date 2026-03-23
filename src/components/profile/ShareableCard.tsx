@@ -47,7 +47,7 @@ export function ShareableCard({
   return (
     <div className="space-y-4">
       {/* The shareable card */}
-      <div className="bg-gradient-to-br from-[#1a3d2a] to-[#2d5a3d] rounded-2xl p-8 text-white">
+      <div className="bg-gradient-to-br from-inverse-surface to-primary/80 rounded-2xl p-8 text-white">
         <p className="text-xs uppercase tracking-widest opacity-60 text-center">
           HackProduct
         </p>

@@ -4,3 +4,14 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+export function getWordCount(text: string): number {
+  return text.trim().split(/\s+/).filter(Boolean).length
+}
+
+export function getTopDimension(dimensions: Record<string, { score: number }>): { key: string; score: number } {
+  return Object.entries(dimensions).reduce(
+    (best, [key, val]) => val.score > best.score ? { key, score: val.score } : best,
+    { key: '', score: 0 }
+  )
+}

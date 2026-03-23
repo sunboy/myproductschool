@@ -31,15 +31,15 @@ const modes: Array<{ id: ChallengeMode; label: string; desc: string; icon: strin
 export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: ChallengeWorkspaceProps) {
   const [selectedMode, setSelectedMode] = useState<ChallengeMode | null>(null)
   const [started, setStarted] = useState(false)
-  const [response, setResponse] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [timeLeft, setTimeLeft] = useState(10 * 60) // 10 minutes in seconds
+  const [timeExpired, setTimeExpired] = useState(false)
   const [nudge, setNudge] = useState<string | null>(null)
   const [liveMessages, setLiveMessages] = useState<Array<{ role: 'user' | 'luma'; content: string }>>([])
   const [liveInput, setLiveInput] = useState('')
   const [liveSending, setLiveSending] = useState(false)
-  const [confidenceRating, setConfidenceRating] = useState(0)
   const nudgeTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const canvasResponsesRef = useRef<string[]>([])
   const router = useRouter()
   const [promptCollapsed, setPromptCollapsed] = useState(false)
 
@@ -52,24 +52,24 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
   useEffect(() => {
     if (!started || selectedMode !== 'spotlight') return
     if (timeLeft <= 0) {
-      handleSubmit()
+      setTimeExpired(true)
       return
     }
     const t = setTimeout(() => setTimeLeft(prev => prev - 1), 1000)
     return () => clearTimeout(t)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started, selectedMode, timeLeft])
 
-  // Workshop: nudge every 3 minutes
+  // Workshop: nudge every 3 minutes (uses ref to avoid resetting interval on keystroke)
   useEffect(() => {
     if (!started || selectedMode !== 'workshop') return
     nudgeTimerRef.current = setInterval(async () => {
-      if (!response.trim()) return
+      const draft = canvasResponsesRef.current.join('\n\n')
+      if (!draft.trim()) return
       try {
         const res = await fetch('/api/luma/nudge', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ challengeId: challenge.id, draft: response }),
+          body: JSON.stringify({ challengeId: challenge.id, draft }),
         })
         const data = await res.json()
         if (data.nudge) setNudge(data.nudge)
@@ -78,10 +78,17 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
       }
     }, 3 * 60 * 1000) // 3 minutes
     return () => { if (nudgeTimerRef.current) clearInterval(nudgeTimerRef.current) }
-  }, [started, selectedMode, response, challenge.id])
+  }, [started, selectedMode, challenge.id])
 
-  const handleSubmit = useCallback(async () => {
-    if (submitting || !response.trim()) return
+  // Callback for PMCanvas to keep canvasResponsesRef in sync
+  const handleCanvasResponsesChange = useCallback((responses: string[]) => {
+    canvasResponsesRef.current = responses
+  }, [])
+
+  // PMCanvas submit handler — directly submits canvas responses
+  const handleCanvasSubmit = useCallback(async (responses: string[], confidence: number) => {
+    if (submitting) return
+    const joined = responses.join('\n\n---\n\n')
     setSubmitting(true)
     try {
       const res = await fetch('/api/challenges/submit', {
@@ -90,8 +97,8 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
         body: JSON.stringify({
           challengeId: challenge.id,
           mode: selectedMode,
-          response,
-          confidenceRating,
+          response: joined,
+          confidenceRating: confidence,
         }),
       })
       const data = await res.json()
@@ -103,7 +110,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
     } catch {
       router.push(`/challenges/${challenge.id}/feedback?attempt=mock`)
     }
-  }, [challenge.id, selectedMode, response, confidenceRating, submitting, router])
+  }, [challenge.id, selectedMode, submitting, router])
 
   const handleLiveSend = useCallback(async () => {
     if (!liveInput.trim() || liveSending) return
@@ -278,35 +285,6 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
     )
   }
 
-  // PMCanvas submit handler — directly submits to avoid stale state from setResponse
-  const handleCanvasSubmit = useCallback(async (responses: string[], confidence: number) => {
-    if (submitting) return
-    const joined = responses.join('\n\n---\n\n')
-    setResponse(joined)
-    setConfidenceRating(confidence)
-    setSubmitting(true)
-    try {
-      const res = await fetch('/api/challenges/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          challengeId: challenge.id,
-          mode: selectedMode,
-          response: joined,
-          confidenceRating: confidence,
-        }),
-      })
-      const data = await res.json()
-      if (data.attemptId) {
-        router.push(`/challenges/${challenge.id}/feedback?attempt=${data.attemptId}`)
-      } else {
-        router.push(`/challenges/${challenge.id}/feedback?attempt=mock`)
-      }
-    } catch {
-      router.push(`/challenges/${challenge.id}/feedback?attempt=mock`)
-    }
-  }, [challenge.id, selectedMode, submitting, router])
-
   // Spotlight / Workshop / Solo — split layout with PMCanvas
   return (
     <div className="w-full px-4 py-6">
@@ -371,6 +349,8 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
             mode={selectedMode!}
             nudge={nudge}
             timeLeft={selectedMode === 'spotlight' ? timeLeft : undefined}
+            timeExpired={timeExpired}
+            onResponsesChange={handleCanvasResponsesChange}
           />
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import type { ChallengeMode } from '@/lib/types'
+import { getWordCount } from '@/lib/utils'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { CanvasSection } from './CanvasSection'
 import { ConfidenceSlider } from './ConfidenceSlider'
@@ -12,10 +13,8 @@ interface PMCanvasProps {
   mode: ChallengeMode
   nudge?: string | null
   timeLeft?: number
-}
-
-function getWordCount(text: string): number {
-  return text.trim().split(/\s+/).filter(Boolean).length
+  timeExpired?: boolean
+  onResponsesChange?: (responses: string[]) => void
 }
 
 export function PMCanvas({
@@ -25,19 +24,39 @@ export function PMCanvas({
   mode,
   nudge,
   timeLeft,
+  timeExpired,
+  onResponsesChange,
 }: PMCanvasProps) {
   const [responses, setResponses] = useState<string[]>(() =>
     subQuestions.map(() => '')
   )
   const [confidence, setConfidence] = useState(0) // 0 = not set
   const [quickDraft, setQuickDraft] = useState(false)
+  const autoSubmittedRef = useRef(false)
+
+  // Notify parent when responses change (used for workshop nudge ref)
+  useEffect(() => {
+    onResponsesChange?.(responses)
+  }, [responses, onResponsesChange])
+
+  // Auto-submit when spotlight timer expires
+  useEffect(() => {
+    if (timeExpired && !autoSubmittedRef.current && !submitting) {
+      autoSubmittedRef.current = true
+      // Submit whatever we have, even with no confidence rating
+      const hasContent = responses.some(r => r.trim().length > 0)
+      if (hasContent) {
+        onSubmit(responses, confidence || 1) // default to 1 if no confidence set
+      }
+    }
+  }, [timeExpired, submitting, responses, confidence, onSubmit])
 
   const totalWordCount = useMemo(
     () => responses.reduce((sum, r) => sum + getWordCount(r), 0),
     [responses]
   )
 
-  const answeredCount = responses.filter((r) => getWordCount(r) > 0).length
+  const answeredCount = useMemo(() => responses.filter(r => getWordCount(r) > 0).length, [responses])
 
   const canSubmit =
     !submitting &&

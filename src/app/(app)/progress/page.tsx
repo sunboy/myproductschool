@@ -3,7 +3,7 @@ import { ProductIQCard } from '@/components/analytics/ProductIQCard'
 import { StreakRingCard } from '@/components/analytics/StreakRingCard'
 import { DimensionMicroCard } from '@/components/analytics/DimensionMicroCard'
 import { RecentChallengesTable } from '@/components/analytics/RecentChallengesTable'
-import { FeedbackDimension } from '@/lib/types'
+import { FeedbackDimension, DIMENSION_LABELS } from '@/lib/types'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 export default async function ProgressPage() {
@@ -22,13 +22,6 @@ export default async function ProgressPage() {
   const weeks: typeof days[] = []
   for (let i = 0; i < days.length; i += 7) {
     weeks.push(days.slice(i, i + 7))
-  }
-
-  const dimensionLabels: Record<FeedbackDimension, string> = {
-    diagnostic_accuracy: 'Diagnostic Accuracy',
-    metric_fluency: 'Metric Fluency',
-    framing_precision: 'Framing Precision',
-    recommendation_strength: 'Recommendation Strength',
   }
 
   return (
@@ -68,7 +61,7 @@ export default async function ProgressPage() {
         {(Object.entries(summary.dimensions) as [FeedbackDimension, { score: number; delta: number; sparkline: number[] }][]).map(([key, dim]) => (
           <DimensionMicroCard
             key={key}
-            label={dimensionLabels[key] ?? key}
+            label={DIMENSION_LABELS[key] ?? key}
             score={dim.score}
             delta={dim.delta}
             sparkline={dim.sparkline}

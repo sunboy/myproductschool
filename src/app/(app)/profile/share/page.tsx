@@ -1,4 +1,6 @@
 import { MOCK_PROFILE_DATA, MOCK_ANALYTICS_SUMMARY } from '@/lib/mock-data'
+import { DIMENSION_LABELS } from '@/lib/types'
+import { getTopDimension } from '@/lib/utils'
 import { ShareableCard } from '@/components/profile/ShareableCard'
 import type { Metadata } from 'next'
 
@@ -16,18 +18,8 @@ export default function SharePage() {
   const analytics = MOCK_ANALYTICS_SUMMARY
 
   // Find top dimension
-  const topDimension = Object.entries(analytics.dimensions).reduce(
-    (best, [key, val]) =>
-      val.score > best.score ? { key, score: val.score } : best,
-    { key: '', score: 0 }
-  )
-  const dimensionLabels: Record<string, string> = {
-    diagnostic_accuracy: 'Diagnostic Accuracy',
-    metric_fluency: 'Metric Fluency',
-    framing_precision: 'Framing Precision',
-    recommendation_strength: 'Recommendation Strength',
-  }
-  const topDimensionLabel = dimensionLabels[topDimension.key] ?? topDimension.key
+  const topDimension = getTopDimension(analytics.dimensions)
+  const topDimensionLabel = DIMENSION_LABELS[topDimension.key as keyof typeof DIMENSION_LABELS] ?? topDimension.key
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">

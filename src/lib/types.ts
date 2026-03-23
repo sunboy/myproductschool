@@ -3,6 +3,13 @@ export type Role = 'user' | 'admin'
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced'
 export type ChallengeMode = 'spotlight' | 'workshop' | 'live' | 'solo'
 export type FeedbackDimension = 'diagnostic_accuracy' | 'metric_fluency' | 'framing_precision' | 'recommendation_strength'
+
+export const DIMENSION_LABELS: Record<FeedbackDimension, string> = {
+  diagnostic_accuracy: 'Diagnostic Accuracy',
+  metric_fluency: 'Metric Fluency',
+  framing_precision: 'Framing Precision',
+  recommendation_strength: 'Recommendation Strength',
+}
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing'
 
 export interface Profile {

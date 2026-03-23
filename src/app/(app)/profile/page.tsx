@@ -1,41 +1,20 @@
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
-import { MOCK_PROFILE_DATA, MOCK_ANALYTICS_SUMMARY } from '@/lib/mock-data'
+import { MOCK_PROFILE_DATA, MOCK_ANALYTICS_SUMMARY, MOCK_ACTIVITIES, MOCK_PATTERNS } from '@/lib/mock-data'
+import { DIMENSION_LABELS } from '@/lib/types'
+import { getTopDimension } from '@/lib/utils'
 import { SkillRadar } from '@/components/profile/SkillRadar'
 import { ActivityTimeline } from '@/components/profile/ActivityTimeline'
 import { PatternBreakdown } from '@/components/profile/PatternBreakdown'
 import { ShareableCard } from '@/components/profile/ShareableCard'
-
-const MOCK_ACTIVITIES = [
-  { date: 'Mar 21', title: 'Spotify podcast discovery drop', score: 74, pattern: 'Metric Recitation' },
-  { date: 'Mar 19', title: 'B2B fintech payments friction', score: 68 },
-  { date: 'Mar 17', title: 'E-commerce cart abandonment', score: 81, pattern: 'Vague Segmentation' },
-  { date: 'Mar 15', title: 'Social app DAU stagnation', score: 72 },
-  { date: 'Mar 13', title: 'SaaS onboarding churn analysis', score: 65, pattern: 'Missing Prioritization' },
-]
-
-const MOCK_PATTERNS = [
-  { name: 'Metric Recitation', count: 5 },
-  { name: 'Vague Segmentation', count: 3 },
-  { name: 'Missing Prioritization', count: 2 },
-]
 
 export default function ProfilePage() {
   const profile = MOCK_PROFILE_DATA
   const analytics = MOCK_ANALYTICS_SUMMARY
 
   // Find top dimension
-  const topDimension = Object.entries(analytics.dimensions).reduce((best, [key, val]) =>
-    val.score > best.score ? { key, score: val.score } : best,
-    { key: '', score: 0 }
-  )
-  const dimensionLabels: Record<string, string> = {
-    diagnostic_accuracy: 'Diagnostic Accuracy',
-    metric_fluency: 'Metric Fluency',
-    framing_precision: 'Framing Precision',
-    recommendation_strength: 'Recommendation Strength',
-  }
-  const topDimensionLabel = dimensionLabels[topDimension.key] ?? topDimension.key
+  const topDimension = getTopDimension(analytics.dimensions)
+  const topDimensionLabel = DIMENSION_LABELS[topDimension.key as keyof typeof DIMENSION_LABELS] ?? topDimension.key
   const percentile = 28
 
   return (

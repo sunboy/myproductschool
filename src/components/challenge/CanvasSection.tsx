@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { getWordCount } from '@/lib/utils'
 
 interface CanvasSectionProps {
   questionNumber: number
@@ -8,10 +9,6 @@ interface CanvasSectionProps {
   value: string
   onChange: (value: string) => void
   isCollapsed?: boolean
-}
-
-function getWordCount(text: string): number {
-  return text.trim().split(/\s+/).filter(Boolean).length
 }
 
 export function CanvasSection({
@@ -23,6 +20,7 @@ export function CanvasSection({
   isCollapsed = false,
 }: CanvasSectionProps) {
   const [collapsed, setCollapsed] = useState(isCollapsed)
+  useEffect(() => { setCollapsed(isCollapsed ?? false) }, [isCollapsed])
   const wordCount = getWordCount(value)
   const isEmpty = wordCount === 0
   const isComplete = wordCount >= wordTarget

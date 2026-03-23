@@ -70,13 +70,6 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
         <p className="text-on-surface-variant mt-1">Choose a challenge and pick your mode.</p>
       </div>
 
-      {/* Search */}
-      <input
-        type="text"
-        placeholder="Search challenges..."
-        className="w-full px-4 py-2.5 bg-surface-container-low border border-outline-variant rounded-xl text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary transition-colors mb-4"
-      />
-
       {/* Filter bar */}
       <div className="space-y-3">
         {/* Difficulty pills */}
