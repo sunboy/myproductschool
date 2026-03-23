@@ -16,19 +16,19 @@ const literata = Literata({
 
 export const metadata: Metadata = {
   title: {
-    default: 'MyProductSchool',
-    template: '%s | MyProductSchool',
+    default: 'HackProduct',
+    template: '%s | HackProduct',
   },
   description: 'A practice gym for product thinking — for engineers in interviews and on the job.',
   keywords: ['product sense', 'PM interview prep', 'product thinking', 'software engineers', 'product manager interview'],
   openGraph: {
-    title: 'MyProductSchool',
+    title: 'HackProduct',
     description: 'A practice gym for product thinking — for engineers in interviews and on the job.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MyProductSchool',
+    title: 'HackProduct',
     description: 'A practice gym for product thinking — for engineers in interviews and on the job.',
   },
 };

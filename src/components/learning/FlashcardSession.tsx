@@ -2,6 +2,7 @@
 import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import type { Domain, Flashcard, Concept } from '@/lib/types'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 interface FlashcardSessionProps {
   domain: Domain
@@ -72,6 +73,8 @@ export function FlashcardSession({ domain, flashcards, conceptMap }: FlashcardSe
 
   if (completed) {
     const avgConfidence = results.reduce((sum, r) => sum + r.confidence, 0) / results.length
+    const masteredCount = results.filter(r => r.confidence >= 4).length
+    const needsPracticeCount = results.length - masteredCount
     return (
       <div className="text-center py-8 space-y-6">
         <div className="w-20 h-20 bg-primary-container rounded-full flex items-center justify-center mx-auto">
@@ -85,6 +88,17 @@ export function FlashcardSession({ domain, flashcards, conceptMap }: FlashcardSe
           <div className="text-4xl font-bold text-primary">{avgConfidence.toFixed(1)}</div>
           <div className="text-sm text-on-surface-variant">avg confidence</div>
         </div>
+        {/* Mastery summary */}
+        <p className="text-sm text-on-surface">
+          <span className="font-semibold text-primary">{masteredCount} concept{masteredCount !== 1 ? 's' : ''} mastered</span>
+          {needsPracticeCount > 0 && (
+            <>, <span className="font-semibold text-tertiary">{needsPracticeCount} need{needsPracticeCount === 1 ? 's' : ''} more practice</span></>
+          )}
+        </p>
+        {/* Next review schedule */}
+        <p className="text-xs text-on-surface-variant">
+          Next review: 1 day (Hard), 3 days (Good), 7 days (Easy)
+        </p>
         <div className="flex gap-3 justify-center flex-wrap">
           <button
             onClick={() => { setCurrentIndex(0); setIsFlipped(false); setResults([]); setCompleted(false) }}
@@ -95,6 +109,18 @@ export function FlashcardSession({ domain, flashcards, conceptMap }: FlashcardSe
           <Link href="/flashcards" className="px-5 py-2.5 bg-surface-container border border-outline-variant text-on-surface rounded-xl font-medium hover:bg-surface-container-high transition-colors">
             Choose another deck
           </Link>
+        </div>
+        {/* CTA: Practice a related challenge */}
+        <Link href="/challenges" className="flex items-center justify-center gap-2 mt-4 px-6 py-2.5 bg-primary text-on-primary rounded-full font-semibold text-sm hover:opacity-90 transition-opacity">
+          Practice a related challenge
+          <span className="material-symbols-outlined text-lg">arrow_forward</span>
+        </Link>
+        {/* Luma post-session nudge */}
+        <div className="flex gap-3 p-4 bg-primary-fixed rounded-xl mt-4 text-left">
+          <LumaGlyph size={20} className="text-primary flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-on-surface-variant">
+            You reviewed {flashcards.length} concepts. Want to test your knowledge in a challenge?
+          </p>
         </div>
       </div>
     )

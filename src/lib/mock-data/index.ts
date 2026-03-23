@@ -1,4 +1,4 @@
-import { Domain, Concept, Flashcard, ChallengePrompt, CompanyProfile, LumaFeedbackItem, AnalyticsSummary, ChallengeDiscussion, RecentAttempt } from '@/lib/types'
+import { Domain, Concept, Flashcard, ChallengePrompt, CompanyProfile, LumaFeedbackItem, AnalyticsSummary, ChallengeDiscussion, RecentAttempt, GlossaryTerm, ProfileData, WeeklyDigest } from '@/lib/types'
 
 export const MOCK_DOMAINS: Domain[] = [
   {
@@ -310,6 +310,13 @@ Your task:
     estimated_minutes: 15,
     is_published: true,
     created_at: '2024-01-01T00:00:00Z',
+    sub_questions: [
+      'Diagnose the root cause of low discovery — what data would you look at and what hypotheses do you have?',
+      'Identify the user segments most likely to convert and why',
+      'Propose 2-3 product changes that could improve podcast discovery and following',
+      'How would you measure success? Define a primary metric and 2 guardrail metrics.',
+      'What trade-offs do you see in your top proposal?',
+    ],
   },
   {
     id: 'ch100000-0000-0000-0000-000000000002',
@@ -326,6 +333,12 @@ Your task:
     estimated_minutes: 20,
     is_published: true,
     created_at: '2024-01-01T00:00:00Z',
+    sub_questions: [
+      'What are the key strategic questions you\'d need to answer before committing to payments?',
+      'Who are the main competitors and what would your differentiation be?',
+      'What does a successful first 6 months look like — what milestone proves the strategy is working?',
+      'What are the top 3 risks and how would you mitigate them?',
+    ],
   },
   {
     id: 'ch100000-0000-0000-0000-000000000003',
@@ -343,6 +356,13 @@ Your task:
     estimated_minutes: 10,
     is_published: true,
     created_at: '2024-01-01T00:00:00Z',
+    sub_questions: [
+      'What is your primary research question?',
+      'What research method would you use and why? (qualitative vs quantitative, remote vs in-person)',
+      'Who would you recruit as participants and how many?',
+      'Write 3 interview questions you\'d ask',
+      'What would you do if research findings contradict the CEO\'s hypothesis that users want summaries?',
+    ],
   },
   {
     id: 'ch100000-0000-0000-0000-000000000004',
@@ -360,6 +380,13 @@ Your task:
     estimated_minutes: 15,
     is_published: true,
     created_at: '2024-01-01T00:00:00Z',
+    sub_questions: [
+      'Walk through your investigation process step by step',
+      'What data would you pull first and why?',
+      'List at least 5 hypotheses for the drop, ranging from technical to product to external causes',
+      'How would you validate or rule out each hypothesis?',
+      'What is your communication plan while you investigate?',
+    ],
   },
 ]
 
@@ -513,3 +540,69 @@ export const MOCK_DISCUSSIONS: ChallengeDiscussion[] = [
     reply_count: 1,
   },
 ]
+
+export const MOCK_GLOSSARY_TERMS: GlossaryTerm[] = [
+  { term: 'NSM', fullName: 'North Star Metric', definition: 'A single metric that best captures the core value your product delivers to users, aligned with long-term business growth.', conceptId: 'c1000000-0000-0000-0000-000000000009' },
+  { term: 'PMF', fullName: 'Product-Market Fit', definition: 'The degree to which a product satisfies a strong market demand, often described as the moment when growth becomes organic.', conceptId: 'c1000000-0000-0000-0000-000000000002' },
+  { term: 'JTBD', fullName: 'Jobs To Be Done', definition: 'A framework that views products as "hired" by users to accomplish an underlying job or outcome.', conceptId: 'c1000000-0000-0000-0000-000000000004' },
+  { term: 'DAU', fullName: 'Daily Active Users', definition: 'The number of unique users who engage with a product within a 24-hour period.' },
+  { term: 'MAU', fullName: 'Monthly Active Users', definition: 'The number of unique users who engage with a product within a 30-day period.' },
+  { term: 'ARPU', fullName: 'Average Revenue Per User', definition: 'Total revenue divided by the number of active users, indicating monetization efficiency.' },
+  { term: 'LTV', fullName: 'Lifetime Value', definition: 'The total revenue a business expects from a single customer over their entire relationship.' },
+  { term: 'CAC', fullName: 'Customer Acquisition Cost', definition: 'The total cost of acquiring a new customer, including marketing, sales, and onboarding expenses.' },
+  { term: 'MRR', fullName: 'Monthly Recurring Revenue', definition: 'Predictable revenue earned each month from active subscriptions.' },
+  { term: 'ARR', fullName: 'Annual Recurring Revenue', definition: 'The annualized value of recurring subscription revenue, used as a key SaaS growth metric.' },
+  { term: 'NPS', fullName: 'Net Promoter Score', definition: 'A loyalty metric based on the question: "How likely are you to recommend us?" Scored from -100 to 100.' },
+  { term: 'RICE', fullName: 'Reach, Impact, Confidence, Effort', definition: 'A prioritization scoring model that evaluates ideas by Reach, Impact, Confidence, and Effort.' },
+  { term: 'ICE', fullName: 'Impact, Confidence, Ease', definition: 'A lightweight prioritization framework: Impact x Confidence x Ease, each rated 1-10.' },
+  { term: 'OKR', fullName: 'Objectives and Key Results', definition: 'A goal-setting framework pairing a qualitative objective with 2-5 measurable key results.' },
+  { term: 'KPI', fullName: 'Key Performance Indicator', definition: 'A measurable value that demonstrates how effectively a team is achieving its business objectives.' },
+  { term: 'PLG', fullName: 'Product-Led Growth', definition: 'A go-to-market strategy where the product itself drives user acquisition, expansion, and retention.', conceptId: 'c1000000-0000-0000-0000-000000000018' },
+  { term: 'MVP', fullName: 'Minimum Viable Product', definition: 'The smallest version of a product that can be released to validate a core hypothesis with real users.' },
+  { term: 'PRD', fullName: 'Product Requirements Document', definition: 'A document outlining the purpose, features, functionality, and behavior of a product or feature.' },
+  { term: 'TAM', fullName: 'Total Addressable Market', definition: 'The total revenue opportunity available if a product achieved 100% market share.' },
+  { term: 'SAM', fullName: 'Serviceable Addressable Market', definition: 'The portion of TAM that your product can realistically serve given its capabilities and go-to-market.' },
+  { term: 'SOM', fullName: 'Serviceable Obtainable Market', definition: 'The portion of SAM you can realistically capture in the near term given competition and resources.' },
+  { term: 'GTM', fullName: 'Go-to-Market', definition: 'The strategy and plan for launching a product to market, covering positioning, channels, and pricing.' },
+  { term: 'Churn Rate', definition: 'The percentage of customers or subscribers who stop using a product within a given time period.' },
+  { term: 'Retention Cohort', definition: 'A group of users segmented by signup date, tracked over time to measure what percentage remain active.', conceptId: 'c1000000-0000-0000-0000-000000000011' },
+  { term: 'Activation Rate', definition: 'The percentage of new users who complete a key action indicating they have experienced core product value.', conceptId: 'c1000000-0000-0000-0000-000000000020' },
+]
+
+export const MOCK_PROFILE_DATA: ProfileData = {
+  name: 'Alex Chen',
+  email: 'alex.chen@example.com',
+  role: 'Software Engineer',
+  tier: 'free',
+  member_since: '2025-11-15',
+  avatar_initials: 'AC',
+}
+
+export const MOCK_WEEKLY_DIGEST: WeeklyDigest = {
+  period: 'Mar 15 - Mar 21, 2026',
+  challenges_completed: 4,
+  patterns_resolved: ['Metric Recitation', 'Vague Segmentation'],
+  top_delta: { dimension: 'framing_precision', change: 5 },
+  insight: 'Your framing precision improved the most this week. You are consistently naming frameworks before applying them, which signals strong product fluency. Next focus area: strengthen metric selection rationale.',
+}
+
+export const MOCK_ORIENTATION_CHALLENGE: ChallengePrompt = {
+  id: 'ch100000-0000-0000-0000-000000000099',
+  domain_id: 'd1000000-0000-0000-0000-000000000001',
+  title: 'Your first product sense question',
+  prompt_text: `Welcome to your first challenge. This is a short warm-up to help you understand the format.
+
+Scenario: You are a PM at a mid-size e-commerce company. The CEO mentions that cart abandonment rate has increased from 65% to 78% over the past quarter.
+
+1. What are your top 3 hypotheses for why cart abandonment increased?
+2. How would you prioritize investigating these hypotheses?`,
+  difficulty: 'beginner',
+  tags: ['orientation', 'warm-up', 'e-commerce'],
+  estimated_minutes: 5,
+  is_published: true,
+  created_at: '2024-01-01T00:00:00Z',
+  sub_questions: [
+    'What are your top 3 hypotheses for why cart abandonment increased?',
+    'How would you prioritize investigating these hypotheses?',
+  ],
+}

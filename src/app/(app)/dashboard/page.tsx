@@ -13,6 +13,30 @@ export default async function DashboardPage() {
         <p className="text-on-surface-variant mt-1">Ready to sharpen your product instincts?</p>
       </section>
 
+      {/* Orientation card for new users — TODO: conditionally show based on user onboarding state */}
+      <div className="p-6 bg-gradient-to-r from-primary to-primary/80 rounded-2xl text-on-primary mb-6">
+        <div className="flex items-start gap-4">
+          <LumaGlyph size={40} className="flex-shrink-0 mt-1" />
+          <div className="flex-1">
+            <h2 className="font-headline text-xl font-bold">Welcome! Let&apos;s find your starting point.</h2>
+            <p className="text-on-primary/80 mt-1 text-sm">Your first challenge takes ~5 minutes. Luma will walk you through everything and establish your baseline.</p>
+            <Link href="/challenges/orientation" className="inline-flex items-center gap-2 mt-4 px-6 py-2.5 bg-on-primary text-primary rounded-full font-semibold text-sm hover:opacity-90 transition-opacity">
+              Start Orientation
+              <span className="material-symbols-outlined text-lg">arrow_forward</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Weekly Digest */}
+      <div className="flex gap-4 p-5 bg-surface-container rounded-2xl border border-outline-variant mb-6">
+        <LumaGlyph size={28} className="text-primary flex-shrink-0 mt-0.5" animated />
+        <div>
+          <div className="text-xs font-bold text-primary uppercase tracking-wider mb-1">Luma&apos;s Weekly Insight</div>
+          <p className="text-sm text-on-surface leading-relaxed">You completed 5 challenges this week. Your Diagnostic Accuracy improved +1.2. Your biggest win: you stopped listing metrics without explaining why they matter.</p>
+        </div>
+      </div>
+
       {/* Quick actions */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[

@@ -60,6 +60,7 @@ export interface ChallengePrompt {
   estimated_minutes: number
   is_published: boolean
   created_at: string
+  sub_questions?: string[]
 }
 
 export interface ChallengeAttempt {
@@ -234,4 +235,37 @@ export interface RecentAttempt {
   status: 'completed' | 'in_progress'
   created_at: string
   trend: number[]
+}
+
+export interface Framework {
+  id: string
+  name: string
+  purpose: string
+  steps: string[]
+  when_to_use: string
+  domain?: string
+}
+
+export interface GlossaryTerm {
+  term: string
+  fullName?: string
+  definition: string
+  conceptId?: string
+}
+
+export interface WeeklyDigest {
+  period: string
+  challenges_completed: number
+  patterns_resolved: string[]
+  top_delta: { dimension: string; change: number }
+  insight: string
+}
+
+export interface ProfileData {
+  name: string
+  email: string
+  role: string
+  tier: 'free' | 'pro'
+  member_since: string
+  avatar_initials: string
 }

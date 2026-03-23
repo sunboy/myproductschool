@@ -1,8 +1,19 @@
 'use client'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import type { ChallengePrompt, ChallengeMode } from '@/lib/types'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { PMCanvas } from './PMCanvas'
+
+function parseSubQuestions(text: string): string[] {
+  const lines = text.split('\n')
+  const questions: string[] = []
+  for (const line of lines) {
+    const match = line.match(/^\s*(\d+)\.\s+(.+)/)
+    if (match) questions.push(match[2].trim())
+  }
+  return questions.length > 0 ? questions : [text]
+}
 
 interface ChallengeWorkspaceProps {
   challenge: ChallengePrompt
@@ -27,8 +38,15 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
   const [liveMessages, setLiveMessages] = useState<Array<{ role: 'user' | 'luma'; content: string }>>([])
   const [liveInput, setLiveInput] = useState('')
   const [liveSending, setLiveSending] = useState(false)
+  const [confidenceRating, setConfidenceRating] = useState(0)
   const nudgeTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const router = useRouter()
+  const [promptCollapsed, setPromptCollapsed] = useState(false)
+
+  const subQuestions = useMemo(
+    () => challenge.sub_questions ?? parseSubQuestions(challenge.prompt_text),
+    [challenge.sub_questions, challenge.prompt_text]
+  )
 
   // Spotlight: countdown timer
   useEffect(() => {
@@ -73,6 +91,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
           challengeId: challenge.id,
           mode: selectedMode,
           response,
+          confidenceRating,
         }),
       })
       const data = await res.json()
@@ -84,7 +103,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
     } catch {
       router.push(`/challenges/${challenge.id}/feedback?attempt=mock`)
     }
-  }, [challenge.id, selectedMode, response, submitting, router])
+  }, [challenge.id, selectedMode, response, confidenceRating, submitting, router])
 
   const handleLiveSend = useCallback(async () => {
     if (!liveInput.trim() || liveSending) return
@@ -259,11 +278,40 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
     )
   }
 
-  // Spotlight / Workshop / Solo — textarea mode
+  // PMCanvas submit handler — directly submits to avoid stale state from setResponse
+  const handleCanvasSubmit = useCallback(async (responses: string[], confidence: number) => {
+    if (submitting) return
+    const joined = responses.join('\n\n---\n\n')
+    setResponse(joined)
+    setConfidenceRating(confidence)
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/challenges/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          challengeId: challenge.id,
+          mode: selectedMode,
+          response: joined,
+          confidenceRating: confidence,
+        }),
+      })
+      const data = await res.json()
+      if (data.attemptId) {
+        router.push(`/challenges/${challenge.id}/feedback?attempt=${data.attemptId}`)
+      } else {
+        router.push(`/challenges/${challenge.id}/feedback?attempt=mock`)
+      }
+    } catch {
+      router.push(`/challenges/${challenge.id}/feedback?attempt=mock`)
+    }
+  }, [challenge.id, selectedMode, submitting, router])
+
+  // Spotlight / Workshop / Solo — split layout with PMCanvas
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+    <div className="w-full px-4 py-6">
       {/* Header with timer (spotlight) */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 max-w-6xl mx-auto mb-4">
         <div className="flex-1">
           <h2 className="font-medium text-on-surface text-sm">{challenge.title}</h2>
         </div>
@@ -279,61 +327,53 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
         )}
       </div>
 
-      {/* Prompt (collapsible) */}
-      <details className="group">
-        <summary className="flex items-center gap-2 cursor-pointer text-sm text-on-surface-variant hover:text-on-surface">
-          <span className="material-symbols-outlined text-base">expand_more</span>
-          View challenge prompt
-        </summary>
-        <div className="mt-3 p-4 bg-surface-container rounded-xl border border-outline-variant">
-          <p className="text-sm text-on-surface whitespace-pre-wrap leading-relaxed">{challenge.prompt_text}</p>
-        </div>
-      </details>
+      {/* Desktop: split layout */}
+      <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-6">
+        {/* Left panel — Prompt (desktop: sticky sidebar 2/5) */}
+        <div className="lg:w-2/5">
+          {/* Mobile: collapsible prompt */}
+          <div className="lg:hidden">
+            <button
+              type="button"
+              onClick={() => setPromptCollapsed(!promptCollapsed)}
+              className="w-full flex items-center gap-2 cursor-pointer text-sm text-on-surface-variant hover:text-on-surface py-2"
+            >
+              <span className={`material-symbols-outlined text-base transition-transform ${promptCollapsed ? '' : 'rotate-180'}`}>
+                expand_more
+              </span>
+              {promptCollapsed ? 'View challenge prompt' : 'Hide challenge prompt'}
+            </button>
+            {!promptCollapsed && (
+              <div className="mt-2 p-4 bg-surface-container rounded-xl border border-outline-variant">
+                <p className="text-sm text-on-surface whitespace-pre-wrap leading-relaxed">{challenge.prompt_text}</p>
+              </div>
+            )}
+          </div>
 
-      {/* Workshop nudge */}
-      {selectedMode === 'workshop' && nudge && (
-        <div className="flex gap-3 p-4 bg-primary-container rounded-xl">
-          <LumaGlyph size={20} className="text-primary flex-shrink-0 mt-0.5" />
-          <div>
-            <div className="text-xs font-semibold text-primary mb-1">Luma nudge</div>
-            <p className="text-sm text-on-primary-container">{nudge}</p>
+          {/* Desktop: always-visible sticky prompt */}
+          <div className="hidden lg:block lg:sticky lg:top-24">
+            <div className="p-5 bg-surface-container rounded-xl border border-outline-variant">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="material-symbols-outlined text-primary text-base">description</span>
+                <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wide">Challenge prompt</span>
+              </div>
+              <p className="text-sm text-on-surface whitespace-pre-wrap leading-relaxed">{challenge.prompt_text}</p>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Response textarea */}
-      <div>
-        <textarea
-          value={response}
-          onChange={e => setResponse(e.target.value)}
-          placeholder="Write your response here..."
-          className="w-full min-h-64 px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors resize-none text-sm leading-relaxed"
-          disabled={selectedMode === 'spotlight' && timeLeft <= 0}
-        />
-        <div className="flex justify-between items-center mt-1">
-          <span className="text-xs text-on-surface-variant">{response.length} characters</span>
-          {selectedMode === 'workshop' && (
-            <span className="text-xs text-on-surface-variant flex items-center gap-1">
-              <LumaGlyph size={12} className="text-primary" />
-              Luma coaches every 3 min
-            </span>
-          )}
+        {/* Right panel — PMCanvas (3/5) */}
+        <div className="lg:w-3/5">
+          <PMCanvas
+            subQuestions={subQuestions}
+            onSubmit={handleCanvasSubmit}
+            submitting={submitting}
+            mode={selectedMode!}
+            nudge={nudge}
+            timeLeft={selectedMode === 'spotlight' ? timeLeft : undefined}
+          />
         </div>
       </div>
-
-      {/* Submit */}
-      <button
-        onClick={handleSubmit}
-        disabled={submitting || !response.trim() || (selectedMode === 'spotlight' && timeLeft <= 0)}
-        className="w-full py-3 bg-primary text-on-primary font-medium rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity"
-      >
-        {submitting ? (
-          <span className="flex items-center justify-center gap-2">
-            <LumaGlyph size={16} className="animate-luma-glow" />
-            Luma is thinking...
-          </span>
-        ) : 'Submit for Luma feedback'}
-      </button>
     </div>
   )
 }

@@ -4,6 +4,7 @@ import { StreakRingCard } from '@/components/analytics/StreakRingCard'
 import { DimensionMicroCard } from '@/components/analytics/DimensionMicroCard'
 import { RecentChallengesTable } from '@/components/analytics/RecentChallengesTable'
 import { FeedbackDimension } from '@/lib/types'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 export default async function ProgressPage() {
   const summary = MOCK_ANALYTICS_SUMMARY
@@ -105,6 +106,12 @@ export default async function ProgressPage() {
           </div>
           <p className="text-xs text-on-surface-variant mt-3">Last 13 weeks of challenge activity</p>
         </div>
+      </div>
+
+      {/* Luma analytics nudge */}
+      <div className="flex gap-3 p-4 bg-primary-fixed rounded-xl">
+        <LumaGlyph size={20} className="text-primary flex-shrink-0 mt-0.5" />
+        <p className="text-sm text-on-surface-variant">Your analytics dashboard will light up after your first 3 challenges. Every session teaches Luma more about your patterns.</p>
       </div>
     </div>
   )

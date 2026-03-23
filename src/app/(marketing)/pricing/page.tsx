@@ -3,21 +3,22 @@ import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { UpgradeButton } from '@/components/marketing/UpgradeButton'
 
 const FREE_FEATURES = [
-  '3 challenges per day',
+  'Unlimited beginner challenges',
+  '3 intermediate/advanced per day',
   'All 5 domains',
-  'Vocabulary & flashcards',
-  'Luma feedback (basic)',
+  'Vocabulary + flashcards',
+  'Basic Luma feedback (4 dimensions)',
   'Progress tracking',
 ]
 
 const PRO_FEATURES = [
-  'Unlimited challenges',
-  'Model answers for every challenge',
-  'Luma Live coaching sessions',
-  'Company interview prep packs',
-  'Advanced analytics & radar charts',
-  'Priority feedback',
-  'Download progress reports',
+  'Everything in Free, plus:',
+  'Unlimited all challenges',
+  'Full model answers with trade-off analysis',
+  'Failure pattern tracking + prescriptions',
+  'Mock interview simulations',
+  'Shareable ProductIQ card',
+  'Framework reference in Workshop mode',
 ]
 
 export default function PricingPage() {
@@ -25,7 +26,7 @@ export default function PricingPage() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-outline-variant px-6 py-4 flex items-center gap-3">
         <LumaGlyph size={24} className="text-primary" />
-        <Link href="/" className="font-headline font-bold text-on-surface">MyProductSchool</Link>
+        <Link href="/" className="font-headline font-bold text-on-surface">HackProduct</Link>
         <div className="flex-1" />
         <Link href="/login" className="text-sm text-on-surface-variant hover:text-on-surface">Sign in</Link>
       </header>
@@ -44,6 +45,7 @@ export default function PricingPage() {
                 <span className="text-on-surface-variant ml-1">/ month</span>
               </div>
             </div>
+            <p className="text-sm text-on-surface-variant italic">Build the habit</p>
             <Link href="/signup" className="block w-full py-3 text-center bg-surface-container-high border border-outline-variant text-on-surface font-medium rounded-xl hover:opacity-90 transition-opacity">
               Get started free
             </Link>
@@ -68,6 +70,7 @@ export default function PricingPage() {
                 <span className="text-on-primary-container/70 ml-1">/ month</span>
               </div>
             </div>
+            <p className="text-sm text-on-primary-container/70 italic">Accelerate your prep</p>
             <UpgradeButton />
             <ul className="space-y-3">
               {PRO_FEATURES.map(f => (

@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: 'MyProductSchool Pro',
+            name: 'HackProduct Pro',
             description: 'Unlimited challenges, model answers, and Luma Live coaching',
           },
           unit_amount: 1200, // $12.00

@@ -46,33 +46,72 @@ Use music taste graph to surface 3 podcast recommendations with high editorial c
 I'd start with proposal 2 (highest ROI for effort), run A/B test for 2 weeks, then layer in the inline player.`,
 }
 
+const ANSWER_STRUCTURE = [
+  { icon: 'search', label: 'Diagnosis' },
+  { icon: 'assignment', label: 'Investigation Plan' },
+  { icon: 'analytics', label: 'Metrics' },
+  { icon: 'lightbulb', label: 'Recommendation' },
+  { icon: 'balance', label: 'Trade-offs' },
+]
+
+function getFirstSentence(text: string): string {
+  const match = text.match(/^[^.!?]+[.!?]/)
+  return match ? match[0] : text
+}
+
 export function ModelAnswer({ challenge, isPro }: ModelAnswerProps) {
   if (!isPro) {
     return (
-      <div className="relative">
-        {/* Blurred preview */}
-        <div className="select-none pointer-events-none blur-sm opacity-50 space-y-4">
-          <div className="p-5 bg-surface-container rounded-2xl border border-outline-variant">
-            <h3 className="font-headline font-bold text-on-surface mb-3">Key Points</h3>
-            {MOCK_MODEL_ANSWER.key_points.slice(0, 2).map((point, i) => (
-              <div key={i} className="flex gap-2 mb-2">
-                <span className="material-symbols-outlined text-primary text-base flex-shrink-0">check_circle</span>
-                <p className="text-sm text-on-surface">{point}</p>
+      <div className="space-y-6">
+        {/* Key Points — headers visible with first sentence only */}
+        <div className="p-5 bg-surface-container rounded-2xl border border-outline-variant space-y-3">
+          <h3 className="font-headline font-bold text-on-surface">Key Points</h3>
+          {MOCK_MODEL_ANSWER.key_points.map((point, i) => (
+            <div key={i} className="flex gap-2">
+              <span className="material-symbols-outlined text-primary text-base flex-shrink-0 mt-0.5">check_circle</span>
+              <p className="text-sm text-on-surface">{getFirstSentence(point)}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Answer Structure outline */}
+        <div className="p-5 bg-surface-container-low rounded-2xl border border-outline-variant">
+          <h3 className="font-headline font-bold text-on-surface mb-4">How a top PM would structure this</h3>
+          <div className="flex flex-col gap-2">
+            {ANSWER_STRUCTURE.map((section, i) => (
+              <div key={section.label} className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-7 h-7 rounded-full bg-primary-container text-primary text-xs font-bold flex-shrink-0">
+                  {i + 1}
+                </div>
+                <span className="material-symbols-outlined text-primary text-lg">{section.icon}</span>
+                <span className="text-sm font-medium text-on-surface">{section.label}</span>
+                {i < ANSWER_STRUCTURE.length - 1 && (
+                  <span className="material-symbols-outlined text-outline-variant text-sm ml-auto">arrow_downward</span>
+                )}
               </div>
             ))}
           </div>
         </div>
-        {/* Pro gate overlay */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="bg-background/95 backdrop-blur-sm rounded-2xl p-8 max-w-sm text-center shadow-lg border border-outline-variant">
-            <span className="material-symbols-outlined text-4xl text-primary mb-3 block">workspace_premium</span>
-            <h3 className="font-headline text-xl font-bold text-on-surface mb-2">Pro feature</h3>
-            <p className="text-sm text-on-surface-variant mb-4">
-              Unlock model answers, unlimited challenges, and advanced analytics.
+
+        {/* Blurred full text with gradient overlay + upgrade CTA */}
+        <div className="relative">
+          <div className="select-none pointer-events-none blur-sm opacity-50 max-h-48 overflow-hidden">
+            <div className="p-5 bg-surface-container rounded-2xl border border-outline-variant">
+              <h3 className="font-headline font-bold text-on-surface mb-4">Model Answer</h3>
+              <pre className="whitespace-pre-wrap font-body text-sm leading-relaxed text-on-surface">{MOCK_MODEL_ANSWER.answer_text}</pre>
+            </div>
+          </div>
+          {/* Gradient fade overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent rounded-2xl" />
+          {/* Upgrade CTA */}
+          <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center pb-6">
+            <span className="material-symbols-outlined text-3xl text-primary mb-2">workspace_premium</span>
+            <p className="text-sm text-on-surface-variant mb-3 text-center max-w-xs">
+              See the complete walkthrough with trade-off analysis
             </p>
             <a
               href="/pricing"
-              className="block w-full py-3 bg-primary text-on-primary font-medium rounded-xl hover:opacity-90 transition-opacity text-center"
+              className="px-6 py-2.5 bg-primary text-on-primary font-semibold font-label rounded-full hover:opacity-90 transition-opacity text-center"
             >
               Upgrade to Pro
             </a>

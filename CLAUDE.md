@@ -19,7 +19,7 @@ npx shadcn@latest add <component>  # Add shadcn/ui components
 
 ## Product Context
 
-"MyProductSchool" is a working name. The platform serves two audiences:
+"HackProduct" is a working name. The platform serves two audiences:
 1. **Engineers in PM interviews** — practicing product sense rounds
 2. **Engineers on the job** — sharpening product thinking as a day-to-day skill
 

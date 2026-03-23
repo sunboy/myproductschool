@@ -4,14 +4,17 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
-type Role = 'engineer' | 'em' | 'transitioning' | 'pm'
+type Role = 'engineer' | 'em' | 'transitioning' | 'pm' | 'student' | 'career-changer' | 'bootcamp'
 type SkillKey = 'metrics' | 'empathy' | 'prioritization' | 'rootCause' | 'strategy'
 
-const ROLES: { id: Role; label: string; icon: string }[] = [
+const ROLES: { id: Role; label: string; icon: string; desc?: string }[] = [
   { id: 'engineer', label: 'Software Engineer', icon: 'code' },
   { id: 'em', label: 'Engineering Manager', icon: 'groups' },
   { id: 'transitioning', label: 'Transitioning to PM', icon: 'trending_up' },
   { id: 'pm', label: 'Already a PM', icon: 'inventory' },
+  { id: 'student', icon: 'school', label: 'Student / Recent Grad', desc: 'Studying PM or just graduated' },
+  { id: 'career-changer', icon: 'swap_horiz', label: 'Career Changer', desc: 'Non-tech background pivoting to PM' },
+  { id: 'bootcamp', icon: 'rocket_launch', label: 'Bootcamp / Self-taught', desc: 'Self-directed learning path' },
 ]
 
 const ROLE_TO_GOAL: Record<Role, string> = {
@@ -19,6 +22,19 @@ const ROLE_TO_GOAL: Record<Role, string> = {
   em: 'job',
   transitioning: 'interview',
   pm: 'both',
+  student: 'interview',
+  'career-changer': 'interview',
+  bootcamp: 'both',
+}
+
+const RECOMMENDATIONS: Record<Role, { title: string; desc: string }> = {
+  engineer: { title: 'Metrics & Analytics', desc: 'Your analytical thinking is a superpower. Start with data-driven challenges.' },
+  em: { title: 'Product Strategy', desc: 'Your leadership lens is valuable. Start with strategic decision-making.' },
+  transitioning: { title: 'Product Strategy for Engineers', desc: 'Bridge your technical depth with product thinking fundamentals.' },
+  pm: { title: 'Advanced Challenges', desc: "Let's find your blind spots. Jump into Advanced difficulty." },
+  student: { title: 'Product 75 Vocabulary', desc: 'Start with vocabulary and beginner challenges to build your foundation.' },
+  'career-changer': { title: 'Go-to-Market', desc: 'Your business instincts are an asset. Start where your experience shines.' },
+  bootcamp: { title: 'Orientation Challenge', desc: "Let's build your foundations. Start with the guided orientation." },
 }
 
 const COMPETENCIES: { key: SkillKey; label: string; icon: string }[] = [
@@ -72,7 +88,7 @@ export default function OnboardingPage() {
         {/* Brand */}
         <div className="flex items-center gap-2 mb-2">
           <LumaGlyph size={32} className="text-primary" />
-          <span className="font-headline text-sm font-semibold text-on-surface">MyProductSchool</span>
+          <span className="font-headline text-sm font-semibold text-on-surface">HackProduct</span>
         </div>
 
         <div className="flex-1" />
@@ -125,7 +141,7 @@ export default function OnboardingPage() {
                 Luma will personalize your learning path.
               </p>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 {ROLES.map(role => {
                   const isSelected = selectedRole === role.id
                   return (
@@ -133,7 +149,7 @@ export default function OnboardingPage() {
                       key={role.id}
                       onClick={() => setSelectedRole(role.id)}
                       className={[
-                        'flex flex-col items-center gap-2 p-6 rounded-2xl border-2 cursor-pointer text-center transition-all',
+                        'flex flex-col items-center gap-1.5 p-5 rounded-2xl border-2 cursor-pointer text-center transition-all',
                         'bg-surface-container hover:bg-surface-container-high',
                         isSelected
                           ? 'border-primary bg-primary-fixed text-on-primary-fixed'
@@ -147,6 +163,9 @@ export default function OnboardingPage() {
                         {role.icon}
                       </span>
                       <span className="text-sm font-medium leading-snug">{role.label}</span>
+                      {role.desc && (
+                        <span className="text-xs text-on-surface-variant leading-snug">{role.desc}</span>
+                      )}
                     </button>
                   )
                 })}
@@ -163,44 +182,44 @@ export default function OnboardingPage() {
           )}
 
           {/* Step 2 — Recommendation */}
-          {step === 2 && (
-            <div>
-              <h1 className="font-headline text-2xl text-on-surface mb-6">
-                Here&apos;s what Luma recommends.
-              </h1>
+          {step === 2 && (() => {
+            const rec = selectedRole ? RECOMMENDATIONS[selectedRole] : RECOMMENDATIONS.engineer
+            return (
+              <div>
+                <h1 className="font-headline text-2xl text-on-surface mb-6">
+                  Here&apos;s what Luma recommends.
+                </h1>
 
-              <div className="bg-surface-container rounded-2xl p-6 border border-outline-variant">
-                <div className="flex items-center gap-2 mb-3">
-                  <LumaGlyph size={24} className="text-primary" />
-                  <span className="text-on-surface-variant text-sm">Luma suggests:</span>
+                <div className="bg-surface-container rounded-2xl p-6 border border-outline-variant">
+                  <div className="flex items-center gap-2 mb-3">
+                    <LumaGlyph size={24} className="text-primary" />
+                    <span className="text-on-surface-variant text-sm">Luma suggests:</span>
+                  </div>
+                  <p className="font-headline text-xl font-semibold text-primary mb-3">
+                    {rec.title}
+                  </p>
+                  <p className="text-on-surface-variant text-sm mb-4">
+                    {rec.desc}
+                  </p>
                 </div>
-                <p className="font-headline text-xl font-semibold text-primary mb-3">
-                  Product Strategy for Engineers
-                </p>
-                <p className="text-on-surface-variant text-sm mb-4">
-                  A 12-module path covering core PM frameworks, metrics fluency, and product sense — tailored for engineers entering PM roles.
-                </p>
-                <span className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 text-xs inline-block">
-                  12 modules
-                </span>
-              </div>
 
-              <div className="flex gap-3 mt-8">
-                <button
-                  onClick={() => setStep(3)}
-                  className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold hover:opacity-90 transition-opacity"
-                >
-                  Sounds right →
-                </button>
-                <button
-                  onClick={() => setStep(3)}
-                  className="bg-surface-container-high text-on-surface rounded-full px-6 py-2.5 font-label hover:opacity-80 transition-opacity"
-                >
-                  Let me choose myself
-                </button>
+                <div className="flex gap-3 mt-8">
+                  <button
+                    onClick={() => setStep(3)}
+                    className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold hover:opacity-90 transition-opacity"
+                  >
+                    Sounds right →
+                  </button>
+                  <button
+                    onClick={() => setStep(3)}
+                    className="bg-surface-container-high text-on-surface rounded-full px-6 py-2.5 font-label hover:opacity-80 transition-opacity"
+                  >
+                    Let me choose myself
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )
+          })()}
 
           {/* Step 3 — Assessment */}
           {step === 3 && (

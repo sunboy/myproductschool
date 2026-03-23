@@ -1,6 +1,7 @@
 import { getChallenges } from '@/lib/data/challenges'
 import { getDomains } from '@/lib/data/domains'
 import Link from 'next/link'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import type { ChallengeWithDomain } from '@/lib/types'
 
 interface ChallengesPageProps {
@@ -48,10 +49,33 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+      {/* Luma's Pick */}
+      <div className="mb-8 p-6 bg-primary-fixed rounded-2xl border border-primary/20">
+        <div className="flex items-start gap-4">
+          <LumaGlyph size={32} className="text-primary flex-shrink-0 mt-1" />
+          <div className="flex-1">
+            <div className="text-xs font-bold text-primary uppercase tracking-wider mb-1">Luma&apos;s Pick for You</div>
+            <h3 className="font-headline text-lg font-bold text-on-surface">Spotify podcast discovery drop</h3>
+            <p className="text-sm text-on-surface-variant mt-1">Based on your Metric Recitation pattern, this challenge will help you practice grounding metrics in rationale.</p>
+            <Link href="/challenges/c1000000-0000-0000-0000-000000000001" className="inline-flex items-center gap-2 mt-3 px-5 py-2 bg-primary text-on-primary rounded-full text-sm font-semibold hover:opacity-90 transition-opacity">
+              Start Challenge
+              <span className="material-symbols-outlined text-lg">arrow_forward</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <div>
         <h1 className="font-headline text-3xl font-bold text-on-surface">Practice Hub</h1>
         <p className="text-on-surface-variant mt-1">Choose a challenge and pick your mode.</p>
       </div>
+
+      {/* Search */}
+      <input
+        type="text"
+        placeholder="Search challenges..."
+        className="w-full px-4 py-2.5 bg-surface-container-low border border-outline-variant rounded-xl text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary transition-colors mb-4"
+      />
 
       {/* Filter bar */}
       <div className="space-y-3">

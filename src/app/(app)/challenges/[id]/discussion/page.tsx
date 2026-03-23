@@ -7,6 +7,7 @@ import { DiscussionThread } from '@/components/challenge/DiscussionThread'
 import { DiscussionInput } from '@/components/challenge/DiscussionInput'
 import { ExpertPicksPanel } from '@/components/challenge/ExpertPicksPanel'
 import { MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 export default async function ChallengeDiscussionPage({
   params,
@@ -52,9 +53,10 @@ export default async function ChallengeDiscussionPage({
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 text-on-surface-variant">
-              <span className="material-symbols-outlined text-4xl mb-3 block text-on-surface-variant/50">chat_bubble_outline</span>
-              <p className="font-medium">No responses yet. Be the first to share your approach.</p>
+            <div className="text-center py-12">
+              <LumaGlyph size={40} className="text-primary mx-auto mb-4" animated />
+              <p className="font-medium text-on-surface">Be the first to share your approach.</p>
+              <p className="text-sm text-on-surface-variant mt-1">Others learn from your thinking — and you learn by explaining.</p>
             </div>
           )}
         </div>

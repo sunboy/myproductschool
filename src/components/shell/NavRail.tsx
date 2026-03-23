@@ -9,6 +9,8 @@ const navItems = [
   { href: '/challenges', icon: 'fitness_center', label: 'Practice' },
   { href: '/progress', icon: 'bar_chart', label: 'Progress' },
   { href: '/interview-prep', icon: 'workspace_premium', label: 'Interview Prep' },
+  { href: '/simulation', icon: 'sports_esports', label: 'Simulation' },
+  { href: '/frameworks', icon: 'collections_bookmark', label: 'Frameworks' },
 ]
 
 const DAILY_GOAL_DONE = 3
@@ -22,7 +24,7 @@ export function NavRail() {
       {/* Brand */}
       <div className="flex items-center gap-3 px-4 py-5">
         <LumaGlyph size={28} className="text-primary flex-shrink-0" animated />
-        <span className="font-headline text-lg font-bold text-primary">MyProductSchool</span>
+        <span className="font-headline text-lg font-bold text-primary">HackProduct</span>
       </div>
 
       {/* Nav items */}
