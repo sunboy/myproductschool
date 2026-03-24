@@ -3,60 +3,92 @@ interface Props {
   delta: number
   weeklyActivity: number[]
   totalAttempts: number
+  dimensions: Record<string, { score: number; delta: number; sparkline: number[] }>
 }
 
-const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+export function ProductIQCard({ score, delta, weeklyActivity, totalAttempts, dimensions }: Props) {
+  // Generate sparkline bar heights from weekly activity — pad to 14 bars to match Stitch
+  const bars = weeklyActivity.length >= 14
+    ? weeklyActivity
+    : [...Array(14 - weeklyActivity.length).fill(0), ...weeklyActivity]
+  const maxBar = Math.max(...bars, 1)
 
-export function ProductIQCard({ score, delta, weeklyActivity, totalAttempts }: Props) {
-  const maxActivity = Math.max(...weeklyActivity, 1)
+  // Sub-metrics from dimensions (mapped to Stitch labels)
+  const subMetrics = [
+    {
+      label: 'Diagnostic Accuracy',
+      value: dimensions.diagnostic_accuracy?.score ?? 0,
+      color: 'bg-primary',
+    },
+    {
+      label: 'Metric Fluency',
+      value: dimensions.metric_fluency?.score ?? 0,
+      color: 'bg-tertiary',
+    },
+    {
+      label: 'Framing Precision',
+      value: dimensions.framing_precision?.score ?? 0,
+      color: 'bg-error',
+    },
+  ]
 
   return (
-    <div className="bg-surface-container rounded-xl p-8 h-full">
-      {/* Header */}
-      <p className="text-xs font-bold uppercase tracking-wider text-tertiary">ProductIQ Score</p>
-
-      {/* Score row */}
-      <div className="flex items-center gap-3 mt-2">
-        <span className="font-headline text-5xl font-bold text-on-surface">{score}</span>
-        <span
-          className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full text-sm font-bold ${
-            delta >= 0 ? 'bg-primary/10 text-primary' : 'bg-error/10 text-error'
-          }`}
-        >
-          <span
-            className="material-symbols-outlined"
-            style={{ fontSize: 12, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-          >
-            {delta >= 0 ? 'trending_up' : 'trending_down'}
+    <div className="bg-surface-container-lowest p-8 rounded-xl editorial-shadow ghost-border relative overflow-hidden h-full">
+      {/* Header row */}
+      <div className="flex justify-between items-start mb-8">
+        <div>
+          <h3 className="font-headline text-2xl font-bold text-primary">ProductIQ Score</h3>
+          <p className="text-on-surface-variant text-sm font-medium">Global composite performance index</p>
+        </div>
+        <div className="flex flex-col items-end">
+          <span className="text-6xl font-headline font-black text-primary">{score}</span>
+          <span className="text-primary text-sm font-bold flex items-center gap-1">
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 14, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
+            >
+              {delta >= 0 ? 'trending_up' : 'trending_down'}
+            </span>
+            {delta >= 0 ? '+' : ''}{delta}% vs last cycle
           </span>
-          {delta >= 0 ? '+' : ''}{delta}
-        </span>
+        </div>
       </div>
 
-      <p className="text-xs text-on-surface-variant mt-1">composite skill score</p>
-
-      {/* Bar chart */}
-      <div className="mt-8 h-32 flex items-end gap-2">
-        {weeklyActivity.map((val, i) => {
-          const isToday = i === weeklyActivity.length - 1
-          const heightPct = Math.max(8, Math.round((val / maxActivity) * 100))
+      {/* Sparkline bar chart */}
+      <div className="h-48 w-full bg-surface-container rounded-xl flex items-end gap-1 px-4 py-2 mb-6">
+        {bars.map((val, i) => {
+          const heightPct = Math.max(10, Math.round((val / maxBar) * 100))
+          // Increasing opacity based on value magnitude
+          const opacityClass =
+            heightPct >= 90 ? 'bg-primary'
+            : heightPct >= 75 ? 'bg-primary/80'
+            : heightPct >= 60 ? 'bg-primary/60'
+            : heightPct >= 45 ? 'bg-primary/50'
+            : heightPct >= 30 ? 'bg-primary/40'
+            : heightPct >= 15 ? 'bg-primary/30'
+            : 'bg-primary/20'
           return (
             <div
               key={i}
-              className={`flex-1 rounded-t-lg transition-all cursor-pointer ${
-                isToday ? 'bg-primary' : 'bg-primary/20 hover:bg-primary/40'
-              }`}
+              className={`flex-1 ${opacityClass} rounded-t-sm`}
               style={{ height: `${heightPct}%` }}
-              title={`${DAY_LABELS[i]}: ${val} challenge${val === 1 ? '' : 's'}`}
             />
           )
         })}
       </div>
 
-      {/* Day labels */}
-      <div className="flex justify-between mt-2 text-[10px] font-bold text-on-surface-variant uppercase px-1">
-        {DAY_LABELS.map(day => (
-          <span key={day}>{day}</span>
+      {/* Sub-metric progress bars */}
+      <div className="grid grid-cols-3 gap-6 pt-6 border-t border-outline-variant/20">
+        {subMetrics.map(metric => (
+          <div key={metric.label}>
+            <p className="text-xs font-bold uppercase tracking-wider text-outline mb-1">{metric.label}</p>
+            <div className="flex items-center gap-2">
+              <div className="h-2 flex-1 bg-surface-container-highest rounded-full overflow-hidden">
+                <div className={`h-full ${metric.color}`} style={{ width: `${metric.value}%` }} />
+              </div>
+              <span className="text-sm font-bold">{metric.value}%</span>
+            </div>
+          </div>
         ))}
       </div>
     </div>

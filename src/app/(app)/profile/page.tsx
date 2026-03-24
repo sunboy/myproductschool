@@ -1,21 +1,62 @@
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
-import { MOCK_PROFILE_DATA, MOCK_ANALYTICS_SUMMARY, MOCK_ACTIVITIES, MOCK_PATTERNS } from '@/lib/mock-data'
 import { DIMENSION_LABELS } from '@/lib/types'
 import { getTopDimension } from '@/lib/utils'
 import { SkillRadar } from '@/components/profile/SkillRadar'
 import { ActivityTimeline } from '@/components/profile/ActivityTimeline'
 import { PatternBreakdown } from '@/components/profile/PatternBreakdown'
 import { ShareableCard } from '@/components/profile/ShareableCard'
+import { createClient } from '@/lib/supabase/server'
+import { getUserAnalyticsSummary } from '@/lib/data/analytics'
 
-export default function ProfilePage() {
-  const profile = MOCK_PROFILE_DATA
-  const analytics = MOCK_ANALYTICS_SUMMARY
+function deriveInitials(displayName: string | null | undefined): string {
+  if (!displayName) return '?'
+  const words = displayName.trim().split(/\s+/)
+  const first = words[0]?.[0] ?? ''
+  const second = words[1]?.[0] ?? ''
+  return (first + second).toUpperCase() || '?'
+}
+
+function formatAttemptDate(isoString: string): string {
+  const date = new Date(isoString)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+export default async function ProfilePage() {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
+  const [profileResult, analytics] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id, display_name, avatar_url, plan, role, streak_days, xp_total')
+      .eq('id', user.id)
+      .single(),
+    getUserAnalyticsSummary(user.id),
+  ])
+
+  const profile = profileResult.data
+
+  const displayName = profile?.display_name ?? 'Anonymous'
+  const role = profile?.role ?? 'Product Thinker'
+  const tier = profile?.plan ?? 'free'
+  const avatarInitials = deriveInitials(profile?.display_name)
 
   // Find top dimension
   const topDimension = getTopDimension(analytics.dimensions)
   const topDimensionLabel = DIMENSION_LABELS[topDimension.key as keyof typeof DIMENSION_LABELS] ?? topDimension.key
   const percentile = 28
+
+  const activities = analytics.recent_attempts.map((attempt) => ({
+    date: formatAttemptDate(attempt.created_at),
+    title: attempt.challenge_title,
+    score: attempt.score,
+  }))
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-8">
@@ -23,19 +64,19 @@ export default function ProfilePage() {
       <div className="flex items-center gap-4">
         <div className="w-16 h-16 bg-primary-container rounded-full flex items-center justify-center flex-shrink-0">
           <span className="font-headline text-xl font-bold text-on-primary-container">
-            {profile.avatar_initials}
+            {avatarInitials}
           </span>
         </div>
         <div className="flex-1 min-w-0">
           <h1 className="font-headline text-2xl font-bold text-on-surface">
-            {profile.name}
+            {displayName}
           </h1>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-xs bg-secondary-container text-on-secondary-container rounded-full px-3 py-0.5">
-              {profile.role}
+              {role}
             </span>
             <span className="text-xs bg-primary-fixed text-primary rounded-full px-3 py-0.5 capitalize">
-              {profile.tier} tier
+              {tier} tier
             </span>
           </div>
         </div>
@@ -103,7 +144,7 @@ export default function ProfilePage() {
         <h2 className="font-headline text-lg font-bold text-on-surface mb-2">
           Recent Activity
         </h2>
-        <ActivityTimeline activities={MOCK_ACTIVITIES} />
+        <ActivityTimeline activities={activities} />
       </div>
 
       {/* 6. Pattern Breakdown */}
@@ -114,7 +155,7 @@ export default function ProfilePage() {
         <p className="text-xs text-on-surface-variant mb-4">
           Recurring anti-patterns Luma has flagged in your responses
         </p>
-        <PatternBreakdown patterns={MOCK_PATTERNS} />
+        <PatternBreakdown patterns={[]} />
       </div>
 
       {/* 7. Shareable Card */}
@@ -123,7 +164,7 @@ export default function ProfilePage() {
           Share Your Progress
         </h2>
         <ShareableCard
-          name={profile.name}
+          name={displayName}
           score={analytics.productiq_score}
           topDimension={topDimensionLabel}
           challengeCount={analytics.total_attempts}

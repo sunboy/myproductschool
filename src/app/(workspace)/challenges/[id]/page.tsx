@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { ChallengeWorkspace } from '@/components/challenge/ChallengeWorkspace'
 import { MOCK_DOMAINS } from '@/lib/mock-data'
 
-export default async function ChallengePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ChallengeWorkspacePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const challenge = await getChallengeById(id)
   if (!challenge) notFound()

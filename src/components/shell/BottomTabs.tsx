@@ -24,7 +24,10 @@ export function BottomTabs() {
               href={tab.href}
               className="flex-1 flex flex-col items-center gap-1 py-2 px-1"
             >
-              <span className={`material-symbols-${active ? 'filled' : 'outlined'} text-xl ${active ? 'text-primary' : 'text-on-surface-variant'}`}>
+              <span
+                className={`material-symbols-outlined text-xl ${active ? 'text-primary' : 'text-on-surface-variant'}`}
+                style={{ fontVariationSettings: active ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" : "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
+              >
                 {tab.icon}
               </span>
               <span className={`text-[10px] font-medium ${active ? 'text-primary' : 'text-on-surface-variant'}`}>

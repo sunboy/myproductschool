@@ -1,13 +1,13 @@
 'use client'
 import { useState, useCallback } from 'react'
 import Link from 'next/link'
-import type { Domain, Flashcard, Concept } from '@/lib/types'
+import type { Domain } from '@/lib/types'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { useFlashcardSession } from '@/hooks/useFlashcardSession'
 
 interface FlashcardSessionProps {
   domain: Domain
-  flashcards: Flashcard[]
-  conceptMap: Record<string, Concept>
+  domainSlug: string
 }
 
 type ConfidenceLevel = 1 | 2 | 3 | 4 | 5
@@ -20,16 +20,24 @@ const confidenceLevels: { level: ConfidenceLevel; label: string; color: string; 
   { level: 5, label: 'Perfect', color: 'text-primary', bg: 'bg-primary hover:opacity-90 text-on-primary' },
 ]
 
-export function FlashcardSession({ domain, flashcards, conceptMap }: FlashcardSessionProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
+export function FlashcardSession({ domain, domainSlug }: FlashcardSessionProps) {
+  const {
+    cards,
+    currentCard,
+    currentIndex,
+    totalCards,
+    isComplete,
+    isLoading,
+    stats,
+    rateCard,
+    accuracy,
+  } = useFlashcardSession(domainSlug)
+
   const [isFlipped, setIsFlipped] = useState(false)
-  const [results, setResults] = useState<Array<{ flashcardId: string; confidence: ConfidenceLevel }>>([])
-  const [completed, setCompleted] = useState(false)
   const [showHint, setShowHint] = useState(false)
 
-  const currentCard = flashcards[currentIndex]
-  const concept = currentCard ? conceptMap[currentCard.concept_id] : null
-  const progress = flashcards.length > 0 ? ((currentIndex) / flashcards.length) * 100 : 0
+  const progress = totalCards > 0 ? (currentIndex / totalCards) * 100 : 0
+  const conceptTitle = currentCard ? (currentCard as Record<string, unknown>)['concept_title'] as string | undefined : undefined
 
   const handleFlip = useCallback(() => {
     setIsFlipped(f => !f)
@@ -38,43 +46,34 @@ export function FlashcardSession({ domain, flashcards, conceptMap }: FlashcardSe
 
   const handleRate = useCallback(async (confidence: ConfidenceLevel) => {
     if (!currentCard) return
+    const conceptId = ((currentCard as Record<string, unknown>)['concept_id'] as string | undefined) ?? currentCard.id
+    await rateCard(conceptId, confidence)
+    setIsFlipped(false)
+    setShowHint(false)
+  }, [currentCard, rateCard])
 
-    const newResults = [...results, { flashcardId: currentCard.id, confidence }]
-    setResults(newResults)
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    )
+  }
 
-    // Call progress API (fire and forget in mock mode)
-    if (process.env.NODE_ENV !== 'test') {
-      fetch('/api/progress/vocabulary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conceptId: currentCard.concept_id, confidence }),
-      }).catch(() => {})
-    }
-
-    if (currentIndex + 1 >= flashcards.length) {
-      setCompleted(true)
-    } else {
-      setCurrentIndex(i => i + 1)
-      setIsFlipped(false)
-      setShowHint(false)
-    }
-  }, [currentCard, currentIndex, flashcards.length, results])
-
-  if (flashcards.length === 0) {
+  if (totalCards === 0 && !isLoading) {
     return (
       <div className="text-center py-12">
-        <span className="material-symbols-outlined text-5xl text-on-surface-variant mb-4 block">style</span>
-        <h2 className="font-headline text-xl font-bold text-on-surface">No flashcards yet</h2>
-        <p className="text-on-surface-variant mt-2">This domain doesn&apos;t have flashcards yet.</p>
+        <span className="material-symbols-outlined text-5xl text-on-surface-variant mb-4 block">check_circle</span>
+        <h2 className="font-headline text-xl font-bold text-on-surface">You&apos;re all caught up!</h2>
+        <p className="text-on-surface-variant mt-2">No cards due today.</p>
         <Link href="/flashcards" className="mt-4 inline-block text-primary hover:underline">← Back to decks</Link>
       </div>
     )
   }
 
-  if (completed) {
-    const avgConfidence = results.reduce((sum, r) => sum + r.confidence, 0) / results.length
-    const masteredCount = results.filter(r => r.confidence >= 4).length
-    const needsPracticeCount = results.length - masteredCount
+  if (isComplete) {
+    const masteredCount = Math.round((accuracy / 100) * currentIndex)
+    const needsPracticeCount = currentIndex - masteredCount
     return (
       <div className="text-center py-8 space-y-6">
         <div className="w-20 h-20 bg-primary-container rounded-full flex items-center justify-center mx-auto">
@@ -82,11 +81,11 @@ export function FlashcardSession({ domain, flashcards, conceptMap }: FlashcardSe
         </div>
         <div>
           <h2 className="font-headline text-3xl font-bold text-on-surface">Session complete!</h2>
-          <p className="text-on-surface-variant mt-2">You reviewed {flashcards.length} cards from {domain.title}</p>
+          <p className="text-on-surface-variant mt-2">You reviewed {totalCards} cards from {domain.title}</p>
         </div>
         <div className="p-5 bg-surface-container rounded-2xl inline-block">
-          <div className="text-4xl font-bold text-primary">{avgConfidence.toFixed(1)}</div>
-          <div className="text-sm text-on-surface-variant">avg confidence</div>
+          <div className="text-4xl font-bold text-primary">{accuracy}%</div>
+          <div className="text-sm text-on-surface-variant">accuracy</div>
         </div>
         {/* Mastery summary */}
         <p className="text-sm text-on-surface">
@@ -100,12 +99,9 @@ export function FlashcardSession({ domain, flashcards, conceptMap }: FlashcardSe
           Next review: 1 day (Hard), 3 days (Good), 7 days (Easy)
         </p>
         <div className="flex gap-3 justify-center flex-wrap">
-          <button
-            onClick={() => { setCurrentIndex(0); setIsFlipped(false); setResults([]); setCompleted(false) }}
-            className="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-medium hover:opacity-90 transition-opacity"
-          >
+          <Link href={`/flashcards/${domainSlug}`} className="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-medium hover:opacity-90 transition-opacity">
             Study again
-          </button>
+          </Link>
           <Link href="/flashcards" className="px-5 py-2.5 bg-surface-container border border-outline-variant text-on-surface rounded-xl font-medium hover:bg-surface-container-high transition-colors">
             Choose another deck
           </Link>
@@ -119,7 +115,7 @@ export function FlashcardSession({ domain, flashcards, conceptMap }: FlashcardSe
         <div className="flex gap-3 p-4 bg-primary-fixed rounded-xl mt-4 text-left">
           <LumaGlyph size={20} className="text-primary flex-shrink-0 mt-0.5" />
           <p className="text-sm text-on-surface-variant">
-            You reviewed {flashcards.length} concepts. Want to test your knowledge in a challenge?
+            You reviewed {totalCards} concepts. Want to test your knowledge in a challenge?
           </p>
         </div>
       </div>
@@ -136,12 +132,26 @@ export function FlashcardSession({ domain, flashcards, conceptMap }: FlashcardSe
         <div className="flex-1">
           <h1 className="font-headline font-bold text-on-surface">{domain.title}</h1>
         </div>
+        {(stats.total_due > 0 || stats.total_new > 0) && (
+          <div className="flex gap-2 text-xs font-label">
+            {stats.total_due > 0 && (
+              <span className="bg-tertiary-container text-on-secondary-container rounded-full px-2.5 py-0.5">
+                {stats.total_due} due
+              </span>
+            )}
+            {stats.total_new > 0 && (
+              <span className="bg-secondary-container text-on-secondary-container rounded-full px-2.5 py-0.5">
+                {stats.total_new} new
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Progress indicator */}
       <div>
         <div className="flex justify-between items-center mb-1.5">
-          <span className="text-xs font-label text-on-surface-variant">{currentIndex + 1} / {flashcards.length}</span>
+          <span className="text-xs font-label text-on-surface-variant">{currentIndex + 1} / {totalCards}</span>
         </div>
         <div className="h-1 bg-surface-container-highest rounded-full overflow-hidden">
           <div
@@ -152,9 +162,9 @@ export function FlashcardSession({ domain, flashcards, conceptMap }: FlashcardSe
       </div>
 
       {/* Concept label */}
-      {concept && (
+      {conceptTitle && (
         <div className="text-center">
-          <span className="text-xs font-medium text-on-surface-variant uppercase tracking-wide">{concept.title}</span>
+          <span className="text-xs font-medium text-on-surface-variant uppercase tracking-wide">{conceptTitle}</span>
         </div>
       )}
 

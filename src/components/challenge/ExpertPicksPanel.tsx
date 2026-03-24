@@ -1,38 +1,45 @@
 const EXPERT_PICKS = [
   {
-    content:
-      'Started with the activation metric drop, traced it to the new-user cohort from the referral campaign...',
-    author: 'Alex R.',
+    title: 'Mastering Tonal Layers',
+    author: 'Sarah Chen',
+    role: 'Staff Designer',
   },
   {
-    content:
-      'The mechanism matters more than the symptom. DAU drop → which segment → what changed → why.',
-    author: 'Priya S.',
-  },
-  {
-    content:
-      "I explicitly stated what I would NOT investigate first — that was the key to Luma's top score.",
-    author: 'Jordan K.',
+    title: 'Accessibility in Earth Tones',
+    author: 'David Miller',
+    role: 'A11y Lead',
   },
 ]
 
 export function ExpertPicksPanel() {
   return (
-    <div className="bg-tertiary-container rounded-xl p-5">
-      <div className="flex items-center gap-2 mb-4">
-        <span className="material-symbols-outlined text-on-tertiary-container">star</span>
-        <h2 className="font-headline font-bold text-on-tertiary-container text-lg">Expert Picks</h2>
+    <div className="bg-[#fdf8ed] border-l-[3px] border-tertiary-container text-on-surface rounded-lg p-6 editorial-shadow ghost-border relative overflow-hidden">
+      <div className="relative z-10">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-8 h-8 rounded-full bg-tertiary-container/10 flex items-center justify-center text-tertiary-container">
+            <span className="material-symbols-outlined text-xl">verified</span>
+          </div>
+          <h3 className="text-tertiary-container font-bold text-lg tracking-wide uppercase font-label">Luma&apos;s Expert Picks</h3>
+        </div>
+        <p className="text-sm font-medium mb-6 text-on-surface-variant">
+          Curated insights from the community to help you navigate complex design challenges.
+        </p>
+        <ul className="space-y-4">
+          {EXPERT_PICKS.map((pick, i) => (
+            <li key={i} className="flex gap-3">
+              <span className="text-xl font-bold opacity-30">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <div>
+                <h4 className="text-sm font-bold leading-tight">{pick.title}</h4>
+                <p className="text-xs opacity-70">
+                  By {pick.author} &bull; {pick.role}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
-      <ul>
-        {EXPERT_PICKS.map((pick, i) => (
-          <li key={i} className="py-3 border-b border-tertiary-fixed/30 last:border-0">
-            <p className="text-sm text-on-tertiary-container leading-relaxed line-clamp-2">
-              "{pick.content}"
-            </p>
-            <p className="text-xs text-on-tertiary-container/70 mt-1">— {pick.author}</p>
-          </li>
-        ))}
-      </ul>
     </div>
   )
 }

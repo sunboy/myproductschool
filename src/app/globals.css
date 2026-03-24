@@ -119,6 +119,33 @@ body {
   .animate-fade-in-up { animation: none; }
 }
 
+/* ── Stitch Design Utilities ──────────────────────────────────── */
+.ambient-glow {
+  box-shadow: 0 4px 24px rgba(74, 124, 89, 0.25);
+}
+.editorial-shadow {
+  box-shadow: 0 8px 32px rgba(46, 50, 48, 0.06);
+}
+.ghost-border {
+  outline: 1px solid rgba(193, 201, 191, 0.15);
+}
+.bg-signature-gradient {
+  background: linear-gradient(135deg, #316342 0%, #4a7c59 100%);
+}
+.marquee-container {
+  mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+}
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-scroll {
+  animation: scroll 40s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-scroll { animation: none; }
+}
+
 @keyframes luma-glow {
   0%, 100% { opacity: 1; filter: drop-shadow(0 0 4px #4a7c59); }
   50% { opacity: 0.8; filter: drop-shadow(0 0 8px #4a7c59); }

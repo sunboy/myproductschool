@@ -1,7 +1,11 @@
 'use client'
 import { useState } from 'react'
 
-export function UpgradeButton() {
+interface UpgradeButtonProps {
+  variant?: 'default' | 'hero'
+}
+
+export function UpgradeButton({ variant = 'default' }: UpgradeButtonProps) {
   const [loading, setLoading] = useState(false)
 
   async function handleUpgrade() {
@@ -18,11 +22,16 @@ export function UpgradeButton() {
     }
   }
 
+  const className =
+    variant === 'hero'
+      ? 'mt-auto w-full py-4 px-6 rounded-full bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-300 transform active:scale-[0.98] disabled:opacity-70'
+      : 'mt-auto w-full py-3 bg-surface-container-lowest text-primary font-bold rounded-lg shadow-sm hover:bg-white transition-all active:scale-95 disabled:opacity-70'
+
   return (
     <button
       onClick={handleUpgrade}
       disabled={loading}
-      className="block w-full py-3 text-center bg-primary text-on-primary font-medium rounded-xl hover:opacity-90 disabled:opacity-70 transition-opacity"
+      className={className}
     >
       {loading ? 'Loading...' : 'Upgrade to Pro'}
     </button>

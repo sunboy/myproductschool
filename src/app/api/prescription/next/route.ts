@@ -129,7 +129,7 @@ export async function GET(req: NextRequest) {
         mode: prescribedMode,
         challenge_slug: nextChallenge?.id ?? '',
         challenge_title: nextChallenge?.title ?? 'Next challenge',
-        reason: `Your last ${topPattern.occurrence_count} submissions show "${topPattern.pattern_name}". ${prescribedMode === 'live' ? 'Live mode forces real-time prioritization.' : prescribedMode === 'spotlight' ? 'Spotlight mode builds diagnostic speed.' : prescribedMode === 'workshop' ? 'Workshop mode lets Luma coach your reasoning step by step.' : 'Solo mode gives you space to practice without pressure.'}`,
+        reason: `Your last ${topPattern.occurrence_count} submissions show "${topPattern.pattern_name}". ${prescribedMode === 'live' ? 'Live mode forces real-time prioritization with Luma coaching.' : 'Solo mode gives you space to practice without pressure.'}`,
       },
       secondary_patterns: recurringPatterns.slice(1, 3).map(p => ({
         pattern_id: p.pattern_id,

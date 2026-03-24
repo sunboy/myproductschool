@@ -20,7 +20,6 @@ export async function POST(
 
   const adminClient = createAdminClient()
 
-  // Verify session ownership
   const { data: session, error: sessionError } = await adminClient
     .from('simulation_sessions')
     .select('*, company_profiles(name, industry, product_focus, interview_style), challenge_prompts(title, prompt_text)')
@@ -31,7 +30,6 @@ export async function POST(
   if (sessionError || !session) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
   if (session.status === 'completed') return NextResponse.json({ error: 'Session already completed' }, { status: 400 })
 
-  // Fetch existing turns
   const { data: existingTurns } = await adminClient
     .from('simulation_turns')
     .select('role, content, turn_index')
@@ -40,7 +38,6 @@ export async function POST(
 
   const nextTurnIndex = (existingTurns?.length ?? 0)
 
-  // Build system prompt with company + challenge context
   const companyContext = session.company_profiles
     ? `\n\nYou are interviewing for ${session.company_profiles.name} (${session.company_profiles.industry}). Interview style: ${session.company_profiles.interview_style}.`
     : ''
@@ -49,7 +46,6 @@ export async function POST(
     : ''
   const systemPrompt = LUMA_CHAT_SYSTEM_PROMPT + companyContext + challengeContext
 
-  // Build message history for Claude
   const messages = [
     ...(existingTurns ?? []).map(t => ({
       role: t.role === 'luma' ? 'assistant' as const : 'user' as const,
@@ -58,7 +54,6 @@ export async function POST(
     { role: 'user' as const, content },
   ]
 
-  // Call Claude (or mock)
   let lumaReply: string
   if (process.env.USE_MOCK_DATA === 'true' || !process.env.ANTHROPIC_API_KEY) {
     lumaReply = "That's an interesting perspective. Can you walk me through how you'd measure the success of that approach? What specific metrics would you track in the first 30 days?"
@@ -72,7 +67,6 @@ export async function POST(
     lumaReply = response.content[0].type === 'text' ? response.content[0].text : ''
   }
 
-  // Save both turns
   await adminClient.from('simulation_turns').insert([
     { session_id: id, role: 'user', content, turn_index: nextTurnIndex },
     { session_id: id, role: 'luma', content: lumaReply, turn_index: nextTurnIndex + 1 },

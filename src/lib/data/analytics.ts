@@ -64,24 +64,19 @@ export async function getUserAnalyticsSummary(userId: string): Promise<Analytics
 
   const productiq_delta = Math.round((recentAvg - prevAvg) * 10) / 10
 
-  // Streak: read from profiles.streak_days directly
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('streak_days')
-    .eq('id', userId)
-    .single()
-
-  // Heatmap: query user_streaks for last 90 days, map to { date, completed }
   const ninetyDaysAgo = new Date(now)
   ninetyDaysAgo.setDate(now.getDate() - 89)
   ninetyDaysAgo.setHours(0, 0, 0, 0)
 
-  const { data: streakRows } = await supabase
-    .from('user_streaks')
-    .select('streak_date, completed')
-    .eq('user_id', userId)
-    .gte('streak_date', ninetyDaysAgo.toISOString().split('T')[0])
-    .order('streak_date', { ascending: true })
+  const [{ data: profile }, { data: streakRows }] = await Promise.all([
+    supabase.from('profiles').select('streak_days').eq('id', userId).single(),
+    supabase
+      .from('user_streaks')
+      .select('streak_date, completed')
+      .eq('user_id', userId)
+      .gte('streak_date', ninetyDaysAgo.toISOString().split('T')[0])
+      .order('streak_date', { ascending: true }),
+  ])
 
   const streakMap = new Map<string, boolean>()
   for (const row of streakRows ?? []) {

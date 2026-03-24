@@ -62,7 +62,7 @@ export function PMCanvas({
     !submitting &&
     confidence > 0 &&
     responses.some((r) => r.trim().length > 0) &&
-    !(mode === 'spotlight' && timeLeft !== undefined && timeLeft <= 0)
+    !(timeLeft !== undefined && timeLeft <= 0)
 
   const handleResponseChange = (index: number, value: string) => {
     setResponses((prev) => {
@@ -134,28 +134,11 @@ export function PMCanvas({
         ))}
       </div>
 
-      {/* Workshop nudge */}
-      {mode === 'workshop' && nudge && (
-        <div className="flex gap-3 p-4 bg-primary-container rounded-xl">
-          <LumaGlyph size={20} className="text-primary flex-shrink-0 mt-0.5" />
-          <div>
-            <div className="text-xs font-semibold text-primary mb-1">Luma nudge</div>
-            <p className="text-sm text-on-primary-container">{nudge}</p>
-          </div>
-        </div>
-      )}
-
       {/* Total word count */}
       <div className="flex items-center justify-between px-1">
         <span className="text-xs text-on-surface-variant">
           Total: {totalWordCount} {totalWordCount === 1 ? 'word' : 'words'}
         </span>
-        {mode === 'workshop' && (
-          <span className="text-xs text-on-surface-variant flex items-center gap-1">
-            <LumaGlyph size={12} className="text-primary" />
-            Luma coaches every 3 min
-          </span>
-        )}
       </div>
 
       {/* Confidence slider */}

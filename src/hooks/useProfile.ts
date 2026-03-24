@@ -30,7 +30,5 @@ export function useProfile() {
 
   useEffect(() => { fetchProfile() }, [fetchProfile])
 
-  const mutate = useCallback(() => fetchProfile(), [fetchProfile])
-
-  return { profile, isLoading, error, mutate }
+  return { profile, isLoading, error, mutate: fetchProfile }
 }

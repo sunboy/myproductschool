@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
@@ -65,18 +64,24 @@ export default function OnboardingPage() {
   const [skillRatings, setSkillRatings] = useState<Record<SkillKey, number>>(DEFAULT_RATINGS)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   async function handleComplete() {
     setLoading(true)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      await supabase.from('profiles').upsert({
-        id: user.id,
-        display_name: user.email?.split('@')[0] ?? 'User',
-        onboarding_completed_at: new Date().toISOString(),
-        goal: selectedRole ? ROLE_TO_GOAL[selectedRole] : 'both',
-      })
+
+    const ratings = Object.values(skillRatings)
+    const avg = ratings.reduce((sum, v) => sum + v, 0) / ratings.length
+    const experience_level = avg < 2.5 ? 'beginner' : avg >= 4 ? 'advanced' : 'intermediate'
+
+    const res = await fetch('/api/onboarding/complete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        role_context: selectedRole ?? 'engineer',
+        experience_level,
+      }),
+    })
+    if (!res.ok) {
+      // show error or just continue to dashboard anyway
     }
     router.push('/dashboard')
   }

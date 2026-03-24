@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getChallengeById } from '@/lib/data/challenges'
-import { MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import type { FailurePattern } from '@/lib/types'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { DiagnosisCard } from '@/components/challenge/DiagnosisCard'
 import { SkillMovementRow } from '@/components/challenge/SkillMovementRow'
@@ -25,18 +27,34 @@ const PATTERN_CONSEQUENCES: Record<string, string> = {
   'FP-14': "Forgetting stakeholder translation signals you've been heads-down in execution without cross-functional experience.",
 }
 
-// Mock skill movement deltas
-const MOCK_SKILL_DELTAS = [
-  { dimension: 'diagnostic_accuracy', delta: 0.2 },
-  { dimension: 'metric_fluency', delta: -0.1 },
-  { dimension: 'framing_precision', delta: 0 },
-  { dimension: 'recommendation_strength', delta: 0.1 },
-]
+interface ScoreDimension {
+  dimension: string
+  score: number
+}
+
+interface SkillDelta {
+  dimension: string
+  delta: number
+}
+
+interface PatternOccurrence {
+  pattern_id: string
+  pattern_name: string
+  occurrence_count: number
+  last_seen_at: string
+}
 
 interface DiagnosisPageProps {
   params: Promise<{ id: string }>
   searchParams: Promise<{ attempt?: string; confidence?: string }>
 }
+
+const ZERO_DELTAS: SkillDelta[] = [
+  { dimension: 'diagnostic_accuracy', delta: 0 },
+  { dimension: 'metric_fluency', delta: 0 },
+  { dimension: 'framing_precision', delta: 0 },
+  { dimension: 'recommendation_strength', delta: 0 },
+]
 
 export default async function DiagnosisPage({ params, searchParams }: DiagnosisPageProps) {
   const { id } = await params
@@ -45,19 +63,74 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
   const challenge = await getChallengeById(id)
   if (!challenge) notFound()
 
-  const isMock = process.env.USE_MOCK_DATA === 'true' || attempt === 'mock'
-  const feedbackFull = isMock ? MOCK_FEEDBACK_FULL : null
+  const isMock = process.env.USE_MOCK_DATA === 'true' || attempt === 'mock' || !attempt
 
-  const detectedPatterns = feedbackFull?.detected_patterns ?? []
+  let detectedPatterns: FailurePattern[] = []
+  let skillDeltas: SkillDelta[] = ZERO_DELTAS
+  let userPatterns: PatternOccurrence[] = []
+  let actualScore: number | null = null
+  let actualMaxScore: number | null = null
+
+  if (!isMock) {
+    // Fetch real user + attempt data
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (user) {
+      const adminClient = createAdminClient()
+
+      const [attemptResult, patternsResult] = await Promise.all([
+        adminClient
+          .from('challenge_attempts')
+          .select('score_json, feedback_json')
+          .eq('id', attempt)
+          .eq('user_id', user.id)
+          .single(),
+        adminClient
+          .from('user_failure_patterns')
+          .select('pattern_id, pattern_name, occurrence_count, last_seen_at')
+          .eq('user_id', user.id)
+          .order('occurrence_count', { ascending: false })
+          .limit(5),
+      ])
+
+      const attemptData = attemptResult.data
+      userPatterns = (patternsResult.data as PatternOccurrence[]) ?? []
+
+      if (attemptData) {
+        const scoreJson = attemptData.score_json as Record<string, unknown>
+
+        // Extract detected patterns from score_json
+        detectedPatterns = (scoreJson?.detected_patterns as FailurePattern[]) ?? []
+
+        // Calculate skill deltas from dimensions (baseline 5.0 on a 0–10 scale)
+        const dimensions = scoreJson?.dimensions as ScoreDimension[] | undefined
+        if (dimensions && dimensions.length > 0) {
+          skillDeltas = dimensions.map((d) => ({
+            dimension: d.dimension,
+            delta: (d.score / 10) - 0.5,
+          }))
+        }
+
+        // Extract overall score for confidence calibration
+        const overallScore = scoreJson?.overall_score
+        if (typeof overallScore === 'number') {
+          actualScore = overallScore
+          actualMaxScore = 10
+        }
+      }
+    }
+  }
+
   const primaryPattern = detectedPatterns[0] ?? null
   const hasPatterns = detectedPatterns.length > 0
 
   // Confidence calibration
   const confidenceRating = confidence ? parseInt(confidence) : null
-  const mockScore = 2.3
-  const mockMaxScore = 4
+  const displayScore = actualScore ?? 2.3
+  const displayMaxScore = actualMaxScore ?? 4
 
-  // Mock prescription
+  // Mock prescription (kept as-is per instructions)
   const prescription = {
     mode: 'live',
     challenge_slug: id,
@@ -112,13 +185,15 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
           {/* 2. Skill movement */}
           <div className="space-y-2">
             <p className="text-xs font-label font-semibold text-on-surface-variant uppercase tracking-widest">Skill movement this session</p>
-            <SkillMovementRow deltas={MOCK_SKILL_DELTAS} />
+            <SkillMovementRow deltas={skillDeltas} />
           </div>
 
           {/* 3. Primary failure pattern card */}
           <DiagnosisCard
             pattern={primaryPattern}
-            occurrenceCount={4}
+            occurrenceCount={
+              userPatterns.find((p) => p.pattern_id === primaryPattern.pattern_id)?.occurrence_count ?? 1
+            }
             isNew={false}
             interviewRisk={PATTERN_CONSEQUENCES[primaryPattern.pattern_id]}
           />
@@ -128,7 +203,9 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
             <DiagnosisCard
               key={p.pattern_id}
               pattern={p}
-              occurrenceCount={2}
+              occurrenceCount={
+                userPatterns.find((up) => up.pattern_id === p.pattern_id)?.occurrence_count ?? 1
+              }
               isNew={false}
             />
           ))}
@@ -138,12 +215,12 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
             <div className="bg-surface-container rounded-2xl p-5 space-y-1">
               <p className="text-xs font-label font-semibold text-on-surface-variant uppercase tracking-widest mb-2">Confidence calibration</p>
               <p className="text-sm text-on-surface">
-                You rated yourself <span className="font-semibold">{confidenceRating}/5</span>. Your score was <span className="font-semibold">{mockScore.toFixed(1)}/{mockMaxScore.toFixed(1)}</span>.
+                You rated yourself <span className="font-semibold">{confidenceRating}/5</span>. Your score was <span className="font-semibold">{displayScore.toFixed(1)}/{displayMaxScore.toFixed(1)}</span>.
               </p>
               <p className="text-sm text-on-surface-variant italic">
-                {confidenceRating / 5 > mockScore / mockMaxScore + 0.1
+                {confidenceRating / 5 > displayScore / displayMaxScore + 0.1
                   ? "You tend to overestimate your performance on this type of challenge."
-                  : confidenceRating / 5 < mockScore / mockMaxScore - 0.1
+                  : confidenceRating / 5 < displayScore / displayMaxScore - 0.1
                   ? "You tend to underestimate yourself — trust your product instincts more."
                   : "Your confidence is well-calibrated to your actual performance."}
               </p>

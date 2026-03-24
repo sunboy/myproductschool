@@ -15,3 +15,7 @@ export function getTopDimension(dimensions: Record<string, { score: number }>): 
     { key: '', score: 0 }
   )
 }
+
+export function isMockMode(): boolean {
+  return process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+}

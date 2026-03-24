@@ -6,6 +6,7 @@ import { LumaGlyph } from './LumaGlyph'
 const navItems = [
   { href: '/dashboard', icon: 'home', label: 'Home' },
   { href: '/domains', icon: 'grid_view', label: 'Domains' },
+  { href: '/product-75', icon: 'menu_book', label: 'Product 75' },
   { href: '/challenges', icon: 'fitness_center', label: 'Practice' },
   { href: '/progress', icon: 'bar_chart', label: 'Progress' },
   { href: '/interview-prep', icon: 'workspace_premium', label: 'Interview Prep' },
@@ -80,13 +81,14 @@ export function NavRail() {
 
       {/* Ask Luma button */}
       <div className="px-2 pb-4">
-        <Link
-          href="/luma"
-          className="flex items-center gap-3 px-3 py-3 rounded-full bg-primary text-on-primary hover:opacity-90 transition-opacity w-full justify-center"
+        <button
+          disabled
+          title="Coming soon"
+          className="flex items-center gap-3 px-3 py-3 rounded-full bg-primary text-on-primary opacity-60 cursor-not-allowed w-full justify-center"
         >
           <LumaGlyph size={20} className="flex-shrink-0" />
           <span className="text-sm font-medium">Ask Luma</span>
-        </Link>
+        </button>
       </div>
     </nav>
   )

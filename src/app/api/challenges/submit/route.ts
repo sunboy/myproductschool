@@ -19,18 +19,14 @@ export async function POST(req: NextRequest) {
 
   const adminClient = createAdminClient()
 
-  // Check free tier daily limit
-  const { data: profile } = await adminClient.from('profiles').select('plan').eq('id', user.id).single()
-  if (profile?.plan !== 'pro') {
-    const today = new Date().toISOString().split('T')[0]
-    const { count } = await adminClient
-      .from('challenge_attempts')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .gte('created_at', today)
-    if ((count ?? 0) >= 3) {
-      return NextResponse.json({ error: 'Daily limit reached', upgrade_url: '/pricing' }, { status: 403 })
-    }
+  // Check free tier daily limit — fetch plan and today's attempt count in parallel
+  const today = new Date().toISOString().split('T')[0]
+  const [{ data: profile }, { count }] = await Promise.all([
+    adminClient.from('profiles').select('plan').eq('id', user.id).single(),
+    adminClient.from('challenge_attempts').select('id', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', today),
+  ])
+  if (profile?.plan !== 'pro' && (count ?? 0) >= 3) {
+    return NextResponse.json({ error: 'Daily limit reached', upgrade_url: '/pricing' }, { status: 403 })
   }
 
   const { data, error } = await supabase.from('challenge_attempts').insert({
@@ -44,7 +40,7 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ error: 'Failed to save attempt' }, { status: 500 })
 
   // Update streak (fire and forget)
-  adminClient.rpc('update_user_streak', { p_user_id: user.id }).catch(() => {})
+  adminClient.rpc('update_user_streak', { p_user_id: user.id }).then(() => {}, () => {})
 
   // Trigger achievement check (fire and forget)
   fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/achievements/check`, {

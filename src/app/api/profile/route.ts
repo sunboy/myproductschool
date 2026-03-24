@@ -10,7 +10,7 @@ export async function GET() {
   const adminClient = createAdminClient()
 
   const [profileResult, subscriptionResult, attemptsResult] = await Promise.all([
-    adminClient.from('profiles').select('*').eq('id', user.id).single(),
+    adminClient.from('profiles').select('id, display_name, avatar_url, plan, role, streak_days, xp_total, onboarding_completed_at, created_at, updated_at').eq('id', user.id).single(),
     adminClient.from('subscriptions').select('plan, status, current_period_end').eq('user_id', user.id).maybeSingle(),
     adminClient
       .from('challenge_attempts')

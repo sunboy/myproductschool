@@ -31,10 +31,13 @@ export function useSimulation(sessionId: string | null) {
   }, [sessionId])
 
   const sendMessage = useCallback(async (content: string) => {
-    if (!sessionId || isSending) return
-    setIsSending(true)
+    if (!sessionId) return
+    setIsSending(sending => {
+      if (sending) return sending
+      return true
+    })
 
-    const optimisticTurn: SimTurn = { role: 'user', content, turn_index: turns.length }
+    const optimisticTurn: SimTurn = { role: 'user', content, turn_index: -1 }
     setTurns(prev => [...prev, optimisticTurn])
 
     try {
@@ -52,7 +55,7 @@ export function useSimulation(sessionId: string | null) {
     } finally {
       setIsSending(false)
     }
-  }, [sessionId, isSending, turns.length])
+  }, [sessionId])
 
   const endSession = useCallback(async () => {
     if (!sessionId) return

@@ -1,29 +1,24 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 
-interface Achievement {
+interface AchievementDefinition {
   id: string
+  key: string
   name: string
   description: string
   icon: string
   xp_reward: number
+}
+
+interface Achievement extends AchievementDefinition {
   unlocked_at?: string
 }
 
 export function useAchievements() {
   const [achievements, setAchievements] = useState<Achievement[]>([])
   const [newlyUnlocked, setNewlyUnlocked] = useState<Achievement[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    fetch('/api/profile')
-      .then(res => res.json())
-      .then(() => {
-        setIsLoading(false)
-      })
-      .catch(() => setIsLoading(false))
-  }, [])
+  const [isLoading] = useState(false)
 
   const checkAchievements = useCallback(async (userId: string) => {
     const res = await fetch('/api/achievements/check', {

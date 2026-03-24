@@ -1,57 +1,48 @@
 interface Props {
   streakDays: number
   totalAttempts: number
+  productiqScore: number
 }
 
-const CIRCUMFERENCE = 427 // 2π × 68 ≈ 427
-const MAX_STREAK = 30
+export function StreakRingCard({ streakDays, totalAttempts, productiqScore }: Props) {
+  // Determine tier badge
+  const tierLabel =
+    productiqScore >= 90 ? 'TOP PERFORMER'
+    : productiqScore >= 75 ? 'RISING STAR'
+    : productiqScore >= 60 ? 'BUILDING'
+    : 'GETTING STARTED'
 
-export function StreakRingCard({ streakDays, totalAttempts }: Props) {
-  const cappedDays = Math.min(streakDays, MAX_STREAK)
-  const strokeDashoffset = CIRCUMFERENCE - (cappedDays / MAX_STREAK) * CIRCUMFERENCE
+  // Percentile estimate based on score
+  const percentile =
+    productiqScore >= 90 ? 2
+    : productiqScore >= 80 ? 10
+    : productiqScore >= 70 ? 25
+    : productiqScore >= 60 ? 40
+    : 60
 
   return (
-    <div className="bg-surface-container rounded-xl p-8 flex flex-col items-center justify-center text-center h-full">
-      <p className="text-xs font-bold uppercase tracking-wider text-tertiary mb-6">Streak</p>
-
-      {/* Ring */}
-      <div className="relative w-36 h-36">
-        <svg width="144" height="144" viewBox="0 0 160 160" className="w-full h-full">
-          {/* Background track */}
-          <circle
-            cx="80"
-            cy="80"
-            r="68"
-            fill="transparent"
-            stroke="#e4e0d8"
-            strokeWidth="8"
-          />
-          {/* Progress arc */}
-          <circle
-            cx="80"
-            cy="80"
-            r="68"
-            fill="transparent"
-            stroke="#4a7c59"
-            strokeWidth="12"
-            strokeLinecap="round"
-            strokeDasharray={CIRCUMFERENCE}
-            strokeDashoffset={strokeDashoffset}
-            transform="rotate(-90 80 80)"
-          />
+    <div className="bg-surface-container-lowest p-6 rounded-xl editorial-shadow ghost-border flex flex-col items-center justify-center h-full relative">
+      <div className="absolute top-4 right-4">
+        <span
+          className="material-symbols-outlined text-secondary"
+          style={{ fontVariationSettings: "'FILL' 1" }}
+        >
+          local_fire_department
+        </span>
+      </div>
+      <div className="relative flex items-center justify-center w-32 h-32">
+        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 128 128">
+          <circle className="text-surface-variant" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" strokeWidth="8" />
+          <circle className="text-primary" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" strokeDasharray="364.4" strokeDashoffset={364.4 - (364.4 * Math.min(streakDays, 30) / 30)} strokeLinecap="round" strokeWidth="8" />
         </svg>
-
-        {/* Center text */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-4xl font-bold font-headline text-on-surface leading-none">
-            {streakDays}
-          </span>
-          <span className="text-xs text-on-surface-variant uppercase mt-1">days</span>
+        <div className="absolute flex flex-col items-center">
+          <span className="text-4xl font-headline font-black text-primary leading-none">{streakDays}</span>
+          <span className="text-[10px] font-bold text-on-surface-variant uppercase">Days</span>
         </div>
       </div>
-
-      <p className="text-sm font-medium text-on-surface-variant mt-4">current streak</p>
-      <p className="text-xs text-on-surface-variant mt-2">{totalAttempts} total sessions</p>
+      <p className="mt-4 text-xs font-bold text-on-surface-variant">
+        {totalAttempts} sessions &bull; Top {percentile}%
+      </p>
     </div>
   )
 }

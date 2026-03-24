@@ -8,28 +8,19 @@ export async function POST(request: Request) {
 
   const adminClient = createAdminClient()
 
-  const [definitionsResult, unlockedResult, profileResult] = await Promise.all([
+  const [definitionsResult, unlockedResult, profileResult, challengeCountResult, simulationCountResult] = await Promise.all([
     adminClient.from('achievement_definitions').select('*'),
     adminClient.from('user_achievements').select('achievement_id').eq('user_id', user_id),
     adminClient.from('profiles').select('streak_days').eq('id', user_id).single(),
+    adminClient.from('challenge_attempts').select('id', { count: 'exact', head: true }).eq('user_id', user_id),
+    adminClient.from('simulation_sessions').select('id', { count: 'exact', head: true }).eq('user_id', user_id).eq('status', 'completed'),
   ])
 
   const definitions = definitionsResult.data ?? []
   const alreadyUnlocked = new Set((unlockedResult.data ?? []).map(a => a.achievement_id))
   const streakDays = profileResult.data?.streak_days ?? 0
-
-  // Get challenge count
-  const { count: challengeCount } = await adminClient
-    .from('challenge_attempts')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', user_id)
-
-  // Get simulation count
-  const { count: simulationCount } = await adminClient
-    .from('simulation_sessions')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', user_id)
-    .eq('status', 'completed')
+  const challengeCount = challengeCountResult.count
+  const simulationCount = simulationCountResult.count
 
   const newlyUnlocked: string[] = []
 
@@ -46,7 +37,6 @@ export async function POST(request: Request) {
     await adminClient.from('user_achievements').insert(
       newlyUnlocked.map(achievement_id => ({ user_id, achievement_id }))
     )
-    // Award XP for each achievement
     const totalXP = definitions.filter(d => newlyUnlocked.includes(d.id)).reduce((sum, d) => sum + (d.xp_reward ?? 0), 0)
     if (totalXP > 0) await adminClient.from('profiles').update({ xp_total: adminClient.rpc('increment', { x: totalXP }) }).eq('id', user_id)
   }

@@ -3,6 +3,17 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function GET(request: Request) {
+  if (process.env.USE_MOCK_DATA === 'true') {
+    const { MOCK_FLASHCARDS, MOCK_CONCEPTS } = await import('@/lib/mock-data')
+    const { searchParams } = new URL(request.url)
+    const domainSlug = searchParams.get('domainSlug')
+    const cards = MOCK_FLASHCARDS.map(f => {
+      const concept = MOCK_CONCEPTS.find(c => c.id === f.concept_id)
+      return { ...f, concept_id: f.concept_id, domain_slug: domainSlug, concept_title: concept?.title, definition: concept?.definition, progress: null }
+    })
+    return NextResponse.json({ cards, total_due: 0, total_new: cards.length })
+  }
+
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 interface FlashCard {
   id: string
@@ -23,6 +23,7 @@ export function useFlashcardSession(domainSlug?: string) {
   const [sessionCorrect, setSessionCorrect] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [isComplete, setIsComplete] = useState(false)
+  const cardsRef = useRef<FlashCard[]>([])
 
   useEffect(() => {
     const url = domainSlug
@@ -31,7 +32,9 @@ export function useFlashcardSession(domainSlug?: string) {
     fetch(url)
       .then(res => res.json())
       .then(data => {
-        setCards(data.cards ?? [])
+        const loaded = data.cards ?? []
+        cardsRef.current = loaded
+        setCards(loaded)
         setStats({ total_due: data.total_due ?? 0, total_new: data.total_new ?? 0 })
       })
       .catch(console.error)
@@ -39,24 +42,28 @@ export function useFlashcardSession(domainSlug?: string) {
   }, [domainSlug])
 
   const rateCard = useCallback(async (conceptId: string, confidence: number) => {
-    const card = cards[currentIndex]
-    const flashcardId = (card?.flashcards as FlashCard[])?.[0]?.id ?? card?.id
+    const current = cardsRef.current[currentIndex]
+    const flashcardId = (current?.flashcards as FlashCard[])?.[0]?.id ?? current?.id
 
-    await fetch('/api/progress/vocabulary', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ conceptId, flashcardId, confidence }),
-    })
+    try {
+      await fetch('/api/progress/vocabulary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conceptId, flashcardId, confidence }),
+      })
+    } catch (e) {
+      console.error(e)
+    }
 
     if (confidence >= 4) setSessionCorrect(c => c + 1)
 
     const next = currentIndex + 1
-    if (next >= cards.length) {
+    if (next >= cardsRef.current.length) {
       setIsComplete(true)
     } else {
       setCurrentIndex(next)
     }
-  }, [cards, currentIndex])
+  }, [currentIndex])
 
   const accuracy = cards.length > 0 ? Math.round((sessionCorrect / Math.max(currentIndex, 1)) * 100) : 0
 
