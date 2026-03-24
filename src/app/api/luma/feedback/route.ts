@@ -6,13 +6,14 @@ import {
 } from '@/lib/luma/system-prompt'
 import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { LumaFeedbackSchema, clampFeedbackScores } from '@/lib/luma/feedback-schema'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
 export async function POST(req: NextRequest) {
-  const { challengeId, challengeTitle, challengePrompt, response: userResponse, userId, attemptId } = await req.json()
+  const { challengeId: _challengeId, challengeTitle, challengePrompt, response: userResponse, userId, attemptId } = await req.json()
 
   if (!userResponse?.trim()) {
     return NextResponse.json({ error: 'No response provided' }, { status: 400 })
@@ -24,36 +25,55 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const userMessage = {
+      role: 'user' as const,
+      content: buildFeedbackUserPrompt(
+        challengeTitle ?? 'Product Challenge',
+        challengePrompt ?? '',
+        userResponse
+      ),
+    }
+
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 2000,
       system: LUMA_FEEDBACK_SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: buildFeedbackUserPrompt(
-            challengeTitle ?? 'Product Challenge',
-            challengePrompt ?? '',
-            userResponse
-          ),
-        },
-      ],
+      messages: [userMessage],
     })
 
-    const content = message.content[0]
-    if (content.type !== 'text') {
-      return NextResponse.json({ error: 'Unexpected response type' }, { status: 500 })
+    // Attempt 1: parse and validate
+    let parsedFeedback
+    const rawText = message.content[0].type === 'text' ? message.content[0].text : '{}'
+
+    try {
+      const parsed = JSON.parse(rawText)
+      const validated = LumaFeedbackSchema.safeParse(parsed)
+
+      if (validated.success) {
+        parsedFeedback = clampFeedbackScores(validated.data)
+      } else {
+        // Retry once with stricter prompt
+        const retryResponse = await client.messages.create({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1500,
+          system: LUMA_FEEDBACK_SYSTEM_PROMPT + '\n\nCRITICAL: Return ONLY a valid JSON object. No markdown, no explanation, no code blocks. Raw JSON only.',
+          messages: [userMessage, { role: 'assistant', content: rawText }, { role: 'user', content: 'The JSON was invalid. Return only the raw JSON object with no surrounding text.' }],
+        })
+        const retryText = retryResponse.content[0].type === 'text' ? retryResponse.content[0].text : '{}'
+        const retryParsed = JSON.parse(retryText)
+        const retryValidated = LumaFeedbackSchema.safeParse(retryParsed)
+        parsedFeedback = retryValidated.success ? clampFeedbackScores(retryValidated.data) : retryParsed
+      }
+    } catch {
+      return NextResponse.json({ error: 'Failed to parse Luma feedback' }, { status: 500 })
     }
 
-    // Parse and validate the JSON
-    const feedback = JSON.parse(content.text)
-
     // Persist detected patterns to DB
-    if (feedback.detected_patterns?.length && userId) {
+    if (parsedFeedback.detected_patterns?.length && userId) {
       try {
         const supabaseAdmin = createAdminClient()
         await supabaseAdmin.from('user_failure_patterns').insert(
-          feedback.detected_patterns.map((p: { pattern_id: string; pattern_name: string; confidence: number; evidence: string; question?: string }) => ({
+          parsedFeedback.detected_patterns.map((p: { pattern_id: string; pattern_name: string; confidence: number; evidence: string; question?: string }) => ({
             user_id: userId,
             attempt_id: attemptId ?? null,
             pattern_id: p.pattern_id,
@@ -69,7 +89,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json(feedback)
+    return NextResponse.json(parsedFeedback)
   } catch (error) {
     console.error('Luma feedback error:', error)
     // Fall back to mock on error
