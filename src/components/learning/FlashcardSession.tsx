@@ -1,237 +1,331 @@
 'use client'
-import { useState, useCallback } from 'react'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import type { Domain } from '@/lib/types'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { useFlashcardSession } from '@/hooks/useFlashcardSession'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import type { Domain } from '@/lib/types'
+
+/* ── Types ───────────────────────────────────────────────── */
 
 interface FlashcardSessionProps {
   domain: Domain
   domainSlug: string
+  allDomains?: Domain[]
 }
 
-type ConfidenceLevel = 1 | 2 | 3 | 4 | 5
+/* ── Component ───────────────────────────────────────────── */
 
-const confidenceLevels: { level: ConfidenceLevel; label: string; color: string; bg: string }[] = [
-  { level: 1, label: 'Forgot', color: 'text-error', bg: 'bg-error-container hover:bg-error/20' },
-  { level: 2, label: 'Hard', color: 'text-error', bg: 'bg-error-container/70 hover:bg-error/20' },
-  { level: 3, label: 'Good', color: 'text-tertiary', bg: 'bg-tertiary-container hover:bg-tertiary/20' },
-  { level: 4, label: 'Easy', color: 'text-primary', bg: 'bg-primary-container hover:bg-primary/20' },
-  { level: 5, label: 'Perfect', color: 'text-primary', bg: 'bg-primary hover:opacity-90 text-on-primary' },
-]
-
-export function FlashcardSession({ domain, domainSlug }: FlashcardSessionProps) {
+export function FlashcardSession({ domain, domainSlug, allDomains = [] }: FlashcardSessionProps) {
   const {
-    cards,
     currentCard,
     currentIndex,
     totalCards,
+    accuracy,
     isComplete,
     isLoading,
-    stats,
     rateCard,
-    accuracy,
   } = useFlashcardSession(domainSlug)
 
-  const [isFlipped, setIsFlipped] = useState(false)
-  const [showHint, setShowHint] = useState(false)
+  const [revealed, setRevealed] = useState(false)
+  const [ratings, setRatings] = useState<number[]>([])
+  const [sessionStart] = useState(Date.now())
+  const [elapsed, setElapsed] = useState(0)
 
-  const progress = totalCards > 0 ? (currentIndex / totalCards) * 100 : 0
-  const conceptTitle = currentCard ? (currentCard as Record<string, unknown>)['concept_title'] as string | undefined : undefined
+  useEffect(() => {
+    const interval = setInterval(() => setElapsed(Math.floor((Date.now() - sessionStart) / 60000)), 30_000)
+    return () => clearInterval(interval)
+  }, [sessionStart])
 
-  const handleFlip = useCallback(() => {
-    setIsFlipped(f => !f)
-    setShowHint(false)
-  }, [])
+  useEffect(() => {
+    setRevealed(false)
+  }, [currentIndex])
 
-  const handleRate = useCallback(async (confidence: ConfidenceLevel) => {
+  const handleRate = (confidence: number) => {
     if (!currentCard) return
-    const conceptId = ((currentCard as Record<string, unknown>)['concept_id'] as string | undefined) ?? currentCard.id
-    await rateCard(conceptId, confidence)
-    setIsFlipped(false)
-    setShowHint(false)
-  }, [currentCard, rateCard])
+    setRatings(prev => [...prev, confidence])
+    rateCard(currentCard.id, confidence)
+  }
 
+  const streakCount = (() => {
+    let count = 0
+    for (let i = ratings.length - 1; i >= 0; i--) {
+      if (ratings[i] >= 3) count++
+      else break
+    }
+    return count
+  })()
+
+  const masteryPercent = totalCards > 0 ? Math.round((currentIndex / totalCards) * 100) : 0
+
+  /* ── Loading ───────────────────────────────────────────── */
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
-  if (totalCards === 0 && !isLoading) {
+  /* ── Empty ─────────────────────────────────────────────── */
+  if (!currentCard && !isComplete) {
     return (
-      <div className="text-center py-12">
-        <span className="material-symbols-outlined text-5xl text-on-surface-variant mb-4 block">check_circle</span>
-        <h2 className="font-headline text-xl font-bold text-on-surface">You&apos;re all caught up!</h2>
-        <p className="text-on-surface-variant mt-2">No cards due today.</p>
-        <Link href="/flashcards" className="mt-4 inline-block text-primary hover:underline">← Back to decks</Link>
+      <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
+        <span className="material-symbols-outlined text-5xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+        <h2 className="font-headline text-2xl font-bold">All caught up!</h2>
+        <p className="text-on-surface-variant">No cards due today in {domain.title}.</p>
+        <Link href="/flashcards" className="text-primary font-bold hover:underline">← Back to decks</Link>
       </div>
     )
   }
 
+  /* ── Complete ──────────────────────────────────────────── */
   if (isComplete) {
-    const masteredCount = Math.round((accuracy / 100) * currentIndex)
-    const needsPracticeCount = currentIndex - masteredCount
     return (
-      <div className="text-center py-8 space-y-6">
-        <div className="w-20 h-20 bg-primary-container rounded-full flex items-center justify-center mx-auto">
-          <span className="material-symbols-outlined text-4xl text-primary">check_circle</span>
-        </div>
-        <div>
-          <h2 className="font-headline text-3xl font-bold text-on-surface">Session complete!</h2>
-          <p className="text-on-surface-variant mt-2">You reviewed {totalCards} cards from {domain.title}</p>
-        </div>
-        <div className="p-5 bg-surface-container rounded-2xl inline-block">
-          <div className="text-4xl font-bold text-primary">{accuracy}%</div>
-          <div className="text-sm text-on-surface-variant">accuracy</div>
-        </div>
-        {/* Mastery summary */}
-        <p className="text-sm text-on-surface">
-          <span className="font-semibold text-primary">{masteredCount} concept{masteredCount !== 1 ? 's' : ''} mastered</span>
-          {needsPracticeCount > 0 && (
-            <>, <span className="font-semibold text-tertiary">{needsPracticeCount} need{needsPracticeCount === 1 ? 's' : ''} more practice</span></>
-          )}
-        </p>
-        {/* Next review schedule */}
-        <p className="text-xs text-on-surface-variant">
-          Next review: 1 day (Hard), 3 days (Good), 7 days (Easy)
-        </p>
-        <div className="flex gap-3 justify-center flex-wrap">
-          <Link href={`/flashcards/${domainSlug}`} className="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-medium hover:opacity-90 transition-opacity">
-            Study again
-          </Link>
-          <Link href="/flashcards" className="px-5 py-2.5 bg-surface-container border border-outline-variant text-on-surface rounded-xl font-medium hover:bg-surface-container-high transition-colors">
-            Choose another deck
-          </Link>
-        </div>
-        {/* CTA: Practice a related challenge */}
-        <Link href="/challenges" className="flex items-center justify-center gap-2 mt-4 px-6 py-2.5 bg-primary text-on-primary rounded-full font-semibold text-sm hover:opacity-90 transition-opacity">
-          Practice a related challenge
-          <span className="material-symbols-outlined text-lg">arrow_forward</span>
-        </Link>
-        {/* Luma post-session nudge */}
-        <div className="flex gap-3 p-4 bg-primary-fixed rounded-xl mt-4 text-left">
-          <LumaGlyph size={20} className="text-primary flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-on-surface-variant">
-            You reviewed {totalCards} concepts. Want to test your knowledge in a challenge?
-          </p>
+      <div className="flex items-center justify-center min-h-[70vh]">
+        <div className="max-w-md text-center space-y-6">
+          <div className="w-20 h-20 mx-auto bg-primary-container rounded-full flex items-center justify-center">
+            <span className="material-symbols-outlined text-white text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>celebration</span>
+          </div>
+          <h2 className="font-headline text-3xl font-bold text-on-surface">Session Complete!</h2>
+          <div className="bg-surface-container rounded-2xl p-6 space-y-3">
+            <div className="text-4xl font-headline font-bold text-primary">{accuracy}%</div>
+            <div className="text-sm text-on-surface-variant">Accuracy across {totalCards} cards</div>
+          </div>
+          <div className="bg-primary-fixed rounded-xl p-4 flex items-start gap-3 text-left">
+            <LumaGlyph size={24} className="text-primary flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-on-primary-fixed-variant">
+              Keep reviewing to strengthen recall. Spaced repetition works best with consistent daily practice.
+            </p>
+          </div>
+          <div className="flex gap-3 justify-center">
+            <button onClick={() => window.location.reload()} className="px-6 py-3 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 transition-opacity">
+              Study again
+            </button>
+            <Link href="/flashcards" className="px-6 py-3 bg-surface-container text-on-surface rounded-full font-bold hover:bg-surface-container-high transition-colors">
+              Choose another deck
+            </Link>
+          </div>
         </div>
       </div>
     )
   }
 
+  /* ── Active Session — Two-Pane Layout ──────────────────── */
   return (
-    <div className="max-w-lg mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link href="/flashcards" className="p-2 rounded-lg hover:bg-surface-container transition-colors">
-          <span className="material-symbols-outlined text-on-surface-variant">arrow_back</span>
-        </Link>
-        <div className="flex-1">
-          <h1 className="font-headline font-bold text-on-surface">{domain.title}</h1>
+    <>
+      {/* Slim Top Bar */}
+      <header className="fixed top-0 w-full h-12 z-50 bg-background/80 backdrop-blur-md border-b border-outline-variant/10" style={{ boxShadow: '0 12px 48px rgba(46,50,48,0.08)' }}>
+        <div className="flex items-center justify-between px-6 w-full h-full">
+          <div className="flex items-center gap-4">
+            <Link href="/flashcards" className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors text-xl">arrow_back</Link>
+            <span className="font-headline font-bold text-xl text-primary tracking-tight">HackProduct</span>
+          </div>
+          <span className="font-headline font-bold text-lg text-on-surface-variant/50">
+            Card {currentIndex + 1} of {totalCards}
+          </span>
+          <div className="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant/20 flex items-center justify-center">
+            <span className="material-symbols-outlined text-on-surface-variant text-lg">account_circle</span>
+          </div>
         </div>
-        {(stats.total_due > 0 || stats.total_new > 0) && (
-          <div className="flex gap-2 text-xs font-label">
-            {stats.total_due > 0 && (
-              <span className="bg-tertiary-container text-on-secondary-container rounded-full px-2.5 py-0.5">
-                {stats.total_due} due
-              </span>
+      </header>
+
+    <main className="pt-12 min-h-screen flex w-full max-w-screen-2xl mx-auto">
+      {/* Left Pane: Flashcard Area (65%) */}
+      <section className="w-[65%] p-8 flex flex-col gap-8">
+        <div className="flex-1 flex flex-col">
+
+        {/* Flashcard */}
+        <article
+          className="flex-1 bg-surface-container-lowest rounded-2xl overflow-hidden flex flex-col cursor-pointer ghost-border"
+          style={{ boxShadow: '0 12px 48px rgba(46,50,48,0.08)' }}
+          onClick={() => !revealed && setRevealed(true)}
+        >
+          <div className="h-10 bg-gradient-to-r from-primary to-primary-container flex items-center px-6">
+            <span className="material-symbols-outlined text-white text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
+              {domain.icon ?? 'analytics'}
+            </span>
+          </div>
+
+          <div className="flex-1 flex flex-col items-center justify-center p-16 text-center">
+            {!revealed ? (
+              <h2 className="font-headline font-bold text-2xl leading-relaxed text-on-surface max-w-2xl">
+                {currentCard.front}
+              </h2>
+            ) : (
+              <div className="space-y-6 max-w-2xl animate-fade-in-up">
+                <p className="text-sm text-on-surface-variant/60 font-label font-bold uppercase tracking-wider">Answer</p>
+                <p className="font-body text-lg leading-relaxed text-on-surface">{currentCard.back}</p>
+                {currentCard.hint && (
+                  <p className="text-sm italic text-on-surface-variant/60 mt-4">Hint: {currentCard.hint}</p>
+                )}
+              </div>
             )}
-            {stats.total_new > 0 && (
-              <span className="bg-secondary-container text-on-secondary-container rounded-full px-2.5 py-0.5">
-                {stats.total_new} new
+          </div>
+
+          {!revealed && (
+            <div className="p-8 flex flex-col items-center">
+              <span className="font-label font-semibold text-on-surface-variant/50 tracking-wide uppercase text-xs flex items-center gap-1">
+                Tap to reveal
+                <span className="material-symbols-outlined text-sm">keyboard_arrow_down</span>
               </span>
-            )}
+            </div>
+          )}
+
+          <div className="px-8 pb-8 flex flex-col gap-4">
+            <div className="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary-container rounded-full transition-all duration-300"
+                style={{ width: `${((currentIndex + 1) / totalCards) * 100}%` }}
+              />
+            </div>
+            <div className="flex justify-center gap-2">
+              {Array.from({ length: Math.min(totalCards, 12) }).map((_, i) => {
+                const rating = ratings[i]
+                let dotClass = 'bg-surface-container-high'
+                if (i === currentIndex) dotClass = 'border-2 border-primary bg-surface-container-lowest'
+                else if (rating !== undefined) dotClass = rating >= 3 ? 'bg-primary' : 'bg-tertiary'
+                return <div key={i} className={`w-2.5 h-2.5 rounded-full ${dotClass}`} />
+              })}
+              {totalCards > 12 && <span className="text-[10px] text-on-surface-variant font-bold">+{totalCards - 12}</span>}
+            </div>
+          </div>
+        </article>
+        </div>
+
+        {/* Action Buttons */}
+        {revealed && (
+          <div className="flex items-center justify-center gap-6 pb-4 animate-fade-in-up">
+            <button
+              onClick={() => handleRate(1)}
+              className="flex items-center gap-2 px-10 py-4 bg-surface-container-lowest border-2 border-error text-error rounded-lg font-label font-bold transition-all hover:scale-[1.02] active:scale-[0.98]"
+              style={{ boxShadow: '0 12px 48px rgba(46,50,48,0.08)' }}
+            >
+              <span className="material-symbols-outlined text-xl">refresh</span>
+              Again
+            </button>
+            <button
+              onClick={() => handleRate(3)}
+              className="flex items-center gap-2 px-10 py-4 bg-tertiary-container text-on-surface rounded-lg font-label font-bold transition-all hover:scale-[1.02] active:scale-[0.98]"
+              style={{ boxShadow: '0 12px 48px rgba(46,50,48,0.08)' }}
+            >
+              <span className="material-symbols-outlined text-xl">thumb_up</span>
+              Good
+            </button>
+            <button
+              onClick={() => handleRate(5)}
+              className="flex items-center gap-2 px-10 py-4 bg-primary-container text-white rounded-lg font-label font-bold transition-all hover:scale-[1.02] active:scale-[0.98]"
+              style={{ boxShadow: '0 12px 48px rgba(46,50,48,0.08)' }}
+            >
+              <span className="material-symbols-outlined text-xl">bolt</span>
+              Easy
+            </button>
           </div>
         )}
-      </div>
+      </section>
 
-      {/* Progress indicator */}
-      <div>
-        <div className="flex justify-between items-center mb-1.5">
-          <span className="text-xs font-label text-on-surface-variant">{currentIndex + 1} / {totalCards}</span>
-        </div>
-        <div className="h-1 bg-surface-container-highest rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary-fixed rounded-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
+      {/* Right Pane: Sidebar (35%) */}
+      <aside className="w-[35%] bg-surface-container-low border-l border-outline-variant/15 p-8 flex flex-col gap-6 sticky top-12 h-[calc(100vh-3rem)] overflow-y-auto">
+        {/* Session Stats */}
+        <section className="bg-surface-container-lowest rounded-xl p-6 flex flex-col gap-6 ghost-border" style={{ boxShadow: '0 12px 48px rgba(46,50,48,0.08)' }}>
+          <div className="flex items-center justify-between">
+            <h3 className="font-headline font-bold text-lg">Session Stats</h3>
+            <span className="material-symbols-outlined text-primary">analytics</span>
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 64 64">
+                <circle className="text-surface-container-high" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" strokeWidth="4" />
+                <circle
+                  className="text-primary"
+                  cx="32" cy="32" fill="transparent" r="28"
+                  stroke="currentColor" strokeWidth="4"
+                  strokeDasharray={Math.PI * 56}
+                  strokeDashoffset={Math.PI * 56 * (1 - masteryPercent / 100)}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span className="absolute font-label font-bold text-sm">{masteryPercent}%</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-on-surface-variant font-label text-xs font-semibold uppercase tracking-wider">Overall Mastery</span>
+              <span className="font-headline font-bold text-xl text-primary">
+                {masteryPercent < 30 ? 'Starting' : masteryPercent < 60 ? 'Progressing' : masteryPercent < 90 ? 'Strong' : 'Mastered'}
+              </span>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-surface-container-low p-3 rounded-lg flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
+                <span className="font-label font-bold text-sm">{streakCount} in a row</span>
+              </div>
+              <span className="text-on-surface-variant text-[10px] font-bold uppercase tracking-wider">Current Streak</span>
+            </div>
+            <div className="bg-surface-container-low p-3 rounded-lg flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-on-surface-variant text-sm">timer</span>
+                <span className="font-label font-bold text-sm">{elapsed || '<1'} min</span>
+              </div>
+              <span className="text-on-surface-variant text-[10px] font-bold uppercase tracking-wider">Session Time</span>
+            </div>
+          </div>
+          <div className="flex flex-col gap-3 pt-2 border-t border-outline-variant/10">
+            <div className="flex items-center justify-between">
+              <span className="font-label text-xs font-bold text-on-surface-variant uppercase">Accuracy</span>
+              <span className="font-label font-bold text-sm text-primary">{accuracy}%</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="font-label text-xs font-bold text-on-surface-variant uppercase">Cards Reviewed</span>
+              <span className="font-label font-bold text-sm text-on-surface">{currentIndex} / {totalCards}</span>
+            </div>
+          </div>
+        </section>
 
-      {/* Concept label */}
-      {conceptTitle && (
-        <div className="text-center">
-          <span className="text-xs font-medium text-on-surface-variant uppercase tracking-wide">{conceptTitle}</span>
-        </div>
-      )}
-
-      {/* Flashcard */}
-      <div
-        onClick={handleFlip}
-        className="relative min-h-64 cursor-pointer"
-        style={{ perspective: '1000px' }}
-      >
-        <div
-          className="w-full transition-all duration-500"
-          style={{
-            transformStyle: 'preserve-3d',
-            transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-          }}
-        >
-          {/* Front */}
-          <div
-            className="p-8 bg-surface-container rounded-2xl border-2 border-outline-variant flex flex-col items-center justify-center min-h-64 text-center"
-            style={{ backfaceVisibility: 'hidden' }}
-          >
-            <p className="text-xl font-medium text-on-surface leading-relaxed">{currentCard?.front}</p>
-            {!isFlipped && (
-              <p className="text-sm text-on-surface-variant mt-6">Tap to reveal answer</p>
+        {/* Domain Info */}
+        <section className="bg-surface-container-lowest rounded-xl p-6 flex flex-col gap-4 ghost-border" style={{ boxShadow: '0 12px 48px rgba(46,50,48,0.08)' }}>
+          <div className="flex items-center justify-between">
+            <h3 className="font-headline font-bold text-lg">Domain Info</h3>
+            <span className="material-symbols-outlined text-primary">info</span>
+          </div>
+          <div className="flex flex-col gap-3">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label font-bold text-xs w-fit">
+              <span className="material-symbols-outlined text-sm">{domain.icon ?? 'category'}</span>
+              {domain.title}
+            </span>
+            {domain.description && (
+              <p className="font-body text-sm leading-relaxed text-on-surface-variant">{domain.description}</p>
             )}
           </div>
-          {/* Back */}
-          <div
-            className="p-8 bg-primary-container rounded-2xl border-2 border-primary/30 flex flex-col items-center justify-center min-h-64 text-center absolute inset-0"
-            style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-          >
-            <p className="text-on-primary-container leading-relaxed">{currentCard?.back}</p>
-          </div>
-        </div>
-      </div>
+        </section>
 
-      {/* Hint */}
-      {!isFlipped && currentCard?.hint && (
-        <div className="text-center">
-          {showHint ? (
-            <p className="text-sm text-on-surface-variant italic">{currentCard.hint}</p>
-          ) : (
-            <button onClick={(e) => { e.stopPropagation(); setShowHint(true) }} className="text-sm text-primary hover:underline">
-              Show hint
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Rating buttons (shown after flip) */}
-      {isFlipped && (
-        <div className="space-y-3 animate-fade-in-up">
-          <p className="text-center text-sm text-on-surface-variant font-medium">How well did you know this?</p>
-          <div className="grid grid-cols-5 gap-2">
-            {confidenceLevels.map(({ level, label, color, bg }) => (
-              <button
-                key={level}
-                onClick={() => handleRate(level)}
-                className={`flex flex-col items-center gap-1 py-3 rounded-xl transition-all ${bg}`}
-              >
-                <span className={`text-lg font-bold ${level === 5 ? '' : color}`}>{level}</span>
-                <span className={`text-xs ${level === 5 ? '' : color}`}>{label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+        {/* Other Decks */}
+        {allDomains.length > 1 && (
+          <section className="bg-surface-container-lowest rounded-xl p-6 flex flex-col gap-4 flex-1 ghost-border" style={{ boxShadow: '0 12px 48px rgba(46,50,48,0.08)' }}>
+            <div className="flex items-center justify-between">
+              <h3 className="font-headline font-bold text-lg">Other Decks</h3>
+              <span className="material-symbols-outlined text-primary">library_books</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              {allDomains.filter(d => d.slug !== domainSlug).slice(0, 5).map(d => (
+                <Link key={d.id} href={`/flashcards/${d.slug}`} className="group flex items-center justify-between p-3 rounded-lg hover:bg-surface-container-low transition-colors">
+                  <div className="flex flex-col">
+                    <span className="font-label font-bold text-sm text-primary">{d.title}</span>
+                    <span className="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">
+                      {d.description?.slice(0, 30) ?? 'Flashcard deck'}
+                    </span>
+                  </div>
+                  <span className="material-symbols-outlined text-sm opacity-0 group-hover:opacity-100 transition-opacity text-primary">arrow_forward</span>
+                </Link>
+              ))}
+            </div>
+            <Link href="/flashcards" className="mt-auto w-full py-3 bg-surface-container-high text-on-surface-variant rounded-lg font-label font-bold text-sm hover:bg-surface-container-highest transition-colors text-center block">
+              End Session
+            </Link>
+          </section>
+        )}
+      </aside>
+    </main>
+    </>
   )
 }
