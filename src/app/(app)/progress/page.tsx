@@ -1,4 +1,6 @@
-import { MOCK_ANALYTICS_SUMMARY } from '@/lib/mock-data'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { getUserAnalyticsSummary } from '@/lib/data/analytics'
 import { ProductIQCard } from '@/components/analytics/ProductIQCard'
 import { StreakRingCard } from '@/components/analytics/StreakRingCard'
 import { DimensionMicroCard } from '@/components/analytics/DimensionMicroCard'
@@ -7,18 +9,27 @@ import { FeedbackDimension, DIMENSION_LABELS } from '@/lib/types'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 export default async function ProgressPage() {
-  const summary = MOCK_ANALYTICS_SUMMARY
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  // Build heatmap data
+  if (!user) redirect('/login')
+
+  const summary = await getUserAnalyticsSummary(user.id)
+
+  // Build heatmap data from weekly_activity (last 91 days)
   const today = new Date()
   const days = Array.from({ length: 91 }, (_, i) => {
     const d = new Date(today)
     d.setDate(d.getDate() - (90 - i))
     return {
       date: d.toISOString().split('T')[0],
-      count: ((i * 7 + 3) % 10) > 6 ? ((i * 3 + 1) % 4) + 1 : 0,
+      count: 0,
     }
   })
+
+  // Overlay real activity from attempts if USE_MOCK_DATA is off — heatmap
+  // uses weekly_activity as a 7-day window; full 90-day heatmap is a future
+  // enhancement. For now keep the grid structure with zeros so it renders.
   const weeks: typeof days[] = []
   for (let i = 0; i < days.length; i += 7) {
     weeks.push(days.slice(i, i + 7))

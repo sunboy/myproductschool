@@ -1,9 +1,24 @@
 import { getDomains } from '@/lib/data/domains'
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { createClient } from '@/lib/supabase/server'
 
 export default async function DashboardPage() {
   const domains = await getDomains()
+
+  // Fetch authenticated user and profile for onboarding gate
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  let isOnboarded = false
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('onboarding_completed_at')
+      .eq('id', user.id)
+      .single()
+    isOnboarded = !!profile?.onboarding_completed_at
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-8">
@@ -13,20 +28,22 @@ export default async function DashboardPage() {
         <p className="text-on-surface-variant mt-1">Ready to sharpen your product instincts?</p>
       </section>
 
-      {/* Orientation card for new users — TODO: conditionally show based on user onboarding state */}
-      <div className="p-6 bg-gradient-to-r from-primary to-primary/80 rounded-2xl text-on-primary mb-6">
-        <div className="flex items-start gap-4">
-          <LumaGlyph size={40} className="flex-shrink-0 mt-1" />
-          <div className="flex-1">
-            <h2 className="font-headline text-xl font-bold">Welcome! Let&apos;s find your starting point.</h2>
-            <p className="text-on-primary/80 mt-1 text-sm">Your first challenge takes ~5 minutes. Luma will walk you through everything and establish your baseline.</p>
-            <Link href="/challenges/orientation" className="inline-flex items-center gap-2 mt-4 px-6 py-2.5 bg-on-primary text-primary rounded-full font-semibold text-sm hover:opacity-90 transition-opacity">
-              Start Orientation
-              <span className="material-symbols-outlined text-lg">arrow_forward</span>
-            </Link>
+      {/* Orientation card — only show for users who have not completed onboarding */}
+      {!isOnboarded && (
+        <div className="p-6 bg-gradient-to-r from-primary to-primary/80 rounded-2xl text-on-primary mb-6">
+          <div className="flex items-start gap-4">
+            <LumaGlyph size={40} className="flex-shrink-0 mt-1" />
+            <div className="flex-1">
+              <h2 className="font-headline text-xl font-bold">Welcome! Let&apos;s find your starting point.</h2>
+              <p className="text-on-primary/80 mt-1 text-sm">Your first challenge takes ~5 minutes. Luma will walk you through everything and establish your baseline.</p>
+              <Link href="/challenges/orientation" className="inline-flex items-center gap-2 mt-4 px-6 py-2.5 bg-on-primary text-primary rounded-full font-semibold text-sm hover:opacity-90 transition-opacity">
+                Start Orientation
+                <span className="material-symbols-outlined text-lg">arrow_forward</span>
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Weekly Digest */}
       <div className="flex gap-4 p-5 bg-surface-container rounded-2xl border border-outline-variant mb-6">

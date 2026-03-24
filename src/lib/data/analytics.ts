@@ -27,36 +27,85 @@ export async function getUserAnalyticsSummary(userId: string): Promise<Analytics
 
   if (!attempts || attempts.length === 0) return MOCK_ANALYTICS_SUMMARY
 
-  // Aggregate ProductIQ
-  const scores = attempts.map(a => (a.score_json as Record<string,number>)?.overall ?? 0).filter(Boolean)
+  // Aggregate ProductIQ (last 30 attempts avg)
+  const scores = attempts.map(a => (a.score_json as Record<string, number>)?.overall ?? 0).filter(Boolean)
   const productiq_score = scores.length > 0
     ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10
     : 0
 
-  // Streak from user_streaks
-  const { data: streak } = await supabase
-    .from('user_streaks')
-    .select('current_streak')
-    .eq('user_id', userId)
+  // ProductIQ delta: avg of last 7 days vs the 7 days before that
+  const now = new Date()
+  const sevenDaysAgo = new Date(now)
+  sevenDaysAgo.setDate(now.getDate() - 7)
+  sevenDaysAgo.setHours(0, 0, 0, 0)
+  const fourteenDaysAgo = new Date(now)
+  fourteenDaysAgo.setDate(now.getDate() - 14)
+  fourteenDaysAgo.setHours(0, 0, 0, 0)
+
+  const recentScores = attempts
+    .filter(a => new Date(a.created_at) >= sevenDaysAgo)
+    .map(a => (a.score_json as Record<string, number>)?.overall ?? 0)
+    .filter(Boolean)
+
+  const prevScores = attempts
+    .filter(a => {
+      const d = new Date(a.created_at)
+      return d >= fourteenDaysAgo && d < sevenDaysAgo
+    })
+    .map(a => (a.score_json as Record<string, number>)?.overall ?? 0)
+    .filter(Boolean)
+
+  const recentAvg = recentScores.length > 0
+    ? recentScores.reduce((a, b) => a + b, 0) / recentScores.length
+    : productiq_score
+  const prevAvg = prevScores.length > 0
+    ? prevScores.reduce((a, b) => a + b, 0) / prevScores.length
+    : recentAvg
+
+  const productiq_delta = Math.round((recentAvg - prevAvg) * 10) / 10
+
+  // Streak: read from profiles.streak_days directly
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('streak_days')
+    .eq('id', userId)
     .single()
 
-  // Weekly activity (last 7 days)
+  // Heatmap: query user_streaks for last 90 days, map to { date, completed }
+  const ninetyDaysAgo = new Date(now)
+  ninetyDaysAgo.setDate(now.getDate() - 89)
+  ninetyDaysAgo.setHours(0, 0, 0, 0)
+
+  const { data: streakRows } = await supabase
+    .from('user_streaks')
+    .select('streak_date, completed')
+    .eq('user_id', userId)
+    .gte('streak_date', ninetyDaysAgo.toISOString().split('T')[0])
+    .order('streak_date', { ascending: true })
+
+  const streakMap = new Map<string, boolean>()
+  for (const row of streakRows ?? []) {
+    streakMap.set(row.streak_date, row.completed)
+  }
+
+  // Build weekly_activity from the heatmap (last 7 days count of completed)
   const weekly_activity = Array.from({ length: 7 }, (_, i) => {
-    const dayStart = new Date()
-    dayStart.setDate(dayStart.getDate() - (6 - i))
-    dayStart.setHours(0, 0, 0, 0)
-    const dayEnd = new Date(dayStart)
-    dayEnd.setHours(23, 59, 59, 999)
-    return attempts.filter(a => {
+    const dayStart = new Date(now)
+    dayStart.setDate(now.getDate() - (6 - i))
+    const dateStr = dayStart.toISOString().split('T')[0]
+    return streakMap.get(dateStr) ? 1 : attempts.filter(a => {
       const d = new Date(a.created_at)
+      const dayEnd = new Date(dayStart)
+      dayEnd.setHours(23, 59, 59, 999)
+      dayStart.setHours(0, 0, 0, 0)
       return d >= dayStart && d <= dayEnd
     }).length
   })
 
   return {
     productiq_score,
-    productiq_delta: 0,
-    streak_days: streak?.current_streak ?? 0,
+    productiq_delta,
+    streak_days: profile?.streak_days ?? 0,
     total_attempts: attempts.length,
     dimensions: MOCK_ANALYTICS_SUMMARY.dimensions, // real aggregation deferred
     weekly_activity,
