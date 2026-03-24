@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { LUMA_NUDGE_SYSTEM_PROMPT, buildNudgeUserPrompt } from '@/lib/luma/system-prompt'
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -14,7 +16,7 @@ const MOCK_NUDGES = [
 ]
 
 export async function POST(req: NextRequest) {
-  const { challengeId, challengePrompt, draft } = await req.json()
+  const { challengeId: _challengeId, challengePrompt, draft, attemptId } = await req.json()
 
   if (!draft?.trim()) {
     return NextResponse.json({ nudge: null })
@@ -23,6 +25,28 @@ export async function POST(req: NextRequest) {
   if (process.env.USE_MOCK_DATA === 'true' || !process.env.ANTHROPIC_API_KEY) {
     const randomNudge = MOCK_NUDGES[Math.floor(Math.random() * MOCK_NUDGES.length)]
     return NextResponse.json({ nudge: randomNudge })
+  }
+
+  // Nudge rate limiting
+  if (attemptId) {
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (!authError && user) {
+      const adminClient = createAdminClient()
+      const { count } = await adminClient
+        .from('nudge_usage')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('attempt_id', attemptId)
+
+      if ((count ?? 0) >= 3) {
+        return NextResponse.json({ error: 'Nudge limit reached', remaining: 0 }, { status: 429 })
+      }
+
+      // Record nudge usage
+      await adminClient.from('nudge_usage').insert({ user_id: user.id, attempt_id: attemptId })
+    }
   }
 
   try {

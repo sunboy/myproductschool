@@ -1,5 +1,63 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+
+export async function GET(request: Request) {
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { searchParams } = new URL(request.url)
+  const domainSlug = searchParams.get('domainSlug')
+
+  const adminClient = createAdminClient()
+
+  // Base concepts query
+  let conceptsQuery = adminClient
+    .from('concepts')
+    .select('*, domains!inner(slug), flashcards(id, front, back, hint)')
+    .eq('is_published', true)
+
+  if (domainSlug) {
+    conceptsQuery = conceptsQuery.eq('domains.slug', domainSlug)
+  }
+
+  const { data: concepts, error: conceptsError } = await conceptsQuery
+  if (conceptsError) return NextResponse.json({ error: conceptsError.message }, { status: 500 })
+
+  // Get user progress for these concepts
+  const conceptIds = (concepts ?? []).map(c => c.id)
+  const { data: progress } = await adminClient
+    .from('vocabulary_progress')
+    .select('concept_id, confidence, next_review_at, review_count')
+    .eq('user_id', user.id)
+    .in('concept_id', conceptIds)
+
+  const progressMap = new Map((progress ?? []).map(p => [p.concept_id, p]))
+  const now = new Date()
+
+  // Classify cards
+  const dueCards = []
+  const newCards = []
+
+  for (const concept of concepts ?? []) {
+    const p = progressMap.get(concept.id)
+    if (!p) {
+      newCards.push({ ...concept, progress: null })
+    } else if (new Date(p.next_review_at) <= now) {
+      dueCards.push({ ...concept, progress: p })
+    }
+  }
+
+  // Order: overdue first, then new, limit 20
+  const cards = [...dueCards, ...newCards].slice(0, 20)
+
+  return NextResponse.json({
+    cards,
+    total_due: dueCards.length,
+    total_new: newCards.length,
+  })
+}
 
 export async function POST(req: NextRequest) {
   const { conceptId, confidence } = await req.json()
