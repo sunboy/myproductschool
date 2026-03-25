@@ -12,7 +12,7 @@ interface TopBarProps {
 export function TopBar({ title: _title, showBack, streakDays = 0, xpTotal = 0 }: TopBarProps) {
   return (
     <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-outline-variant">
-      <div className="flex items-center gap-3 px-4 h-14">
+      <div className="flex items-center gap-3 px-4 h-12">
         {/* Left: back button or logo */}
         {showBack ? (
           <Link href=".." className="md:hidden p-1.5 rounded-lg hover:bg-surface-container transition-colors flex-shrink-0">
@@ -36,19 +36,15 @@ export function TopBar({ title: _title, showBack, streakDays = 0, xpTotal = 0 }:
         {/* Right: streak, xp, avatar */}
         <div className="flex items-center gap-2 flex-shrink-0">
           {/* Streak badge */}
-          {streakDays > 0 && (
-            <div className="flex items-center gap-1 px-2 py-1 bg-tertiary-container rounded-full">
-              <span className="material-symbols-filled text-sm text-tertiary">local_fire_department</span>
-              <span className="text-xs font-bold text-on-tertiary-container">{streakDays}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-1 px-2 py-1 bg-tertiary-container rounded-full">
+            <span className="material-symbols-filled text-sm text-tertiary">local_fire_department</span>
+            <span className="text-xs font-bold text-on-tertiary-container">{streakDays}</span>
+          </div>
 
           {/* XP badge */}
-          {xpTotal > 0 && (
-            <div className="flex items-center gap-1 px-2 py-1 bg-secondary-container rounded-full">
-              <span className="text-xs font-bold text-on-secondary-container">{xpTotal} XP</span>
-            </div>
-          )}
+          <div className="flex items-center gap-1 px-2 py-1 bg-secondary-container rounded-full">
+            <span className="text-xs font-bold text-on-secondary-container">{xpTotal} XP</span>
+          </div>
 
           {/* Avatar */}
           <Link href="/profile" className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">

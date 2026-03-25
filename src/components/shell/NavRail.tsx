@@ -5,13 +5,10 @@ import { LumaGlyph } from './LumaGlyph'
 
 const navItems = [
   { href: '/dashboard', icon: 'home', label: 'Home' },
-  { href: '/domains', icon: 'grid_view', label: 'Domains' },
-  { href: '/product-75', icon: 'menu_book', label: 'Product 75' },
+  { href: '/explore', icon: 'explore', label: 'Explore' },
   { href: '/challenges', icon: 'fitness_center', label: 'Practice' },
+  { href: '/prep', icon: 'workspace_premium', label: 'Prep' },
   { href: '/progress', icon: 'bar_chart', label: 'Progress' },
-  { href: '/interview-prep', icon: 'workspace_premium', label: 'Interview Prep' },
-  { href: '/simulation', icon: 'sports_esports', label: 'Simulation' },
-  { href: '/frameworks', icon: 'collections_bookmark', label: 'Frameworks' },
 ]
 
 const DAILY_GOAL_DONE = 3
@@ -82,9 +79,7 @@ export function NavRail() {
       {/* Ask Luma button */}
       <div className="px-2 pb-4">
         <button
-          disabled
-          title="Coming soon"
-          className="flex items-center gap-3 px-3 py-3 rounded-full bg-primary text-on-primary opacity-60 cursor-not-allowed w-full justify-center"
+          className="flex items-center gap-3 px-3 py-3 rounded-full bg-primary text-on-primary w-full justify-center hover:opacity-90 transition-opacity"
         >
           <LumaGlyph size={20} className="flex-shrink-0" />
           <span className="text-sm font-medium">Ask Luma</span>

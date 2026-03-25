@@ -1,6 +1,18 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      { source: '/domains', destination: '/explore', permanent: true },
+      { source: '/domains/:slug', destination: '/explore/:slug', permanent: true },
+      { source: '/product-75', destination: '/explore', permanent: true },
+      { source: '/frameworks', destination: '/explore', permanent: true },
+      { source: '/flashcards', destination: '/explore', permanent: true },
+      { source: '/simulation', destination: '/prep', permanent: true },
+      { source: '/interview-prep', destination: '/prep', permanent: true },
+      { source: '/interview-prep/:slug', destination: '/prep/:slug', permanent: true },
+    ]
+  },
   async headers() {
     return [
       {
