@@ -152,8 +152,8 @@ export default async function PrepPage({ searchParams }: PrepPageProps) {
                         <span
                           className={`text-[10px] font-label font-semibold px-2 py-0.5 rounded-full shrink-0 ${
                             item.type === 'challenge'
-                              ? 'bg-primary-fixed text-on-primary-container'
-                              : 'bg-secondary-container text-on-secondary-container'
+                              ? 'bg-primary text-on-primary'
+                              : 'bg-secondary text-on-secondary'
                           }`}
                         >
                           {item.type}
@@ -172,12 +172,18 @@ export default async function PrepPage({ searchParams }: PrepPageProps) {
                         {/* Mode pills — only for non-locked challenges */}
                         {item.type === 'challenge' && !isLocked && (
                           <div className="flex items-center gap-1 shrink-0">
-                            <span className="text-[10px] font-label font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                            <Link
+                              href="/challenges/c1000000-0000-0000-0000-000000000001"
+                              className="text-[10px] font-label font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                            >
                               Solo
-                            </span>
-                            <span className="text-[10px] font-label font-semibold px-2 py-0.5 rounded-full border border-outline-variant text-on-surface-variant">
+                            </Link>
+                            <Link
+                              href="/challenges/c1000000-0000-0000-0000-000000000001?mode=live"
+                              className="text-[10px] font-label font-semibold px-2 py-0.5 rounded-full border border-outline-variant text-on-surface-variant hover:bg-surface-container-high transition-colors"
+                            >
                               Live
-                            </span>
+                            </Link>
                           </div>
                         )}
                       </div>
@@ -242,14 +248,14 @@ export default async function PrepPage({ searchParams }: PrepPageProps) {
           <div className="bg-primary-fixed rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <LumaGlyph size={40} />
-              <span className="font-label font-semibold text-sm text-on-primary-container">
+              <span className="font-label font-semibold text-sm text-on-surface">
                 Luma&apos;s Prep Advice
               </span>
             </div>
-            <p className="text-sm text-on-primary-container leading-relaxed">
+            <p className="text-sm text-on-surface-variant leading-relaxed">
               You have 14 days — focus on Product Sense first. Use{' '}
-              <strong className="font-semibold">Solo mode</strong> to practice quickly, then switch
-              to <strong className="font-semibold">Live mode</strong> in week two to simulate real
+              <strong className="font-semibold text-on-surface">Solo mode</strong> to practice quickly, then switch
+              to <strong className="font-semibold text-on-surface">Live mode</strong> in week two to simulate real
               interview pressure. Aim for 3 challenges per day.
             </p>
           </div>
