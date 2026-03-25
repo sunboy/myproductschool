@@ -76,20 +76,18 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
   const extraTopicCount = topics.length > TOPIC_DISPLAY_LIMIT ? topics.length - TOPIC_DISPLAY_LIMIT : 0
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 space-y-4">
-      {/* Luma's Pick — compact row */}
-      <div className="bg-primary-fixed rounded-xl p-3 flex items-center gap-3">
-        <LumaGlyph size={32} className="text-primary flex-shrink-0" />
-        <div className="flex-1 min-w-0">
-          <span className="text-xs font-bold text-primary uppercase tracking-wider">Luma&apos;s Pick</span>
-          <span className="mx-2 text-on-surface-variant text-xs">·</span>
-          <span className="text-sm font-medium text-on-surface">Spotify podcast discovery drop</span>
-        </div>
+    <div className="max-w-6xl mx-auto px-4 py-6 space-y-3">
+      {/* Luma's Pick — single compact row */}
+      <div className="bg-primary-fixed rounded-xl p-2.5 flex items-center gap-2.5">
+        <LumaGlyph size={28} className="text-primary flex-shrink-0" />
+        <span className="text-xs font-bold text-primary uppercase tracking-wider flex-shrink-0">Luma&apos;s Pick</span>
+        <span className="text-on-surface-variant/40 text-xs flex-shrink-0">·</span>
+        <span className="text-sm font-medium text-on-surface flex-1 min-w-0 truncate">Spotify podcast discovery drop</span>
         <Link
           href="/challenges/c1000000-0000-0000-0000-000000000001"
-          className="flex-shrink-0 inline-flex items-center gap-1 px-4 py-1.5 bg-primary text-on-primary rounded-full text-sm font-semibold hover:opacity-90 transition-opacity"
+          className="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1 bg-primary text-on-primary rounded-full text-xs font-semibold hover:opacity-90 transition-opacity"
         >
-          Start <span className="material-symbols-outlined text-base leading-none">arrow_forward</span>
+          Start <span className="material-symbols-outlined text-sm leading-none">arrow_forward</span>
         </Link>
       </div>
 
@@ -98,13 +96,13 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
         <p className="text-on-surface-variant mt-1">Choose a challenge and pick your mode.</p>
       </div>
 
-      {/* Filter bar */}
-      <div className="space-y-2">
-        {/* Difficulty pills */}
-        <div className="flex gap-2 flex-wrap items-center">
+      {/* Filter bar — 2 rows max */}
+      <div className="space-y-1.5">
+        {/* Row 1: Difficulty + Status */}
+        <div className="flex gap-1.5 flex-wrap items-center">
           <Link
             href={buildHref({ domain, company, topic, status })}
-            className={`px-4 py-1.5 rounded-full text-sm font-label font-semibold transition-colors ${
+            className={`px-3 py-1 rounded-full text-xs font-label font-semibold transition-colors ${
               !difficulty
                 ? 'bg-primary text-on-primary'
                 : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
@@ -116,7 +114,7 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
             <Link
               key={key}
               href={buildHref({ domain, difficulty: key, company, topic, status })}
-              className={`px-4 py-1.5 rounded-full text-sm font-label font-semibold transition-colors ${
+              className={`px-3 py-1 rounded-full text-xs font-label font-semibold transition-colors ${
                 difficulty === key
                   ? cfg.activeClass
                   : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
@@ -125,11 +123,7 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
               {cfg.label}
             </Link>
           ))}
-        </div>
-
-        {/* Status filter pills */}
-        <div className="flex gap-2 flex-wrap items-center">
-          <span className="text-xs text-on-surface-variant font-label font-semibold mr-1">Status:</span>
+          <span className="text-on-surface-variant/30 text-xs mx-0.5">|</span>
           {STATUS_OPTIONS.map(opt => (
             <Link
               key={opt.label}
@@ -145,11 +139,11 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
           ))}
         </div>
 
-        {/* Domain pills */}
-        <div className="flex gap-2 flex-wrap">
+        {/* Row 2: Domains + Topics + Companies */}
+        <div className="flex gap-1.5 flex-wrap items-center">
           <Link
             href={buildHref({ difficulty, company, topic, status })}
-            className={`px-3 py-1 rounded-full text-sm font-label transition-colors border ${
+            className={`px-3 py-1 rounded-full text-xs font-label transition-colors border ${
               !domain
                 ? 'border-primary text-primary bg-primary-container'
                 : 'border-outline-variant text-on-surface-variant bg-surface-container hover:bg-surface-container-high'
@@ -161,7 +155,7 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
             <Link
               key={d.id}
               href={buildHref({ domain: d.slug, difficulty, company, topic, status })}
-              className={`px-3 py-1 rounded-full text-sm font-label transition-colors border ${
+              className={`px-3 py-1 rounded-full text-xs font-label transition-colors border ${
                 domain === d.slug
                   ? 'border-primary text-primary bg-primary-container'
                   : 'border-outline-variant text-on-surface-variant bg-surface-container hover:bg-surface-container-high'
@@ -170,43 +164,28 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
               {d.title}
             </Link>
           ))}
-        </div>
-
-        {/* Topic pills */}
-        {visibleTopics.length > 0 && (
-          <div className="flex gap-2 flex-wrap items-center">
-            <span className="text-xs text-on-surface-variant font-label font-semibold mr-1">Topics:</span>
-            <Link
-              href={buildHref({ domain, difficulty, company, status })}
-              className={`px-3 py-1 rounded-full text-xs font-label transition-colors border ${
-                !topic
-                  ? 'border-primary text-primary bg-primary-container'
-                  : 'border-outline-variant text-on-surface-variant bg-surface-container hover:bg-surface-container-high'
-              }`}
-            >
-              All
-            </Link>
-            {visibleTopics.map(t => (
-              <Link
-                key={t.id}
-                href={buildHref({ domain, difficulty, company, topic: t.slug === topic ? undefined : t.slug, status })}
-                className={`px-3 py-1 rounded-full text-xs font-label transition-colors border ${
-                  topic === t.slug
-                    ? 'border-primary text-primary bg-primary-container'
-                    : 'border-outline-variant text-on-surface-variant bg-surface-container hover:bg-surface-container-high'
-                }`}
-              >
-                {t.title}
-              </Link>
-            ))}
-            {extraTopicCount > 0 && (
-              <span className="text-xs text-on-surface-variant font-label">+{extraTopicCount} more</span>
-            )}
-          </div>
-        )}
-
-        {/* Company tag chips */}
-        <div className="flex gap-2 flex-wrap">
+          {visibleTopics.length > 0 && (
+            <>
+              <span className="text-on-surface-variant/30 text-xs mx-0.5">|</span>
+              {visibleTopics.map(t => (
+                <Link
+                  key={t.id}
+                  href={buildHref({ domain, difficulty, company, topic: t.slug === topic ? undefined : t.slug, status })}
+                  className={`px-3 py-1 rounded-full text-xs font-label transition-colors border ${
+                    topic === t.slug
+                      ? 'border-primary text-primary bg-primary-container'
+                      : 'border-outline-variant text-on-surface-variant bg-surface-container hover:bg-surface-container-high'
+                  }`}
+                >
+                  {t.title}
+                </Link>
+              ))}
+              {extraTopicCount > 0 && (
+                <span className="text-xs text-on-surface-variant font-label">+{extraTopicCount} more</span>
+              )}
+            </>
+          )}
+          <span className="text-on-surface-variant/30 text-xs mx-0.5">|</span>
           {COMPANY_TAGS.map(tag => (
             <Link
               key={tag}
@@ -225,14 +204,14 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
 
       {/* Free Challenges */}
       <div>
-        <h2 className="font-headline text-xl text-on-surface mb-4">Free Challenges</h2>
+        <h2 className="text-xs font-label font-semibold uppercase tracking-wider text-on-surface-variant mb-2">Free Challenges</h2>
         {freeChallenges.length === 0 ? (
           <div className="text-center py-8 text-on-surface-variant">
             <span className="material-symbols-outlined text-4xl mb-2 block">search_off</span>
             <p>No free challenges match your filters.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-1.5">
             {freeChallenges.map((challenge, idx) => (
               <ChallengeCard key={challenge.id} challenge={challenge} index={idx} />
             ))}
@@ -241,16 +220,16 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
       </div>
 
       {/* Pro Access Banner */}
-      <div className="bg-secondary-container rounded-2xl p-4 flex items-center justify-between gap-4">
+      <div className="bg-secondary-container rounded-xl p-3 flex items-center justify-between gap-4">
         <div>
           <h3 className="font-label font-semibold text-on-secondary-container">Unlock Pro Access</h3>
-          <p className="text-sm text-on-secondary-container mt-0.5">
+          <p className="text-xs text-on-secondary-container mt-0.5">
             Get unlimited challenges, model answers, and Luma&apos;s deeper coaching.
           </p>
         </div>
         <a
           href="/pricing"
-          className="bg-primary text-on-primary rounded-full px-5 py-2 text-sm font-label font-semibold whitespace-nowrap hover:opacity-90 transition-opacity"
+          className="bg-primary text-on-primary rounded-full px-4 py-1.5 text-xs font-label font-semibold whitespace-nowrap hover:opacity-90 transition-opacity"
         >
           Upgrade →
         </a>
@@ -259,16 +238,16 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
       {/* Premium Challenges */}
       {premiumChallenges.length > 0 && (
         <div>
-          <h2 className="font-headline text-xl text-on-surface mb-4 flex items-center gap-2">
+          <h2 className="text-xs font-label font-semibold uppercase tracking-wider text-on-surface-variant mb-2 flex items-center gap-1.5">
             <span
-              className="material-symbols-outlined text-on-surface-variant text-xl"
+              className="material-symbols-outlined text-on-surface-variant text-sm"
               style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
             >
               lock
             </span>
             Premium Challenges
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-1.5">
             {premiumChallenges.map((challenge, idx) => (
               <ChallengeCard
                 key={challenge.id}
