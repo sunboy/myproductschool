@@ -276,3 +276,64 @@ export interface ProfileData {
   member_since: string
   avatar_initials: string
 }
+
+// ── Topics & Study Plans (Explore Redesign) ─────────────────────
+
+export interface Topic {
+  id: string
+  domain_id: string
+  slug: string
+  title: string
+  description: string | null
+  icon: string | null
+  order_index: number
+  difficulty_range: string
+  is_published: boolean
+  created_at: string
+}
+
+export interface TopicWithProgress extends Topic {
+  concept_count: number
+  challenge_count: number
+  completed_challenges: number
+  progress_percentage: number
+  domain: Pick<Domain, 'slug' | 'title'>
+}
+
+export interface StudyPlan {
+  id: string
+  slug: string
+  title: string
+  description: string | null
+  icon: string | null
+  difficulty: string
+  estimated_hours: number | null
+  is_published: boolean
+  order_index: number
+  created_at: string
+}
+
+export interface StudyPlanItem {
+  id: string
+  plan_id: string
+  item_type: 'challenge' | 'concept' | 'article'
+  challenge_id: string | null
+  concept_id: string | null
+  chapter_title: string | null
+  order_index: number
+  challenge?: ChallengeWithDomain
+  concept?: Concept
+}
+
+export interface StudyPlanWithItems extends StudyPlan {
+  items: StudyPlanItem[]
+  item_count: number
+  chapter_count: number
+  completed_count: number
+  progress_percentage: number
+}
+
+export interface ChallengeWithTopics extends ChallengeWithDomain {
+  topics: Pick<Topic, 'slug' | 'title'>[]
+  companies: Pick<CompanyProfile, 'slug' | 'name'>[]
+}
