@@ -55,7 +55,7 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
       {/* Bento Grid Dashboard — 12 column grid matching Stitch */}
       <div className="grid grid-cols-12 gap-4">
         {/* Main ProductIQ Score Card — 8 cols */}
-        <div className="col-span-12 lg:col-span-8 xl:col-span-7">
+        <div className="col-span-12 lg:col-span-8">
           <ProductIQCard
             score={summary.productiq_score}
             delta={summary.productiq_delta}
@@ -66,7 +66,7 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
         </div>
 
         {/* Secondary Score Card — 4 cols, tertiary container */}
-        <div className="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-5">
+        <div className="col-span-12 md:col-span-6 lg:col-span-4">
           <StreakRingCard
             streakDays={summary.streak_days}
             totalAttempts={summary.total_attempts}
