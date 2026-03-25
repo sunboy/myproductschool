@@ -1,4 +1,4 @@
-import { Domain, Concept, Flashcard, ChallengePrompt, CompanyProfile, LumaFeedbackItem, AnalyticsSummary, ChallengeDiscussion, RecentAttempt, GlossaryTerm, ProfileData, WeeklyDigest } from '@/lib/types'
+import { Domain, Concept, Flashcard, ChallengePrompt, CompanyProfile, LumaFeedbackItem, AnalyticsSummary, ChallengeDiscussion, RecentAttempt, GlossaryTerm, ProfileData, WeeklyDigest, Topic, StudyPlan, StudyPlanItem } from '@/lib/types'
 
 export const MOCK_DOMAINS: Domain[] = [
   {
@@ -620,3 +620,671 @@ Scenario: You are a PM at a mid-size e-commerce company. The CEO mentions that c
     'How would you prioritize investigating these hypotheses?',
   ],
 }
+
+// ── Topics (5 per domain, 25 total) ─────────────────────────────
+
+export const MOCK_TOPICS: Topic[] = [
+  // Product Strategy (d1)
+  {
+    id: 't1000000-0000-0000-0000-000000000001',
+    domain_id: 'd1000000-0000-0000-0000-000000000001',
+    slug: 'vision-and-mission',
+    title: 'Vision & Mission',
+    description: 'Crafting and communicating a compelling product direction that aligns teams and inspires users.',
+    icon: 'flag',
+    order_index: 1,
+    difficulty_range: 'beginner–intermediate',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000002',
+    domain_id: 'd1000000-0000-0000-0000-000000000001',
+    slug: 'competitive-analysis',
+    title: 'Competitive Analysis',
+    description: 'Systematically evaluating competitors to find differentiation opportunities and strategic gaps.',
+    icon: 'compare_arrows',
+    order_index: 2,
+    difficulty_range: 'intermediate',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000003',
+    domain_id: 'd1000000-0000-0000-0000-000000000001',
+    slug: 'market-sizing',
+    title: 'Market Sizing',
+    description: 'Estimating TAM, SAM, and SOM using top-down and bottom-up approaches.',
+    icon: 'pie_chart',
+    order_index: 3,
+    difficulty_range: 'intermediate',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000004',
+    domain_id: 'd1000000-0000-0000-0000-000000000001',
+    slug: 'product-roadmapping',
+    title: 'Product Roadmapping',
+    description: 'Building and communicating roadmaps that balance near-term execution with long-term strategy.',
+    icon: 'map',
+    order_index: 4,
+    difficulty_range: 'beginner–intermediate',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000005',
+    domain_id: 'd1000000-0000-0000-0000-000000000001',
+    slug: 'opportunity-assessment',
+    title: 'Opportunity Assessment',
+    description: 'Evaluating whether a product opportunity is worth pursuing before committing resources.',
+    icon: 'search_insights',
+    order_index: 5,
+    difficulty_range: 'intermediate–advanced',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  // User Research (d2)
+  {
+    id: 't1000000-0000-0000-0000-000000000006',
+    domain_id: 'd1000000-0000-0000-0000-000000000002',
+    slug: 'user-interviews',
+    title: 'User Interviews',
+    description: 'Designing and running effective user interviews to uncover problems, motivations, and mental models.',
+    icon: 'record_voice_over',
+    order_index: 1,
+    difficulty_range: 'beginner–intermediate',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000007',
+    domain_id: 'd1000000-0000-0000-0000-000000000002',
+    slug: 'survey-design',
+    title: 'Survey Design',
+    description: 'Creating unbiased surveys that yield actionable quantitative insights at scale.',
+    icon: 'assignment',
+    order_index: 2,
+    difficulty_range: 'beginner',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000008',
+    domain_id: 'd1000000-0000-0000-0000-000000000002',
+    slug: 'persona-building',
+    title: 'Persona Building',
+    description: 'Synthesizing research into actionable personas that represent real user segments.',
+    icon: 'person',
+    order_index: 3,
+    difficulty_range: 'beginner–intermediate',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000009',
+    domain_id: 'd1000000-0000-0000-0000-000000000002',
+    slug: 'jobs-to-be-done',
+    title: 'Jobs To Be Done',
+    description: 'Applying the JTBD framework to uncover underlying user motivations beyond surface-level requests.',
+    icon: 'work',
+    order_index: 4,
+    difficulty_range: 'intermediate',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000010',
+    domain_id: 'd1000000-0000-0000-0000-000000000002',
+    slug: 'usability-testing',
+    title: 'Usability Testing',
+    description: 'Running moderated and unmoderated usability tests to identify where users struggle in your product.',
+    icon: 'touch_app',
+    order_index: 5,
+    difficulty_range: 'beginner–intermediate',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  // Metrics & Analytics (d3)
+  {
+    id: 't1000000-0000-0000-0000-000000000011',
+    domain_id: 'd1000000-0000-0000-0000-000000000003',
+    slug: 'metric-definition',
+    title: 'Metric Definition',
+    description: 'Selecting and defining the right metrics — north star, input metrics, and guardrails — for a product.',
+    icon: 'straighten',
+    order_index: 1,
+    difficulty_range: 'beginner–intermediate',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000012',
+    domain_id: 'd1000000-0000-0000-0000-000000000003',
+    slug: 'metric-investigation',
+    title: 'Metric Investigation',
+    description: 'Structured approaches to diagnosing unexpected metric changes and communicating findings.',
+    icon: 'manage_search',
+    order_index: 2,
+    difficulty_range: 'intermediate',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000013',
+    domain_id: 'd1000000-0000-0000-0000-000000000003',
+    slug: 'funnel-analysis',
+    title: 'Funnel Analysis',
+    description: 'Measuring and improving conversion rates at each stage of the user journey.',
+    icon: 'filter_alt',
+    order_index: 3,
+    difficulty_range: 'intermediate',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000014',
+    domain_id: 'd1000000-0000-0000-0000-000000000003',
+    slug: 'experimentation-design',
+    title: 'Experimentation Design',
+    description: 'Designing statistically valid A/B tests and interpreting results without common pitfalls.',
+    icon: 'science',
+    order_index: 4,
+    difficulty_range: 'intermediate–advanced',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000015',
+    domain_id: 'd1000000-0000-0000-0000-000000000003',
+    slug: 'data-storytelling',
+    title: 'Data Storytelling',
+    description: 'Communicating data insights to non-technical stakeholders in a compelling, decision-driving way.',
+    icon: 'bar_chart',
+    order_index: 5,
+    difficulty_range: 'intermediate',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  // Prioritization (d4)
+  {
+    id: 't1000000-0000-0000-0000-000000000016',
+    domain_id: 'd1000000-0000-0000-0000-000000000004',
+    slug: 'impact-vs-effort',
+    title: 'Impact vs Effort',
+    description: 'Evaluating feature candidates by weighing expected impact against implementation effort.',
+    icon: 'balance',
+    order_index: 1,
+    difficulty_range: 'beginner',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000017',
+    domain_id: 'd1000000-0000-0000-0000-000000000004',
+    slug: 'rice-scoring',
+    title: 'RICE Scoring',
+    description: 'Applying the Reach, Impact, Confidence, Effort framework to rank competing initiatives.',
+    icon: 'leaderboard',
+    order_index: 2,
+    difficulty_range: 'beginner–intermediate',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000018',
+    domain_id: 'd1000000-0000-0000-0000-000000000004',
+    slug: 'stakeholder-alignment',
+    title: 'Stakeholder Alignment',
+    description: 'Navigating competing stakeholder priorities and building consensus around a roadmap.',
+    icon: 'groups',
+    order_index: 3,
+    difficulty_range: 'intermediate–advanced',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000019',
+    domain_id: 'd1000000-0000-0000-0000-000000000004',
+    slug: 'resource-allocation',
+    title: 'Resource Allocation',
+    description: 'Making trade-off decisions about where to invest engineering time and product bandwidth.',
+    icon: 'account_tree',
+    order_index: 4,
+    difficulty_range: 'intermediate–advanced',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000020',
+    domain_id: 'd1000000-0000-0000-0000-000000000004',
+    slug: 'sprint-planning',
+    title: 'Sprint Planning',
+    description: 'Structuring sprint backlogs and communicating scope trade-offs within delivery cycles.',
+    icon: 'sprint',
+    order_index: 5,
+    difficulty_range: 'beginner–intermediate',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  // Go-to-Market (d5)
+  {
+    id: 't1000000-0000-0000-0000-000000000021',
+    domain_id: 'd1000000-0000-0000-0000-000000000005',
+    slug: 'acquisition-channels',
+    title: 'Acquisition Channels',
+    description: 'Identifying and evaluating channels to drive new user or customer acquisition efficiently.',
+    icon: 'ads_click',
+    order_index: 1,
+    difficulty_range: 'intermediate',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000022',
+    domain_id: 'd1000000-0000-0000-0000-000000000005',
+    slug: 'activation-optimization',
+    title: 'Activation Optimization',
+    description: 'Improving the onboarding experience to get more users to their first "aha moment" faster.',
+    icon: 'bolt',
+    order_index: 2,
+    difficulty_range: 'intermediate',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000023',
+    domain_id: 'd1000000-0000-0000-0000-000000000005',
+    slug: 'retention-loops',
+    title: 'Retention Loops',
+    description: 'Designing habit-forming product loops and re-engagement strategies to reduce churn.',
+    icon: 'loop',
+    order_index: 3,
+    difficulty_range: 'intermediate–advanced',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000024',
+    domain_id: 'd1000000-0000-0000-0000-000000000005',
+    slug: 'pricing-strategy',
+    title: 'Pricing Strategy',
+    description: 'Selecting pricing models and structures that align with value delivery and business goals.',
+    icon: 'sell',
+    order_index: 4,
+    difficulty_range: 'intermediate–advanced',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 't1000000-0000-0000-0000-000000000025',
+    domain_id: 'd1000000-0000-0000-0000-000000000005',
+    slug: 'launch-planning',
+    title: 'Launch Planning',
+    description: 'Coordinating cross-functional launch activities and defining the right launch tier for a feature.',
+    icon: 'rocket_launch',
+    order_index: 5,
+    difficulty_range: 'intermediate',
+    is_published: true,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+]
+
+// ── Challenge-Topic junction ─────────────────────────────────────
+
+export const MOCK_CHALLENGE_TOPICS: { challenge_id: string; topic_id: string }[] = [
+  // ch1 (Spotify podcast discovery) → product-strategy + metric-investigation + funnel-analysis
+  { challenge_id: 'ch100000-0000-0000-0000-000000000001', topic_id: 't1000000-0000-0000-0000-000000000004' }, // product-roadmapping
+  { challenge_id: 'ch100000-0000-0000-0000-000000000001', topic_id: 't1000000-0000-0000-0000-000000000012' }, // metric-investigation
+  { challenge_id: 'ch100000-0000-0000-0000-000000000001', topic_id: 't1000000-0000-0000-0000-000000000013' }, // funnel-analysis
+  // ch2 (B2B fintech payments) → competitive-analysis + opportunity-assessment + pricing-strategy
+  { challenge_id: 'ch100000-0000-0000-0000-000000000002', topic_id: 't1000000-0000-0000-0000-000000000002' }, // competitive-analysis
+  { challenge_id: 'ch100000-0000-0000-0000-000000000002', topic_id: 't1000000-0000-0000-0000-000000000005' }, // opportunity-assessment
+  { challenge_id: 'ch100000-0000-0000-0000-000000000002', topic_id: 't1000000-0000-0000-0000-000000000024' }, // pricing-strategy
+  // ch3 (user research plan) → user-interviews + survey-design + persona-building
+  { challenge_id: 'ch100000-0000-0000-0000-000000000003', topic_id: 't1000000-0000-0000-0000-000000000006' }, // user-interviews
+  { challenge_id: 'ch100000-0000-0000-0000-000000000003', topic_id: 't1000000-0000-0000-0000-000000000007' }, // survey-design
+  { challenge_id: 'ch100000-0000-0000-0000-000000000003', topic_id: 't1000000-0000-0000-0000-000000000008' }, // persona-building
+  // ch4 (activation rate drop) → metric-investigation + funnel-analysis + experimentation-design
+  { challenge_id: 'ch100000-0000-0000-0000-000000000004', topic_id: 't1000000-0000-0000-0000-000000000012' }, // metric-investigation
+  { challenge_id: 'ch100000-0000-0000-0000-000000000004', topic_id: 't1000000-0000-0000-0000-000000000013' }, // funnel-analysis
+  { challenge_id: 'ch100000-0000-0000-0000-000000000004', topic_id: 't1000000-0000-0000-0000-000000000014' }, // experimentation-design
+]
+
+// ── Concept-Topic junction ────────────────────────────────────────
+
+export const MOCK_CONCEPT_TOPICS: { concept_id: string; topic_id: string }[] = [
+  // Product Vision (c1) → vision-and-mission
+  { concept_id: 'c1000000-0000-0000-0000-000000000001', topic_id: 't1000000-0000-0000-0000-000000000001' },
+  // Product-Market Fit (c2) → opportunity-assessment + vision-and-mission
+  { concept_id: 'c1000000-0000-0000-0000-000000000002', topic_id: 't1000000-0000-0000-0000-000000000005' },
+  { concept_id: 'c1000000-0000-0000-0000-000000000002', topic_id: 't1000000-0000-0000-0000-000000000001' },
+  // Strategic Moat (c3) → competitive-analysis + opportunity-assessment
+  { concept_id: 'c1000000-0000-0000-0000-000000000003', topic_id: 't1000000-0000-0000-0000-000000000002' },
+  { concept_id: 'c1000000-0000-0000-0000-000000000003', topic_id: 't1000000-0000-0000-0000-000000000005' },
+  // JTBD (c4) → jobs-to-be-done + user-interviews
+  { concept_id: 'c1000000-0000-0000-0000-000000000004', topic_id: 't1000000-0000-0000-0000-000000000009' },
+  { concept_id: 'c1000000-0000-0000-0000-000000000004', topic_id: 't1000000-0000-0000-0000-000000000006' },
+  // User Interview (c5) → user-interviews
+  { concept_id: 'c1000000-0000-0000-0000-000000000005', topic_id: 't1000000-0000-0000-0000-000000000006' },
+  // Affinity Mapping (c6) → user-interviews + persona-building
+  { concept_id: 'c1000000-0000-0000-0000-000000000006', topic_id: 't1000000-0000-0000-0000-000000000006' },
+  { concept_id: 'c1000000-0000-0000-0000-000000000006', topic_id: 't1000000-0000-0000-0000-000000000008' },
+  // Persona (c7) → persona-building
+  { concept_id: 'c1000000-0000-0000-0000-000000000007', topic_id: 't1000000-0000-0000-0000-000000000008' },
+  // Usability Testing (c8) → usability-testing
+  { concept_id: 'c1000000-0000-0000-0000-000000000008', topic_id: 't1000000-0000-0000-0000-000000000010' },
+  // North Star Metric (c9) → metric-definition
+  { concept_id: 'c1000000-0000-0000-0000-000000000009', topic_id: 't1000000-0000-0000-0000-000000000011' },
+  // Funnel Analysis (c10) → funnel-analysis + metric-definition
+  { concept_id: 'c1000000-0000-0000-0000-000000000010', topic_id: 't1000000-0000-0000-0000-000000000013' },
+  { concept_id: 'c1000000-0000-0000-0000-000000000010', topic_id: 't1000000-0000-0000-0000-000000000011' },
+  // Retention Cohort (c11) → metric-investigation + experimentation-design
+  { concept_id: 'c1000000-0000-0000-0000-000000000011', topic_id: 't1000000-0000-0000-0000-000000000012' },
+  { concept_id: 'c1000000-0000-0000-0000-000000000011', topic_id: 't1000000-0000-0000-0000-000000000014' },
+  // A/B Testing (c12) → experimentation-design
+  { concept_id: 'c1000000-0000-0000-0000-000000000012', topic_id: 't1000000-0000-0000-0000-000000000014' },
+  // ICE Scoring (c13) → impact-vs-effort + rice-scoring
+  { concept_id: 'c1000000-0000-0000-0000-000000000013', topic_id: 't1000000-0000-0000-0000-000000000016' },
+  { concept_id: 'c1000000-0000-0000-0000-000000000013', topic_id: 't1000000-0000-0000-0000-000000000017' },
+  // Opportunity Scoring (c14) → impact-vs-effort + stakeholder-alignment
+  { concept_id: 'c1000000-0000-0000-0000-000000000014', topic_id: 't1000000-0000-0000-0000-000000000016' },
+  { concept_id: 'c1000000-0000-0000-0000-000000000014', topic_id: 't1000000-0000-0000-0000-000000000018' },
+  // Now/Next/Later Roadmap (c15) → product-roadmapping + stakeholder-alignment
+  { concept_id: 'c1000000-0000-0000-0000-000000000015', topic_id: 't1000000-0000-0000-0000-000000000004' },
+  { concept_id: 'c1000000-0000-0000-0000-000000000015', topic_id: 't1000000-0000-0000-0000-000000000018' },
+  // Trade-off Analysis (c16) → resource-allocation + stakeholder-alignment
+  { concept_id: 'c1000000-0000-0000-0000-000000000016', topic_id: 't1000000-0000-0000-0000-000000000019' },
+  { concept_id: 'c1000000-0000-0000-0000-000000000016', topic_id: 't1000000-0000-0000-0000-000000000018' },
+  // Product Positioning (c17) → acquisition-channels + launch-planning
+  { concept_id: 'c1000000-0000-0000-0000-000000000017', topic_id: 't1000000-0000-0000-0000-000000000021' },
+  { concept_id: 'c1000000-0000-0000-0000-000000000017', topic_id: 't1000000-0000-0000-0000-000000000025' },
+  // PLG (c18) → acquisition-channels + retention-loops + activation-optimization
+  { concept_id: 'c1000000-0000-0000-0000-000000000018', topic_id: 't1000000-0000-0000-0000-000000000021' },
+  { concept_id: 'c1000000-0000-0000-0000-000000000018', topic_id: 't1000000-0000-0000-0000-000000000023' },
+  { concept_id: 'c1000000-0000-0000-0000-000000000018', topic_id: 't1000000-0000-0000-0000-000000000022' },
+  // Launch Tier (c19) → launch-planning
+  { concept_id: 'c1000000-0000-0000-0000-000000000019', topic_id: 't1000000-0000-0000-0000-000000000025' },
+  // Activation Rate (c20) → activation-optimization + funnel-analysis
+  { concept_id: 'c1000000-0000-0000-0000-000000000020', topic_id: 't1000000-0000-0000-0000-000000000022' },
+  { concept_id: 'c1000000-0000-0000-0000-000000000020', topic_id: 't1000000-0000-0000-0000-000000000013' },
+]
+
+// ── Study Plans ──────────────────────────────────────────────────
+
+export const MOCK_STUDY_PLANS: StudyPlan[] = [
+  {
+    id: 'sp100000-0000-0000-0000-000000000001',
+    slug: 'product-sense-20',
+    title: 'Product Sense in 20 Days',
+    description: 'A structured daily practice plan covering the five core domains of product thinking — one domain per week, building toward interview-ready fluency.',
+    icon: 'school',
+    difficulty: 'beginner',
+    estimated_hours: 10,
+    is_published: true,
+    order_index: 1,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 'sp100000-0000-0000-0000-000000000002',
+    slug: 'metrics-mastery',
+    title: 'Metrics Mastery',
+    description: 'Deep-dive into product metrics: defining north star metrics, investigating drops, running experiments, and communicating data to stakeholders.',
+    icon: 'analytics',
+    difficulty: 'intermediate',
+    estimated_hours: 6,
+    is_published: true,
+    order_index: 2,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 'sp100000-0000-0000-0000-000000000003',
+    slug: 'interview-ready',
+    title: 'Interview Ready',
+    description: 'A focused sprint for engineers with PM interviews in the next 2 weeks. Hits the highest-frequency question types and common failure patterns.',
+    icon: 'emoji_events',
+    difficulty: 'intermediate',
+    estimated_hours: 8,
+    is_published: true,
+    order_index: 3,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 'sp100000-0000-0000-0000-000000000004',
+    slug: 'hackproduct-75',
+    title: 'HackProduct 75',
+    description: 'The complete 75-day program: 4 challenges per week across all domains, escalating in difficulty. The full stack of product thinking.',
+    icon: 'local_fire_department',
+    difficulty: 'advanced',
+    estimated_hours: 40,
+    is_published: true,
+    order_index: 4,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+]
+
+// ── Study Plan Items ──────────────────────────────────────────────
+
+export const MOCK_STUDY_PLAN_ITEMS: StudyPlanItem[] = [
+  // ── Product Sense in 20 Days ──────────────────────────────────
+  // Chapter 1: Product Strategy
+  {
+    id: 'spi10000-0000-0000-0000-000000000001',
+    plan_id: 'sp100000-0000-0000-0000-000000000001',
+    item_type: 'concept',
+    challenge_id: null,
+    concept_id: 'c1000000-0000-0000-0000-000000000001',
+    chapter_title: 'Week 1: Product Strategy',
+    order_index: 1,
+  },
+  {
+    id: 'spi10000-0000-0000-0000-000000000002',
+    plan_id: 'sp100000-0000-0000-0000-000000000001',
+    item_type: 'concept',
+    challenge_id: null,
+    concept_id: 'c1000000-0000-0000-0000-000000000003',
+    chapter_title: 'Week 1: Product Strategy',
+    order_index: 2,
+  },
+  {
+    id: 'spi10000-0000-0000-0000-000000000003',
+    plan_id: 'sp100000-0000-0000-0000-000000000001',
+    item_type: 'challenge',
+    challenge_id: 'ch100000-0000-0000-0000-000000000001',
+    concept_id: null,
+    chapter_title: 'Week 1: Product Strategy',
+    order_index: 3,
+  },
+  // Chapter 2: User Research
+  {
+    id: 'spi10000-0000-0000-0000-000000000004',
+    plan_id: 'sp100000-0000-0000-0000-000000000001',
+    item_type: 'concept',
+    challenge_id: null,
+    concept_id: 'c1000000-0000-0000-0000-000000000005',
+    chapter_title: 'Week 2: User Research',
+    order_index: 4,
+  },
+  {
+    id: 'spi10000-0000-0000-0000-000000000005',
+    plan_id: 'sp100000-0000-0000-0000-000000000001',
+    item_type: 'concept',
+    challenge_id: null,
+    concept_id: 'c1000000-0000-0000-0000-000000000007',
+    chapter_title: 'Week 2: User Research',
+    order_index: 5,
+  },
+  {
+    id: 'spi10000-0000-0000-0000-000000000006',
+    plan_id: 'sp100000-0000-0000-0000-000000000001',
+    item_type: 'challenge',
+    challenge_id: 'ch100000-0000-0000-0000-000000000003',
+    concept_id: null,
+    chapter_title: 'Week 2: User Research',
+    order_index: 6,
+  },
+  // Chapter 3: Metrics
+  {
+    id: 'spi10000-0000-0000-0000-000000000007',
+    plan_id: 'sp100000-0000-0000-0000-000000000001',
+    item_type: 'concept',
+    challenge_id: null,
+    concept_id: 'c1000000-0000-0000-0000-000000000009',
+    chapter_title: 'Week 3: Metrics & Analytics',
+    order_index: 7,
+  },
+  {
+    id: 'spi10000-0000-0000-0000-000000000008',
+    plan_id: 'sp100000-0000-0000-0000-000000000001',
+    item_type: 'concept',
+    challenge_id: null,
+    concept_id: 'c1000000-0000-0000-0000-000000000010',
+    chapter_title: 'Week 3: Metrics & Analytics',
+    order_index: 8,
+  },
+  {
+    id: 'spi10000-0000-0000-0000-000000000009',
+    plan_id: 'sp100000-0000-0000-0000-000000000001',
+    item_type: 'challenge',
+    challenge_id: 'ch100000-0000-0000-0000-000000000004',
+    concept_id: null,
+    chapter_title: 'Week 3: Metrics & Analytics',
+    order_index: 9,
+  },
+  // ── Metrics Mastery ───────────────────────────────────────────
+  // Chapter 1: Foundations
+  {
+    id: 'spi10000-0000-0000-0000-000000000010',
+    plan_id: 'sp100000-0000-0000-0000-000000000002',
+    item_type: 'concept',
+    challenge_id: null,
+    concept_id: 'c1000000-0000-0000-0000-000000000009',
+    chapter_title: 'Chapter 1: Metric Foundations',
+    order_index: 1,
+  },
+  {
+    id: 'spi10000-0000-0000-0000-000000000011',
+    plan_id: 'sp100000-0000-0000-0000-000000000002',
+    item_type: 'concept',
+    challenge_id: null,
+    concept_id: 'c1000000-0000-0000-0000-000000000010',
+    chapter_title: 'Chapter 1: Metric Foundations',
+    order_index: 2,
+  },
+  // Chapter 2: Investigation
+  {
+    id: 'spi10000-0000-0000-0000-000000000012',
+    plan_id: 'sp100000-0000-0000-0000-000000000002',
+    item_type: 'concept',
+    challenge_id: null,
+    concept_id: 'c1000000-0000-0000-0000-000000000011',
+    chapter_title: 'Chapter 2: Investigating Drops',
+    order_index: 3,
+  },
+  {
+    id: 'spi10000-0000-0000-0000-000000000013',
+    plan_id: 'sp100000-0000-0000-0000-000000000002',
+    item_type: 'challenge',
+    challenge_id: 'ch100000-0000-0000-0000-000000000004',
+    concept_id: null,
+    chapter_title: 'Chapter 2: Investigating Drops',
+    order_index: 4,
+  },
+  // Chapter 3: Experimentation
+  {
+    id: 'spi10000-0000-0000-0000-000000000014',
+    plan_id: 'sp100000-0000-0000-0000-000000000002',
+    item_type: 'concept',
+    challenge_id: null,
+    concept_id: 'c1000000-0000-0000-0000-000000000012',
+    chapter_title: 'Chapter 3: Experimentation',
+    order_index: 5,
+  },
+  // ── Interview Ready ───────────────────────────────────────────
+  // Chapter 1: Quick-build fundamentals
+  {
+    id: 'spi10000-0000-0000-0000-000000000015',
+    plan_id: 'sp100000-0000-0000-0000-000000000003',
+    item_type: 'concept',
+    challenge_id: null,
+    concept_id: 'c1000000-0000-0000-0000-000000000001',
+    chapter_title: 'Part 1: Strategy Fundamentals',
+    order_index: 1,
+  },
+  {
+    id: 'spi10000-0000-0000-0000-000000000016',
+    plan_id: 'sp100000-0000-0000-0000-000000000003',
+    item_type: 'concept',
+    challenge_id: null,
+    concept_id: 'c1000000-0000-0000-0000-000000000002',
+    chapter_title: 'Part 1: Strategy Fundamentals',
+    order_index: 2,
+  },
+  {
+    id: 'spi10000-0000-0000-0000-000000000017',
+    plan_id: 'sp100000-0000-0000-0000-000000000003',
+    item_type: 'challenge',
+    challenge_id: 'ch100000-0000-0000-0000-000000000002',
+    concept_id: null,
+    chapter_title: 'Part 1: Strategy Fundamentals',
+    order_index: 3,
+  },
+  {
+    id: 'spi10000-0000-0000-0000-000000000018',
+    plan_id: 'sp100000-0000-0000-0000-000000000003',
+    item_type: 'concept',
+    challenge_id: null,
+    concept_id: 'c1000000-0000-0000-0000-000000000009',
+    chapter_title: 'Part 2: Metrics Under Pressure',
+    order_index: 4,
+  },
+  {
+    id: 'spi10000-0000-0000-0000-000000000019',
+    plan_id: 'sp100000-0000-0000-0000-000000000003',
+    item_type: 'challenge',
+    challenge_id: 'ch100000-0000-0000-0000-000000000004',
+    concept_id: null,
+    chapter_title: 'Part 2: Metrics Under Pressure',
+    order_index: 5,
+  },
+  // ── HackProduct 75 ────────────────────────────────────────────
+  // Week 1
+  {
+    id: 'spi10000-0000-0000-0000-000000000020',
+    plan_id: 'sp100000-0000-0000-0000-000000000004',
+    item_type: 'challenge',
+    challenge_id: 'ch100000-0000-0000-0000-000000000001',
+    concept_id: null,
+    chapter_title: 'Week 1: Product Strategy',
+    order_index: 1,
+  },
+  {
+    id: 'spi10000-0000-0000-0000-000000000021',
+    plan_id: 'sp100000-0000-0000-0000-000000000004',
+    item_type: 'challenge',
+    challenge_id: 'ch100000-0000-0000-0000-000000000002',
+    concept_id: null,
+    chapter_title: 'Week 1: Product Strategy',
+    order_index: 2,
+  },
+  // Week 2
+  {
+    id: 'spi10000-0000-0000-0000-000000000022',
+    plan_id: 'sp100000-0000-0000-0000-000000000004',
+    item_type: 'challenge',
+    challenge_id: 'ch100000-0000-0000-0000-000000000003',
+    concept_id: null,
+    chapter_title: 'Week 2: User Research',
+    order_index: 3,
+  },
+  {
+    id: 'spi10000-0000-0000-0000-000000000023',
+    plan_id: 'sp100000-0000-0000-0000-000000000004',
+    item_type: 'challenge',
+    challenge_id: 'ch100000-0000-0000-0000-000000000004',
+    concept_id: null,
+    chapter_title: 'Week 3: Metrics & Analytics',
+    order_index: 4,
+  },
+]
