@@ -83,7 +83,7 @@ export function CaseContextPane({ challenge, domainTitle, domainIcon, timerEnabl
   const timerTextColor = timeLeft < 60 ? 'text-error' : timeLeft < 180 ? 'text-tertiary' : 'text-primary'
 
   return (
-    <section className="w-1/2 h-full overflow-y-auto bg-surface-container-low px-16 py-12 pb-32">
+    <section className="w-1/2 h-full overflow-y-auto bg-surface-container-low px-8 lg:px-12 py-10 pb-24">
 
       {/* ── Nav Row ───────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-8">
@@ -159,7 +159,7 @@ export function CaseContextPane({ challenge, domainTitle, domainIcon, timerEnabl
 
       {/* ── Scenario Card ─────────────────────────────────── */}
       <div
-        className="bg-surface-container-lowest p-8 rounded-2xl mb-6 space-y-6"
+        className="bg-surface-container-lowest p-6 rounded-2xl mb-6 space-y-6"
         style={{ boxShadow: '0 4px 20px rgba(46,50,48,0.03)' }}
       >
         {/* Icon header row */}
@@ -182,25 +182,22 @@ export function CaseContextPane({ challenge, domainTitle, domainIcon, timerEnabl
           {challenge.prompt_text}
         </p>
 
-        {/* Image placeholder */}
-        <div className="rounded-xl overflow-hidden h-48 bg-surface-container-high flex items-center justify-center">
-          <div className="flex flex-col items-center gap-2 text-on-surface-variant/30">
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 40, fontVariationSettings: "'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 48" }}
-            >
-              image
-            </span>
-            <span className="text-xs font-label font-medium uppercase tracking-wider">
-              Visual Context
-            </span>
+        {/* Image — only render if actual image data is present */}
+        {challenge.image_url && (
+          <div className="rounded-xl overflow-hidden h-48 bg-surface-container-high">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={challenge.image_url}
+              alt="Visual context"
+              className="w-full h-full object-cover"
+            />
           </div>
-        </div>
+        )}
       </div>
 
       {/* ── Constraints / Sub-Questions Card ─────────────── */}
       <div
-        className="bg-surface-container-lowest p-8 rounded-2xl mb-8 space-y-5"
+        className="bg-surface-container-lowest p-6 rounded-2xl mb-8 space-y-5"
         style={{ boxShadow: '0 4px 20px rgba(46,50,48,0.03)' }}
       >
         {/* Header */}

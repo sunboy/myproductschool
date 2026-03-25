@@ -68,6 +68,7 @@ export interface ChallengePrompt {
   is_published: boolean
   created_at: string
   sub_questions?: string[]
+  image_url?: string | null
 }
 
 export interface ChallengeAttempt {

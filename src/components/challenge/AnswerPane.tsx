@@ -1,14 +1,15 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import type { ChallengeMode } from '@/lib/types'
 import { PMCanvas } from './PMCanvas'
+import { FrameworkDrawer } from './FrameworkDrawer'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { getWordCount } from '@/lib/utils'
 
 /* ── Types ───────────────────────────────────────────────── */
 
-type AnswerTab = 'answer' | 'canvas' | 'frameworks'
+type AnswerTab = 'answer' | 'canvas'
 
 interface AnswerPaneProps {
   activeTab: AnswerTab
@@ -32,69 +33,16 @@ interface AnswerPaneProps {
   // Timer (for canvas auto-submit)
   timeLeft?: number
   timeExpired?: boolean
+  // Drawer control (parent can trigger open via prop)
+  drawerOpen?: boolean
+  onDrawerClose?: () => void
 }
-
-/* ── Frameworks stub content ─────────────────────────────── */
-
-const FRAMEWORKS = [
-  {
-    id: 'circles',
-    name: 'CIRCLES Method',
-    purpose: 'Comprehensive product design framework',
-    steps: [
-      'Comprehend the situation',
-      'Identify the customer',
-      'Report customer needs',
-      'Cut through prioritization',
-      'List solutions',
-      'Evaluate trade-offs',
-      'Summarize recommendations',
-    ],
-  },
-  {
-    id: 'heart',
-    name: 'HEART Framework',
-    purpose: 'Measure user experience quality',
-    steps: ['Happiness', 'Engagement', 'Adoption', 'Retention', 'Task success'],
-  },
-  {
-    id: 'rice',
-    name: 'RICE Scoring',
-    purpose: 'Prioritize features objectively',
-    steps: ['Reach', 'Impact', 'Confidence', 'Effort'],
-  },
-  {
-    id: 'jobs',
-    name: 'Jobs to Be Done',
-    purpose: 'Understand user motivation',
-    steps: [
-      'Functional job',
-      'Emotional job',
-      'Social job',
-      'Identify underserved jobs',
-      'Map to solutions',
-    ],
-  },
-  {
-    id: 'prfaq',
-    name: 'PR/FAQ',
-    purpose: 'Work backwards from the customer',
-    steps: [
-      'Write the press release',
-      'Define customer problem',
-      'Describe the solution',
-      'Anticipate FAQs',
-      'Define success metrics',
-    ],
-  },
-]
 
 /* ── Tab definitions ─────────────────────────────────────── */
 
 const TABS: Array<{ id: AnswerTab; label: string; icon: string }> = [
-  { id: 'answer', label: 'Freeform', icon: 'edit_note' },
   { id: 'canvas', label: 'Guided', icon: 'format_list_numbered' },
-  { id: 'frameworks', label: 'Frameworks', icon: 'import_contacts' },
+  { id: 'answer', label: 'Freeform', icon: 'edit_note' },
 ]
 
 /* ── Sub-components ──────────────────────────────────────── */
@@ -104,11 +52,13 @@ function TabBar({
   onTabChange,
   mode,
   onModeChange,
+  onOpenDrawer,
 }: {
   activeTab: AnswerTab
   onTabChange: (tab: AnswerTab) => void
   mode: ChallengeMode
   onModeChange: (mode: ChallengeMode) => void
+  onOpenDrawer: () => void
 }) {
   return (
     <div className="border-b border-outline-variant/10 px-8 pt-6 flex items-end justify-between flex-shrink-0">
@@ -129,25 +79,44 @@ function TabBar({
           </button>
         ))}
       </div>
-      <div className="flex items-center bg-surface-container-high/50 rounded-full p-0.5 mb-2">
+
+      <div className="flex items-center gap-2 mb-2">
+        {/* Framework reference lightbulb button */}
         <button
-          onClick={() => onModeChange('solo')}
-          className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all ${
-            mode === 'solo' ? 'bg-primary-container text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'
-          }`}
+          onClick={onOpenDrawer}
+          className="p-2 rounded-full hover:bg-surface-container-high transition-colors"
+          title="Framework Reference"
+          aria-label="Open framework reference"
         >
-          <span className="material-symbols-outlined text-sm">edit_note</span>
-          Solo
+          <span
+            className="material-symbols-outlined text-on-surface-variant"
+            style={{ fontSize: 20 }}
+          >
+            lightbulb
+          </span>
         </button>
-        <button
-          onClick={() => onModeChange('live')}
-          className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all ${
-            mode === 'live' ? 'bg-primary-container text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'
-          }`}
-        >
-          <span className="material-symbols-outlined text-sm">chat</span>
-          Live
-        </button>
+
+        {/* Solo / Live mode toggle */}
+        <div className="flex items-center bg-surface-container-high/50 rounded-full p-0.5">
+          <button
+            onClick={() => onModeChange('solo')}
+            className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all ${
+              mode === 'solo' ? 'bg-primary-container text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'
+            }`}
+          >
+            <span className="material-symbols-outlined text-sm">edit_note</span>
+            Solo
+          </button>
+          <button
+            onClick={() => onModeChange('live')}
+            className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all ${
+              mode === 'live' ? 'bg-primary-container text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'
+            }`}
+          >
+            <span className="material-symbols-outlined text-sm">chat</span>
+            Live
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -203,7 +172,7 @@ function LiveChatView({
       {/* Message thread */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-10 py-6 space-y-4"
+        className="flex-1 overflow-y-auto px-6 lg:px-8 py-4 space-y-4"
       >
         {lumaMessages.map((msg, i) => (
           <div
@@ -251,7 +220,7 @@ function LiveChatView({
       </div>
 
       {/* Chat input */}
-      <div className="px-10 pb-4 flex gap-3 items-end flex-shrink-0">
+      <div className="px-6 lg:px-8 pb-4 flex gap-3 items-end flex-shrink-0">
         <textarea
           value={response}
           onChange={(e) => onResponseChange(e.target.value)}
@@ -276,7 +245,7 @@ function LiveChatView({
       </div>
 
       {/* Finish & Submit */}
-      <div className="px-10 pb-6 flex-shrink-0">
+      <div className="px-6 lg:px-8 pb-4 flex-shrink-0">
         <button
           type="button"
           onClick={onSubmit}
@@ -293,42 +262,6 @@ function LiveChatView({
           )}
         </button>
       </div>
-    </div>
-  )
-}
-
-/* ── Frameworks tab ──────────────────────────────────────── */
-
-function FrameworksTab() {
-  return (
-    <div className="h-full overflow-y-auto px-10 py-8 space-y-4">
-      <p className="text-xs font-label font-bold text-outline uppercase tracking-wider mb-6">
-        Reference frameworks
-      </p>
-      {FRAMEWORKS.map((fw) => (
-        <div
-          key={fw.id}
-          className="bg-surface-container-low rounded-xl p-5 border border-outline-variant/20 space-y-3"
-        >
-          <div>
-            <h3 className="font-headline font-bold text-on-surface text-base">{fw.name}</h3>
-            <p className="text-xs text-on-surface-variant font-body mt-0.5">{fw.purpose}</p>
-          </div>
-          <ol className="space-y-1.5 pl-1">
-            {fw.steps.map((step, i) => (
-              <li
-                key={i}
-                className="flex items-center gap-2 text-sm text-on-surface-variant font-body"
-              >
-                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold font-label">
-                  {i + 1}
-                </span>
-                {step}
-              </li>
-            ))}
-          </ol>
-        </div>
-      ))}
     </div>
   )
 }
@@ -353,22 +286,38 @@ export function AnswerPane({
   lumaSending,
   timeLeft,
   timeExpired,
+  drawerOpen: externalDrawerOpen,
+  onDrawerClose: externalDrawerClose,
 }: AnswerPaneProps) {
   const wordCount = getWordCount(response)
+  const [internalDrawerOpen, setInternalDrawerOpen] = useState(false)
+
+  // Merge external and internal drawer state (external wins when provided)
+  const drawerOpen = externalDrawerOpen !== undefined ? externalDrawerOpen : internalDrawerOpen
+  const handleDrawerClose = () => {
+    setInternalDrawerOpen(false)
+    externalDrawerClose?.()
+  }
 
   return (
     <div className="w-1/2 h-full bg-surface-container-lowest border-l border-outline-variant/20 flex flex-col shadow-[-20px_0_40px_rgba(0,0,0,0.02)]">
       {/* Tab bar */}
-      <TabBar activeTab={activeTab} onTabChange={onTabChange} mode={mode} onModeChange={onModeChange} />
+      <TabBar
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        mode={mode}
+        onModeChange={onModeChange}
+        onOpenDrawer={() => setInternalDrawerOpen(true)}
+      />
 
       {/* Tab content — fills remaining height, no outer scroll */}
       <div className="flex-1 overflow-hidden flex flex-col">
 
-        {/* ── Your Answer tab ── */}
+        {/* ── Your Answer tab (Freeform) ── */}
         {activeTab === 'answer' && mode !== 'live' && (
           <>
             {/* Textarea area */}
-            <div className="flex-1 p-10 overflow-hidden flex flex-col gap-4">
+            <div className="flex-1 p-6 lg:p-8 overflow-hidden flex flex-col gap-4">
               <textarea
                 value={response}
                 onChange={(e) => onResponseChange(e.target.value)}
@@ -378,7 +327,7 @@ export function AnswerPane({
             </div>
 
             {/* Footer */}
-            <div className="flex-shrink-0 p-8 bg-surface-container-low/30 border-t border-outline-variant/10">
+            <div className="flex-shrink-0 p-5 lg:p-6 bg-surface-container-low/30 border-t border-outline-variant/10">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
                   <span className="text-[10px] font-bold text-outline uppercase tracking-wider">
@@ -410,7 +359,7 @@ export function AnswerPane({
           </>
         )}
 
-        {/* ── Your Answer tab (Live mode) ── */}
+        {/* ── Freeform tab (Live mode) ── */}
         {activeTab === 'answer' && mode === 'live' && (
           <LiveChatView
             lumaMessages={lumaMessages}
@@ -423,9 +372,9 @@ export function AnswerPane({
           />
         )}
 
-        {/* ── Canvas tab ── */}
+        {/* ── Guided tab ── */}
         {activeTab === 'canvas' && (
-          <div className="flex-1 overflow-y-auto p-10">
+          <div className="flex-1 overflow-y-auto p-6 lg:p-8">
             <PMCanvas
               subQuestions={subQuestions}
               onSubmit={(responses, conf) => {
@@ -442,10 +391,10 @@ export function AnswerPane({
             />
           </div>
         )}
-
-        {/* ── Frameworks tab ── */}
-        {activeTab === 'frameworks' && <FrameworksTab />}
       </div>
+
+      {/* Framework side drawer */}
+      <FrameworkDrawer open={drawerOpen} onClose={handleDrawerClose} />
     </div>
   )
 }

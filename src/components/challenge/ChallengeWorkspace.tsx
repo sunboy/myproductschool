@@ -14,7 +14,7 @@ interface ChallengeWorkspaceProps {
   domainIcon: string
 }
 
-type AnswerTab = 'answer' | 'canvas' | 'frameworks'
+type AnswerTab = 'answer' | 'canvas'
 
 /* ── Helpers ─────────────────────────────────────────────── */
 
@@ -35,7 +35,8 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
 
   // Mode — Solo (default) or Live
   const [selectedMode, setSelectedMode] = useState<ChallengeMode>('solo')
-  const [activeTab, setActiveTab] = useState<AnswerTab>('answer')
+  const [activeTab, setActiveTab] = useState<AnswerTab>('canvas')
+  const [frameworkDrawerOpen, setFrameworkDrawerOpen] = useState(false)
 
   // Response state
   const [response, setResponse] = useState('')
@@ -200,6 +201,8 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
           lumaSending={lumaSending}
           timeLeft={timeLeft}
           timeExpired={timeExpired}
+          drawerOpen={frameworkDrawerOpen}
+          onDrawerClose={() => setFrameworkDrawerOpen(false)}
         />
       </main>
 
@@ -207,7 +210,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
       <LumaCoachingStrip
         mode={selectedMode}
         onHintRequest={handleHintRequest}
-        onShowFramework={() => setActiveTab('frameworks')}
+        onShowFramework={() => setFrameworkDrawerOpen(true)}
       />
     </>
   )
