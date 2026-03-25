@@ -1,11 +1,13 @@
 import { MetadataRoute } from 'next'
 
+const SITE_URL = 'https://hackproduct.dev'
+
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
-    { url: 'https://myproductschool.com', lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
-    { url: 'https://myproductschool.com/waitlist', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
-    { url: 'https://myproductschool.com/pricing', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
-    { url: 'https://myproductschool.com/login', lastModified: new Date(), changeFrequency: 'yearly', priority: 0.5 },
-    { url: 'https://myproductschool.com/signup', lastModified: new Date(), changeFrequency: 'yearly', priority: 0.5 },
+    { url: SITE_URL, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
+    { url: `${SITE_URL}/waitlist`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${SITE_URL}/pricing`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${SITE_URL}/login`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${SITE_URL}/signup`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
   ]
 }

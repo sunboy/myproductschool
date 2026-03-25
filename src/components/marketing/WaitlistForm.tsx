@@ -66,6 +66,8 @@ export function WaitlistForm() {
           onChange={e => setFirstName(e.target.value)}
           placeholder="First name"
           required
+          aria-label="First name"
+          autoComplete="given-name"
           className={`flex-1 ${inputClass}`}
         />
         <input
@@ -74,6 +76,8 @@ export function WaitlistForm() {
           onChange={e => setLastName(e.target.value)}
           placeholder="Last name"
           required
+          aria-label="Last name"
+          autoComplete="family-name"
           className={`flex-1 ${inputClass}`}
         />
       </div>
@@ -83,6 +87,8 @@ export function WaitlistForm() {
         onChange={e => setEmail(e.target.value)}
         placeholder="you@email.com"
         required
+        aria-label="Email address"
+        autoComplete="email"
         className={`w-full ${inputClass}`}
       />
       <div className="flex flex-col sm:flex-row gap-2.5">
@@ -91,6 +97,8 @@ export function WaitlistForm() {
           value={company}
           onChange={e => setCompany(e.target.value)}
           placeholder="Company (optional)"
+          aria-label="Company name (optional)"
+          autoComplete="organization"
           className={`sm:flex-1 ${inputClass}`}
         />
         <button
