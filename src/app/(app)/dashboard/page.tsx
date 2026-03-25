@@ -10,12 +10,18 @@ function getGreeting(): string {
   return 'Good evening'
 }
 
-function getFormattedDate(): string {
-  return new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  })
+// Mock recent activity rows
+const recentActivity = [
+  { name: 'Spotify podcast discovery', domain: 'Product Strategy', score: 78, date: 'Mar 24' },
+  { name: 'DoorDash driver retention', domain: 'Growth', score: 64, date: 'Mar 22' },
+  { name: 'Airbnb superhost funnel', domain: 'Conversion', score: 51, date: 'Mar 20' },
+  { name: 'Duolingo streak mechanics', domain: 'Engagement', score: 82, date: 'Mar 18' },
+]
+
+function scoreColor(score: number): string {
+  if (score >= 75) return 'text-primary'
+  if (score >= 50) return 'text-tertiary'
+  return 'text-error'
 }
 
 export default async function DashboardPage() {
@@ -24,7 +30,7 @@ export default async function DashboardPage() {
 
   let displayName = 'there'
   let isOnboarded = false
-  let streakDays = 0
+  let streakDays = 7
   let productiqScore = 72
   let productiqDelta = 2.4
   let weeklyActivity = [2, 1, 3, 0, 2, 1, 2]
@@ -38,7 +44,7 @@ export default async function DashboardPage() {
 
     displayName = profile?.display_name ?? 'there'
     isOnboarded = !!profile?.onboarding_completed_at
-    streakDays = profile?.streak_days ?? 0
+    streakDays = profile?.streak_days ?? 7
 
     const analytics = await getUserAnalyticsSummary(user.id)
     productiqScore = Math.round(analytics.productiq_score)
@@ -49,14 +55,14 @@ export default async function DashboardPage() {
   // Fetch a featured challenge
   let featuredChallenge = {
     title: 'The Marketplace Retention Loop',
-    description: 'Analyze the Cohort data for a hypothetical delivery app and propose 3 structural changes to improve D30 retention.',
-    estimatedMinutes: 45,
+    difficulty: 'Medium',
+    domain: 'Product Strategy',
     slug: '',
   }
 
   const { data: challenge } = await supabase
     .from('challenge_prompts')
-    .select('id, title, prompt_text, estimated_minutes, domain_id')
+    .select('id, title, estimated_minutes, domain_id')
     .eq('is_published', true)
     .limit(1)
     .single()
@@ -64,96 +70,81 @@ export default async function DashboardPage() {
   if (challenge) {
     featuredChallenge = {
       title: challenge.title,
-      description: challenge.prompt_text.length > 160
-        ? challenge.prompt_text.slice(0, 157) + '...'
-        : challenge.prompt_text,
-      estimatedMinutes: challenge.estimated_minutes,
+      difficulty: 'Medium',
+      domain: 'Product Strategy',
       slug: challenge.id,
     }
   }
 
-  // Radar chart dimension scores for the visualization
-  const radarDimensions = [
-    { label: 'Strategic Thinking', value: 85 },
-    { label: 'Execution', value: 70 },
-    { label: 'Growth', value: 75 },
-    { label: 'Empathy', value: 90 },
-    { label: 'Data Analysis', value: 65 },
-    { label: 'UI Design', value: 72 },
+  // Sparkline bar heights — normalize weeklyActivity to max height of 48px
+  const maxActivity = Math.max(...weeklyActivity, 1)
+  const sparklineBars = weeklyActivity.map(v => Math.max(4, Math.round((v / maxActivity) * 48)))
+
+  // ProductIQ dimension scores
+  const dimensions = [
+    { label: 'Diagnostic Accuracy', score: 74 },
+    { label: 'Metric Fluency', score: 68 },
+    { label: 'Framing Precision', score: 80 },
+    { label: 'Recommendation Strength', score: 71 },
   ]
 
-  // Compute radar polygon points (6 axes, centered at 50,50, max radius 40)
-  const radarPoints = radarDimensions.map((dim, i) => {
-    const angle = (Math.PI * 2 * i) / radarDimensions.length - Math.PI / 2
-    const r = (dim.value / 100) * 40
-    return `${50 + r * Math.cos(angle)},${50 + r * Math.sin(angle)}`
-  }).join(' ')
+  // Radar SVG — pentagon with 4 axes (using 4 axes)
+  const radarDims = [
+    { label: 'Diagnostic', value: 74 },
+    { label: 'Metrics', value: 68 },
+    { label: 'Framing', value: 80 },
+    { label: 'Recommendations', value: 71 },
+  ]
+  const numAxes = radarDims.length
+  const cx = 80
+  const cy = 80
+  const maxR = 60
+  const radarPoints = radarDims.map((d, i) => {
+    const angle = (Math.PI * 2 * i) / numAxes - Math.PI / 2
+    const r = (d.value / 100) * maxR
+    return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) }
+  })
+  const radarPolygon = radarPoints.map(p => `${p.x},${p.y}`).join(' ')
 
-  const radarDotPositions = radarDimensions.map((dim, i) => {
-    const angle = (Math.PI * 2 * i) / radarDimensions.length - Math.PI / 2
-    const r = (dim.value / 100) * 40
-    return { cx: 50 + r * Math.cos(angle), cy: 50 + r * Math.sin(angle) }
+  // Grid ring points at 33%, 66%, 100%
+  const gridRings = [0.33, 0.66, 1.0].map(frac =>
+    Array.from({ length: numAxes }, (_, i) => {
+      const angle = (Math.PI * 2 * i) / numAxes - Math.PI / 2
+      const r = frac * maxR
+      return `${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`
+    }).join(' ')
+  )
+
+  // Axis line endpoints
+  const axisEndpoints = radarDims.map((_, i) => {
+    const angle = (Math.PI * 2 * i) / numAxes - Math.PI / 2
+    return { x: cx + maxR * Math.cos(angle), y: cy + maxR * Math.sin(angle) }
   })
 
-  // Label positions for radar (pushed further out)
-  const labelPositions = radarDimensions.map((dim, i) => {
-    const angle = (Math.PI * 2 * i) / radarDimensions.length - Math.PI / 2
-    const r = 48
+  // Axis labels placed slightly beyond the ring
+  const axisLabels = radarDims.map((d, i) => {
+    const angle = (Math.PI * 2 * i) / numAxes - Math.PI / 2
+    const r = maxR + 14
     return {
-      x: 50 + r * Math.cos(angle),
-      y: 50 + r * Math.sin(angle),
-      label: dim.label,
-      anchor: Math.abs(Math.cos(angle)) < 0.1
-        ? 'middle' as const
-        : Math.cos(angle) > 0
-          ? 'start' as const
-          : 'end' as const,
+      label: d.label,
+      x: cx + r * Math.cos(angle),
+      y: cy + r * Math.sin(angle),
+      anchor: (Math.abs(Math.cos(angle)) < 0.15 ? 'middle' : Math.cos(angle) > 0 ? 'start' : 'end') as 'middle' | 'start' | 'end',
     }
   })
 
-  // Mock community submissions
-  const recentSubmissions = [
-    {
-      id: '1',
-      name: 'Marcus J.',
-      topic: 'FinTech UX',
-      action: 'shared a case study on',
-      timeAgo: '2 hours ago',
-      comments: 14,
-      likes: 42,
-      avatar: 'M',
-    },
-    {
-      id: '2',
-      name: 'Elena Rose',
-      topic: 'Onboarding Flow',
-      action: 'asked for feedback on',
-      timeAgo: '5 hours ago',
-      comments: 28,
-      likes: 15,
-      avatar: 'E',
-    },
-  ]
-
-  // Milestone data
-  const milestonePhase = 'Phase 2: Mechanics'
-  const milestoneLessons = { done: 8, total: 12 }
-  const milestonePercent = Math.round((milestoneLessons.done / milestoneLessons.total) * 100)
-  const milestoneNext = 'Incentive Structures & Variable Rewards'
-
   return (
     <div className="max-w-6xl mx-auto px-6 py-6 space-y-4">
-      {/* Compact Luma greeting row */}
+
+      {/* Row 1 — Compact Luma greeting */}
       <div className="bg-primary-fixed rounded-xl p-3 flex items-center gap-3">
         <LumaGlyph size={40} className="flex-shrink-0" />
-        <div className="flex-1 min-w-0">
-          <span className="text-xs text-primary font-bold uppercase tracking-wider block">
-            {getFormattedDate()}
-          </span>
-          <p className="text-sm text-on-surface font-medium truncate">
-            {getGreeting()}, {displayName}. {streakDays > 0 ? `${streakDays}-day streak — keep it going.` : "Let's build your product instincts."}
-          </p>
-        </div>
+        <p className="flex-1 min-w-0 text-sm text-on-surface font-medium truncate">
+          {getGreeting()}, {displayName}!{' '}
+          {streakDays > 0
+            ? `You're on a ${streakDays}-day streak.`
+            : "Let's build your product instincts."}
+        </p>
         <div className="flex gap-2 flex-shrink-0">
           <Link
             href="/challenges"
@@ -163,7 +154,7 @@ export default async function DashboardPage() {
           </Link>
           <Link
             href="/challenges"
-            className="bg-surface-container-high text-on-surface px-4 py-1.5 rounded-full text-sm font-label font-semibold hover:bg-surface-container-highest transition-colors whitespace-nowrap"
+            className="border border-outline-variant text-on-surface px-4 py-1.5 rounded-full text-sm font-label font-semibold hover:bg-surface-container transition-colors whitespace-nowrap"
           >
             Resume Learning
           </Link>
@@ -186,211 +177,175 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Greeting headline (compact) */}
-      <h1 className="font-headline text-2xl md:text-3xl font-bold text-on-surface">
-        {getGreeting()}, {displayName}.
-      </h1>
+      {/* Row 2 — Bento grid: ProductIQ (2/3) + Luma's Pick (1/3) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-      {/* Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-
-        {/* ProductIQ Score Radar Chart Card */}
-        <div className="md:col-span-7 lg:col-span-8 bg-surface-container-lowest rounded-xl p-4 editorial-shadow ghost-border flex flex-col relative overflow-hidden">
-          <div className="flex justify-between items-start mb-4 z-10">
+        {/* ProductIQ Score Card */}
+        <div className="lg:col-span-2 bg-surface-container rounded-xl p-4 flex flex-col gap-3">
+          <div className="flex items-start justify-between">
             <div>
-              <h3 className="font-label font-bold text-outline uppercase tracking-wider text-xs mb-1">ProductIQ Score</h3>
-              <p className="text-sm text-secondary">Based on your last 12 challenges</p>
-            </div>
-            <div className="text-right">
-              <span className="text-6xl font-headline font-bold text-primary-container">{productiqScore}</span>
-              <span className="text-sm font-bold text-tertiary block">
+              <h2 className="font-label font-bold text-xs uppercase tracking-wider text-outline">ProductIQ Score</h2>
+              <span className="text-3xl font-bold text-primary font-headline leading-none">{productiqScore}</span>
+              <span className="text-xs font-semibold text-tertiary ml-2">
                 {productiqDelta >= 0 ? '+' : ''}{productiqDelta} pts
               </span>
             </div>
           </div>
 
-          {/* Radar Chart */}
-          <div className="flex-grow flex items-center justify-center relative py-10">
-            {/* Radial gradient background */}
-            <div
-              className="absolute inset-0 rounded-full scale-125 opacity-30"
-              style={{ background: 'radial-gradient(circle, rgba(74, 124, 89, 0.1) 0%, rgba(74, 124, 89, 0) 70%)' }}
-            />
-            <div className="relative w-64 h-64 lg:w-80 lg:h-80 border-2 border-outline-variant/30 rounded-full flex items-center justify-center">
-              <div className="w-48 h-48 lg:w-60 lg:h-60 border border-outline-variant/30 rounded-full flex items-center justify-center">
-                <div className="w-32 h-32 lg:w-44 lg:h-44 border border-outline-variant/30 rounded-full" />
-              </div>
-              {/* Radar polygon */}
-              <svg className="absolute w-full h-full drop-shadow-lg" viewBox="0 0 100 100">
-                <polygon
-                  points={radarPoints}
-                  fill="rgba(74, 124, 89, 0.4)"
-                  stroke="#4a7c59"
-                  strokeWidth="2"
-                />
-                {radarDotPositions.map((pos, i) => (
-                  <circle key={i} cx={pos.cx} cy={pos.cy} r="3" fill="#4a7c59" />
-                ))}
-              </svg>
-              {/* Labels */}
-              {labelPositions.map((pos, i) => {
-                // Position labels around the circle using absolute positioning
-                const style: React.CSSProperties = {
-                  left: `${pos.x}%`,
-                  top: `${pos.y}%`,
-                  transform: 'translate(-50%, -50%)',
-                }
-                return (
-                  <span
-                    key={i}
-                    className="absolute text-[10px] font-bold uppercase text-outline tracking-tighter whitespace-nowrap"
-                    style={style}
-                  >
-                    {pos.label}
-                  </span>
-                )
-              })}
-            </div>
+          {/* Sparkline bar chart */}
+          <div className="flex items-end gap-1 h-12">
+            {sparklineBars.map((h, i) => (
+              <div
+                key={i}
+                className="flex-1 rounded-sm bg-primary/30"
+                style={{ height: `${h}px` }}
+              />
+            ))}
           </div>
 
-          {/* Bottom stats */}
-          <div className="mt-4 grid grid-cols-3 gap-4 border-t border-outline-variant/20 pt-4 z-10">
-            <div className="text-center">
-              <p className="text-[10px] text-outline font-bold uppercase">Rank</p>
-              <p className="font-headline font-bold text-on-surface">Top 12%</p>
-            </div>
-            <div className="text-center border-x border-outline-variant/20 px-2">
-              <p className="text-[10px] text-outline font-bold uppercase">Streaks</p>
-              <p className="font-headline font-bold text-on-surface">{streakDays} Days</p>
-            </div>
-            <div className="text-center">
-              <p className="text-[10px] text-outline font-bold uppercase">Badges</p>
-              <p className="font-headline font-bold text-on-surface">24 Unlocked</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Featured Challenge Card */}
-        <div className="md:col-span-5 lg:col-span-4 space-y-4">
-          <div className="bg-primary-container text-on-primary rounded-xl p-4 relative overflow-hidden h-full flex flex-col ambient-glow">
-            {/* Decorative circle */}
-            <div className="absolute -top-12 -right-12 w-40 h-40 border-[20px] border-white/10 rounded-full" />
-            <div className="flex items-center gap-2 mb-3 z-10">
-              <LumaGlyph size={24} className="flex-shrink-0" />
-              <span className="bg-white/20 text-white font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-widest">
-                Luma recommends
-              </span>
-            </div>
-            <h3 className="font-headline text-2xl font-bold text-white leading-tight mb-2 z-10">{featuredChallenge.title}</h3>
-            <p className="text-white/80 text-sm mb-6 font-body z-10">
-              {featuredChallenge.description}
-            </p>
-            <div className="mt-auto space-y-4 z-10">
-              <div className="flex items-center gap-2 text-xs font-bold">
-                <span className="material-symbols-outlined text-sm">timer</span>
-                {featuredChallenge.estimatedMinutes} min estimated
-              </div>
-              <Link
-                href={featuredChallenge.slug ? `/challenges/${featuredChallenge.slug}` : '/challenges'}
-                className="w-full bg-white text-primary-container py-3.5 rounded-full font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-lg"
-              >
-                Start Challenge
-                <span className="material-symbols-outlined">arrow_forward</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Community Activity — spanning full width, split into 2/3 + 1/3 */}
-        <div className="md:col-span-12 lg:col-span-12 grid grid-cols-1 lg:grid-cols-3 gap-4">
-
-          {/* Recent Submissions */}
-          <div className="lg:col-span-2 bg-surface-container-lowest rounded-xl p-4 editorial-shadow ghost-border">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="font-headline text-xl font-bold text-on-surface">Recent Submissions</h2>
-              <Link href="/challenges" className="text-primary text-sm font-bold hover:underline">
-                View All Community
-              </Link>
-            </div>
-            <div className="space-y-4">
-              {recentSubmissions.map(sub => (
-                <div
-                  key={sub.id}
-                  className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-colors cursor-pointer group"
-                >
-                  {/* Avatar placeholder */}
-                  <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
-                    <span className="text-sm font-bold text-on-primary-container">{sub.avatar}</span>
-                  </div>
-                  <div className="flex-grow min-w-0">
-                    <h4 className="font-bold text-sm text-on-surface group-hover:text-primary transition-colors">
-                      {sub.name}{' '}
-                      <span className="font-normal text-outline">{sub.action}</span>{' '}
-                      {sub.topic}
-                    </h4>
-                    <p className="text-xs text-outline">
-                      {sub.timeAgo} &bull; {sub.comments} comments &bull; {sub.likes} likes
-                    </p>
-                  </div>
-                  <span className="material-symbols-outlined text-outline group-hover:text-primary flex-shrink-0">
-                    chevron_right
-                  </span>
+          {/* 4 dimension mini-bars in 2x2 grid */}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+            {dimensions.map((dim) => (
+              <div key={dim.label} className="flex flex-col gap-0.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-on-surface-variant truncate">{dim.label}</span>
+                  <span className="text-sm font-semibold text-on-surface ml-2">{dim.score}</span>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Milestone Progress */}
-          <div className="bg-tertiary-fixed text-on-tertiary-fixed-variant rounded-xl p-4 flex flex-col">
-            <h3 className="font-headline text-xl font-bold mb-4">Milestone Progress</h3>
-            <div className="flex-grow flex flex-col justify-center">
-              <div className="relative pt-1">
-                <div className="flex mb-2 items-center justify-between">
-                  <div>
-                    <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-tertiary-container text-on-tertiary-container">
-                      {milestonePhase}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs font-semibold inline-block text-tertiary">
-                      {milestoneLessons.done}/{milestoneLessons.total} Lessons
-                    </span>
-                  </div>
-                </div>
-                <div className="overflow-hidden h-2 mb-4 text-xs flex rounded-full bg-on-tertiary-fixed-variant/10">
+                <div className="h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
                   <div
-                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-tertiary"
-                    style={{ width: `${milestonePercent}%` }}
+                    className="h-full bg-primary rounded-full"
+                    style={{ width: `${dim.score}%` }}
                   />
                 </div>
-                <p className="text-sm font-medium">Next: &ldquo;{milestoneNext}&rdquo;</p>
               </div>
-            </div>
-            <div className="mt-4 pt-4 border-t border-on-tertiary-fixed-variant/10">
-              <p className="text-xs opacity-75">Estimated completion</p>
-              <p className="font-bold">Next Thursday</p>
-            </div>
+            ))}
           </div>
         </div>
 
+        {/* Luma's Pick Card */}
+        <div className="lg:col-span-1 bg-surface-container rounded-xl p-4 flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <LumaGlyph size={32} className="flex-shrink-0" />
+            <span className="text-xs font-bold text-primary uppercase tracking-wider">Luma's Pick</span>
+          </div>
+
+          <div className="flex-1 flex flex-col gap-2">
+            <p className="font-semibold text-sm text-on-surface leading-snug">{featuredChallenge.title}</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="bg-tertiary-container text-on-tertiary-container rounded-full text-xs px-2 py-0.5 font-label">
+                {featuredChallenge.difficulty}
+              </span>
+              <span className="bg-secondary-container text-on-secondary-container rounded-full text-xs px-2 py-0.5 font-label">
+                {featuredChallenge.domain}
+              </span>
+            </div>
+          </div>
+
+          <Link
+            href={featuredChallenge.slug ? `/challenges/${featuredChallenge.slug}` : '/challenges'}
+            className="bg-primary text-on-primary rounded-full px-4 py-1.5 text-sm font-label font-semibold text-center hover:opacity-90 transition-opacity"
+          >
+            Start Challenge →
+          </Link>
+        </div>
       </div>
 
-      {/* Contextual FAB */}
-      <div className="fixed bottom-20 right-6 md:bottom-8 md:right-8 z-40 group">
-        <Link
-          href="/challenges"
-          className="bg-primary text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
-        >
-          <span
-            className="material-symbols-outlined text-2xl"
-            style={{ fontVariationSettings: "'FILL' 1" }}
+      {/* Row 3 — Recent Activity + Skill Radar */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        {/* Recent Activity */}
+        <div className="bg-surface-container rounded-xl p-4 flex flex-col gap-2">
+          <h2 className="font-headline font-semibold text-base text-on-surface">Recent Activity</h2>
+
+          <div className="flex flex-col">
+            {recentActivity.map((row, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 h-10 border-b border-outline-variant/20 last:border-0"
+              >
+                <span className="flex-1 text-sm text-on-surface truncate">{row.name}</span>
+                <span className="bg-secondary-container text-on-secondary-container rounded-full text-xs px-2 py-0.5 font-label whitespace-nowrap flex-shrink-0">
+                  {row.domain}
+                </span>
+                <span className={`text-sm font-semibold flex-shrink-0 w-8 text-right ${scoreColor(row.score)}`}>
+                  {row.score}
+                </span>
+                <span className="text-xs text-on-surface-variant flex-shrink-0 w-12 text-right">{row.date}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Skill Radar */}
+        <div className="bg-surface-container rounded-xl p-4 flex flex-col items-center gap-3">
+          <h2 className="font-headline font-semibold text-base text-on-surface self-start">Skill Radar</h2>
+
+          {/* Pentagon SVG radar */}
+          <svg
+            viewBox="0 0 160 160"
+            className="w-40 h-40"
+            aria-label="Skill radar chart"
           >
-            add
-          </span>
-        </Link>
-        <span className="absolute right-full mr-4 bg-inverse-surface text-inverse-on-surface px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-          New Submission
-        </span>
+            {/* Grid rings */}
+            {gridRings.map((pts, i) => (
+              <polygon
+                key={i}
+                points={pts}
+                fill="none"
+                stroke="#c4c8bc"
+                strokeWidth="0.75"
+              />
+            ))}
+            {/* Axis lines */}
+            {axisEndpoints.map((ep, i) => (
+              <line
+                key={i}
+                x1={cx}
+                y1={cy}
+                x2={ep.x}
+                y2={ep.y}
+                stroke="#c4c8bc"
+                strokeWidth="0.75"
+              />
+            ))}
+            {/* Filled radar shape */}
+            <polygon
+              points={radarPolygon}
+              fill="rgba(74, 124, 89, 0.25)"
+              stroke="#4a7c59"
+              strokeWidth="1.5"
+            />
+            {/* Dots at vertices */}
+            {radarPoints.map((p, i) => (
+              <circle key={i} cx={p.x} cy={p.y} r="3" fill="#4a7c59" />
+            ))}
+            {/* Axis labels */}
+            {axisLabels.map((al, i) => (
+              <text
+                key={i}
+                x={al.x}
+                y={al.y}
+                textAnchor={al.anchor}
+                dominantBaseline="middle"
+                fontSize="7"
+                fontFamily="Nunito Sans, sans-serif"
+                fontWeight="600"
+                fill="#4a4e4a"
+              >
+                {al.label}
+              </text>
+            ))}
+          </svg>
+
+          {/* Top strength chip */}
+          <div className="flex items-center gap-2 bg-primary-fixed rounded-full px-3 py-1">
+            <LumaGlyph size={20} className="flex-shrink-0" />
+            <span className="text-xs text-on-surface font-label">
+              Top strength: <span className="font-semibold">Framing Precision</span>
+            </span>
+          </div>
+        </div>
+
       </div>
     </div>
   )
