@@ -1,5 +1,6 @@
 import { WaitlistForm } from '@/components/marketing/WaitlistForm'
 import { WaitlistCountdown } from '@/components/marketing/WaitlistCountdown'
+import { CyclingText } from '@/components/marketing/CyclingText'
 
 const WAITLIST_COUNT = 1100 // TODO: fetch from supabase at build/request time
 
@@ -57,14 +58,13 @@ export default function WaitlistPage() {
 
               {/* Headline */}
               <h1 className="font-headline font-bold text-3xl sm:text-4xl lg:text-[44px] leading-[1.15] text-on-background mb-4">
-                Stop Guessing.<br />
-                <span className="text-primary">Start Thinking</span>{' '}
-                Like a Product Leader.
+                Built for <CyclingText /><br />
+                Who Think in Products.
               </h1>
 
               {/* Subhead */}
               <p className="text-base lg:text-lg text-on-surface-variant leading-relaxed mb-5 max-w-md">
-                The practice gym where engineers build real product intuition. Bridge the gap to be a 100x engineer in the AI era.
+                Master product sense for interviews and on the job. Practice real decisions, get feedback from Luma, your personal product coach, and build the intuition that gets you hired and promoted.
               </p>
 
               {/* Value Props */}
@@ -77,7 +77,7 @@ export default function WaitlistPage() {
                     check_circle
                   </span>
                   <span className="text-on-surface">
-                    <strong>Real feedback</strong> on every answer, with graded rubrics
+                    <strong>Ace product sense interviews</strong> with Luma-graded practice rounds
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -88,7 +88,7 @@ export default function WaitlistPage() {
                     check_circle
                   </span>
                   <span className="text-on-surface">
-                    <strong>Real cases</strong> from Startups and Big Tech
+                    <strong>Ship better on the job</strong> with real cases from startups and Big Tech
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -99,7 +99,7 @@ export default function WaitlistPage() {
                     check_circle
                   </span>
                   <span className="text-on-surface">
-                    <strong>Product IQ tracking</strong> — watch the gap close
+                    <strong>Track your growth</strong> as your Product IQ rises with every rep
                   </span>
                 </div>
               </div>
@@ -107,7 +107,7 @@ export default function WaitlistPage() {
               {/* Form */}
               <WaitlistForm />
               <p className="text-xs font-label text-on-surface-variant/60 mt-2">
-                Free during beta. No credit card. Unsubscribe anytime.
+                Free during beta. No credit card required.
               </p>
             </div>
 

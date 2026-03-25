@@ -3,7 +3,8 @@
 import { useState } from 'react'
 
 export function WaitlistForm() {
-  const [name, setName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [company, setCompany] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -16,8 +17,9 @@ export function WaitlistForm() {
     setError(null)
 
     try {
+      const fullName = `${firstName.trim()} ${lastName.trim()}`.trim()
       const body: { name?: string; email: string; company?: string } = { email }
-      if (name.trim()) body.name = name.trim()
+      if (fullName) body.name = fullName
       if (company.trim()) body.company = company.trim()
 
       const res = await fetch('/api/waitlist', {
@@ -53,38 +55,48 @@ export function WaitlistForm() {
     )
   }
 
+  const inputClass = "px-4 py-3 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-body text-sm"
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2.5 max-w-lg">
       <div className="flex flex-col sm:flex-row gap-2.5">
         <input
           type="text"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          placeholder="Your name"
+          value={firstName}
+          onChange={e => setFirstName(e.target.value)}
+          placeholder="First name"
           required
-          className="sm:w-36 px-4 py-3 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-body text-sm"
+          className={`flex-1 ${inputClass}`}
         />
         <input
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          placeholder="you@company.com"
+          type="text"
+          value={lastName}
+          onChange={e => setLastName(e.target.value)}
+          placeholder="Last name"
           required
-          className="flex-1 px-4 py-3 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-body text-sm"
+          className={`flex-1 ${inputClass}`}
         />
       </div>
+      <input
+        type="email"
+        value={email}
+        onChange={e => setEmail(e.target.value)}
+        placeholder="you@email.com"
+        required
+        className={`w-full ${inputClass}`}
+      />
       <div className="flex flex-col sm:flex-row gap-2.5">
         <input
           type="text"
           value={company}
           onChange={e => setCompany(e.target.value)}
           placeholder="Company (optional)"
-          className="sm:w-36 px-4 py-3 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-body text-sm"
+          className={`sm:flex-1 ${inputClass}`}
         />
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 bg-primary text-on-primary font-label font-bold text-sm px-6 py-3 rounded-full hover:bg-primary/90 hover:shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5 whitespace-nowrap disabled:opacity-50"
+          className="sm:flex-1 bg-primary text-on-primary font-label font-bold text-sm px-6 py-3 rounded-full hover:bg-primary/90 hover:shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5 whitespace-nowrap disabled:opacity-50"
         >
           {loading ? 'Joining...' : 'Join Waitlist'}
           {!loading && (

@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 const TARGET = new Date('2026-04-15T00:00:00').getTime()
 
 export function WaitlistCountdown() {
-  const [remaining, setRemaining] = useState({ d: '--', h: '--', m: '--', s: '--' })
+  const [remaining, setRemaining] = useState({ d: '--', h: '--' })
   const [live, setLive] = useState(false)
 
   useEffect(() => {
@@ -16,12 +16,11 @@ export function WaitlistCountdown() {
         return
       }
       setRemaining({
-        d: String(Math.floor(gap / 86400000)).padStart(2, '0'),
-        h: String(Math.floor((gap % 86400000) / 3600000)).padStart(2, '0'),
-        m: String(Math.floor((gap % 3600000) / 60000)).padStart(2, '0'),
-        s: String(Math.floor((gap % 60000) / 1000)).padStart(2, '0'),
+        d: String(Math.floor(gap / 86400000)),
+        h: String(Math.floor((gap % 86400000) / 3600000)),
       })
-      requestAnimationFrame(tick)
+      // Update every minute — days+hours don't need per-second updates
+      setTimeout(tick, 60000)
     }
     tick()
   }, [])
@@ -38,11 +37,7 @@ export function WaitlistCountdown() {
       >
         timer
       </span>
-      <span>Beta opens in</span>
-      <span className="tabular-nums font-bold text-on-background">{remaining.d}</span>d
-      <span className="tabular-nums font-bold text-on-background">{remaining.h}</span>h
-      <span className="tabular-nums font-bold text-on-background">{remaining.m}</span>m
-      <span className="tabular-nums font-bold text-on-background">{remaining.s}</span>s
+      <span>Beta in <strong className="text-on-background">{remaining.d}d {remaining.h}h</strong></span>
     </div>
   )
 }
