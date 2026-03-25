@@ -70,7 +70,7 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
           <p className="text-on-surface-variant text-sm mb-4">
             {challenges.length} challenge{challenges.length !== 1 ? 's' : ''} available in this domain
           </p>
-          <a href="/challenges" className="inline-flex items-center gap-2 bg-primary text-on-primary rounded-full px-5 py-2 text-sm font-semibold font-label">
+          <a href={`/challenges?domain=${domain.slug}`} className="inline-flex items-center gap-2 bg-primary text-on-primary rounded-full px-5 py-2 text-sm font-semibold font-label">
             View challenges
             <span className="material-symbols-outlined text-base">arrow_forward</span>
           </a>

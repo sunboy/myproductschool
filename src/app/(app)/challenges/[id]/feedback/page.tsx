@@ -2,6 +2,7 @@ import { getChallengeById } from '@/lib/data/challenges'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { FeedbackAccordion } from '@/components/challenge/FeedbackAccordion'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -171,9 +172,9 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
   })) ?? []
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
+    <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-5">
       {/* Back navigation */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-4">
         <Link href={`/challenges/${id}`} className="p-2 rounded-lg hover:bg-surface-container transition-colors">
           <span className="material-symbols-outlined text-on-surface-variant">arrow_back</span>
         </Link>
@@ -181,10 +182,10 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
       </div>
 
       {/* Two-pane grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
         {/* ─── Left Pane: Case Context (5 cols) ─── */}
-        <section className="col-span-12 lg:col-span-5 space-y-6">
+        <section className="col-span-12 lg:col-span-5 space-y-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-headline text-2xl font-bold text-on-surface">Case Context</h2>
             <span className="px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed rounded-full text-xs font-bold uppercase tracking-wider">
@@ -193,7 +194,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           </div>
 
           {/* Challenge card — sticky on desktop */}
-          <div className="bg-surface-container p-6 rounded-xl editorial-shadow space-y-4 lg:sticky lg:top-24">
+          <div className="bg-surface-container p-5 rounded-xl editorial-shadow space-y-4 lg:sticky lg:top-24">
             {/* Challenge title */}
             <h3 className="font-headline text-xl font-bold text-primary">{challenge.title}</h3>
 
@@ -254,17 +255,20 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
         </section>
 
         {/* ─── Right Pane: Luma's Analysis (7 cols) ─── */}
-        <section className="col-span-12 lg:col-span-7 space-y-6">
+        <section className="col-span-12 lg:col-span-7 space-y-4">
           <h2 className="font-headline text-2xl font-bold text-on-surface">Submission Review</h2>
 
           {/* Score Summary Card */}
-          <div className="bg-surface-container p-6 rounded-xl editorial-shadow border-t-4 border-primary">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="font-headline text-lg font-bold text-on-surface">
-                  Luma&apos;s Analysis
-                </h3>
-                <p className="text-sm text-on-surface-variant">AI-Assisted Evaluation</p>
+          <div className="bg-surface-container p-5 rounded-xl editorial-shadow border-t-4 border-primary">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <LumaGlyph size={40} className="text-primary flex-shrink-0" />
+                <div>
+                  <h3 className="font-headline text-lg font-bold text-on-surface">
+                    Luma&apos;s Analysis
+                  </h3>
+                  <p className="text-sm text-on-surface-variant">AI-Assisted Evaluation</p>
+                </div>
               </div>
               <div className="text-right">
                 <span className="text-5xl font-headline font-extrabold text-primary">{(overallScoreNum / 10).toFixed(1)}</span>
@@ -279,7 +283,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             <p className="text-sm text-on-surface leading-relaxed mb-6">{full.overall}</p>
 
             {/* Progress Bars for each dimension (summary) */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               {items.map(item => {
                 const percentage = (item.score / 10) * 100
                 const barColor = item.score >= 7 ? 'bg-primary' : 'bg-secondary'
@@ -345,6 +349,22 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             <div>
               <p className="font-label font-semibold text-on-tertiary-fixed-variant mb-1">Key Insight</p>
               <p className="text-sm text-on-tertiary-fixed-variant">{full.key_insight}</p>
+            </div>
+          </div>
+
+          {/* Related concepts to review */}
+          <div className="space-y-2">
+            <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider font-label">Related concepts to review</p>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/explore" className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 text-xs font-label font-semibold hover:opacity-80 transition-opacity">
+                Metric Fluency
+              </Link>
+              <Link href="/explore" className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 text-xs font-label font-semibold hover:opacity-80 transition-opacity">
+                Root Cause Analysis
+              </Link>
+              <Link href="/explore" className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 text-xs font-label font-semibold hover:opacity-80 transition-opacity">
+                Problem Framing
+              </Link>
             </div>
           </div>
 
