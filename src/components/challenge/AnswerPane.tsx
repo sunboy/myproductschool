@@ -61,59 +61,65 @@ function TabBar({
   onOpenDrawer: () => void
 }) {
   return (
-    <div className="border-b border-outline-variant/10 px-8 pt-6 flex items-end justify-between flex-shrink-0">
-      <div className="flex items-end gap-1">
+    <div className="border-b border-outline-variant/20 px-5 flex items-center justify-between flex-shrink-0 h-12">
+      {/* Pill-style tabs */}
+      <div className="flex items-center gap-1.5">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             type="button"
             onClick={() => onTabChange(tab.id)}
-            className={`flex items-center gap-1.5 ${
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
               activeTab === tab.id
-                ? 'px-6 py-3 text-sm font-bold text-primary border-b-2 border-primary -mb-px transition-colors'
-                : 'px-6 py-3 text-sm font-medium text-outline hover:text-on-surface-variant transition-colors'
+                ? 'bg-primary text-white shadow-sm'
+                : 'text-on-surface-variant hover:bg-surface-container transition-colors'
             }`}
           >
-            <span className="material-symbols-outlined text-base">{tab.icon}</span>
+            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>{tab.icon}</span>
             {tab.label}
           </button>
         ))}
       </div>
 
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex items-center gap-1">
         {/* Framework reference lightbulb button */}
-        <button
-          onClick={onOpenDrawer}
-          className="p-2 rounded-full hover:bg-surface-container-high transition-colors"
-          title="Framework Reference"
-          aria-label="Open framework reference"
-        >
-          <span
-            className="material-symbols-outlined text-on-surface-variant"
-            style={{ fontSize: 20 }}
+        <div className="group relative">
+          <button
+            onClick={onOpenDrawer}
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-tertiary transition-colors"
+            title="Framework Reference"
+            aria-label="Open framework reference"
           >
-            lightbulb
-          </span>
-        </button>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 18 }}
+            >
+              lightbulb
+            </span>
+          </button>
+          <div className="absolute right-0 top-10 w-24 bg-on-surface text-white text-[10px] font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity text-center z-[60]">
+            Frameworks
+          </div>
+        </div>
+
+        <div className="w-px h-5 bg-outline-variant/30 mx-0.5" />
 
         {/* Solo / Live mode toggle */}
-        <div className="flex items-center bg-surface-container-high/50 rounded-full p-0.5">
+        <div className="flex items-center bg-surface-container p-0.5 rounded-full">
           <button
             onClick={() => onModeChange('solo')}
-            className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all ${
-              mode === 'solo' ? 'bg-primary-container text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'
+            className={`px-3 py-0.5 text-[10px] font-bold rounded-full transition-all ${
+              mode === 'solo' ? 'bg-white shadow-sm text-primary' : 'text-on-surface-variant hover:text-primary'
             }`}
           >
-            <span className="material-symbols-outlined text-sm">edit_note</span>
             Solo
           </button>
           <button
             onClick={() => onModeChange('live')}
-            className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all ${
-              mode === 'live' ? 'bg-primary-container text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'
+            className={`px-3 py-0.5 text-[10px] font-bold rounded-full transition-all ${
+              mode === 'live' ? 'bg-white shadow-sm text-primary' : 'text-on-surface-variant hover:text-primary'
             }`}
           >
-            <span className="material-symbols-outlined text-sm">chat</span>
             Live
           </button>
         </div>
@@ -300,7 +306,7 @@ export function AnswerPane({
   }
 
   return (
-    <div className="w-1/2 h-full bg-surface-container-lowest border-l border-outline-variant/20 flex flex-col shadow-[-20px_0_40px_rgba(0,0,0,0.02)]">
+    <div className="w-1/2 h-full bg-white border-l border-outline-variant/20 flex flex-col relative overflow-hidden">
       {/* Tab bar */}
       <TabBar
         activeTab={activeTab}
@@ -317,12 +323,12 @@ export function AnswerPane({
         {activeTab === 'answer' && mode !== 'live' && (
           <>
             {/* Textarea area */}
-            <div className="flex-1 p-6 lg:p-8 overflow-hidden flex flex-col gap-4">
+            <div className="flex-1 p-6 overflow-hidden flex flex-col bg-surface-container-low/30">
               <textarea
                 value={response}
                 onChange={(e) => onResponseChange(e.target.value)}
                 placeholder="Write your complete answer here — structure it however you like..."
-                className="w-full h-full border-none focus:ring-0 text-on-surface-variant font-headline text-lg leading-relaxed placeholder:text-outline/40 bg-transparent resize-none outline-none"
+                className="w-full h-full border-none focus:ring-0 text-on-surface font-body text-sm leading-relaxed placeholder:text-outline/40 bg-transparent resize-none outline-none"
               />
             </div>
 
@@ -374,7 +380,7 @@ export function AnswerPane({
 
         {/* ── Guided tab ── */}
         {activeTab === 'canvas' && (
-          <div className="flex-1 overflow-y-auto p-6 lg:p-8">
+          <div className="flex-1 overflow-y-auto p-6 bg-surface-container-low/30">
             <PMCanvas
               subQuestions={subQuestions}
               onSubmit={(responses, conf) => {
