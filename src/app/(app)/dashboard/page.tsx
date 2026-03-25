@@ -142,63 +142,61 @@ export default async function DashboardPage() {
   const milestoneNext = 'Incentive Structures & Variable Rewards'
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
-      {/* Onboarding banner */}
-      {!isOnboarded && (
-        <div className="p-6 bg-gradient-to-r from-primary to-primary/80 rounded-xl text-on-primary">
-          <div className="flex items-start gap-4">
-            <LumaGlyph size={40} className="flex-shrink-0 mt-1" />
-            <div className="flex-1">
-              <h2 className="font-headline text-xl font-bold">Welcome! Let&apos;s find your starting point.</h2>
-              <p className="text-on-primary/80 mt-1 text-sm">Your first challenge takes ~5 minutes. Luma will walk you through everything and establish your baseline.</p>
-              <Link
-                href="/challenges/orientation"
-                className="inline-flex items-center gap-2 mt-4 px-6 py-2.5 bg-on-primary text-primary rounded-full font-semibold text-sm hover:opacity-90 transition-opacity"
-              >
-                Start Orientation
-                <span className="material-symbols-outlined text-lg">arrow_forward</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Greeting Section */}
-      <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <span className="text-primary font-bold tracking-widest text-xs uppercase mb-2 block">
+    <div className="max-w-6xl mx-auto px-6 py-6 space-y-4">
+      {/* Compact Luma greeting row */}
+      <div className="bg-primary-fixed rounded-xl p-3 flex items-center gap-3">
+        <LumaGlyph size={40} className="flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <span className="text-xs text-primary font-bold uppercase tracking-wider block">
             {getFormattedDate()}
           </span>
-          <h1 className="font-headline text-4xl md:text-5xl font-bold text-on-surface">
-            {getGreeting()}, {displayName}.
-          </h1>
-          <p className="text-secondary mt-3 text-lg max-w-xl font-body">
-            Luma here. You&apos;re on a {streakDays > 0 ? `${streakDays}-day streak` : 'fresh start'}. Let&apos;s keep building your product instincts.
+          <p className="text-sm text-on-surface font-medium truncate">
+            {getGreeting()}, {displayName}. {streakDays > 0 ? `${streakDays}-day streak — keep it going.` : "Let's build your product instincts."}
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2 flex-shrink-0">
           <Link
-            href="/progress"
-            className="bg-surface-container-high hover:bg-surface-variant text-on-surface px-6 py-3 rounded-xl font-bold transition-colors"
+            href="/challenges"
+            className="bg-primary text-on-primary px-4 py-1.5 rounded-full text-sm font-label font-semibold hover:opacity-90 transition-opacity whitespace-nowrap"
           >
-            View Schedule
+            Daily Challenge
           </Link>
           <Link
             href="/challenges"
-            className="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold shadow-sm hover:shadow-md transition-all flex items-center gap-2"
+            className="bg-surface-container-high text-on-surface px-4 py-1.5 rounded-full text-sm font-label font-semibold hover:bg-surface-container-highest transition-colors whitespace-nowrap"
           >
-            <span className="material-symbols-outlined text-xl">play_circle</span>
             Resume Learning
           </Link>
         </div>
-      </section>
+      </div>
+
+      {/* Onboarding prompt — compact inline variant */}
+      {!isOnboarded && (
+        <div className="flex items-center gap-3 p-3 bg-secondary-container rounded-xl">
+          <span className="material-symbols-outlined text-on-secondary-container">waving_hand</span>
+          <p className="flex-1 text-sm text-on-secondary-container font-medium">
+            Welcome! Your first challenge takes ~5 min and sets your baseline.
+          </p>
+          <Link
+            href="/challenges/orientation"
+            className="flex-shrink-0 px-4 py-1.5 bg-primary text-on-primary rounded-full text-sm font-semibold hover:opacity-90 transition-opacity whitespace-nowrap"
+          >
+            Start Orientation
+          </Link>
+        </div>
+      )}
+
+      {/* Greeting headline (compact) */}
+      <h1 className="font-headline text-2xl md:text-3xl font-bold text-on-surface">
+        {getGreeting()}, {displayName}.
+      </h1>
 
       {/* Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
 
         {/* ProductIQ Score Radar Chart Card */}
-        <div className="md:col-span-7 lg:col-span-8 bg-surface-container-lowest rounded-xl p-8 editorial-shadow ghost-border flex flex-col relative overflow-hidden">
-          <div className="flex justify-between items-start mb-8 z-10">
+        <div className="md:col-span-7 lg:col-span-8 bg-surface-container-lowest rounded-xl p-4 editorial-shadow ghost-border flex flex-col relative overflow-hidden">
+          <div className="flex justify-between items-start mb-4 z-10">
             <div>
               <h3 className="font-label font-bold text-outline uppercase tracking-wider text-xs mb-1">ProductIQ Score</h3>
               <p className="text-sm text-secondary">Based on your last 12 challenges</p>
@@ -218,9 +216,9 @@ export default async function DashboardPage() {
               className="absolute inset-0 rounded-full scale-125 opacity-30"
               style={{ background: 'radial-gradient(circle, rgba(74, 124, 89, 0.1) 0%, rgba(74, 124, 89, 0) 70%)' }}
             />
-            <div className="relative w-64 h-64 border-2 border-outline-variant/30 rounded-full flex items-center justify-center">
-              <div className="w-48 h-48 border border-outline-variant/30 rounded-full flex items-center justify-center">
-                <div className="w-32 h-32 border border-outline-variant/30 rounded-full" />
+            <div className="relative w-64 h-64 lg:w-80 lg:h-80 border-2 border-outline-variant/30 rounded-full flex items-center justify-center">
+              <div className="w-48 h-48 lg:w-60 lg:h-60 border border-outline-variant/30 rounded-full flex items-center justify-center">
+                <div className="w-32 h-32 lg:w-44 lg:h-44 border border-outline-variant/30 rounded-full" />
               </div>
               {/* Radar polygon */}
               <svg className="absolute w-full h-full drop-shadow-lg" viewBox="0 0 100 100">
@@ -256,7 +254,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Bottom stats */}
-          <div className="mt-8 grid grid-cols-3 gap-4 border-t border-outline-variant/20 pt-6 z-10">
+          <div className="mt-4 grid grid-cols-3 gap-4 border-t border-outline-variant/20 pt-4 z-10">
             <div className="text-center">
               <p className="text-[10px] text-outline font-bold uppercase">Rank</p>
               <p className="font-headline font-bold text-on-surface">Top 12%</p>
@@ -273,13 +271,16 @@ export default async function DashboardPage() {
         </div>
 
         {/* Featured Challenge Card */}
-        <div className="md:col-span-5 lg:col-span-4 space-y-6">
-          <div className="bg-primary-container text-on-primary rounded-xl p-6 relative overflow-hidden h-full flex flex-col ambient-glow">
+        <div className="md:col-span-5 lg:col-span-4 space-y-4">
+          <div className="bg-primary-container text-on-primary rounded-xl p-4 relative overflow-hidden h-full flex flex-col ambient-glow">
             {/* Decorative circle */}
             <div className="absolute -top-12 -right-12 w-40 h-40 border-[20px] border-white/10 rounded-full" />
-            <span className="bg-white/20 text-white font-bold text-[10px] px-3 py-1 rounded-full mb-4 w-fit uppercase tracking-widest z-10">
-              Expert Pick
-            </span>
+            <div className="flex items-center gap-2 mb-3 z-10">
+              <LumaGlyph size={24} className="flex-shrink-0" />
+              <span className="bg-white/20 text-white font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-widest">
+                Luma recommends
+              </span>
+            </div>
             <h3 className="font-headline text-2xl font-bold text-white leading-tight mb-2 z-10">{featuredChallenge.title}</h3>
             <p className="text-white/80 text-sm mb-6 font-body z-10">
               {featuredChallenge.description}
@@ -301,11 +302,11 @@ export default async function DashboardPage() {
         </div>
 
         {/* Community Activity — spanning full width, split into 2/3 + 1/3 */}
-        <div className="md:col-span-12 lg:col-span-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="md:col-span-12 lg:col-span-12 grid grid-cols-1 lg:grid-cols-3 gap-4">
 
           {/* Recent Submissions */}
-          <div className="lg:col-span-2 bg-surface-container-lowest rounded-xl p-8 editorial-shadow ghost-border">
-            <div className="flex justify-between items-center mb-6">
+          <div className="lg:col-span-2 bg-surface-container-lowest rounded-xl p-4 editorial-shadow ghost-border">
+            <div className="flex justify-between items-center mb-4">
               <h2 className="font-headline text-xl font-bold text-on-surface">Recent Submissions</h2>
               <Link href="/challenges" className="text-primary text-sm font-bold hover:underline">
                 View All Community
@@ -340,7 +341,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Milestone Progress */}
-          <div className="bg-tertiary-fixed text-on-tertiary-fixed-variant rounded-xl p-8 flex flex-col">
+          <div className="bg-tertiary-fixed text-on-tertiary-fixed-variant rounded-xl p-4 flex flex-col">
             <h3 className="font-headline text-xl font-bold mb-4">Milestone Progress</h3>
             <div className="flex-grow flex flex-col justify-center">
               <div className="relative pt-1">
@@ -365,7 +366,7 @@ export default async function DashboardPage() {
                 <p className="text-sm font-medium">Next: &ldquo;{milestoneNext}&rdquo;</p>
               </div>
             </div>
-            <div className="mt-6 pt-6 border-t border-on-tertiary-fixed-variant/10">
+            <div className="mt-4 pt-4 border-t border-on-tertiary-fixed-variant/10">
               <p className="text-xs opacity-75">Estimated completion</p>
               <p className="font-bold">Next Thursday</p>
             </div>

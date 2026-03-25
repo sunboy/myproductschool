@@ -1,14 +1,18 @@
 import { getChallenges } from '@/lib/data/challenges'
 import { getDomains } from '@/lib/data/domains'
+import { getTopics } from '@/lib/data/topics'
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
-import type { ChallengeWithDomain } from '@/lib/types'
+import { ChallengeCard } from '@/components/challenge/ChallengeCard'
 
 interface ChallengesPageProps {
-  searchParams: Promise<{ domain?: string; difficulty?: string; company?: string }>
+  searchParams: Promise<{ domain?: string; difficulty?: string; company?: string; topic?: string; status?: string }>
 }
 
-const COMPANY_TAGS = ['Meta', 'Google', 'Stripe', 'Airbnb', 'Uber', 'DoorDash']
+const COMPANY_TAGS = [
+  'Meta', 'Google', 'Stripe', 'Airbnb', 'Uber', 'DoorDash',
+  'Netflix', 'Spotify', 'Figma', 'Linear', 'Notion', 'Shopify',
+]
 
 const DIFFICULTY_CONFIG: Record<string, { activeClass: string; label: string }> = {
   beginner: { activeClass: 'bg-primary text-on-primary', label: 'Easy' },
@@ -16,23 +20,42 @@ const DIFFICULTY_CONFIG: Record<string, { activeClass: string; label: string }> 
   advanced: { activeClass: 'bg-error text-on-error', label: 'Hard' },
 }
 
-// Deterministic participant counts based on challenge index
-function getParticipantCount(index: number): number {
-  const counts = [312, 487, 198, 563, 241, 89, 410, 175]
-  return counts[index % counts.length]
-}
+const STATUS_OPTIONS = [
+  { value: undefined, label: 'All' },
+  { value: 'new', label: 'New' },
+  { value: 'attempted', label: 'Attempted' },
+  { value: 'completed', label: 'Completed' },
+]
+
+const TOPIC_DISPLAY_LIMIT = 6
 
 export default async function ChallengesPage({ searchParams }: ChallengesPageProps) {
-  const { domain, difficulty, company } = await searchParams
-  const [domains, challenges] = await Promise.all([
+  const { domain, difficulty, company, topic, status } = await searchParams
+  const [domains, challenges, topics] = await Promise.all([
     getDomains(),
     getChallenges({ difficulty }),
+    getTopics(),
   ])
 
   // Filter by domain slug if provided
-  const filteredChallenges = domain
+  let filteredChallenges = domain
     ? challenges.filter(c => c.domain.slug === domain)
     : challenges
+
+  // Filter by company tag if provided
+  if (company) {
+    filteredChallenges = filteredChallenges.filter(c =>
+      Array.isArray(c.tags) && (c.tags as string[]).some(t => t.toLowerCase() === company.toLowerCase())
+    )
+  }
+
+  // Filter by topic slug if provided
+  // (topic filtering is best-effort on tags since ChallengeWithDomain doesn't carry topic relations)
+  if (topic) {
+    filteredChallenges = filteredChallenges.filter(c =>
+      Array.isArray(c.tags) && (c.tags as string[]).some(t => t.toLowerCase().replace(/\s+/g, '-') === topic)
+    )
+  }
 
   // Split into free (first 3) and premium (rest)
   const freeChallenges = filteredChallenges.slice(0, 3)
@@ -43,26 +66,31 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
     if (params.domain) p.set('domain', params.domain)
     if (params.difficulty) p.set('difficulty', params.difficulty)
     if (params.company) p.set('company', params.company)
+    if (params.topic) p.set('topic', params.topic)
+    if (params.status) p.set('status', params.status)
     const s = p.toString()
     return s ? `/challenges?${s}` : '/challenges'
   }
 
+  const visibleTopics = topics.slice(0, TOPIC_DISPLAY_LIMIT)
+  const extraTopicCount = topics.length > TOPIC_DISPLAY_LIMIT ? topics.length - TOPIC_DISPLAY_LIMIT : 0
+
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-      {/* Luma's Pick */}
-      <div className="mb-8 p-6 bg-primary-fixed rounded-2xl border border-primary/20">
-        <div className="flex items-start gap-4">
-          <LumaGlyph size={32} className="text-primary flex-shrink-0 mt-1" />
-          <div className="flex-1">
-            <div className="text-xs font-bold text-primary uppercase tracking-wider mb-1">Luma&apos;s Pick for You</div>
-            <h3 className="font-headline text-lg font-bold text-on-surface">Spotify podcast discovery drop</h3>
-            <p className="text-sm text-on-surface-variant mt-1">Based on your Metric Recitation pattern, this challenge will help you practice grounding metrics in rationale.</p>
-            <Link href="/challenges/c1000000-0000-0000-0000-000000000001" className="inline-flex items-center gap-2 mt-3 px-5 py-2 bg-primary text-on-primary rounded-full text-sm font-semibold hover:opacity-90 transition-opacity">
-              Start Challenge
-              <span className="material-symbols-outlined text-lg">arrow_forward</span>
-            </Link>
-          </div>
+    <div className="max-w-6xl mx-auto px-4 py-6 space-y-4">
+      {/* Luma's Pick — compact row */}
+      <div className="bg-primary-fixed rounded-xl p-3 flex items-center gap-3">
+        <LumaGlyph size={32} className="text-primary flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <span className="text-xs font-bold text-primary uppercase tracking-wider">Luma&apos;s Pick</span>
+          <span className="mx-2 text-on-surface-variant text-xs">·</span>
+          <span className="text-sm font-medium text-on-surface">Spotify podcast discovery drop</span>
         </div>
+        <Link
+          href="/challenges/c1000000-0000-0000-0000-000000000001"
+          className="flex-shrink-0 inline-flex items-center gap-1 px-4 py-1.5 bg-primary text-on-primary rounded-full text-sm font-semibold hover:opacity-90 transition-opacity"
+        >
+          Start <span className="material-symbols-outlined text-base leading-none">arrow_forward</span>
+        </Link>
       </div>
 
       <div>
@@ -71,11 +99,11 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
       </div>
 
       {/* Filter bar */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {/* Difficulty pills */}
         <div className="flex gap-2 flex-wrap items-center">
           <Link
-            href={buildHref({ domain, company })}
+            href={buildHref({ domain, company, topic, status })}
             className={`px-4 py-1.5 rounded-full text-sm font-label font-semibold transition-colors ${
               !difficulty
                 ? 'bg-primary text-on-primary'
@@ -87,7 +115,7 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
           {Object.entries(DIFFICULTY_CONFIG).map(([key, cfg]) => (
             <Link
               key={key}
-              href={buildHref({ domain, difficulty: key, company })}
+              href={buildHref({ domain, difficulty: key, company, topic, status })}
               className={`px-4 py-1.5 rounded-full text-sm font-label font-semibold transition-colors ${
                 difficulty === key
                   ? cfg.activeClass
@@ -99,10 +127,28 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
           ))}
         </div>
 
-        {/* Domain dropdown row */}
+        {/* Status filter pills */}
+        <div className="flex gap-2 flex-wrap items-center">
+          <span className="text-xs text-on-surface-variant font-label font-semibold mr-1">Status:</span>
+          {STATUS_OPTIONS.map(opt => (
+            <Link
+              key={opt.label}
+              href={buildHref({ domain, difficulty, company, topic, status: opt.value })}
+              className={`px-3 py-1 rounded-full text-xs font-label transition-colors ${
+                status === opt.value
+                  ? 'bg-secondary text-on-secondary'
+                  : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
+              }`}
+            >
+              {opt.label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Domain pills */}
         <div className="flex gap-2 flex-wrap">
           <Link
-            href={buildHref({ difficulty, company })}
+            href={buildHref({ difficulty, company, topic, status })}
             className={`px-3 py-1 rounded-full text-sm font-label transition-colors border ${
               !domain
                 ? 'border-primary text-primary bg-primary-container'
@@ -114,7 +160,7 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
           {domains.map(d => (
             <Link
               key={d.id}
-              href={buildHref({ domain: d.slug, difficulty, company })}
+              href={buildHref({ domain: d.slug, difficulty, company, topic, status })}
               className={`px-3 py-1 rounded-full text-sm font-label transition-colors border ${
                 domain === d.slug
                   ? 'border-primary text-primary bg-primary-container'
@@ -126,12 +172,45 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
           ))}
         </div>
 
+        {/* Topic pills */}
+        {visibleTopics.length > 0 && (
+          <div className="flex gap-2 flex-wrap items-center">
+            <span className="text-xs text-on-surface-variant font-label font-semibold mr-1">Topics:</span>
+            <Link
+              href={buildHref({ domain, difficulty, company, status })}
+              className={`px-3 py-1 rounded-full text-xs font-label transition-colors border ${
+                !topic
+                  ? 'border-primary text-primary bg-primary-container'
+                  : 'border-outline-variant text-on-surface-variant bg-surface-container hover:bg-surface-container-high'
+              }`}
+            >
+              All
+            </Link>
+            {visibleTopics.map(t => (
+              <Link
+                key={t.id}
+                href={buildHref({ domain, difficulty, company, topic: t.slug === topic ? undefined : t.slug, status })}
+                className={`px-3 py-1 rounded-full text-xs font-label transition-colors border ${
+                  topic === t.slug
+                    ? 'border-primary text-primary bg-primary-container'
+                    : 'border-outline-variant text-on-surface-variant bg-surface-container hover:bg-surface-container-high'
+                }`}
+              >
+                {t.title}
+              </Link>
+            ))}
+            {extraTopicCount > 0 && (
+              <span className="text-xs text-on-surface-variant font-label">+{extraTopicCount} more</span>
+            )}
+          </div>
+        )}
+
         {/* Company tag chips */}
         <div className="flex gap-2 flex-wrap">
           {COMPANY_TAGS.map(tag => (
             <Link
               key={tag}
-              href={buildHref({ domain, difficulty, company: company === tag ? undefined : tag })}
+              href={buildHref({ domain, difficulty, company: company === tag ? undefined : tag, topic, status })}
               className={`px-3 py-1 rounded-full text-xs font-label cursor-pointer transition-colors ${
                 company === tag
                   ? 'bg-secondary text-on-secondary'
@@ -155,17 +234,19 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
         ) : (
           <div className="space-y-3">
             {freeChallenges.map((challenge, idx) => (
-              <ChallengeCard key={challenge.id} challenge={challenge} participantCount={getParticipantCount(idx)} />
+              <ChallengeCard key={challenge.id} challenge={challenge} index={idx} />
             ))}
           </div>
         )}
       </div>
 
       {/* Pro Access Banner */}
-      <div className="bg-secondary-container rounded-2xl p-5 flex items-center justify-between my-6 gap-4">
+      <div className="bg-secondary-container rounded-2xl p-4 flex items-center justify-between gap-4">
         <div>
           <h3 className="font-label font-semibold text-on-secondary-container">Unlock Pro Access</h3>
-          <p className="text-sm text-on-secondary-container mt-0.5">Get unlimited challenges, model answers, and Luma&apos;s deeper coaching.</p>
+          <p className="text-sm text-on-secondary-container mt-0.5">
+            Get unlimited challenges, model answers, and Luma&apos;s deeper coaching.
+          </p>
         </div>
         <a
           href="/pricing"
@@ -179,7 +260,12 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
       {premiumChallenges.length > 0 && (
         <div>
           <h2 className="font-headline text-xl text-on-surface mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-on-surface-variant text-xl" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>lock</span>
+            <span
+              className="material-symbols-outlined text-on-surface-variant text-xl"
+              style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
+            >
+              lock
+            </span>
             Premium Challenges
           </h2>
           <div className="space-y-3">
@@ -187,7 +273,7 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
               <ChallengeCard
                 key={challenge.id}
                 challenge={challenge}
-                participantCount={getParticipantCount(idx + 3)}
+                index={idx + 3}
                 locked
               />
             ))}
@@ -195,71 +281,5 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
         </div>
       )}
     </div>
-  )
-}
-
-function ChallengeCard({
-  challenge,
-  participantCount,
-  locked = false,
-}: {
-  challenge: ChallengeWithDomain
-  participantCount: number
-  locked?: boolean
-}) {
-  const CardWrapper = locked ? 'div' : Link
-  const cardProps = locked
-    ? { className: 'relative flex items-start gap-4 p-5 bg-surface-container rounded-2xl border border-outline-variant opacity-75 cursor-default' }
-    : {
-        href: `/challenges/${challenge.id}`,
-        className: 'relative flex items-start gap-4 p-5 bg-surface-container rounded-2xl border border-outline-variant hover:bg-surface-container-high hover:border-primary/30 transition-all',
-      }
-
-  return (
-    // @ts-expect-error - polymorphic component
-    <CardWrapper {...cardProps}>
-      {locked && (
-        <div className="absolute inset-0 rounded-2xl flex items-center justify-end pr-5 pointer-events-none">
-          <span className="material-symbols-outlined text-on-surface-variant text-2xl" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>lock</span>
-        </div>
-      )}
-      <div className="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center flex-shrink-0">
-        <span className="material-symbols-outlined text-primary">{challenge.domain.icon ?? 'fitness_center'}</span>
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start gap-2 flex-wrap mb-1">
-          <h3 className="font-label font-medium text-on-surface flex-1">{challenge.title}</h3>
-          {challenge.is_completed && (
-            <span className="flex-shrink-0">
-              <span className="material-symbols-outlined text-primary text-base" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>check_circle</span>
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-on-surface-variant">{challenge.domain.title}</span>
-          <span className="text-on-surface-variant">·</span>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${
-            challenge.difficulty === 'beginner'
-              ? 'bg-primary-container text-on-primary-container'
-              : challenge.difficulty === 'intermediate'
-              ? 'bg-tertiary-container text-on-tertiary-container'
-              : 'bg-error-container text-on-error-container'
-          }`}>{challenge.difficulty}</span>
-          <span className="text-on-surface-variant">·</span>
-          <span className="text-xs text-on-surface-variant flex items-center gap-1">
-            <span className="material-symbols-outlined text-base">schedule</span>
-            ~{challenge.estimated_minutes} min
-          </span>
-          <span className="text-on-surface-variant">·</span>
-          <span className="text-xs text-on-surface-variant flex items-center gap-1">
-            <span className="material-symbols-outlined text-sm">group</span>
-            {participantCount} attempts
-          </span>
-        </div>
-      </div>
-      {!locked && (
-        <span className="material-symbols-outlined text-on-surface-variant flex-shrink-0 mt-0.5">chevron_right</span>
-      )}
-    </CardWrapper>
   )
 }
