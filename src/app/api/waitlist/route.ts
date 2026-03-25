@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(req: NextRequest) {
-  const { email } = await req.json()
+  const { name, email, company } = await req.json()
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: 'Invalid email' }, { status: 400 })
@@ -13,7 +13,14 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = createAdminClient()
-  const { error } = await supabase.from('waitlist').insert({ email }).select().single()
+  const row: { email: string; name?: string; company?: string } = { email }
+  if (name && typeof name === 'string' && name.trim()) {
+    row.name = name.trim()
+  }
+  if (company && typeof company === 'string' && company.trim()) {
+    row.company = company.trim()
+  }
+  const { error } = await supabase.from('waitlist').insert(row).select().single()
 
   if (error?.code === '23505') {
     return NextResponse.json({ error: 'Already on the waitlist' }, { status: 409 })

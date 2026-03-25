@@ -1,11 +1,31 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// ── Pre-launch gate ──────────────────────────────────────────
+// Set to true to restrict all routes to the waitlist page.
+// Flip to false (or remove the block) when ready to launch.
+const PRE_LAUNCH = true
+
+const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist']
+
+// ── Post-launch route config ─────────────────────────────────
 const PUBLIC_ROUTES = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/waitlist', '/pricing', '/onboarding']
 const AUTH_ROUTES = ['/login', '/signup', '/forgot-password', '/reset-password']
-const ADMIN_ROUTES = ['/admin']
 
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
+
+  // ── Pre-launch: only waitlist + its API are accessible ──
+  if (PRE_LAUNCH) {
+    const isAllowed = LAUNCH_ALLOWED.some(r => pathname === r || pathname.startsWith(r + '/'))
+      || pathname.startsWith('/api/waitlist')
+    if (!isAllowed) {
+      return NextResponse.redirect(new URL('/waitlist', request.url))
+    }
+    return NextResponse.next()
+  }
+
+  // ── Post-launch: normal auth flow ──────────────────────
   // Bypass auth in mock/testing mode
   if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || process.env.USE_MOCK_DATA === 'true') {
     return NextResponse.next()
@@ -33,7 +53,6 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  const pathname = request.nextUrl.pathname
 
   // Redirect authenticated users away from auth pages
   if (user && AUTH_ROUTES.some(r => pathname.startsWith(r))) {
