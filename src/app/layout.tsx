@@ -21,6 +21,13 @@ export const metadata: Metadata = {
   },
   description: 'A practice gym for product thinking — for engineers in interviews and on the job.',
   keywords: ['product sense', 'PM interview prep', 'product thinking', 'software engineers', 'product manager interview'],
+  icons: {
+    icon: [
+      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
   openGraph: {
     title: 'HackProduct',
     description: 'A practice gym for product thinking — for engineers in interviews and on the job.',

@@ -12,8 +12,10 @@ export default function WaitlistPage() {
       {/* Nav */}
       <nav className="bg-background/80 backdrop-blur-lg border-b border-on-background/5 z-50 relative">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="text-xl font-headline font-bold text-on-background tracking-tight">
-            &lt; HackProduct
+          <span className="flex items-center gap-2 text-xl font-headline font-bold text-on-background tracking-tight">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/hackylogo.png" alt="HackProduct logo" className="w-8 h-8 object-contain" />
+            HackProduct
           </span>
           <WaitlistCountdown />
         </div>
@@ -62,7 +64,7 @@ export default function WaitlistPage() {
 
               {/* Subhead */}
               <p className="text-base lg:text-lg text-on-surface-variant leading-relaxed mb-5 max-w-md">
-                The practice gym where engineers build real product intuition — through deliberate reps, not courses.
+                The practice gym where engineers build real product intuition. Bridge the gap to be a 100x engineer in the AI era.
               </p>
 
               {/* Value Props */}
@@ -75,7 +77,7 @@ export default function WaitlistPage() {
                     check_circle
                   </span>
                   <span className="text-on-surface">
-                    <strong>AI feedback</strong> on every answer — not just right or wrong
+                    <strong>Real feedback</strong> on every answer, with graded rubrics
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -86,7 +88,7 @@ export default function WaitlistPage() {
                     check_circle
                   </span>
                   <span className="text-on-surface">
-                    <strong>Real cases</strong> from Spotify, Uber, Stripe
+                    <strong>Real cases</strong> from Startups and Big Tech
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
