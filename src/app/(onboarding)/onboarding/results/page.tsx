@@ -38,7 +38,7 @@ function RadarChart() {
   const dataPath = dataPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ') + 'Z'
 
   return (
-    <svg viewBox="0 0 240 240" className="w-full max-w-[240px] mx-auto">
+    <svg viewBox="-20 -10 280 260" className="w-full max-w-[280px] mx-auto">
       {/* Grid rings */}
       {rings.map((ring) => {
         const r = (ring / 5) * maxR

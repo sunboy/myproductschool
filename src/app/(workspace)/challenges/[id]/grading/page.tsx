@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 export default function GradingPage() {
@@ -15,23 +16,23 @@ export default function GradingPage() {
           <span className="text-lg font-bold text-primary tracking-tight font-headline">HackProduct</span>
         </div>
         <nav className="flex-1 flex flex-col gap-1">
-          <a
+          <Link
             className="text-on-surface-variant mx-2 px-4 py-2 flex items-center gap-3 hover:bg-stone-200 rounded-full transition-all opacity-90 hover:opacity-100"
-            href="#"
+            href="/dashboard"
           >
             <span className="material-symbols-outlined">home</span>
             <span>Home</span>
-          </a>
-          <a
+          </Link>
+          <Link
             className="text-on-surface-variant mx-2 px-4 py-2 flex items-center gap-3 hover:bg-stone-200 rounded-full transition-all opacity-90 hover:opacity-100"
-            href="#"
+            href="/explore"
           >
             <span className="material-symbols-outlined">explore</span>
             <span>Explore</span>
-          </a>
-          <a
+          </Link>
+          <Link
             className="bg-primary-fixed text-on-surface rounded-full mx-2 px-4 py-2 flex items-center gap-3 opacity-90 hover:opacity-100"
-            href="#"
+            href="/challenges"
           >
             <span
               className="material-symbols-outlined"
@@ -40,21 +41,21 @@ export default function GradingPage() {
               fitness_center
             </span>
             <span>Practice</span>
-          </a>
-          <a
+          </Link>
+          <Link
             className="text-on-surface-variant mx-2 px-4 py-2 flex items-center gap-3 hover:bg-stone-200 rounded-full transition-all opacity-90 hover:opacity-100"
-            href="#"
+            href="/prep"
           >
             <span className="material-symbols-outlined">workspace_premium</span>
             <span>Prep</span>
-          </a>
-          <a
+          </Link>
+          <Link
             className="text-on-surface-variant mx-2 px-4 py-2 flex items-center gap-3 hover:bg-stone-200 rounded-full transition-all opacity-90 hover:opacity-100"
-            href="#"
+            href="/progress"
           >
             <span className="material-symbols-outlined">bar_chart</span>
             <span>Progress</span>
-          </a>
+          </Link>
         </nav>
         <div className="px-4 mt-auto space-y-4">
           <div className="bg-white/50 p-3 rounded-xl border border-outline-variant">
@@ -144,9 +145,9 @@ export default function GradingPage() {
             </div>
             <div className="flex items-center gap-3 text-sm font-semibold text-on-surface-variant">
               <span className="line-through">Clean Run ✦</span>
-              <button className="bg-primary text-on-primary px-6 py-2 rounded-full text-sm font-bold shadow-sm hover:opacity-90 transition-all">
+              <Link href="/challenges" className="bg-primary text-on-primary px-6 py-2 rounded-full text-sm font-bold shadow-sm hover:opacity-90 transition-all">
                 Next Challenge
-              </button>
+              </Link>
             </div>
           </section>
 

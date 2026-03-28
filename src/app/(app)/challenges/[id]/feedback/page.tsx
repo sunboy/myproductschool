@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 export default function FeedbackPage() {
@@ -28,7 +29,7 @@ export default function FeedbackPage() {
         </div>
         <div className="flex items-center gap-3 text-sm font-semibold text-stone-400">
           <span className="line-through">Clean Run ✦</span>
-          <button className="bg-primary text-white px-6 py-2 rounded-full text-sm font-bold shadow-sm hover:opacity-90 transition-all">Next Challenge</button>
+          <Link href="/challenges" className="bg-primary text-white px-6 py-2 rounded-full text-sm font-bold shadow-sm hover:opacity-90 transition-all">Next Challenge</Link>
         </div>
       </section>
 

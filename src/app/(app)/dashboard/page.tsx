@@ -1,6 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 /* ── Mock Data ───────────────────────────────────────────────── */
@@ -30,9 +32,19 @@ const noCalMoves = [
   { name: 'Sell',  symbol: '◎', color: MOVE_COLORS.sell,  icon: 'campaign' },
 ]
 
+const NEXT_CHALLENGES = [
+  { id: 'ch100000-0000-0000-0000-000000000001', title: 'Model Accuracy Up, Engagement Down', paradigm: 'AI-Assisted', difficulty: 'Hard', roles: ['ML Eng', 'SWE', 'Data Eng'] },
+  { id: 'ch100000-0000-0000-0000-000000000002', title: 'Build a Product Strategy for AI Code Review', paradigm: 'AI-Assisted', difficulty: 'Hard', roles: ['SWE', 'EM'] },
+  { id: 'ch100000-0000-0000-0000-000000000003', title: 'Design a User Research Plan on a Tight Budget', paradigm: 'Agentic', difficulty: 'Easy', roles: ['SWE', 'ML Eng'] },
+]
+
 /* ── Returning User Dashboard ────────────────────────────────── */
 
 function ReturningDashboard() {
+  const router = useRouter()
+  const [challengeIdx, setChallengeIdx] = useState(0)
+  const nextChallenge = NEXT_CHALLENGES[challengeIdx]
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
 
@@ -74,7 +86,10 @@ function ReturningDashboard() {
             />
           </div>
           <div className="mt-4">
-            <button className="bg-primary text-on-primary rounded-full px-6 py-2 text-sm font-bold shadow-sm hover:brightness-110 transition-all">
+            <button
+              onClick={() => router.push('/challenges')}
+              className="bg-primary text-on-primary rounded-full px-6 py-2 text-sm font-bold shadow-sm hover:brightness-110 transition-all"
+            >
               Grade in 15s
             </button>
           </div>
@@ -85,19 +100,19 @@ function ReturningDashboard() {
           <h2 className="text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-3">Your Next Challenge</h2>
           <div className="flex-1 space-y-3">
             <h3 className="text-xl font-headline font-bold text-on-surface leading-tight">
-              Model Accuracy Up, Engagement Down
+              {nextChallenge.title}
             </h3>
             <div className="flex flex-wrap gap-2">
               <span
                 className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                 style={{ backgroundColor: `${MOVE_COLORS.frame}33`, color: MOVE_COLORS.frame }}
               >
-                AI-Assisted
+                {nextChallenge.paradigm}
               </span>
-              <span className="text-[10px] font-bold bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full">Hard</span>
+              <span className="text-[10px] font-bold bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full">{nextChallenge.difficulty}</span>
             </div>
             <div className="flex gap-1.5">
-              {['ML Eng', 'SWE', 'Data Eng'].map(r => (
+              {nextChallenge.roles.map(r => (
                 <span key={r} className="text-[9px] font-bold text-on-surface-variant bg-surface-container-highest/50 px-2 py-0.5 rounded-full border border-outline-variant/30 font-label">{r}</span>
               ))}
             </div>
@@ -107,13 +122,17 @@ function ReturningDashboard() {
           </div>
           <div className="mt-6 flex items-center gap-2">
             <Link
-              href="/challenges"
+              href={`/challenges/${nextChallenge.id}`}
               className="flex-1 bg-primary text-on-primary rounded-full py-2.5 text-sm font-bold flex items-center justify-center gap-2 hover:brightness-110 active:scale-95 transition-all"
             >
               Start Challenge
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </Link>
-            <button className="px-4 py-2.5 border border-primary text-primary rounded-full hover:bg-primary/5 transition-colors">
+            <button
+              onClick={() => setChallengeIdx(i => (i + 1) % NEXT_CHALLENGES.length)}
+              className="px-4 py-2.5 border border-primary text-primary rounded-full hover:bg-primary/5 transition-colors"
+              title="Shuffle challenge"
+            >
               <span className="material-symbols-outlined text-base">refresh</span>
             </button>
           </div>

@@ -124,7 +124,7 @@ export default function WelcomePage() {
         </Link>
         <p className="text-sm text-on-surface-variant mt-3 font-body">~5 minutes · No credit card required</p>
         <p className="mt-4">
-          <Link href="/onboarding/role" className="text-sm text-primary font-label font-semibold hover:underline">
+          <Link href="/dashboard" className="text-sm text-primary font-label font-semibold hover:underline">
             Sign in
           </Link>
         </p>

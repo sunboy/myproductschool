@@ -6,7 +6,7 @@ const tabs = [
   { href: '/dashboard', icon: 'home', label: 'Home' },
   { href: '/explore', icon: 'explore', label: 'Explore' },
   { href: '/challenges', icon: 'fitness_center', label: 'Practice' },
-  { href: '/interview-prep', icon: 'workspace_premium', label: 'Prep' },
+  { href: '/prep', icon: 'workspace_premium', label: 'Prep' },
   { href: '/progress', icon: 'bar_chart', label: 'Progress' },
 ]
 

@@ -1,13 +1,14 @@
+import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 export default function ShareScoreCardPage() {
   return (
     <div className="bg-inverse-surface/80 min-h-screen flex items-center justify-center font-body text-on-surface p-4">
       {/* Top Right Close */}
-      <button className="fixed top-6 right-8 text-white flex items-center gap-2 font-medium hover:opacity-80 transition-opacity z-10">
+      <Link href="/dashboard" className="fixed top-6 right-8 text-white flex items-center gap-2 font-medium hover:opacity-80 transition-opacity z-10">
         <span className="material-symbols-outlined text-lg">close</span>
         <span>Close</span>
-      </button>
+      </Link>
 
       <div className="flex flex-col items-center gap-8 w-full max-w-[420px]">
         {/* Score Card */}
@@ -100,6 +101,11 @@ export default function ShareScoreCardPage() {
               Pre-filled caption: &ldquo;I just scored 84/100 on The Feature That Backfired (Optimize move) on HackProduct 🎯&rdquo;
             </p>
           </div>
+
+          {/* Back to Dashboard */}
+          <Link href="/dashboard" className="text-sm text-white/70 hover:text-white underline underline-offset-2 transition-colors">
+            Back to Dashboard
+          </Link>
 
           {/* Context Strip */}
           <div className="flex flex-col items-center gap-3 pt-2">
