@@ -10,8 +10,8 @@ const STARTING_LEVELS = [
 
 export default function ResultsPage() {
   return (
-    <div className="min-h-screen pb-4">
-      {/* Header */}
+    <div className="min-h-screen pb-20">
+      {/* Top App Bar */}
       <header className="h-12 w-full sticky top-0 z-50 bg-background border-b border-outline-variant flex items-center justify-between px-4 max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
           <Link href="/calibration/frame" className="hover:bg-surface-container p-1 rounded-full transition-colors active:scale-95">
@@ -24,28 +24,28 @@ export default function ResultsPage() {
         </div>
       </header>
 
-      <main className="max-w-[640px] mx-auto px-4 py-4 space-y-3">
+      <main className="max-w-[640px] mx-auto px-4 py-6 space-y-6">
         {/* Header */}
-        <h1 className="font-headline text-xl font-extrabold text-on-surface">
-          Your Baseline Results
-        </h1>
+        <div className="flex items-center gap-3">
+          <h1 className="font-headline text-2xl font-extrabold text-on-surface">Your Baseline Results</h1>
+        </div>
 
-        {/* Luma Speaking Card */}
-        <section className="bg-surface-container rounded-xl p-3 flex gap-3 items-start relative">
+        {/* Section 1: Luma Speaking Card */}
+        <section className="bg-surface-container rounded-xl p-4 flex gap-4 items-start relative">
           <div className="shrink-0">
-            <LumaGlyph size={48} className="text-primary rounded-lg bg-white/50 p-1" />
+            <LumaGlyph size={64} className="text-primary rounded-lg bg-white/50 p-1" />
           </div>
           <div className="relative bg-white p-3 rounded-lg rounded-tl-none border border-outline-variant shadow-sm text-sm">
-            <p className="text-on-surface-variant leading-relaxed text-xs">
+            <p className="text-on-surface-variant leading-relaxed">
               Based on your answer, I&apos;ve mapped your starting point across all 4 FLOW moves. Here&apos;s where you stand.
             </p>
             <div className="absolute -left-2 top-0 w-0 h-0 border-t-[8px] border-t-white border-l-[8px] border-l-transparent" />
           </div>
         </section>
 
-        {/* Radar Chart */}
-        <section className="card-elevated flex flex-col items-center justify-center py-3 rounded-xl">
-          <div className="relative w-56 h-56 flex items-center justify-center">
+        {/* Section 2: Radar Chart */}
+        <section className="flex flex-col items-center justify-center py-4 bg-white rounded-xl shadow-sm border border-outline-variant/30">
+          <div className="relative w-64 h-64 flex items-center justify-center">
             <svg className="w-full h-full transform -rotate-45" viewBox="0 0 200 200">
               {/* Web circles */}
               <circle cx="100" cy="100" r="80" fill="none" stroke="#eae6de" strokeWidth="1" />
@@ -64,60 +64,54 @@ export default function ResultsPage() {
                 strokeWidth="2"
               />
             </svg>
-            {/* Labels */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 text-center">
+            {/* Labels positioned around the SVG */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 text-center">
               <span className="block text-[10px] font-bold text-secondary uppercase tracking-wider">Frame</span>
               <span className="text-sm font-bold text-primary">72</span>
             </div>
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 text-center">
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 text-center">
               <span className="block text-[10px] font-bold text-secondary uppercase tracking-wider">Lens</span>
               <span className="text-sm font-bold text-primary">58</span>
             </div>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 text-center">
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 text-center">
               <span className="block text-[10px] font-bold text-secondary uppercase tracking-wider">Optimize</span>
               <span className="text-sm font-bold text-primary">65</span>
             </div>
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 text-center">
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 text-center">
               <span className="block text-[10px] font-bold text-secondary uppercase tracking-wider">Win</span>
               <span className="text-sm font-bold text-primary">44</span>
             </div>
           </div>
-          <div className="mt-3 bg-secondary-container text-secondary text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-tight">
+          <div className="mt-8 bg-secondary-container text-secondary text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-tight">
             Better than 61% of engineers at your stage
           </div>
         </section>
 
-        {/* Archetype Card */}
-        <section className="card-elevated bg-primary-container rounded-xl p-4 border border-primary/10">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
-              Your Thinking Archetype
-            </span>
+        {/* Section 3: Archetype Card */}
+        <section className="bg-primary-container rounded-xl p-5 border border-primary/10">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Your Thinking Archetype</span>
             <span className="text-2xl" role="img" aria-label="builder">🏗️</span>
           </div>
-          <h2 className="font-headline text-xl font-bold text-on-surface mb-1">
-            The Systematic Builder
-          </h2>
-          <p className="text-xs text-on-surface-variant leading-relaxed">
+          <h2 className="font-headline text-2xl font-bold text-on-surface mb-2">The Systematic Builder</h2>
+          <p className="text-sm text-on-surface-variant leading-relaxed">
             You construct solutions methodically with strong framing, but your narrative communication (Win move) needs development.
           </p>
         </section>
 
-        {/* Answer Callout */}
+        {/* Section 4: Answer Callout */}
         <section className="bg-white rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
-          <div className="p-4 border-l-4 border-primary">
-            <h3 className="text-xs font-bold text-secondary uppercase tracking-wider mb-2">
-              What Luma noticed in your answer
-            </h3>
-            <blockquote className="text-on-surface-variant italic text-xs leading-relaxed mb-3">
+          <div className="p-5 border-l-4 border-primary">
+            <h3 className="text-xs font-bold text-secondary uppercase tracking-wider mb-3">What Luma noticed in your answer</h3>
+            <blockquote className="text-on-surface-variant italic text-sm leading-relaxed mb-4">
               &ldquo;You clearly identified user segments and defined success criteria early. Your solution was structured and well-reasoned. However, the narrative around stakeholder buy-in was underdeveloped.&rdquo;
             </blockquote>
             <div className="flex flex-wrap gap-2">
-              <span className="bg-green-50 text-green-800 text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1">
+              <span className="bg-primary-fixed text-primary text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1">
                 <span className="material-symbols-outlined text-xs">check</span>
                 Criteria-based thinking
               </span>
-              <span className="bg-orange-50 text-orange-700 text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1">
+              <span className="bg-tertiary-container/30 text-tertiary text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1">
                 <span className="material-symbols-outlined text-xs">arrow_forward</span>
                 Stakeholder narrative
               </span>
@@ -125,7 +119,7 @@ export default function ResultsPage() {
           </div>
         </section>
 
-        {/* Starting Levels */}
+        {/* Section 5: Starting Levels */}
         <section className="grid grid-cols-2 md:flex md:flex-row gap-3">
           {STARTING_LEVELS.map((item) => (
             <div
@@ -153,11 +147,11 @@ export default function ResultsPage() {
           ))}
         </section>
 
-        {/* CTA */}
-        <section className="pt-2 space-y-3">
+        {/* Section 6: CTA */}
+        <section className="pt-4 space-y-4">
           <Link
             href="/dashboard"
-            className="glow-primary w-full bg-primary hover:brightness-110 text-on-primary font-label font-bold py-2.5 rounded-full transition-all active:scale-95 shadow-md flex items-center justify-center gap-2"
+            className="w-full bg-primary hover:brightness-110 text-on-primary font-label font-bold py-4 rounded-full transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2"
           >
             Start your first challenge
             <span className="material-symbols-outlined">arrow_forward</span>

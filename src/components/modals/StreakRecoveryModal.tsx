@@ -13,7 +13,7 @@ export function StreakRecoveryModal({ isOpen, onClose }: StreakRecoveryModalProp
   return (
     <>
       {/* Dark Overlay Background */}
-      <div className="fixed inset-0 bg-[#2e3230]/60 z-40 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-inverse-surface/60 z-40 flex items-center justify-center p-4">
         {/* Dismiss Button */}
         <button
           onClick={onClose}

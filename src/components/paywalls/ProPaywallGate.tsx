@@ -70,7 +70,7 @@ export function ProPaywallGate({
       </div>
 
       {/* Frosted Glass Overlay */}
-      <div className="fixed inset-0 z-10 backdrop-blur-sm bg-surface/70" />
+      <div className="fixed inset-0 z-10 backdrop-blur-[8px] bg-surface/70" />
 
       {/* Foreground Modal */}
       <div className="fixed inset-0 z-20 flex items-center justify-center p-4">

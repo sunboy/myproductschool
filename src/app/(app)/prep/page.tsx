@@ -1,245 +1,259 @@
-import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
-
-/* ---------- mock data ---------- */
-const companies = [
-  { name: 'Google', challenges: 24, icon: '🔍', color: '#4285F4' },
-  { name: 'Meta', challenges: 18, icon: '📘', color: '#1877F2' },
-  { name: 'Stripe', challenges: 12, icon: '💳', color: '#635BFF' },
-  { name: 'Amazon', challenges: 15, icon: '📦', color: '#FF9900' },
-  { name: 'Apple', challenges: 8, icon: '🍎', color: '#000000' },
-  { name: 'Uber', challenges: 10, icon: '🚗', color: '#000000' },
-  { name: 'Airbnb', challenges: 6, icon: '🏠', color: '#FF385C' },
-  { name: 'DoorDash', challenges: 5, icon: '🚪', color: '#FF3008' },
-]
-
-const activeStudyPlan = {
-  company: 'Google',
-  progress: 35,
-  daysUntilInterview: 14,
-  percentileRank: 72,
-  challengesDone: 4,
-  challengesTotal: 12,
-}
-
-type ChapterItem = { name: string; score?: number; status: 'completed' | 'available' | 'locked' }
-type Chapter = { id: number; title: string; status: 'active' | 'locked' | 'pro'; items?: ChapterItem[]; count?: string }
-
-const chapters: Chapter[] = [
-  {
-    id: 1, title: 'Chapter 1: Product Sense & Logic', status: 'active',
-    items: [
-      { name: 'Google Maps Monetization', score: 78, status: 'completed' },
-      { name: 'YouTube Shorts Growth', score: 65, status: 'completed' },
-      { name: 'Search Quality Metrics', status: 'available' },
-      { name: 'Cloud Platform Pricing', status: 'locked' },
-    ],
-  },
-  { id: 2, title: 'Chapter 2: Execution & Metrics', status: 'locked', count: '3 challenges, 2 concepts' },
-  { id: 3, title: 'Chapter 3: Leadership & Behavioral', status: 'pro', count: 'PRO ONLY' },
-]
-
-const simulations = [
-  { label: 'Standard', desc: 'Practice with AI interviewer at your pace', icon: 'smart_toy' },
-  { label: 'Advanced', desc: 'Timed mock with realistic pressure', icon: 'timer' },
-]
 
 export default function PrepHubPage() {
   return (
-    <div className="max-w-7xl mx-auto p-4 animate-fade-in-up">
-      <div className="grid grid-cols-12 gap-3">
+    <div className="p-6 bg-background space-y-6 max-w-7xl mx-auto w-full">
+      {/* Page Header */}
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 bg-primary-fixed rounded-xl flex items-center justify-center">
+          <span className="material-symbols-outlined text-primary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold font-headline text-on-surface leading-none">Prep Hub</h1>
+          <p className="text-sm text-on-surface-variant mt-1">Tell Luma where you&apos;re interviewing</p>
+        </div>
+      </div>
 
-        {/* ── Left Column: Company Selection ── */}
-        <aside className="col-span-12 lg:col-span-3 space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-xl">workspace_premium</span>
-            <h1 className="text-lg font-headline font-bold text-on-surface">Prep Hub</h1>
-          </div>
-          <p className="text-[10px] font-body text-on-surface-variant mb-2">Choose a company to see its study plan</p>
+      {/* Section 1: Company Selector */}
+      <section className="relative">
+        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+          {/* Google (Selected) */}
+          <button className="flex-shrink-0 w-[120px] bg-primary-fixed border-2 border-primary rounded-xl p-3 text-center transition-all hover:scale-105">
+            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 text-primary font-bold shadow-sm">G</div>
+            <div className="text-sm font-bold text-on-surface truncate">Google</div>
+            <div className="text-[10px] text-primary font-bold">24 challenges</div>
+          </button>
+          {/* Meta */}
+          <button className="flex-shrink-0 w-[120px] bg-surface-container rounded-xl p-3 text-center transition-all hover:bg-surface-container-high hover:scale-105 border border-transparent">
+            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 text-blue-600 font-bold shadow-sm">M</div>
+            <div className="text-sm font-bold text-on-surface truncate">Meta</div>
+            <div className="text-[10px] text-on-surface-variant">18 challenges</div>
+          </button>
+          {/* Stripe */}
+          <button className="flex-shrink-0 w-[120px] bg-surface-container rounded-xl p-3 text-center transition-all hover:bg-surface-container-high hover:scale-105 border border-transparent">
+            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 text-indigo-500 font-bold shadow-sm">S</div>
+            <div className="text-sm font-bold text-on-surface truncate">Stripe</div>
+            <div className="text-[10px] text-on-surface-variant">12 challenges</div>
+          </button>
+          {/* Amazon */}
+          <button className="flex-shrink-0 w-[120px] bg-surface-container rounded-xl p-3 text-center transition-all hover:bg-surface-container-high hover:scale-105 border border-transparent">
+            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 text-orange-500 font-bold shadow-sm">A</div>
+            <div className="text-sm font-bold text-on-surface truncate">Amazon</div>
+            <div className="text-[10px] text-on-surface-variant">15 challenges</div>
+          </button>
+          {/* Apple */}
+          <button className="flex-shrink-0 w-[120px] bg-surface-container rounded-xl p-3 text-center transition-all hover:bg-surface-container-high hover:scale-105 border border-transparent">
+            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 text-gray-800 font-bold shadow-sm">A</div>
+            <div className="text-sm font-bold text-on-surface truncate">Apple</div>
+            <div className="text-[10px] text-on-surface-variant">8 challenges</div>
+          </button>
+          {/* Uber */}
+          <button className="flex-shrink-0 w-[120px] bg-surface-container rounded-xl p-3 text-center transition-all hover:bg-surface-container-high hover:scale-105 border border-transparent">
+            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 text-black font-bold shadow-sm">U</div>
+            <div className="text-sm font-bold text-on-surface truncate">Uber</div>
+            <div className="text-[10px] text-on-surface-variant">10 challenges</div>
+          </button>
+          {/* Airbnb */}
+          <button className="flex-shrink-0 w-[120px] bg-surface-container rounded-xl p-3 text-center transition-all hover:bg-surface-container-high hover:scale-105 border border-transparent">
+            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 text-red-500 font-bold shadow-sm">A</div>
+            <div className="text-sm font-bold text-on-surface truncate">Airbnb</div>
+            <div className="text-[10px] text-on-surface-variant">6 challenges</div>
+          </button>
+          {/* DoorDash */}
+          <button className="flex-shrink-0 w-[120px] bg-surface-container rounded-xl p-3 text-center transition-all hover:bg-surface-container-high hover:scale-105 border border-transparent">
+            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 text-red-600 font-bold shadow-sm">D</div>
+            <div className="text-sm font-bold text-on-surface truncate">DoorDash</div>
+            <div className="text-[10px] text-on-surface-variant">5 challenges</div>
+          </button>
+        </div>
+      </section>
 
-          <div className="space-y-1">
-            {companies.map((c) => (
-              <button
-                key={c.name}
-                className={`w-full text-left rounded-lg px-3 py-2 flex items-center gap-2 transition-colors ${
-                  c.name === 'Google'
-                    ? 'bg-primary-fixed ring-1 ring-primary/30'
-                    : 'bg-surface-container hover:bg-surface-container-high'
-                }`}
-              >
-                <span className="text-base">{c.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-label font-semibold text-on-surface">{c.name}</p>
-                  <p className="text-[10px] font-label text-on-surface-variant">{c.challenges} challenges</p>
-                </div>
-                {c.name === 'Google' && (
-                  <span className="material-symbols-outlined text-primary text-sm">check_circle</span>
-                )}
-              </button>
-            ))}
-          </div>
-        </aside>
-
-        {/* ── Main Content: Google Study Plan ── */}
-        <main className="col-span-12 lg:col-span-6 space-y-3">
-          {/* Active Plan Header */}
-          <div className="card-elevated rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl">🔍</span>
-              <h2 className="text-base font-headline font-bold text-on-surface">Google Study Plan</h2>
+      {/* Section 2: Selected Company Detail */}
+      <div className="grid grid-cols-12 gap-6">
+        {/* Left Column: Study Plan */}
+        <div className="col-span-12 lg:col-span-8 space-y-4">
+          <div className="bg-surface-container rounded-xl p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold font-headline flex items-center gap-2">
+                <span className="w-6 h-6 rounded bg-white flex items-center justify-center text-[10px] text-primary border border-outline-variant">G</span>
+                Google Study Plan
+              </h2>
+              <span className="bg-primary-fixed text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">Recommended</span>
             </div>
-            <p className="text-xs font-body text-on-surface-variant mb-2">Comprehensive prep path for Google PM interviews</p>
 
-            {/* Progress */}
-            <div className="space-y-1">
-              <div className="flex justify-between items-end text-[10px] font-label">
-                <span className="font-bold text-primary">{activeStudyPlan.challengesDone} of {activeStudyPlan.challengesTotal} challenges</span>
-                <span className="text-on-surface-variant">{activeStudyPlan.progress}% Complete</span>
-              </div>
-              <div className="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
-                <div className="h-full bg-primary rounded-full" style={{ width: `${activeStudyPlan.progress}%` }} />
-              </div>
-            </div>
-          </div>
-
-          {/* Chapter List */}
-          <div className="space-y-2">
-            {chapters.map((ch) => (
-              <div key={ch.id} className="card-elevated rounded-xl overflow-hidden">
-                <div className={`px-4 py-3 flex items-center justify-between ${ch.status === 'active' ? 'bg-primary-fixed/20' : ''}`}>
-                  <div className="flex items-center gap-2">
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                      ch.status === 'active' ? 'bg-primary text-white' : 'bg-surface-container-highest text-on-surface-variant'
-                    }`}>
-                      {ch.id}
-                    </div>
-                    <h3 className="text-xs font-bold text-on-surface">{ch.title}</h3>
-                  </div>
-                  {ch.status === 'pro' && (
-                    <span className="bg-tertiary text-on-primary text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase">PRO</span>
-                  )}
-                  {ch.status === 'locked' && (
-                    <span className="material-symbols-outlined text-on-surface-variant/40 text-lg">lock</span>
-                  )}
-                  {ch.status === 'active' && (
-                    <span className="material-symbols-outlined text-primary text-lg">expand_less</span>
-                  )}
-                </div>
-
-                {ch.status === 'active' && ch.items && (
-                  <div className="divide-y divide-outline-variant/20">
-                    {ch.items.map((item, i) => (
-                      <div
-                        key={i}
-                        className={`px-4 py-2 flex items-center justify-between ${
-                          item.status === 'available' ? 'bg-primary/5' : item.status === 'locked' ? 'opacity-60' : ''
-                        }`}
-                      >
-                        <p className="text-xs font-label font-semibold text-on-surface truncate flex-1 min-w-0">{item.name}</p>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {item.status === 'completed' && (
-                            <span className="text-[10px] font-bold text-primary flex items-center gap-1">
-                              {item.score && <span>{item.score}/100</span>}
-                              <span className="material-symbols-outlined text-xs" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                            </span>
-                          )}
-                          {item.status === 'available' && (
-                            <Link href="/challenges" className="bg-primary text-white px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 hover:opacity-90">
-                              Start <span className="material-symbols-outlined text-xs">arrow_forward</span>
-                            </Link>
-                          )}
-                          {item.status === 'locked' && (
-                            <span className="text-[10px] font-label text-on-surface-variant flex items-center gap-1">
-                              Locked <span className="material-symbols-outlined text-xs">lock</span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {ch.count && ch.status !== 'active' && (
-                  <div className="px-4 py-2 text-[10px] font-label text-on-surface-variant">{ch.count}</div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* AI Simulation */}
-          <div>
-            <h3 className="text-xs font-label font-bold text-on-surface mb-2">AI-Powered Simulation</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {simulations.map((sim) => (
-                <button
-                  key={sim.label}
-                  className="card-elevated card-interactive rounded-lg p-3 text-left"
-                >
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="material-symbols-outlined text-primary text-lg">{sim.icon}</span>
-                    <span className="font-label font-semibold text-on-surface text-xs">{sim.label}</span>
-                  </div>
-                  <p className="text-[10px] font-label text-on-surface-variant">{sim.desc}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        </main>
-
-        {/* ── Right Sidebar ── */}
-        <aside className="col-span-12 lg:col-span-3 space-y-3">
-          {/* Prep Status */}
-          <div className="bg-primary-fixed rounded-xl p-4">
-            <h3 className="text-xs font-label font-bold text-on-surface mb-2">Prep Status</h3>
+            {/* Chapters */}
             <div className="space-y-3">
-              <div className="text-center">
-                <div className="relative w-16 h-16 mx-auto mb-1">
-                  <svg width="64" height="64" className="-rotate-90" style={{ display: 'block' }}>
-                    <circle cx="32" cy="32" r="26" fill="none" strokeWidth={5} stroke="#c4c8bc" />
-                    <circle cx="32" cy="32" r="26" fill="none" strokeWidth={5}
-                      stroke="#4a7c59" strokeLinecap="round"
-                      strokeDasharray={`${(35 / 100) * 2 * Math.PI * 26} ${2 * Math.PI * 26}`} />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-sm font-headline font-bold text-on-surface">35%</span>
+              {/* Chapter 1: Expanded */}
+              <div className="border border-outline-variant rounded-xl overflow-hidden bg-white">
+                <button className="w-full flex items-center justify-between p-4 bg-surface-container-high/30">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-primary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+                    </div>
+                    <span className="font-bold text-sm">Chapter 1: Product Sense &amp; Logic</span>
+                  </div>
+                  <span className="material-symbols-outlined text-on-surface-variant">expand_less</span>
+                </button>
+                <div className="p-2 space-y-1">
+                  {/* Item 1 */}
+                  <div className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-primary text-lg">check_circle</span>
+                      <span className="text-sm font-medium">Improve Google Maps for commuters</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] font-bold text-primary bg-primary-fixed px-2 py-0.5 rounded-full">78/100</span>
+                      <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </div>
+                  </div>
+                  {/* Item 2 */}
+                  <div className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-primary text-lg">check_circle</span>
+                      <span className="text-sm font-medium">Design a new Google Workspace feature</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] font-bold text-amber-700 bg-tertiary-container px-2 py-0.5 rounded-full">65/100</span>
+                      <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </div>
+                  </div>
+                  {/* Item 3 */}
+                  <div className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-outline text-lg">radio_button_unchecked</span>
+                      <span className="text-sm font-medium text-on-surface-variant">Google Search quality metrics</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Start</span>
+                      <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </div>
+                  </div>
+                  {/* Item 4 */}
+                  <div className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-outline text-lg">radio_button_unchecked</span>
+                      <span className="text-sm font-medium text-on-surface-variant italic">Concept: &apos;Platform thinking&apos;</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] font-bold text-tertiary uppercase tracking-tighter">Review</span>
+                      <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-[10px] font-label">
-                  <span className="text-on-surface-variant">Time left</span>
-                  <span className="font-bold text-on-surface">14 days</span>
+
+              {/* Chapter 2: Collapsed */}
+              <div className="border border-outline-variant rounded-xl overflow-hidden">
+                <button className="w-full flex items-center justify-between p-4 bg-white">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-outline-variant/30 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-on-surface-variant text-sm">monitoring</span>
+                    </div>
+                    <div className="text-left">
+                      <div className="font-bold text-sm">Chapter 2: Execution &amp; Metrics</div>
+                      <div className="text-[10px] text-on-surface-variant uppercase tracking-widest">3 challenges · 2 concepts</div>
+                    </div>
+                  </div>
+                  <span className="material-symbols-outlined text-on-surface-variant">expand_more</span>
+                </button>
+              </div>
+
+              {/* Chapter 3: Locked */}
+              <div className="border border-outline-variant rounded-xl overflow-hidden opacity-60 bg-surface-container/50">
+                <div className="w-full flex items-center justify-between p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-outline-variant/30 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-on-surface-variant text-sm">diversity_3</span>
+                    </div>
+                    <div className="text-left">
+                      <div className="font-bold text-sm">Chapter 3: Leadership &amp; Behavioral</div>
+                      <div className="text-[10px] text-primary font-bold">PRO ONLY</div>
+                    </div>
+                  </div>
+                  <span className="material-symbols-outlined text-on-surface-variant">lock</span>
                 </div>
-                <div className="flex justify-between text-[10px] font-label">
-                  <span className="text-on-surface-variant">Ahead of</span>
-                  <span className="font-bold text-primary">72% of candidates</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Status & Simulation */}
+        <div className="col-span-12 lg:col-span-4 space-y-4">
+          {/* Prep Status Card */}
+          <div className="bg-surface-container rounded-xl p-5 shadow-sm border border-white/50">
+            <h3 className="font-bold text-sm mb-4">Prep Status</h3>
+            <div className="flex items-center gap-6">
+              <div className="relative w-20 h-20 flex items-center justify-center">
+                <svg className="w-full h-full -rotate-90">
+                  <circle className="text-outline-variant" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" strokeWidth="6" />
+                  <circle className="text-primary" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" strokeDasharray="213.6" strokeDashoffset="138.8" strokeWidth="6" />
+                </svg>
+                <span className="absolute text-xl font-black font-headline text-on-surface">35%</span>
+              </div>
+              <div className="flex-1 space-y-1">
+                <div className="text-xs font-bold text-orange-700">14 days until interview</div>
+                <p className="text-[10px] text-on-surface-variant">Ahead of 72% of candidates</p>
+                <div className="w-full bg-outline-variant h-1 rounded-full mt-2 overflow-hidden">
+                  <div className="bg-primary h-full w-[72%]" />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Community */}
-          <div className="card-elevated rounded-lg p-3">
-            <div className="flex items-center gap-1.5 mb-1">
-              <span className="material-symbols-outlined text-primary text-base">group</span>
-              <h3 className="text-xs font-label font-bold text-on-surface">Community</h3>
+          {/* Mock Interview Simulation */}
+          <div className="bg-primary-fixed rounded-xl p-5 shadow-sm relative overflow-hidden group">
+            {/* Background Luma */}
+            <div className="absolute -right-2 -bottom-2 opacity-10 group-hover:scale-110 transition-transform duration-500">
+              <LumaGlyph size={128} state="idle" className="text-primary" />
             </div>
-            <p className="text-[10px] font-label text-on-surface-variant">12 others prepping for Google this week</p>
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-4">
+                <LumaGlyph size={40} state="speaking" className="text-primary" />
+                <div>
+                  <h3 className="font-black font-headline text-primary leading-none">Practice with Luma</h3>
+                  <p className="text-[10px] font-bold text-primary/70 uppercase tracking-tighter">AI-Powered Simulation</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between mb-5 px-1">
+                <span className="text-xs font-bold text-primary">Standard</span>
+                <div className="w-8 h-4 bg-primary/20 rounded-full relative p-0.5 cursor-pointer">
+                  <div className="w-3 h-3 bg-white rounded-full shadow-sm" />
+                </div>
+                <span className="text-xs font-bold text-primary/40">Advanced</span>
+              </div>
+              <button className="w-full bg-primary text-on-primary py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#3d6549] transition-colors shadow-md">
+                Start Simulation
+                <span className="material-symbols-outlined text-sm">arrow_forward</span>
+              </button>
+            </div>
           </div>
 
-          {/* Luma Tip */}
-          <div className="card-elevated rounded-lg p-3 border border-primary-container/20">
-            <div className="flex items-start gap-2">
-              <LumaGlyph size={20} className="text-primary shrink-0 mt-0.5" />
-              <div>
-                <p className="text-[10px] font-label font-semibold text-on-surface mb-0.5">Luma&apos;s Prep Tip</p>
-                <p className="text-[10px] font-body text-on-surface-variant">
-                  Focus on Product Sense challenges first — they&apos;re the most common in Google PM interviews. Complete Chapter 1 to unlock advanced simulations.
-                </p>
+          {/* Community Card */}
+          <div className="bg-surface-container rounded-xl p-4 shadow-sm border border-outline-variant/30">
+            <div className="flex items-center gap-3">
+              <div className="flex -space-x-2">
+                <div className="w-6 h-6 rounded-full border-2 border-surface-container bg-primary-fixed flex items-center justify-center text-[8px] font-bold text-primary">A</div>
+                <div className="w-6 h-6 rounded-full border-2 border-surface-container bg-tertiary-container flex items-center justify-center text-[8px] font-bold text-tertiary">B</div>
+                <div className="w-6 h-6 rounded-full border-2 border-surface-container bg-secondary-container flex items-center justify-center text-[8px] font-bold text-secondary">C</div>
+                <div className="w-6 h-6 rounded-full border-2 border-surface-container bg-surface-container-high flex items-center justify-center text-[8px] font-bold">+9</div>
               </div>
+              <span className="text-xs font-bold text-on-surface-variant">12 others prepping for Google</span>
             </div>
+            <a className="mt-3 block text-[11px] font-black text-primary uppercase tracking-widest hover:underline flex items-center gap-1" href="#">
+              Join discussion
+              <span className="material-symbols-outlined text-xs">chevron_right</span>
+            </a>
           </div>
-        </aside>
+        </div>
+      </div>
+
+      {/* Footer Coaching Strip */}
+      <div className="bg-surface-container-low border border-outline-variant p-4 rounded-xl flex items-center gap-4">
+        <LumaGlyph size={28} state="speaking" className="text-primary shrink-0" />
+        <p className="text-sm text-on-surface-variant leading-tight flex-1">
+          <span className="font-bold text-on-surface">Luma&apos;s Tip:</span> Google heavily weighs <span className="text-primary font-bold italic">User Empathy</span> in Product Sense rounds. Try to focus on the &ldquo;Why&rdquo; before jumping to &ldquo;How&rdquo; in your framework.
+        </p>
+        <button className="text-xs font-bold text-primary px-4 py-2 hover:bg-primary-fixed rounded-full transition-colors">Dismiss</button>
       </div>
     </div>
   )

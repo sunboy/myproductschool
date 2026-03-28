@@ -19,26 +19,26 @@ type WorkspaceMode = 'guided' | 'freeform'
 interface FlowStep {
   key: string
   label: string
-  icon: string
   subtitle: string
+  color: string
 }
 
 /* ── Constants ───────────────────────────────────────────── */
 
 const FLOW_STEPS: FlowStep[] = [
-  { key: 'frame', label: 'Frame', icon: 'article', subtitle: 'Define the core problem' },
-  { key: 'split', label: 'Split', icon: 'article', subtitle: 'Who exactly is affected, and how?' },
-  { key: 'weigh', label: 'Weigh', icon: 'article', subtitle: 'Weigh your options' },
-  { key: 'sell', label: 'Sell', icon: 'article', subtitle: 'Make your recommendation' },
+  { key: 'frame', label: 'Frame', subtitle: 'Define the core problem',          color: 'text-blue-500' },
+  { key: 'split', label: 'Split', subtitle: 'Who exactly is affected, and how?', color: 'text-green-500' },
+  { key: 'weigh', label: 'Weigh', subtitle: 'Weigh your options',               color: 'text-amber-500' },
+  { key: 'sell',  label: 'Sell',  subtitle: 'Make your recommendation',         color: 'text-purple-500' },
 ]
 
 const MOCK_METRICS = [
-  { label: 'Virality', value: '+12%', positive: true },
+  { label: 'Virality',    value: '+12%', positive: true  },
   { label: 'Engagement', value: '-18%', positive: false },
-  { label: 'Revenue', value: '-9%', positive: false },
+  { label: 'Revenue',    value: '-9%',  positive: false },
 ]
 
-const GUIDED_MAX_CHARS = 1200
+const GUIDED_MAX_CHARS  = 1200
 const FREEFORM_MAX_CHARS = 2000
 
 const COACHING_PROMPTS: Record<number, { thought: string; tip: string }> = {
@@ -78,33 +78,27 @@ function formatAutoSave(date: Date | null): string {
 export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: ChallengeWorkspaceProps) {
   const router = useRouter()
 
-  // Core state
-  const [mode, setMode] = useState<WorkspaceMode>('guided')
-  const [activeStep, setActiveStep] = useState(0)
-  const [responses, setResponses] = useState<Record<number, string>>({ 0: '', 1: '', 2: '', 3: '' })
+  const [mode, setMode]                   = useState<WorkspaceMode>('guided')
+  const [activeStep, setActiveStep]       = useState(1) // Start on Split (step 1) to match Stitch
+  const [responses, setResponses]         = useState<Record<number, string>>({ 0: '', 1: '', 2: '', 3: '' })
   const [freeformResponse, setFreeformResponse] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [autoSavedAt, setAutoSavedAt] = useState<Date | null>(null)
+  const [submitting, setSubmitting]       = useState(false)
+  const [autoSavedAt, setAutoSavedAt]     = useState<Date | null>(null)
   const [frameworkOpen, setFrameworkOpen] = useState(false)
 
   const responseRef = useRef('')
 
-  // Keep ref in sync
   useEffect(() => {
     responseRef.current = mode === 'guided' ? (responses[activeStep] ?? '') : freeformResponse
   }, [mode, activeStep, responses, freeformResponse])
 
-  // Auto-save every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      if (responseRef.current.trim()) {
-        setAutoSavedAt(new Date())
-      }
+      if (responseRef.current.trim()) setAutoSavedAt(new Date())
     }, 30_000)
     return () => clearInterval(interval)
   }, [])
 
-  // Refresh autosave display every minute
   const [, setTick] = useState(0)
   useEffect(() => {
     const t = setInterval(() => setTick(n => n + 1), 60_000)
@@ -112,7 +106,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
   }, [])
 
   const currentResponse = mode === 'guided' ? (responses[activeStep] ?? '') : freeformResponse
-  const maxChars = mode === 'guided' ? GUIDED_MAX_CHARS : FREEFORM_MAX_CHARS
+  const maxChars        = mode === 'guided' ? GUIDED_MAX_CHARS : FREEFORM_MAX_CHARS
 
   const handleResponseChange = useCallback((value: string) => {
     if (value.length > maxChars) return
@@ -132,13 +126,13 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
 
     setSubmitting(true)
     try {
-      const res = await fetch('/api/challenges/submit', {
-        method: 'POST',
+      const res  = await fetch('/api/challenges/submit', {
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          challengeId: challenge.id,
+        body:    JSON.stringify({
+          challengeId:      challenge.id,
           mode,
-          response: responseText,
+          response:         responseText,
           confidenceRating: 3,
         }),
       })
@@ -149,510 +143,596 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
     }
   }, [challenge.id, mode, submitting, responses, freeformResponse, router])
 
-  const step = FLOW_STEPS[activeStep]
+  const step     = FLOW_STEPS[activeStep]
   const coaching = COACHING_PROMPTS[activeStep]
 
+  /* ── Render ── */
+
   return (
-    <div className="flex flex-col h-screen bg-background">
-      {/* ── Top Bar ──────────────────────────────────────────── */}
-      <header className="flex-shrink-0 h-14 bg-surface editorial-shadow flex items-center px-6 gap-4 z-20">
-        {/* Back */}
-        <Link
-          href="/challenges"
-          className="flex items-center gap-1 text-on-surface-variant hover:text-on-surface transition-colors"
-        >
-          <span className="material-symbols-outlined text-[20px]">arrow_back</span>
-        </Link>
+    <div className="flex flex-col h-screen bg-background overflow-hidden">
 
-        {/* Title + breadcrumb */}
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="material-symbols-outlined text-[20px] text-primary" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>bookmark</span>
-          <h1 className="font-headline font-bold text-on-surface text-lg truncate">
-            {challenge.title}
-          </h1>
-        </div>
-
-        {/* Metadata chips */}
-        <div className="hidden sm:flex items-center gap-2 ml-2">
-          <span className="badge-move bg-secondary-container text-on-secondary-container">
-            <span className="material-symbols-outlined text-[14px]">{domainIcon}</span>
-            {domainTitle}
-          </span>
-          <span className="badge-move bg-tertiary-container text-on-surface">
-            {difficultyLabel(challenge.difficulty)}
-          </span>
-        </div>
-
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Mode toggle */}
-        <div className="flex items-center bg-surface-container-high rounded-full p-0.5">
+      {/* ═══════════════════════════════════════════════════════
+          TOP BAR — matches Stitch exactly
+          ═══════════════════════════════════════════════════════ */}
+      <header className="h-12 w-full bg-background border-b border-outline-variant flex items-center justify-between px-6 z-30 flex-shrink-0">
+        {/* Left: back + title */}
+        <div className="flex items-center gap-4">
           <button
-            onClick={() => setMode('guided')}
-            className={`px-4 py-1.5 rounded-full text-sm font-label font-semibold transition-all ${
-              mode === 'guided'
-                ? 'bg-primary text-on-primary shadow-sm glow-primary'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
+            onClick={() => router.back()}
+            className="p-1 hover:bg-surface-container-high rounded-full transition-colors"
           >
-            Guided
+            <span className="material-symbols-outlined text-on-surface-variant">arrow_back</span>
           </button>
+          <span className="font-headline font-black text-lg text-on-surface">{challenge.title}</span>
+        </div>
+        {/* Center: mode toggle */}
+        <div className="flex items-center gap-6">
+          <div className="bg-surface-container rounded-full p-1 flex items-center">
+            <button
+              onClick={() => setMode('guided')}
+              className={`px-4 py-1 text-xs font-bold flex items-center gap-2 rounded-full transition-all ${
+                mode === 'guided'
+                  ? 'bg-white shadow-sm text-primary'
+                  : 'text-on-surface-variant'
+              }`}
+            >
+              <span className="text-[10px]">◇◈◆◎</span> Guided
+            </button>
+            <button
+              onClick={() => setMode('freeform')}
+              className={`px-4 py-1 text-xs font-bold flex items-center gap-2 rounded-full transition-all ${
+                mode === 'freeform'
+                  ? 'bg-white shadow-sm text-primary'
+                  : 'text-on-surface-variant'
+              }`}
+            >
+              <span
+                className="material-symbols-outlined text-xs"
+                style={mode === 'freeform' ? { fontVariationSettings: "'FILL' 1" } : undefined}
+              >
+                check_circle
+              </span>
+              Freeform
+            </button>
+          </div>
           <button
-            onClick={() => setMode('freeform')}
-            className={`px-4 py-1.5 rounded-full text-sm font-label font-semibold transition-all ${
-              mode === 'freeform'
-                ? 'bg-primary text-on-primary shadow-sm glow-primary'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
+            onClick={() => setFrameworkOpen(f => !f)}
+            className="flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors"
           >
-            Freeform
+            <span className="material-symbols-outlined">menu_open</span>
+            Frameworks
           </button>
+          <div className="h-6 w-px bg-outline-variant" />
+          {/* Streak + XP */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 bg-tertiary-container/30 px-2 py-0.5 rounded-full border border-tertiary-container/50">
+              <span className="material-symbols-outlined text-xs text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
+              <span className="text-xs font-bold text-tertiary">5</span>
+            </div>
+            <div className="flex items-center gap-1 bg-primary-fixed/50 px-2 py-0.5 rounded-full border border-primary-fixed">
+              <span className="text-xs font-bold text-primary">1250 XP</span>
+            </div>
+          </div>
+          {/* Avatar */}
+          <div className="flex items-center gap-2">
+            <button className="p-1 hover:bg-surface-container-high rounded-full transition-colors">
+              <span className="material-symbols-outlined text-on-surface-variant">notifications</span>
+            </button>
+            <div className="h-8 w-8 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant flex items-center justify-center">
+              <span className="material-symbols-outlined text-on-surface-variant text-lg">account_circle</span>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* ── Body ─────────────────────────────────────────────── */}
-      {mode === 'guided' ? (
-        <GuidedView
-          challenge={challenge}
-          step={step}
-          activeStep={activeStep}
-          onStepChange={setActiveStep}
-          response={currentResponse}
-          onResponseChange={handleResponseChange}
-          maxChars={GUIDED_MAX_CHARS}
-          coaching={coaching}
-          autoSavedAt={autoSavedAt}
-          frameworkOpen={frameworkOpen}
-          onFrameworkToggle={() => setFrameworkOpen(f => !f)}
-          onSubmit={handleSubmit}
-          submitting={submitting}
-          responses={responses}
-        />
-      ) : (
+      {/* ═══════════════════════════════════════════════════════
+          CONTENT AREA — guided split-pane or freeform scroll
+          ═══════════════════════════════════════════════════════ */}
+      {mode === 'freeform' ? (
         <FreeformView
           challenge={challenge}
-          response={freeformResponse}
-          onResponseChange={handleResponseChange}
-          maxChars={FREEFORM_MAX_CHARS}
+          freeformResponse={freeformResponse}
+          onResponseChange={setFreeformResponse}
           onSubmit={handleSubmit}
           submitting={submitting}
+          autoSavedAt={autoSavedAt}
+          frameworkOpen={frameworkOpen}
+          onToggleFramework={() => setFrameworkOpen(f => !f)}
         />
+      ) : (
+      <div className="flex-1 flex overflow-hidden">
+
+        {/* ── LEFT PANE — Scenario (w-2/5) ─────────────────── */}
+        <section className="w-2/5 bg-surface-container-lowest border-r border-outline-variant flex flex-col overflow-y-auto p-6">
+
+          {/* Title + bookmark */}
+          <div className="flex items-start justify-between mb-4">
+            <h1 className="font-headline text-lg font-bold leading-tight">{challenge.title}</h1>
+            <button className="text-on-surface-variant hover:text-primary">
+              <span className="material-symbols-outlined">bookmark</span>
+            </button>
+          </div>
+
+          {/* Paradigm + Difficulty badges */}
+          <div className="flex gap-2 mb-6">
+            <span className="bg-green-50 text-green-500 border border-green-500/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+              Paradigm: Traditional
+            </span>
+            <span className="bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+              Difficulty: {difficultyLabel(challenge.difficulty)}
+            </span>
+          </div>
+
+          {/* Scenario prose */}
+          <div className="text-on-surface-variant leading-relaxed text-sm">
+            <p className="mb-4">{challenge.prompt_text}</p>
+
+            {/* Context box */}
+            <div className="bg-surface-container-low rounded-xl p-4 mt-6 border border-outline-variant/30">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="material-symbols-outlined text-primary text-sm">info</span>
+                <h3 className="font-bold text-xs uppercase tracking-widest text-on-surface">Context</h3>
+              </div>
+              <p className="text-xs text-on-surface-variant">
+                The mobile gaming app &ldquo;QuestBound&rdquo; added a prominent &lsquo;Share with
+                Friends&rsquo; button on the post-match screen. While it drove virality, retention
+                and monetization dropped sharply. You need to diagnose why this happened and propose
+                a path forward.
+              </p>
+            </div>
+
+            {/* Key Metrics */}
+            <div className="mt-8">
+              <h4 className="font-headline text-sm font-bold mb-3">Key Metrics Observed</h4>
+              <div className="grid grid-cols-3 gap-2">
+                {MOCK_METRICS.map(m => (
+                  <div
+                    key={m.label}
+                    className={`p-2 rounded-lg border ${m.positive ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}
+                  >
+                    <div className={`text-[10px] font-bold ${m.positive ? 'text-green-700' : 'text-red-700'}`}>{m.label}</div>
+                    <div className={`text-lg font-bold ${m.positive ? 'text-green-800' : 'text-red-800'}`}>{m.value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Hero image placeholder */}
+          <div className="mt-8 rounded-xl overflow-hidden aspect-video bg-surface-container relative">
+            <div className="absolute inset-0 flex items-center justify-center text-on-surface-variant/30">
+              <span className="material-symbols-outlined text-6xl">monitoring</span>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent" />
+          </div>
+        </section>
+
+        {/* ── RIGHT PANE — Answer Workspace (flex-1) ───────── */}
+        <section className="flex-1 bg-surface flex flex-col overflow-hidden relative">
+
+          {/* Move Progress Bar */}
+          <div className="px-6 pt-4 pb-2 border-b border-outline-variant/30 flex items-center justify-between flex-shrink-0">
+            <div className="flex items-center gap-1 w-full max-w-lg">
+              {FLOW_STEPS.map((s, i) => {
+                const hasContent = (responses[i] ?? '').trim().length > 0
+                const isComplete = hasContent && i < activeStep
+                const isActive   = i === activeStep
+
+                return (
+                  <div key={s.key} className={`flex items-center gap-2 ${i > 0 ? '' : ''}`}>
+                    {i > 0 && i < FLOW_STEPS.length && (
+                      <div className="border-r border-outline-variant/30 h-4 mx-1" />
+                    )}
+                    <button
+                      onClick={() => setActiveStep(i)}
+                      className={`flex items-center gap-2 px-4 py-1.5 rounded-full transition-all ${
+                        isActive
+                          ? 'bg-primary-container text-on-primary-container'
+                          : isComplete
+                            ? ''
+                            : 'opacity-40'
+                      }`}
+                    >
+                      {isComplete ? (
+                        <div className="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs">✓</div>
+                      ) : isActive ? (
+                        <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>article</span>
+                      ) : (
+                        <span className="material-symbols-outlined text-sm">article</span>
+                      )}
+                      <span className="text-xs font-bold">{s.label}</span>
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+            <button
+              onClick={() => setFrameworkOpen(f => !f)}
+              className="bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 transition-all"
+            >
+              <span className="material-symbols-outlined text-sm">segment</span>
+              ≡ Frameworks
+            </button>
+          </div>
+
+          {/* Thinking Move Tabs */}
+          <div className="px-6 flex items-center gap-6 border-b border-outline-variant/30 bg-surface-container-low flex-shrink-0">
+            {FLOW_STEPS.map((s, i) => {
+              const isActive = i === activeStep
+              return (
+                <button
+                  key={s.key}
+                  onClick={() => setActiveStep(i)}
+                  className={`py-3 text-xs font-bold flex items-center gap-1.5 transition-colors ${
+                    isActive
+                      ? 'text-primary border-b-2 border-primary'
+                      : i > activeStep
+                        ? 'text-on-surface-variant opacity-60 hover:text-primary'
+                        : 'text-on-surface-variant hover:text-primary'
+                  }`}
+                >
+                  <span
+                    className={`material-symbols-outlined text-[16px] ${s.color}`}
+                    style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                  >
+                    article
+                  </span>
+                  {s.label}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Active Content */}
+          <div className="flex-1 p-8 overflow-y-auto">
+            <div className="max-w-3xl">
+              <h2 className="text-xl font-bold font-headline mb-1">
+                {step.label} — {step.subtitle}
+              </h2>
+              <p className="text-sm text-on-surface-variant mb-6 font-body">
+                {activeStep === 0 && 'Identify the problem before jumping to solutions.'}
+                {activeStep === 1 && 'Segment the affected users before deciding anything.'}
+                {activeStep === 2 && 'Evaluate the options and their trade-offs.'}
+                {activeStep === 3 && 'Make a clear, specific recommendation.'}
+              </p>
+
+              {/* Textarea */}
+              <div className="relative group">
+                <textarea
+                  value={currentResponse}
+                  onChange={e => handleResponseChange(e.target.value)}
+                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl p-5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none font-body leading-relaxed"
+                  placeholder={`Write your analysis here. Consider: ${step.subtitle.toLowerCase()}`}
+                  rows={8}
+                />
+                <div className="absolute bottom-4 right-4 text-[10px] font-bold text-outline uppercase tracking-widest">
+                  {currentResponse.length} / {maxChars} characters
+                </div>
+              </div>
+
+              {/* Action row */}
+              <div className="mt-6 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-on-surface-variant flex items-center gap-1">
+                    <span className="material-symbols-outlined text-sm">save</span>
+                    {autoSavedAt ? formatAutoSave(autoSavedAt) : 'Autosaved 2 mins ago'}
+                  </span>
+                </div>
+                <button
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                  className="bg-primary text-on-primary hover:bg-primary-container hover:text-on-primary-container px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm flex items-center gap-2 active:scale-95 disabled:opacity-50"
+                >
+                  {submitting ? 'Submitting...' : 'Submit for Grading'}
+                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </button>
+              </div>
+
+              {/* Data Cards Grid — Luma thought starter + Add custom segment */}
+              <div className="mt-12 grid grid-cols-2 gap-4">
+                <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30">
+                  <div className="flex items-center gap-2 mb-3">
+                    <LumaGlyph size={24} state="speaking" className="text-primary" />
+                    <span className="text-[10px] font-bold uppercase text-on-surface-variant">Luma&apos;s Thought Starter</span>
+                  </div>
+                  <p className="text-xs italic text-on-surface-variant">
+                    &ldquo;{coaching.thought}&rdquo;
+                  </p>
+                </div>
+                <button className="bg-surface-container-lowest p-4 rounded-xl border border-dashed border-outline-variant/30 flex items-center justify-center hover:border-primary hover:text-primary transition-colors">
+                  <div className="text-center">
+                    <span className="material-symbols-outlined text-outline mb-1">add_circle</span>
+                    <div className="text-[10px] font-bold text-outline uppercase">Add Custom Segment</div>
+                  </div>
+                </button>
+              </div>
+
+              {/* Frameworks drawer */}
+              {frameworkOpen && (
+                <div className="mt-6 bg-surface-container rounded-xl p-4 space-y-2 animate-fade-in">
+                  <h3 className="font-label font-bold text-on-surface text-xs mb-3 uppercase tracking-widest">HEART Framework</h3>
+                  {[
+                    { letter: 'H', name: 'Happiness',    desc: 'User satisfaction, NPS, sentiment' },
+                    { letter: 'E', name: 'Engagement',   desc: 'Session depth, frequency, feature usage' },
+                    { letter: 'A', name: 'Adoption',     desc: 'New users, onboarding completion' },
+                    { letter: 'R', name: 'Retention',    desc: 'Churn rate, return frequency' },
+                    { letter: 'T', name: 'Task Success', desc: 'Completion rate, time-to-task, errors' },
+                  ].map(f => (
+                    <div key={f.letter} className="flex items-start gap-2.5 p-2.5 bg-surface-container-low rounded-xl">
+                      <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary-fixed text-primary flex items-center justify-center font-headline font-bold text-xs">
+                        {f.letter}
+                      </span>
+                      <div>
+                        <p className="font-label font-semibold text-on-surface text-xs">{f.name}</p>
+                        <p className="text-on-surface-variant text-xs font-body mt-0.5">{f.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Luma Coaching Strip (bottom) */}
+          <div className="bg-primary-fixed/30 border-t border-primary/10 px-6 py-3 flex items-center gap-4 flex-shrink-0">
+            <LumaGlyph size={28} state="speaking" className="text-primary flex-shrink-0" />
+            <div className="flex-1 text-sm text-on-primary-container font-medium">
+              <span className="font-bold">Pro tip:</span> {coaching.tip}
+            </div>
+            <a className="text-primary font-bold text-sm hover:underline flex items-center gap-1 flex-shrink-0" href="#">
+              More tips
+              <span className="material-symbols-outlined text-sm">open_in_new</span>
+            </a>
+          </div>
+        </section>
+      </div>
       )}
     </div>
   )
 }
 
-/* ── Guided Mode ─────────────────────────────────────────── */
-
-interface GuidedViewProps {
-  challenge: ChallengePrompt
-  step: FlowStep
-  activeStep: number
-  onStepChange: (i: number) => void
-  response: string
-  onResponseChange: (v: string) => void
-  maxChars: number
-  coaching: { thought: string; tip: string }
-  autoSavedAt: Date | null
-  frameworkOpen: boolean
-  onFrameworkToggle: () => void
-  onSubmit: () => void
-  submitting: boolean
-  responses: Record<number, string>
-}
-
-function GuidedView({
-  challenge,
-  step,
-  activeStep,
-  onStepChange,
-  response,
-  onResponseChange,
-  maxChars,
-  coaching,
-  autoSavedAt,
-  frameworkOpen,
-  onFrameworkToggle,
-  onSubmit,
-  submitting,
-  responses,
-}: GuidedViewProps) {
-  const allStepsHaveContent = Object.values(responses).some(r => r.trim().length > 0)
-
-  return (
-    <div className="flex flex-1 overflow-hidden">
-      {/* ── Left Panel (Main Content) ──────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        <div className="flex-1 px-4 py-4 space-y-3 animate-fade-in-up">
-          {/* Challenge header */}
-          <div>
-            <h1 className="font-headline text-2xl font-bold text-on-surface">
-              {challenge.title}
-            </h1>
-            <p className="text-on-surface-variant font-body text-sm mt-1 leading-relaxed">
-              {challenge.prompt_text}
-            </p>
-          </div>
-
-          {/* Context info banner */}
-          <div className="glass-card border-l-4 border-primary rounded-lg p-3">
-            <div className="flex items-start gap-2">
-              <span className="material-symbols-outlined text-primary flex-shrink-0 mt-0.5" style={{ fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>info</span>
-              <div>
-                <p className="font-label font-bold text-[10px] uppercase tracking-widest text-on-surface-variant mb-0.5">Context</p>
-                <p className="text-xs text-on-surface font-body leading-relaxed">
-                  The mobile gaming app &ldquo;QuestBound&rdquo; added a prominent &lsquo;Share with Friends&rsquo; button on the post-match screen. While it drove virality, retention and monetization dropped sharply. You need to diagnose why this happened and propose a path forward.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Key Metrics Grid */}
-          <div>
-            <h3 className="font-label font-bold text-[10px] uppercase tracking-widest text-on-surface-variant mb-2">Key Metrics</h3>
-            <div className="grid grid-cols-3 gap-3">
-              {MOCK_METRICS.map(m => (
-                <div
-                  key={m.label}
-                  className="card-elevated card-interactive p-3 text-center"
-                >
-                  <p className="text-xs text-on-surface-variant font-label mb-0.5">{m.label}</p>
-                  <p className={`text-xl font-bold font-headline ${
-                    m.positive ? 'text-primary' : 'text-error'
-                  }`}>
-                    {m.value}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* FLOW Tab Bar — pills */}
-          <div>
-            <p className="font-label font-bold text-[10px] uppercase tracking-widest text-on-surface-variant mb-2">FLOW</p>
-            <nav className="flex gap-2">
-              {FLOW_STEPS.map((s, i) => {
-                const isActive = i === activeStep
-                const hasContent = (responses[i] ?? '').trim().length > 0
-                return (
-                  <button
-                    key={s.key}
-                    onClick={() => onStepChange(i)}
-                    className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-label font-semibold transition-all ${
-                      isActive
-                        ? 'bg-primary text-on-primary shadow-sm'
-                        : hasContent
-                          ? 'bg-primary-fixed text-primary'
-                          : 'bg-surface-container-high text-on-surface-variant hover:text-on-surface'
-                    }`}
-                  >
-                    {hasContent && !isActive && (
-                      <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>check</span>
-                    )}
-                    <span>{s.label}</span>
-                  </button>
-                )
-              })}
-            </nav>
-          </div>
-
-          {/* Tab content card */}
-          <div className="card-elevated p-4">
-            <h2 className="font-headline text-base font-bold text-on-surface mb-0.5">
-              {step.label} — {step.subtitle}
-            </h2>
-            <p className="text-on-surface-variant text-sm font-body mb-3">
-              {activeStep === 0 && 'Identify the real problem before proposing any solutions.'}
-              {activeStep === 1 && 'Segment the affected users before deciding anything.'}
-              {activeStep === 2 && 'Compare trade-offs between your options.'}
-              {activeStep === 3 && 'Present your final recommendation with conviction.'}
-            </p>
-
-            {/* Textarea */}
-            <textarea
-              value={response}
-              onChange={e => onResponseChange(e.target.value)}
-              placeholder="Start typing your analysis..."
-              className="w-full min-h-[120px] border border-outline-variant bg-surface-container-low rounded-lg px-3 py-2.5 text-on-surface font-body text-sm leading-relaxed placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-2 ring-primary/20 focus:border-primary/40 resize-y transition-all"
-            />
-
-            {/* Bottom bar: char count + autosave */}
-            <div className="flex items-center justify-between mt-2 text-xs font-label text-on-surface-variant">
-              <span>{response.length} / {maxChars} characters</span>
-              {autoSavedAt && (
-                <span>{formatAutoSave(autoSavedAt)}</span>
-              )}
-            </div>
-
-            {/* Action buttons */}
-            <div className="flex items-center justify-end gap-3 mt-3">
-              <button
-                onClick={onFrameworkToggle}
-                className="inline-flex items-center gap-2 border border-outline-variant text-primary rounded-lg px-4 py-2 text-sm font-label font-semibold hover:bg-surface-container-low transition-colors"
-              >
-                <span className="material-symbols-outlined text-[18px]">save</span>
-                Save
-              </button>
-
-              {activeStep < FLOW_STEPS.length - 1 ? (
-                <button
-                  onClick={() => onStepChange(activeStep + 1)}
-                  className="glow-primary inline-flex items-center gap-2 bg-primary text-on-primary rounded-lg px-4 py-2 text-sm font-label font-semibold hover:bg-primary/90 active:scale-95 transition-all"
-                >
-                  Next: {FLOW_STEPS[activeStep + 1].label}
-                  <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-                </button>
-              ) : (
-                <button
-                  onClick={onSubmit}
-                  disabled={submitting || !allStepsHaveContent}
-                  className="glow-primary inline-flex items-center gap-2 bg-primary text-on-primary rounded-lg px-4 py-2 text-sm font-label font-semibold hover:bg-primary/90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  {submitting ? (
-                    <>
-                      <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      Submit for Grading
-                      <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Right Panel (Luma Coaching) ────────────────────── */}
-      <aside className="hidden lg:flex flex-col w-[320px] flex-shrink-0 bg-surface-container-low border-l border-outline-variant/30 overflow-y-auto">
-        <div className="px-4 py-4 space-y-3">
-          {/* Luma Thought Starter */}
-          <div className="card-elevated p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="p-1.5 rounded-full bg-primary/10">
-                <LumaGlyph size={28} className="text-primary animate-luma-glow" state="speaking" />
-              </div>
-              <span className="font-label font-semibold text-on-surface text-sm">
-                Luma&apos;s Thought Starter
-              </span>
-            </div>
-            <p className="text-on-surface font-body text-sm leading-relaxed">
-              &ldquo;{coaching.thought}&rdquo;
-            </p>
-          </div>
-
-          {/* Add Segment button (step 1 only) */}
-          {activeStep === 1 && (
-            <button className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-outline-variant text-on-surface-variant rounded-lg px-3 py-2 text-sm font-label hover:border-primary hover:text-primary transition-colors">
-              <span className="material-symbols-outlined text-[18px]">add_circle</span>
-              Add Custom Segment
-            </button>
-          )}
-
-          {/* Pro tip card */}
-          <div className="card-elevated p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="material-symbols-outlined text-primary" style={{ fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>tips_and_updates</span>
-              <span className="font-label font-semibold text-on-surface text-sm">Pro tip</span>
-            </div>
-            <p className="text-on-surface font-body text-sm leading-relaxed">
-              {coaching.tip}
-            </p>
-            <button className="inline-flex items-center gap-1 text-primary text-xs font-label font-semibold mt-2 hover:opacity-80 transition-opacity">
-              More tips
-              <span className="material-symbols-outlined text-[14px]">open_in_new</span>
-            </button>
-          </div>
-
-          {/* Frameworks section */}
-          <div>
-            <p className="font-label font-bold text-[10px] uppercase tracking-widest text-on-surface-variant mb-2">
-              Frameworks
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {FLOW_STEPS.map(s => (
-                <button
-                  key={s.key}
-                  className="card-interactive flex items-center gap-1.5 border border-outline-variant/50 rounded-lg px-2.5 py-2 text-xs font-label font-semibold text-primary hover:bg-surface-container-low transition-colors"
-                >
-                  <span className="material-symbols-outlined text-[16px]">article</span>
-                  {s.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Framework drawer content */}
-          {frameworkOpen && (
-            <div className="bg-surface-container rounded-xl p-4 space-y-2 animate-in slide-in-from-top-2">
-              <h3 className="font-label font-bold text-on-surface text-xs">
-                HEART Framework
-              </h3>
-              <div className="grid grid-cols-1 gap-2">
-                {[
-                  { letter: 'H', name: 'Happiness', desc: 'User satisfaction, NPS, sentiment' },
-                  { letter: 'E', name: 'Engagement', desc: 'Session depth, frequency, feature usage' },
-                  { letter: 'A', name: 'Adoption', desc: 'New users, onboarding completion' },
-                  { letter: 'R', name: 'Retention', desc: 'Churn rate, return frequency' },
-                  { letter: 'T', name: 'Task Success', desc: 'Completion rate, time-to-task, errors' },
-                ].map(f => (
-                  <div key={f.letter} className="flex items-start gap-2 p-2 bg-surface-container-low rounded-lg">
-                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary-fixed text-primary flex items-center justify-center font-headline font-bold text-xs">
-                      {f.letter}
-                    </span>
-                    <div>
-                      <p className="font-label font-semibold text-on-surface text-xs">{f.name}</p>
-                      <p className="text-on-surface-variant text-xs font-body">{f.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </aside>
-    </div>
-  )
-}
-
-/* ── Freeform Mode ───────────────────────────────────────── */
+/* ── FreeformView ─────────────────────────────────────────────────────────── */
 
 interface FreeformViewProps {
   challenge: ChallengePrompt
-  response: string
+  freeformResponse: string
   onResponseChange: (v: string) => void
-  maxChars: number
   onSubmit: () => void
   submitting: boolean
+  autoSavedAt: Date | null
+  frameworkOpen: boolean
+  onToggleFramework: () => void
 }
 
 function FreeformView({
   challenge,
-  response,
+  freeformResponse,
   onResponseChange,
-  maxChars,
   onSubmit,
   submitting,
+  autoSavedAt,
+  frameworkOpen,
+  onToggleFramework,
 }: FreeformViewProps) {
+  const wordCount = freeformResponse.trim() ? freeformResponse.trim().split(/\s+/).length : 0
+  // aim 200-400 words → 100% at 400
+  const wordPct   = Math.min(100, Math.round((wordCount / 400) * 100))
+
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="max-w-3xl mx-auto px-4 py-4 space-y-3 animate-fade-in-up">
-        {/* Mode badge */}
-        <div className="flex items-center gap-3">
-          <span className="badge-move bg-secondary-container text-on-secondary-container">
-            Freeform
-          </span>
-          <span className="text-xs text-on-surface-variant font-label">
-            {challenge.estimated_minutes} min · {difficultyLabel(challenge.difficulty)}
-          </span>
-        </div>
+    <main className="flex-1 overflow-y-auto bg-background p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
 
-        {/* Challenge title */}
-        <h1 className="font-headline text-2xl font-bold text-on-surface">
-          {challenge.title}
-        </h1>
+        {/* ── Challenge Header & Scenario ─────────────────────── */}
+        <section className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+          <div className="md:col-span-8 space-y-4">
+            {/* Badges */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="bg-primary text-on-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                Traditional
+              </span>
+              <span className="bg-secondary-container text-secondary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                {challenge.difficulty.charAt(0).toUpperCase() + challenge.difficulty.slice(1)}
+              </span>
+              <span className="bg-surface-container text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded-full">
+                #SWE
+              </span>
+              <span className="bg-surface-container text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded-full">
+                #Data Eng
+              </span>
+            </div>
 
-        {/* Context & metrics description */}
-        <div className="text-on-surface-variant font-body text-sm leading-relaxed space-y-2">
-          <p>{challenge.prompt_text}</p>
-          <p>
-            The current data suggests a significant contradictory effect: While the share button successfully expanded the top of the funnel (Downloads +12%), the Retention (-18%) and Revenue (-9%) metrics suggest a negative impact on the core product experience.
-          </p>
-          <p>
-            Your hypothesis is that the share button is driving growth in a demographic that is in the post-journey, perhaps leading content to key categories and disrupting engagement flow.
-          </p>
-          <div className="space-y-0.5 text-xs">
-            <p>To submit, tell us:</p>
-            <p>1. What is the root cause of this divergence?</p>
-            <p>2. Who&rsquo;s affected and how?</p>
-            <p>3. What should the PM do?</p>
+            {/* Title */}
+            <h2 className="font-headline text-3xl font-black text-on-surface tracking-tight">
+              {challenge.title}
+            </h2>
+
+            {/* Scenario card */}
+            <div className="bg-surface rounded-xl p-5 border border-outline-variant shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16" />
+              <div className="flex gap-4 relative z-10">
+                <div className="bg-secondary-container/50 p-2 rounded-lg h-fit">
+                  <span
+                    className="material-symbols-outlined text-secondary"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
+                  >
+                    assignment
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-bold text-sm text-secondary uppercase tracking-widest">Scenario</h3>
+                  <p className="text-on-surface leading-relaxed text-sm">
+                    {challenge.prompt_text}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="text-xs italic text-on-surface-variant/80">
-            The audience needs to understand that two sub-groups are heading off in opposite directions, so they show up as directly vs. organic.
-          </p>
-        </div>
 
-        {/* Large textarea */}
-        <div className="space-y-2">
-          <textarea
-            value={response}
-            onChange={e => {
-              if (e.target.value.length <= maxChars) onResponseChange(e.target.value)
-            }}
-            placeholder="Write your complete response here. Cover problem framing, user analysis, trade-offs, and your recommendation..."
-            className="w-full min-h-[220px] border border-outline-variant bg-surface-container-low rounded-xl px-4 py-3 text-on-surface font-body text-sm leading-relaxed placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2 ring-primary/20 focus:border-primary/40 resize-y transition-all"
-          />
+          {/* Luma Insight sidebar */}
+          <div className="md:col-span-4 space-y-4">
+            <div className="bg-tertiary-container/10 border border-tertiary-container/30 rounded-xl p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <LumaGlyph size={40} state="speaking" className="flex-shrink-0" />
+                <div>
+                  <h4 className="font-bold text-sm text-tertiary">Luma&apos;s Insight</h4>
+                  <p className="text-xs text-on-surface-variant">Focus on the cannibalization.</p>
+                </div>
+              </div>
+              <p className="text-xs leading-relaxed text-on-surface-variant">
+                Why would more downloads lead to fewer sessions? Look for a disconnect between user
+                acquisition and long-term utility.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Freeform Writing Workspace ──────────────────────── */}
+        <section className="bg-surface rounded-2xl border border-outline-variant overflow-hidden flex flex-col min-h-[600px] shadow-sm">
+
+          {/* Workspace header */}
+          <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-low flex justify-between items-center">
+            <div>
+              <div className="flex items-center gap-3">
+                <h2 className="font-headline text-lg font-extrabold">Your Analysis</h2>
+                <span className="bg-primary-fixed text-primary text-[10px] font-black px-2 py-0.5 rounded-full">
+                  FREEFORM MODE
+                </span>
+              </div>
+              <p className="text-xs text-on-surface-variant mt-1">
+                Write your complete analysis. Think through Frame, Split, Weigh, and Sell in whatever
+                order makes sense to you.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                className="p-2 hover:bg-surface-container-high rounded-lg transition-colors text-on-surface-variant"
+                title="Formatting"
+              >
+                <span className="material-symbols-outlined">format_list_bulleted</span>
+              </button>
+              <button
+                className="p-2 hover:bg-surface-container-high rounded-lg transition-colors text-on-surface-variant"
+                title="Save Draft"
+              >
+                <span className="material-symbols-outlined">save</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Textarea area */}
+          <div className="flex-1 p-6 relative">
+            <textarea
+              value={freeformResponse}
+              onChange={e => onResponseChange(e.target.value)}
+              className="w-full h-full min-h-[400px] bg-transparent border-none focus:ring-0 font-body text-base leading-relaxed placeholder:text-outline/60 outline-none resize-none"
+              placeholder="Start with what you notice in the data. What&apos;s the first question you&apos;d ask? Who&apos;s affected? What does leadership need to hear?"
+            />
+          </div>
+
+          {/* Luma coaching strip */}
+          <div className="bg-primary-fixed/30 border-y border-primary-fixed px-6 py-3 flex items-center gap-4">
+            <LumaGlyph size={28} state="speaking" className="flex-shrink-0" />
+            <p className="text-sm font-medium text-primary">
+              <span className="font-bold">Freeform tip:</span> Structure is optional, but great answers
+              usually address: What problem really is &rarr; Who&apos;s affected &rarr; What the tradeoff
+              is &rarr; What you&apos;d recommend.
+            </p>
+          </div>
 
           {/* Bottom action bar */}
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-label text-on-surface-variant">
-              {response.length} / {maxChars}
-            </span>
-            <button
-              onClick={onSubmit}
-              disabled={submitting || !response.trim()}
-              className="glow-primary inline-flex items-center gap-2 bg-primary text-on-primary rounded-full px-5 py-2 text-sm font-label font-semibold hover:bg-primary/90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {submitting ? (
-                <>
-                  <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  <span className="material-symbols-outlined text-[18px]">send</span>
-                  Submit for Grading
-                </>
-              )}
-            </button>
+          <div className="px-6 py-4 bg-surface-container-low flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-on-surface">{wordCount} words</span>
+                <span className="text-[10px] text-on-surface-variant font-medium">
+                  Aim for 200–400 words for full analysis
+                </span>
+              </div>
+              <div className="w-24 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+                <div
+                  className="bg-primary h-full rounded-full transition-all"
+                  style={{ width: `${wordPct}%` }}
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-xs font-semibold text-on-surface-variant italic">
+                {autoSavedAt ? formatAutoSave(autoSavedAt) : 'Draft saved 2m ago'}
+              </span>
+              <button
+                onClick={onSubmit}
+                disabled={submitting}
+                className="bg-primary hover:bg-primary/90 text-on-primary font-bold px-6 py-2.5 rounded-full text-sm flex items-center gap-2 shadow-md active:scale-95 transition-all disabled:opacity-50"
+              >
+                {submitting ? 'Submitting...' : 'Submit for Grading'}
+                <span className="material-symbols-outlined text-sm">send</span>
+              </button>
+            </div>
           </div>
-        </div>
+        </section>
 
-        {/* Framework Reference collapsible */}
-        <details className="group">
-          <summary className="flex items-center gap-2 cursor-pointer select-none text-on-surface-variant hover:text-on-surface transition-colors">
-            <span className="material-symbols-outlined text-[16px] transition-transform group-open:rotate-90">
-              chevron_right
-            </span>
-            <span className="font-label font-semibold text-xs">Framework Reference</span>
-          </summary>
-          <div className="mt-2 bg-surface-container rounded-xl p-4 space-y-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {[
-                { letter: 'H', name: 'Happiness', desc: 'User satisfaction, NPS, sentiment' },
-                { letter: 'E', name: 'Engagement', desc: 'Session depth, frequency, feature usage' },
-                { letter: 'A', name: 'Adoption', desc: 'New users, onboarding completion' },
-                { letter: 'R', name: 'Retention', desc: 'Churn rate, return frequency' },
-                { letter: 'T', name: 'Task Success', desc: 'Completion rate, time-to-task, errors' },
-              ].map(f => (
-                <div key={f.letter} className="flex items-start gap-2 p-2 bg-surface-container-low rounded-lg">
-                  <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary-fixed text-primary flex items-center justify-center font-headline font-bold text-xs">
-                    {f.letter}
+        {/* ── Bento Context Grid ───────────────────────────────── */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Conversion funnel card */}
+          <div className="bg-surface p-4 rounded-xl border border-outline-variant">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-on-surface-variant uppercase">
+                Conversion Funnel
+              </span>
+              <span className="material-symbols-outlined text-xs text-primary">trending_down</span>
+            </div>
+            <div className="space-y-2">
+              {MOCK_METRICS.map(m => (
+                <div key={m.label} className="flex justify-between text-xs">
+                  <span className="text-on-surface-variant">{m.label}</span>
+                  <span className={`font-bold ${m.positive ? 'text-primary' : 'text-error'}`}>
+                    {m.value}
                   </span>
-                  <div>
-                    <p className="font-label font-semibold text-on-surface text-xs">{f.name}</p>
-                    <p className="text-on-surface-variant text-xs font-body">{f.desc}</p>
-                  </div>
                 </div>
               ))}
             </div>
           </div>
-        </details>
 
-        {/* Luma status strip */}
-        <div className="flex items-center gap-2 glass-card rounded-xl px-3 py-2">
-          <div className="p-1 rounded-full bg-primary/10">
-            <LumaGlyph size={18} className="text-primary animate-luma-glow" state="speaking" />
+          {/* Framework refresher card */}
+          <div className="bg-surface p-4 rounded-xl border border-outline-variant md:col-span-2 flex items-center gap-4">
+            <div className="flex-1">
+              <h4 className="text-sm font-bold mb-1">Framework Refresher</h4>
+              <p className="text-xs text-on-surface-variant">
+                Stuck? Use the <strong>HEART</strong> framework to measure happiness, engagement,
+                adoption, retention, and task success.
+              </p>
+              {frameworkOpen && (
+                <div className="mt-4 space-y-2">
+                  {[
+                    { letter: 'H', name: 'Happiness',    desc: 'User satisfaction, NPS, sentiment' },
+                    { letter: 'E', name: 'Engagement',   desc: 'Session depth, frequency, feature usage' },
+                    { letter: 'A', name: 'Adoption',     desc: 'New users, onboarding completion' },
+                    { letter: 'R', name: 'Retention',    desc: 'Churn rate, return frequency' },
+                    { letter: 'T', name: 'Task Success', desc: 'Completion rate, time-to-task, errors' },
+                  ].map(f => (
+                    <div key={f.letter} className="flex items-start gap-2.5 p-2.5 bg-surface-container-low rounded-xl">
+                      <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary-fixed text-primary flex items-center justify-center font-headline font-bold text-xs">
+                        {f.letter}
+                      </span>
+                      <div>
+                        <p className="font-label font-semibold text-on-surface text-xs">{f.name}</p>
+                        <p className="text-on-surface-variant text-xs font-body mt-0.5">{f.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={onToggleFramework}
+              className="border border-primary text-primary font-bold px-4 py-2 rounded-lg text-xs hover:bg-primary-fixed/20 transition-colors flex-shrink-0"
+            >
+              {frameworkOpen ? 'Hide HEART' : 'View HEART'}
+            </button>
           </div>
-          <p className="text-on-surface-variant text-xs font-body">
-            Luma will review all 4 FLOW moves after you submit.
-          </p>
-        </div>
+        </section>
+
       </div>
-    </div>
+    </main>
   )
 }

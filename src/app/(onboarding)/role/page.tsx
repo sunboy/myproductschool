@@ -45,7 +45,7 @@ const ROLES = [
     icon: 'rocket_launch',
     badge: 'Founding',
     title: 'Founding Engineer',
-    description: 'You ARE the product team — need to think like a CPO',
+    description: 'You ARE the product team - need to think like a CPO',
   },
 ]
 
@@ -60,7 +60,7 @@ export default function RoleSelectionPage() {
 
   return (
     <>
-      {/* Header */}
+      {/* Top App Bar */}
       <header className="bg-background border-b border-outline-variant fixed top-0 w-full z-50 h-12 flex items-center">
         <div className="flex justify-between items-center px-4 w-full max-w-7xl mx-auto">
           <Link href="/welcome" className="flex items-center gap-2 text-primary font-headline font-bold text-xl">
@@ -75,8 +75,10 @@ export default function RoleSelectionPage() {
         </div>
       </header>
 
-      <div className="flex-grow pt-16 pb-20 px-4 md:px-8 flex justify-center">
-        <div className="w-full max-w-4xl flex flex-col gap-4">
+      {/* Main Content Canvas */}
+      <main className="flex-grow pt-20 pb-24 px-6 md:px-12 flex justify-center">
+        <div className="w-full max-w-4xl flex flex-col gap-12">
+
           {/* Progress Indicator */}
           <nav className="flex items-center justify-center w-full max-w-2xl mx-auto">
             <div className="flex items-center w-full relative">
@@ -84,16 +86,16 @@ export default function RoleSelectionPage() {
                 <div key={step.num} className="contents">
                   <div className="flex flex-col items-center z-10">
                     <div
-                      className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shadow-sm ${
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-sm ${
                         step.num === 1
                           ? 'bg-primary text-on-primary'
-                          : 'border-2 border-outline-variant bg-background text-secondary'
+                          : 'border-2 border-outline-variant bg-background text-secondary font-semibold'
                       }`}
                     >
                       {step.num}
                     </div>
                     <span
-                      className={`mt-1 text-xs font-label ${
+                      className={`mt-2 text-sm font-label ${
                         step.num === 1
                           ? 'font-bold text-primary'
                           : 'font-semibold text-secondary'
@@ -103,65 +105,66 @@ export default function RoleSelectionPage() {
                     </span>
                   </div>
                   {i < STEPS.length - 1 && (
-                    <div className="flex-grow h-[2px] bg-outline-variant -mt-5" />
+                    <div className="flex-grow h-[2px] bg-outline-variant -mt-6" />
                   )}
                 </div>
               ))}
             </div>
           </nav>
 
-          {/* Header Section with Luma */}
-          <section className="flex flex-col md:flex-row items-start gap-4 max-w-3xl">
+          {/* Header Section */}
+          <section className="flex flex-col md:flex-row items-start gap-6 max-w-3xl">
             <div className="shrink-0">
-              <LumaGlyph size={72} className="text-primary" state="idle" />
+              <LumaGlyph size={96} className="text-primary" state="idle" />
             </div>
-            <div className="space-y-1">
-              <h1 className="font-headline text-2xl font-bold text-primary">
+            <div className="space-y-2">
+              <h1 className="font-headline text-3xl font-bold text-primary">
                 What&apos;s your role?
               </h1>
-              <p className="font-body text-sm text-on-surface-variant leading-relaxed">
+              <p className="font-body text-lg text-on-surface-variant leading-relaxed">
                 We&apos;ll personalize your calibration challenge and learning path for your specific engineering role.
               </p>
             </div>
           </section>
 
           {/* Role Selection Grid */}
-          <section className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {ROLES.map((role) => {
               const isSelected = selectedRole === role.id
               return (
                 <button
                   key={role.id}
                   onClick={() => setSelectedRole(role.id)}
-                  className={`group text-left rounded-xl p-4 card-elevated card-interactive transition-all focus:outline-none ${
+                  className={`group text-left bg-surface-container border rounded-xl p-6 transition-all hover:bg-primary-fixed hover:border-primary hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary ${
                     isSelected
-                      ? 'ring-2 ring-primary border border-primary'
-                      : 'border border-outline-variant/30'
+                      ? 'bg-primary-fixed border-primary shadow-md'
+                      : 'border-outline-variant'
                   }`}
                 >
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="material-symbols-outlined text-primary text-2xl">
+                  <div className="flex justify-between items-start mb-4">
+                    <span className="material-symbols-outlined text-primary text-3xl">
                       {role.icon}
                     </span>
-                    <span className="bg-secondary-container text-secondary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    <span className="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                       {role.badge}
                     </span>
                   </div>
-                  <h3 className="font-headline text-base font-bold text-on-surface mb-1">
+                  <h3 className="font-headline text-xl font-bold text-on-surface mb-2">
                     {role.title}
                   </h3>
-                  <p className="font-body text-xs text-on-surface-variant leading-tight group-hover:text-on-surface-variant">
+                  <p className="font-body text-sm text-on-surface-variant leading-tight group-hover:text-on-surface-variant">
                     {role.description}
                   </p>
                 </button>
               )
             })}
           </section>
-        </div>
-      </div>
 
-      {/* Fixed Bottom Bar */}
-      <footer className="fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-4 py-2 bg-background border-t border-outline-variant">
+        </div>
+      </main>
+
+      {/* Bottom Nav Bar */}
+      <footer className="bg-background fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-8 py-4 border-t border-outline-variant">
         <Link
           href="/welcome"
           className="flex items-center gap-2 text-primary font-label text-sm font-semibold underline transition-transform active:scale-90"
@@ -170,22 +173,22 @@ export default function RoleSelectionPage() {
           Back
         </Link>
         <div className="flex items-center gap-4">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2 text-secondary font-label text-sm font-semibold opacity-50"
-          >
-            Skip assessment
-            <span className="material-symbols-outlined">skip_next</span>
-          </Link>
           {selectedRole && (
             <Link
               href="/calibration/frame"
-              className="bg-primary text-on-primary rounded-full px-6 py-2 font-label font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
+              className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-bold text-sm flex items-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all"
             >
               Next
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </Link>
           )}
+          <button
+            disabled
+            className="flex items-center gap-2 text-secondary font-label text-sm font-semibold opacity-50 cursor-not-allowed"
+          >
+            Skip assessment
+            <span className="material-symbols-outlined">skip_next</span>
+          </button>
         </div>
       </footer>
     </>

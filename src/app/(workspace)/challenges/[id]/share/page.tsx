@@ -2,7 +2,7 @@ import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 export default function ShareScoreCardPage() {
   return (
-    <div className="bg-[#2e3230]/80 min-h-screen flex items-center justify-center font-body text-on-surface p-4">
+    <div className="bg-inverse-surface/80 min-h-screen flex items-center justify-center font-body text-on-surface p-4">
       {/* Top Right Close */}
       <button className="fixed top-6 right-8 text-white flex items-center gap-2 font-medium hover:opacity-80 transition-opacity z-10">
         <span className="material-symbols-outlined text-lg">close</span>
@@ -97,7 +97,7 @@ export default function ShareScoreCardPage() {
           {/* Caption Preview */}
           <div className="w-full bg-on-surface/10 rounded-lg p-3 border border-white/10">
             <p className="text-[11px] text-white/70 leading-relaxed italic">
-              Pre-filled caption: &ldquo;I just scored 84/100 on The Feature That Backfired (Optimize move) on HackProduct&rdquo;
+              Pre-filled caption: &ldquo;I just scored 84/100 on The Feature That Backfired (Optimize move) on HackProduct 🎯&rdquo;
             </p>
           </div>
 
@@ -105,7 +105,7 @@ export default function ShareScoreCardPage() {
           <div className="flex flex-col items-center gap-3 pt-2">
             <div className="flex -space-x-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="w-8 h-8 rounded-full border-2 border-[#2e3230] bg-surface-container-high flex items-center justify-center overflow-hidden">
+                <div key={i} className="w-8 h-8 rounded-full border-2 border-inverse-surface bg-surface-container-high flex items-center justify-center overflow-hidden">
                   <span className="material-symbols-outlined text-on-surface-variant text-sm">person</span>
                 </div>
               ))}

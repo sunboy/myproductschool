@@ -155,10 +155,55 @@ Use filled variant (`'FILL' 1`) for active/selected states.
 - **Chips/Badges**: `bg-secondary-container text-on-secondary-container rounded-full text-sm px-3 py-1`
 - **Text gradient accent**: `bg-gradient-to-r from-primary to-tertiary bg-clip-text text-transparent`
 
+## Stitch → Next.js Replication Process
+
+When building or fixing a screen to match a Stitch design, follow this exact process. **Do NOT use your own judgement to recreate screens — extract the HTML and convert it literally.**
+
+### Step 1: Download the Stitch HTML
+```bash
+# Get the screen metadata (includes downloadUrl)
+mcp__stitch__get_screen  projectId=12072135267645366200  screenId={SCREEN_ID}
+
+# Download the full HTML
+curl -sL "{downloadUrl}" -o /tmp/stitch-{screen-name}.html
+```
+
+### Step 2: Read the full HTML
+Read `/tmp/stitch-{screen-name}.html` completely. Extract:
+- **Exact layout**: How many panes? What's the split ratio (e.g., `w-2/5` + `flex-1`)? `flex-row` or `flex-col`?
+- **Every section** in order, top to bottom, left to right
+- **All text content** verbatim — headings, labels, body copy, badge text, placeholder text
+- **All icon names** — the `material-symbols-outlined` icon text content (e.g., `search`, `bookmark`, `arrow_forward`)
+- **All color classes** — map Stitch's Tailwind classes to our token classes
+- **Grid structures** — `grid-cols-2`, `grid-cols-3`, gaps
+- **Interactive states** — hover classes, active states, focus rings
+
+### Step 3: Read the current Next.js file
+Read the existing `.tsx` file to understand what state/logic exists.
+
+### Step 4: Rewrite JSX to match Stitch exactly
+- Copy the Stitch structure literally — same divs, same nesting, same order
+- Replace Stitch's raw hex Tailwind config colors with our token classes (`bg-primary` not `bg-[#4a7c59]`)
+- Keep all existing React state, hooks, event handlers, and imports
+- The `(app)` layout already provides NavRail + TopBar — **do NOT duplicate** the sidebar nav or top header bar that Stitch shows as shared components
+- The `(onboarding)` layout is minimal — check what it provides before adding shells
+
+### Step 5: Verify
+```bash
+cd /Users/sandeep/Projects/myproductschool/.claude/worktrees/overhaul
+npx tsc --noEmit 2>&1 | head -20
+```
+
+### Rules
+- **NO creative interpretation** — if Stitch shows a 2-column split, build a 2-column split. If Stitch puts the textarea on the right pane, put it on the right pane.
+- **NO raw hex in className** — use Tailwind token classes. Raw hex IS allowed in `style={{}}` for SVG strokes or non-token colors.
+- **Copy ALL text** — every heading, every label, every badge, every placeholder. Don't paraphrase.
+- **Copy ALL icons** — use the exact Material Symbols name from the Stitch HTML.
+- **LumaGlyph** replaces Stitch's `<img>` Luma mascot images — use the appropriate `state` prop.
+
 ## Key Conventions
 
 - `@/*` path alias maps to `./src/*`
-- Use Tailwind token classes — never raw hex values in JSX
-- Generous spacing, large touch targets — design feels breathable
-- Stitch project ID: `8824654605376882712` (source of truth for screen designs)
-- Material screens in `stitch-screens/material-*.html` are the canonical reference for new work
+- Use Tailwind token classes — never raw hex values in JSX className
+- Stitch v2 project ID: `12072135267645366200` (canonical design reference)
+- See "Canonical Stitch Screens" table above for all 24 screen IDs and their file paths

@@ -5,64 +5,101 @@ import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import type { ChallengeWithDomain } from '@/lib/types'
 
 interface ChallengesPageProps {
-  searchParams: Promise<{ move?: string; paradigm?: string; role?: string; difficulty?: string }>
+  searchParams: Promise<{ paradigm?: string; role?: string; difficulty?: string }>
 }
 
-const FLOW_MOVES = [
-  { key: 'all', label: 'All Moves' },
-  { key: 'frame', label: 'Frame', symbol: '◇' },
-  { key: 'lens', label: 'Lens', symbol: '◈' },
-  { key: 'optimize', label: 'Optimize', symbol: '◆' },
-  { key: 'win', label: 'Win', symbol: '◎' },
-] as const
-
 const PARADIGMS = [
-  { key: 'all', label: 'All Paradigms' },
-  { key: 'traditional', label: 'Traditional' },
-  { key: 'ai-assisted', label: 'AI-Assisted' },
-  { key: 'agentic', label: 'Agentic' },
-  { key: 'ai-native', label: 'AI-Native' },
+  { key: 'all', label: 'All Paradigms', dot: null },
+  { key: 'traditional', label: 'Traditional', dot: 'bg-emerald-500' },
+  { key: 'ai-assisted', label: 'AI-Assisted', dot: 'bg-blue-500' },
+  { key: 'agentic', label: 'Agentic', dot: 'bg-purple-500' },
+  { key: 'ai-native', label: 'AI-Native', dot: 'bg-amber-500' },
 ] as const
 
 const ROLES = ['SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng'] as const
 
 const MOVE_DATA = [
-  { label: 'Frame', symbol: '◇' },
-  { label: 'Lens', symbol: '◈' },
-  { label: 'Optimize', symbol: '◆' },
-  { label: 'Win', symbol: '◎' },
+  { label: 'Frame', symbol: '◇', color: 'text-blue-600' },
+  { label: 'Split', symbol: '◈', color: 'text-rose-600' },
+  { label: 'Weigh', symbol: '◆', color: 'text-amber-600' },
+  { label: 'Sell', symbol: '◎', color: 'text-emerald-600' },
 ] as const
-function getMoveBadge(index: number): { label: string; symbol: string } {
-  return MOVE_DATA[index % MOVE_DATA.length]
+
+function getMoveBadges(index: number): Array<{ label: string; symbol: string; color: string }> {
+  // Each card gets 1–3 moves based on index pattern
+  const patterns = [
+    [0, 1],
+    [2, 3],
+    [0, 1, 2],
+    [3],
+    [1, 3],
+    [0, 2],
+    [0, 1],
+    [2, 3],
+  ]
+  const moves = patterns[index % patterns.length]
+  return moves.map(i => MOVE_DATA[i])
 }
 
-function getParticipantCount(index: number): number {
-  const counts = [312, 487, 198, 563, 241, 89, 410, 175]
-  return counts[index % counts.length]
+function getCardRoles(index: number): string[] {
+  const patterns = [
+    ['SWE', 'EM'],
+    ['ML Eng', 'SWE'],
+    ['DevOps', 'ML Eng'],
+    ['Founding Eng'],
+    ['SWE', 'Data Eng'],
+    ['Data Eng', 'ML Eng'],
+    ['SWE', 'EM'],
+    ['ML Eng', 'SWE'],
+  ]
+  return patterns[index % patterns.length]
 }
 
-const PARADIGM_COLORS = ['Traditional', 'AI-Assisted', 'Agentic', 'AI-Native'] as const
+const PARADIGM_LABELS = ['Traditional', 'AI-Assisted', 'Agentic', 'AI-Native'] as const
 function getParadigmLabel(index: number): string {
-  return PARADIGM_COLORS[index % PARADIGM_COLORS.length]
+  return PARADIGM_LABELS[index % PARADIGM_LABELS.length]
+}
+
+function getParadigmBadgeClass(paradigm: string): string {
+  switch (paradigm) {
+    case 'Traditional': return 'bg-emerald-100 text-emerald-800'
+    case 'AI-Assisted': return 'bg-blue-100 text-blue-800'
+    case 'Agentic': return 'bg-purple-100 text-purple-800'
+    case 'AI-Native': return 'bg-amber-100 text-amber-800'
+    default: return 'bg-surface-container-high text-on-surface-variant'
+  }
+}
+
+function getDifficultyLabel(difficulty: string): string {
+  switch (difficulty) {
+    case 'beginner': return 'EASY'
+    case 'intermediate': return 'MEDIUM'
+    case 'advanced': return 'HARD'
+    default: return difficulty.toUpperCase()
+  }
+}
+
+function getDifficultyClass(difficulty: string): string {
+  switch (difficulty) {
+    case 'beginner': return 'text-on-surface-variant'
+    case 'intermediate': return 'text-amber-600'
+    case 'advanced': return 'text-red-600'
+    default: return 'text-on-surface-variant'
+  }
 }
 
 export default async function ChallengesPage({ searchParams }: ChallengesPageProps) {
-  const { move, paradigm, role, difficulty } = await searchParams
-  const [domains, challenges] = await Promise.all([
+  const { paradigm, role, difficulty } = await searchParams
+  const [, challenges] = await Promise.all([
     getDomains(),
     getChallenges({ difficulty }),
   ])
 
-  const freeChallenges = challenges.slice(0, 3)
-  const premiumChallenges = challenges.slice(3)
-
   const buildHref = (params: Record<string, string | undefined>) => {
     const p = new URLSearchParams()
-    const m = params.move ?? move
     const pa = params.paradigm ?? paradigm
     const r = params.role ?? role
     const d = params.difficulty ?? difficulty
-    if (m && m !== 'all') p.set('move', m)
     if (pa && pa !== 'all') p.set('paradigm', pa)
     if (r) p.set('role', r)
     if (d) p.set('difficulty', d)
@@ -71,80 +108,78 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-4 space-y-3 animate-fade-in-up">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <main className="p-6 max-w-7xl w-full mx-auto">
+      {/* Header Section */}
+      <div className="flex items-baseline gap-3 mb-6">
+        <h1 className="text-2xl font-bold font-headline text-primary">Practice Hub</h1>
+        <p className="text-sm text-on-surface-variant">Master product thinking through real-world scenarios.</p>
+      </div>
+
+      {/* Luma's Pick Banner */}
+      <div className="bg-primary-container/20 border border-primary-container/30 rounded-xl p-4 mb-6 flex items-center gap-4">
+        <LumaGlyph size={40} className="text-primary flex-shrink-0" />
         <div>
-          <h1 className="font-headline text-2xl font-extrabold text-primary">Practice Hub</h1>
-          <p className="text-xs text-on-surface-variant font-body mt-0.5">Master product thinking through real-world scenarios.</p>
+          <p className="text-sm font-bold text-primary">Luma&apos;s Pick: The Feature That Backfired</p>
+          <p className="text-xs text-on-surface-variant">
+            This challenge targets your weakest move <span className="font-bold">(Communication)</span>. Practice explaining trade-offs clearly.
+          </p>
         </div>
-        <LumaGlyph size={36} className="text-primary flex-shrink-0" />
+        <Link
+          href="/challenges/c1000000-0000-0000-0000-000000000001"
+          className="ml-auto bg-primary text-on-primary text-xs font-bold px-4 py-2 rounded-full hover:opacity-90 transition-colors whitespace-nowrap"
+        >
+          Try Now
+        </Link>
       </div>
 
-      {/* Luma&apos;s Pick */}
-      <div className="p-4 bg-primary-fixed rounded-2xl border border-primary/20">
-        <div className="flex items-center gap-3">
-          <LumaGlyph size={28} className="text-primary flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-0.5">Luma&apos;s Pick</div>
-            <h3 className="font-headline text-sm font-bold text-on-surface">The Feature That Backfired</h3>
-            <p className="text-xs text-on-surface-variant mt-0.5">This challenge targets your weakest move (Communication). Practice explaining trade-offs clearly.</p>
-          </div>
-          <Link href="/challenges/c1000000-0000-0000-0000-000000000001" className="glow-primary inline-flex items-center gap-1 px-4 py-2 bg-primary text-on-primary rounded-full text-xs font-semibold hover:opacity-90 active:scale-95 transition-all flex-shrink-0">
-            Try Now
+      {/* Filters */}
+      <div className="space-y-4 mb-8">
+        {/* Paradigm Filter */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mr-2">Paradigm:</span>
+          {PARADIGMS.map(p => {
+            const isActive = (paradigm ?? 'all') === p.key
+            return (
+              <Link
+                key={p.key}
+                href={buildHref({ paradigm: p.key })}
+                className={`px-4 py-1.5 text-xs font-bold rounded-full flex items-center gap-2 transition-colors ${
+                  isActive
+                    ? 'bg-primary text-on-primary'
+                    : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
+                }`}
+              >
+                {p.dot && (
+                  <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-on-primary' : p.dot}`} />
+                )}
+                {!p.dot && isActive && (
+                  <span className="w-2 h-2 rounded-full bg-on-primary" />
+                )}
+                {p.label}
+              </Link>
+            )
+          })}
+        </div>
+
+        {/* Role Filter */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mr-2">Role:</span>
+          <Link
+            href={buildHref({ role: undefined })}
+            className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+              !role ? 'bg-on-surface text-on-primary' : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
+            }`}
+          >
+            All Roles
           </Link>
-        </div>
-      </div>
-
-      {/* Filter bar */}
-      <div className="space-y-2">
-        {/* Row 1: FLOW move tabs */}
-        <div className="flex gap-1.5 flex-wrap items-center">
-          <span className="text-[10px] font-bold text-on-surface-variant mr-1">Moves:</span>
-          {FLOW_MOVES.map(m => (
-            <Link
-              key={m.key}
-              href={buildHref({ move: m.key })}
-              className={`px-3 py-1 rounded-full text-xs font-label font-bold transition-colors ${
-                (move ?? 'all') === m.key
-                  ? 'bg-primary text-on-primary'
-                  : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
-              }`}
-            >
-              {m.label}
-            </Link>
-          ))}
-        </div>
-
-        {/* Row 2: Paradigm filter pills */}
-        <div className="flex gap-1.5 flex-wrap items-center">
-          <span className="text-[10px] font-bold text-on-surface-variant mr-1">Paradigm:</span>
-          {PARADIGMS.map(p => (
-            <Link
-              key={p.key}
-              href={buildHref({ paradigm: p.key })}
-              className={`px-3 py-1 rounded-full text-xs font-label font-bold transition-colors border ${
-                (paradigm ?? 'all') === p.key
-                  ? 'border-primary text-primary bg-primary-fixed'
-                  : 'border-outline-variant text-on-surface-variant bg-surface-container hover:bg-surface-container-high'
-              }`}
-            >
-              {p.label}
-            </Link>
-          ))}
-        </div>
-
-        {/* Row 3: Role chips */}
-        <div className="flex gap-1.5 flex-wrap items-center">
-          <span className="text-[10px] font-bold text-on-surface-variant mr-1">Role:</span>
           {ROLES.map(r => (
             <Link
               key={r}
               href={buildHref({ role: role === r ? undefined : r })}
-              className={`px-3 py-1 rounded-full text-xs font-label font-bold transition-colors ${
+              className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
                 role === r
-                  ? 'bg-secondary text-on-secondary'
-                  : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'
+                  ? 'bg-on-surface text-on-primary'
+                  : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
               }`}
             >
               {r}
@@ -153,127 +188,77 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
         </div>
       </div>
 
-      {/* Challenge cards grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {freeChallenges.map((challenge, idx) => (
-          <ChallengeCard key={challenge.id} challenge={challenge} participantCount={getParticipantCount(idx)} moveBadge={getMoveBadge(idx)} paradigm={getParadigmLabel(idx)} />
+      {/* Challenge Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {challenges.map((challenge, idx) => (
+          <ChallengeCard
+            key={challenge.id}
+            challenge={challenge}
+            moveBadges={getMoveBadges(idx)}
+            cardRoles={getCardRoles(idx)}
+            paradigm={getParadigmLabel(idx)}
+          />
         ))}
       </div>
-
-      {/* Pro Access Banner */}
-      {premiumChallenges.length > 0 && (
-        <>
-          <div className="bg-secondary-container rounded-2xl p-4 flex items-center justify-between gap-3">
-            <div>
-              <h3 className="font-label font-semibold text-on-secondary-container text-sm">Unlock Pro Access</h3>
-              <p className="text-xs text-on-secondary-container mt-0.5">Get unlimited challenges, model answers, and Luma&apos;s deeper coaching.</p>
-            </div>
-            <a
-              href="/pricing"
-              className="bg-primary text-on-primary rounded-full px-4 py-2 text-xs font-label font-semibold whitespace-nowrap hover:opacity-90 transition-opacity"
-            >
-              Upgrade
-            </a>
-          </div>
-
-          {/* Premium Challenges */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {premiumChallenges.map((challenge, idx) => (
-              <ChallengeCard
-                key={challenge.id}
-                challenge={challenge}
-                participantCount={getParticipantCount(idx + 3)}
-                moveBadge={getMoveBadge(idx + 3)}
-                paradigm={getParadigmLabel(idx + 3)}
-                locked
-              />
-            ))}
-          </div>
-        </>
-      )}
-    </div>
+    </main>
   )
 }
 
 function ChallengeCard({
   challenge,
-  participantCount,
-  moveBadge,
+  moveBadges,
+  cardRoles,
   paradigm,
-  locked = false,
 }: {
   challenge: ChallengeWithDomain
-  participantCount: number
-  moveBadge: { label: string; symbol: string }
+  moveBadges: Array<{ label: string; symbol: string; color: string }>
+  cardRoles: string[]
   paradigm: string
-  locked?: boolean
 }) {
-  const cardContent = (
-    <div className={`card-elevated card-interactive rounded-2xl overflow-hidden border border-outline-variant/30 transition-all ${locked ? 'opacity-75' : ''}`}>
-      <div className="p-4 space-y-2">
-        {/* Paradigm + Lock indicator */}
-        <div className="flex items-center justify-between">
-          <span className={`text-[10px] font-bold uppercase tracking-wider ${
-            paradigm === 'Traditional' ? 'text-primary' :
-            paradigm === 'AI-Assisted' ? 'text-tertiary' :
-            paradigm === 'Agentic' ? 'text-primary-container' :
-            'text-error'
-          }`}>{paradigm}</span>
-          {locked && (
-            <span className="material-symbols-outlined text-on-surface-variant text-lg" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>lock</span>
-          )}
-          {challenge.is_completed && (
-            <span className="material-symbols-outlined text-primary text-lg" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>check_circle</span>
-          )}
+  return (
+    <Link href={`/challenges/${challenge.id}`}>
+      <div className="bg-surface-container rounded-xl p-4 border border-outline-variant hover:shadow-md transition-shadow flex flex-col group">
+        {/* Paradigm badge + difficulty */}
+        <div className="flex justify-between items-start mb-3">
+          <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase ${getParadigmBadgeClass(paradigm)}`}>
+            {paradigm}
+          </span>
+          <span className={`text-[10px] font-bold ${getDifficultyClass(challenge.difficulty)}`}>
+            {getDifficultyLabel(challenge.difficulty)}
+          </span>
         </div>
 
         {/* Title */}
-        <h3 className="font-label font-bold text-on-surface text-sm">{challenge.title}</h3>
+        <h3 className="font-bold text-base mb-2 group-hover:text-primary transition-colors">
+          {challenge.title}
+        </h3>
 
-        {/* Meta row */}
-        <div className="flex items-center gap-2 flex-wrap text-xs text-on-surface-variant">
-          <span className={`px-2 py-0.5 rounded-full font-label font-bold uppercase text-[10px] ${
-            challenge.difficulty === 'beginner'
-              ? 'bg-primary-fixed text-primary'
-              : challenge.difficulty === 'intermediate'
-              ? 'bg-tertiary-container text-on-tertiary-container'
-              : 'bg-error-container text-on-error-container'
-          }`}>{challenge.difficulty === 'beginner' ? 'Easy' : challenge.difficulty === 'intermediate' ? 'Medium' : 'Hard'}</span>
-          <span className="flex items-center gap-0.5 text-[11px]">
-            <span className="material-symbols-outlined text-sm">schedule</span>
-            ~{challenge.estimated_minutes} min
-          </span>
-          <span className="flex items-center gap-0.5 text-[11px]">
-            <span className="material-symbols-outlined text-sm">group</span>
-            {participantCount}
-          </span>
+        {/* Description */}
+        <p className="text-xs text-on-surface-variant mb-4 line-clamp-2">
+          {challenge.prompt_text}
+        </p>
+
+        {/* Role tags + move symbols */}
+        <div className="flex flex-wrap gap-1.5 mb-6 mt-auto">
+          {cardRoles.map(r => (
+            <span key={r} className="px-2 py-0.5 bg-secondary-container text-secondary text-[10px] font-bold rounded-full">
+              {r}
+            </span>
+          ))}
+          <div className="flex gap-1 items-center ml-2 border-l border-outline-variant pl-2">
+            {moveBadges.map(m => (
+              <span key={m.label} className={`${m.color} text-[10px] font-bold`}>
+                {m.symbol} {m.label}
+              </span>
+            ))}
+          </div>
         </div>
 
-        {/* FLOW badge + Domain */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="badge-move">
-            {moveBadge.symbol} {moveBadge.label}
-          </span>
-          <span className="text-[11px] text-on-surface-variant">{challenge.domain.title}</span>
-        </div>
-
-        {/* Action button */}
-        {!locked && (
-          <button className="glow-primary w-full bg-primary text-on-primary rounded-full py-2 text-xs font-label font-bold hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1">
-            Start <span className="material-symbols-outlined text-sm">arrow_forward</span>
-          </button>
-        )}
+        {/* Start button */}
+        <button className="w-full py-2 bg-primary text-on-primary text-xs font-bold rounded-full flex items-center justify-center gap-2 group-hover:opacity-90 transition-opacity">
+          Start <span className="material-symbols-outlined text-sm">arrow_forward</span>
+        </button>
       </div>
-    </div>
-  )
-
-  if (locked) {
-    return cardContent
-  }
-
-  return (
-    <Link href={`/challenges/${challenge.id}`}>
-      {cardContent}
     </Link>
   )
 }

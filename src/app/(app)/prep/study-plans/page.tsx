@@ -1,208 +1,220 @@
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
+/* ---------- mock data ---------- */
 const plans = [
   {
-    slug: 'staff-engineer-path',
-    name: 'Staff Engineer Path',
-    role: 'SWE',
-    roleBg: 'bg-primary-fixed',
-    roleText: 'text-primary',
-    accentColor: '#4a7c59',
-    duration: '6 weeks',
-    challenges: 30,
-    description: 'Master high-level architecture and organizational impact.',
-    flow: { Frame: 80, Lens: 90, Optimize: 85, Win: 75 },
+    slug: 'pm-interview-bootcamp',
+    name: 'PM Interview Bootcamp',
+    moveTag: 'Multi-move', moveTagBg: 'bg-[#f3e8ff]', moveTagText: 'text-[#6b21a8]',
+    roleTag: 'PM', borderColor: '#8b5cf6',
+    level: 'INTERMEDIATE',
+    description: 'Comprehensive roadmap covering design, metrics, and strategy for top-tier roles.',
+    challenges: 10, time: '~5 hrs',
+    progress: { done: 3, total: 10, pct: 30 },
+    progressColor: 'bg-gradient-to-r from-primary to-purple-500',
+    cta: 'Continue',
   },
   {
-    slug: '7-day-prep',
-    name: '7-Day Prep',
-    role: 'SWE/Data/ML',
-    roleBg: 'bg-blue-100',
-    roleText: 'text-blue-700',
-    accentColor: '#3b5bdb',
-    duration: '7 days',
-    challenges: 12,
-    description: 'Intensive refresher for upcoming product design interviews.',
-    flow: { Frame: 70, Lens: 60, Optimize: 50, Win: 70 },
+    slug: 'engineers-product-intuition',
+    name: "Engineer's Product Intuition",
+    moveTag: 'Frame+Lens', moveTagBg: 'bg-[#e8f0ff]', moveTagText: 'text-[#3b5bdb]',
+    roleTag: 'Engineer', borderColor: '#3b5bdb',
+    level: 'BEGINNER',
+    description: 'Bridge the gap between technical execution and user-centric product thinking.',
+    challenges: 6, time: '~2.5 hrs',
+    cta: 'View Plan',
   },
   {
-    slug: 'ai-product-fluency',
-    name: 'AI Product Fluency',
-    role: 'SWE/ML/Founding',
-    roleBg: 'bg-amber-100',
-    roleText: 'text-tertiary',
-    accentColor: '#705c30',
-    duration: '4 weeks',
-    challenges: 20,
-    description: 'Bridging the gap between model capabilities and UX.',
-    flow: { Frame: 90, Lens: 85, Optimize: 95, Win: 90 },
+    slug: 'metrics-mastery',
+    name: 'Metrics Mastery',
+    moveTag: 'Lens', moveTagBg: 'bg-[#c8e8d0]', moveTagText: 'text-primary',
+    roleTag: 'PM+Engineer', borderColor: '#4a7c59',
+    level: 'COMPLETE', levelColor: 'text-green-600',
+    description: 'Define, track, and optimize the numbers that actually move the needle for your team.',
+    challenges: 6, time: '~3 hrs',
+    progress: { done: 6, total: 6, pct: 100 },
+    progressColor: 'bg-primary',
+    progressTrack: 'bg-green-100',
+    cta: 'View Plan',
   },
   {
-    slug: 'data-eng-product',
-    name: 'Data Eng -> Product',
-    role: 'Data Eng',
-    roleBg: 'bg-purple-100',
-    roleText: 'text-purple-700',
-    accentColor: '#6b21a8',
-    duration: '4 weeks',
-    challenges: 18,
-    description: 'Leveraging data pipelines for product decisions.',
-    flow: { Frame: 75, Lens: 80, Optimize: 85, Win: 65 },
+    slug: 'tradeoff-thinking',
+    name: 'Tradeoff Thinking',
+    moveTag: 'Optimize', moveTagBg: 'bg-[#fef3c7]', moveTagText: 'text-tertiary',
+    roleTag: 'Engineer', borderColor: '#705c30',
+    level: 'ADVANCED',
+    description: 'Master the art of architectural and product decision making under constraints.',
+    challenges: 8, time: '~4 hrs',
+    cta: 'View Plan',
   },
   {
-    slug: 'pm-product-leadership',
-    name: 'PM Product Leadership',
-    role: 'EM',
-    roleBg: 'bg-teal-100',
-    roleText: 'text-teal-700',
-    accentColor: '#0d9488',
-    duration: '6 weeks',
-    challenges: 24,
-    description: 'Leading product direction as an engineering manager.',
-    flow: { Frame: 85, Lens: 80, Optimize: 75, Win: 80 },
+    slug: 'storytelling-for-engineers',
+    name: 'Storytelling for Engineers',
+    moveTag: 'Win', moveTagBg: 'bg-[#f3e8ff]', moveTagText: 'text-[#6b21a8]',
+    roleTag: 'Engineer', borderColor: '#a855f7',
+    level: 'INTERMEDIATE',
+    description: 'Pitch technical ideas effectively and gain buy-in from non-technical stakeholders.',
+    challenges: 7, time: '~2 hrs',
+    progress: { done: 1, total: 7, pct: 14 },
+    progressColor: 'bg-purple-500',
+    cta: 'Continue',
   },
   {
-    slug: 'founding-engineer',
-    name: 'Founding Engineer',
-    role: 'Founding Eng',
-    roleBg: 'bg-orange-100',
-    roleText: 'text-orange-700',
-    accentColor: '#c2410c',
-    duration: '4 weeks',
-    challenges: 16,
-    description: 'Zero-to-one product thinking for early-stage engineers.',
-    flow: { Frame: 70, Lens: 90, Optimize: 80, Win: 75 },
+    slug: 'discovery-deep-dive',
+    name: 'Discovery Deep Dive',
+    moveTag: 'Frame', moveTagBg: 'bg-[#e8f0ff]', moveTagText: 'text-[#3b5bdb]',
+    roleTag: 'Designer+PM', borderColor: '#60a5fa',
+    level: 'BEGINNER',
+    description: 'Learn to run user interviews and synthesize insights into actionable frameworks.',
+    challenges: 5, time: '~3 hrs',
+    cta: 'View Plan',
   },
   {
-    slug: 'devops-product',
-    name: 'DevOps -> Product',
-    role: 'DevOps',
-    roleBg: 'bg-sky-100',
-    roleText: 'text-sky-700',
-    accentColor: '#0284c7',
-    duration: '3 weeks',
-    challenges: 15,
-    description: 'Understanding product impact of infrastructure decisions.',
-    flow: { Frame: 65, Lens: 75, Optimize: 90, Win: 70 },
+    slug: 'system-design-as-pm',
+    name: 'System Design as a PM',
+    moveTag: 'Optimize+Lens', moveTagBg: 'bg-[#fef3c7]', moveTagText: 'text-tertiary',
+    roleTag: 'PM', borderColor: '#c4a66a',
+    level: 'ADVANCED',
+    description: 'Understand technical architecture to make better product tradeoffs and estimates.',
+    challenges: 9, time: '~6 hrs',
+    cta: 'View Plan',
+  },
+  {
+    slug: 'growth-loops-retention',
+    name: 'Growth Loops & Retention',
+    moveTag: 'Lens+Win', moveTagBg: 'bg-[#c8e8d0]', moveTagText: 'text-primary',
+    roleTag: 'PM', borderColor: '#78a886',
+    level: 'INTERMEDIATE',
+    description: 'Analyze viral mechanics and sustainable product growth through loops.',
+    challenges: 12, time: '~4.5 hrs',
+    cta: 'View Plan',
+  },
+  {
+    slug: '30-day-faang-prep',
+    name: '30-Day FAANG Prep',
+    moveTag: 'Multi-move', moveTagBg: 'bg-secondary-container', moveTagText: 'text-on-surface',
+    roleTag: 'PM+Engineer', borderColor: '#fb923c',
+    level: 'EXPERT',
+    description: 'Intensive daily curriculum focused on the most common Big Tech product questions.',
+    challenges: 30, time: '~15 hrs',
+    rainbowBar: true,
+    cta: 'View Plan',
   },
 ]
 
-const ROLE_FILTERS = ['All', 'SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng'] as const
-const DURATION_FILTERS = ['All', '1 week', '4 weeks', '6+ weeks'] as const
+const FLOW_FILTERS = [
+  { label: 'All', active: true },
+  { label: 'Frame', symbol: '◇', color: 'text-[#3b5bdb]' },
+  { label: 'Lens', symbol: '◈', color: 'text-primary' },
+  { label: 'Optimize', symbol: '◆', color: 'text-tertiary' },
+  { label: 'Win', symbol: '◎', color: 'text-[#6b21a8]' },
+]
 
 export default function StudyPlansPage() {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-4 space-y-3 animate-fade-in-up">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="max-w-7xl mx-auto px-4 pt-4 pb-12 space-y-6 animate-fade-in-up">
+
+      {/* ── Header ── */}
+      <div className="flex justify-between items-end mb-6">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-xl">explore</span>
-            <h1 className="text-2xl font-extrabold font-headline text-primary">Study Plans</h1>
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-2xl font-black text-on-surface font-headline">Study Plans</h1>
+            <LumaGlyph size={40} state="idle" className="text-primary" />
           </div>
-          <p className="text-xs text-on-surface-variant font-body mt-0.5">Structured paths to PM interview readiness</p>
+          <p className="text-sm text-on-surface-variant font-body">Structured paths to sharpen your FLOW skills</p>
         </div>
-        <LumaGlyph size={40} className="text-primary flex-shrink-0" />
-      </div>
-
-      {/* Filter chips */}
-      <div className="space-y-2">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[10px] font-bold text-on-surface-variant mr-1">Roles:</span>
-          {ROLE_FILTERS.map((r, i) => (
-            <button key={r} className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
-              i === 0 ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
-            }`}>
-              {r}
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[10px] font-bold text-on-surface-variant mr-1">Duration:</span>
-          {DURATION_FILTERS.map(d => (
-            <button key={d} className="px-3 py-1 rounded-full text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors">
-              {d}
+        <div className="flex gap-2">
+          {FLOW_FILTERS.map((f) => (
+            <button
+              key={f.label}
+              className={`rounded-full px-4 py-1.5 text-xs font-bold flex items-center gap-1.5 ${
+                f.active ? 'bg-primary text-white' : 'bg-surface-container hover:bg-surface-container-high'
+              }`}
+            >
+              {f.symbol && <span className={f.color}>{f.symbol}</span>}
+              {f.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Luma recommendation strip */}
-      <div className="bg-primary-fixed rounded-xl p-3 flex items-center gap-2">
-        <LumaGlyph size={20} className="text-primary flex-shrink-0" />
-        <p className="text-xs text-on-surface flex-1">
-          Luma&apos;s Recommendation: Based on your FLOW profile, I recommend starting with the{' '}
-          <Link href="/prep/study-plans/staff-engineer-path" className="font-bold text-primary hover:underline">Staff Engineer Path</Link>.
-        </p>
-      </div>
-
-      {/* Plans grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      {/* ── Plans Grid ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {plans.map((plan) => (
           <Link
             key={plan.slug}
             href={`/prep/study-plans/${plan.slug}`}
-            className="card-elevated card-interactive rounded-xl overflow-hidden transition-all group"
+            className="group bg-surface-container rounded-xl p-5 hover:bg-surface-container-high transition-all cursor-pointer relative flex flex-col h-full"
+            style={{ borderTop: `4px solid ${plan.borderColor}` }}
           >
-            <div className="h-1.5 w-full" style={{ backgroundColor: plan.accentColor }} />
-            <div className="p-3 space-y-3">
-              <div className="flex justify-between items-start">
-                <h3 className="font-headline font-bold text-sm text-on-surface leading-tight">{plan.name}</h3>
-                <span className={`${plan.roleBg} ${plan.roleText} text-[10px] font-bold px-2 py-0.5 rounded-full`}>
-                  {plan.role}
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex flex-wrap gap-1.5">
+                <span className={`${plan.moveTagBg} ${plan.moveTagText} text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider`}>
+                  {plan.moveTag}
+                </span>
+                <span className="bg-secondary-container text-on-surface text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">
+                  {plan.roleTag}
                 </span>
               </div>
-              <p className="text-[11px] text-on-surface-variant leading-relaxed">{plan.description}</p>
-              <div className="flex items-center gap-3 text-[11px] text-on-surface-variant font-semibold">
-                <span className="flex items-center gap-0.5">
-                  <span className="material-symbols-outlined text-xs">schedule</span> {plan.duration}
+              {plan.level === 'COMPLETE' ? (
+                <span className="text-[10px] text-green-600 font-bold flex items-center gap-1">
+                  <span className="material-symbols-outlined text-xs" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span> COMPLETE
                 </span>
-                <span className="flex items-center gap-0.5">
-                  <span className="material-symbols-outlined text-xs">assignment</span> {plan.challenges} challenges
-                </span>
-              </div>
-              <div className="space-y-2 pt-1">
-                <div className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[10px]">monitoring</span> FLOW Analysis
+              ) : (
+                <span className="text-[10px] text-on-surface-variant font-bold">{plan.level}</span>
+              )}
+            </div>
+
+            <h3 className="text-lg font-bold mb-2 leading-tight">{plan.name}</h3>
+            <p className="text-xs text-on-surface-variant mb-4 flex-grow">{plan.description}</p>
+
+            {/* Progress or empty bar */}
+            {plan.progress ? (
+              <div className="mb-4">
+                <div className={`flex justify-between text-[10px] font-bold mb-1 ${plan.level === 'COMPLETE' ? 'text-green-600' : 'text-primary'}`}>
+                  <span>Progress: {plan.progress.done}/{plan.progress.total} complete{plan.level === 'COMPLETE' ? ' ✓' : ''}</span>
+                  <span>{plan.progress.pct}%</span>
                 </div>
-                <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
-                  {Object.entries(plan.flow).map(([label, value]) => (
-                    <div key={label} className="space-y-0.5">
-                      <div className="flex justify-between text-[10px] font-bold text-on-surface-variant">
-                        <span>{label}</span>
-                        <span>{value}%</span>
-                      </div>
-                      <div className="h-1 bg-outline-variant rounded-full overflow-hidden">
-                        <div className="h-full rounded-full" style={{ width: `${value}%`, backgroundColor: plan.accentColor }} />
-                      </div>
-                    </div>
-                  ))}
+                <div className={`w-full h-1 rounded-full overflow-hidden ${plan.progressTrack || 'bg-outline-variant'}`}>
+                  <div className={`h-full ${plan.progressColor}`} style={{ width: `${plan.progress.pct}%` }} />
                 </div>
               </div>
-              <button className="w-full bg-primary text-on-primary rounded-full py-2 text-xs font-label font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-1">
-                Start Plan <span className="material-symbols-outlined text-xs">arrow_forward</span>
-              </button>
+            ) : plan.rainbowBar ? (
+              <div className="h-1 bg-gradient-to-r from-red-400 via-yellow-400 to-blue-400 rounded-full w-full mb-4" />
+            ) : (
+              <div className="h-1 bg-outline-variant rounded-full w-full mb-4" />
+            )}
+
+            <div className="flex items-center justify-between mt-auto">
+              <div className="flex items-center gap-3 text-[10px] text-on-surface-variant font-semibold">
+                <span className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-sm">menu_book</span> {plan.challenges} challenges
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-sm">schedule</span> {plan.time}
+                </span>
+              </div>
+              <span className="text-primary text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all">
+                {plan.cta} <span className="material-symbols-outlined text-sm">arrow_forward</span>
+              </span>
             </div>
           </Link>
         ))}
       </div>
 
-      {/* Luma Study Tip */}
-      <div className="bg-surface-container-high border border-outline-variant rounded-xl p-3 flex items-start gap-3">
-        <LumaGlyph size={28} className="text-primary flex-shrink-0 mt-0.5" />
-        <div className="space-y-0.5">
-          <h4 className="text-xs font-bold text-on-surface">Luma&apos;s Study Tip</h4>
-          <p className="text-xs text-on-surface-variant font-body">
-            I&apos;ve noticed your <strong>Frame</strong> scores are consistently high! Focus on <strong>Win</strong> (execution) challenges this week to balance your FLOW profile for the Staff PM track.
+      {/* ── Luma Insight ── */}
+      <div className="bg-primary-fixed rounded-xl p-4 flex items-center gap-5 border border-outline-variant">
+        <LumaGlyph size={48} state="speaking" className="text-primary shrink-0" />
+        <div className="flex-1">
+          <h4 className="font-headline font-bold text-primary text-sm mb-0.5">Luma&apos;s Insight</h4>
+          <p className="text-xs text-on-surface-variant leading-relaxed">
+            &ldquo;Consistent practice is key! Completion rates are 45% higher for users who finish at least one challenge in a Study Plan every 48 hours.&rdquo;
           </p>
         </div>
-      </div>
-
-      {/* Footer */}
-      <div className="flex items-center justify-center gap-2 pt-2 pb-2 text-[10px] text-on-surface-variant">
-        <LumaGlyph size={12} className="text-primary" />
-        <span>&copy; 2026 HackProduct. Practice builds intuition.</span>
+        <button className="text-xs font-bold bg-white text-primary px-4 py-1.5 rounded-full border border-primary hover:bg-primary hover:text-white transition-colors">
+          Got it!
+        </button>
       </div>
     </div>
   )

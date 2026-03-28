@@ -3,91 +3,74 @@ import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 const ROLES = ['All', 'SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng'] as const
 
-const PATHWAYS = [
+const PARADIGMS = [
   {
     name: 'Traditional',
-    tagline: 'Build the right thing, not just the thing right. Core fundamentals of product logic.',
-    challengeCount: 150,
+    tagline: 'Build the right thing, not just the thing right',
+    challengeCount: '~150 challenges',
     icon: 'architecture',
-    borderColor: 'border-primary',
-    bgColor: 'bg-primary-fixed/20',
-    iconBg: 'bg-primary-container',
+    borderClass: 'border-lens',
+    bgClass: 'bg-lens-tint',
+    iconClass: 'text-lens',
     subtopics: ['Failure Analysis', 'Second-Order Thinking', 'Scope Negotiation'],
   },
   {
     name: 'AI-Assisted',
-    tagline: 'Use AI tools without losing judgment. Enhancing productivity through co-pilots.',
-    challengeCount: 50,
+    tagline: 'Use AI tools without losing judgment',
+    challengeCount: '~50 challenges',
     icon: 'smart_toy',
-    borderColor: 'border-tertiary',
-    bgColor: 'bg-tertiary-container/10',
-    iconBg: 'bg-tertiary-container',
+    borderClass: 'border-frame',
+    bgClass: 'bg-frame-tint',
+    iconClass: 'text-frame',
     subtopics: ['AI Tool Judgment', 'Impact Translation'],
   },
   {
     name: 'Agentic',
-    tagline: 'Design systems where agents act autonomously. New architectures for intent.',
-    challengeCount: 70,
+    tagline: 'Design systems where agents act autonomously',
+    challengeCount: '~70 challenges',
     icon: 'hub',
-    borderColor: 'border-primary-container',
-    bgColor: 'bg-primary-container/10',
-    iconBg: 'bg-primary-container',
+    borderClass: 'border-win',
+    bgClass: 'bg-win-tint',
+    iconClass: 'text-win',
     subtopics: ['Trust & Autonomy', 'Agent Economics'],
   },
   {
     name: 'AI-Native',
-    tagline: "Products that couldn't exist without AI. Ground-up zero-to-one strategy.",
-    challengeCount: 70,
+    tagline: "Products that couldn't exist without AI",
+    challengeCount: '~70 challenges',
     icon: 'neurology',
-    borderColor: 'border-secondary',
-    bgColor: 'bg-secondary-container/20',
-    iconBg: 'bg-secondary-container',
+    borderClass: 'border-optimize',
+    bgClass: 'bg-optimize-tint',
+    iconClass: 'text-optimize',
     subtopics: ['AI Product Strategy', 'AI UX Patterns'],
   },
 ] as const
 
 const STUDY_PLANS = [
   {
-    title: 'Staff Engineer Path',
+    title: 'Staff Engineer Path 🎯',
     roles: ['SWE'],
     duration: '6 weeks',
-    description: 'Master high-level architecture and organizational impact.',
+    description: 'Strategic technical leadership and high-stakes decision making.',
     slug: 'staff-engineer-path',
+    participantCount: '+12',
   },
   {
-    title: '7-Day Prep',
+    title: '7-Day Prep ⏱️',
     roles: ['SWE', 'Data', 'ML'],
     duration: '7 days',
-    description: 'Intensive refresher for upcoming product design interviews.',
+    description: 'Intensive crash course for top-tier system design rounds.',
     slug: '7-day-prep',
+    participantCount: '+82',
   },
   {
-    title: 'AI Product Fluency',
+    title: 'AI Product Fluency 🧠',
     roles: ['SWE', 'ML', 'Founding'],
     duration: '4 weeks',
-    description: 'Bridging the gap between model capabilities and UX.',
+    description: 'Bridge the gap between engineering and AI product strategy.',
     slug: 'ai-product-fluency',
+    participantCount: '+45',
   },
-  {
-    title: 'Data Eng -> Product',
-    roles: ['Data Eng'],
-    duration: '4 weeks',
-    description: 'Leveraging data pipelines for product decisions.',
-    slug: 'data-eng-product',
-  },
-] as const
-
-const FLASHCARD_DECKS = [
-  { name: 'Product Terms', cards: 42, icon: 'menu_book' },
-  { name: 'Growth Loops', cards: 28, icon: 'cycle' },
-  { name: 'User Psych', cards: 35, icon: 'psychology' },
-  { name: 'Metric Guardrails', cards: 15, icon: 'monitoring' },
-] as const
-
-const FRAMEWORKS = [
-  { name: 'CIRCLES Method\u2122', description: 'Product Design Interview Classic', tag: 'CIRC' },
-  { name: 'RICE Prioritization', description: 'Reach, Impact, Confidence, Effort', tag: 'RICE' },
-  { name: 'Kano Model', description: 'Delighters vs. Basic Needs', tag: 'KANO' },
 ] as const
 
 interface ExplorePageProps {
@@ -104,23 +87,25 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-4 space-y-3 animate-fade-in-up">
-      {/* Page header */}
-      <div>
-        <h1 className="font-headline text-2xl font-extrabold text-primary">Explore Hub</h1>
-        <p className="text-xs text-on-surface-variant font-body mt-0.5">Browse by paradigm, plan your path, or dive into concepts</p>
-      </div>
+    <div className="max-w-7xl mx-auto p-6 space-y-6 animate-fade-in-up">
+      {/* Header Section */}
+      <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="font-headline text-2xl font-extrabold text-on-surface leading-tight">Overhaul: Explore Hub</h1>
+          <p className="text-sm text-on-surface-variant mt-0.5">Browse by paradigm, plan your path, or dive into concepts</p>
+        </div>
+      </section>
 
-      {/* Role filter chips */}
-      <div className="flex gap-2 flex-wrap">
+      {/* Role Filter Row */}
+      <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1">
         {ROLES.map(r => (
           <Link
             key={r}
             href={buildHref(r)}
-            className={`px-3 py-1 rounded-full text-xs font-label font-semibold transition-colors ${
+            className={`px-5 py-1.5 rounded-full text-xs font-bold shadow-sm transition-all ${
               activeRole === r
                 ? 'bg-primary text-on-primary'
-                : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
+                : 'bg-surface-variant text-on-surface-variant hover:bg-surface-container-high'
             }`}
           >
             {r}
@@ -128,24 +113,41 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
         ))}
       </div>
 
-      {/* Learning Paradigm Pathways - 2x2 grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {PATHWAYS.map(pathway => (
+      {/* Luma Recommendation Banner */}
+      <section className="bg-primary-container/40 border border-primary-container rounded-xl p-4 flex items-center gap-4">
+        <LumaGlyph size={40} className="text-primary shrink-0" />
+        <div className="relative bg-white/60 px-4 py-2 rounded-2xl rounded-tl-none border border-white/40">
+          <p className="text-sm text-on-primary-container font-medium leading-relaxed">
+            Based on your scores, I recommend starting with{' '}
+            <span className="font-bold underline decoration-primary/30">Traditional → Failure Analysis</span>.
+          </p>
+        </div>
+      </section>
+
+      {/* Paradigms Grid (2x2) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {PARADIGMS.map(paradigm => (
           <Link
-            key={pathway.name}
-            href={`/challenges?paradigm=${encodeURIComponent(pathway.name)}`}
-            className={`group card-elevated card-interactive ${pathway.bgColor} rounded-2xl p-4 border-l-4 ${pathway.borderColor} transition-all`}
+            key={paradigm.name}
+            href={`/challenges?paradigm=${encodeURIComponent(paradigm.name)}`}
+            className={`bg-surface-variant rounded-xl p-5 border-l-4 ${paradigm.borderClass} hover:bg-surface-container-high transition-colors group`}
           >
-            <div className="flex items-start justify-between mb-2">
-              <h3 className="font-headline text-base font-bold text-on-surface">{pathway.name}</h3>
-              <div className={`w-8 h-8 ${pathway.iconBg} rounded-lg flex items-center justify-center`}>
-                <span className="material-symbols-outlined text-primary text-xl">{pathway.icon}</span>
+            <div className="flex justify-between items-start mb-3">
+              <div className={`p-2 ${paradigm.bgClass} rounded-lg ${paradigm.iconClass}`}>
+                <span className="material-symbols-outlined">{paradigm.icon}</span>
               </div>
+              <span className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest">
+                {paradigm.challengeCount}
+              </span>
             </div>
-            <p className="text-xs text-on-surface-variant leading-relaxed mb-2">{pathway.tagline}</p>
-            <div className="flex flex-wrap gap-1">
-              {pathway.subtopics.map(topic => (
-                <span key={topic} className="px-2 py-0.5 bg-surface-container text-on-surface-variant rounded-full text-[10px] font-label">
+            <h3 className="font-headline text-lg font-bold mb-1">{paradigm.name}</h3>
+            <p className="text-xs text-on-surface-variant mb-4">{paradigm.tagline}</p>
+            <div className="flex flex-wrap gap-2">
+              {paradigm.subtopics.map(topic => (
+                <span
+                  key={topic}
+                  className="bg-white/50 px-2.5 py-1 rounded text-[11px] font-medium border border-outline-variant/20"
+                >
                   {topic}
                 </span>
               ))}
@@ -154,97 +156,54 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
         ))}
       </div>
 
-      {/* Study Plans section */}
-      <section>
-        <div className="flex items-center justify-between mb-2">
+      {/* Study Plans Section */}
+      <section className="space-y-4 pt-2">
+        <div className="flex items-center justify-between">
           <h2 className="font-headline text-lg font-bold text-on-surface">Study Plans</h2>
-          <Link href="/prep/study-plans" className="text-xs font-label font-semibold text-primary hover:underline flex items-center gap-1">
-            View All Plans <span className="material-symbols-outlined text-xs">arrow_forward</span>
+          <Link href="/prep/study-plans" className="text-xs font-bold text-primary hover:underline">
+            View All
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {STUDY_PLANS.map(plan => (
             <Link
               key={plan.slug}
               href={`/prep/study-plans/${plan.slug}`}
-              className="card-elevated card-interactive rounded-xl p-3 transition-all group"
+              className="bg-surface-container-low rounded-xl p-4 border border-outline-variant/30 flex flex-col justify-between hover:shadow-sm transition-shadow"
             >
-              <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-                <span className="text-[10px] px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full font-label font-semibold">{plan.duration}</span>
-                {plan.roles.map(r => (
-                  <span key={r} className="text-[10px] px-2 py-0.5 bg-primary-fixed text-primary rounded-full font-label font-semibold">{r}</span>
-                ))}
+              <div>
+                <div className="flex justify-between mb-3">
+                  <div className="flex gap-1 flex-wrap">
+                    {plan.roles.map(r => (
+                      <span
+                        key={r}
+                        className="bg-secondary-container text-secondary text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider"
+                      >
+                        {r}
+                      </span>
+                    ))}
+                  </div>
+                  <span className="text-[10px] text-on-surface-variant font-medium">{plan.duration}</span>
+                </div>
+                <h4 className="font-headline text-base font-bold mb-1">{plan.title}</h4>
+                <p className="text-xs text-on-surface-variant leading-snug">{plan.description}</p>
               </div>
-              <h3 className="font-label font-bold text-on-surface text-sm mb-0.5">{plan.title}</h3>
-              <p className="text-xs text-on-surface-variant leading-relaxed mb-2">{plan.description}</p>
-              <div className="flex items-center gap-1.5 text-[10px] text-on-surface-variant">
-                <LumaGlyph size={14} className="text-primary" />
-                <span>By Luma &amp; Team</span>
+              <div className="mt-4 pt-4 border-t border-outline-variant/20 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <div className="flex -space-x-1.5">
+                    <div className="w-5 h-5 rounded-full bg-surface-container-high ring-2 ring-surface-container-low" />
+                    <div className="w-5 h-5 rounded-full bg-surface-dim ring-2 ring-surface-container-low" />
+                  </div>
+                  <span className="text-[8px] font-bold text-on-surface-variant">{plan.participantCount}</span>
+                </div>
+                <button className="text-xs font-bold text-primary px-3 py-1 rounded-full border border-primary/20 hover:bg-primary/5">
+                  Start
+                </button>
               </div>
             </Link>
           ))}
         </div>
       </section>
-
-      {/* Flashcards & Frameworks side by side */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {/* Flashcards */}
-        <section>
-          <h2 className="font-headline text-lg font-bold text-on-surface mb-2">Flashcards</h2>
-          <div className="grid grid-cols-2 gap-2">
-            {FLASHCARD_DECKS.map(deck => (
-              <div
-                key={deck.name}
-                className="card-elevated card-interactive rounded-xl p-3 cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-primary-container rounded-lg flex items-center justify-center">
-                    <span className="material-symbols-outlined text-primary text-lg">{deck.icon}</span>
-                  </div>
-                  <div>
-                    <h4 className="font-label font-semibold text-on-surface text-xs">{deck.name}</h4>
-                    <p className="text-[10px] text-on-surface-variant">{deck.cards} cards</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Frameworks */}
-        <section>
-          <h2 className="font-headline text-lg font-bold text-on-surface mb-2">Frameworks</h2>
-          <div className="space-y-1.5">
-            {FRAMEWORKS.map(fw => (
-              <div
-                key={fw.name}
-                className="card-elevated card-interactive rounded-xl p-3 flex items-center justify-between cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-primary bg-primary-fixed px-2 py-0.5 rounded font-label tracking-wide">{fw.tag}</span>
-                  <div>
-                    <h4 className="font-label font-semibold text-on-surface text-xs">{fw.name}</h4>
-                    <p className="text-[10px] text-on-surface-variant">{fw.description}</p>
-                  </div>
-                </div>
-                <span className="material-symbols-outlined text-on-surface-variant text-lg">chevron_right</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
-
-      {/* Luma CTA banner */}
-      <div className="bg-surface-container rounded-2xl p-4 flex items-center gap-3">
-        <LumaGlyph size={40} className="text-primary flex-shrink-0" />
-        <div className="flex-1">
-          <h3 className="font-label font-bold text-on-surface text-sm">Not sure where to start?</h3>
-          <p className="text-xs text-on-surface-variant mt-0.5">I can help you build a personalized study plan based on your current role and goals. Tell me what you&apos;re working on!</p>
-        </div>
-        <button className="glow-primary bg-primary text-on-primary rounded-full px-4 py-2 text-xs font-label font-bold whitespace-nowrap hover:opacity-90 active:scale-95 transition-all flex-shrink-0">
-          Talk to Luma
-        </button>
-      </div>
     </div>
   )
 }

@@ -64,6 +64,12 @@
   --color-error-container:          #ffdad8;
   --color-on-error-container:       #690005;
 
+  /* FLOW Move Colors */
+  --color-flow-frame:               #3b82f6;
+  --color-flow-lens:                #10b981;
+  --color-flow-optimize:            #f59e0b;
+  --color-flow-win:                 #8b5cf6;
+
   /* Typography */
   --font-headline: var(--font-literata), 'Literata', serif;
   --font-body:     var(--font-nunito-sans), 'Nunito Sans', sans-serif;
@@ -147,6 +153,11 @@ body {
 .ghost-border {
   outline: 1px solid rgba(196, 200, 188, 0.25);
 }
+
+/* ── Scrollbar Utilities ──────────────────────────────────────── */
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* ── Gradient Utilities ───────────────────────────────────────── */
 
@@ -244,6 +255,24 @@ body {
 .dot-pulse > span:nth-child(1) { animation: dot-pulse 1.2s ease-in-out infinite 0s; }
 .dot-pulse > span:nth-child(2) { animation: dot-pulse 1.2s ease-in-out infinite 0.2s; }
 .dot-pulse > span:nth-child(3) { animation: dot-pulse 1.2s ease-in-out infinite 0.4s; }
+
+/* ── Paradigm accent borders (mapped from Stitch hex accents) ─── */
+
+.border-lens   { border-color: #2dd4a0; }
+.bg-lens-tint  { background-color: rgba(45, 212, 160, 0.10); }
+.text-lens     { color: #2dd4a0; }
+
+.border-frame  { border-color: #5eaeff; }
+.bg-frame-tint { background-color: rgba(94, 174, 255, 0.10); }
+.text-frame    { color: #5eaeff; }
+
+.border-win    { border-color: #a78bfa; }
+.bg-win-tint   { background-color: rgba(167, 139, 250, 0.10); }
+.text-win      { color: #a78bfa; }
+
+.border-optimize  { border-color: #f59e0b; }
+.bg-optimize-tint { background-color: rgba(245, 158, 11, 0.10); }
+.text-optimize    { color: #f59e0b; }
 
 /* ── Badge / Chip Styles ──────────────────────────────────────── */
 

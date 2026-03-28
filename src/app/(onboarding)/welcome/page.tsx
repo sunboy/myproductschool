@@ -6,7 +6,7 @@ const THINKING_MOVES = [
     icon: 'diamond',
     title: 'Frame',
     tagline: '"What\'s the real problem?"',
-    iconColor: 'text-blue-400',
+    iconColor: 'text-[#5eaeff]',
     bgColor: 'bg-blue-100',
     hoverBorder: 'hover:border-blue-200',
   },
@@ -14,7 +14,7 @@ const THINKING_MOVES = [
     icon: 'grid_view',
     title: 'Split',
     tagline: '"Who exactly is affected?"',
-    iconColor: 'text-emerald-400',
+    iconColor: 'text-[#2dd4a0]',
     bgColor: 'bg-green-100',
     hoverBorder: 'hover:border-green-200',
   },
@@ -40,13 +40,13 @@ const ROLE_TAGS = ['SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng']
 
 export default function WelcomePage() {
   return (
-    <div className="flex flex-col animate-fade-in-up">
+    <div className="flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background border-b border-outline-variant h-12 flex items-center shadow-sm">
-        <div className="flex items-center justify-between px-4 w-full max-w-7xl mx-auto">
+      <header className="fixed top-0 z-50 w-full bg-surface border-b border-outline-variant h-12 flex items-center shadow-sm">
+        <div className="flex items-center justify-between px-6 w-full max-w-7xl mx-auto">
           <div className="flex items-center gap-2">
             <LumaGlyph size={24} className="text-primary" />
-            <span className="font-headline font-bold text-xl text-primary tracking-tight">HackProduct</span>
+            <span className="font-headline font-black text-xl text-primary">HackProduct</span>
           </div>
           <div className="hidden md:flex gap-6 items-center">
             <span className="text-xs font-medium text-secondary uppercase tracking-widest">
@@ -56,13 +56,14 @@ export default function WelcomePage() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="flex flex-col items-center justify-center pt-8 pb-4 px-4">
-        <div className="max-w-3xl w-full text-center space-y-3">
-          {/* Luma Mascot */}
+      {/* Main Content Canvas */}
+      <main className="min-h-screen flex flex-col items-center justify-center pt-24 pb-16 px-6">
+        <div className="max-w-3xl w-full text-center space-y-8">
+
+          {/* Luma Mascot (80px) */}
           <div className="flex justify-center">
             <div className="relative">
-              <LumaGlyph size={64} className="text-primary" state="idle" />
+              <LumaGlyph size={80} className="text-primary" state="idle" />
               <div className="absolute -top-2 -right-2 bg-primary text-on-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">
                 Coach
               </div>
@@ -70,44 +71,44 @@ export default function WelcomePage() {
           </div>
 
           {/* Headlines */}
-          <div className="space-y-1">
-            <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tight text-on-surface">
+          <div className="space-y-2">
+            <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight text-on-surface">
               Coding isn&apos;t the moat.
             </h1>
-            <h2 className="font-headline text-2xl md:text-3xl text-primary font-bold">
+            <h2 className="font-headline text-3xl md:text-4xl text-primary font-bold">
               Thinking in products is.
             </h2>
-            <p className="text-on-surface-variant text-sm max-w-xl mx-auto mt-2 leading-relaxed font-body">
+            <p className="text-on-surface-variant text-base md:text-lg max-w-xl mx-auto mt-4 leading-relaxed">
               Write your thinking. Get AI-graded feedback. Build the 4 moves that separate Staff from Senior engineers.
             </p>
           </div>
 
-          {/* Four Thinking Moves */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-2">
+          {/* Four Thinking Moves (Horizontal Row of Cards) */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-4">
             {THINKING_MOVES.map((move) => (
               <div
                 key={move.title}
-                className={`card-elevated card-interactive rounded-xl p-3 text-left border border-transparent ${move.hoverBorder} transition-all`}
+                className={`bg-surface-container rounded-xl p-4 text-left border border-transparent ${move.hoverBorder} transition-all hover:bg-surface-container-high`}
               >
-                <div className={`w-7 h-7 rounded-lg ${move.bgColor} flex items-center justify-center mb-2`}>
+                <div className={`w-8 h-8 rounded-lg ${move.bgColor} flex items-center justify-center mb-3`}>
                   <span
-                    className={`material-symbols-outlined ${move.iconColor} text-lg`}
+                    className={`material-symbols-outlined ${move.iconColor} text-xl`}
                     style={{ fontVariationSettings: "'FILL' 1" }}
                   >
                     {move.icon}
                   </span>
                 </div>
-                <div className="font-bold text-sm mb-0.5 text-on-surface">{move.title}</div>
+                <div className="font-bold text-sm mb-1 text-on-surface">{move.title}</div>
                 <div className="text-xs text-on-surface-variant italic">{move.tagline}</div>
               </div>
             ))}
           </div>
 
           {/* CTAs */}
-          <div className="flex flex-col items-center gap-2 pt-2">
+          <div className="flex flex-col items-center gap-4 pt-4">
             <Link
               href="/role"
-              className="glow-primary bg-primary text-on-primary rounded-full px-8 py-2.5 text-sm font-semibold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+              className="bg-primary text-on-primary rounded-full px-10 py-4 text-base font-semibold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
             >
               Take the Assessment →
             </Link>
@@ -116,16 +117,16 @@ export default function WelcomePage() {
             </div>
             <Link
               href="/dashboard"
-              className="mt-1 text-primary font-bold text-sm hover:underline flex items-center gap-1 group"
+              className="mt-4 text-primary font-bold text-sm hover:underline flex items-center gap-1 group"
             >
               Skip assessment, explore the platform
               <span className="group-hover:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
 
-          {/* Built For Tags */}
-          <div className="pt-4">
-            <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-on-surface-variant mb-2">
+          {/* Roles Tags */}
+          <div className="pt-12">
+            <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-on-surface-variant mb-4">
               Built for
             </p>
             <div className="flex flex-wrap justify-center gap-2">
@@ -141,7 +142,7 @@ export default function WelcomePage() {
           </div>
 
           {/* Social Proof */}
-          <div className="pt-3 flex items-center justify-center gap-2 opacity-60">
+          <div className="pt-8 flex items-center justify-center gap-2 opacity-60">
             <div className="flex -space-x-2">
               <div className="w-6 h-6 rounded-full border-2 border-surface bg-surface-container-high" />
               <div className="w-6 h-6 rounded-full border-2 border-surface bg-surface-container" />
@@ -151,12 +152,13 @@ export default function WelcomePage() {
               Join 1,200 engineers sharpening their product thinking
             </p>
           </div>
+
         </div>
-      </section>
+      </main>
 
       {/* Footer */}
-      <footer className="border-t border-outline-variant">
-        <div className="w-full pt-2 pb-2 px-4 flex flex-col md:flex-row justify-between items-center gap-2 max-w-7xl mx-auto">
+      <footer className="bg-surface border-t border-outline-variant">
+        <div className="w-full py-8 px-6 flex flex-col md:flex-row justify-between items-center gap-4 max-w-7xl mx-auto">
           <p className="text-xs font-medium uppercase tracking-wider text-secondary">
             &copy; 2024 HackProduct. Built for engineers.
           </p>

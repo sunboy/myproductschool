@@ -31,8 +31,8 @@ export default function CalibrationFramePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-surface overflow-x-hidden">
-      {/* Custom Calibration Top Bar */}
-      <header className="flex justify-between items-center w-full px-4 h-12 sticky top-0 z-50 bg-background border-b border-outline-variant shadow-sm">
+      {/* Top Bar */}
+      <header className="flex justify-between items-center w-full px-6 h-12 sticky top-0 z-50 bg-background border-b border-outline-variant shadow-sm">
         <div className="flex items-center gap-2">
           <span className="font-headline text-primary font-bold text-sm tracking-tight">
             Calibration Challenge
@@ -44,7 +44,7 @@ export default function CalibrationFramePage() {
           {STEP_PILLS.map((step, i) => (
             <div key={step.id} className="relative z-10 flex items-center">
               <div
-                className={`flex items-center justify-center w-[100px] h-[34px] rounded-full text-xs font-bold ${
+                className={`flex items-center justify-center w-[100px] h-[36px] rounded-full text-xs font-bold ${
                   step.active
                     ? 'bg-primary text-on-primary shadow-sm'
                     : 'bg-surface-container-high text-on-surface-variant font-medium'
@@ -65,7 +65,7 @@ export default function CalibrationFramePage() {
             <span className="text-[10px] uppercase font-bold text-on-surface-variant tracking-wider">
               Step 1 of 4
             </span>
-            <div className="flex items-center gap-1 text-primary font-mono font-bold text-sm">
+            <div className="flex items-center gap-1 text-primary font-mono font-bold">
               <span className="material-symbols-outlined text-sm">timer</span>
               <span>{formatTime(seconds)}</span>
             </div>
@@ -74,12 +74,12 @@ export default function CalibrationFramePage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow flex flex-col items-center px-4 py-4 w-full max-w-screen-xl mx-auto overflow-y-auto pb-20">
-        <div className="w-full max-w-[800px] space-y-3">
+      <main className="flex-grow flex flex-col items-center px-4 py-8 w-full max-w-screen-xl mx-auto overflow-y-auto pb-32">
+        <div className="w-full max-w-[800px]">
           {/* Luma Intro Banner */}
-          <div className="bg-surface-container-low rounded-xl p-4 flex items-start gap-3 border border-outline-variant/30">
-            <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center border border-primary/20">
-              <LumaGlyph size={32} className="text-primary" />
+          <div className="bg-surface-container-low rounded-xl p-5 mb-6 flex items-start gap-4 border border-outline-variant/30">
+            <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center border border-primary/20">
+              <LumaGlyph size={40} className="text-primary" />
             </div>
             <div className="flex-grow">
               <p className="text-sm text-on-surface font-medium leading-relaxed">
@@ -89,8 +89,8 @@ export default function CalibrationFramePage() {
           </div>
 
           {/* Challenge Prompt Card */}
-          <section className="card-elevated rounded-xl p-4">
-            <div className="flex flex-wrap gap-2 mb-2">
+          <section className="bg-surface-container-lowest shadow-sm rounded-xl border border-outline-variant/20 p-6 mb-8">
+            <div className="flex flex-wrap gap-2 mb-4">
               <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                 AI-Assisted
               </span>
@@ -101,18 +101,18 @@ export default function CalibrationFramePage() {
                 B2C
               </span>
             </div>
-            <h2 className="font-headline text-xl font-bold text-on-surface mb-2 leading-tight">
+            <h2 className="font-headline text-2xl font-bold text-on-surface mb-3 leading-tight">
               Spotify is seeing a 15% drop in podcast listening among 25-34 year olds
             </h2>
-            <p className="text-sm text-on-surface-variant leading-relaxed">
+            <p className="text-lg text-on-surface-variant leading-relaxed">
               You&apos;re the PM. What&apos;s the real problem here — and how would you frame it for your team?
             </p>
           </section>
 
           {/* Question Area */}
-          <div className="space-y-4">
+          <div className="space-y-8">
             {/* Question 1 */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               <label className="text-sm font-bold text-on-surface flex items-center gap-2">
                 <span className="w-6 h-6 rounded-full bg-primary-fixed text-primary flex items-center justify-center text-xs">
                   1
@@ -123,18 +123,18 @@ export default function CalibrationFramePage() {
                 <textarea
                   value={assumptions}
                   onChange={(e) => setAssumptions(e.target.value.slice(0, 500))}
-                  className="w-full bg-surface-container border border-outline-variant/50 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-on-surface-variant/40 resize-none"
+                  className="w-full bg-surface-container border border-outline-variant/50 rounded-lg p-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-on-surface-variant/40 resize-none"
                   placeholder="Think about what the data does and doesn't tell you..."
-                  rows={5}
+                  rows={6}
                 />
-                <div className="absolute bottom-2 right-3 text-[10px] font-bold text-on-surface-variant/60 uppercase">
+                <div className="absolute bottom-3 right-4 text-[10px] font-bold text-on-surface-variant/60 uppercase">
                   {assumptions.length} / 500
                 </div>
               </div>
             </div>
 
             {/* Question 2 */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               <label className="text-sm font-bold text-on-surface flex items-center gap-2">
                 <span className="w-6 h-6 rounded-full bg-primary-fixed text-primary flex items-center justify-center text-xs">
                   2
@@ -145,11 +145,11 @@ export default function CalibrationFramePage() {
                 <textarea
                   value={reframe}
                   onChange={(e) => setReframe(e.target.value.slice(0, 500))}
-                  className="w-full bg-surface-container border border-outline-variant/50 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-on-surface-variant/40 resize-none"
+                  className="w-full bg-surface-container border border-outline-variant/50 rounded-lg p-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-on-surface-variant/40 resize-none"
                   placeholder="A good reframe changes what solutions become possible..."
-                  rows={5}
+                  rows={6}
                 />
-                <div className="absolute bottom-2 right-3 text-[10px] font-bold text-on-surface-variant/60 uppercase">
+                <div className="absolute bottom-3 right-4 text-[10px] font-bold text-on-surface-variant/60 uppercase">
                   {reframe.length} / 500
                 </div>
               </div>
@@ -159,16 +159,19 @@ export default function CalibrationFramePage() {
       </main>
 
       {/* Fixed Bottom Bar */}
-      <footer className="fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-4 py-2 bg-background border-t border-outline-variant shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
+      <footer className="fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-8 py-4 bg-background border-t border-outline-variant shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
         {/* Left: Back (disabled on first step) */}
-        <button className="flex items-center gap-2 text-secondary opacity-50 cursor-not-allowed font-label text-sm font-bold" disabled>
+        <button
+          className="flex items-center gap-2 text-secondary opacity-50 cursor-not-allowed font-label text-sm font-bold"
+          disabled
+        >
           <span className="material-symbols-outlined">arrow_back</span>
           <span>Back</span>
         </button>
 
         {/* Center: Luma Tip */}
         <div className="hidden lg:flex items-center gap-3 max-w-md">
-          <LumaGlyph size={20} className="text-on-surface-variant/70 grayscale" />
+          <LumaGlyph size={24} className="text-on-surface-variant opacity-70 grayscale" />
           <span className="text-xs text-on-surface-variant italic">
             &ldquo;Take your time. Luma sees your reasoning, not just keywords.&rdquo;
           </span>
@@ -177,7 +180,7 @@ export default function CalibrationFramePage() {
         {/* Right: Primary Next Action */}
         <Link
           href="/calibration/split"
-          className="glow-primary bg-primary text-on-primary rounded-full px-8 py-2.5 font-label font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
+          className="bg-primary text-on-primary rounded-full px-10 py-3 font-label font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
         >
           <span>Next: Split</span>
           <span className="material-symbols-outlined text-sm">arrow_forward</span>
