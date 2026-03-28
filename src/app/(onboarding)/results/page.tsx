@@ -1,0 +1,175 @@
+import Link from 'next/link'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
+
+const STARTING_LEVELS = [
+  { icon: 'diamond', name: 'Frame', level: 'Level 3', highlight: false },
+  { icon: 'vignette', name: 'Lens', level: 'Level 2', highlight: false },
+  { icon: 'pentagon', name: 'Optimize', level: 'Level 2', highlight: false },
+  { icon: 'circle', name: 'Win', level: 'Focus area', highlight: true },
+]
+
+export default function ResultsPage() {
+  return (
+    <div className="min-h-screen pb-4">
+      {/* Header */}
+      <header className="h-12 w-full sticky top-0 z-50 bg-background border-b border-outline-variant flex items-center justify-between px-4 max-w-7xl mx-auto">
+        <div className="flex items-center gap-2">
+          <Link href="/calibration/frame" className="hover:bg-surface-container p-1 rounded-full transition-colors active:scale-95">
+            <span className="material-symbols-outlined text-primary">arrow_back</span>
+          </Link>
+          <span className="font-headline text-2xl font-bold text-primary">HackProduct</span>
+        </div>
+        <div className="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden">
+          <LumaGlyph size={28} className="text-primary" />
+        </div>
+      </header>
+
+      <main className="max-w-[640px] mx-auto px-4 py-4 space-y-3">
+        {/* Header */}
+        <h1 className="font-headline text-xl font-extrabold text-on-surface">
+          Your Baseline Results
+        </h1>
+
+        {/* Luma Speaking Card */}
+        <section className="bg-surface-container rounded-xl p-3 flex gap-3 items-start relative">
+          <div className="shrink-0">
+            <LumaGlyph size={48} className="text-primary rounded-lg bg-white/50 p-1" />
+          </div>
+          <div className="relative bg-white p-3 rounded-lg rounded-tl-none border border-outline-variant shadow-sm text-sm">
+            <p className="text-on-surface-variant leading-relaxed text-xs">
+              Based on your answer, I&apos;ve mapped your starting point across all 4 FLOW moves. Here&apos;s where you stand.
+            </p>
+            <div className="absolute -left-2 top-0 w-0 h-0 border-t-[8px] border-t-white border-l-[8px] border-l-transparent" />
+          </div>
+        </section>
+
+        {/* Radar Chart */}
+        <section className="card-elevated flex flex-col items-center justify-center py-3 rounded-xl">
+          <div className="relative w-56 h-56 flex items-center justify-center">
+            <svg className="w-full h-full transform -rotate-45" viewBox="0 0 200 200">
+              {/* Web circles */}
+              <circle cx="100" cy="100" r="80" fill="none" stroke="#eae6de" strokeWidth="1" />
+              <circle cx="100" cy="100" r="60" fill="none" stroke="#eae6de" strokeWidth="1" />
+              <circle cx="100" cy="100" r="40" fill="none" stroke="#eae6de" strokeWidth="1" />
+              <circle cx="100" cy="100" r="20" fill="none" stroke="#eae6de" strokeWidth="1" />
+              {/* Axes */}
+              <line x1="100" y1="20" x2="100" y2="180" stroke="#eae6de" strokeWidth="1" />
+              <line x1="20" y1="100" x2="180" y2="100" stroke="#eae6de" strokeWidth="1" />
+              {/* Data Shape: Frame:72, Lens:58, Optimize:65, Win:44 */}
+              <polygon
+                points="100,42.4 146.4,100 100,152 64.8,100"
+                fill="#4a7c59"
+                fillOpacity="0.4"
+                stroke="#4a7c59"
+                strokeWidth="2"
+              />
+            </svg>
+            {/* Labels */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 text-center">
+              <span className="block text-[10px] font-bold text-secondary uppercase tracking-wider">Frame</span>
+              <span className="text-sm font-bold text-primary">72</span>
+            </div>
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 text-center">
+              <span className="block text-[10px] font-bold text-secondary uppercase tracking-wider">Lens</span>
+              <span className="text-sm font-bold text-primary">58</span>
+            </div>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 text-center">
+              <span className="block text-[10px] font-bold text-secondary uppercase tracking-wider">Optimize</span>
+              <span className="text-sm font-bold text-primary">65</span>
+            </div>
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 text-center">
+              <span className="block text-[10px] font-bold text-secondary uppercase tracking-wider">Win</span>
+              <span className="text-sm font-bold text-primary">44</span>
+            </div>
+          </div>
+          <div className="mt-3 bg-secondary-container text-secondary text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-tight">
+            Better than 61% of engineers at your stage
+          </div>
+        </section>
+
+        {/* Archetype Card */}
+        <section className="card-elevated bg-primary-container rounded-xl p-4 border border-primary/10">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
+              Your Thinking Archetype
+            </span>
+            <span className="text-2xl" role="img" aria-label="builder">🏗️</span>
+          </div>
+          <h2 className="font-headline text-xl font-bold text-on-surface mb-1">
+            The Systematic Builder
+          </h2>
+          <p className="text-xs text-on-surface-variant leading-relaxed">
+            You construct solutions methodically with strong framing, but your narrative communication (Win move) needs development.
+          </p>
+        </section>
+
+        {/* Answer Callout */}
+        <section className="bg-white rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
+          <div className="p-4 border-l-4 border-primary">
+            <h3 className="text-xs font-bold text-secondary uppercase tracking-wider mb-2">
+              What Luma noticed in your answer
+            </h3>
+            <blockquote className="text-on-surface-variant italic text-xs leading-relaxed mb-3">
+              &ldquo;You clearly identified user segments and defined success criteria early. Your solution was structured and well-reasoned. However, the narrative around stakeholder buy-in was underdeveloped.&rdquo;
+            </blockquote>
+            <div className="flex flex-wrap gap-2">
+              <span className="bg-green-50 text-green-800 text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1">
+                <span className="material-symbols-outlined text-xs">check</span>
+                Criteria-based thinking
+              </span>
+              <span className="bg-orange-50 text-orange-700 text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1">
+                <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                Stakeholder narrative
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Starting Levels */}
+        <section className="grid grid-cols-2 md:flex md:flex-row gap-3">
+          {STARTING_LEVELS.map((item) => (
+            <div
+              key={item.name}
+              className={`bg-white border rounded-lg p-3 flex flex-col items-center justify-center flex-1 ${
+                item.highlight ? 'border-tertiary-container' : 'border-outline-variant'
+              }`}
+            >
+              <span className={`material-symbols-outlined mb-1 ${item.highlight ? 'text-tertiary' : 'text-primary'}`}>
+                {item.icon}
+              </span>
+              <span className="text-[10px] font-bold text-secondary uppercase mb-1">
+                {item.name}
+              </span>
+              {item.highlight ? (
+                <span className="border border-tertiary text-tertiary text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  {item.level}
+                </span>
+              ) : (
+                <span className="bg-primary text-on-primary text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  {item.level}
+                </span>
+              )}
+            </div>
+          ))}
+        </section>
+
+        {/* CTA */}
+        <section className="pt-2 space-y-3">
+          <Link
+            href="/dashboard"
+            className="glow-primary w-full bg-primary hover:brightness-110 text-on-primary font-label font-bold py-2.5 rounded-full transition-all active:scale-95 shadow-md flex items-center justify-center gap-2"
+          >
+            Start your first challenge
+            <span className="material-symbols-outlined">arrow_forward</span>
+          </Link>
+          <Link
+            href="/dashboard"
+            className="block text-center text-sm font-bold text-primary hover:underline underline-offset-4 decoration-2"
+          >
+            See your personalized study plan
+          </Link>
+        </section>
+      </main>
+    </div>
+  )
+}

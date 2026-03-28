@@ -59,7 +59,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     <div className="min-h-screen flex">
       {/* Left panel */}
       <div className="w-2/5 bg-surface-container-low flex flex-col justify-center px-12 py-16">
-        <LumaGlyph size={48} animated className="text-primary mb-6" />
+        <LumaGlyph size={48} state="idle" className="text-primary mb-6" />
         <h2 className="font-headline text-3xl text-on-surface mb-3 leading-snug">
           Tell me where you are. I&apos;ll tell you where to go.
         </h2>

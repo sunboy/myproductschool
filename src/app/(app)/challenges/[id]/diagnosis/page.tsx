@@ -154,7 +154,7 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
       {!hasPatterns ? (
         /* Empty state — strong submission */
         <div className="flex flex-col items-center text-center py-10 space-y-4">
-          <LumaGlyph size={48} className="text-primary" animated />
+          <LumaGlyph size={48} className="text-primary" state="reviewing" />
           <div>
             <h2 className="font-headline text-2xl text-on-surface mb-2">Strong session.</h2>
             <p className="text-on-surface-variant text-sm">No failure patterns detected this session. Keep building.</p>

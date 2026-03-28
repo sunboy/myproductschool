@@ -2,57 +2,59 @@
 import Link from 'next/link'
 import { LumaGlyph } from './LumaGlyph'
 
-interface TopBarProps {
-  title?: string
-  showBack?: boolean
-  streakDays?: number
-  xpTotal?: number
-}
+// Mock values — replace with real data when backend is ready
+const STREAK_DAYS = 5
+const XP_TOTAL    = 1240
 
-export function TopBar({ title: _title, showBack, streakDays = 0, xpTotal = 0 }: TopBarProps) {
+export function TopBar() {
   return (
-    <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-outline-variant">
-      <div className="flex items-center gap-3 px-4 h-14">
-        {/* Left: back button or logo */}
-        {showBack ? (
-          <Link href=".." className="md:hidden p-1.5 rounded-lg hover:bg-surface-container transition-colors flex-shrink-0">
-            <span className="material-symbols-outlined">arrow_back</span>
-          </Link>
-        ) : (
-          <div className="md:hidden flex-shrink-0">
-            <LumaGlyph size={24} className="text-primary" />
-          </div>
-        )}
+    <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-lg border-b border-outline-variant/40">
+      <div className="flex items-center gap-3 px-4 h-13">
 
-        {/* Center: search input */}
-        <div className="flex-1 flex justify-center">
-          <input
-            type="text"
-            placeholder="Search challenges, concepts..."
-            className="w-full max-w-sm bg-surface-container rounded-full px-4 py-1.5 text-sm text-on-surface placeholder:text-on-surface-variant outline-none border border-outline-variant focus:border-primary transition-colors"
-          />
+        {/* Mobile: logo */}
+        <div className="md:hidden shrink-0">
+          <LumaGlyph size={22} className="text-primary animate-luma-glow" animated />
         </div>
 
-        {/* Right: streak, xp, avatar */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Streak badge */}
-          {streakDays > 0 && (
-            <div className="flex items-center gap-1 px-2 py-1 bg-tertiary-container rounded-full">
-              <span className="material-symbols-filled text-sm text-tertiary">local_fire_department</span>
-              <span className="text-xs font-bold text-on-tertiary-container">{streakDays}</span>
-            </div>
-          )}
+        {/* Search */}
+        <div className="flex-1 flex">
+          <div className="relative w-full max-w-sm">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-base pointer-events-none">
+              search
+            </span>
+            <input
+              type="text"
+              placeholder="Search challenges, concepts..."
+              className="w-full bg-surface-container rounded-full pl-9 pr-4 py-1.5 text-sm text-on-surface placeholder:text-on-surface-variant/60 outline-none border border-outline-variant/40 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+            />
+          </div>
+        </div>
 
-          {/* XP badge */}
-          {xpTotal > 0 && (
-            <div className="flex items-center gap-1 px-2 py-1 bg-secondary-container rounded-full">
-              <span className="text-xs font-bold text-on-secondary-container">{xpTotal} XP</span>
-            </div>
-          )}
+        {/* Right badges + avatar */}
+        <div className="flex items-center gap-2 shrink-0">
+
+          {/* Streak */}
+          <div className="flex items-center gap-1 px-2.5 py-1 bg-tertiary-fixed/70 rounded-full">
+            <span
+              className="material-symbols-outlined text-tertiary text-sm"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              local_fire_department
+            </span>
+            <span className="text-xs font-bold text-tertiary font-label">{STREAK_DAYS}</span>
+          </div>
+
+          {/* XP */}
+          <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 bg-primary-fixed/70 rounded-full">
+            <span className="text-xs font-bold text-primary font-label">{XP_TOTAL.toLocaleString()} XP</span>
+          </div>
 
           {/* Avatar */}
-          <Link href="/profile" className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
-            <span className="material-symbols-outlined text-sm text-on-primary-container">person</span>
+          <Link
+            href="/settings"
+            className="w-8 h-8 rounded-full bg-primary flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm"
+          >
+            <span className="text-xs font-bold text-on-primary font-label">S</span>
           </Link>
         </div>
       </div>

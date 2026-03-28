@@ -1,22 +1,11 @@
 import { getChallengeById } from '@/lib/data/challenges'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { FeedbackAccordion } from '@/components/challenge/FeedbackAccordion'
 import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { LumaFeedbackItem } from '@/lib/types'
-
-const dimensionConfig: Record<string, { label: string; icon: string }> = {
-  diagnostic_accuracy: { label: 'Diagnostic Accuracy', icon: 'manage_search' },
-  metric_fluency: { label: 'Metric Fluency', icon: 'analytics' },
-  framing_precision: { label: 'Framing Precision', icon: 'frame_inspect' },
-  recommendation_strength: { label: 'Recommendation Strength', icon: 'recommend' },
-}
-
-function prettifyDimension(key: string): string {
-  return dimensionConfig[key]?.label ?? key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-}
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 interface FeedbackPageProps {
   params: Promise<{ id: string }>
@@ -35,8 +24,6 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
   let feedback: LumaFeedbackItem[] = isMock ? MOCK_FEEDBACK : []
   let feedbackFull: typeof MOCK_FEEDBACK_FULL | undefined = isMock ? MOCK_FEEDBACK_FULL : undefined
   let rawOverallScore: number | null = null
-  let submissionDate: string | null = null
-  let responseText: string | null = null
 
   if (!isMock && attempt) {
     try {
@@ -55,12 +42,6 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
         if (attemptData) {
           if (attemptData.feedback_json) {
             feedback = attemptData.feedback_json as LumaFeedbackItem[]
-          }
-          if (attemptData.submitted_at) {
-            submissionDate = attemptData.submitted_at
-          }
-          if (attemptData.response_text) {
-            responseText = attemptData.response_text as string
           }
 
           const scoreJson = attemptData.score_json as Record<string, unknown> | null
@@ -117,273 +98,264 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
     }
   }
 
-  // Compute overall score on /100 scale
   const overallScoreNum = rawOverallScore != null
     ? rawOverallScore
     : feedback.length > 0
       ? Math.round(feedback.reduce((s, f) => s + f.score, 0) / feedback.length * 10)
-      : 70
+      : 72
 
   const full = feedbackFull ?? MOCK_FEEDBACK_FULL
-  const items = feedback.length > 0 ? feedback : (full.dimensions as LumaFeedbackItem[])
 
-  // Determine score descriptor text
-  const scoreDescriptor = overallScoreNum >= 90
-    ? 'Excellent performance'
-    : overallScoreNum >= 75
-      ? 'Strong performance with room to grow'
-      : overallScoreNum >= 60
-        ? 'Good foundation — focus on the areas below'
-        : 'Keep practicing — review the suggestions below'
+  // Five-dimension breakdown
+  const dimensions = [
+    { name: 'Problem Reframing', score: 4, maxScore: 5 },
+    { name: 'User Segmentation', score: 5, maxScore: 5 },
+    { name: 'Data Reasoning', score: 3, maxScore: 5 },
+    { name: 'Tradeoff Clarity', score: 4, maxScore: 5 },
+    { name: 'Communication', score: 2, maxScore: 5 },
+  ]
 
-  // Format submission date
-  const formattedDate = submissionDate
-    ? new Date(submissionDate).toLocaleDateString('en-US', {
-        month: 'short', day: 'numeric', year: 'numeric',
-      })
-    : new Date().toLocaleDateString('en-US', {
-        month: 'short', day: 'numeric', year: 'numeric',
-      })
+  function scoreColor(score: number) {
+    if (score >= 4) return 'bg-primary'
+    if (score === 3) return 'bg-tertiary'
+    return 'bg-error'
+  }
 
-  // Word count from response or estimate
-  const wordCount = responseText
-    ? responseText.split(/\s+/).filter(Boolean).length
-    : null
+  function scoreTextColor(score: number) {
+    if (score >= 4) return 'text-primary'
+    if (score === 3) return 'text-tertiary'
+    return 'text-error'
+  }
 
-  // Map dimensions to accordion panel data
-  const dimensionPanels = items.map((item, idx) => ({
-    index: idx + 1,
-    dimension: item.dimension,
-    label: prettifyDimension(item.dimension),
-    icon: dimensionConfig[item.dimension]?.icon ?? 'bar_chart',
-    score: item.score,
-    maxScore: 10,
-    commentary: item.commentary,
-    suggestions: item.suggestions,
-    needsWork: item.score < 7,
-  }))
-
-  // Map detected patterns
-  const detectedPatterns = full.detected_patterns?.map(p => ({
-    pattern_name: p.pattern_name,
-    confidence: p.confidence,
-    evidence: p.evidence,
-  })) ?? []
+  // Anti-patterns from data or mock
+  const antiPatterns = full.detected_patterns && full.detected_patterns.length > 0
+    ? full.detected_patterns
+    : [
+        { pattern_id: 'FP-09', pattern_name: 'Aggregate Fallacy', confidence: 0.85, evidence: 'Treating all users as one group instead of segmenting by behavior.', question: 'q1' },
+        { pattern_id: 'FP-04', pattern_name: 'Metric Recitation', confidence: 0.75, evidence: 'Named metrics without explaining selection rationale.', question: 'q2' },
+      ]
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
-      {/* Back navigation */}
-      <div className="flex items-center gap-3 mb-6">
-        <Link href={`/challenges/${id}`} className="p-2 rounded-lg hover:bg-surface-container transition-colors">
-          <span className="material-symbols-outlined text-on-surface-variant">arrow_back</span>
-        </Link>
-        <span className="text-sm text-on-surface-variant font-label">Back to challenge</span>
-      </div>
-
-      {/* Two-pane grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
-        {/* ─── Left Pane: Case Context (5 cols) ─── */}
-        <section className="col-span-12 lg:col-span-5 space-y-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-headline text-2xl font-bold text-on-surface">Case Context</h2>
-            <span className="px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed rounded-full text-xs font-bold uppercase tracking-wider">
-              {challenge.difficulty}
-            </span>
+    <div className="min-h-screen bg-background">
+      <div className="max-w-6xl mx-auto px-4 py-4 animate-fade-in-up">
+        {/* Page header */}
+        <div className="flex items-center gap-3 mb-3">
+          <Link
+            href="/challenges"
+            className="text-on-surface-variant hover:text-on-surface transition-colors"
+          >
+            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+          </Link>
+          <div>
+            <h1 className="font-headline text-xl font-bold text-on-surface">
+              {challenge.title}
+            </h1>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="badge-move bg-secondary-container text-on-secondary-container">
+                <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>check</span>
+                Completed
+              </span>
+              <span className="badge-move bg-tertiary-container text-on-surface">
+                +45 XP
+              </span>
+            </div>
           </div>
+        </div>
 
-          {/* Challenge card — sticky on desktop */}
-          <div className="bg-surface-container p-6 rounded-xl editorial-shadow space-y-4 lg:sticky lg:top-24">
-            {/* Challenge title */}
-            <h3 className="font-headline text-xl font-bold text-primary">{challenge.title}</h3>
+        {/* Two-column layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
+          {/* ── Left column (3/5) ──────────────────────────── */}
+          <div className="lg:col-span-3 space-y-3">
+            {/* MIST Fingerprint section */}
+            <div className="card-elevated p-4">
+              <h2 className="font-label font-bold text-[10px] uppercase tracking-widest text-on-surface-variant mb-3">
+                MIST Fingerprint
+              </h2>
 
-            {/* Prompt text */}
-            <p className="text-sm text-on-surface-variant leading-relaxed whitespace-pre-line">
-              {challenge.prompt_text}
-            </p>
+              {/* Score bars */}
+              <div className="space-y-2">
+                {dimensions.map((dim) => (
+                  <div key={dim.name} className="flex items-center gap-3">
+                    <span className="w-36 text-xs font-label font-semibold text-on-surface">{dim.name}</span>
+                    <div className="flex-1 h-2 rounded-full bg-surface-container-high overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${scoreColor(dim.score)}`}
+                        style={{ width: `${(dim.score / dim.maxScore) * 100}%` }}
+                      />
+                    </div>
+                    <span className={`text-xs font-bold tabular-nums ${scoreTextColor(dim.score)}`}>
+                      {dim.score}/{dim.maxScore}
+                    </span>
+                  </div>
+                ))}
+              </div>
 
-            {/* Tag chips */}
-            <div className="flex flex-wrap gap-2 pt-2">
-              {challenge.tags.map(tag => (
-                <span
-                  key={tag}
-                  className="text-xs px-2 py-1 bg-surface-variant text-on-surface-variant rounded-md border border-outline-variant/30"
-                >
-                  {tag}
-                </span>
+              {/* Overall score */}
+              <div className="mt-3 pt-3 border-t border-outline-variant/30 flex items-center justify-between">
+                <span className="font-label font-semibold text-on-surface-variant text-xs">Overall Score</span>
+                <span className="text-xl font-headline font-bold text-primary">{overallScoreNum}/100</span>
+              </div>
+            </div>
+
+            {/* Build On / Growth Areas */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="card-elevated p-4">
+                <h3 className="font-label font-semibold text-on-surface text-xs mb-2 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-primary" style={{ fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>check_circle</span>
+                  Build On
+                </h3>
+                <ul className="text-xs text-on-surface-variant font-body space-y-1.5">
+                  {full.what_worked.map((item, i) => (
+                    <li key={i} className="flex items-start gap-1.5">
+                      <span className="text-primary mt-0.5">•</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="card-elevated p-4">
+                <h3 className="font-label font-semibold text-on-surface text-xs mb-2 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-error" style={{ fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>trending_up</span>
+                  Growth Areas
+                </h3>
+                <ul className="text-xs text-on-surface-variant font-body space-y-1.5">
+                  {full.what_to_fix.map((item, i) => (
+                    <li key={i} className="flex items-start gap-1.5">
+                      <span className="text-error mt-0.5">•</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Detailed Feedback */}
+            <div className="card-elevated p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-1.5 rounded-full bg-primary/10">
+                  <LumaGlyph size={24} className="text-primary animate-luma-glow" />
+                </div>
+                <h2 className="font-headline text-sm font-bold text-on-surface">Detailed Feedback</h2>
+              </div>
+
+              <p className="text-xs text-on-surface-variant font-body leading-relaxed mb-3">
+                {full.overall}
+              </p>
+
+              {/* Per-dimension commentary */}
+              {full.dimensions && full.dimensions.map((dim, i) => (
+                <div key={i} className="mt-3 pt-3 border-t border-outline-variant/20">
+                  <h4 className="font-label font-semibold text-on-surface text-xs mb-0.5">
+                    {dim.dimension.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                  </h4>
+                  <p className="text-xs text-on-surface-variant font-body leading-relaxed">
+                    {dim.commentary}
+                  </p>
+                  {dim.suggestions && dim.suggestions.length > 0 && (
+                    <ul className="mt-1.5 space-y-0.5">
+                      {dim.suggestions.map((s, j) => (
+                        <li key={j} className="text-xs text-primary font-label flex items-start gap-1">
+                          <span className="material-symbols-outlined text-[12px] mt-0.5">arrow_forward</span>
+                          {s}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               ))}
             </div>
 
-            {/* Submission details */}
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-3 p-4 bg-surface-container-low rounded-lg border border-outline-variant/20">
-                <span className="material-symbols-outlined text-primary">calendar_today</span>
-                <div className="flex-1">
-                  <p className="text-xs font-bold text-on-surface-variant uppercase">Submission Date</p>
-                  <p className="text-sm font-semibold text-on-surface">{formattedDate}</p>
-                </div>
+            {/* Key Conceptual Lesson */}
+            <div className="bg-primary-fixed rounded-2xl p-4 editorial-shadow">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="material-symbols-outlined text-primary" style={{ fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>lightbulb</span>
+                <h3 className="font-headline font-bold text-on-surface text-sm">Composition Effect</h3>
               </div>
-              {wordCount && (
-                <div className="flex items-center gap-3 p-4 bg-surface-container-low rounded-lg border border-outline-variant/20">
-                  <span className="material-symbols-outlined text-primary">description</span>
-                  <div className="flex-1">
-                    <p className="text-xs font-bold text-on-surface-variant uppercase">Response Length</p>
-                    <p className="text-sm font-semibold text-on-surface">{wordCount} words</p>
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center gap-3 p-4 bg-surface-container-low rounded-lg border border-outline-variant/20">
-                <span className="material-symbols-outlined text-primary">timer</span>
-                <div className="flex-1">
-                  <p className="text-xs font-bold text-on-surface-variant uppercase">Estimated Time</p>
-                  <p className="text-sm font-semibold text-on-surface">{challenge.estimated_minutes} min</p>
-                </div>
-              </div>
+              <p className="text-xs text-on-surface-variant font-body leading-relaxed">
+                Aggregate metrics can hide opposing segment trends. When one user group grows while another shrinks, the blended average can move in a direction that reflects neither group accurately. Always decompose metrics by meaningful segments before drawing conclusions.
+              </p>
+              <p className="text-xs text-primary font-label font-semibold mt-2">
+                Added to your Thinking Journal &rarr;
+              </p>
             </div>
 
-            {/* User's submitted response (if available) */}
-            {responseText && (
-              <div className="pt-2">
-                <p className="text-xs font-bold text-on-surface-variant uppercase mb-2">Your Response</p>
-                <div className="bg-surface-container-lowest rounded-xl p-4 text-sm text-on-surface-variant leading-relaxed max-h-64 overflow-y-auto whitespace-pre-line border border-outline-variant/20">
-                  {responseText}
-                </div>
+            {/* Interview Tip */}
+            <div className="bg-primary-fixed rounded-2xl p-4 editorial-shadow">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="material-symbols-outlined text-primary" style={{ fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>school</span>
+                <h3 className="font-label font-semibold text-on-surface text-xs">Interview Tip</h3>
               </div>
-            )}
+              <p className="text-xs text-on-surface-variant font-body leading-relaxed">
+                Segment tickets by type and user cohort before presenting your analysis. Interviewers look for structured segmentation as a sign of analytical maturity.
+              </p>
+            </div>
           </div>
-        </section>
 
-        {/* ─── Right Pane: Luma's Analysis (7 cols) ─── */}
-        <section className="col-span-12 lg:col-span-7 space-y-6">
-          <h2 className="font-headline text-2xl font-bold text-on-surface">Submission Review</h2>
-
-          {/* Score Summary Card */}
-          <div className="bg-surface-container p-6 rounded-xl editorial-shadow border-t-4 border-primary">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="font-headline text-lg font-bold text-on-surface">
-                  Luma&apos;s Analysis
-                </h3>
-                <p className="text-sm text-on-surface-variant">AI-Assisted Evaluation</p>
-              </div>
-              <div className="text-right">
-                <span className="text-5xl font-headline font-extrabold text-primary">{(overallScoreNum / 10).toFixed(1)}</span>
-                <span className="text-xl opacity-60">/10</span>
-              </div>
-            </div>
-
-            {/* Score descriptor */}
-            <p className="text-sm text-on-surface-variant mb-4">{scoreDescriptor}</p>
-
-            {/* Overall assessment */}
-            <p className="text-sm text-on-surface leading-relaxed mb-6">{full.overall}</p>
-
-            {/* Progress Bars for each dimension (summary) */}
-            <div className="space-y-3">
-              {items.map(item => {
-                const percentage = (item.score / 10) * 100
-                const barColor = item.score >= 7 ? 'bg-primary' : 'bg-secondary'
-                return (
-                  <div key={item.dimension} className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/15 flex items-center justify-between shadow-sm">
-                    <div className="flex flex-col gap-2 w-full mr-4">
-                      <span className="text-sm font-bold text-on-surface">{prettifyDimension(item.dimension)}</span>
-                      <div className="h-1.5 w-full bg-background rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${barColor} rounded-full transition-all duration-700`}
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
+          {/* ── Right column (2/5) ─────────────────────────── */}
+          <div className="lg:col-span-2 space-y-3">
+            {/* Anti-Patterns Detected */}
+            <div className="card-elevated p-4">
+              <h2 className="font-label font-bold text-[10px] uppercase tracking-widest text-on-surface-variant mb-3 flex items-center gap-2">
+                <span className="material-symbols-outlined text-error" style={{ fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>warning</span>
+                Anti-Patterns Detected
+              </h2>
+              <div className="space-y-3">
+                {antiPatterns.map((pattern, i) => (
+                  <div key={i} className="bg-error/5 border border-error/15 rounded-xl p-3">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="font-label font-bold text-on-surface text-xs">{pattern.pattern_name}</span>
+                      <span className="badge-move bg-error/10 text-error">
+                        {Math.round(pattern.confidence * 100)}%
+                      </span>
                     </div>
-                    <span className="font-headline font-extrabold text-primary">{item.score.toFixed(1)}</span>
+                    <p className="text-xs text-on-surface-variant font-body leading-relaxed">
+                      {pattern.evidence}
+                    </p>
                   </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* What Worked / What to Fix */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-surface border-l-4 border-primary rounded-xl p-5 shadow-sm space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
-                <h4 className="font-headline font-extrabold text-on-surface text-lg">What Worked</h4>
-              </div>
-              <ul className="space-y-2">
-                {full.what_worked.map((item, i) => (
-                  <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
-                    <span className="material-symbols-outlined text-primary text-lg flex-shrink-0">check_circle</span>
-                    <span>{item}</span>
-                  </li>
                 ))}
-              </ul>
-            </div>
-            <div className="bg-surface border-l-4 border-secondary rounded-xl p-5 shadow-sm space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
-                <h4 className="font-headline font-extrabold text-on-surface text-lg">Areas for Growth</h4>
               </div>
-              <ul className="space-y-2">
-                {full.what_to_fix.map((item, i) => (
-                  <li key={i} className="flex gap-3 text-sm text-on-surface-variant font-medium">
-                    <span className="material-symbols-outlined text-secondary text-lg flex-shrink-0">arrow_forward</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
+            </div>
+
+            {/* Thinking Pattern Collected */}
+            <div className="bg-tertiary-container/30 border border-tertiary-container rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="material-symbols-outlined text-tertiary" style={{ fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>lightbulb</span>
+                <span className="font-label font-semibold text-on-surface text-xs">Pattern Collected</span>
+              </div>
+              <p className="text-xs text-on-surface-variant font-body">
+                <span className="font-semibold text-on-surface">Composition Effect</span> — When aggregate metrics move oppositely, segment first.
+              </p>
+            </div>
+
+            {/* Model Answer (Pro-locked) */}
+            <div className="card-elevated p-4 relative overflow-hidden">
+              <h3 className="font-headline font-bold text-on-surface text-sm mb-2">Model Answer</h3>
+              <p className="blur-sm text-xs text-on-surface-variant leading-relaxed">
+                A comprehensive approach would involve segmenting users by historical behavior&hellip; classic Simpson&apos;s Paradox where aggregate rates drop because low-intent traffic was added. The candidate should identify at least three cohorts &mdash; power users, casual browsers, and dormant accounts &mdash; and analyze how each group responds differently to the proposed pricing change.
+              </p>
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-2xl">
+                <span className="material-symbols-outlined text-2xl text-on-surface-variant mb-2" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>lock</span>
+                <button className="bg-primary text-on-primary glow-primary rounded-full px-5 py-2 font-label font-semibold text-xs active:scale-95 transition-all">
+                  Unlock with Pro
+                </button>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-2 pt-1 pb-2">
+              <button className="flex items-center justify-center gap-2 border border-outline text-on-surface rounded-full px-5 py-2 font-label font-semibold text-xs hover:bg-surface-container transition-colors">
+                <span className="material-symbols-outlined text-[16px]">share</span>
+                Share Score Card
+              </button>
+              <Link
+                href="/challenges"
+                className="text-center text-xs font-label font-semibold text-primary hover:underline"
+              >
+                Back to Practice
+              </Link>
             </div>
           </div>
-
-          {/* Dimension Expansion Panels (Accordions) */}
-          <FeedbackAccordion
-            dimensions={dimensionPanels}
-            detectedPatterns={detectedPatterns.length > 0 ? detectedPatterns : undefined}
-          />
-
-          {/* Key Insight */}
-          <div className="bg-tertiary-fixed rounded-xl p-5 flex items-start gap-3">
-            <span className="material-symbols-outlined text-tertiary flex-shrink-0 mt-0.5">lightbulb</span>
-            <div>
-              <p className="font-label font-semibold text-on-tertiary-fixed-variant mb-1">Key Insight</p>
-              <p className="text-sm text-on-tertiary-fixed-variant">{full.key_insight}</p>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-2">
-            <Link
-              href={`/challenges/${id}/diagnosis?attempt=${attempt ?? 'mock'}`}
-              className="flex-1 py-3 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 shadow-md shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 font-label text-sm"
-            >
-              <span className="material-symbols-outlined">verified</span>
-              See Diagnosis
-            </Link>
-            <Link
-              href={`/challenges/${id}`}
-              className="flex-1 py-3 border border-primary text-primary rounded-full font-bold hover:bg-primary/5 transition-all active:scale-95 flex items-center justify-center gap-2 font-label text-sm"
-            >
-              <span className="material-symbols-outlined">edit_note</span>
-              Try Again
-            </Link>
-          </div>
-
-          {/* Links row */}
-          <div className="flex items-center justify-center gap-4 pt-1 pb-4">
-            <Link href={`/challenges/${id}/model-answer`} className="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors font-label">
-              <span className="material-symbols-outlined text-sm">auto_stories</span>
-              Model answer
-            </Link>
-            <span className="text-outline-variant">&#183;</span>
-            <Link href={`/challenges/${id}/discussion`} className="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors font-label">
-              <span className="material-symbols-outlined text-sm">forum</span>
-              Discussion
-            </Link>
-            <span className="text-outline-variant">&#183;</span>
-            <Link href="/challenges" className="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors font-label">
-              <span className="material-symbols-outlined text-sm">grid_view</span>
-              All challenges
-            </Link>
-          </div>
-        </section>
+        </div>
       </div>
     </div>
   )

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings | HackProduct</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,700;0,800;1,400&amp;family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#4a7c59",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#c8e8d0",
+                        secondary: "#6b6358",
+                        "secondary-container": "#f0e8db",
+                        tertiary: "#705c30",
+                        "tertiary-container": "#c4a66a",
+                        background: "#faf6f0",
+                        surface: "#faf6f0",
+                        "surface-low": "#f5f1ea",
+                        "surface-container": "#f0ece4",
+                        "surface-high": "#eae6de",
+                        "surface-highest": "#e4e0d8",
+                        "on-surface": "#2e3230",
+                        "on-surface-variant": "#4a4e4a",
+                        outline: "#74796e",
+                        "outline-variant": "#c4c8bc",
+                        error: "#b83230",
+                    },
+                    fontFamily: {
+                        "headline": ["Literata", "serif"],
+                        "body": ["Nunito Sans", "sans-serif"],
+                        "label": ["Nunito Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .small-caps { font-variant: small-caps; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-container">
+<!-- Sidebar Navigation (Desktop) -->
+<aside class="fixed left-0 top-0 py-4 flex flex-col justify-between w-[220px] h-screen border-r border-outline-variant bg-surface-low hidden md:flex z-50">
+<div class="flex flex-col gap-6">
+<div class="px-6 flex items-center gap-3">
+<img alt="Luma Mascot" class="w-8 h-8 rounded-full" data-alt="Small friendly robot mascot Luma wearing a green graduation cap on a pale cream background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYDu7eSLuDUHN_Y9qlLszdT8F8lTJwo2gIhv7XLQPSSNS07DynoVQdQBiazWVteTsBe9Y6e8plJuoixGNudUvEPFs8iWtmt2uD97yDRqcrS_HwRUXxxd0r9NJaV3tPuA70ukJWJgF8pH0Hxy7FySajTGOGOHHuLNCCSZPD3smqkgQx2a_ZnyJVWn7Qg49fdxE8FPOQWOsoKKLTqtaK-__CwasB1TAJwLpNCoq0GK1D1yz6m-a8YCyMUOmlVFEeIMe2SJXe18bUJUhn"/>
+<span class="text-primary font-headline font-bold text-lg">HackProduct</span>
+</div>
+<nav class="flex flex-col gap-1">
+<!-- Home -->
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-high mx-2 rounded-full transition-all group" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-medium text-sm">Home</span>
+</a>
+<!-- Explore -->
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-high mx-2 rounded-full transition-all group" href="#">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-medium text-sm">Explore</span>
+</a>
+<!-- Practice -->
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-high mx-2 rounded-full transition-all group" href="#">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span>
+<span class="font-medium text-sm">Practice</span>
+</a>
+<!-- Prep -->
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-high mx-2 rounded-full transition-all group" href="#">
+<span class="material-symbols-outlined" data-icon="workspace_premium">workspace_premium</span>
+<span class="font-medium text-sm">Prep</span>
+</a>
+<!-- Progress -->
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-high mx-2 rounded-full transition-all group" href="#">
+<span class="material-symbols-outlined" data-icon="bar_chart">bar_chart</span>
+<span class="font-medium text-sm">Progress</span>
+</a>
+</nav>
+</div>
+<div class="px-4 flex flex-col gap-4">
+<div class="bg-surface-container rounded-xl p-3">
+<div class="flex justify-between items-center mb-1">
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Daily Goal</span>
+<span class="text-[10px] font-bold text-primary">2/3</span>
+</div>
+<div class="w-full bg-surface-highest rounded-full h-1.5">
+<div class="bg-primary h-1.5 rounded-full" style="width: 66%"></div>
+</div>
+</div>
+<button class="w-full py-2 px-4 bg-tertiary-container text-tertiary rounded-full text-sm font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-sm" data-icon="stars">stars</span>
+                Upgrade to Pro
+            </button>
+<button class="w-full py-2 px-4 bg-primary text-on-primary rounded-full text-sm font-bold flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="forum">forum</span>
+                Ask Luma
+            </button>
+</div>
+</aside>
+<!-- Top Bar -->
+<header class="h-12 w-full border-b border-outline-variant bg-surface sticky top-0 z-40 flex items-center justify-between px-4 md:pl-[236px]">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined cursor-pointer" data-icon="arrow_back">arrow_back</span>
+<h1 class="font-headline font-bold text-lg md:text-xl">Settings</h1>
+</div>
+<div class="flex items-center gap-3">
+<div class="hidden sm:flex items-center bg-surface-container-high rounded-full px-3 py-1 gap-2 border border-outline-variant">
+<span class="material-symbols-outlined text-tertiary text-sm" data-icon="local_fire_department" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="text-xs font-bold">12 Day Streak</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer p-1 rounded-full hover:bg-surface-high" data-icon="notifications">notifications</span>
+<img alt="User Avatar" class="w-7 h-7 rounded-full border border-outline-variant" data-alt="Portrait avatar of a young man named Sandeep with dark hair and a friendly expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-CH_MI2_ysAV7ouCRzoxDdxtnkTQEglL7t50OvGMzlZJr_n4O3yzeQj0TDGwJZJ6DF-_tipdu-cUdEAWIU_tnrqnO3k1DJoOG43T3M5Y57AdcWxlvl2v8YbqwM3qY-SK0bCrGNIlMdPyk38ErUDnqfD1YJAT-AtnJVcuami1Re53LVtv-mJEChYsPrrViJcEAuYBmatlRQsLfLdiBChHVm1GOqmrmNwq-FC-7DEGl6N2ZywOEbwjv3LThNty3Sch2NwBPduI7UVYF"/>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="md:ml-[220px] pb-24 md:pb-8 pt-6 px-4 max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Left Column: Primary Settings -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<!-- Account Section -->
+<section class="bg-surface-container rounded-xl p-5 border border-outline-variant/30">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-xs font-bold text-on-surface-variant tracking-[0.15em] small-caps">ACCOUNT</h2>
+<span class="material-symbols-outlined text-on-surface-variant text-sm cursor-help" data-icon="info">info</span>
+</div>
+<div class="flex flex-col sm:flex-row items-center gap-6 mb-8">
+<div class="relative">
+<div class="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-on-primary font-headline text-2xl font-bold">S</div>
+<div class="absolute -bottom-1 -right-1 bg-surface rounded-full p-1 border border-outline-variant">
+<span class="material-symbols-outlined text-xs text-primary" data-icon="photo_camera" style="font-variation-settings: 'FILL' 1;">photo_camera</span>
+</div>
+</div>
+<div class="flex flex-col items-center sm:items-start">
+<button class="text-primary text-sm font-bold hover:underline">Change photo →</button>
+<p class="text-xs text-on-surface-variant mt-1">Recommended size 400x400px</p>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="flex flex-col gap-1.5">
+<label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider pl-1">Display name</label>
+<div class="flex items-center justify-between bg-surface-low rounded-lg px-3 py-2.5 border border-outline-variant/50">
+<span class="text-sm font-medium">Sandeep</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm cursor-pointer" data-icon="edit">edit</span>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider pl-1">Email</label>
+<div class="flex items-center justify-between bg-surface-low rounded-lg px-3 py-2.5 border border-outline-variant/50 opacity-80">
+<span class="text-sm font-medium">sandeep@hackproduct.io</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="lock">lock</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider pl-1">Role</label>
+<div class="flex items-center justify-between bg-surface-low rounded-lg px-3 py-2.5 border border-outline-variant/50">
+<div class="flex items-center gap-2">
+<span class="text-sm font-medium">Engineer</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="arrow_forward">arrow_forward</span>
+<span class="text-sm font-bold text-primary">PM</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-sm cursor-pointer" data-icon="settings_suggest">settings_suggest</span>
+</div>
+</div>
+<div class="mt-4 flex justify-end">
+<button class="bg-primary text-on-primary font-bold px-6 py-2.5 rounded-full text-sm hover:shadow-lg active:scale-95 transition-all">
+                            Save changes
+                        </button>
+</div>
+</div>
+</section>
+<!-- Notifications Section -->
+<section class="bg-surface-container rounded-xl p-5 border border-outline-variant/30">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-xs font-bold text-on-surface-variant tracking-[0.15em] small-caps">NOTIFICATIONS</h2>
+</div>
+<div class="divide-y divide-outline-variant/20">
+<!-- Row 1 -->
+<div class="py-4 flex items-center justify-between">
+<div class="flex flex-col gap-0.5">
+<span class="text-sm font-bold">Daily Quick Take</span>
+<p class="text-xs text-on-surface-variant">Get your morning product challenge</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="bg-secondary-container text-secondary text-[10px] font-bold px-2 py-0.5 rounded-full">9:00 AM</span>
+<div class="w-10 h-5 bg-primary rounded-full relative cursor-pointer flex items-center px-1">
+<div class="w-3.5 h-3.5 bg-on-primary rounded-full ml-auto"></div>
+</div>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="py-4 flex items-center justify-between">
+<div class="flex flex-col gap-0.5">
+<span class="text-sm font-bold">Streak alert</span>
+<p class="text-xs text-on-surface-variant">Don't lose your progress, Sandeep!</p>
+</div>
+<div class="w-10 h-5 bg-primary rounded-full relative cursor-pointer flex items-center px-1">
+<div class="w-3.5 h-3.5 bg-on-primary rounded-full ml-auto"></div>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="py-4 flex items-center justify-between">
+<div class="flex flex-col gap-0.5">
+<span class="text-sm font-bold">Weekly results</span>
+<p class="text-xs text-on-surface-variant">Your performance breakdown every Monday</p>
+</div>
+<div class="w-10 h-5 bg-primary rounded-full relative cursor-pointer flex items-center px-1">
+<div class="w-3.5 h-3.5 bg-on-primary rounded-full ml-auto"></div>
+</div>
+</div>
+<!-- Row 4 -->
+<div class="py-4 flex items-center justify-between">
+<div class="flex flex-col gap-0.5">
+<span class="text-sm font-bold">Level up</span>
+<p class="text-xs text-on-surface-variant">When you earn new skill badges</p>
+</div>
+<div class="w-10 h-5 bg-primary rounded-full relative cursor-pointer flex items-center px-1">
+<div class="w-3.5 h-3.5 bg-on-primary rounded-full ml-auto"></div>
+</div>
+</div>
+<!-- Row 5 -->
+<div class="py-4 flex items-center justify-between">
+<div class="flex flex-col gap-0.5">
+<span class="text-sm font-bold">Luma tips</span>
+<p class="text-xs text-on-surface-variant">AI-curated coaching insights</p>
+</div>
+<div class="w-10 h-5 bg-outline-variant/40 rounded-full relative cursor-pointer flex items-center px-1">
+<div class="w-3.5 h-3.5 bg-on-surface-variant rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Secondary Settings -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<!-- Plan Section -->
+<section class="bg-surface-container rounded-xl p-5 border border-outline-variant/30">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-xs font-bold text-on-surface-variant tracking-[0.15em] small-caps">PLAN</h2>
+</div>
+<div class="bg-surface-low rounded-xl p-4 border border-outline-variant/30 mb-4">
+<div class="flex items-center justify-between mb-3">
+<span class="text-sm font-medium">Current Plan</span>
+<span class="bg-secondary-container text-secondary text-[10px] font-bold px-2 py-0.5 rounded-full">Free</span>
+</div>
+<div class="flex flex-col gap-2">
+<button class="w-full bg-primary text-on-primary font-bold py-2 rounded-full text-sm hover:opacity-90 transition-opacity">
+                            Upgrade to Pro →
+                        </button>
+<a class="text-center text-[10px] font-bold text-on-surface-variant uppercase tracking-wider hover:underline mt-1" href="#">View billing history</a>
+</div>
+</div>
+</section>
+<!-- Learning Section -->
+<section class="bg-surface-container rounded-xl p-5 border border-outline-variant/30">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-xs font-bold text-on-surface-variant tracking-[0.15em] small-caps">LEARNING</h2>
+</div>
+<div class="flex flex-col gap-5">
+<!-- Daily Goal -->
+<div class="flex flex-col gap-2">
+<label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Daily goal</label>
+<div class="flex items-center justify-between bg-surface-low rounded-lg p-2 border border-outline-variant/50">
+<button class="p-1 hover:bg-surface-high rounded-md text-primary"><span class="material-symbols-outlined" data-icon="remove">remove</span></button>
+<span class="text-sm font-bold">3 challenges</span>
+<button class="p-1 hover:bg-surface-high rounded-md text-primary"><span class="material-symbols-outlined" data-icon="add">add</span></button>
+</div>
+</div>
+<!-- FLOW Focus -->
+<div class="flex flex-col gap-2">
+<label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Preferred FLOW focus</label>
+<div class="relative">
+<select class="w-full bg-surface-low rounded-lg pl-3 pr-10 py-2 text-sm font-medium border border-outline-variant/50 appearance-none focus:ring-primary focus:border-primary">
+<option>Lens</option>
+<option>Strategy</option>
+<option>Execution</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2 pointer-events-none text-on-surface-variant" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<!-- Difficulty -->
+<div class="flex flex-col gap-2">
+<label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Challenge difficulty</label>
+<div class="relative">
+<select class="w-full bg-surface-low rounded-lg pl-3 pr-10 py-2 text-sm font-medium border border-outline-variant/50 appearance-none focus:ring-primary focus:border-primary">
+<option>Mixed</option>
+<option>Standard</option>
+<option>Expert</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2 pointer-events-none text-on-surface-variant" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<!-- Timezone -->
+<div class="flex items-center justify-between pt-2 border-t border-outline-variant/20">
+<div class="flex flex-col">
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Timezone</span>
+<span class="text-xs font-medium">IST (GMT+5:30)</span>
+</div>
+<button class="text-primary text-[10px] font-bold uppercase tracking-wider hover:underline">Change</button>
+</div>
+</div>
+</section>
+<!-- Account Actions -->
+<section class="bg-surface-container rounded-xl p-5 border border-outline-variant/30">
+<div class="flex flex-col gap-4">
+<button class="flex items-center gap-3 text-primary font-bold text-sm hover:underline w-fit">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+                        Export my data
+                    </button>
+<button class="flex items-center gap-3 text-error font-bold text-sm hover:underline w-fit">
+<span class="material-symbols-outlined text-sm" data-icon="delete_forever">delete_forever</span>
+                        Delete account
+                    </button>
+</div>
+</section>
+<!-- Mascot Insight Widget -->
+<div class="bg-primary-container rounded-xl p-4 flex gap-3 relative overflow-hidden group">
+<div class="absolute -right-4 -bottom-4 opacity-10 rotate-12 transition-transform group-hover:scale-110">
+<img alt="Luma Mascot Ghost" class="w-24 h-24" data-alt="Faded large robot mascot graphic acting as a decorative background element" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMMg2WBaBdtMzcc1UJgeU2AONW3HeVaCWckKr8tobPyyBk5tS-XlVhGCtLs0WvrQ0ColI_sy3TFcZZFWuxxrfYAWrC8YGJZr6KvNJ_l0C5T0qj0KIYD59IuKv-_n8A6CNazqCBK8UXIV0JVXGs4B0x3aTR5eEt0mc_A9SbAY46OqI3cOP9QGcPlaqv_NR-DlNl_vB6pJU79K7PR-Y8keeZbQOfyXynkHpUVYJbwaEogBS-Ylxf7cn5B7FkhSXrQfg13sASFOJsOFI5"/>
+</div>
+<img alt="Luma" class="w-10 h-10 rounded-full flex-shrink-0" data-alt="Luma robot mascot with a friendly green graduation cap" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAs3rPJiOvhpvkUtiE3k1mq8r8bodhTCY_b4DYpqpFQTRZ4b9o4zVYEOReIx1Um_3JROT8YfN6hbIJUXCa1G850hb1roxJvm4bKrTQuCuHk8Wnm_P5VDyBWyZkXk4BP2pDOdh7bgHmh7xEuM6-QWC6FSbJ6llqNMZ5bPgM2a4hrhICN8xElwXnyObN0-IewiQvGOrJ8cn-qTm_6YdfDkg2XVKP4V-QOMCDhEyzC9j03Sh-lzp_Z6xiG2RRhMCBqflS3keHShRspYJMz"/>
+<div>
+<h4 class="text-xs font-bold text-primary mb-1">Luma's Tip</h4>
+<p class="text-xs leading-relaxed text-on-surface-variant">Did you know users who practice at the same time each day are 3x more likely to reach 'Senior PM' level?</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="md:ml-[220px] pb-24 md:pb-8 pt-4 px-4">
+<div class="max-w-5xl mx-auto flex flex-col items-center gap-2">
+<p class="text-[10px] text-on-surface-variant/60 font-medium">HackProduct v2.0 · Sunboy Labs</p>
+</div>
+</footer>
+<!-- Bottom Navigation (Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-safe h-16 bg-surface border-t border-outline-variant md:hidden shadow-lg">
+<a class="flex flex-col items-center justify-center text-on-surface-variant group" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant group" href="#">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="text-[10px] font-medium">Explore</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant group" href="#">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span>
+<span class="text-[10px] font-medium">Practice</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant group" href="#">
+<span class="material-symbols-outlined" data-icon="bar_chart">bar_chart</span>
+<span class="text-[10px] font-medium">Progress</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-primary rounded-2xl px-3 py-1" href="#">
+<span class="material-symbols-outlined" data-icon="settings" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="text-[10px] font-bold">Settings</span>
+</a>
+</nav>
+</body></html>

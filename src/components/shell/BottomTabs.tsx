@@ -4,10 +4,10 @@ import { usePathname } from 'next/navigation'
 
 const tabs = [
   { href: '/dashboard', icon: 'home', label: 'Home' },
-  { href: '/domains', icon: 'grid_view', label: 'Domains' },
+  { href: '/explore', icon: 'explore', label: 'Explore' },
   { href: '/challenges', icon: 'fitness_center', label: 'Practice' },
+  { href: '/interview-prep', icon: 'workspace_premium', label: 'Prep' },
   { href: '/progress', icon: 'bar_chart', label: 'Progress' },
-  { href: '/profile', icon: 'person', label: 'Profile' },
 ]
 
 export function BottomTabs() {
@@ -22,15 +22,17 @@ export function BottomTabs() {
             <Link
               key={tab.href}
               href={tab.href}
-              className="flex-1 flex flex-col items-center gap-1 py-2 px-1"
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 px-1 ${
+                active ? 'bg-primary-fixed text-primary rounded-2xl mx-0.5 px-3 py-1' : 'text-on-surface-variant'
+              }`}
             >
               <span
-                className={`material-symbols-outlined text-xl ${active ? 'text-primary' : 'text-on-surface-variant'}`}
+                className={`material-symbols-outlined text-xl`}
                 style={{ fontVariationSettings: active ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" : "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
               >
                 {tab.icon}
               </span>
-              <span className={`text-[10px] font-medium ${active ? 'text-primary' : 'text-on-surface-variant'}`}>
+              <span className={`text-[10px] ${active ? 'font-semibold' : 'font-medium'}`}>
                 {tab.label}
               </span>
             </Link>

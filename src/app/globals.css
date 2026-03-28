@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 /* ── Material 3 + Terra Design System ────────────────────────── */
-/* Canonical token reference: stitch-screens/material-*.html     */
 
 @theme inline {
   /* Primary */
@@ -76,29 +75,82 @@
   --radius-xl: 1.5rem;
 }
 
+/* ── Base ─────────────────────────────────────────────────────── */
+
 body {
   background-color: #faf6f0;
   font-family: var(--font-nunito-sans, 'Nunito Sans', sans-serif);
   color: #2e3230;
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Material Symbols icon style */
+/* ── Material Symbols ─────────────────────────────────────────── */
+
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+  line-height: 1;
 }
 .material-symbols-filled {
   font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+  line-height: 1;
 }
 
-/* Glass card utility */
+/* ── Premium Surface Utilities ────────────────────────────────── */
+
+/* Glass morphism card */
 .glass-card {
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
-/* Text gradient (primary → tertiary) */
+/* Elevated card — warm white with editorial shadow */
+.card-elevated {
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(46, 50, 48, 0.04),
+    0 4px 16px rgba(46, 50, 48, 0.06),
+    0 0 0 1px rgba(196, 200, 188, 0.3);
+  border-radius: 16px;
+}
+
+/* Primary glow — green ambient */
+.glow-primary {
+  box-shadow: 0 4px 24px rgba(74, 124, 89, 0.22), 0 0 0 1px rgba(74, 124, 89, 0.08);
+}
+
+/* Subtle editorial shadow for cards */
+.editorial-shadow {
+  box-shadow:
+    0 1px 3px rgba(46, 50, 48, 0.05),
+    0 6px 20px rgba(46, 50, 48, 0.07);
+}
+
+/* Inner glow on hover for interactive cards */
+.card-interactive {
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+.card-interactive:hover {
+  box-shadow:
+    0 2px 8px rgba(46, 50, 48, 0.06),
+    0 12px 32px rgba(46, 50, 48, 0.10),
+    0 0 0 1px rgba(74, 124, 89, 0.12);
+  transform: translateY(-1px);
+}
+
+/* Ghost border — barely visible outline */
+.ghost-border {
+  outline: 1px solid rgba(196, 200, 188, 0.25);
+}
+
+/* ── Gradient Utilities ───────────────────────────────────────── */
+
+/* Green text gradient */
 .text-gradient {
   background: linear-gradient(135deg, #4a7c59 0%, #705c30 100%);
   -webkit-background-clip: text;
@@ -106,37 +158,30 @@ body {
   background-clip: text;
 }
 
-/* ── Animations ───────────────────────────────────────────────── */
-@keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in-up {
-  animation: fade-in-up 0.5s ease both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-fade-in-up { animation: none; }
-}
-
-/* ── Stitch Design Utilities ──────────────────────────────────── */
-.ambient-glow {
-  box-shadow: 0 4px 24px rgba(74, 124, 89, 0.25);
-}
-.editorial-shadow {
-  box-shadow: 0 8px 32px rgba(46, 50, 48, 0.06);
-}
-.ghost-border {
-  outline: 1px solid rgba(193, 201, 191, 0.15);
-}
+/* Deep forest hero gradient */
 .bg-signature-gradient {
-  background: linear-gradient(135deg, #316342 0%, #4a7c59 100%);
+  background: linear-gradient(145deg, #2d5a3d 0%, #4a7c59 50%, #3a6b4a 100%);
 }
+
+/* Warm surface gradient for featured cards */
+.bg-warm-gradient {
+  background: linear-gradient(145deg, #f5f1ea 0%, #ede7dc 100%);
+}
+
+/* Move accent gradients */
+.bg-frame-gradient  { background: linear-gradient(135deg, #4a8fd4 0%, #5eaeff 100%); }
+.bg-lens-gradient   { background: linear-gradient(135deg, #28b890 0%, #2dd4a0 100%); }
+.bg-optimize-gradient { background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%); }
+.bg-win-gradient    { background: linear-gradient(135deg, #7c6be0 0%, #a78bfa 100%); }
+
+/* ── Marquee ──────────────────────────────────────────────────── */
+
 .marquee-container {
   mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
 }
 @keyframes scroll {
-  0% { transform: translateX(0); }
+  0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
 .animate-scroll {
@@ -146,13 +191,98 @@ body {
   .animate-scroll { animation: none; }
 }
 
+/* ── Luma Glow ────────────────────────────────────────────────── */
+
 @keyframes luma-glow {
-  0%, 100% { opacity: 1; filter: drop-shadow(0 0 4px #4a7c59); }
-  50% { opacity: 0.8; filter: drop-shadow(0 0 8px #4a7c59); }
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 4px rgba(74,124,89,0.5)); }
+  50%      { opacity: 0.85; filter: drop-shadow(0 0 10px rgba(74,124,89,0.7)); }
 }
 .animate-luma-glow {
   animation: luma-glow 3s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-luma-glow { animation: none; }
+}
+
+/* ── Page Entry Animations ────────────────────────────────────── */
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease both;
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fade-in 0.3s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up,
+  .animate-fade-in { animation: none; }
+}
+
+/* ── Luma state: thinking eye scan ───────────────────────────── */
+@keyframes luma-scan {
+  0%, 100% { transform: translateX(-1.5px); }
+  50%       { transform: translateX(1.5px); }
+}
+.luma-thinking-eye {
+  animation: luma-scan 0.8s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* ── Dot pulse (grading loader) ───────────────────────────────── */
+
+@keyframes dot-pulse {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40%           { transform: scale(1);   opacity: 1;   }
+}
+.dot-pulse > span:nth-child(1) { animation: dot-pulse 1.2s ease-in-out infinite 0s; }
+.dot-pulse > span:nth-child(2) { animation: dot-pulse 1.2s ease-in-out infinite 0.2s; }
+.dot-pulse > span:nth-child(3) { animation: dot-pulse 1.2s ease-in-out infinite 0.4s; }
+
+/* ── Badge / Chip Styles ──────────────────────────────────────── */
+
+.badge-move {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-nunito-sans);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* ── Scrollbar styling ────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(74, 124, 89, 0.2);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 124, 89, 0.35);
+}
+
+/* ── Selection color ──────────────────────────────────────────── */
+
+::selection {
+  background: rgba(74, 124, 89, 0.18);
+  color: #2e3230;
+}
+
+/* ── Focus ring ───────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid #4a7c59;
+  outline-offset: 2px;
+  border-radius: 4px;
 }

@@ -45,7 +45,7 @@ export default function SimulationPage() {
   if (isLoading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-6 flex flex-col items-center justify-center" style={{ height: 'calc(100vh - 4rem)' }}>
-        <LumaGlyph size={48} className="text-primary mx-auto mb-4" animated />
+        <LumaGlyph size={48} className="text-primary mx-auto mb-4" state="listening" />
         <p className="text-on-surface-variant text-sm">Loading session…</p>
       </div>
     )
@@ -60,7 +60,7 @@ export default function SimulationPage() {
       <div className="max-w-2xl mx-auto px-4 py-6 flex flex-col" style={{ height: 'calc(100vh - 4rem)' }}>
         {/* Header */}
         <div className="flex items-center gap-3 pb-4 border-b border-outline-variant mb-4">
-          <LumaGlyph size={28} className="text-primary" animated />
+          <LumaGlyph size={28} className="text-primary" state="speaking" />
           <div>
             <p className="font-medium text-on-surface">{companyName ?? 'Interview Simulation'}</p>
             <p className="text-xs text-on-surface-variant">{challengeTitle ?? 'Luma as PM Interviewer'}</p>
@@ -106,7 +106,7 @@ export default function SimulationPage() {
     <div className="max-w-2xl mx-auto px-4 py-6 flex flex-col" style={{ height: 'calc(100vh - 4rem)' }}>
       {/* Header */}
       <div className="flex items-center gap-3 pb-4 border-b border-outline-variant mb-4">
-        <LumaGlyph size={28} className="text-primary" animated />
+        <LumaGlyph size={28} className="text-primary" state="speaking" />
         <div>
           <p className="font-medium text-on-surface">{companyName ?? 'Interview Simulation'}</p>
           <p className="text-xs text-on-surface-variant">{challengeTitle ?? 'Luma as PM Interviewer'}</p>

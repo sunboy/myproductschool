@@ -55,7 +55,7 @@ export function FeedbackDisplay({ feedback, loading, feedbackFull }: FeedbackDis
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3 p-4 bg-primary-container rounded-2xl">
-          <LumaGlyph size={32} className="text-primary animate-luma-glow" animated />
+          <LumaGlyph size={32} className="text-primary" state="celebrating" />
           <div>
             <p className="font-label font-medium text-on-primary-container">Luma is reviewing your response...</p>
             <p className="text-sm text-primary">This usually takes 10–15 seconds.</p>
