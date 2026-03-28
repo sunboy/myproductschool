@@ -1,7 +1,7 @@
 export type Plan = 'free' | 'pro'
 export type Role = 'user' | 'admin'
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced'
-export type ChallengeMode = 'solo' | 'live'
+export type ChallengeMode = 'solo' | 'live' | 'guided' | 'freeform' | 'quick-take'
 export type FeedbackDimension = 'diagnostic_accuracy' | 'metric_fluency' | 'framing_precision' | 'recommendation_strength'
 
 export const DIMENSION_LABELS: Record<FeedbackDimension, string> = {
@@ -12,6 +12,10 @@ export const DIMENSION_LABELS: Record<FeedbackDimension, string> = {
 }
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing'
 
+export type UserRole = 'SWE' | 'Data Eng' | 'ML Eng' | 'DevOps' | 'EM' | 'Founding Eng'
+export type FlowMove = 'frame' | 'split' | 'weigh' | 'sell'
+export type Paradigm = 'traditional' | 'ai-assisted' | 'agentic' | 'ai-native'
+
 export interface Profile {
   id: string
   display_name: string | null
@@ -21,6 +25,10 @@ export interface Profile {
   streak_days: number
   xp_total: number
   onboarding_completed_at: string | null
+  preferred_role: UserRole | null
+  archetype: string | null
+  archetype_description: string | null
+  streak_shield_count: number
   created_at: string
   updated_at: string
 }
@@ -275,4 +283,147 @@ export interface ProfileData {
   tier: 'free' | 'pro'
   member_since: string
   avatar_initials: string
+}
+
+/* ── v2 FLOW Move Types ───────────────────────────────────── */
+
+export interface MoveLevel {
+  id: string
+  user_id: string
+  move: FlowMove
+  level: number
+  progress_pct: number
+  xp: number
+  created_at: string
+  updated_at: string
+}
+
+export interface MoveLevelHistory {
+  id: string
+  user_id: string
+  move: FlowMove
+  xp_delta: number
+  source: 'challenge' | 'quick-take' | 'calibration' | 'cohort'
+  source_id: string | null
+  created_at: string
+}
+
+/* ── v2 Study Plans ───────────────────────────────────────── */
+
+export interface StudyPlan {
+  id: string
+  title: string
+  slug: string
+  description: string | null
+  move_tag: FlowMove | null
+  role_tags: string[]
+  challenge_count: number
+  estimated_hours: number
+  is_published: boolean
+  created_at: string
+}
+
+export interface StudyPlanChapter {
+  id: string
+  plan_id: string
+  title: string
+  order_index: number
+  challenge_ids: string[]
+  created_at: string
+}
+
+export interface UserStudyPlan {
+  id: string
+  user_id: string
+  plan_id: string
+  started_at: string
+  progress_pct: number
+  is_active: boolean
+  completed_challenges: string[]
+}
+
+/* ── v2 Cohort ────────────────────────────────────────────── */
+
+export interface CohortChallenge {
+  id: string
+  title: string
+  prompt_text: string
+  difficulty: Difficulty
+  move_tag: FlowMove | null
+  week_start: string
+  week_end: string
+  is_active: boolean
+  created_at: string
+}
+
+export interface CohortSubmission {
+  id: string
+  user_id: string
+  cohort_challenge_id: string
+  response_text: string
+  score: number | null
+  feedback_json: Record<string, unknown> | null
+  submitted_at: string
+}
+
+/* ── v2 Settings ──────────────────────────────────────────── */
+
+export interface UserSettings {
+  id: string
+  user_id: string
+  notifications: {
+    weekly_summary: boolean
+    streak_reminder: boolean
+    new_challenges: boolean
+    cohort_updates: boolean
+  }
+  daily_goal_count: number
+  preferred_role: UserRole | null
+  created_at: string
+  updated_at: string
+}
+
+/* ── v2 Extended Challenge Prompt ─────────────────────────── */
+
+export interface ChallengePromptV2 extends ChallengePrompt {
+  paradigm: Paradigm | null
+  move_tags: FlowMove[]
+  is_premium: boolean
+  role_tags: string[]
+}
+
+/* ── v2 Onboarding Calibration ────────────────────────────── */
+
+export interface CalibrationScores {
+  frame: number
+  split: number
+  weigh: number
+  sell: number
+}
+
+export interface CalibrationResults {
+  scores: CalibrationScores
+  archetype: string
+  archetype_description: string
+  starting_levels: Record<FlowMove, number>
+  percentile: number
+}
+
+/* ── v2 Share Card ────────────────────────────────────────── */
+
+export interface ShareCardData {
+  score: number
+  challenge_title: string
+  move: FlowMove
+  user_display_name: string
+  xp_earned: number
+  percentile: number
+  share_url: string
+}
+
+/* ── v2 Career Benchmark ──────────────────────────────────── */
+
+export interface CareerBenchmark {
+  levels: { title: string; percentile: number }[]
+  user_level: string
 }

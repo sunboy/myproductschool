@@ -11,6 +11,9 @@ interface LumaCoachingStripProps {
 const STATUS_TEXT: Record<ChallengeMode, string> = {
   solo: 'Luma is watching... it will review once you submit.',
   live: 'Live mode: real-time coaching with Luma',
+  guided: 'Luma is tracking your progress across all 4 FLOW steps.',
+  freeform: 'Luma will review all 4 FLOW moves after you submit.',
+  'quick-take': 'Quick take — Luma will grade in 15 seconds.',
 }
 
 export function LumaCoachingStrip({
