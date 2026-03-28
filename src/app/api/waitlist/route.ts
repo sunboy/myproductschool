@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   if (company && typeof company === 'string' && company.trim()) {
     row.company = company.trim()
   }
-  const { error } = await supabase.from('waitlist').insert(row).select().single()
+  const { error } = await supabase.from('waitlist').insert(row)
 
   if (error?.code === '23505') {
     return NextResponse.json({ error: 'Already on the waitlist' }, { status: 409 })
