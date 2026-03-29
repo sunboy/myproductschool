@@ -35,8 +35,8 @@ const noCalMoves = [
 
 const NEXT_CHALLENGES_MOCK = [
   { id: 'a0000001-0000-0000-0000-000000000001', title: 'Model Accuracy Up, Engagement Down', paradigm: 'AI-Assisted', difficulty: 'Advanced', roles: ['ML Eng', 'SWE', 'Data Eng'] },
-  { id: 'a0000001-0000-0000-0000-000000000001', title: 'Build a Product Strategy for AI Code Review', paradigm: 'AI-Assisted', difficulty: 'Advanced', roles: ['SWE', 'EM'] },
-  { id: 'a0000001-0000-0000-0000-000000000001', title: 'Design a User Research Plan on a Tight Budget', paradigm: 'Agentic', difficulty: 'Intermediate', roles: ['SWE', 'ML Eng'] },
+  { id: 'c0000001-0000-0000-0000-000000000005', title: 'New Feature vs. Tech Debt: Allocating Next Quarter', paradigm: 'AI-Assisted', difficulty: 'Advanced', roles: ['SWE', 'EM'] },
+  { id: 'c0000001-0000-0000-0000-000000000006', title: 'Checkout Funnel: Page 3 Drop-off Spike', paradigm: 'Agentic', difficulty: 'Intermediate', roles: ['SWE', 'ML Eng'] },
 ]
 
 /* ── Returning User Dashboard ────────────────────────────────── */
@@ -211,6 +211,7 @@ function ReturningDashboard() {
 /* ── No-Calibration State ────────────────────────────────────── */
 
 function NoCalibrationDashboard() {
+  const router = useRouter()
   return (
     <div className="p-6 max-w-7xl mx-auto w-full space-y-8">
 
@@ -231,7 +232,10 @@ function NoCalibrationDashboard() {
               Start Calibration
               <span className="material-symbols-outlined text-base">arrow_forward</span>
             </Link>
-            <button className="text-on-surface font-bold text-sm hover:underline font-label">
+            <button
+              onClick={() => router.push('/challenges')}
+              className="text-on-surface font-bold text-sm hover:underline font-label"
+            >
               Skip for now
             </button>
           </div>

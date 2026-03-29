@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 interface Company {
@@ -28,8 +30,10 @@ const COMPANY_COLORS: Record<string, string> = {
 }
 
 export default function PrepHubPage() {
+  const router = useRouter()
   const [companies, setCompanies] = useState<Company[]>(COMPANIES_MOCK)
   const [selectedCompany, setSelectedCompany] = useState<Company>(COMPANIES_MOCK[0])
+  const [coachingDismissed, setCoachingDismissed] = useState(false)
 
   useEffect(() => {
     fetch('/api/prep/companies')
@@ -106,7 +110,7 @@ export default function PrepHubPage() {
                 </button>
                 <div className="p-2 space-y-1">
                   {/* Item 1 */}
-                  <div className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
+                  <Link href="/challenges" className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
                     <div className="flex items-center gap-3">
                       <span className="material-symbols-outlined text-primary text-lg">check_circle</span>
                       <span className="text-sm font-medium">Improve Google Maps for commuters</span>
@@ -115,9 +119,9 @@ export default function PrepHubPage() {
                       <span className="text-[10px] font-bold text-primary bg-primary-fixed px-2 py-0.5 rounded-full">78/100</span>
                       <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
                     </div>
-                  </div>
+                  </Link>
                   {/* Item 2 */}
-                  <div className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
+                  <Link href="/challenges" className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
                     <div className="flex items-center gap-3">
                       <span className="material-symbols-outlined text-primary text-lg">check_circle</span>
                       <span className="text-sm font-medium">Design a new Google Workspace feature</span>
@@ -126,9 +130,9 @@ export default function PrepHubPage() {
                       <span className="text-[10px] font-bold text-amber-700 bg-tertiary-container px-2 py-0.5 rounded-full">65/100</span>
                       <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
                     </div>
-                  </div>
+                  </Link>
                   {/* Item 3 */}
-                  <div className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
+                  <Link href="/challenges" className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
                     <div className="flex items-center gap-3">
                       <span className="material-symbols-outlined text-outline text-lg">radio_button_unchecked</span>
                       <span className="text-sm font-medium text-on-surface-variant">Google Search quality metrics</span>
@@ -137,9 +141,9 @@ export default function PrepHubPage() {
                       <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Start</span>
                       <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
                     </div>
-                  </div>
+                  </Link>
                   {/* Item 4 */}
-                  <div className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
+                  <Link href="/challenges" className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
                     <div className="flex items-center gap-3">
                       <span className="material-symbols-outlined text-outline text-lg">radio_button_unchecked</span>
                       <span className="text-sm font-medium text-on-surface-variant italic">Concept: &apos;Platform thinking&apos;</span>
@@ -148,7 +152,7 @@ export default function PrepHubPage() {
                       <span className="text-[10px] font-bold text-tertiary uppercase tracking-tighter">Review</span>
                       <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
                     </div>
-                  </div>
+                  </Link>
                 </div>
               </div>
 
@@ -231,7 +235,10 @@ export default function PrepHubPage() {
                 </div>
                 <span className="text-xs font-bold text-primary/40">Advanced</span>
               </div>
-              <button className="w-full bg-primary text-on-primary py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#3d6549] transition-colors shadow-md">
+              <button
+                onClick={() => router.push('/simulation')}
+                className="w-full bg-primary text-on-primary py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#3d6549] transition-colors shadow-md"
+              >
                 Start Simulation
                 <span className="material-symbols-outlined text-sm">arrow_forward</span>
               </button>
@@ -249,22 +256,29 @@ export default function PrepHubPage() {
               </div>
               <span className="text-xs font-bold text-on-surface-variant">12 others prepping for Google</span>
             </div>
-            <a className="mt-3 block text-[11px] font-black text-primary uppercase tracking-widest hover:underline flex items-center gap-1" href="#">
+            <Link className="mt-3 block text-[11px] font-black text-primary uppercase tracking-widest hover:underline flex items-center gap-1" href="/cohort">
               Join discussion
               <span className="material-symbols-outlined text-xs">chevron_right</span>
-            </a>
+            </Link>
           </div>
         </div>
       </div>
 
       {/* Footer Coaching Strip */}
-      <div className="bg-surface-container-low border border-outline-variant p-4 rounded-xl flex items-center gap-4">
-        <LumaGlyph size={28} state="speaking" className="text-primary shrink-0" />
-        <p className="text-sm text-on-surface-variant leading-tight flex-1">
-          <span className="font-bold text-on-surface">Luma&apos;s Tip:</span> Google heavily weighs <span className="text-primary font-bold italic">User Empathy</span> in Product Sense rounds. Try to focus on the &ldquo;Why&rdquo; before jumping to &ldquo;How&rdquo; in your framework.
-        </p>
-        <button className="text-xs font-bold text-primary px-4 py-2 hover:bg-primary-fixed rounded-full transition-colors">Dismiss</button>
-      </div>
+      {!coachingDismissed && (
+        <div className="bg-surface-container-low border border-outline-variant p-4 rounded-xl flex items-center gap-4">
+          <LumaGlyph size={28} state="speaking" className="text-primary shrink-0" />
+          <p className="text-sm text-on-surface-variant leading-tight flex-1">
+            <span className="font-bold text-on-surface">Luma&apos;s Tip:</span> Google heavily weighs <span className="text-primary font-bold italic">User Empathy</span> in Product Sense rounds. Try to focus on the &ldquo;Why&rdquo; before jumping to &ldquo;How&rdquo; in your framework.
+          </p>
+          <button
+            onClick={() => setCoachingDismissed(true)}
+            className="text-xs font-bold text-primary px-4 py-2 hover:bg-primary-fixed rounded-full transition-colors"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
     </div>
   )
 }

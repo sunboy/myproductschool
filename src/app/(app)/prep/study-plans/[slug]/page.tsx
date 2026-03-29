@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 type Challenge = {
@@ -38,7 +39,9 @@ const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 const schedule = ['done', 'done', 'current', '', '', '', '']
 
 export default function StudyPlanDetailPage() {
+  const router = useRouter()
   const [expandedChapter, setExpandedChapter] = useState(1)
+  const [isActive, setIsActive] = useState(false)
 
   return (
     <div className="max-w-7xl mx-auto p-6 animate-fade-in-up">
@@ -69,8 +72,11 @@ export default function StudyPlanDetailPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button className="bg-secondary-container text-on-surface-variant hover:bg-surface-container-high px-4 py-2 rounded-full text-sm font-bold transition-all">
-                  Mark as active
+                <button
+                  onClick={() => setIsActive(true)}
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${isActive ? 'bg-primary-fixed text-primary' : 'bg-secondary-container text-on-surface-variant hover:bg-surface-container-high'}`}
+                >
+                  {isActive ? 'Active Plan ✓' : 'Mark as active'}
                 </button>
                 <button className="bg-primary text-white hover:opacity-90 px-5 py-2 rounded-full text-sm font-bold shadow-sm transition-all flex items-center gap-2">
                   Continue Plan <span className="material-symbols-outlined text-sm">arrow_forward</span>
@@ -161,7 +167,10 @@ export default function StudyPlanDetailPage() {
                               </span>
                             )}
                             {c.status === 'available' && (
-                              <button className="bg-primary text-white px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 hover:opacity-90 transition-opacity">
+                              <button
+                                onClick={() => router.push('/challenges')}
+                                className="bg-primary text-white px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 hover:opacity-90 transition-opacity"
+                              >
                                 Start <span className="material-symbols-outlined text-sm">arrow_forward</span>
                               </button>
                             )}
