@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 const RADAR_DIMENSIONS = [
@@ -92,6 +95,17 @@ function RadarChart() {
 }
 
 export default function ResultsPage() {
+  const router = useRouter()
+
+  async function handleStartTraining() {
+    try {
+      await fetch('/api/onboarding/complete', { method: 'POST' })
+    } catch {
+      // Non-fatal
+    }
+    router.push('/dashboard')
+  }
+
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto">
       {/* Status */}
@@ -165,13 +179,13 @@ export default function ResultsPage() {
 
       {/* CTA */}
       <div className="text-center">
-        <Link
-          href="/dashboard"
+        <button
+          onClick={handleStartTraining}
           className="inline-flex items-center gap-2 bg-primary text-on-primary rounded-full px-8 py-3 font-label font-semibold hover:bg-primary/90 transition-colors"
         >
           Start Training
           <span className="material-symbols-outlined text-lg">arrow_forward</span>
-        </Link>
+        </button>
         <p className="text-sm text-on-surface-variant font-body mt-3">
           First challenge: <strong>Power User Paradox</strong> (targets Communication)
         </p>
