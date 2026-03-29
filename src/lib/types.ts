@@ -445,10 +445,11 @@ export interface ChallengeStep {
   step_index: number
   prompt: string
   hint: string | null
-  recommended: boolean
+  recommended: string | null
   pattern_title: string | null
   pattern_body: string | null
   trap_ids: string[]
+  scaffold_options: string[]
 }
 
 /* ── v2 Quick Takes ───────────────────────────────────────── */

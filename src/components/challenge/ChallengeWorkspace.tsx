@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { ChallengePrompt } from '@/lib/types'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { useSteps } from '@/hooks/useSteps'
 
 /* ── Types ───────────────────────────────────────────────── */
 
@@ -85,7 +86,13 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
   const [submitting, setSubmitting]       = useState(false)
   const [autoSavedAt, setAutoSavedAt]     = useState<Date | null>(null)
   const [frameworkOpen, setFrameworkOpen] = useState(false)
+  const [inputMode, setInputMode]         = useState<'text' | 'options'>('text')
+  const [selectedOptions, setSelectedOptions] = useState<Set<number>>(new Set())
 
+  const { steps } = useSteps(challenge.id)
+  const scaffoldOptions = steps[activeStep]?.scaffold_options ?? []
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const responseRef = useRef('')
 
   useEffect(() => {
@@ -108,6 +115,12 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
   const currentResponse = mode === 'guided' ? (responses[activeStep] ?? '') : freeformResponse
   const maxChars        = mode === 'guided' ? GUIDED_MAX_CHARS : FREEFORM_MAX_CHARS
 
+  // Reset options state when step changes
+  useEffect(() => {
+    setInputMode('text')
+    setSelectedOptions(new Set())
+  }, [activeStep])
+
   const handleResponseChange = useCallback((value: string) => {
     if (value.length > maxChars) return
     if (mode === 'guided') {
@@ -116,6 +129,24 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
       setFreeformResponse(value)
     }
   }, [mode, activeStep, maxChars])
+
+  const toggleOption = useCallback((index: number) => {
+    setSelectedOptions(prev => {
+      const next = new Set(prev)
+      if (next.has(index)) next.delete(index)
+      else next.add(index)
+      return next
+    })
+  }, [])
+
+  const applyOptions = useCallback(() => {
+    const parts = [...selectedOptions].sort().map(i => scaffoldOptions[i])
+    const seed = parts.join(' Additionally, ')
+    handleResponseChange(seed + ' ')
+    setInputMode('text')
+    setSelectedOptions(new Set())
+    setTimeout(() => textareaRef.current?.focus(), 0)
+  }, [selectedOptions, scaffoldOptions, handleResponseChange])
 
   const handleSubmit = useCallback(async () => {
     if (submitting) return
@@ -368,37 +399,102 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
                 {activeStep === 3 && 'Make a clear, specific recommendation.'}
               </p>
 
-              {/* Textarea */}
-              <div className="relative group">
-                <textarea
-                  value={currentResponse}
-                  onChange={e => handleResponseChange(e.target.value)}
-                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl p-5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none font-body leading-relaxed"
-                  placeholder={`Write your analysis here. Consider: ${step.subtitle.toLowerCase()}`}
-                  rows={8}
-                />
-                <div className="absolute bottom-4 right-4 text-[10px] font-bold text-outline uppercase tracking-widest">
-                  {currentResponse.length} / {maxChars} characters
+              {/* Input mode toggle — only shown when scaffold options exist */}
+              {scaffoldOptions.length > 0 && (
+                <div className="flex gap-1 mb-4">
+                  <button
+                    onClick={() => setInputMode('text')}
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-label font-semibold transition-colors ${
+                      inputMode === 'text'
+                        ? 'bg-primary text-on-primary'
+                        : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[14px]">edit</span>
+                    Text
+                  </button>
+                  <button
+                    onClick={() => setInputMode('options')}
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-label font-semibold transition-colors ${
+                      inputMode === 'options'
+                        ? 'bg-primary text-on-primary'
+                        : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[14px]">format_list_bulleted</span>
+                    Options
+                  </button>
                 </div>
-              </div>
+              )}
 
-              {/* Action row */}
-              <div className="mt-6 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-on-surface-variant flex items-center gap-1">
-                    <span className="material-symbols-outlined text-sm">save</span>
-                    {autoSavedAt ? formatAutoSave(autoSavedAt) : 'Autosaved 2 mins ago'}
-                  </span>
+              {/* Options cards — shown in options mode */}
+              {inputMode === 'options' && scaffoldOptions.length > 0 ? (
+                <div className="space-y-2">
+                  {scaffoldOptions.map((opt, i) => {
+                    const selected = selectedOptions.has(i)
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => toggleOption(i)}
+                        className={`w-full text-left p-4 rounded-xl border-2 transition-all font-body text-sm leading-relaxed ${
+                          selected
+                            ? 'border-primary bg-primary-fixed text-on-surface'
+                            : 'border-outline-variant bg-surface-container text-on-surface-variant hover:border-primary/40 hover:bg-surface-container-high'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 mt-0.5 transition-colors ${
+                            selected ? 'border-primary bg-primary' : 'border-outline-variant'
+                          }`} />
+                          <span>{opt}</span>
+                        </div>
+                      </button>
+                    )
+                  })}
+                  <button
+                    onClick={applyOptions}
+                    disabled={selectedOptions.size === 0}
+                    className="mt-2 w-full py-2.5 rounded-full bg-secondary-container text-on-secondary-container text-sm font-label font-semibold disabled:opacity-40 hover:bg-primary-fixed transition-colors"
+                  >
+                    Use selected — continue in text
+                  </button>
                 </div>
-                <button
-                  onClick={handleSubmit}
-                  disabled={submitting}
-                  className="bg-primary text-on-primary hover:bg-primary-container hover:text-on-primary-container px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm flex items-center gap-2 active:scale-95 disabled:opacity-50"
-                >
-                  {submitting ? 'Submitting...' : 'Submit for Grading'}
-                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                </button>
-              </div>
+              ) : (
+                /* Textarea */
+                <div className="relative group">
+                  <textarea
+                    ref={textareaRef}
+                    value={currentResponse}
+                    onChange={e => handleResponseChange(e.target.value)}
+                    className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl p-5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none font-body leading-relaxed"
+                    placeholder={`Write your analysis here. Consider: ${step.subtitle.toLowerCase()}`}
+                    rows={8}
+                  />
+                  <div className="absolute bottom-4 right-4 text-[10px] font-bold text-outline uppercase tracking-widest">
+                    {currentResponse.length} / {maxChars} characters
+                  </div>
+                </div>
+              )}
+
+              {/* Action row — hidden in options mode */}
+              {inputMode !== 'options' && (
+                <div className="mt-6 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-on-surface-variant flex items-center gap-1">
+                      <span className="material-symbols-outlined text-sm">save</span>
+                      {autoSavedAt ? formatAutoSave(autoSavedAt) : 'Autosaved 2 mins ago'}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={submitting}
+                    className="bg-primary text-on-primary hover:bg-primary-container hover:text-on-primary-container px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm flex items-center gap-2 active:scale-95 disabled:opacity-50"
+                  >
+                    {submitting ? 'Submitting...' : 'Submit for Grading'}
+                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                  </button>
+                </div>
+              )}
 
               {/* Data Cards Grid — Luma thought starter + Add custom segment */}
               <div className="mt-12 grid grid-cols-2 gap-4">
