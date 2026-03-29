@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getChallengeDiscussions, postDiscussion } from '@/lib/data/analytics'
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET(
   _request: NextRequest,
@@ -21,13 +22,15 @@ export async function POST(
 ) {
   const { id } = await params
   const body = await request.json()
-  const { userId, content } = body
+  const { content } = body
 
   if (!content?.trim()) {
     return NextResponse.json({ error: 'Content required' }, { status: 400 })
   }
 
-  const resolvedUserId = userId ?? 'mock-user'
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const resolvedUserId = user?.id ?? 'mock-user'
 
   try {
     const discussion = await postDiscussion(id, resolvedUserId, content.trim())
