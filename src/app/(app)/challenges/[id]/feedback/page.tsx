@@ -9,17 +9,16 @@ import { useAttempt } from '@/hooks/useAttempt'
 /* ── Dimension Config ─────────────────────────────────────── */
 
 const DIMENSIONS = [
-  { key: 'problem_reframe',         label: 'Problem Reframing',     color: '#5eaeff' },
-  { key: 'user_segmentation',       label: 'User Segmentation',     color: '#2dd4a0' },
-  { key: 'data_reasoning',          label: 'Data Reasoning',        color: '#22d3ee' },
-  { key: 'tradeoff_clarity',        label: 'Tradeoff Clarity',      color: '#f59e0b' },
-  { key: 'communication',           label: 'Communication',         color: '#a78bfa' },
+  { key: 'framing_precision',        label: 'Problem Reframing',     color: '#5eaeff' },
+  { key: 'diagnostic_accuracy',      label: 'Diagnostic Accuracy',   color: '#2dd4a0' },
+  { key: 'metric_fluency',           label: 'Data Reasoning',        color: '#22d3ee' },
+  { key: 'recommendation_strength',  label: 'Recommendation',        color: '#f59e0b' },
 ] as const
 
 /* ── Mock fallback ────────────────────────────────────────── */
 
 const MOCK_SCORES: Record<string, number> = {
-  problem_reframe: 4, user_segmentation: 5, data_reasoning: 3, tradeoff_clarity: 4, communication: 2,
+  framing_precision: 4, diagnostic_accuracy: 5, metric_fluency: 3, recommendation_strength: 4,
 }
 
 const MOCK_PATTERNS = [
@@ -66,14 +65,16 @@ function getThinkingTraps(feedback: unknown): Array<{ trap_id: string; trap_name
 
 function getScores(feedback: unknown): Record<string, number> {
   if (!feedback) return MOCK_SCORES
-  if (Array.isArray(feedback)) {
+  // Real feedback_json shape: { dimensions: [{dimension, score (0-10), ...}], ... }
+  const dims = (feedback as Record<string, unknown>)?.dimensions
+  if (Array.isArray(dims) && dims.length >= 4) {
     const map: Record<string, number> = {}
-    for (const item of feedback) {
+    for (const item of dims) {
       if (item.dimension && typeof item.score === 'number') {
-        map[item.dimension] = Math.round(item.score / 20) // 0-100 → 0-5
+        map[item.dimension] = Math.round(item.score / 2) // 0-10 → 0-5
       }
     }
-    return Object.keys(map).length >= 4 ? map : MOCK_SCORES
+    if (Object.keys(map).length >= 4) return map
   }
   if (typeof feedback === 'object' && feedback !== null && 'scores' in feedback) {
     return (feedback as { scores: Record<string, number> }).scores
@@ -83,11 +84,17 @@ function getScores(feedback: unknown): Record<string, number> {
 
 function getFeedbackText(feedback: unknown): string {
   if (!feedback) return MOCK_FEEDBACK.feedback_text
-  if (Array.isArray(feedback)) {
-    return feedback.map((f: { commentary?: string }) => f.commentary).filter(Boolean).join('\n\n')
-  }
-  if (typeof feedback === 'object' && feedback !== null && 'feedback' in feedback) {
-    return (feedback as { feedback: string }).feedback
+  if (typeof feedback === 'object' && feedback !== null) {
+    const f = feedback as Record<string, unknown>
+    // Real feedback_json: combine dimension commentaries
+    const dims = f.dimensions
+    if (Array.isArray(dims) && dims.length > 0) {
+      const parts = dims
+        .map((d: { commentary?: string }) => d.commentary)
+        .filter(Boolean)
+      if (parts.length > 0) return parts.join('\n\n')
+    }
+    if (typeof f.feedback === 'string') return f.feedback
   }
   return MOCK_FEEDBACK.feedback_text
 }

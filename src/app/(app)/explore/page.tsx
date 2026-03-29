@@ -114,7 +114,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
       {/* Header Section */}
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="font-headline text-2xl font-extrabold text-on-surface leading-tight">Overhaul: Explore Hub</h1>
+          <h1 className="font-headline text-2xl font-extrabold text-on-surface leading-tight">Explore Hub</h1>
           <p className="text-sm text-on-surface-variant mt-0.5">Browse by paradigm, plan your path, or dive into concepts</p>
         </div>
       </section>

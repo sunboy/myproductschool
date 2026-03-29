@@ -149,7 +149,7 @@ export default function CalibrationFramePage() {
           Back
         </Link>
         <Link
-          href="/onboarding/calibration/split"
+          href="/onboarding/calibration/list"
           className="inline-flex items-center gap-1 bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:bg-primary/90 transition-colors"
         >
           Next
