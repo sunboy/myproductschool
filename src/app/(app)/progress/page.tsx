@@ -1,13 +1,23 @@
+'use client'
+
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { useMoveLevels } from '@/hooks/useMoveLevels'
 
 /* ---------- mock data ---------- */
-const flowMoves = [
+const FLOW_MOVES_MOCK = [
   { name: 'Frame', level: 3, pct: 45, icon: 'navigation', color: '#5eaeff' },
-  { name: 'Split', level: 3, pct: 78, icon: 'grid_view', color: '#2dd4a0', fill: true },
-  { name: 'Weigh', level: 2, pct: 30, icon: 'balance', color: '#f59e0b', fill: true },
-  { name: 'Sell', level: 1, pct: 60, icon: 'campaign', color: '#a78bfa', fill: true },
+  { name: 'List',  level: 3, pct: 78, icon: 'grid_view', color: '#2dd4a0', fill: true },
+  { name: 'Optimize', level: 2, pct: 30, icon: 'balance', color: '#f59e0b', fill: true },
+  { name: 'Win',  level: 1, pct: 60, icon: 'campaign', color: '#a78bfa', fill: true },
 ]
+
+const MOVE_ICONS: Record<string, string> = {
+  frame: 'navigation', list: 'grid_view', optimize: 'balance', win: 'campaign',
+}
+const MOVE_COLORS: Record<string, string> = {
+  frame: '#5eaeff', list: '#2dd4a0', optimize: '#f59e0b', win: '#a78bfa',
+}
 
 const masteryGrid = [
   'mastered','mastered','mastered','mid','mid',
@@ -32,6 +42,19 @@ function squareColor(s: typeof masteryGrid[number]) {
 }
 
 export default function ProgressPage() {
+  const { moves } = useMoveLevels()
+
+  const flowMoves = moves.length > 0
+    ? moves.map(m => ({
+        name: m.move.charAt(0).toUpperCase() + m.move.slice(1),
+        level: m.level,
+        pct: m.progress_pct,
+        icon: MOVE_ICONS[m.move] ?? 'circle',
+        color: MOVE_COLORS[m.move] ?? '#4a7c59',
+        fill: m.move !== 'frame',
+      }))
+    : FLOW_MOVES_MOCK
+
   return (
     <div className="max-w-7xl mx-auto p-6 w-full flex flex-col gap-6 animate-fade-in-up">
 

@@ -1,6 +1,48 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
+interface Company {
+  id: string
+  name: string
+  slug: string
+  challenge_count: number
+}
+
+const COMPANIES_MOCK: Company[] = [
+  { id: '1', name: 'Google', slug: 'google', challenge_count: 24 },
+  { id: '2', name: 'Meta', slug: 'meta', challenge_count: 18 },
+  { id: '3', name: 'Stripe', slug: 'stripe', challenge_count: 12 },
+  { id: '4', name: 'Amazon', slug: 'amazon', challenge_count: 15 },
+  { id: '5', name: 'Apple', slug: 'apple', challenge_count: 8 },
+  { id: '6', name: 'Uber', slug: 'uber', challenge_count: 10 },
+  { id: '7', name: 'Airbnb', slug: 'airbnb', challenge_count: 6 },
+  { id: '8', name: 'DoorDash', slug: 'doordash', challenge_count: 5 },
+]
+
+const COMPANY_COLORS: Record<string, string> = {
+  google: 'text-primary', meta: 'text-blue-600', stripe: 'text-indigo-500',
+  amazon: 'text-orange-500', apple: 'text-gray-800', uber: 'text-black',
+  airbnb: 'text-red-500', doordash: 'text-red-600',
+}
+
 export default function PrepHubPage() {
+  const [companies, setCompanies] = useState<Company[]>(COMPANIES_MOCK)
+  const [selectedCompany, setSelectedCompany] = useState<Company>(COMPANIES_MOCK[0])
+
+  useEffect(() => {
+    fetch('/api/prep/companies')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.length) {
+          setCompanies(data)
+          setSelectedCompany(data[0])
+        }
+      })
+      .catch(() => {})
+  }, [])
+
   return (
     <div className="p-6 bg-background space-y-6 max-w-7xl mx-auto w-full">
       {/* Page Header */}
@@ -17,54 +59,22 @@ export default function PrepHubPage() {
       {/* Section 1: Company Selector */}
       <section className="relative">
         <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-          {/* Google (Selected) */}
-          <button className="flex-shrink-0 w-[120px] bg-primary-fixed border-2 border-primary rounded-xl p-3 text-center transition-all hover:scale-105">
-            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 text-primary font-bold shadow-sm">G</div>
-            <div className="text-sm font-bold text-on-surface truncate">Google</div>
-            <div className="text-[10px] text-primary font-bold">24 challenges</div>
-          </button>
-          {/* Meta */}
-          <button className="flex-shrink-0 w-[120px] bg-surface-container rounded-xl p-3 text-center transition-all hover:bg-surface-container-high hover:scale-105 border border-transparent">
-            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 text-blue-600 font-bold shadow-sm">M</div>
-            <div className="text-sm font-bold text-on-surface truncate">Meta</div>
-            <div className="text-[10px] text-on-surface-variant">18 challenges</div>
-          </button>
-          {/* Stripe */}
-          <button className="flex-shrink-0 w-[120px] bg-surface-container rounded-xl p-3 text-center transition-all hover:bg-surface-container-high hover:scale-105 border border-transparent">
-            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 text-indigo-500 font-bold shadow-sm">S</div>
-            <div className="text-sm font-bold text-on-surface truncate">Stripe</div>
-            <div className="text-[10px] text-on-surface-variant">12 challenges</div>
-          </button>
-          {/* Amazon */}
-          <button className="flex-shrink-0 w-[120px] bg-surface-container rounded-xl p-3 text-center transition-all hover:bg-surface-container-high hover:scale-105 border border-transparent">
-            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 text-orange-500 font-bold shadow-sm">A</div>
-            <div className="text-sm font-bold text-on-surface truncate">Amazon</div>
-            <div className="text-[10px] text-on-surface-variant">15 challenges</div>
-          </button>
-          {/* Apple */}
-          <button className="flex-shrink-0 w-[120px] bg-surface-container rounded-xl p-3 text-center transition-all hover:bg-surface-container-high hover:scale-105 border border-transparent">
-            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 text-gray-800 font-bold shadow-sm">A</div>
-            <div className="text-sm font-bold text-on-surface truncate">Apple</div>
-            <div className="text-[10px] text-on-surface-variant">8 challenges</div>
-          </button>
-          {/* Uber */}
-          <button className="flex-shrink-0 w-[120px] bg-surface-container rounded-xl p-3 text-center transition-all hover:bg-surface-container-high hover:scale-105 border border-transparent">
-            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 text-black font-bold shadow-sm">U</div>
-            <div className="text-sm font-bold text-on-surface truncate">Uber</div>
-            <div className="text-[10px] text-on-surface-variant">10 challenges</div>
-          </button>
-          {/* Airbnb */}
-          <button className="flex-shrink-0 w-[120px] bg-surface-container rounded-xl p-3 text-center transition-all hover:bg-surface-container-high hover:scale-105 border border-transparent">
-            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 text-red-500 font-bold shadow-sm">A</div>
-            <div className="text-sm font-bold text-on-surface truncate">Airbnb</div>
-            <div className="text-[10px] text-on-surface-variant">6 challenges</div>
-          </button>
-          {/* DoorDash */}
-          <button className="flex-shrink-0 w-[120px] bg-surface-container rounded-xl p-3 text-center transition-all hover:bg-surface-container-high hover:scale-105 border border-transparent">
-            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 text-red-600 font-bold shadow-sm">D</div>
-            <div className="text-sm font-bold text-on-surface truncate">DoorDash</div>
-            <div className="text-[10px] text-on-surface-variant">5 challenges</div>
-          </button>
+          {companies.map(company => {
+            const isSelected = selectedCompany.id === company.id
+            const initial = company.name[0].toUpperCase()
+            const colorClass = COMPANY_COLORS[company.slug] ?? 'text-on-surface'
+            return (
+              <button
+                key={company.id}
+                onClick={() => setSelectedCompany(company)}
+                className={`flex-shrink-0 w-[120px] rounded-xl p-3 text-center transition-all hover:scale-105 ${isSelected ? 'bg-primary-fixed border-2 border-primary' : 'bg-surface-container hover:bg-surface-container-high border border-transparent'}`}
+              >
+                <div className={`w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 font-bold shadow-sm ${colorClass}`}>{initial}</div>
+                <div className="text-sm font-bold text-on-surface truncate">{company.name}</div>
+                <div className={`text-[10px] font-bold ${isSelected ? 'text-primary' : 'text-on-surface-variant'}`}>{company.challenge_count} challenges</div>
+              </button>
+            )
+          })}
         </div>
       </section>
 
@@ -75,8 +85,8 @@ export default function PrepHubPage() {
           <div className="bg-surface-container rounded-xl p-5 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold font-headline flex items-center gap-2">
-                <span className="w-6 h-6 rounded bg-white flex items-center justify-center text-[10px] text-primary border border-outline-variant">G</span>
-                Google Study Plan
+                <span className="w-6 h-6 rounded bg-white flex items-center justify-center text-[10px] text-primary border border-outline-variant">{selectedCompany.name[0]}</span>
+                {selectedCompany.name} Study Plan
               </h2>
               <span className="bg-primary-fixed text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">Recommended</span>
             </div>

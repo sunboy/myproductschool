@@ -7,6 +7,7 @@ import {
 import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { LumaFeedbackSchema, clampFeedbackScores } from '@/lib/luma/feedback-schema'
+import { logEvent } from '@/lib/data/events'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -87,6 +88,11 @@ export async function POST(req: NextRequest) {
         // Non-fatal: log but don't fail the feedback response
         console.error('Failed to persist failure patterns:', err)
       }
+    }
+
+    // Log feedback generated event
+    if (userId) {
+      logEvent(userId, 'session.feedback_generated', { attempt_id: attemptId ?? null, challenge_id: _challengeId ?? null })
     }
 
     return NextResponse.json(parsedFeedback)

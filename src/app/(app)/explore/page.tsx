@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import type { StudyPlan } from '@/lib/types'
 
 const ROLES = ['All', 'SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng'] as const
 
@@ -46,9 +47,9 @@ const PARADIGMS = [
   },
 ] as const
 
-const STUDY_PLANS = [
+const STUDY_PLANS_MOCK = [
   {
-    title: 'Staff Engineer Path 🎯',
+    title: 'Staff Engineer Path',
     roles: ['SWE'],
     duration: '6 weeks',
     description: 'Strategic technical leadership and high-stakes decision making.',
@@ -56,7 +57,7 @@ const STUDY_PLANS = [
     participantCount: '+12',
   },
   {
-    title: '7-Day Prep ⏱️',
+    title: '7-Day Prep',
     roles: ['SWE', 'Data', 'ML'],
     duration: '7 days',
     description: 'Intensive crash course for top-tier system design rounds.',
@@ -64,22 +65,44 @@ const STUDY_PLANS = [
     participantCount: '+82',
   },
   {
-    title: 'AI Product Fluency 🧠',
+    title: 'AI Product Fluency',
     roles: ['SWE', 'ML', 'Founding'],
     duration: '4 weeks',
     description: 'Bridge the gap between engineering and AI product strategy.',
     slug: 'ai-product-fluency',
     participantCount: '+45',
   },
-] as const
+]
 
 interface ExplorePageProps {
   searchParams: Promise<{ role?: string }>
 }
 
+async function fetchStudyPlans(): Promise<typeof STUDY_PLANS_MOCK> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+    const res = await fetch(`${baseUrl}/api/study-plans?limit=3`, { next: { revalidate: 300 } })
+    if (!res.ok) return STUDY_PLANS_MOCK
+    const data: StudyPlan[] = await res.json()
+    if (!data?.length) return STUDY_PLANS_MOCK
+    return data.map(p => ({
+      title: p.title,
+      roles: p.role_tags,
+      duration: `${p.estimated_hours} hrs`,
+      description: p.description ?? '',
+      slug: p.slug,
+      participantCount: '+0',
+    }))
+  } catch {
+    return STUDY_PLANS_MOCK
+  }
+}
+
 export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const { role } = await searchParams
   const activeRole = role || 'All'
+
+  const studyPlans = await fetchStudyPlans()
 
   const buildHref = (r: string) => {
     if (r === 'All') return '/explore'
@@ -165,7 +188,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {STUDY_PLANS.map(plan => (
+          {studyPlans.map(plan => (
             <Link
               key={plan.slug}
               href={`/prep/study-plans/${plan.slug}`}

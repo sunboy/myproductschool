@@ -1,14 +1,43 @@
-import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+'use client'
 
-const STARTING_LEVELS = [
+import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import type { CalibrationResults } from '@/lib/types'
+
+const STARTING_LEVELS_MOCK = [
   { icon: 'diamond', name: 'Frame', level: 'Level 3', highlight: false },
-  { icon: 'vignette', name: 'Lens', level: 'Level 2', highlight: false },
+  { icon: 'vignette', name: 'List', level: 'Level 2', highlight: false },
   { icon: 'pentagon', name: 'Optimize', level: 'Level 2', highlight: false },
   { icon: 'circle', name: 'Win', level: 'Focus area', highlight: true },
 ]
 
 export default function ResultsPage() {
+  const [results, setResults] = useState<CalibrationResults | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/onboarding/results')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setResults(data) })
+      .catch(() => {})
+      .finally(() => setIsLoading(false))
+  }, [])
+
+  const scores = results?.scores ?? { frame: 72, list: 58, optimize: 65, win: 44 }
+  const archetype = results?.archetype ?? 'The Systematic Builder'
+  const archetypeDescription = results?.archetype_description ?? 'You construct solutions methodically with strong framing, but your narrative communication (Win move) needs development.'
+  const percentile = results?.percentile ?? 61
+
+  const startingLevels = results?.starting_levels
+    ? [
+        { icon: 'diamond',  name: 'Frame',    level: `Level ${results.starting_levels.frame}`,    highlight: results.starting_levels.frame < 2 },
+        { icon: 'vignette', name: 'List',     level: `Level ${results.starting_levels.list}`,     highlight: results.starting_levels.list < 2 },
+        { icon: 'pentagon', name: 'Optimize', level: `Level ${results.starting_levels.optimize}`, highlight: results.starting_levels.optimize < 2 },
+        { icon: 'circle',   name: 'Win',      level: `Level ${results.starting_levels.win}`,      highlight: results.starting_levels.win < 2 },
+      ]
+    : STARTING_LEVELS_MOCK
+
   return (
     <div className="min-h-screen pb-20">
       {/* Top App Bar */}
@@ -55,9 +84,9 @@ export default function ResultsPage() {
               {/* Axes */}
               <line x1="100" y1="20" x2="100" y2="180" stroke="#eae6de" strokeWidth="1" />
               <line x1="20" y1="100" x2="180" y2="100" stroke="#eae6de" strokeWidth="1" />
-              {/* Data Shape: Frame:72, Lens:58, Optimize:65, Win:44 */}
+              {/* Data Shape computed from scores */}
               <polygon
-                points="100,42.4 146.4,100 100,152 64.8,100"
+                points={`100,${100 - scores.frame * 0.8} ${100 + scores.list * 0.8},100 100,${100 + scores.optimize * 0.8} ${100 - scores.win * 0.8},100`}
                 fill="#4a7c59"
                 fillOpacity="0.4"
                 stroke="#4a7c59"
@@ -67,23 +96,23 @@ export default function ResultsPage() {
             {/* Labels positioned around the SVG */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 text-center">
               <span className="block text-[10px] font-bold text-secondary uppercase tracking-wider">Frame</span>
-              <span className="text-sm font-bold text-primary">72</span>
+              <span className="text-sm font-bold text-primary">{scores.frame}</span>
             </div>
             <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 text-center">
-              <span className="block text-[10px] font-bold text-secondary uppercase tracking-wider">Lens</span>
-              <span className="text-sm font-bold text-primary">58</span>
+              <span className="block text-[10px] font-bold text-secondary uppercase tracking-wider">List</span>
+              <span className="text-sm font-bold text-primary">{scores.list}</span>
             </div>
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 text-center">
               <span className="block text-[10px] font-bold text-secondary uppercase tracking-wider">Optimize</span>
-              <span className="text-sm font-bold text-primary">65</span>
+              <span className="text-sm font-bold text-primary">{scores.optimize}</span>
             </div>
             <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 text-center">
               <span className="block text-[10px] font-bold text-secondary uppercase tracking-wider">Win</span>
-              <span className="text-sm font-bold text-primary">44</span>
+              <span className="text-sm font-bold text-primary">{scores.win}</span>
             </div>
           </div>
           <div className="mt-8 bg-secondary-container text-secondary text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-tight">
-            Better than 61% of engineers at your stage
+            Better than {percentile}% of engineers at your stage
           </div>
         </section>
 
@@ -93,9 +122,9 @@ export default function ResultsPage() {
             <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Your Thinking Archetype</span>
             <span className="text-2xl" role="img" aria-label="builder">🏗️</span>
           </div>
-          <h2 className="font-headline text-2xl font-bold text-on-surface mb-2">The Systematic Builder</h2>
+          <h2 className="font-headline text-2xl font-bold text-on-surface mb-2">{archetype}</h2>
           <p className="text-sm text-on-surface-variant leading-relaxed">
-            You construct solutions methodically with strong framing, but your narrative communication (Win move) needs development.
+            {archetypeDescription}
           </p>
         </section>
 
@@ -121,7 +150,7 @@ export default function ResultsPage() {
 
         {/* Section 5: Starting Levels */}
         <section className="grid grid-cols-2 md:flex md:flex-row gap-3">
-          {STARTING_LEVELS.map((item) => (
+          {startingLevels.map((item) => (
             <div
               key={item.name}
               className={`bg-white border rounded-lg p-3 flex flex-col items-center justify-center flex-1 ${

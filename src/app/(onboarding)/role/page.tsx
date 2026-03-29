@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 const ROLES = [
@@ -56,7 +57,26 @@ const STEPS = [
 ]
 
 export default function RoleSelectionPage() {
+  const router = useRouter()
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleNext = async () => {
+    if (!selectedRole) return
+    setIsLoading(true)
+    try {
+      await fetch('/api/onboarding/role', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: selectedRole }),
+      })
+    } catch {
+      // Non-fatal — proceed regardless
+    } finally {
+      setIsLoading(false)
+      router.push('/onboarding/calibration/frame')
+    }
+  }
 
   return (
     <>
@@ -174,13 +194,14 @@ export default function RoleSelectionPage() {
         </Link>
         <div className="flex items-center gap-4">
           {selectedRole && (
-            <Link
-              href="/calibration/frame"
-              className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-bold text-sm flex items-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all"
+            <button
+              onClick={handleNext}
+              disabled={isLoading}
+              className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-bold text-sm flex items-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all disabled:opacity-70"
             >
-              Next
+              {isLoading ? 'Saving...' : 'Next'}
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
-            </Link>
+            </button>
           )}
           <button
             disabled

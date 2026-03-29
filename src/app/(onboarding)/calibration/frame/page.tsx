@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 const STEP_PILLS = [
@@ -12,9 +13,11 @@ const STEP_PILLS = [
 ]
 
 export default function CalibrationFramePage() {
+  const router = useRouter()
   const [assumptions, setAssumptions] = useState('')
   const [reframe, setReframe] = useState('')
   const [seconds, setSeconds] = useState(522) // 08:42
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -22,6 +25,25 @@ export default function CalibrationFramePage() {
     }, 1000)
     return () => clearInterval(interval)
   }, [])
+
+  const handleNext = async () => {
+    setIsSubmitting(true)
+    try {
+      await fetch('/api/onboarding/calibration/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          move: 'frame',
+          answers: { assumptions, reframe },
+        }),
+      })
+    } catch {
+      // Non-fatal — proceed regardless
+    } finally {
+      setIsSubmitting(false)
+      router.push('/onboarding/results')
+    }
+  }
 
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60)
@@ -178,13 +200,14 @@ export default function CalibrationFramePage() {
         </div>
 
         {/* Right: Primary Next Action */}
-        <Link
-          href="/calibration/split"
-          className="bg-primary text-on-primary rounded-full px-10 py-3 font-label font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
+        <button
+          onClick={handleNext}
+          disabled={isSubmitting}
+          className="bg-primary text-on-primary rounded-full px-10 py-3 font-label font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-70"
         >
-          <span>Next: Split</span>
+          <span>{isSubmitting ? 'Saving...' : 'Next: Split'}</span>
           <span className="material-symbols-outlined text-sm">arrow_forward</span>
-        </Link>
+        </button>
       </footer>
     </div>
   )

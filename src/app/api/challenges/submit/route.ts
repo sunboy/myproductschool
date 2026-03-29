@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logEvent } from '@/lib/data/events'
 
 export async function POST(req: NextRequest) {
   const { challengeId, mode, response } = await req.json()
@@ -38,6 +39,9 @@ export async function POST(req: NextRequest) {
   }).select().single()
 
   if (error) return NextResponse.json({ error: 'Failed to save attempt' }, { status: 500 })
+
+  // Log session scored event
+  logEvent(user.id, 'session.scored', { challenge_id: challengeId, mode, attempt_id: data.id })
 
   // Update streak (fire and forget)
   adminClient.rpc('update_user_streak', { p_user_id: user.id }).then(() => {}, () => {})

@@ -1,14 +1,48 @@
-import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+'use client'
 
-/* ---------- mock data ---------- */
-const leaderboard = [
-  { rank: 1, name: 'Alex Chen', score: 98, move: 'Optimize', time: '31m 12s', medalColor: 'text-amber-400' },
-  { rank: 2, name: 'Sarah Jenkins', score: 94, move: 'Optimize', time: '35m 44s', medalColor: 'text-slate-400' },
-  { rank: 3, name: 'David Miller', score: 92, move: 'Optimize', time: '29m 05s', medalColor: 'text-amber-700' },
-]
+import Link from 'next/link'
+import { useState } from 'react'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { useCohort } from '@/hooks/useCohort'
+
+const MEDAL_COLORS = ['text-amber-400', 'text-slate-400', 'text-amber-700']
 
 export default function CohortPage() {
+  const { challenge, submission, leaderboard, isLoading, submitResponse } = useCohort()
+  const [responseText, setResponseText] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async () => {
+    if (!responseText.trim()) return
+    setIsSubmitting(true)
+    try {
+      await submitResponse(responseText)
+    } catch {
+      // submission failed silently
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // Build leaderboard display — use real data or fall back to mock
+  const leaderboardDisplay = leaderboard.length > 0
+    ? leaderboard.slice(0, 3).map((e, i) => ({
+        rank: e.rank,
+        name: e.display_name ?? 'Anonymous',
+        score: e.score,
+        move: 'Optimize',
+        time: '--',
+        medalColor: MEDAL_COLORS[i] ?? 'text-outline',
+      }))
+    : [
+        { rank: 1, name: 'Alex Chen', score: 98, move: 'Optimize', time: '31m 12s', medalColor: 'text-amber-400' },
+        { rank: 2, name: 'Sarah Jenkins', score: 94, move: 'Optimize', time: '35m 44s', medalColor: 'text-slate-400' },
+        { rank: 3, name: 'David Miller', score: 92, move: 'Optimize', time: '29m 05s', medalColor: 'text-amber-700' },
+      ]
+
+  const challengeTitle = challenge?.title ?? "You're PM at Spotify. Podcast listening dropped 23% in Q3. Diagnose and recommend a fix."
+  const moveTag = challenge?.move_tag ? `${challenge.move_tag.charAt(0).toUpperCase() + challenge.move_tag.slice(1)} Move` : 'Optimize Move'
+
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6 animate-fade-in-up">
 
@@ -28,10 +62,10 @@ export default function CohortPage() {
         <div className="relative z-10 flex flex-col md:flex-row justify-between gap-6">
           <div className="space-y-4 max-w-2xl">
             <div className="flex gap-2">
-              <span className="bg-tertiary text-white px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">Week 12 · Optimize Move</span>
+              <span className="bg-tertiary text-white px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">Week 12 · {moveTag}</span>
             </div>
             <h2 className="text-xl md:text-2xl font-bold leading-tight font-headline">
-              You&apos;re PM at Spotify. Podcast listening dropped 23% in Q3. Diagnose and recommend a fix.
+              {challengeTitle}
             </h2>
             <div className="flex items-center gap-4 text-sm font-medium opacity-90">
               <div className="flex items-center gap-1.5">
@@ -45,9 +79,19 @@ export default function CohortPage() {
             </div>
           </div>
           <div className="flex items-center justify-end">
-            <button className="bg-white text-primary px-6 py-3 rounded-full font-bold text-sm shadow-sm hover:bg-primary-fixed transition-colors">
-              Submit Revision
-            </button>
+            {submission ? (
+              <span className="bg-white/20 text-white px-4 py-2 rounded-full text-sm font-bold">
+                Submitted ✓
+              </span>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting || !responseText.trim()}
+                className="bg-white text-primary px-6 py-3 rounded-full font-bold text-sm shadow-sm hover:bg-primary-fixed transition-colors disabled:opacity-50"
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Revision'}
+              </button>
+            )}
           </div>
         </div>
         <div className="absolute -right-20 -top-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
@@ -115,7 +159,7 @@ export default function CohortPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {/* Top 3 */}
-              {leaderboard.map((entry) => (
+              {leaderboardDisplay.map((entry) => (
                 <tr key={entry.rank} className="h-14 hover:bg-surface-container transition-colors">
                   <td className="px-6">
                     <div className="flex items-center gap-2">

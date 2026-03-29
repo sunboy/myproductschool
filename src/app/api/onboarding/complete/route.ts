@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
+import { logEvent } from '@/lib/data/events'
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -39,6 +40,8 @@ export async function POST(request: Request) {
       role_context,
     })
     .eq('id', user.id)
+
+  logEvent(user.id, 'onboarding.completed', { role_context, experience_level })
 
   return NextResponse.json({ success: true, level: experience_level })
 }

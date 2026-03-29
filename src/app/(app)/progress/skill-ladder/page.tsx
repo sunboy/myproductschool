@@ -1,5 +1,10 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { useMoveLevels } from '@/hooks/useMoveLevels'
+import type { CareerBenchmark } from '@/lib/types'
 
 /* ---------- mock data ---------- */
 const relatedSkills = [
@@ -10,6 +15,25 @@ const relatedSkills = [
 ]
 
 export default function SkillLadderPage() {
+  const { moves } = useMoveLevels()
+  const [benchmark, setBenchmark] = useState<CareerBenchmark | null>(null)
+
+  useEffect(() => {
+    fetch('/api/career-benchmark')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setBenchmark(data) })
+      .catch(() => {})
+  }, [])
+
+  // Use first move from API as the focus move (defaulting to frame)
+  const focusMove = moves[0]
+  const moveLabel = focusMove
+    ? focusMove.move.charAt(0).toUpperCase() + focusMove.move.slice(1)
+    : 'Frame'
+  const moveLevel = focusMove?.level ?? 2
+  const moveProgress = focusMove?.progress_pct ?? 62
+  const userLevel = benchmark?.user_level ?? 'PM-2'
+
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 animate-fade-in-up">
 
@@ -204,7 +228,7 @@ export default function SkillLadderPage() {
                 </div>
                 <div className="absolute left-[45%] -top-4 w-1 bg-primary h-6 flex flex-col items-center">
                   <div className="absolute -top-7 bg-primary text-white text-[9px] px-2 py-0.5 rounded-full font-black shadow-sm">YOU</div>
-                  <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-black text-primary whitespace-nowrap">PM-2</div>
+                  <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-black text-primary whitespace-nowrap">{userLevel}</div>
                 </div>
                 <div className="absolute left-[66%] -top-1 w-3 h-3 bg-outline rounded-full">
                   <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[9px] font-bold text-outline whitespace-nowrap">Senior</div>

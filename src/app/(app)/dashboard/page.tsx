@@ -2,37 +2,38 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { useMoveLevels } from '@/hooks/useMoveLevels'
+import { useProfile } from '@/hooks/useProfile'
 
-/* ── Mock Data ───────────────────────────────────────────────── */
-
-const isCalibrated = true
+/* ── Move Colors ─────────────────────────────────────────────── */
 
 // Move-specific accent colors are not in the design system token set;
 // they are used only in SVG/style attributes (not className).
-const MOVE_COLORS = {
+const MOVE_COLORS: Record<string, string> = {
   frame:  '#5eaeff',
+  list:   '#2dd4a0',
+  optimize: '#f59e0b',
+  win:    '#a78bfa',
+  // legacy aliases
   split:  '#2dd4a0',
   weigh:  '#f59e0b',
   sell:   '#a78bfa',
 }
 
-const moveLevels = [
-  { name: 'Frame', symbol: '◇', color: MOVE_COLORS.frame, level: 2, progress: 68, nextLevel: 3 },
-  { name: 'Split', symbol: '◈', color: MOVE_COLORS.split, level: 3, progress: 22, nextLevel: 4 },
-  { name: 'Weigh', symbol: '◆', color: MOVE_COLORS.weigh, level: 1, progress: 90, nextLevel: 2 },
-  { name: 'Sell',  symbol: '◎', color: MOVE_COLORS.sell,  level: 1, progress: 45, nextLevel: 2 },
-]
+const MOVE_SYMBOLS: Record<string, string> = {
+  frame: '◇', list: '◈', optimize: '◆', win: '◎',
+}
 
 const noCalMoves = [
   { name: 'Frame', symbol: '◇', color: MOVE_COLORS.frame, icon: 'crop_free' },
-  { name: 'Split', symbol: '◈', color: MOVE_COLORS.split, icon: 'grid_view', filled: true },
-  { name: 'Weigh', symbol: '◆', color: MOVE_COLORS.weigh, icon: 'balance',   filled: true },
-  { name: 'Sell',  symbol: '◎', color: MOVE_COLORS.sell,  icon: 'campaign' },
+  { name: 'List',  symbol: '◈', color: MOVE_COLORS.list,  icon: 'grid_view', filled: true },
+  { name: 'Optimize', symbol: '◆', color: MOVE_COLORS.optimize, icon: 'balance', filled: true },
+  { name: 'Win',   symbol: '◎', color: MOVE_COLORS.win,   icon: 'campaign' },
 ]
 
-const NEXT_CHALLENGES = [
+const NEXT_CHALLENGES_MOCK = [
   { id: 'a0000001-0000-0000-0000-000000000001', title: 'Model Accuracy Up, Engagement Down', paradigm: 'AI-Assisted', difficulty: 'Advanced', roles: ['ML Eng', 'SWE', 'Data Eng'] },
   { id: 'a0000001-0000-0000-0000-000000000001', title: 'Build a Product Strategy for AI Code Review', paradigm: 'AI-Assisted', difficulty: 'Advanced', roles: ['SWE', 'EM'] },
   { id: 'a0000001-0000-0000-0000-000000000001', title: 'Design a User Research Plan on a Tight Budget', paradigm: 'Agentic', difficulty: 'Intermediate', roles: ['SWE', 'ML Eng'] },
@@ -43,7 +44,44 @@ const NEXT_CHALLENGES = [
 function ReturningDashboard() {
   const router = useRouter()
   const [challengeIdx, setChallengeIdx] = useState(0)
-  const nextChallenge = NEXT_CHALLENGES[challengeIdx]
+  const [nextChallenges, setNextChallenges] = useState(NEXT_CHALLENGES_MOCK)
+  const [quickTake, setQuickTake] = useState<{ id: string; scenario_text: string; move: string } | null>(null)
+  const { moves, isLoading: movesLoading } = useMoveLevels()
+  const { profile } = useProfile()
+
+  useEffect(() => {
+    fetch('/api/challenges/next')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.length) setNextChallenges(data) })
+      .catch(() => {})
+
+    fetch('/api/challenges/quick-take')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.id) setQuickTake(data) })
+      .catch(() => {})
+  }, [])
+
+  const nextChallenge = nextChallenges[challengeIdx] ?? nextChallenges[0]
+
+  // Build move levels for display — fall back to mock if API empty
+  const displayMoves = moves.length > 0
+    ? moves.map(m => ({
+        name: m.move.charAt(0).toUpperCase() + m.move.slice(1),
+        symbol: MOVE_SYMBOLS[m.move] ?? '◇',
+        color: MOVE_COLORS[m.move] ?? '#4a7c59',
+        level: m.level,
+        progress: m.progress_pct,
+        nextLevel: m.level + 1,
+      }))
+    : [
+        { name: 'Frame', symbol: '◇', color: MOVE_COLORS.frame, level: 2, progress: 68, nextLevel: 3 },
+        { name: 'List',  symbol: '◈', color: MOVE_COLORS.list,  level: 3, progress: 22, nextLevel: 4 },
+        { name: 'Optimize', symbol: '◆', color: MOVE_COLORS.optimize, level: 1, progress: 90, nextLevel: 2 },
+        { name: 'Win',   symbol: '◎', color: MOVE_COLORS.win,   level: 1, progress: 45, nextLevel: 2 },
+      ]
+
+  const streakDays = profile?.streak_days ?? 0
+  const xpTotal = profile?.xp_total ?? 0
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -54,7 +92,10 @@ function ReturningDashboard() {
           <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>diamond</span>
         </div>
         <p className="text-sm font-medium text-on-surface">
-          Good morning! Your <span className="font-bold">Frame</span> skills jumped last session. Try a Quick Take to keep the momentum.
+          {streakDays > 0 ? (
+            <>You&apos;re on a <span className="font-bold">{streakDays}-day streak</span> with {xpTotal} XP! </>
+          ) : null}
+          Your <span className="font-bold">Frame</span> skills jumped last session. Try a Quick Take to keep the momentum.
         </p>
       </section>
 
@@ -77,7 +118,7 @@ function ReturningDashboard() {
           </div>
           <div className="flex-1 space-y-4">
             <p className="text-sm font-semibold text-on-surface leading-relaxed">
-              &ldquo;Your app&apos;s DAU is up 20% but revenue is flat. What&apos;s the first question you ask?&rdquo;
+              &ldquo;{quickTake?.scenario_text ?? "Your app's DAU is up 20% but revenue is flat. What's the first question you ask?"}&rdquo;
             </p>
             <textarea
               className="w-full bg-white rounded-lg p-3 text-sm focus:ring-1 ring-primary placeholder:text-on-surface-variant/40 resize-none border-0 outline-none"
@@ -129,7 +170,7 @@ function ReturningDashboard() {
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </Link>
             <button
-              onClick={() => setChallengeIdx(i => (i + 1) % NEXT_CHALLENGES.length)}
+              onClick={() => setChallengeIdx(i => (i + 1) % nextChallenges.length)}
               className="px-4 py-2.5 border border-primary text-primary rounded-full hover:bg-primary/5 transition-colors"
               title="Shuffle challenge"
             >
@@ -142,8 +183,9 @@ function ReturningDashboard() {
       {/* 3. Full-Width Card: Your Move Levels */}
       <section className="bg-surface-container rounded-xl p-4">
         <h2 className="text-sm font-semibold text-on-surface mb-6">Your Move Levels</h2>
+        {movesLoading && <div className="text-xs text-on-surface-variant animate-pulse">Loading...</div>}
         <div className="space-y-5">
-          {moveLevels.map((m) => (
+          {displayMoves.map((m) => (
             <div key={m.name} className="space-y-1.5">
               <div className="flex justify-between items-center text-[11px] font-bold">
                 <div className="flex items-center gap-2">
@@ -307,5 +349,17 @@ function NoCalibrationDashboard() {
 /* ── Page ─────────────────────────────────────────────────────── */
 
 export default function DashboardPage() {
+  const { profile, isLoading } = useProfile()
+
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto p-6 flex items-center justify-center min-h-[200px]">
+        <span className="text-sm text-on-surface-variant animate-pulse">Loading your dashboard...</span>
+      </div>
+    )
+  }
+
+  const isCalibrated = !!profile?.onboarding_completed_at
+
   return isCalibrated ? <ReturningDashboard /> : <NoCalibrationDashboard />
 }

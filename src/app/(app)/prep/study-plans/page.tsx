@@ -1,8 +1,11 @@
+'use client'
+
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { useStudyPlans } from '@/hooks/useStudyPlans'
 
-/* ---------- mock data ---------- */
-const plans = [
+/* ---------- mock data (fallback) ---------- */
+const PLANS_MOCK = [
   {
     slug: 'pm-interview-bootcamp',
     name: 'PM Interview Bootcamp',
@@ -111,7 +114,31 @@ const FLOW_FILTERS = [
   { label: 'Win', symbol: '◎', color: 'text-[#6b21a8]' },
 ]
 
+const MOVE_COLORS: Record<string, string> = {
+  frame: '#3b5bdb', list: '#4a7c59', optimize: '#705c30', win: '#6b21a8',
+}
+
 export default function StudyPlansPage() {
+  const { plans: apiPlans, isLoading } = useStudyPlans()
+
+  // Map API plans to display format, fall back to mock if empty
+  const plans: typeof PLANS_MOCK = apiPlans.length > 0
+    ? apiPlans.map(p => ({
+        slug: p.slug,
+        name: p.title,
+        moveTag: p.move_tag ? p.move_tag.charAt(0).toUpperCase() + p.move_tag.slice(1) : 'Multi-move',
+        moveTagBg: p.move_tag ? 'bg-secondary-container' : 'bg-secondary-container',
+        moveTagText: p.move_tag ? 'text-on-surface' : 'text-on-surface',
+        roleTag: p.role_tags.join('+') || 'PM',
+        borderColor: p.move_tag ? (MOVE_COLORS[p.move_tag] ?? '#4a7c59') : '#4a7c59',
+        level: 'INTERMEDIATE' as const,
+        description: p.description ?? '',
+        challenges: p.challenge_count,
+        time: `~${p.estimated_hours} hrs`,
+        cta: 'View Plan' as const,
+      }))
+    : PLANS_MOCK
+
   return (
     <div className="max-w-7xl mx-auto px-4 pt-4 pb-12 space-y-6 animate-fade-in-up">
 
