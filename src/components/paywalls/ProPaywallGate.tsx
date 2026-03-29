@@ -4,12 +4,14 @@ interface ProPaywallGateProps {
   challengeTitle?: string
   challengeCategory?: string
   challengeDuration?: string
+  completedCount?: number
 }
 
 export function ProPaywallGate({
   challengeTitle = "Prioritize Stripe's Next Feature",
   challengeCategory = 'Strategy',
   challengeDuration = '15 mins',
+  completedCount = 3,
 }: ProPaywallGateProps) {
   return (
     <div className="fixed inset-0 z-0 overflow-hidden">
@@ -100,7 +102,8 @@ export function ProPaywallGate({
               </div>
             </div>
 
-            <h2 className="font-headline text-[22px] font-bold text-on-surface mb-6">Unlock this challenge</h2>
+            <p className="text-sm text-on-surface-variant mb-2">You&apos;ve unlocked {completedCount} of 3 free challenges.</p>
+            <h2 className="font-headline text-[22px] font-bold text-on-surface mb-6">Keep going — you&apos;re just getting started.</h2>
 
             {/* Preview Card */}
             <div className="w-full bg-surface-container rounded-xl p-4 mb-8 border border-outline-variant/30">
@@ -117,20 +120,25 @@ export function ProPaywallGate({
               <p className="text-[11px] text-on-surface-variant italic">Best for: Systems-level tradeoff analysis</p>
             </div>
 
+            <p className="w-full text-sm text-on-surface-variant mb-4">
+              Pro members get unlimited challenges, full Luma coaching, and a shareable skill credential for LinkedIn.
+            </p>
+
             {/* Feature List */}
             <ul className="w-full space-y-3 mb-8">
               {[
                 { text: 'Unlimited access to <strong>200+ challenges</strong>' },
-                { text: 'Full <strong>AI Grading</strong> with deep diagnostic feedback' },
-                { text: 'Skill Ladder + <strong>LinkedIn credentials</strong>' },
-                { text: 'Personalized <strong>Luma coaching</strong> session clips' },
+                { text: 'Full AI coaching with <strong>skill fingerprint</strong> after every challenge' },
+                { text: '<strong>Skill Ladder</strong> with shareable LinkedIn credentials' },
+                { text: '<strong>Weekly cohort challenges</strong> with leaderboard' },
+                { text: 'Personalized <strong>study plans</strong>' },
               ].map((benefit, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm text-on-surface-variant">
                   <span
                     className="material-symbols-outlined text-primary text-lg"
                     style={{ fontVariationSettings: "'wght' 700" }}
                   >
-                    check_circle
+                    check
                   </span>
                   <span dangerouslySetInnerHTML={{ __html: benefit.text }} />
                 </li>
@@ -158,6 +166,9 @@ export function ProPaywallGate({
               <button className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-full transition-transform active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-primary/20">
                 Unlock Pro <span className="material-symbols-outlined">arrow_forward</span>
               </button>
+              <p className="text-xs text-on-surface-variant">
+                Free plan: 3 challenges · No coaching detail · No credential
+              </p>
               <button className="text-sm font-semibold text-on-surface-variant hover:text-on-surface underline underline-offset-4">
                 Start 7-day free trial
               </button>

@@ -34,6 +34,16 @@ export default function PrepHubPage() {
   const [companies, setCompanies] = useState<Company[]>(COMPANIES_MOCK)
   const [selectedCompany, setSelectedCompany] = useState<Company>(COMPANIES_MOCK[0])
   const [coachingDismissed, setCoachingDismissed] = useState(false)
+  const [interviewDate, setInterviewDate] = useState<string | null>(null)
+
+  const daysLeft = interviewDate
+    ? Math.max(0, Math.ceil((new Date(interviewDate).getTime() - Date.now()) / 86400000))
+    : null
+
+  useEffect(() => {
+    const saved = localStorage.getItem('hackproduct_interview_date')
+    if (saved) setInterviewDate(saved)
+  }, [])
 
   useEffect(() => {
     fetch('/api/prep/companies')
@@ -205,7 +215,22 @@ export default function PrepHubPage() {
                 <span className="absolute text-xl font-black font-headline text-on-surface">35%</span>
               </div>
               <div className="flex-1 space-y-1">
-                <div className="text-xs font-bold text-orange-700">14 days until interview</div>
+                {daysLeft !== null ? (
+                  <div className="text-xs font-bold text-orange-700">{daysLeft} days until interview</div>
+                ) : (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs text-on-surface-variant">Interview date:</span>
+                    <input
+                      type="date"
+                      className="text-xs border border-outline-variant rounded-lg px-2 py-1 bg-surface-container focus:outline-none focus:border-primary"
+                      min={new Date().toISOString().split('T')[0]}
+                      onChange={e => {
+                        setInterviewDate(e.target.value)
+                        localStorage.setItem('hackproduct_interview_date', e.target.value)
+                      }}
+                    />
+                  </div>
+                )}
                 <p className="text-[10px] text-on-surface-variant">Ahead of 72% of candidates</p>
                 <div className="w-full bg-outline-variant h-1 rounded-full mt-2 overflow-hidden">
                   <div className="bg-primary h-full w-[72%]" />

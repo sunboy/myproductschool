@@ -7,43 +7,39 @@ const ROLES = ['All', 'SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng
 const PARADIGMS = [
   {
     name: 'Traditional',
-    tagline: 'Build the right thing, not just the thing right',
+    description: 'Metrics, trade-offs, and prioritization — the core toolkit every PM needs cold.',
     challengeCount: '~150 challenges',
     icon: 'architecture',
     borderClass: 'border-lens',
     bgClass: 'bg-lens-tint',
     iconClass: 'text-lens',
-    subtopics: ['Failure Analysis', 'Second-Order Thinking', 'Scope Negotiation'],
   },
   {
     name: 'AI-Assisted',
-    tagline: 'Use AI tools without losing judgment',
+    description: 'Know when to trust AI output — prompting, validation, and keeping human judgment sharp.',
     challengeCount: '~50 challenges',
     icon: 'smart_toy',
     borderClass: 'border-frame',
     bgClass: 'bg-frame-tint',
     iconClass: 'text-frame',
-    subtopics: ['AI Tool Judgment', 'Impact Translation'],
   },
   {
     name: 'Agentic',
-    tagline: 'Design systems where agents act autonomously',
+    description: 'Design multi-step AI systems — agents, evals, failure modes, and trust boundaries.',
     challengeCount: '~70 challenges',
     icon: 'hub',
     borderClass: 'border-win',
     bgClass: 'bg-win-tint',
     iconClass: 'text-win',
-    subtopics: ['Trust & Autonomy', 'Agent Economics'],
   },
   {
     name: 'AI-Native',
-    tagline: "Products that couldn't exist without AI",
+    description: "Products that couldn't exist without AI — new interaction models, new risks.",
     challengeCount: '~70 challenges',
     icon: 'neurology',
     borderClass: 'border-optimize',
     bgClass: 'bg-optimize-tint',
     iconClass: 'text-optimize',
-    subtopics: ['AI Product Strategy', 'AI UX Patterns'],
   },
 ] as const
 
@@ -75,7 +71,7 @@ const STUDY_PLANS_MOCK = [
 ]
 
 interface ExplorePageProps {
-  searchParams: Promise<{ role?: string }>
+  searchParams: Promise<{ role?: string; paradigm?: string }>
 }
 
 async function fetchStudyPlans(): Promise<typeof STUDY_PLANS_MOCK> {
@@ -99,14 +95,30 @@ async function fetchStudyPlans(): Promise<typeof STUDY_PLANS_MOCK> {
 }
 
 export default async function ExplorePage({ searchParams }: ExplorePageProps) {
-  const { role } = await searchParams
+  const { role, paradigm } = await searchParams
   const activeRole = role || 'All'
+  const activeParadigm = paradigm || null
 
   const studyPlans = await fetchStudyPlans()
 
   const buildHref = (r: string) => {
-    if (r === 'All') return '/explore'
-    return `/explore?role=${encodeURIComponent(r)}`
+    const params = new URLSearchParams()
+    if (r !== 'All') params.set('role', r)
+    if (activeParadigm) params.set('paradigm', activeParadigm)
+    const qs = params.toString()
+    return qs ? `/explore?${qs}` : '/explore'
+  }
+
+  const buildParadigmHref = (name: string) => {
+    const params = new URLSearchParams()
+    if (activeRole !== 'All') params.set('role', activeRole)
+    if (activeParadigm === name) {
+      // Deselect — remove paradigm param
+      const qs = params.toString()
+      return qs ? `/explore?${qs}` : '/explore'
+    }
+    params.set('paradigm', name)
+    return `/explore?${params.toString()}`
   }
 
   return (
@@ -147,37 +159,39 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
         </div>
       </section>
 
-      {/* Paradigms Grid (2x2) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {PARADIGMS.map(paradigm => (
-          <Link
-            key={paradigm.name}
-            href={`/challenges?paradigm=${encodeURIComponent(paradigm.name)}`}
-            className={`bg-surface-variant rounded-xl p-5 border-l-4 ${paradigm.borderClass} hover:bg-surface-container-high transition-colors group`}
-          >
-            <div className="flex justify-between items-start mb-3">
-              <div className={`p-2 ${paradigm.bgClass} rounded-lg ${paradigm.iconClass}`}>
-                <span className="material-symbols-outlined">{paradigm.icon}</span>
-              </div>
-              <span className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest">
-                {paradigm.challengeCount}
-              </span>
-            </div>
-            <h3 className="font-headline text-lg font-bold mb-1">{paradigm.name}</h3>
-            <p className="text-xs text-on-surface-variant mb-4">{paradigm.tagline}</p>
-            <div className="flex flex-wrap gap-2">
-              {paradigm.subtopics.map(topic => (
-                <span
-                  key={topic}
-                  className="bg-white/50 px-2.5 py-1 rounded text-[11px] font-medium border border-outline-variant/20"
-                >
-                  {topic}
+      {/* Paradigms — compact 4-column strip */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {PARADIGMS.map(p => {
+          const isActive = activeParadigm === p.name
+          return (
+            <Link
+              key={p.name}
+              href={buildParadigmHref(p.name)}
+              className={`rounded-xl p-4 border-l-4 ${p.borderClass} hover:bg-surface-container transition-colors relative ${
+                isActive
+                  ? 'bg-surface-container ring-2 ring-primary/30'
+                  : 'bg-surface-container-low'
+              }`}
+            >
+              {isActive && (
+                <span className="absolute top-2 right-2 material-symbols-outlined text-primary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  check_circle
                 </span>
-              ))}
-            </div>
-          </Link>
-        ))}
+              )}
+              {/* Icon + name on same row */}
+              <div className="flex items-center gap-2 mb-2">
+                <div className={`inline-flex p-1.5 ${p.bgClass} rounded-lg ${p.iconClass} shrink-0`}>
+                  <span className="material-symbols-outlined text-[16px]">{p.icon}</span>
+                </div>
+                <h3 className="font-headline text-sm font-bold leading-tight">{p.name}</h3>
+              </div>
+              <p className="text-[11px] text-on-surface-variant leading-snug mb-1.5">{p.description}</p>
+              <p className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest">{p.challengeCount}</p>
+            </Link>
+          )
+        })}
       </div>
+
 
       {/* Study Plans Section */}
       <section className="space-y-4 pt-2">

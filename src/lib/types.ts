@@ -84,6 +84,7 @@ export interface ChallengePrompt {
   created_at: string
   sub_questions?: string[]
   paradigm?: string | null
+  move_tags?: FlowMove[]
 }
 
 export interface ChallengeAttempt {

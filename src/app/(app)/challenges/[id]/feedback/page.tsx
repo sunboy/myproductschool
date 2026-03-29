@@ -15,32 +15,6 @@ const DIMENSIONS = [
   { key: 'recommendation_strength',  label: 'Recommendation',        color: '#f59e0b' },
 ] as const
 
-/* ── Mock fallback ────────────────────────────────────────── */
-
-const MOCK_SCORES: Record<string, number> = {
-  framing_precision: 4, diagnostic_accuracy: 5, metric_fluency: 3, recommendation_strength: 4,
-}
-
-const MOCK_PATTERNS = [
-  { pattern_id: 'aggregate_fallacy', pattern_name: 'Aggregate Fallacy', confidence: 0.87, evidence: 'Treated all users as one group when analyzing the failure. This obscured the fact that the feature actually worked for 20% of your power users while confusing the casual base.' },
-  { pattern_id: 'data_delay', pattern_name: 'Data Delay', confidence: 0.72, evidence: 'Called for more research when the qualitative feedback from the beta was already sufficient to pivot. In an interview, this comes across as indecisiveness.' },
-]
-
-const MOCK_FEEDBACK = {
-  feedback_text: 'Your approach to identifying the "backfired" component was strong—you correctly isolated the new UI as the primary friction point. However, your proposed solution leaned heavily on reverting to the previous state, which ignores the strategic reasons why the change was made in the first place.\n\nGreat product thinkers don\'t just roll back; they re-integrate. You identified the user pain but missed the opportunity to explain how you\'d keep the business objective while fixing the user experience.',
-  thinking_pattern: { title: 'Build On, Don\'t Tear Down', body: 'You successfully leveraged existing features rather than suggesting a full rebuild. This shows an understanding of organizational constraints and user muscle memory.' },
-  trap_dodged: 'Surface-Level Restatement',
-  interview_tip: 'When a feature fails, interviewers look for radical accountability. Instead of blaming "marketing" or "bad luck," show you can trace the failure back to a specific faulty assumption in your initial hypothesis.',
-  recommended_answer: 'A strong response would: (1) Segment users into power users who benefit vs casual users who are confused, (2) Propose an A/B test with the feature gated behind user tenure, (3) Quantify the expected impact on both DAU and revenue, (4) Present a 2-week rollout plan with kill-switch criteria.',
-  xp_earned: 85,
-}
-
-const MOCK_CHALLENGE = {
-  title: 'The Feature That Backfired',
-  paradigm: 'Traditional',
-  difficulty: 'Easy',
-}
-
 /* ── Helpers ──────────────────────────────────────────────── */
 
 const TRAP_FIX: Record<string, string> = {
@@ -63,40 +37,65 @@ function getThinkingTraps(feedback: unknown): Array<{ trap_id: string; trap_name
   return traps as Array<{ trap_id: string; trap_name: string; description: string; fix_hint: string; confidence: number }>
 }
 
+/**
+ * Returns scores keyed by dimension (0-5 scale for bar display).
+ * Falls back to neutral 0.5 (on 0-5 = 2.5) if no real data.
+ */
 function getScores(feedback: unknown): Record<string, number> {
-  if (!feedback) return MOCK_SCORES
-  // Real feedback_json shape: { dimensions: [{dimension, score (0-10), ...}], ... }
-  const dims = (feedback as Record<string, unknown>)?.dimensions
-  if (Array.isArray(dims) && dims.length >= 4) {
+  const dims = (feedback as Record<string, unknown> | null)?.dimensions
+  if (Array.isArray(dims) && dims.length > 0) {
     const map: Record<string, number> = {}
-    for (const item of dims) {
+    for (const item of dims as Array<{ dimension?: string; score?: number }>) {
       if (item.dimension && typeof item.score === 'number') {
-        map[item.dimension] = Math.round(item.score / 2) // 0-10 → 0-5
+        // score is 0-10 → divide by 2 → 0-5 scale for bars
+        map[item.dimension] = Math.round((item.score / 2) * 10) / 10
       }
     }
-    if (Object.keys(map).length >= 4) return map
+    if (Object.keys(map).length > 0) return map
   }
-  if (typeof feedback === 'object' && feedback !== null && 'scores' in feedback) {
-    return (feedback as { scores: Record<string, number> }).scores
-  }
-  return MOCK_SCORES
+  // Neutral fallback: 2.5 out of 5
+  return Object.fromEntries(DIMENSIONS.map(d => [d.key, 2.5]))
 }
 
+/**
+ * Returns true if the scores are real (not fallback neutrals).
+ */
+function hasRealScores(feedback: unknown): boolean {
+  const dims = (feedback as Record<string, unknown> | null)?.dimensions
+  return Array.isArray(dims) && dims.length > 0
+}
+
+/**
+ * Returns feedback text from dimension commentaries, or placeholder.
+ */
 function getFeedbackText(feedback: unknown): string {
-  if (!feedback) return MOCK_FEEDBACK.feedback_text
-  if (typeof feedback === 'object' && feedback !== null) {
+  if (feedback && typeof feedback === 'object') {
     const f = feedback as Record<string, unknown>
-    // Real feedback_json: combine dimension commentaries
     const dims = f.dimensions
     if (Array.isArray(dims) && dims.length > 0) {
-      const parts = dims
-        .map((d: { commentary?: string }) => d.commentary)
-        .filter(Boolean)
+      const parts = (dims as Array<{ commentary?: string }>)
+        .map(d => d.commentary)
+        .filter(Boolean) as string[]
       if (parts.length > 0) return parts.join('\n\n')
     }
-    if (typeof f.feedback === 'string') return f.feedback
+    if (typeof f.overall_feedback === 'string' && f.overall_feedback) return f.overall_feedback
+    if (typeof f.feedback === 'string' && f.feedback) return f.feedback
   }
-  return MOCK_FEEDBACK.feedback_text
+  return 'Submit your response to receive Luma\'s detailed coaching.'
+}
+
+function getRecommendedAnswer(feedback: unknown): string | null {
+  if (!feedback || typeof feedback !== 'object') return null
+  const f = feedback as Record<string, unknown>
+  if (typeof f.recommended_answer === 'string' && f.recommended_answer) return f.recommended_answer
+  return null
+}
+
+function getInterviewTip(feedback: unknown): string | null {
+  if (!feedback || typeof feedback !== 'object') return null
+  const f = feedback as Record<string, unknown>
+  if (typeof f.interview_tip === 'string' && f.interview_tip) return f.interview_tip
+  return null
 }
 
 /* ── Page ─────────────────────────────────────────────────── */
@@ -113,23 +112,32 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
 
   // Get attempt ID from URL or fetch latest for this challenge
   const attemptId = searchParams.get('attempt')
-  const { attempt, feedback, patterns, isLoading, error } = useAttempt(attemptId)
+  const { attempt, feedback, patterns, isLoading } = useAttempt(attemptId)
 
   // Derive display data
   const scores = getScores(feedback)
+  const realScores = hasRealScores(feedback)
   const feedbackText = getFeedbackText(feedback)
-  // Prefer semantic trap matches from feedback_json; fall back to Luma-detected patterns; last resort: mock
+  const recommendedAnswer = getRecommendedAnswer(feedback)
+  const interviewTip = getInterviewTip(feedback)
+
+  // Thinking traps: prefer semantic traps from feedback_json, then Luma-detected patterns
   const thinkingTraps = getThinkingTraps(feedback)
   const detectedPatterns = thinkingTraps.length > 0
     ? thinkingTraps.map(t => ({ pattern_id: t.trap_id, pattern_name: t.trap_name, confidence: t.confidence, evidence: t.description, fix_hint: t.fix_hint }))
-    : patterns.length > 0 ? patterns : MOCK_PATTERNS
+    : patterns
+
   const challengeTitle = (attempt as Record<string, unknown>)?.challenge_prompts
-    ? ((attempt as Record<string, { title?: string }>).challenge_prompts?.title ?? MOCK_CHALLENGE.title)
-    : MOCK_CHALLENGE.title
+    ? ((attempt as Record<string, { title?: string }>).challenge_prompts?.title ?? 'Challenge Feedback')
+    : 'Challenge Feedback'
+
   const overallScore = typeof (attempt as Record<string, unknown>)?.score === 'number'
     ? (attempt as { score: number }).score
-    : Object.values(scores).reduce((a, b) => a + b, 0) * 4 // rough estimate
-  const xpEarned = MOCK_FEEDBACK.xp_earned
+    : Object.values(scores).reduce((a, b) => a + b, 0) * 4
+
+  const xpEarned = typeof (attempt as Record<string, unknown>)?.xp_awarded === 'number'
+    ? (attempt as { xp_awarded: number }).xp_awarded
+    : null
 
   // Loading state
   if (isLoading) {
@@ -155,26 +163,29 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
           <div>
             <h1 className="text-2xl font-bold font-headline text-on-surface">{challengeTitle}</h1>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider" style={{ backgroundColor: '#2dd4a0' }}>
-                {MOCK_CHALLENGE.paradigm}
-              </span>
-              <span className="bg-surface-container-highest text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-                {MOCK_CHALLENGE.difficulty}
-              </span>
-              <span className="bg-primary text-on-primary text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1 uppercase tracking-wider">
-                <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-                +{xpEarned} XP
-              </span>
+              {xpEarned !== null && (
+                <span className="bg-primary text-on-primary text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1 uppercase tracking-wider">
+                  <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+                  +{xpEarned} XP
+                </span>
+              )}
             </div>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {detectedPatterns.length === 0 && (
+          {detectedPatterns.length === 0 && realScores && (
             <span className="text-sm font-bold text-primary flex items-center gap-1">
               <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
               Clean Run ✦
             </span>
           )}
+          <Link
+            href={`/challenges/${challengeId}/discussion`}
+            className="bg-secondary-container text-on-secondary-container px-6 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-sm">forum</span>
+            View Discussion
+          </Link>
           <Link href="/challenges" className="bg-primary text-on-primary px-6 py-2 rounded-full text-sm font-bold shadow-sm hover:opacity-90 transition-all">
             Next Challenge
           </Link>
@@ -191,6 +202,11 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
               <span className="material-symbols-outlined text-primary">analytics</span>
               Skill Fingerprint
             </h2>
+            {!realScores && (
+              <p className="text-sm text-on-surface-variant mb-4 italic">
+                Complete a challenge to see your skill fingerprint.
+              </p>
+            )}
             <div className="flex flex-col md:flex-row items-center gap-8">
               {/* Radar Chart */}
               <div className="relative w-48 h-48 shrink-0">
@@ -200,15 +216,15 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
                     const pts = radarPoints(100, 100, 90 * scale, 5)
                     return <polygon key={i} fill="none" style={{ stroke: '#c4c8bc', strokeDasharray: '2' }} points={pts} />
                   })}
-                  {/* Data Shape */}
+                  {/* Data Shape — score is 0-5 scale, normalize to 0-1 for chart */}
                   {(() => {
-                    const vals = DIMENSIONS.map(d => (scores[d.key] ?? 3) / 5)
+                    const vals = DIMENSIONS.map(d => (scores[d.key] ?? 2.5) / 5)
                     const pts = radarDataPoints(100, 100, 90, vals)
                     return <polygon style={{ fill: '#4a7c59', fillOpacity: 0.3, stroke: '#4a7c59', strokeWidth: 2 }} points={pts} />
                   })()}
                   {/* Score dots */}
                   {(() => {
-                    const vals = DIMENSIONS.map(d => (scores[d.key] ?? 3) / 5)
+                    const vals = DIMENSIONS.map(d => (scores[d.key] ?? 2.5) / 5)
                     return DIMENSIONS.map((d, i) => {
                       const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2
                       const r = 90 * vals[i]
@@ -221,12 +237,12 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
               {/* Score Bars */}
               <div className="flex-1 w-full space-y-4">
                 {DIMENSIONS.map(d => {
-                  const score = scores[d.key] ?? 3
+                  const score = scores[d.key] ?? 2.5
                   return (
                     <div key={d.key} className="space-y-1">
                       <div className="flex justify-between text-xs font-bold">
                         <span className="text-on-surface-variant">{d.label}</span>
-                        <span style={{ color: d.color }}>{score}/5</span>
+                        <span style={{ color: d.color }}>{realScores ? `${score}/5` : '—'}</span>
                       </div>
                       <div className="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
                         <div className="h-full rounded-full transition-all duration-700" style={{ backgroundColor: d.color, width: `${(score / 5) * 100}%` }} />
@@ -238,29 +254,19 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
             </div>
           </div>
 
-          {/* Thinking Pattern + Trap Dodged */}
+          {/* Thinking Traps / Anti-Patterns (left column summary) */}
           <div className="grid grid-cols-1 gap-4">
-            <div className="card-elevated border-l-4 border-primary p-4">
-              <div className="flex gap-3">
-                <span className="text-2xl">🧠</span>
-                <div>
-                  <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1">Thinking Pattern Identified</h3>
-                  <p className="text-lg font-bold font-headline text-primary mb-2">{MOCK_FEEDBACK.thinking_pattern.title}</p>
-                  <p className="text-xs text-on-surface-variant leading-relaxed">{MOCK_FEEDBACK.thinking_pattern.body}</p>
+            {detectedPatterns.length === 0 ? (
+              <div className="card-elevated border-l-4 border-primary p-4">
+                <div className="flex gap-3 items-center">
+                  <span className="material-symbols-outlined text-primary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                  <div>
+                    <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1">Thinking Traps</h3>
+                    <p className="text-sm font-semibold text-primary">No significant thinking traps detected.</p>
+                  </div>
                 </div>
               </div>
-            </div>
-            {MOCK_FEEDBACK.trap_dodged && (
-              <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-center gap-4">
-                <div className="bg-primary text-on-primary w-10 h-10 rounded-full flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined">shield</span>
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-primary uppercase tracking-widest">Trap Dodged</p>
-                  <p className="text-sm font-bold text-on-surface">{MOCK_FEEDBACK.trap_dodged}</p>
-                </div>
-              </div>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -271,26 +277,34 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
             Anti-Patterns Detected
             {detectedPatterns.length === 0 && <span className="text-sm font-normal text-on-surface-variant ml-2">None — great job!</span>}
           </h2>
-          {(detectedPatterns as Array<{ pattern_id: string; pattern_name: string; confidence: number; evidence: string; fix_hint?: string }>).map((p) => (
-            <div key={p.pattern_id} className="border-l-4 border-error rounded-xl p-5 shadow-sm space-y-3 bg-error-container/30">
-              <div className="flex justify-between items-start">
-                <h3 className="font-bold text-error text-base flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>dangerous</span>
-                  {p.pattern_name}
-                </h3>
-                <span className="bg-error/10 text-error text-[10px] font-bold px-2 py-0.5 rounded uppercase">
-                  {Math.round(p.confidence * 100)}% conf
-                </span>
-              </div>
-              <p className="text-sm text-on-surface-variant leading-relaxed">{p.evidence}</p>
-              {(p.fix_hint ?? TRAP_FIX[p.pattern_id]) && (
-                <div className="bg-surface-container-lowest p-3 rounded-lg border border-error/10 text-sm">
-                  <span className="font-bold text-error">💡 Fix: </span>
-                  <span className="text-on-surface-variant">{p.fix_hint ?? TRAP_FIX[p.pattern_id]}</span>
-                </div>
-              )}
+          {detectedPatterns.length === 0 ? (
+            <div className="card-elevated p-6 flex flex-col items-center justify-center gap-3 text-center min-h-[120px]">
+              <span className="material-symbols-outlined text-primary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+              <p className="text-sm font-semibold text-on-surface">No significant thinking traps detected.</p>
+              <p className="text-xs text-on-surface-variant">Your reasoning was clear and well-structured.</p>
             </div>
-          ))}
+          ) : (
+            (detectedPatterns as Array<{ pattern_id: string; pattern_name: string; confidence: number; evidence: string; fix_hint?: string }>).map((p) => (
+              <div key={p.pattern_id} className="border-l-4 border-error rounded-xl p-5 shadow-sm space-y-3 bg-error-container/30">
+                <div className="flex justify-between items-start">
+                  <h3 className="font-bold text-error text-base flex items-center gap-2">
+                    <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>dangerous</span>
+                    {p.pattern_name}
+                  </h3>
+                  <span className="bg-error/10 text-error text-[10px] font-bold px-2 py-0.5 rounded uppercase">
+                    {Math.round(p.confidence * 100)}% conf
+                  </span>
+                </div>
+                <p className="text-sm text-on-surface-variant leading-relaxed">{p.evidence}</p>
+                {(p.fix_hint ?? TRAP_FIX[p.pattern_id]) && (
+                  <div className="bg-surface-container-lowest p-3 rounded-lg border border-error/10 text-sm">
+                    <span className="font-bold text-error">Fix: </span>
+                    <span className="text-on-surface-variant">{p.fix_hint ?? TRAP_FIX[p.pattern_id]}</span>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -311,36 +325,40 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
             ))}
           </div>
 
-          {/* Recommended Answer Collapsible */}
-          <div className="mt-8 border-t border-outline-variant/30 pt-6">
-            <button
-              className="w-full flex items-center justify-between bg-surface-container-low p-4 rounded-xl border border-outline-variant/30 hover:bg-surface-container-high transition-colors"
-              onClick={() => setShowRecommended(!showRecommended)}
-            >
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary">lightbulb</span>
-                <span className="font-bold text-sm">View Recommended Answer</span>
-              </div>
-              <span className={`material-symbols-outlined text-on-surface-variant transition-transform ${showRecommended ? 'rotate-180' : ''}`}>expand_more</span>
-            </button>
-            {showRecommended && (
-              <div className="mt-3 p-4 bg-surface-container-low rounded-xl border border-outline-variant/20 text-sm text-on-surface-variant leading-relaxed animate-fade-in">
-                {MOCK_FEEDBACK.recommended_answer}
-              </div>
-            )}
-          </div>
+          {/* Recommended Answer Collapsible — only show if real answer exists */}
+          {recommendedAnswer && (
+            <div className="mt-8 border-t border-outline-variant/30 pt-6">
+              <button
+                className="w-full flex items-center justify-between bg-surface-container-low p-4 rounded-xl border border-outline-variant/30 hover:bg-surface-container-high transition-colors"
+                onClick={() => setShowRecommended(!showRecommended)}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-primary">lightbulb</span>
+                  <span className="font-bold text-sm">View Recommended Answer</span>
+                </div>
+                <span className={`material-symbols-outlined text-on-surface-variant transition-transform ${showRecommended ? 'rotate-180' : ''}`}>expand_more</span>
+              </button>
+              {showRecommended && (
+                <div className="mt-3 p-4 bg-surface-container-low rounded-xl border border-outline-variant/20 text-sm text-on-surface-variant leading-relaxed animate-fade-in">
+                  {recommendedAnswer}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Interview Tip */}
-        <div className="bg-tertiary/10 border border-tertiary/20 rounded-xl p-5 flex gap-4">
-          <div className="bg-tertiary text-on-tertiary w-10 h-10 rounded-lg flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>tips_and_updates</span>
+        {/* Interview Tip — only show if real tip exists */}
+        {interviewTip && (
+          <div className="bg-tertiary/10 border border-tertiary/20 rounded-xl p-5 flex gap-4">
+            <div className="bg-tertiary text-on-tertiary w-10 h-10 rounded-lg flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>tips_and_updates</span>
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-tertiary mb-1">Interview Tip</h4>
+              <p className="text-sm text-on-surface-variant leading-snug">{interviewTip}</p>
+            </div>
           </div>
-          <div>
-            <h4 className="text-sm font-bold text-tertiary mb-1">Interview Tip</h4>
-            <p className="text-sm text-on-surface-variant leading-snug">{MOCK_FEEDBACK.interview_tip}</p>
-          </div>
-        </div>
+        )}
       </section>
 
       <div className="h-10" />

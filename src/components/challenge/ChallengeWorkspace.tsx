@@ -15,7 +15,7 @@ interface ChallengeWorkspaceProps {
   domainIcon: string
 }
 
-type WorkspaceMode = 'guided' | 'freeform'
+type WorkspaceMode = 'quick' | 'guided' | 'freeform'
 
 interface FlowStep {
   key: string
@@ -79,7 +79,7 @@ function formatAutoSave(date: Date | null): string {
 export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: ChallengeWorkspaceProps) {
   const router = useRouter()
 
-  const [mode, setMode]                   = useState<WorkspaceMode>('guided')
+  const [mode, setMode]                   = useState<WorkspaceMode>('quick')
   const [activeStep, setActiveStep]       = useState(1) // Start on List (step 1) to match Stitch
   const [responses, setResponses]         = useState<Record<number, string>>({ 0: '', 1: '', 2: '', 3: '' })
   const [freeformResponse, setFreeformResponse] = useState('')
@@ -152,7 +152,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
     if (submitting) return
     const responseText = mode === 'guided'
       ? Object.values(responses).filter(Boolean).join('\n\n---\n\n')
-      : freeformResponse
+      : freeformResponse  // covers both 'freeform' and 'quick'
     if (!responseText.trim()) return
 
     setSubmitting(true)
@@ -195,10 +195,28 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
             <span className="material-symbols-outlined text-on-surface-variant">arrow_back</span>
           </button>
           <span className="font-headline font-black text-lg text-on-surface">{challenge.title}</span>
+          <Link
+            href={`/challenges/${challenge.id}/discussion`}
+            className="flex items-center gap-1 text-xs text-on-surface-variant hover:text-primary transition-colors"
+            title="Discussion"
+          >
+            <span className="material-symbols-outlined text-sm">forum</span>
+          </Link>
         </div>
         {/* Center: mode toggle */}
         <div className="flex items-center gap-6">
           <div className="bg-surface-container rounded-full p-1 flex items-center">
+            <button
+              onClick={() => setMode('quick')}
+              className={`px-4 py-1 text-xs font-bold flex items-center gap-2 rounded-full transition-all ${
+                mode === 'quick'
+                  ? 'bg-white shadow-sm text-primary'
+                  : 'text-on-surface-variant'
+              }`}
+            >
+              <span className="material-symbols-outlined text-xs" style={mode === 'quick' ? { fontVariationSettings: "'FILL' 1" } : undefined}>bolt</span>
+              Quick
+            </button>
             <button
               onClick={() => setMode('guided')}
               className={`px-4 py-1 text-xs font-bold flex items-center gap-2 rounded-full transition-all ${
@@ -257,9 +275,69 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
       </header>
 
       {/* ═══════════════════════════════════════════════════════
-          CONTENT AREA — guided split-pane or freeform scroll
+          CONTENT AREA — quick / guided split-pane / freeform scroll
           ═══════════════════════════════════════════════════════ */}
-      {mode === 'freeform' ? (
+      {mode === 'quick' ? (
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left pane — scenario */}
+          <section className="w-2/5 bg-surface-container-lowest border-r border-outline-variant flex flex-col overflow-y-auto p-6">
+            <div className="flex items-start justify-between mb-4">
+              <h1 className="font-headline text-lg font-bold leading-tight">{challenge.title}</h1>
+              <button className="text-on-surface-variant hover:text-primary">
+                <span className="material-symbols-outlined">bookmark</span>
+              </button>
+            </div>
+            <div className="flex gap-2 mb-6">
+              {challenge.paradigm && (
+                <span className="bg-green-50 text-green-500 border border-green-500/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+                  {challenge.paradigm}
+                </span>
+              )}
+              <span className="bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+                Difficulty: {difficultyLabel(challenge.difficulty)}
+              </span>
+            </div>
+            <div className="text-on-surface-variant leading-relaxed text-sm">
+              <p>{challenge.prompt_text}</p>
+            </div>
+          </section>
+
+          {/* Right pane — quick take input */}
+          <section className="flex-1 bg-surface flex flex-col overflow-hidden relative">
+            <div className="flex-1 flex flex-col p-6 gap-4">
+              <div className="bg-primary-fixed/30 rounded-xl p-4 text-sm text-on-surface">
+                <p className="font-bold mb-1">Quick Take</p>
+                <p className="text-on-surface-variant">Give your best 2-3 sentence answer. Luma grades it in seconds.</p>
+              </div>
+              <textarea
+                className="flex-1 resize-none rounded-xl border border-outline-variant p-4 text-sm bg-surface focus:outline-none focus:border-primary font-body"
+                placeholder="What's your take? Start with the core problem..."
+                maxLength={300}
+                value={freeformResponse}
+                onChange={e => setFreeformResponse(e.target.value)}
+              />
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-on-surface-variant">{freeformResponse.length}/300</span>
+                <button
+                  onClick={handleSubmit}
+                  disabled={freeformResponse.trim().length < 20 || submitting}
+                  className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-bold disabled:opacity-40 hover:opacity-90 transition-opacity"
+                >
+                  {submitting ? 'Submitting...' : 'Submit →'}
+                </button>
+              </div>
+            </div>
+
+            {/* Luma coaching strip */}
+            <div className="bg-primary-fixed/30 border-t border-primary/10 px-6 py-3 flex items-center gap-4 flex-shrink-0">
+              <LumaGlyph size={28} state="listening" className="text-primary flex-shrink-0" />
+              <div className="flex-1 text-sm text-on-primary-container font-medium">
+                <span className="font-bold">Quick Take</span> — no steps needed. Just share your instinct and Luma will grade it.
+              </div>
+            </div>
+          </section>
+        </div>
+      ) : mode === 'freeform' ? (
         <FreeformView
           challenge={challenge}
           freeformResponse={freeformResponse}
@@ -356,34 +434,6 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
               <span className="material-symbols-outlined text-sm">segment</span>
               ≡ Frameworks
             </button>
-          </div>
-
-          {/* Thinking Move Tabs */}
-          <div className="px-6 flex items-center gap-6 border-b border-outline-variant/30 bg-surface-container-low flex-shrink-0">
-            {FLOW_STEPS.map((s, i) => {
-              const isActive = i === activeStep
-              return (
-                <button
-                  key={s.key}
-                  onClick={() => setActiveStep(i)}
-                  className={`py-3 text-xs font-bold flex items-center gap-1.5 transition-colors ${
-                    isActive
-                      ? 'text-primary border-b-2 border-primary'
-                      : i > activeStep
-                        ? 'text-on-surface-variant opacity-60 hover:text-primary'
-                        : 'text-on-surface-variant hover:text-primary'
-                  }`}
-                >
-                  <span
-                    className={`material-symbols-outlined text-[16px] ${s.color}`}
-                    style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}
-                  >
-                    article
-                  </span>
-                  {s.label}
-                </button>
-              )
-            })}
           </div>
 
           {/* Active Content */}

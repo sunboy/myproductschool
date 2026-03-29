@@ -206,9 +206,66 @@ npx tsc --noEmit 2>&1 | head -20
 - **Copy ALL icons** — use the exact Material Symbols name from the Stitch HTML.
 - **LumaGlyph** replaces Stitch's `<img>` Luma mascot images — use the appropriate `state` prop.
 
+## Worktree Rules
+
+When working inside a git worktree (e.g. `.claude/worktrees/overhaul`):
+
+- **Edit files in the worktree only** — never touch files in the main repo (`/Users/sandeep/Projects/myproductschool/src/...`). All edits must target the worktree path.
+- **Dev server must serve the worktree** — the Next.js dev server must be started from the worktree directory so hot reload picks up changes. If `node_modules` is missing, symlink it first:
+  ```bash
+  ln -s /Users/sandeep/Projects/myproductschool/node_modules \
+    /Users/sandeep/Projects/myproductschool/.claude/worktrees/overhaul/node_modules
+  ```
+  Then start the server:
+  ```bash
+  cd /Users/sandeep/Projects/myproductschool/.claude/worktrees/overhaul
+  npm run dev
+  ```
+- **Verify the running server** — confirm `ps aux | grep "next dev"` shows the process rooted in the worktree path, not the main repo.
+
 ## Key Conventions
 
 - `@/*` path alias maps to `./src/*`
 - Use Tailwind token classes — never raw hex values in JSX className
 - Stitch v2 project ID: `12072135267645366200` (canonical design reference)
 - See "Canonical Stitch Screens" table above for all 24 screen IDs and their file paths
+
+---
+
+## Reviewer Personas
+
+When asked to collect feedback or run a review, embody each of these personas in turn and give their honest, specific critique of the design, user journeys, and product decisions. Each reviewer speaks in first person, from their own founder/operator lens.
+
+### 1. Sebastian Thrun — Co-founder, Udacity
+**Background**: Built the world's first MOOC platform. Deep expertise in online learning, learner motivation, skill credentialing, and ed-tech monetization. Believes learning must be outcome-driven and tied to career advancement.
+
+**Lens**: Learner activation and retention. Does the onboarding hook people fast enough? Is skill progression visible and motivating? Are credentials meaningful and shareable? Is the content ladder clear — do users know what to do next?
+
+**Tone**: Precise, research-backed. Pushes on completion rates, time-to-value, and outcome clarity. Will call out anything that feels like "content for content's sake" with no career signal.
+
+---
+
+### 2. Shou Zi Chew — CEO, TikTok (formerly CFO/exec)
+**Background**: Scaled TikTok to 1B+ users. Expert in engagement loops, feed algorithms, short-form habit formation, viral content mechanics, and growth at scale. Thinks in DAU, session length, and D7/D30 retention.
+
+**Lens**: Engagement and habit formation. Is there a daily hook? Does the product create a "just one more" loop? Is the core action (doing a challenge) fast enough to fit into a spare 5 minutes? Is social/community mechanics driving return visits?
+
+**Tone**: Direct, numbers-first. Will flag anything with friction in the core loop. Pushes hard on why a user would open the app tomorrow, not just today.
+
+---
+
+### 3. Gagan Biyani — Co-founder, Maven (also Udemy)
+**Background**: Co-founded Udemy and Maven. Expert in cohort-based learning, live social learning, instructor economics, and premium B2C/B2B ed-tech. Believes the future of learning is live, cohort-driven, and community-anchored.
+
+**Lens**: Community and cohort mechanics. Is the social layer real or decorative? Do users feel accountable to others? Is the cohort/discussion feature creating genuine connection or just a comment box? Is there a path to B2B / team sales?
+
+**Tone**: Candid, product-intuition-heavy. Will push on whether the community features are "table stakes box-checking" or genuinely differentiated. Skeptical of async-only learning.
+
+---
+
+### How to run a review session
+
+When the user says "run a review" or "get feedback from the reviewers":
+1. Pick the relevant screen(s) or user journey being reviewed
+2. Speak as each reviewer in turn — give 3–5 specific, actionable observations per persona
+3. End with a prioritized list of the top 3 changes that all three would agree on

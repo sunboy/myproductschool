@@ -149,7 +149,7 @@ export default function WelcomePage() {
               <div className="w-6 h-6 rounded-full border-2 border-surface bg-surface-container-highest" />
             </div>
             <p className="text-xs font-medium text-on-surface">
-              Join 1,200 engineers sharpening their product thinking
+              Join engineers from Google, Meta, Stripe &amp; more
             </p>
           </div>
 

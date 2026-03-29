@@ -2,10 +2,11 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
+import { useCohort } from '@/hooks/useCohort'
 
 /* ── Move Colors ─────────────────────────────────────────────── */
 
@@ -48,6 +49,7 @@ function ReturningDashboard() {
   const [quickTake, setQuickTake] = useState<{ id: string; scenario_text: string; move: string } | null>(null)
   const { moves, isLoading: movesLoading } = useMoveLevels()
   const { profile } = useProfile()
+  const { challenge: cohortChallenge, submission: cohortSubmission, leaderboard: cohortLeaderboard } = useCohort()
 
   useEffect(() => {
     fetch('/api/challenges/next')
@@ -82,9 +84,46 @@ function ReturningDashboard() {
 
   const streakDays = profile?.streak_days ?? 0
   const xpTotal = profile?.xp_total ?? 0
+  // Use xpTotal > 0 as the returning-user signal (any XP means they've completed at least one challenge)
+  const hasAttempts = xpTotal > 0
+
+  // Focus move: highest level (ties broken by progress_pct)
+  const focusMove = moves.length > 0
+    ? [...moves].sort((a, b) => b.level - a.level || b.progress_pct - a.progress_pct)[0]
+    : null
+
+  const daysLeft = useMemo(() => {
+    if (!cohortChallenge?.week_end) return null
+    const end = new Date(cohortChallenge.week_end)
+    const now = new Date()
+    const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    return diff > 0 ? diff : 0
+  }, [cohortChallenge])
+
+  const myRank = useMemo(() => {
+    if (!cohortSubmission || !cohortLeaderboard.length) return null
+    const idx = cohortLeaderboard.findIndex(e => e.user_id === cohortSubmission.user_id)
+    return idx >= 0 ? idx + 1 : null
+  }, [cohortSubmission, cohortLeaderboard])
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
+
+      {/* Streak Banner — shows if streak > 0 */}
+      {streakDays > 0 && (
+        <div className="flex items-center gap-3 bg-tertiary/10 border border-tertiary/20 rounded-xl px-4 py-3">
+          <span className="material-symbols-outlined text-tertiary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
+          <div>
+            <span className="font-bold text-tertiary">{streakDays} day streak</span>
+            <span className="text-xs text-on-surface-variant ml-2">· Practice today to keep it alive</span>
+          </div>
+          <div className="ml-auto flex gap-1">
+            {Array.from({ length: Math.min(7, streakDays) }).map((_, i) => (
+              <div key={i} className="w-2 h-2 rounded-full bg-tertiary" />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 1. Luma Greeting Card */}
       <section className="flex items-center gap-4 bg-primary-fixed/30 rounded-xl p-4 border border-primary/10">
@@ -99,11 +138,135 @@ function ReturningDashboard() {
         </p>
       </section>
 
-      {/* 2. Two-Column Grid */}
+      {/* 2. This Week's Community Challenge (cohort pinned card) */}
+      {cohortChallenge && (
+        <section className="bg-inverse-surface text-inverse-on-surface rounded-xl p-5">
+          {/* Header row */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span
+                className="material-symbols-outlined text-base"
+                style={{ color: '#8ecf9e', fontVariationSettings: "'FILL' 1" }}
+              >
+                emoji_events
+              </span>
+              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: '#8ecf9e' }}>
+                This Week&apos;s Community Challenge
+              </span>
+            </div>
+            {daysLeft !== null && (
+              <span
+                className="text-[10px] font-bold px-2.5 py-1 rounded-full"
+                style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#f5f0e8' }}
+              >
+                {daysLeft === 0 ? 'Ends today' : `${daysLeft}d left`}
+              </span>
+            )}
+          </div>
+
+          {/* Title + move tag */}
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <h3 className="font-headline text-lg font-bold leading-snug" style={{ color: '#f5f0e8' }}>
+              {cohortChallenge.title}
+            </h3>
+            {cohortChallenge.move_tag && (
+              <span className="shrink-0 bg-primary-fixed text-on-surface text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
+                {cohortChallenge.move_tag}
+              </span>
+            )}
+          </div>
+
+          {/* Peer signal */}
+          <div className="flex items-center gap-1.5 mb-4 text-xs" style={{ color: '#a0a8a0' }}>
+            <span className="material-symbols-outlined text-sm">group</span>
+            <span>{cohortLeaderboard.length} engineers submitted this week</span>
+          </div>
+
+          {/* CTA / submission status */}
+          {cohortSubmission ? (
+            <Link
+              href="/cohort"
+              className="inline-flex items-center gap-2 text-sm font-bold"
+              style={{ color: '#8ecf9e' }}
+            >
+              <span
+                className="material-symbols-outlined text-sm"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                check_circle
+              </span>
+              Submitted · {myRank ? `You ranked #${myRank} this week` : 'View leaderboard'}
+              <span className="material-symbols-outlined text-sm">arrow_forward</span>
+            </Link>
+          ) : (
+            <Link
+              href="/cohort"
+              className="inline-flex items-center gap-2 bg-primary text-on-primary rounded-full px-5 py-2 text-sm font-bold hover:brightness-110 transition-all"
+            >
+              Join Challenge
+              <span className="material-symbols-outlined text-sm">arrow_forward</span>
+            </Link>
+          )}
+        </section>
+      )}
+
+      {/* 3. Social proof strip */}
+      <div className="flex items-center gap-4 text-xs text-on-surface-variant bg-surface-container rounded-xl px-4 py-3">
+        <span className="flex items-center gap-1.5">
+          <span className="material-symbols-outlined text-sm text-primary">group</span>
+          <span><strong className="text-on-surface">47</strong> engineers practiced today</span>
+        </span>
+        <span className="text-outline-variant">·</span>
+        <span className="flex items-center gap-1.5">
+          <span className="material-symbols-outlined text-sm text-tertiary">local_fire_department</span>
+          <span><strong className="text-on-surface">12</strong> on a streak this week</span>
+        </span>
+      </div>
+
+      {/* 4. Your Progress Banner — only shown when move data exists */}
+      {focusMove && (
+        <section className="bg-primary-fixed border border-primary/20 rounded-xl p-4 flex items-center gap-4">
+          <div className="w-10 h-10 flex items-center justify-center bg-primary/10 rounded-lg shrink-0">
+            <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <p className="text-sm font-bold text-on-surface">
+                Level {focusMove.level}{' '}
+                <span className="text-primary">
+                  {focusMove.move.charAt(0).toUpperCase() + focusMove.move.slice(1)} Builder
+                </span>
+              </p>
+              <span className="text-xs text-on-surface-variant font-label shrink-0">
+                {focusMove.xp} XP
+              </span>
+            </div>
+            <div className="w-full bg-primary/10 h-2 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all duration-700"
+                style={{ width: `${focusMove.progress_pct}%` }}
+              />
+            </div>
+            <p className="text-xs text-on-surface-variant mt-1.5">{focusMove.progress_pct}% toward Level {focusMove.level + 1}</p>
+          </div>
+          <Link
+            href="/progress/skill-ladder"
+            className="text-xs font-bold text-primary flex items-center gap-1 shrink-0 hover:opacity-80 transition-opacity"
+          >
+            View ladder
+            <span className="material-symbols-outlined text-sm">arrow_forward</span>
+          </Link>
+        </section>
+      )}
+
+      {/* 5. Two-Column Grid — Quick Take leads for returning users */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-        {/* Left Card: Quick Take */}
-        <div className="bg-surface-container rounded-xl p-4 flex flex-col relative overflow-hidden">
+        {/* Quick Take card */}
+        <div
+          className="bg-surface-container rounded-xl p-4 flex flex-col relative overflow-hidden"
+          style={{ order: hasAttempts ? 1 : 2 }}
+        >
           <div
             className="absolute top-4 right-4 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase"
             style={{ backgroundColor: MOVE_COLORS.frame }}
@@ -111,10 +274,10 @@ function ReturningDashboard() {
             Frame ◇
           </div>
           <div className="mb-4">
-            <h2 className="text-lg font-bold flex items-center gap-2 text-on-surface">
-              <span>⚡</span> Quick Take
+            <h2 className="font-headline text-lg font-bold text-on-surface">
+              Quick Take
             </h2>
-            <p className="text-xs text-on-surface-variant font-medium">90 seconds. One move. Real feedback.</p>
+            <p className="text-xs text-on-surface-variant font-medium">Grade in 60 seconds · No commitment</p>
           </div>
           <div className="flex-1 space-y-4">
             <p className="text-sm font-semibold text-on-surface leading-relaxed">
@@ -131,13 +294,16 @@ function ReturningDashboard() {
               onClick={() => router.push('/challenges')}
               className="bg-primary text-on-primary rounded-full px-6 py-2 text-sm font-bold shadow-sm hover:brightness-110 transition-all"
             >
-              Grade in 15s
+              Grade in 60s
             </button>
           </div>
         </div>
 
-        {/* Right Card: Your Next Challenge */}
-        <div className="bg-surface-container rounded-xl p-4 flex flex-col">
+        {/* Next Challenge card */}
+        <div
+          className="bg-surface-container rounded-xl p-4 flex flex-col"
+          style={{ order: hasAttempts ? 2 : 1 }}
+        >
           <h2 className="text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-3">Your Next Challenge</h2>
           <div className="flex-1 space-y-3">
             <h3 className="text-xl font-headline font-bold text-on-surface leading-tight">
@@ -180,7 +346,7 @@ function ReturningDashboard() {
         </div>
       </section>
 
-      {/* 3. Full-Width Card: Your Move Levels */}
+      {/* 4. Full-Width Card: Your Move Levels */}
       <section className="bg-surface-container rounded-xl p-4">
         <h2 className="text-sm font-semibold text-on-surface mb-6">Your Move Levels</h2>
         {movesLoading && <div className="text-xs text-on-surface-variant animate-pulse">Loading...</div>}

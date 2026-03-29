@@ -58,9 +58,31 @@ export async function GET(
       .maybeSingle(),
   ])
 
+  const chapters = chaptersResult.data ?? []
+
+  // Collect all challenge IDs across all chapters
+  const allChallengeIds = chapters.flatMap((ch: { challenge_ids: string[] }) => ch.challenge_ids ?? [])
+
+  let challengeMap: Record<string, { id: string; title: string; difficulty: string; paradigm?: string | null }> = {}
+  if (allChallengeIds.length > 0) {
+    const { data: challengeRows } = await adminClient
+      .from('challenge_prompts')
+      .select('id, title, difficulty, paradigm')
+      .in('id', allChallengeIds)
+    for (const row of challengeRows ?? []) {
+      challengeMap[row.id] = row
+    }
+  }
+
+  // Enrich chapters with challenge details
+  const enrichedChapters = chapters.map((ch: { challenge_ids: string[]; [key: string]: unknown }) => ({
+    ...ch,
+    challenges: (ch.challenge_ids ?? []).map((id: string) => challengeMap[id] ?? { id, title: 'Unknown Challenge', difficulty: 'intermediate' }),
+  }))
+
   return NextResponse.json({
     plan,
-    chapters: chaptersResult.data ?? [],
+    chapters: enrichedChapters,
     user_progress: progressResult.data ?? null,
   })
 }

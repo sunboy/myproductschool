@@ -6,6 +6,13 @@ import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import type { CareerBenchmark } from '@/lib/types'
 
+function buildLinkedInUrl(moveName: string, level: number): string {
+  const now = new Date()
+  const certName = encodeURIComponent(`HackProduct ${moveName} Move — Level ${level}`)
+  const certUrl = encodeURIComponent('https://hackproduct.io/verify')
+  return `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${certName}&issueYear=${now.getFullYear()}&issueMonth=${now.getMonth() + 1}&certUrl=${certUrl}`
+}
+
 /* ---------- mock data ---------- */
 const relatedSkills = [
   { name: 'Logic', level: 3 },
@@ -210,9 +217,15 @@ export default function SkillLadderPage() {
                 HACKPRODUCT VERIFIED
               </div>
             </div>
-            <button className="w-full bg-[#0077b5] text-white py-2.5 rounded-full text-sm font-bold flex items-center justify-center gap-2 shadow hover:bg-[#006097] transition-colors">
-              <span className="material-symbols-outlined text-lg">add_circle</span> Add to LinkedIn profile →
-            </button>
+            <a
+              href={buildLinkedInUrl(moveLabel, moveLevel)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full bg-[#0077b5] text-white py-2.5 rounded-full text-sm font-bold flex items-center justify-center gap-2 shadow hover:bg-[#006097] transition-colors"
+            >
+              <span className="material-symbols-outlined text-lg">add_circle</span>
+              Add to LinkedIn profile →
+            </a>
           </div>
 
           {/* Career Benchmark */}

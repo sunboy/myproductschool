@@ -142,6 +142,20 @@ export default function StudyPlansPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 pt-4 pb-12 space-y-6 animate-fade-in-up">
 
+      {/* ── Personalized Path CTA ── */}
+      <div className="bg-primary text-white rounded-xl p-5 mb-6 flex items-center justify-between gap-4">
+        <div>
+          <h2 className="font-headline font-bold text-lg mb-1">Building toward something specific?</h2>
+          <p className="text-sm text-white/80">Tell us your target role and interview date — we&apos;ll recommend the right plan and pace.</p>
+        </div>
+        <Link
+          href="/prep"
+          className="bg-white text-primary px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap hover:bg-white/90 transition-colors shrink-0"
+        >
+          Set my goal →
+        </Link>
+      </div>
+
       {/* ── Header ── */}
       <div className="flex justify-between items-end mb-6">
         <div>

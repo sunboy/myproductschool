@@ -7,10 +7,27 @@ import { useCohort } from '@/hooks/useCohort'
 
 const MEDAL_COLORS = ['text-amber-400', 'text-slate-400', 'text-amber-700']
 
+function buildLinkedInShareUrl(rank: number, score: number, challengeTitle: string): string {
+  const text = encodeURIComponent(
+    `I ranked #${rank} on this week's HackProduct community challenge: "${challengeTitle}" — scored ${score}/100. Sharpening my product thinking one challenge at a time. 🧠\n\nhackproduct.io`
+  )
+  return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://hackproduct.io')}&summary=${text}`
+}
+
 export default function CohortPage() {
   const { challenge, submission, leaderboard, isLoading, submitResponse } = useCohort()
   const [responseText, setResponseText] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [teamModalOpen, setTeamModalOpen] = useState(false)
+  const [teamNotified, setTeamNotified] = useState(false)
+
+  const handleTeamNotify = () => {
+    setTeamNotified(true)
+    setTimeout(() => {
+      setTeamModalOpen(false)
+      setTeamNotified(false)
+    }, 2000)
+  }
 
   const handleSubmit = async () => {
     if (!responseText.trim()) return
@@ -137,10 +154,15 @@ export default function CohortPage() {
             <div className="text-5xl font-black font-headline text-primary">#47</div>
             <p className="text-xs text-on-surface-variant max-w-[180px]">Show your network you&apos;re building elite product skills at HackProduct.</p>
           </div>
-          <button className="mt-4 w-full bg-[#0077b5] text-white py-2 rounded-full font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
-            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg>
-            Post to LinkedIn
-          </button>
+          <a
+            href={buildLinkedInShareUrl(47, 79, challengeTitle)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 flex items-center gap-2 bg-[#0077b5] text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-[#006097] transition-colors justify-center"
+          >
+            <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg>
+            Share rank
+          </a>
         </div>
       </section>
 
@@ -268,6 +290,61 @@ export default function CohortPage() {
           </Link>
         </div>
       </section>
+
+      {/* ── Team / B2B CTA ── */}
+      <div className="bg-inverse-surface text-inverse-on-surface rounded-xl p-6 flex items-center justify-between gap-4 mt-6">
+        <div>
+          <h3 className="font-headline font-bold text-lg mb-1">Practice with your team</h3>
+          <p className="text-sm text-inverse-on-surface/70">Create a private cohort for your engineering team. Track collective progress, run internal challenges, and level up together.</p>
+        </div>
+        <button
+          onClick={() => setTeamModalOpen(true)}
+          className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap hover:opacity-90 transition-opacity shrink-0"
+        >
+          Create Team →
+        </button>
+      </div>
+
+      {/* ── Team Modal ── */}
+      {teamModalOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-50 flex items-end md:items-center justify-center p-4"
+          onClick={() => setTeamModalOpen(false)}
+        >
+          <div
+            className="bg-background rounded-2xl p-6 max-w-md w-full shadow-xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <h2 className="font-headline text-xl font-bold mb-2">Team Cohorts — Coming Soon</h2>
+            <p className="text-sm text-on-surface-variant mb-4">
+              Private cohorts for engineering teams are in early access. Leave your email and we&apos;ll reach out when it&apos;s ready.
+            </p>
+            {teamNotified ? (
+              <p className="text-sm font-bold text-primary text-center py-3">Thanks! We&apos;ll be in touch.</p>
+            ) : (
+              <>
+                <input
+                  type="email"
+                  placeholder="your@company.com"
+                  className="w-full border border-outline-variant rounded-xl px-4 py-2.5 text-sm mb-3 focus:outline-none focus:border-primary bg-surface-container"
+                />
+                <button
+                  onClick={handleTeamNotify}
+                  className="w-full bg-primary text-white py-2.5 rounded-full font-bold text-sm hover:opacity-90 transition-opacity"
+                >
+                  Notify me
+                </button>
+              </>
+            )}
+            <button
+              onClick={() => setTeamModalOpen(false)}
+              className="w-full mt-2 text-xs text-on-surface-variant hover:text-on-surface transition-colors"
+            >
+              Maybe later
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

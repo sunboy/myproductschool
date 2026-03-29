@@ -18,11 +18,11 @@ CREATE OR REPLACE FUNCTION match_thinking_traps(
   match_count      int   DEFAULT 3
 )
 RETURNS TABLE (
-  id          uuid,
-  name        text,
-  description text,
-  fix_hint    text,
-  similarity  float
+  id             uuid,
+  name           text,
+  description    text,
+  fix_suggestion text,
+  similarity     float
 )
 LANGUAGE sql STABLE
 AS $$
@@ -30,7 +30,7 @@ AS $$
     t.id,
     t.name,
     t.description,
-    t.fix_hint,
+    t.fix_suggestion,
     1 - (t.exemplar_embedding <=> query_embedding) AS similarity
   FROM thinking_traps t
   WHERE t.exemplar_embedding IS NOT NULL
