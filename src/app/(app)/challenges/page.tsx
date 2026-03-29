@@ -125,7 +125,7 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
           </p>
         </div>
         <Link
-          href="/challenges/c1000000-0000-0000-0000-000000000001"
+          href="/challenges/c0000001-0000-0000-0000-000000000001"
           className="ml-auto bg-primary text-on-primary text-xs font-bold px-4 py-2 rounded-full hover:opacity-90 transition-colors whitespace-nowrap"
         >
           Try Now
