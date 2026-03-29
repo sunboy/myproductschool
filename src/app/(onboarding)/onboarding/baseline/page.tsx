@@ -3,14 +3,14 @@ import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 const SCORES = [
   { name: 'Frame', score: 72, icon: 'diamond', color: 'text-primary' },
-  { name: 'Lens', score: 58, icon: 'vignette', color: 'text-primary' },
+  { name: 'List', score: 58, icon: 'vignette', color: 'text-primary' },
   { name: 'Optimize', score: 65, icon: 'pentagon', color: 'text-primary' },
   { name: 'Win', score: 44, icon: 'circle', color: 'text-tertiary', focus: true },
 ]
 
 const PROFICIENCY = [
   { name: 'Frame', level: 'L3', icon: 'pentagon' },
-  { name: 'Lens', level: 'L2', icon: 'join_inner' },
+  { name: 'List', level: 'L2', icon: 'join_inner' },
   { name: 'Optimize', level: 'L2', icon: 'balance' },
   { name: 'Win', level: 'Focus', icon: 'emoji_events', highlight: true },
 ]

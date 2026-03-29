@@ -12,7 +12,7 @@ const THINKING_MOVES = [
   },
   {
     icon: 'grid_view',
-    title: 'Split',
+    title: 'List',
     tagline: '"Who exactly is affected?"',
     iconColor: 'text-[#2dd4a0]',
     bgColor: 'bg-green-100',
@@ -20,7 +20,7 @@ const THINKING_MOVES = [
   },
   {
     icon: 'balance',
-    title: 'Weigh',
+    title: 'Optimize',
     tagline: '"What are the tradeoffs?"',
     iconColor: 'text-amber-500',
     bgColor: 'bg-amber-100',
@@ -28,7 +28,7 @@ const THINKING_MOVES = [
   },
   {
     icon: 'campaign',
-    title: 'Sell',
+    title: 'Win',
     tagline: '"How do you make others see it?"',
     iconColor: 'text-violet-400',
     bgColor: 'bg-purple-100',
@@ -107,7 +107,7 @@ export default function WelcomePage() {
           {/* CTAs */}
           <div className="flex flex-col items-center gap-4 pt-4">
             <Link
-              href="/role"
+              href="/onboarding/role"
               className="bg-primary text-on-primary rounded-full px-10 py-4 text-base font-semibold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
             >
               Take the Assessment →

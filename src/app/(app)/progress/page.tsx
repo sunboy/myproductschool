@@ -79,7 +79,7 @@ export default function ProgressPage() {
             </div>
             <h2 className="text-3xl font-headline font-bold text-on-surface">The Analyst</h2>
             <p className="text-sm text-on-surface-variant mt-2 max-w-md">
-              Strong at breaking down problems (<span className="font-bold text-primary">Frame + Split</span>), developing your communication muscle (<span className="font-bold text-tertiary">Sell</span>).
+              Strong at breaking down problems (<span className="font-bold text-primary">Frame + List</span>), developing your communication muscle (<span className="font-bold text-tertiary">Win</span>).
             </p>
             <button className="mt-4 flex items-center gap-2 bg-[#6750a4] text-white px-4 py-2 rounded-full text-xs font-bold hover:bg-[#5a4591] transition-colors">
               <span className="material-symbols-outlined text-sm">share</span>

@@ -1,19 +1,33 @@
 'use client'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { LumaGlyph } from './LumaGlyph'
 
-// Mock values — replace with real data when backend is ready
-const STREAK_DAYS = 5
-const XP_TOTAL    = 1240
+interface ProfileBadge {
+  streak_days: number
+  xp_total: number
+}
 
 export function TopBar() {
+  const [profile, setProfile] = useState<ProfileBadge | null>(null)
+
+  useEffect(() => {
+    fetch('/api/profile')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setProfile({ streak_days: data.streak_days ?? 0, xp_total: data.xp_total ?? 0 }) })
+      .catch(() => {})
+  }, [])
+
+  const streakDays = profile?.streak_days ?? 0
+  const xpTotal = profile?.xp_total ?? 0
+
   return (
     <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-lg border-b border-outline-variant/40">
       <div className="flex items-center gap-3 px-4 h-13">
 
         {/* Mobile: logo */}
         <div className="md:hidden shrink-0">
-          <LumaGlyph size={22} className="text-primary animate-luma-glow" animated />
+          <LumaGlyph size={22} className="text-primary animate-luma-glow" state="idle" />
         </div>
 
         {/* Search */}
@@ -41,12 +55,12 @@ export function TopBar() {
             >
               local_fire_department
             </span>
-            <span className="text-xs font-bold text-tertiary font-label">{STREAK_DAYS}</span>
+            <span className="text-xs font-bold text-tertiary font-label">{streakDays}</span>
           </div>
 
           {/* XP */}
           <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 bg-primary-fixed/70 rounded-full">
-            <span className="text-xs font-bold text-primary font-label">{XP_TOTAL.toLocaleString()} XP</span>
+            <span className="text-xs font-bold text-primary font-label">{xpTotal.toLocaleString()} XP</span>
           </div>
 
           {/* Avatar */}

@@ -209,7 +209,7 @@ export default function SettingsPage() {
             <div className="p-4 bg-surface rounded-lg">
               <label className="block text-xs text-outline font-bold mb-3">Preferred FLOW focus</label>
               <div className="flex items-center justify-between cursor-pointer">
-                <span className="font-headline text-xl">Lens</span>
+                <span className="font-headline text-xl">List</span>
                 <span className="material-symbols-outlined text-outline">expand_more</span>
               </div>
             </div>

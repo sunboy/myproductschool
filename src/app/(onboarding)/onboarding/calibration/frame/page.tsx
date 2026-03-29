@@ -6,8 +6,8 @@ import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 const TABS = [
   { id: 'frame', label: 'Frame', icon: 'pentagon' },
-  { id: 'split', label: 'Split', icon: 'join_inner' },
-  { id: 'weigh', label: 'Weigh', icon: 'balance' },
+  { id: 'list', label: 'List', icon: 'join_inner' },
+  { id: 'optimize', label: 'Optimize', icon: 'balance' },
   { id: 'win', label: 'Win', icon: 'emoji_events' },
 ]
 

@@ -12,7 +12,7 @@ const FLOW_STEPS = [
   {
     icon: 'join_inner',
     letter: 'L',
-    title: 'Lens',
+    title: 'List',
     tagline: 'Find the right angle',
     description: 'Deploy strategic frameworks to identify overlooked opportunities.',
   },

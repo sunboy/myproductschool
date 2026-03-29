@@ -6,9 +6,9 @@ import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 const TABS = [
   { id: 'frame', label: 'Frame', icon: 'pentagon', done: true },
-  { id: 'split', label: 'Split', icon: 'join_inner', active: true },
-  { id: 'weigh', label: 'Weigh', icon: 'balance' },
-  { id: 'sell', label: 'Sell', icon: 'trophy' },
+  { id: 'list', label: 'List', icon: 'join_inner', active: true },
+  { id: 'optimize', label: 'Optimize', icon: 'balance' },
+  { id: 'win', label: 'Win', icon: 'trophy' },
 ]
 
 const METRICS = [
@@ -91,7 +91,7 @@ export default function CalibrationSplitPage() {
       <div className="flex items-center gap-2 mb-2">
         <span className="material-symbols-outlined text-primary text-lg">diamond</span>
         <h2 className="font-headline text-lg font-bold text-on-surface">
-          Split
+          List
         </h2>
       </div>
       <p className="text-sm text-on-surface-variant font-body mb-4">

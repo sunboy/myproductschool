@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import type { CalibrationResults } from '@/lib/types'
 
@@ -13,8 +14,10 @@ const STARTING_LEVELS_MOCK = [
 ]
 
 export default function ResultsPage() {
+  const router = useRouter()
   const [results, setResults] = useState<CalibrationResults | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isCompleting, setIsCompleting] = useState(false)
 
   useEffect(() => {
     fetch('/api/onboarding/results')
@@ -23,6 +26,16 @@ export default function ResultsPage() {
       .catch(() => {})
       .finally(() => setIsLoading(false))
   }, [])
+
+  const handleStartChallenge = async () => {
+    setIsCompleting(true)
+    try {
+      await fetch('/api/onboarding/complete', { method: 'POST' })
+    } catch {
+      // Non-fatal — proceed regardless
+    }
+    router.push('/dashboard')
+  }
 
   const scores = results?.scores ?? { frame: 72, list: 58, optimize: 65, win: 44 }
   const archetype = results?.archetype ?? 'The Systematic Builder'
@@ -178,19 +191,21 @@ export default function ResultsPage() {
 
         {/* Section 6: CTA */}
         <section className="pt-4 space-y-4">
-          <Link
-            href="/dashboard"
-            className="w-full bg-primary hover:brightness-110 text-on-primary font-label font-bold py-4 rounded-full transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2"
+          <button
+            onClick={handleStartChallenge}
+            disabled={isCompleting}
+            className="w-full bg-primary hover:brightness-110 text-on-primary font-label font-bold py-4 rounded-full transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2 disabled:opacity-70"
           >
-            Start your first challenge
+            {isCompleting ? 'Setting up...' : 'Start your first challenge'}
             <span className="material-symbols-outlined">arrow_forward</span>
-          </Link>
-          <Link
-            href="/dashboard"
-            className="block text-center text-sm font-bold text-primary hover:underline underline-offset-4 decoration-2"
+          </button>
+          <button
+            onClick={handleStartChallenge}
+            disabled={isCompleting}
+            className="block w-full text-center text-sm font-bold text-primary hover:underline underline-offset-4 decoration-2 disabled:opacity-50"
           >
             See your personalized study plan
-          </Link>
+          </button>
         </section>
       </main>
     </div>

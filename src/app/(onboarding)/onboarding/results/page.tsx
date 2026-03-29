@@ -11,9 +11,9 @@ const RADAR_DIMENSIONS = [
 
 const MOVE_LEVELS = [
   { name: 'Frame', level: 2, icon: 'pentagon' },
-  { name: 'Split', level: 3, icon: 'join_inner' },
-  { name: 'Weigh', level: 2, icon: 'balance' },
-  { name: 'Sell', level: 1, icon: 'emoji_events' },
+  { name: 'List', level: 3, icon: 'join_inner' },
+  { name: 'Optimize', level: 2, icon: 'balance' },
+  { name: 'Win', level: 1, icon: 'emoji_events' },
 ]
 
 function pentagonPoint(cx: number, cy: number, r: number, angleDeg: number) {
@@ -112,7 +112,7 @@ export default function ResultsPage() {
         <div>
           <span className="text-xs font-label font-bold text-primary uppercase tracking-wide">Luma</span>
           <p className="text-sm text-on-surface font-body mt-1">
-            Sharp instincts — you&apos;ve got a strong analytical foundation. Let&apos;s sharpen your <strong>Sell</strong> move.
+            Sharp instincts — you&apos;ve got a strong analytical foundation. Let&apos;s sharpen your <strong>Win</strong> move.
           </p>
         </div>
       </div>
@@ -139,7 +139,7 @@ export default function ResultsPage() {
           <h3 className="font-headline font-bold text-on-surface">Your Thinking Archetype: The Analyst</h3>
         </div>
         <p className="text-sm text-on-surface-variant font-body">
-          Strong at breaking down problems (Frame + Split), developing your communication muscle (Sell).
+          Strong at breaking down problems (Frame + List), developing your communication muscle (Win).
         </p>
       </div>
 

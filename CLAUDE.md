@@ -12,6 +12,11 @@ npm run lint         # ESLint
 npx shadcn@latest add <component>  # Add shadcn/ui components
 ```
 
+## Dev Setup Notes
+
+- **Supabase email confirmation**: For local dev, disable in Supabase dashboard → Authentication → Settings → "Enable email confirmations" → OFF. Without this, new signups won't get a session and will be stuck on the email confirm screen.
+- **`NEXT_PUBLIC_APP_URL`**: Set to `http://localhost:3000` in `.env.local` for local dev — the submit route uses this to call internal APIs during grading.
+
 ## Reference Archive
 
 - **Stitch v2 project**: https://stitch.withgoogle.com/projects/12072135267645366200 — **canonical design reference** for all screens.

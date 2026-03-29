@@ -4,10 +4,10 @@ import { NextResponse } from 'next/server'
 import type { FlowMove } from '@/lib/types'
 
 interface CalibrationResponses {
-  frame: string
-  list: string
-  optimize: string
-  win: string
+  frame?: string
+  list?: string
+  optimize?: string
+  win?: string
 }
 
 export async function POST(request: Request) {
@@ -20,10 +20,16 @@ export async function POST(request: Request) {
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { responses } = body as { responses: CalibrationResponses }
+  const { responses, move, answers } = body as { responses?: CalibrationResponses; move?: string; answers?: Record<string, string> }
 
-  if (!responses || !responses.frame || !responses.list || !responses.optimize || !responses.win) {
-    return NextResponse.json({ error: 'All four FLOW move responses are required' }, { status: 400 })
+  // Support both full responses object and single-move submission
+  const resolvedResponses: CalibrationResponses = responses ?? {}
+  if (move && answers) {
+    resolvedResponses[move as keyof CalibrationResponses] = Object.values(answers).join('\n\n')
+  }
+
+  if (!resolvedResponses.frame && !resolvedResponses.list && !resolvedResponses.optimize && !resolvedResponses.win) {
+    return NextResponse.json({ error: 'At least one FLOW move response is required' }, { status: 400 })
   }
 
   const adminClient = createAdminClient()

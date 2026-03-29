@@ -20,9 +20,9 @@ const ROLES = ['SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng'] as c
 
 const MOVE_DATA = [
   { label: 'Frame', symbol: '◇', color: 'text-blue-600' },
-  { label: 'Split', symbol: '◈', color: 'text-rose-600' },
-  { label: 'Weigh', symbol: '◆', color: 'text-amber-600' },
-  { label: 'Sell', symbol: '◎', color: 'text-emerald-600' },
+  { label: 'List', symbol: '◈', color: 'text-rose-600' },
+  { label: 'Optimize', symbol: '◆', color: 'text-amber-600' },
+  { label: 'Win', symbol: '◎', color: 'text-emerald-600' },
 ] as const
 
 function getMoveBadges(index: number): Array<{ label: string; symbol: string; color: string }> {

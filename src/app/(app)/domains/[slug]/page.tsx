@@ -4,11 +4,11 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
-type FlowMove = 'Frame' | 'Lens' | 'Optimize' | 'Win'
+type FlowMove = 'Frame' | 'List' | 'Optimize' | 'Win'
 
 const FLOW_MOVES: { label: FlowMove; symbol: string; icon: string }[] = [
   { label: 'Frame',    symbol: '◇', icon: 'crop_square' },
-  { label: 'Lens',     symbol: '◈', icon: 'lens_blur' },
+  { label: 'List',     symbol: '◈', icon: 'lens_blur' },
   { label: 'Optimize', symbol: '◆', icon: 'auto_awesome' },
   { label: 'Win',      symbol: '◎', icon: 'stars' },
 ]
@@ -23,7 +23,7 @@ const MOVE_STYLES: Record<FlowMove, {
   barBg: string
 }> = {
   Frame:    { borderLeft: 'border-l-flow-frame',    iconBg: 'bg-flow-frame/10',    iconText: 'text-flow-frame',    labelText: 'text-flow-frame',    arrowHover: 'group-hover:text-flow-frame',    barBg: 'bg-flow-frame' },
-  Lens:     { borderLeft: 'border-l-flow-lens',     iconBg: 'bg-flow-lens/10',     iconText: 'text-flow-lens',     labelText: 'text-flow-lens',     arrowHover: 'group-hover:text-flow-lens',     barBg: 'bg-flow-lens' },
+  List:     { borderLeft: 'border-l-flow-lens',     iconBg: 'bg-flow-lens/10',     iconText: 'text-flow-lens',     labelText: 'text-flow-lens',     arrowHover: 'group-hover:text-flow-lens',     barBg: 'bg-flow-lens' },
   Optimize: { borderLeft: 'border-l-flow-optimize', iconBg: 'bg-flow-optimize/10', iconText: 'text-flow-optimize', labelText: 'text-flow-optimize', arrowHover: 'group-hover:text-flow-optimize', barBg: 'bg-flow-optimize' },
   Win:      { borderLeft: 'border-l-flow-win',      iconBg: 'bg-flow-win/10',      iconText: 'text-flow-win',      labelText: 'text-flow-win',      arrowHover: 'group-hover:text-flow-win',      barBg: 'bg-flow-win' },
 }
@@ -31,12 +31,12 @@ const MOVE_STYLES: Record<FlowMove, {
 // Static FLOW move scores (per-topic training overview)
 const FLOW_SCORES: Record<FlowMove, number> = {
   Frame:    40,
-  Lens:     85,
+  List:     85,
   Optimize: 60,
   Win:      20,
 }
 
-const PRIMARY_MOVE: FlowMove = 'Lens'
+const PRIMARY_MOVE: FlowMove = 'List'
 
 // Role badge labels for challenges
 const ROLE_LABELS = ['PM', 'Senior PM', 'Engineer→PM', 'Staff PM']
@@ -165,7 +165,7 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
 
           <p className="mt-4 text-[11px] text-on-surface-variant italic border-t border-outline-variant pt-2">
             Note: This topic primarily trains the{' '}
-            <span className="text-flow-lens font-bold italic">Lens ◈</span>{' '}
+            <span className="text-flow-lens font-bold italic">List ◈</span>{' '}
             move, focusing on diagnostic precision.
           </p>
         </div>
@@ -178,7 +178,7 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
               {/* Speech bubble tail */}
               <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-surface border-l border-b border-outline-variant rotate-45" />
               <p className="relative z-10 leading-tight text-xs">
-                Lens is your weakest move — {domain.title} is one of the best topics to sharpen it. Start with challenge #1.
+                List is your weakest move — {domain.title} is one of the best topics to sharpen it. Start with challenge #1.
               </p>
             </div>
           </div>

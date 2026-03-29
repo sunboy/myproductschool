@@ -21,7 +21,7 @@ const PLANS_MOCK = [
   {
     slug: 'engineers-product-intuition',
     name: "Engineer's Product Intuition",
-    moveTag: 'Frame+Lens', moveTagBg: 'bg-[#e8f0ff]', moveTagText: 'text-[#3b5bdb]',
+    moveTag: 'Frame+List', moveTagBg: 'bg-[#e8f0ff]', moveTagText: 'text-[#3b5bdb]',
     roleTag: 'Engineer', borderColor: '#3b5bdb',
     level: 'BEGINNER',
     description: 'Bridge the gap between technical execution and user-centric product thinking.',
@@ -31,7 +31,7 @@ const PLANS_MOCK = [
   {
     slug: 'metrics-mastery',
     name: 'Metrics Mastery',
-    moveTag: 'Lens', moveTagBg: 'bg-[#c8e8d0]', moveTagText: 'text-primary',
+    moveTag: 'List', moveTagBg: 'bg-[#c8e8d0]', moveTagText: 'text-primary',
     roleTag: 'PM+Engineer', borderColor: '#4a7c59',
     level: 'COMPLETE', levelColor: 'text-green-600',
     description: 'Define, track, and optimize the numbers that actually move the needle for your team.',
@@ -76,7 +76,7 @@ const PLANS_MOCK = [
   {
     slug: 'system-design-as-pm',
     name: 'System Design as a PM',
-    moveTag: 'Optimize+Lens', moveTagBg: 'bg-[#fef3c7]', moveTagText: 'text-tertiary',
+    moveTag: 'Optimize+List', moveTagBg: 'bg-[#fef3c7]', moveTagText: 'text-tertiary',
     roleTag: 'PM', borderColor: '#c4a66a',
     level: 'ADVANCED',
     description: 'Understand technical architecture to make better product tradeoffs and estimates.',
@@ -86,7 +86,7 @@ const PLANS_MOCK = [
   {
     slug: 'growth-loops-retention',
     name: 'Growth Loops & Retention',
-    moveTag: 'Lens+Win', moveTagBg: 'bg-[#c8e8d0]', moveTagText: 'text-primary',
+    moveTag: 'List+Win', moveTagBg: 'bg-[#c8e8d0]', moveTagText: 'text-primary',
     roleTag: 'PM', borderColor: '#78a886',
     level: 'INTERMEDIATE',
     description: 'Analyze viral mechanics and sustainable product growth through loops.',
@@ -109,7 +109,7 @@ const PLANS_MOCK = [
 const FLOW_FILTERS = [
   { label: 'All', active: true },
   { label: 'Frame', symbol: '◇', color: 'text-[#3b5bdb]' },
-  { label: 'Lens', symbol: '◈', color: 'text-primary' },
+  { label: 'List', symbol: '◈', color: 'text-primary' },
   { label: 'Optimize', symbol: '◆', color: 'text-tertiary' },
   { label: 'Win', symbol: '◎', color: 'text-[#6b21a8]' },
 ]

@@ -7,9 +7,9 @@ import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 const STEP_PILLS = [
   { id: 'frame', label: 'Frame', active: true },
-  { id: 'split', label: 'Split', active: false },
-  { id: 'weigh', label: 'Weigh', active: false },
-  { id: 'sell', label: 'Sell', active: false },
+  { id: 'list', label: 'List', active: false },
+  { id: 'optimize', label: 'Optimize', active: false },
+  { id: 'win', label: 'Win', active: false },
 ]
 
 export default function CalibrationFramePage() {
@@ -205,7 +205,7 @@ export default function CalibrationFramePage() {
           disabled={isSubmitting}
           className="bg-primary text-on-primary rounded-full px-10 py-3 font-label font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-70"
         >
-          <span>{isSubmitting ? 'Saving...' : 'Next: Split'}</span>
+          <span>{isSubmitting ? 'Saving...' : 'Next: List'}</span>
           <span className="material-symbols-outlined text-sm">arrow_forward</span>
         </button>
       </footer>

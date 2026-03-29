@@ -27,9 +27,9 @@ interface FlowStep {
 
 const FLOW_STEPS: FlowStep[] = [
   { key: 'frame', label: 'Frame', subtitle: 'Define the core problem',          color: 'text-blue-500' },
-  { key: 'split', label: 'Split', subtitle: 'Who exactly is affected, and how?', color: 'text-green-500' },
-  { key: 'weigh', label: 'Weigh', subtitle: 'Weigh your options',               color: 'text-amber-500' },
-  { key: 'sell',  label: 'Sell',  subtitle: 'Make your recommendation',         color: 'text-purple-500' },
+  { key: 'list',     label: 'List',     subtitle: 'Who exactly is affected, and how?', color: 'text-green-500' },
+  { key: 'optimize', label: 'Optimize', subtitle: 'Weigh your options',               color: 'text-amber-500' },
+  { key: 'win',      label: 'Win',      subtitle: 'Make your recommendation',         color: 'text-purple-500' },
 ]
 
 const MOCK_METRICS = [
@@ -79,7 +79,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
   const router = useRouter()
 
   const [mode, setMode]                   = useState<WorkspaceMode>('guided')
-  const [activeStep, setActiveStep]       = useState(1) // Start on Split (step 1) to match Stitch
+  const [activeStep, setActiveStep]       = useState(1) // Start on List (step 1) to match Stitch
   const [responses, setResponses]         = useState<Record<number, string>>({ 0: '', 1: '', 2: '', 3: '' })
   const [freeformResponse, setFreeformResponse] = useState('')
   const [submitting, setSubmitting]       = useState(false)
@@ -599,7 +599,7 @@ function FreeformView({
                 </span>
               </div>
               <p className="text-xs text-on-surface-variant mt-1">
-                Write your complete analysis. Think through Frame, Split, Weigh, and Sell in whatever
+                Write your complete analysis. Think through Frame, List, Optimize, and Win in whatever
                 order makes sense to you.
               </p>
             </div>

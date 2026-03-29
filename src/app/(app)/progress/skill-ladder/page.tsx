@@ -43,7 +43,7 @@ export default function SkillLadderPage() {
         <span className="material-symbols-outlined text-[10px]">chevron_right</span>
         <span>Skill Ladder</span>
         <span className="material-symbols-outlined text-[10px]">chevron_right</span>
-        <span className="text-primary font-bold flex items-center gap-1">Lens Move <span className="material-symbols-outlined text-[12px]">view_in_ar</span></span>
+        <span className="text-primary font-bold flex items-center gap-1">List Move <span className="material-symbols-outlined text-[12px]">view_in_ar</span></span>
       </nav>
 
       {/* ── Header Section ── */}
@@ -54,9 +54,9 @@ export default function SkillLadderPage() {
           </div>
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl font-headline font-bold text-primary">Lens Move</h1>
-              <span className="bg-primary-fixed text-primary px-3 py-0.5 rounded-full text-xs font-bold border border-primary/20">Level 2 — Lens Builder</span>
-              <span className="bg-tertiary text-white px-2 py-0.5 rounded-full text-[10px] font-bold border border-tertiary/20">FLOW Move: Lens</span>
+              <h1 className="text-2xl font-headline font-bold text-primary">List Move</h1>
+              <span className="bg-primary-fixed text-primary px-3 py-0.5 rounded-full text-xs font-bold border border-primary/20">Level 2 — List Builder</span>
+              <span className="bg-tertiary text-white px-2 py-0.5 rounded-full text-[10px] font-bold border border-tertiary/20">FLOW Move: List</span>
             </div>
             <p className="text-on-surface-variant text-sm mt-1">Find the right angle to see through a problem</p>
           </div>
@@ -94,9 +94,9 @@ export default function SkillLadderPage() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-bold">Level 1 — Lens Finder · Beginner</h3>
+                  <h3 className="font-bold">Level 1 — List Finder · Beginner</h3>
                   <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold">🥉 Earned Jan 2026</span>
-                  <span className="bg-white/10 px-2 py-0.5 rounded-full text-[10px] font-bold border border-white/20">FLOW: Lens</span>
+                  <span className="bg-white/10 px-2 py-0.5 rounded-full text-[10px] font-bold border border-white/20">FLOW: List</span>
                 </div>
                 <p className="text-xs text-white/80 mt-0.5">Typical: APM / Junior PM</p>
               </div>
@@ -110,11 +110,11 @@ export default function SkillLadderPage() {
               </div>
               <div className="flex justify-between items-start mb-4 flex-wrap gap-2">
                 <div>
-                  <h3 className="font-bold text-primary text-lg">Level 2 — Lens Builder · Developing</h3>
+                  <h3 className="font-bold text-primary text-lg">Level 2 — List Builder · Developing</h3>
                   <p className="text-xs text-on-surface-variant font-medium">Focus: Multi-stakeholder alignment &amp; edge-case discovery</p>
                 </div>
                 <div className="flex gap-2">
-                  <span className="bg-tertiary text-white px-2 py-0.5 rounded-full text-[10px] font-bold">FLOW: Lens</span>
+                  <span className="bg-tertiary text-white px-2 py-0.5 rounded-full text-[10px] font-bold">FLOW: List</span>
                   <span className="bg-tertiary-container text-tertiary px-3 py-1 rounded-full text-xs font-bold border border-tertiary/20">6 challenges remaining</span>
                 </div>
               </div>
@@ -138,7 +138,7 @@ export default function SkillLadderPage() {
                     <div>
                       <h4 className="text-sm font-bold text-on-surface">DAU/MAU ratio declining</h4>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] flex items-center gap-0.5 bg-surface-container-low px-1.5 py-0.5 rounded border border-outline-variant">Lens <span className="material-symbols-outlined text-[10px]">view_in_ar</span></span>
+                        <span className="text-[10px] flex items-center gap-0.5 bg-surface-container-low px-1.5 py-0.5 rounded border border-outline-variant">List <span className="material-symbols-outlined text-[10px]">view_in_ar</span></span>
                         <span className="text-[10px] text-error font-bold uppercase">Hard</span>
                       </div>
                     </div>
@@ -155,11 +155,11 @@ export default function SkillLadderPage() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-on-surface-variant">Level 3 — Lens Strategist · Proficient</h3>
+                  <h3 className="font-bold text-on-surface-variant">Level 3 — List Strategist · Proficient</h3>
                   <span className="material-symbols-outlined text-outline text-lg" style={{ fontVariationSettings: "'FILL' 0" }}>workspace_premium</span>
                 </div>
-                <p className="text-xs text-on-surface-variant mt-0.5">Complete 6 more Lens challenges (2 Hard)</p>
-                <div className="mt-1 text-[10px] font-bold text-tertiary/80 uppercase tracking-tight">FLOW: Frame → Lens → Optimize</div>
+                <p className="text-xs text-on-surface-variant mt-0.5">Complete 6 more List challenges (2 Hard)</p>
+                <div className="mt-1 text-[10px] font-bold text-tertiary/80 uppercase tracking-tight">FLOW: Frame → List → Optimize</div>
               </div>
               <div className="w-10 h-10 rounded-lg bg-surface-container-highest/50 flex items-center justify-center border border-dashed border-outline-variant">
                 <span className="material-symbols-outlined text-outline-variant text-xl">military_tech</span>
@@ -172,9 +172,9 @@ export default function SkillLadderPage() {
                 <span className="material-symbols-outlined text-outline-variant">lock</span>
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-outline">Level 4 — Lens Expert</h3>
+                <h3 className="font-bold text-outline">Level 4 — List Expert</h3>
                 <p className="text-xs text-outline mt-0.5">Master system-wide perspective moves</p>
-                <div className="mt-1 text-[10px] font-bold text-tertiary/60 uppercase tracking-tight">FLOW: Frame → Lens → Optimize → Win</div>
+                <div className="mt-1 text-[10px] font-bold text-tertiary/60 uppercase tracking-tight">FLOW: Frame → List → Optimize → Win</div>
               </div>
               <span className="material-symbols-outlined text-outline-variant text-2xl">military_tech</span>
             </div>
@@ -185,7 +185,7 @@ export default function SkillLadderPage() {
                 <span className="material-symbols-outlined text-outline-variant">lock</span>
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-outline">Level 5 — Lens Master</h3>
+                <h3 className="font-bold text-outline">Level 5 — List Master</h3>
                 <div className="mt-1 text-[10px] font-bold text-tertiary/40 uppercase tracking-tight">FLOW: Mastery</div>
               </div>
               <span className="material-symbols-outlined text-outline-variant text-2xl">diamond</span>
@@ -203,7 +203,7 @@ export default function SkillLadderPage() {
               <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg">
                 <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>view_in_ar</span>
               </div>
-              <h4 className="text-lg font-headline font-bold text-primary">Lens Builder</h4>
+              <h4 className="text-lg font-headline font-bold text-primary">List Builder</h4>
               <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">Level 2</p>
               <div className="mt-4 flex items-center gap-2 bg-primary-fixed px-3 py-1 rounded-full text-[10px] font-black text-primary">
                 <span className="material-symbols-outlined text-xs" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
@@ -237,7 +237,7 @@ export default function SkillLadderPage() {
                   <div className="absolute -bottom-6 right-0 text-[9px] font-bold text-outline whitespace-nowrap">Principal</div>
                 </div>
               </div>
-              <p className="text-[11px] text-on-surface-variant italic leading-relaxed pt-2">Your current &lsquo;Lens Move&rsquo; skill score puts you in the top 15% of Mid-Level PMs in the tech industry.</p>
+              <p className="text-[11px] text-on-surface-variant italic leading-relaxed pt-2">Your current &lsquo;List Move&rsquo; skill score puts you in the top 15% of Mid-Level PMs in the tech industry.</p>
             </div>
           </div>
 
@@ -259,7 +259,7 @@ export default function SkillLadderPage() {
             <span className="material-symbols-outlined text-tertiary text-lg">info</span>
             <p className="text-[11px] text-tertiary font-medium leading-tight">
               <span className="font-bold block mb-0.5">FLOW Framework</span>
-              The Lens move is one of 4 FLOW thinking moves: Frame · Lens · Optimize · Win
+              The List move is one of 4 FLOW thinking moves: Frame · List · Optimize · Win
             </p>
           </div>
         </div>
