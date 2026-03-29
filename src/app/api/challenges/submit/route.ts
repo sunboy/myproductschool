@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
       const responseEmbedding = await generateEmbedding(response)
 
       // Find thinking traps similar to this response (if we have an embedding)
-      let matchedTraps: Array<{ id: string; name: string; description: string; fix_hint: string; similarity: number }> = []
+      let matchedTraps: Array<{ id: string; name: string; description: string; fix_suggestion: string; similarity: number }> = [] // id is TEXT (not uuid)
       if (responseEmbedding) {
         const { data: traps } = await adminClient.rpc('match_thinking_traps', {
           query_embedding: JSON.stringify(responseEmbedding),
@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
           trap_id: t.id,
           trap_name: t.name,
           description: t.description,
-          fix_hint: t.fix_hint,
+          fix_hint: t.fix_suggestion,
           confidence: Math.round(t.similarity * 100) / 100,
         })),
       }
