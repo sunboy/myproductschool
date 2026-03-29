@@ -114,11 +114,16 @@ export async function getChallengeDiscussions(challengeId: string): Promise<Chal
   const supabase = getAdminClient()
   const { data } = await supabase
     .from('challenge_discussions')
-    .select('*')
+    .select('*, profiles(username)')
     .eq('challenge_id', challengeId)
     .order('created_at', { ascending: false })
 
-  return (data ?? []) as ChallengeDiscussion[]
+  // Flatten profiles join
+  const enriched = (data ?? []).map((d: Record<string, unknown>) => ({
+    ...d,
+    username: (d.profiles as { username?: string } | null)?.username ?? 'Anonymous',
+  }))
+  return enriched as ChallengeDiscussion[]
 }
 
 export async function postDiscussion(

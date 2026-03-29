@@ -238,6 +238,7 @@ export interface ChallengeDiscussion {
   created_at: string
   username?: string
   reply_count?: number
+  upvoted_by?: string[]
 }
 
 export interface AnalyticsSummary {
@@ -331,12 +332,20 @@ export interface StudyPlan {
   created_at: string
 }
 
+export interface StudyPlanChapterChallenge {
+  id: string
+  title: string
+  difficulty: string
+  paradigm?: string | null
+}
+
 export interface StudyPlanChapter {
   id: string
   plan_id: string
   title: string
   order_index: number
   challenge_ids: string[]
+  challenges?: StudyPlanChapterChallenge[]
   created_at: string
 }
 
