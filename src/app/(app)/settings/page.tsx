@@ -1,6 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+
+interface NotificationSettings {
+  weekly_summary: boolean
+  streak_reminder: boolean
+  new_challenges: boolean
+  cohort_updates: boolean
+}
+
+interface UserSettings {
+  id: string | null
+  user_id: string
+  notifications: NotificationSettings
+  daily_goal_count: number
+  preferred_role: string | null
+}
 
 function Toggle({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) {
   return (
@@ -20,18 +35,60 @@ function Toggle({ enabled, onToggle }: { enabled: boolean; onToggle: () => void 
   )
 }
 
-export default function SettingsPage() {
-  const [dailyGoal, setDailyGoal] = useState(3)
-  const [notifications, setNotifications] = useState({
-    dailyQuickTake: true,
-    streakAlert: true,
-    weeklyResults: true,
-    levelUp: true,
-    lumaTips: false,
-  })
+const DEFAULT_NOTIFICATIONS: NotificationSettings = {
+  weekly_summary: true,
+  streak_reminder: true,
+  new_challenges: true,
+  cohort_updates: true,
+}
 
-  const toggleNotification = (key: keyof typeof notifications) => {
-    setNotifications((prev) => ({ ...prev, [key]: !prev[key] }))
+export default function SettingsPage() {
+  const [settings, setSettings] = useState<UserSettings | null>(null)
+  const [dailyGoal, setDailyGoal] = useState(3)
+  const [notifications, setNotifications] = useState<NotificationSettings>(DEFAULT_NOTIFICATIONS)
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(r => r.json())
+      .then((data: UserSettings) => {
+        setSettings(data)
+        setDailyGoal(data.daily_goal_count ?? 3)
+        setNotifications(data.notifications ?? DEFAULT_NOTIFICATIONS)
+      })
+      .catch(() => {})
+  }, [])
+
+  const patchSettings = useCallback(async (patch: Partial<{ notifications: NotificationSettings; daily_goal_count: number }>) => {
+    setSaving(true)
+    try {
+      const resp = await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      })
+      if (resp.ok) {
+        const updated: UserSettings = await resp.json()
+        setSettings(updated)
+        if (updated.notifications) setNotifications(updated.notifications)
+        if (updated.daily_goal_count) setDailyGoal(updated.daily_goal_count)
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSaving(false)
+    }
+  }, [])
+
+  const toggleNotification = (key: keyof NotificationSettings) => {
+    const next = { ...notifications, [key]: !notifications[key] }
+    setNotifications(next)
+    patchSettings({ notifications: next })
+  }
+
+  const updateDailyGoal = (newVal: number) => {
+    setDailyGoal(newVal)
+    patchSettings({ daily_goal_count: newVal })
   }
 
   return (
@@ -43,6 +100,7 @@ export default function SettingsPage() {
           <h2 className="font-headline text-2xl text-primary-container">Settings</h2>
         </div>
         <div className="flex items-center space-x-4">
+          {saving && <span className="text-xs text-outline animate-pulse">Saving…</span>}
           <button className="material-symbols-outlined text-outline hover:opacity-70">more_vert</button>
         </div>
       </header>
@@ -99,7 +157,7 @@ export default function SettingsPage() {
                 <span className="font-nunito">Daily Quick Take reminder</span>
                 <span className="bg-primary-container/10 text-primary-container text-xs px-2 py-1 rounded font-bold">9:00 AM</span>
               </div>
-              <Toggle enabled={notifications.dailyQuickTake} onToggle={() => toggleNotification('dailyQuickTake')} />
+              <Toggle enabled={notifications.new_challenges} onToggle={() => toggleNotification('new_challenges')} />
             </div>
             {/* Item 2 */}
             <div className="flex justify-between items-center h-20 px-4 hover:bg-surface-container rounded-lg transition-colors">
@@ -107,22 +165,17 @@ export default function SettingsPage() {
                 <p className="font-nunito">Streak at-risk alert</p>
                 <p className="text-xs text-outline">6:00 PM if not practiced</p>
               </div>
-              <Toggle enabled={notifications.streakAlert} onToggle={() => toggleNotification('streakAlert')} />
+              <Toggle enabled={notifications.streak_reminder} onToggle={() => toggleNotification('streak_reminder')} />
             </div>
             {/* Item 3 */}
             <div className="flex justify-between items-center h-16 px-4 hover:bg-surface-container rounded-lg transition-colors">
               <span className="font-nunito">Weekly cohort results</span>
-              <Toggle enabled={notifications.weeklyResults} onToggle={() => toggleNotification('weeklyResults')} />
+              <Toggle enabled={notifications.weekly_summary} onToggle={() => toggleNotification('weekly_summary')} />
             </div>
             {/* Item 4 */}
             <div className="flex justify-between items-center h-16 px-4 hover:bg-surface-container rounded-lg transition-colors">
               <span className="font-nunito">Level up celebrations</span>
-              <Toggle enabled={notifications.levelUp} onToggle={() => toggleNotification('levelUp')} />
-            </div>
-            {/* Item 5 */}
-            <div className="flex justify-between items-center h-16 px-4 hover:bg-surface-container rounded-lg transition-colors">
-              <span className="font-nunito text-outline">Luma coaching tips</span>
-              <Toggle enabled={notifications.lumaTips} onToggle={() => toggleNotification('lumaTips')} />
+              <Toggle enabled={notifications.cohort_updates} onToggle={() => toggleNotification('cohort_updates')} />
             </div>
           </div>
         </section>
@@ -138,13 +191,13 @@ export default function SettingsPage() {
                 <span className="font-headline text-xl">{dailyGoal} challenges</span>
                 <div className="flex items-center space-x-4">
                   <button
-                    onClick={() => setDailyGoal(Math.max(1, dailyGoal - 1))}
+                    onClick={() => updateDailyGoal(Math.max(1, dailyGoal - 1))}
                     className="w-8 h-8 rounded-full border border-outline-variant flex items-center justify-center hover:bg-primary-container hover:text-white transition-colors"
                   >
                     <span className="material-symbols-outlined text-sm">remove</span>
                   </button>
                   <button
-                    onClick={() => setDailyGoal(Math.min(10, dailyGoal + 1))}
+                    onClick={() => updateDailyGoal(Math.min(10, dailyGoal + 1))}
                     className="w-8 h-8 rounded-full border border-outline-variant flex items-center justify-center hover:bg-primary-container hover:text-white transition-colors"
                   >
                     <span className="material-symbols-outlined text-sm">add</span>

@@ -33,9 +33,9 @@ const noCalMoves = [
 ]
 
 const NEXT_CHALLENGES = [
-  { id: 'ch100000-0000-0000-0000-000000000001', title: 'Model Accuracy Up, Engagement Down', paradigm: 'AI-Assisted', difficulty: 'Hard', roles: ['ML Eng', 'SWE', 'Data Eng'] },
-  { id: 'ch100000-0000-0000-0000-000000000002', title: 'Build a Product Strategy for AI Code Review', paradigm: 'AI-Assisted', difficulty: 'Hard', roles: ['SWE', 'EM'] },
-  { id: 'ch100000-0000-0000-0000-000000000003', title: 'Design a User Research Plan on a Tight Budget', paradigm: 'Agentic', difficulty: 'Easy', roles: ['SWE', 'ML Eng'] },
+  { id: 'a0000001-0000-0000-0000-000000000001', title: 'Model Accuracy Up, Engagement Down', paradigm: 'AI-Assisted', difficulty: 'Advanced', roles: ['ML Eng', 'SWE', 'Data Eng'] },
+  { id: 'a0000001-0000-0000-0000-000000000001', title: 'Build a Product Strategy for AI Code Review', paradigm: 'AI-Assisted', difficulty: 'Advanced', roles: ['SWE', 'EM'] },
+  { id: 'a0000001-0000-0000-0000-000000000001', title: 'Design a User Research Plan on a Tight Budget', paradigm: 'Agentic', difficulty: 'Intermediate', roles: ['SWE', 'ML Eng'] },
 ]
 
 /* ── Returning User Dashboard ────────────────────────────────── */

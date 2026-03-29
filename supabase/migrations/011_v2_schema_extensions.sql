@@ -9,7 +9,7 @@
 
 -- ── pgvector ─────────────────────────────────────────────────
 
-CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA extensions;
 
 -- ── Extend profiles ──────────────────────────────────────────
 
@@ -28,7 +28,7 @@ ALTER TABLE challenge_prompts
   ADD COLUMN IF NOT EXISTS move_tags TEXT[] DEFAULT '{}',
   ADD COLUMN IF NOT EXISTS is_premium BOOLEAN DEFAULT false,
   ADD COLUMN IF NOT EXISTS role_tags TEXT[] DEFAULT '{}',
-  ADD COLUMN IF NOT EXISTS scenario_embedding vector(512);
+  ADD COLUMN IF NOT EXISTS scenario_embedding extensions.vector(512);
 
 -- ── Extend challenge_attempts mode constraint ─────────────────
 
@@ -119,8 +119,8 @@ CREATE TABLE IF NOT EXISTS challenge_steps (
   pattern_title         TEXT,
   pattern_body          TEXT,
   trap_ids              TEXT[]  DEFAULT '{}',
-  recommended_embedding vector(512),
-  pattern_embedding     vector(512),
+  recommended_embedding extensions.vector(512),
+  pattern_embedding     extensions.vector(512),
   created_at            TIMESTAMPTZ DEFAULT now()
 );
 
@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS thinking_traps (
   name                TEXT NOT NULL,
   description         TEXT NOT NULL,
   fix_suggestion      TEXT NOT NULL,
-  exemplar_embedding  vector(512),
+  exemplar_embedding  extensions.vector(512),
   created_at          TIMESTAMPTZ DEFAULT now()
 );
 
@@ -341,19 +341,19 @@ CREATE POLICY "Admins manage quick takes"
 -- ── IVFFLAT vector indexes ────────────────────────────────────
 
 CREATE INDEX IF NOT EXISTS idx_challenge_prompts_scenario_embedding
-  ON challenge_prompts USING ivfflat (scenario_embedding vector_cosine_ops)
+  ON challenge_prompts USING ivfflat (scenario_embedding extensions.vector_cosine_ops)
   WITH (lists = 100);
 
 CREATE INDEX IF NOT EXISTS idx_challenge_steps_recommended_embedding
-  ON challenge_steps USING ivfflat (recommended_embedding vector_cosine_ops)
+  ON challenge_steps USING ivfflat (recommended_embedding extensions.vector_cosine_ops)
   WITH (lists = 100);
 
 CREATE INDEX IF NOT EXISTS idx_challenge_steps_pattern_embedding
-  ON challenge_steps USING ivfflat (pattern_embedding vector_cosine_ops)
+  ON challenge_steps USING ivfflat (pattern_embedding extensions.vector_cosine_ops)
   WITH (lists = 100);
 
 CREATE INDEX IF NOT EXISTS idx_thinking_traps_exemplar_embedding
-  ON thinking_traps USING ivfflat (exemplar_embedding vector_cosine_ops)
+  ON thinking_traps USING ivfflat (exemplar_embedding extensions.vector_cosine_ops)
   WITH (lists = 100);
 
 -- ── Functions ─────────────────────────────────────────────────

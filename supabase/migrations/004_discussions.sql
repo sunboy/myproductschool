@@ -32,9 +32,9 @@ CREATE POLICY "Users insert own replies" ON discussion_replies FOR INSERT WITH C
 CREATE OR REPLACE VIEW user_productiq AS
 SELECT
   ca.user_id,
-  ROUND(AVG((ca.score_json->>'overall')::float)::numeric, 1) AS productiq_score,
+  ROUND(AVG(ca.score)::numeric, 1) AS productiq_score,
   COUNT(*) AS total_attempts,
   MAX(ca.created_at) AS last_active
 FROM challenge_attempts ca
-WHERE ca.score_json IS NOT NULL
+WHERE ca.score IS NOT NULL
 GROUP BY ca.user_id;
