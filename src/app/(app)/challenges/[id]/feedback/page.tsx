@@ -57,6 +57,13 @@ const TRAP_FIX: Record<string, string> = {
   over_autonomy: 'Match autonomy level to error cost.',
 }
 
+function getThinkingTraps(feedback: unknown): Array<{ trap_id: string; trap_name: string; description: string; fix_hint: string; confidence: number }> {
+  if (!feedback || typeof feedback !== 'object' || !('thinking_traps' in feedback)) return []
+  const traps = (feedback as { thinking_traps: unknown }).thinking_traps
+  if (!Array.isArray(traps)) return []
+  return traps as Array<{ trap_id: string; trap_name: string; description: string; fix_hint: string; confidence: number }>
+}
+
 function getScores(feedback: unknown): Record<string, number> {
   if (!feedback) return MOCK_SCORES
   if (Array.isArray(feedback)) {
@@ -104,7 +111,11 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
   // Derive display data
   const scores = getScores(feedback)
   const feedbackText = getFeedbackText(feedback)
-  const detectedPatterns = patterns.length > 0 ? patterns : MOCK_PATTERNS
+  // Prefer semantic trap matches from feedback_json; fall back to Luma-detected patterns; last resort: mock
+  const thinkingTraps = getThinkingTraps(feedback)
+  const detectedPatterns = thinkingTraps.length > 0
+    ? thinkingTraps.map(t => ({ pattern_id: t.trap_id, pattern_name: t.trap_name, confidence: t.confidence, evidence: t.description, fix_hint: t.fix_hint }))
+    : patterns.length > 0 ? patterns : MOCK_PATTERNS
   const challengeTitle = (attempt as Record<string, unknown>)?.challenge_prompts
     ? ((attempt as Record<string, { title?: string }>).challenge_prompts?.title ?? MOCK_CHALLENGE.title)
     : MOCK_CHALLENGE.title
@@ -253,7 +264,7 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
             Anti-Patterns Detected
             {detectedPatterns.length === 0 && <span className="text-sm font-normal text-on-surface-variant ml-2">None — great job!</span>}
           </h2>
-          {(detectedPatterns as Array<{ pattern_id: string; pattern_name: string; confidence: number; evidence: string }>).map((p) => (
+          {(detectedPatterns as Array<{ pattern_id: string; pattern_name: string; confidence: number; evidence: string; fix_hint?: string }>).map((p) => (
             <div key={p.pattern_id} className="border-l-4 border-error rounded-xl p-5 shadow-sm space-y-3 bg-error-container/30">
               <div className="flex justify-between items-start">
                 <h3 className="font-bold text-error text-base flex items-center gap-2">
@@ -265,10 +276,10 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
                 </span>
               </div>
               <p className="text-sm text-on-surface-variant leading-relaxed">{p.evidence}</p>
-              {TRAP_FIX[p.pattern_id] && (
+              {(p.fix_hint ?? TRAP_FIX[p.pattern_id]) && (
                 <div className="bg-surface-container-lowest p-3 rounded-lg border border-error/10 text-sm">
                   <span className="font-bold text-error">💡 Fix: </span>
-                  <span className="text-on-surface-variant">{TRAP_FIX[p.pattern_id]}</span>
+                  <span className="text-on-surface-variant">{p.fix_hint ?? TRAP_FIX[p.pattern_id]}</span>
                 </div>
               )}
             </div>

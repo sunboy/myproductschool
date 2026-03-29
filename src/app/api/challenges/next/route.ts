@@ -14,7 +14,7 @@ const MOCK_NEXT = {
   },
   reason: 'Targets your weakest move: Frame',
   targets_move: 'frame' as FlowMove,
-  targets_dimension: 'diagnostic_accuracy',
+  recommendation_type: 'weakest_move',
 }
 
 export async function GET() {
@@ -28,33 +28,56 @@ export async function GET() {
 
   const adminClient = createAdminClient()
 
-  // Get user profile for role matching
-  const { data: profile } = await adminClient
-    .from('profiles')
-    .select('preferred_role')
-    .eq('id', user.id)
-    .single()
-
-  // Get weakest move
-  const { data: levels } = await adminClient
-    .from('move_levels')
-    .select('move, xp')
-    .eq('user_id', user.id)
-    .order('xp', { ascending: true })
-    .limit(1)
+  // Fetch profile, weakest move, and completed IDs in parallel
+  const [{ data: profile }, { data: levels }, { data: completedAttempts }] = await Promise.all([
+    adminClient.from('profiles').select('preferred_role').eq('id', user.id).single(),
+    adminClient.from('move_levels').select('move, xp').eq('user_id', user.id).order('xp', { ascending: true }).limit(1),
+    adminClient.from('challenge_attempts').select('prompt_id').eq('user_id', user.id).not('submitted_at', 'is', null),
+  ])
 
   const weakestMove: FlowMove = (levels?.[0]?.move as FlowMove) ?? 'frame'
-
-  // Get completed challenge IDs
-  const { data: completedAttempts } = await adminClient
-    .from('challenge_attempts')
-    .select('prompt_id')
-    .eq('user_id', user.id)
-    .not('submitted_at', 'is', null)
-
   const completedIds = (completedAttempts ?? []).map((a: { prompt_id: string }) => a.prompt_id)
 
-  // Find next challenge targeting weakest move, optionally role-matched
+  // Try semantic novelty path: get user's last 5 response embeddings and compute centroid
+  const { data: recentEmbeddings } = await adminClient
+    .from('challenge_attempts')
+    .select('response_embedding')
+    .eq('user_id', user.id)
+    .not('response_embedding', 'is', null)
+    .order('submitted_at', { ascending: false })
+    .limit(5)
+
+  if (recentEmbeddings && recentEmbeddings.length >= 3) {
+    // Compute centroid of recent response embeddings
+    const vecs = recentEmbeddings.map((r: { response_embedding: number[] }) => r.response_embedding)
+    const dims = vecs[0].length
+    const centroid = Array.from({ length: dims }, (_, i) =>
+      vecs.reduce((sum, v) => sum + v[i], 0) / vecs.length
+    )
+
+    // Find semantically novel challenges (outside comfort zone)
+    const { data: novelChallenges } = await adminClient.rpc('match_novel_challenges', {
+      user_centroid: JSON.stringify(centroid),
+      exclude_ids: completedIds.length > 0 ? completedIds : [],
+      match_count: 5,
+    })
+
+    if (novelChallenges && novelChallenges.length > 0) {
+      // Among novel challenges, prefer ones targeting the weakest move
+      const weakestFirst = novelChallenges.find(
+        (c: { move_tags: string[] }) => c.move_tags?.includes(weakestMove)
+      ) ?? novelChallenges[0]
+
+      return NextResponse.json({
+        challenge: weakestFirst,
+        reason: `Luma picked this to push you outside your thinking comfort zone`,
+        targets_move: weakestMove,
+        recommendation_type: 'semantic_novelty',
+      })
+    }
+  }
+
+  // Fallback: weakest-move SQL filter (no embeddings yet)
   let query = adminClient
     .from('challenge_prompts')
     .select('id, title, prompt_text, difficulty, domain_id, move_tags, role_tags, paradigm')
@@ -65,7 +88,6 @@ export async function GET() {
     query = query.not('id', 'in', `(${completedIds.join(',')})`)
   }
 
-  // Role filter if user has a preferred role
   if (profile?.preferred_role) {
     query = query.or(`role_tags.cs.{"${profile.preferred_role}"},role_tags.eq.{}`)
   }
@@ -73,7 +95,7 @@ export async function GET() {
   const { data: challenge } = await query.limit(1).maybeSingle()
 
   if (!challenge) {
-    // Fallback: any uncompleted challenge
+    // Final fallback: any uncompleted challenge
     const fallbackQuery = adminClient
       .from('challenge_prompts')
       .select('id, title, prompt_text, difficulty, domain_id, move_tags, role_tags')
@@ -89,7 +111,7 @@ export async function GET() {
       challenge: fallback,
       reason: 'Continue building your product thinking skills',
       targets_move: weakestMove,
-      targets_dimension: 'diagnostic_accuracy',
+      recommendation_type: 'fallback',
     })
   }
 
@@ -97,6 +119,6 @@ export async function GET() {
     challenge,
     reason: `Targets your weakest move: ${weakestMove.charAt(0).toUpperCase() + weakestMove.slice(1)}`,
     targets_move: weakestMove,
-    targets_dimension: 'diagnostic_accuracy',
+    recommendation_type: 'weakest_move',
   })
 }

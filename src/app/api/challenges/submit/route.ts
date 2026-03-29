@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { logEvent } from '@/lib/data/events'
+import { generateEmbedding } from '@/lib/embeddings'
 import type { FlowMove } from '@/lib/types'
 
 // XP per score (0-10 scale)
@@ -134,12 +135,39 @@ export async function POST(req: NextRequest) {
 
       const xpEarned = totalXp + bonusXp
 
-      // Persist feedback_json, score, and xp back to attempt
+      // Generate response embedding + run trap detection in parallel with DB write
+      const responseEmbedding = await generateEmbedding(response)
+
+      // Find thinking traps similar to this response (if we have an embedding)
+      let matchedTraps: Array<{ id: string; name: string; description: string; fix_hint: string; similarity: number }> = []
+      if (responseEmbedding) {
+        const { data: traps } = await adminClient.rpc('match_thinking_traps', {
+          query_embedding: JSON.stringify(responseEmbedding),
+          match_threshold: 0.72,
+          match_count: 3,
+        })
+        matchedTraps = traps ?? []
+      }
+
+      // Merge trap matches into feedback_json so the feedback page can render them
+      const enrichedFeedback = {
+        ...feedbackData,
+        thinking_traps: matchedTraps.map(t => ({
+          trap_id: t.id,
+          trap_name: t.name,
+          description: t.description,
+          fix_hint: t.fix_hint,
+          confidence: Math.round(t.similarity * 100) / 100,
+        })),
+      }
+
+      // Persist feedback_json, score, response_embedding back to attempt
       await adminClient
         .from('challenge_attempts')
         .update({
-          feedback_json: feedbackData,
+          feedback_json: enrichedFeedback,
           score: overallScore,
+          ...(responseEmbedding ? { response_embedding: JSON.stringify(responseEmbedding) } : {}),
         })
         .eq('id', attemptId)
 
