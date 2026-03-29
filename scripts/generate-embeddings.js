@@ -1,52 +1,36 @@
 #!/usr/bin/env node
 /**
  * One-time batch script to generate embeddings for all content.
- * Requires EMBEDDING_API_KEY to be set in environment.
+ * Uses Supabase's built-in AI (gte-small, 384 dims) via the admin client.
  *
  * Usage:
- *   EMBEDDING_API_KEY=your_key node scripts/generate-embeddings.js
+ *   node scripts/generate-embeddings.js
  */
 
 const { createClient } = require('@supabase/supabase-js')
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://tikkhvxlclivixqqqjyb.supabase.co'
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRpa2todnhsY2xpdml4cXFxanliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTMxMzI5MCwiZXhwIjoyMDc2ODg5MjkwfQ.SLtlceDB4vzlDWukbFpeYNQoXglqL1U41nuAKoRdSlM'
-const EMBEDDING_API_KEY = process.env.EMBEDDING_API_KEY
 
-const EMBEDDING_API_URL = 'https://api.voyageai.com/v1/embeddings'
-const EMBEDDING_MODEL = 'voyage-3-lite'
-const EMBEDDING_DIMS = 512
-
-if (!EMBEDDING_API_KEY) {
-  console.error('Error: EMBEDDING_API_KEY is not set.')
-  console.error('Usage: EMBEDDING_API_KEY=your_key node scripts/generate-embeddings.js')
-  process.exit(1)
-}
+const EMBEDDING_DIMS = 384
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
 })
 
 async function generateEmbedding(text) {
-  const res = await fetch(EMBEDDING_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${EMBEDDING_API_KEY}`,
-    },
-    body: JSON.stringify({ model: EMBEDDING_MODEL, input: [text] }),
+  const { data, error } = await supabase.functions.invoke('embed', {
+    body: { input: text.slice(0, 2000) },
   })
 
-  if (!res.ok) {
-    const err = await res.text()
-    console.error(`  API error ${res.status}: ${err}`)
+  if (error) {
+    console.error(`  Supabase function error: ${error.message}`)
     return null
   }
 
-  const json = await res.json()
-  const embedding = json.data?.[0]?.embedding
+  const embedding = data?.embedding
   if (!embedding || embedding.length !== EMBEDDING_DIMS) {
-    console.error(`  Unexpected embedding shape`)
+    console.error(`  Unexpected embedding shape (got ${embedding?.length} dims, expected ${EMBEDDING_DIMS})`)
     return null
   }
   return embedding
@@ -76,7 +60,7 @@ async function processTable({ table, idCol, textCol, embeddingCol }) {
       continue
     }
 
-    const embedding = await generateEmbedding(text.slice(0, 2000)) // truncate to avoid token limits
+    const embedding = await generateEmbedding(text)
     if (!embedding) {
       errors++
       continue
@@ -95,7 +79,7 @@ async function processTable({ table, idCol, textCol, embeddingCol }) {
       if (processed % 10 === 0) console.log(`  ... ${processed} done`)
     }
 
-    // Small delay to avoid rate limits
+    // Small delay to stay within rate limits
     await new Promise(r => setTimeout(r, 50))
   }
 
@@ -112,7 +96,7 @@ const SOURCES = [
 
 async function main() {
   console.log('HackProduct — Embeddings batch generator')
-  console.log(`Model: ${EMBEDDING_MODEL} (${EMBEDDING_DIMS} dims)`)
+  console.log(`Model: gte-small (${EMBEDDING_DIMS} dims) via Supabase AI`)
 
   let total = { processed: 0, skipped: 0, errors: 0 }
 

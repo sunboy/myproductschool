@@ -38,10 +38,6 @@ export async function POST(req: NextRequest) {
 
   // Batch mode
   if (body.batch) {
-    if (!process.env.EMBEDDING_API_KEY) {
-      return NextResponse.json({ error: 'EMBEDDING_API_KEY not set' }, { status: 400 })
-    }
-
     const results: { source: string; processed: number; skipped: number; errors: number }[] = []
 
     for (const source of BATCH_SOURCES) {
@@ -88,7 +84,7 @@ export async function POST(req: NextRequest) {
 
   const embedding = await generateEmbedding(text)
   if (!embedding) {
-    return NextResponse.json({ ok: true, skipped: true, reason: 'no EMBEDDING_API_KEY or API error' })
+    return NextResponse.json({ ok: true, skipped: true, reason: 'embedding generation failed' })
   }
 
   const { error } = await admin
