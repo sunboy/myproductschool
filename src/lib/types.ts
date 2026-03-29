@@ -83,6 +83,7 @@ export interface ChallengePrompt {
   is_published: boolean
   created_at: string
   sub_questions?: string[]
+  paradigm?: string | null
 }
 
 export interface ChallengeAttempt {

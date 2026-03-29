@@ -255,9 +255,11 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
 
           {/* Paradigm + Difficulty badges */}
           <div className="flex gap-2 mb-6">
-            <span className="bg-green-50 text-green-500 border border-green-500/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
-              Paradigm: Traditional
-            </span>
+            {challenge.paradigm && (
+              <span className="bg-green-50 text-green-500 border border-green-500/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+                {challenge.paradigm}
+              </span>
+            )}
             <span className="bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
               Difficulty: {difficultyLabel(challenge.difficulty)}
             </span>
@@ -265,37 +267,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
 
           {/* Scenario prose */}
           <div className="text-on-surface-variant leading-relaxed text-sm">
-            <p className="mb-4">{challenge.prompt_text}</p>
-
-            {/* Context box */}
-            <div className="bg-surface-container-low rounded-xl p-4 mt-6 border border-outline-variant/30">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="material-symbols-outlined text-primary text-sm">info</span>
-                <h3 className="font-bold text-xs uppercase tracking-widest text-on-surface">Context</h3>
-              </div>
-              <p className="text-xs text-on-surface-variant">
-                The mobile gaming app &ldquo;QuestBound&rdquo; added a prominent &lsquo;Share with
-                Friends&rsquo; button on the post-match screen. While it drove virality, retention
-                and monetization dropped sharply. You need to diagnose why this happened and propose
-                a path forward.
-              </p>
-            </div>
-
-            {/* Key Metrics */}
-            <div className="mt-8">
-              <h4 className="font-headline text-sm font-bold mb-3">Key Metrics Observed</h4>
-              <div className="grid grid-cols-3 gap-2">
-                {MOCK_METRICS.map(m => (
-                  <div
-                    key={m.label}
-                    className={`p-2 rounded-lg border ${m.positive ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}
-                  >
-                    <div className={`text-[10px] font-bold ${m.positive ? 'text-green-700' : 'text-red-700'}`}>{m.label}</div>
-                    <div className={`text-lg font-bold ${m.positive ? 'text-green-800' : 'text-red-800'}`}>{m.value}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <p>{challenge.prompt_text}</p>
           </div>
 
           {/* Hero image placeholder */}
