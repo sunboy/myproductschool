@@ -67,7 +67,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protect app routes — allow onboarding, API, and public routes without profile check
-  const isPublic = PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith('/api/'))
+  const isPublic = PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/')) || pathname.startsWith('/api/')
   if (!user && !isPublic) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
