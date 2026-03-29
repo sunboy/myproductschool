@@ -21,7 +21,10 @@ export async function GET(
 
   const replies = (data ?? []).map((r: Record<string, unknown>) => ({
     ...r,
-    username: (r.profiles as { username?: string } | null)?.username ?? 'Anonymous',
+    display_name: (r.display_name as string | null) ?? null,
+    username: (r.profiles as { username?: string } | null)?.username
+      ?? (r.display_name as string | null)
+      ?? 'Anonymous',
   }))
 
   return NextResponse.json(replies)

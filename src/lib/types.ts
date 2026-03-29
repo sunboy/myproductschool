@@ -231,7 +231,8 @@ export interface Prescription {
 export interface ChallengeDiscussion {
   id: string
   challenge_id: string
-  user_id: string
+  user_id: string | null
+  display_name?: string | null
   content: string
   is_expert_pick: boolean
   upvote_count: number
