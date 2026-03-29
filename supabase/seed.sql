@@ -594,3 +594,323 @@ INSERT INTO feature_flags (key, enabled, rollout_percentage) VALUES
   ('streak_notifications',       true,  100),
   ('company_profiles',           true,  100),
   ('admin_content_queue',        true,  100);
+
+
+-- ============================================================
+-- V2 SEED DATA
+-- ============================================================
+
+
+-- ============================================================
+-- THINKING TRAPS (10)
+-- ============================================================
+
+INSERT INTO thinking_traps (id, name, description, fix_suggestion) VALUES
+  ('surface_restatement',
+   'Surface Restatement',
+   'Restating the problem prompt using different words rather than diagnosing the underlying cause. The response sounds analytical but adds no new information.',
+   'Ask "why does this problem exist?" at least twice. Every diagnosis statement must contain information not present in the original prompt.'),
+
+  ('aggregate_fallacy',
+   'Aggregate Fallacy',
+   'Drawing conclusions from average or aggregate metrics while ignoring variance across user segments, cohorts, or surfaces. Averages hide the segment where the real problem lives.',
+   'Always ask: which segment? Break any aggregate number by at least two dimensions before forming a hypothesis.'),
+
+  ('confirmation_bias',
+   'Confirmation Bias',
+   'Selecting only the data or examples that support the first hypothesis formed, while ignoring contradictory signals. The investigation stops when the first plausible cause is found.',
+   'List at least three competing hypotheses before gathering data. For each, identify what evidence would disprove it.'),
+
+  ('data_delay',
+   'Data Delay',
+   'Waiting for perfect data or a complete experiment before making any recommendation. The response defers all decisions to future analysis.',
+   'Separate what you know now from what you need to validate. Make a provisional recommendation based on current evidence and explicitly state what would change it.'),
+
+  ('metric_tunnel',
+   'Metric Tunnel',
+   'Optimizing a single metric without acknowledging second-order effects on counter metrics or user experience. The proposed solution moves one number at the cost of something more important.',
+   'For every metric you propose to move, name one counter metric that could degrade. Design the solution to hold both.'),
+
+  ('abdication',
+   'Abdication',
+   'Deflecting the decision to another team, stakeholder, or future state ("the data team will figure this out", "we should ask sales"). The response avoids making a recommendation.',
+   'You are accountable for the recommendation even when others hold relevant context. State your recommendation, then identify whose input you need to refine it.'),
+
+  ('adversarial',
+   'Adversarial Framing',
+   'Framing cross-functional relationships as us-vs-them. Treating stakeholder disagreement as a problem to be won rather than a signal to be understood.',
+   'Replace win/lose language with shared-goal language. Identify what the stakeholder is optimizing for — it is usually legitimate — and find the overlap with your goal.'),
+
+  ('premature_solution',
+   'Premature Solution',
+   'Jumping to a feature or technical solution before fully diagnosing the problem or defining success. The response describes "what to build" before establishing "what outcome we need."',
+   'Write a one-sentence problem statement and a measurable success criterion before describing any solution. If you cannot do both, you are not ready to propose a solution.'),
+
+  ('model_product_gap',
+   'Model-Product Gap',
+   'Reasoning about how an AI model performs without connecting it to user outcomes or product metrics. Treating model accuracy or benchmark scores as the end goal.',
+   'Map every model quality dimension to a user behavior you expect to change. If improved accuracy does not change a user action, it may not matter for the product.'),
+
+  ('over_autonomy',
+   'Over-Autonomy',
+   'Designing an AI agent that takes consequential actions without appropriate human review points, assuming full automation is always better. Ignores trust, error-recovery, and user control needs.',
+   'For every consequential action in the flow, ask: what is the cost of an error here? If high, add a confirmation step. Autonomy should be earned incrementally through demonstrated reliability.');
+
+
+-- ============================================================
+-- QUICK TAKES (5 — one per paradigm + one general)
+-- ============================================================
+
+INSERT INTO quick_takes (id, scenario_text, paradigm, move, active_date) VALUES
+  (gen_random_uuid(),
+   'Your team''s onboarding completion rate dropped from 68% to 51% over the past two weeks. No product changes shipped. How do you frame the problem before investigating?',
+   'traditional',
+   'frame',
+   '2026-03-28'),
+
+  (gen_random_uuid(),
+   'Your AI writing assistant is generating replies that users accept 72% of the time. Engagement is up 30% but 3-month retention is down. List the hypotheses you''d explore.',
+   'ai-assisted',
+   'list',
+   '2026-03-29'),
+
+  (gen_random_uuid(),
+   'Your agentic customer support bot resolved 40% of tickets without human review last month. Users are satisfied but trust scores are declining. Optimize your escalation policy.',
+   'agentic',
+   'optimize',
+   '2026-03-30'),
+
+  (gen_random_uuid(),
+   'You are pitching an AI-native code review product to a VP Eng at a 200-person company. They say "we already have GitHub Copilot." Win the conversation.',
+   'ai-native',
+   'win',
+   '2026-03-31'),
+
+  (gen_random_uuid(),
+   'Leadership wants to add a leaderboard to your B2B SaaS. Three PMs have different opinions. How do you frame this decision to get alignment in one meeting?',
+   NULL,
+   'frame',
+   '2026-04-01');
+
+
+-- ============================================================
+-- STUDY PLANS (7) with chapters
+-- ============================================================
+
+INSERT INTO study_plans (id, title, slug, description, move_tag, role_tags, challenge_count, estimated_hours, is_published) VALUES
+  ('sp000001-0000-0000-0000-000000000001',
+   'Staff Engineer Path',
+   'staff-engineer-path',
+   'Build the product thinking depth expected of a staff or principal engineer. Covers problem framing, cross-functional influence, and metric-driven decisions.',
+   NULL,
+   ARRAY['SWE', 'EM'],
+   12, 4.5, true),
+
+  ('sp000001-0000-0000-0000-000000000002',
+   '7-Day Interview Prep',
+   '7-day-interview-prep',
+   'A focused sprint to prepare for product sense rounds in PM or engineering interviews. One challenge per day, escalating in difficulty.',
+   NULL,
+   ARRAY['SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng'],
+   7, 3.5, true),
+
+  ('sp000001-0000-0000-0000-000000000003',
+   'AI Product Fluency',
+   'ai-product-fluency',
+   'Develop the vocabulary and instincts needed to make product decisions in AI-assisted and AI-native products. Focus on metrics, trust, and model-product gaps.',
+   NULL,
+   ARRAY['SWE', 'ML Eng', 'Data Eng'],
+   10, 4.0, true),
+
+  ('sp000001-0000-0000-0000-000000000004',
+   'Data Eng → Product',
+   'data-eng-to-product',
+   'Translate your data instincts into product thinking. Learn to define metrics, frame ambiguous problems, and communicate recommendations to non-technical stakeholders.',
+   'frame',
+   ARRAY['Data Eng'],
+   8, 3.0, true),
+
+  ('sp000001-0000-0000-0000-000000000005',
+   'EM Product Leadership',
+   'em-product-leadership',
+   'For engineering managers stepping into product partnership. Build skills in prioritization, stakeholder alignment, and roadmap communication.',
+   'win',
+   ARRAY['EM'],
+   9, 3.5, true),
+
+  ('sp000001-0000-0000-0000-000000000006',
+   'Founding Engineer',
+   'founding-engineer',
+   'Cover the full FLOW for engineers at early-stage startups: framing customer problems, listing options under resource constraints, optimizing ruthlessly, and winning internal alignment.',
+   NULL,
+   ARRAY['Founding Eng', 'SWE'],
+   10, 4.0, true),
+
+  ('sp000001-0000-0000-0000-000000000007',
+   'DevOps → Product Impact',
+   'devops-to-product-impact',
+   'Learn to articulate the product value of reliability, developer experience, and platform investments. Make the case for infrastructure work in product terms.',
+   'win',
+   ARRAY['DevOps'],
+   7, 2.5, true);
+
+-- Study plan chapters — Staff Engineer Path
+INSERT INTO study_plan_chapters (plan_id, title, order_index, challenge_ids) VALUES
+  ('sp000001-0000-0000-0000-000000000001', 'Problem Framing Foundations', 0,
+   ARRAY['p0000001-0000-0000-0000-000000000001'::uuid, 'p0000001-0000-0000-0000-000000000003'::uuid]),
+  ('sp000001-0000-0000-0000-000000000001', 'Metrics & Analytical Thinking', 1,
+   ARRAY['p0000001-0000-0000-0000-000000000005'::uuid, 'p0000001-0000-0000-0000-000000000006'::uuid]),
+  ('sp000001-0000-0000-0000-000000000001', 'Prioritization & Trade-offs', 2,
+   ARRAY['p0000001-0000-0000-0000-000000000002'::uuid, 'p0000001-0000-0000-0000-000000000007'::uuid]),
+  ('sp000001-0000-0000-0000-000000000001', 'Cross-functional Influence', 3,
+   ARRAY['p0000001-0000-0000-0000-000000000008'::uuid, 'p0000001-0000-0000-0000-000000000009'::uuid]);
+
+-- Study plan chapters — 7-Day Interview Prep
+INSERT INTO study_plan_chapters (plan_id, title, order_index, challenge_ids) VALUES
+  ('sp000001-0000-0000-0000-000000000002', 'Day 1–2: Frame the Problem', 0,
+   ARRAY['p0000001-0000-0000-0000-000000000001'::uuid, 'p0000001-0000-0000-0000-000000000003'::uuid]),
+  ('sp000001-0000-0000-0000-000000000002', 'Day 3–4: Metrics & Data', 1,
+   ARRAY['p0000001-0000-0000-0000-000000000005'::uuid, 'p0000001-0000-0000-0000-000000000006'::uuid]),
+  ('sp000001-0000-0000-0000-000000000002', 'Day 5: Prioritization', 2,
+   ARRAY['p0000001-0000-0000-0000-000000000007'::uuid]),
+  ('sp000001-0000-0000-0000-000000000002', 'Day 6–7: Communicate & Win', 3,
+   ARRAY['p0000001-0000-0000-0000-000000000009'::uuid, 'p0000001-0000-0000-0000-000000000010'::uuid]);
+
+-- Study plan chapters — AI Product Fluency
+INSERT INTO study_plan_chapters (plan_id, title, order_index, challenge_ids) VALUES
+  ('sp000001-0000-0000-0000-000000000003', 'AI Product Basics', 0,
+   ARRAY['p0000001-0000-0000-0000-000000000009'::uuid]),
+  ('sp000001-0000-0000-0000-000000000003', 'Metrics for AI Features', 1,
+   ARRAY['p0000001-0000-0000-0000-000000000005'::uuid, 'p0000001-0000-0000-0000-000000000006'::uuid]),
+  ('sp000001-0000-0000-0000-000000000003', 'AI Launch Strategy', 2,
+   ARRAY['p0000001-0000-0000-0000-000000000010'::uuid]);
+
+-- Study plan chapters — Data Eng → Product
+INSERT INTO study_plan_chapters (plan_id, title, order_index, challenge_ids) VALUES
+  ('sp000001-0000-0000-0000-000000000004', 'Framing with Data', 0,
+   ARRAY['p0000001-0000-0000-0000-000000000005'::uuid, 'p0000001-0000-0000-0000-000000000006'::uuid]),
+  ('sp000001-0000-0000-0000-000000000004', 'User-Centered Thinking', 1,
+   ARRAY['p0000001-0000-0000-0000-000000000003'::uuid, 'p0000001-0000-0000-0000-000000000004'::uuid]),
+  ('sp000001-0000-0000-0000-000000000004', 'Communicating to Stakeholders', 2,
+   ARRAY['p0000001-0000-0000-0000-000000000008'::uuid]);
+
+-- Study plan chapters — EM Product Leadership
+INSERT INTO study_plan_chapters (plan_id, title, order_index, challenge_ids) VALUES
+  ('sp000001-0000-0000-0000-000000000005', 'Prioritization & Roadmap', 0,
+   ARRAY['p0000001-0000-0000-0000-000000000007'::uuid, 'p0000001-0000-0000-0000-000000000002'::uuid]),
+  ('sp000001-0000-0000-0000-000000000005', 'Stakeholder Alignment', 1,
+   ARRAY['p0000001-0000-0000-0000-000000000008'::uuid]),
+  ('sp000001-0000-0000-0000-000000000005', 'Launch & Communication', 2,
+   ARRAY['p0000001-0000-0000-0000-000000000009'::uuid, 'p0000001-0000-0000-0000-000000000010'::uuid]);
+
+-- Study plan chapters — Founding Engineer
+INSERT INTO study_plan_chapters (plan_id, title, order_index, challenge_ids) VALUES
+  ('sp000001-0000-0000-0000-000000000006', 'Frame the Opportunity', 0,
+   ARRAY['p0000001-0000-0000-0000-000000000001'::uuid, 'p0000001-0000-0000-0000-000000000003'::uuid]),
+  ('sp000001-0000-0000-0000-000000000006', 'List & Prioritize Under Constraints', 1,
+   ARRAY['p0000001-0000-0000-0000-000000000007'::uuid, 'p0000001-0000-0000-0000-000000000002'::uuid]),
+  ('sp000001-0000-0000-0000-000000000006', 'Win Alignment & Launch', 2,
+   ARRAY['p0000001-0000-0000-0000-000000000008'::uuid, 'p0000001-0000-0000-0000-000000000010'::uuid]);
+
+-- Study plan chapters — DevOps → Product Impact
+INSERT INTO study_plan_chapters (plan_id, title, order_index, challenge_ids) VALUES
+  ('sp000001-0000-0000-0000-000000000007', 'Translate Infrastructure to Value', 0,
+   ARRAY['p0000001-0000-0000-0000-000000000001'::uuid]),
+  ('sp000001-0000-0000-0000-000000000007', 'Metrics for Platform Teams', 1,
+   ARRAY['p0000001-0000-0000-0000-000000000005'::uuid, 'p0000001-0000-0000-0000-000000000006'::uuid]),
+  ('sp000001-0000-0000-0000-000000000007', 'Winning the Roadmap Conversation', 2,
+   ARRAY['p0000001-0000-0000-0000-000000000008'::uuid, 'p0000001-0000-0000-0000-000000000009'::uuid]);
+
+
+-- ============================================================
+-- COHORT CHALLENGE — week of 2026-03-23
+-- ============================================================
+
+INSERT INTO cohort_challenges (id, title, prompt_text, difficulty, move_tag, week_start, week_end, is_active) VALUES
+  (gen_random_uuid(),
+   'Diagnose the Drop: Activation Rate Investigation',
+   'Your B2B SaaS product saw activation rate (users who complete their first core action within 7 days) fall from 55% to 38% over the past two weeks. You shipped one change: a redesigned onboarding checklist. No other features changed.
+
+Frame the problem clearly. List all hypotheses you would investigate — including data/instrumentation issues, product regressions, and acquisition quality changes. Optimize your investigation plan: rank the hypotheses by likelihood and cost-to-test. Then win alignment: write a 3-sentence stakeholder update you would send today while the investigation is ongoing.
+
+Show your full FLOW thinking. You have 20 minutes.',
+   'intermediate',
+   'frame',
+   '2026-03-23',
+   '2026-03-29',
+   true);
+
+
+-- ============================================================
+-- UPDATE challenge_prompts — add paradigm, move_tags, role_tags
+-- ============================================================
+
+-- Define the vision for a developer tools product (frame: scope the problem space)
+UPDATE challenge_prompts SET
+  paradigm   = 'traditional',
+  move_tags  = ARRAY['frame'],
+  role_tags  = ARRAY['SWE', 'Founding Eng', 'EM']
+WHERE id = 'p0000001-0000-0000-0000-000000000001';
+
+-- Make a build/buy/partner recommendation (optimize: evaluate trade-offs, decide)
+UPDATE challenge_prompts SET
+  paradigm   = 'traditional',
+  move_tags  = ARRAY['optimize'],
+  role_tags  = ARRAY['SWE', 'EM', 'Founding Eng']
+WHERE id = 'p0000001-0000-0000-0000-000000000002';
+
+-- Design a discovery interview (frame: understand the user problem)
+UPDATE challenge_prompts SET
+  paradigm   = 'traditional',
+  move_tags  = ARRAY['frame'],
+  role_tags  = ARRAY['SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng']
+WHERE id = 'p0000001-0000-0000-0000-000000000003';
+
+-- Apply JTBD to a food delivery app (frame: reframe the problem space)
+UPDATE challenge_prompts SET
+  paradigm   = 'traditional',
+  move_tags  = ARRAY['frame'],
+  role_tags  = ARRAY['SWE', 'Data Eng', 'ML Eng', 'Founding Eng']
+WHERE id = 'p0000001-0000-0000-0000-000000000004';
+
+-- Define the North Star Metric for a note-taking app (list + frame: identify the right metric)
+UPDATE challenge_prompts SET
+  paradigm   = 'traditional',
+  move_tags  = ARRAY['frame', 'list'],
+  role_tags  = ARRAY['SWE', 'Data Eng', 'ML Eng', 'EM']
+WHERE id = 'p0000001-0000-0000-0000-000000000005';
+
+-- Investigate a sudden drop in activation rate (list + optimize: enumerate hypotheses, prioritize)
+UPDATE challenge_prompts SET
+  paradigm   = 'traditional',
+  move_tags  = ARRAY['list', 'optimize'],
+  role_tags  = ARRAY['SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM']
+WHERE id = 'p0000001-0000-0000-0000-000000000006';
+
+-- Prioritize a backlog using ICE or RICE (optimize: score and rank)
+UPDATE challenge_prompts SET
+  paradigm   = 'traditional',
+  move_tags  = ARRAY['optimize'],
+  role_tags  = ARRAY['SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng']
+WHERE id = 'p0000001-0000-0000-0000-000000000007';
+
+-- Handle a stakeholder pushing a low-priority feature (win: communicate and align)
+UPDATE challenge_prompts SET
+  paradigm   = 'traditional',
+  move_tags  = ARRAY['win'],
+  role_tags  = ARRAY['SWE', 'EM', 'Founding Eng']
+WHERE id = 'p0000001-0000-0000-0000-000000000008';
+
+-- Write a positioning statement for a new developer tool (win: pitch, communicate)
+UPDATE challenge_prompts SET
+  paradigm   = 'ai-assisted',
+  move_tags  = ARRAY['win'],
+  role_tags  = ARRAY['SWE', 'Founding Eng', 'DevOps']
+WHERE id = 'p0000001-0000-0000-0000-000000000009';
+
+-- Design a launch plan for a major new feature (list + win: plan and communicate)
+UPDATE challenge_prompts SET
+  paradigm   = 'ai-assisted',
+  move_tags  = ARRAY['list', 'win'],
+  role_tags  = ARRAY['SWE', 'ML Eng', 'EM', 'Founding Eng']
+WHERE id = 'p0000001-0000-0000-0000-000000000010';

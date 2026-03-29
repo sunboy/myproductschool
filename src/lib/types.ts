@@ -10,10 +10,17 @@ export const DIMENSION_LABELS: Record<FeedbackDimension, string> = {
   framing_precision: 'Framing Precision',
   recommendation_strength: 'Recommendation Strength',
 }
+
+export const FLOW_MOVE_LABELS: Record<FlowMove, string> = {
+  frame: 'Frame',
+  list: 'List',
+  optimize: 'Optimize',
+  win: 'Win',
+}
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing'
 
 export type UserRole = 'SWE' | 'Data Eng' | 'ML Eng' | 'DevOps' | 'EM' | 'Founding Eng'
-export type FlowMove = 'frame' | 'split' | 'weigh' | 'sell'
+export type FlowMove = 'frame' | 'list' | 'optimize' | 'win'
 export type Paradigm = 'traditional' | 'ai-assisted' | 'agentic' | 'ai-native'
 
 export interface Profile {
@@ -396,9 +403,9 @@ export interface ChallengePromptV2 extends ChallengePrompt {
 
 export interface CalibrationScores {
   frame: number
-  split: number
-  weigh: number
-  sell: number
+  list: number
+  optimize: number
+  win: number
 }
 
 export interface CalibrationResults {
@@ -426,4 +433,48 @@ export interface ShareCardData {
 export interface CareerBenchmark {
   levels: { title: string; percentile: number }[]
   user_level: string
+}
+
+/* ── v2 Challenge Steps ───────────────────────────────────── */
+
+export interface ChallengeStep {
+  id: string
+  challenge_id: string
+  move: FlowMove
+  step_index: number
+  prompt: string
+  hint: string | null
+  recommended: boolean
+  pattern_title: string | null
+  pattern_body: string | null
+  trap_ids: string[]
+}
+
+/* ── v2 Quick Takes ───────────────────────────────────────── */
+
+export interface QuickTake {
+  id: string
+  scenario_text: string
+  paradigm: Paradigm
+  move: FlowMove
+  active_date: string
+}
+
+/* ── v2 Thinking Traps ────────────────────────────────────── */
+
+export interface ThinkingTrap {
+  id: string
+  name: string
+  description: string
+  fix_suggestion: string
+}
+
+/* ── v2 Session Events ────────────────────────────────────── */
+
+export interface SessionEvent {
+  id: string
+  user_id: string
+  event_type: string
+  payload: Record<string, unknown>
+  created_at: string
 }
