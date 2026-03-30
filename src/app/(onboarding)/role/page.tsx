@@ -84,7 +84,7 @@ export default function RoleSelectionPage() {
       <header className="bg-background border-b border-outline-variant fixed top-0 w-full z-50 h-12 flex items-center">
         <div className="flex justify-between items-center px-4 w-full max-w-7xl mx-auto">
           <Link href="/welcome" className="flex items-center gap-2 text-primary font-headline font-bold text-xl">
-            <LumaGlyph size={32} className="text-primary" />
+            <LumaGlyph size={32} state="idle" className="text-primary" />
             <span className="tracking-tight">HackProduct</span>
           </Link>
           <div className="flex items-center gap-4 text-secondary">

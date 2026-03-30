@@ -169,7 +169,7 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
         <>
           {/* 1. One-line diagnosis */}
           <div className="bg-primary-container rounded-2xl p-5 flex gap-3 items-start">
-            <LumaGlyph size={28} className="text-primary shrink-0 mt-0.5" />
+            <LumaGlyph size={28} state="reviewing" className="text-primary shrink-0 mt-0.5" />
             <div>
               <p className="text-xs font-label font-semibold text-on-primary-container uppercase tracking-widest mb-1">Luma&apos;s diagnosis</p>
               <p className="text-on-primary-container text-base font-medium">

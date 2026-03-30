@@ -67,6 +67,32 @@ export default function CohortPage() {
   const challengeTitle = challenge?.title ?? "You're PM at Spotify. Podcast listening dropped 23% in Q3. Diagnose and recommend a fix."
   const moveTag = challenge?.move_tag ? `${challenge.move_tag.charAt(0).toUpperCase() + challenge.move_tag.slice(1)} Move` : 'Optimize Move'
 
+  // Derive my rank and percentile from real leaderboard data
+  const mySubmissionRank = submission && leaderboard.length > 0
+    ? (leaderboard.findIndex(e => e.user_id === submission.user_id) + 1) || null
+    : null
+  const displayRank = mySubmissionRank ?? 47
+  const displayScore = submission?.score ?? 79
+  const percentileNum = leaderboard.length > 0 && mySubmissionRank
+    ? Math.round((1 - (mySubmissionRank - 1) / leaderboard.length) * 100)
+    : 6
+  const percentilePct = Math.max(1, Math.min(percentileNum, 99))
+
+  // Compute countdown from real week_end if available
+  const closesInLabel = (() => {
+    if (!challenge?.week_end) return '2d 14h 31m'
+    const end = new Date(challenge.week_end)
+    const diffMs = end.getTime() - Date.now()
+    if (diffMs <= 0) return 'Closed'
+    const totalHours = Math.floor(diffMs / (1000 * 60 * 60))
+    const days = Math.floor(totalHours / 24)
+    const hours = totalHours % 24
+    const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
+    if (days > 0) return `${days}d ${hours}h ${mins}m`
+    if (hours > 0) return `${hours}h ${mins}m`
+    return `${mins}m`
+  })()
+
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6 animate-fade-in-up">
 
@@ -94,7 +120,7 @@ export default function CohortPage() {
             <div className="flex items-center gap-4 text-sm font-medium opacity-90">
               <div className="flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-base">schedule</span>
-                <span>Closes in: 2d 14h 31m</span>
+                <span>Closes in: {closesInLabel}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-base">group</span>
@@ -128,23 +154,28 @@ export default function CohortPage() {
         {/* Luma Insights */}
         <div className="bg-surface-container-low border border-outline-variant rounded-xl p-5 flex gap-4 items-start">
           <div className="flex flex-col items-center">
-            <div className="text-4xl font-black font-headline text-primary mb-1">#47</div>
+            <div className="text-4xl font-black font-headline text-primary mb-1">#{displayRank}</div>
             <div className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Global Rank</div>
           </div>
           <div className="flex-1 space-y-3">
             <div className="w-full bg-outline-variant h-2 rounded-full overflow-hidden">
-              <div className="bg-primary h-full w-[94%]" />
+              <div className="bg-primary h-full" style={{ width: `${100 - percentilePct}%` }} />
             </div>
             <div className="flex justify-between text-xs font-bold text-on-surface-variant">
               <span>Percentile</span>
-              <span className="text-primary">Top 6%</span>
+              <span className="text-primary">Top {percentilePct}%</span>
             </div>
             <div className="relative bg-white p-3 rounded-lg border border-outline-variant shadow-sm mt-4">
               <div className="absolute -left-2 top-3 w-4 h-4 bg-white border-l border-b border-outline-variant rotate-45" />
               <div className="flex gap-3">
                 <LumaGlyph size={32} state="speaking" className="text-primary shrink-0" />
                 <p className="text-xs italic text-on-surface leading-relaxed">
-                  &ldquo;Top 6%! You&apos;re outperforming most engineers at your level. Keep tightening your product intuition!&rdquo;
+                  {percentilePct <= 10
+                    ? `Top ${percentilePct}%! You're outperforming most engineers at your level. Keep tightening your product intuition!`
+                    : percentilePct <= 30
+                    ? `Top ${percentilePct}% — solid start. Focus on your recommendation strength to climb the leaderboard.`
+                    : `Keep going! You're in the top ${percentilePct}%. One more strong submission can move you up significantly.`
+                  }
                 </p>
               </div>
             </div>
@@ -158,11 +189,11 @@ export default function CohortPage() {
             <span className="material-symbols-outlined text-on-surface-variant">ios_share</span>
           </div>
           <div className="flex items-center gap-6">
-            <div className="text-5xl font-black font-headline text-primary">#47</div>
+            <div className="text-5xl font-black font-headline text-primary">#{displayRank}</div>
             <p className="text-xs text-on-surface-variant max-w-[180px]">Show your network you&apos;re building elite product skills at HackProduct.</p>
           </div>
           <a
-            href={buildLinkedInShareUrl(47, 79, challengeTitle)}
+            href={buildLinkedInShareUrl(displayRank, displayScore, challengeTitle)}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-4 flex items-center gap-2 bg-[#0077b5] text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-[#006097] transition-colors justify-center"

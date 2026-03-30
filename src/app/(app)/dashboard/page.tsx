@@ -49,6 +49,7 @@ function ReturningDashboard() {
   const [quickTake, setQuickTake] = useState<{ id: string; scenario_text: string; move: string } | null>(null)
   const [quickTakePool, setQuickTakePool] = useState<Array<{ id: string; scenario_text: string; move: string }>>([])
   const [quickTakeIdx, setQuickTakeIdx] = useState(0)
+  const [inProgressChallenge, setInProgressChallenge] = useState<{ id: string; title: string; stepsCompleted: number } | null>(null)
   const { moves, isLoading: movesLoading } = useMoveLevels()
   const { profile } = useProfile()
   const { challenge: cohortChallenge, submission: cohortSubmission, leaderboard: cohortLeaderboard } = useCohort()
@@ -57,6 +58,20 @@ function ReturningDashboard() {
     fetch('/api/challenges/next')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data?.length) setNextChallenges(data) })
+      .catch(() => {})
+
+    // Fetch most recent in-progress draft (Zhang Yiming: continue where you left off)
+    fetch('/api/challenges/drafts?limit=1')
+      .then(r => r.ok ? r.json() : null)
+      .then((data: { id: string; challenge_id: string; challenge_title: string; steps_completed: number }[] | null) => {
+        if (data?.[0]) {
+          setInProgressChallenge({
+            id: data[0].challenge_id,
+            title: data[0].challenge_title,
+            stepsCompleted: data[0].steps_completed ?? 1,
+          })
+        }
+      })
       .catch(() => {})
 
     // Fetch a small pool for quick takes so we can cycle them
@@ -116,6 +131,22 @@ function ReturningDashboard() {
     const idx = cohortLeaderboard.findIndex(e => e.user_id === cohortSubmission.user_id)
     return idx >= 0 ? idx + 1 : null
   }, [cohortSubmission, cohortLeaderboard])
+
+  // Certification progress — derived from move levels (cert requires Level 3 in all 4 moves)
+  // Each move contributes 25% max; each level contributes 25/3 ≈ 8.33% per level
+  const certProgressPct = useMemo(() => {
+    if (moves.length === 0) return 42 // fallback if no data yet
+    const MAX_LEVEL = 3
+    const perMoveMax = 25
+    const total = moves.reduce((sum, m) => {
+      const levelPct = Math.min(m.level, MAX_LEVEL) / MAX_LEVEL
+      const withinLevel = m.progress_pct / 100 / MAX_LEVEL
+      return sum + (levelPct + withinLevel) * perMoveMax
+    }, 0)
+    // Pad to 4 moves if fewer tracked
+    const scale = 4 / Math.max(moves.length, 1)
+    return Math.round(Math.min(total * scale, 100))
+  }, [moves])
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -256,10 +287,10 @@ function ReturningDashboard() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
             <p className="text-xs font-bold text-on-surface">HackProduct Certified</p>
-            <span className="text-[10px] text-on-surface-variant font-bold">42% complete</span>
+            <span className="text-[10px] text-on-surface-variant font-bold">{certProgressPct}% complete</span>
           </div>
           <div className="w-full bg-outline-variant/30 h-1.5 rounded-full overflow-hidden">
-            <div className="h-full bg-primary/60 rounded-full" style={{ width: '42%' }} />
+            <div className="h-full bg-primary/60 rounded-full" style={{ width: `${certProgressPct}%` }} />
           </div>
         </div>
         <Link href="/progress" className="text-xs font-bold text-primary hover:opacity-80 transition-opacity shrink-0 flex items-center gap-1">
@@ -300,6 +331,27 @@ function ReturningDashboard() {
           >
             View ladder
             <span className="material-symbols-outlined text-sm">arrow_forward</span>
+          </Link>
+        </section>
+      )}
+
+      {/* 4b. In-Progress Challenge — Zhang Yiming: continue where you left off */}
+      {inProgressChallenge && (
+        <section className="flex items-center gap-4 bg-tertiary/10 border border-tertiary/20 rounded-xl px-5 py-3">
+          <span className="material-symbols-outlined text-tertiary text-xl shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>edit_note</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-tertiary mb-0.5">Continue where you left off</p>
+            <p className="text-sm font-semibold text-on-surface truncate">{inProgressChallenge.title}</p>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0 text-[10px] font-bold text-tertiary bg-tertiary/10 px-2.5 py-1 rounded-full">
+            <span className="material-symbols-outlined text-sm">check_circle</span>
+            Step {inProgressChallenge.stepsCompleted}/4
+          </div>
+          <Link
+            href={`/challenges/${inProgressChallenge.id}`}
+            className="shrink-0 bg-tertiary text-white rounded-full px-4 py-1.5 text-xs font-bold hover:opacity-90 transition-opacity"
+          >
+            Resume
           </Link>
         </section>
       )}
@@ -465,7 +517,7 @@ function NoCalibrationDashboard() {
             <div className="absolute w-32 h-32 border-2 border-primary/30 rounded-full" />
             <div className="absolute w-24 h-24 border border-primary/50 rounded-full" />
             <div className="w-20 h-20 bg-primary rounded-2xl rotate-45 flex items-center justify-center shadow-lg">
-              <LumaGlyph size={40} className="text-on-primary -rotate-45" />
+              <LumaGlyph size={40} state="idle" className="text-on-primary -rotate-45" />
             </div>
           </div>
         </div>

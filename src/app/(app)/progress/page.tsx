@@ -255,7 +255,7 @@ export default function ProgressPage() {
                     <div className="bg-primary h-full" style={{ width: '42%' }} />
                   </div>
                 </div>
-                <LumaGlyph size={48} className="text-primary grayscale" />
+                <LumaGlyph size={48} state="none" className="text-primary grayscale" />
               </div>
             </div>
           </div>

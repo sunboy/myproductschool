@@ -92,7 +92,7 @@ export default function OnboardingPage() {
       <aside className="w-56 bg-surface-container-low flex flex-col pt-16 px-6 gap-2 shrink-0">
         {/* Brand */}
         <div className="flex items-center gap-2 mb-2">
-          <LumaGlyph size={32} className="text-primary" />
+          <LumaGlyph size={32} state="idle" className="text-primary" />
           <span className="font-headline text-sm font-semibold text-on-surface">HackProduct</span>
         </div>
 
@@ -197,7 +197,7 @@ export default function OnboardingPage() {
 
                 <div className="bg-surface-container rounded-2xl p-6 border border-outline-variant">
                   <div className="flex items-center gap-2 mb-3">
-                    <LumaGlyph size={24} className="text-primary" />
+                    <LumaGlyph size={24} state="speaking" className="text-primary" />
                     <span className="text-on-surface-variant text-sm">Luma suggests:</span>
                   </div>
                   <p className="font-headline text-xl font-semibold text-primary mb-3">

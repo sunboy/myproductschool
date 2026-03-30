@@ -410,7 +410,7 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
         {/* Detailed Feedback */}
         <div className="card-elevated p-6">
           <div className="flex items-start gap-4 mb-6">
-            <LumaGlyph size={48} state="celebrating" className="text-primary" />
+            <LumaGlyph size={48} state="speaking" className="text-primary" />
             <div>
               <h2 className="text-xl font-bold font-headline text-on-surface">Detailed Feedback</h2>
               <p className="text-sm text-on-surface-variant">Luma&apos;s evaluation of your strategy</p>

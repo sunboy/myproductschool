@@ -69,7 +69,7 @@ export default function SimulationPage() {
 
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-5 max-w-md">
-            <LumaGlyph size={56} className="text-primary mx-auto" />
+            <LumaGlyph size={56} state="celebrating" className="text-primary mx-auto" />
             <h2 className="font-headline text-2xl font-bold text-on-surface">Session complete</h2>
 
             {score != null && (
@@ -128,7 +128,7 @@ export default function SimulationPage() {
       <div className="flex-1 overflow-y-auto space-y-4 pb-4">
         {turns.map((turn, i) => (
           <div key={i} className={`flex gap-3 ${turn.role === 'user' ? 'flex-row-reverse' : ''}`}>
-            {turn.role === 'luma' && <LumaGlyph size={24} className="text-primary flex-shrink-0 mt-1" />}
+            {turn.role === 'luma' && <LumaGlyph size={24} state="speaking" className="text-primary flex-shrink-0 mt-1" />}
             <div className={`rounded-2xl px-4 py-3 max-w-[85%] text-sm whitespace-pre-wrap leading-relaxed ${
               turn.role === 'user'
                 ? 'bg-surface-container-high text-on-surface rounded-tr-sm'
@@ -140,7 +140,7 @@ export default function SimulationPage() {
         ))}
         {isSending && (
           <div className="flex gap-3">
-            <LumaGlyph size={24} className="text-primary flex-shrink-0 mt-1" />
+            <LumaGlyph size={24} state="listening" className="text-primary flex-shrink-0 mt-1" />
             <div className="bg-primary-container rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1">
               {[0, 150, 300].map(delay => (
                 <span key={delay} className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: `${delay}ms` }} />

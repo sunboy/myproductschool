@@ -150,7 +150,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
 
       {/* Luma Recommendation Banner */}
       <section className="bg-primary-container/40 border border-primary-container rounded-xl p-4 flex items-center gap-4">
-        <LumaGlyph size={40} className="text-primary shrink-0" />
+        <LumaGlyph size={40} state="speaking" className="text-primary shrink-0" />
         <div className="relative bg-white/60 px-4 py-2 rounded-2xl rounded-tl-none border border-white/40">
           <p className="text-sm text-on-primary-container font-medium leading-relaxed">
             Based on your scores, I recommend starting with{' '}

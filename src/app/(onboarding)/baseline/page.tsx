@@ -38,7 +38,7 @@ export default function BaselineResultsPage() {
 
       {/* Luma quote */}
       <div className="flex items-start gap-3 mb-8 bg-surface-container-low rounded-xl p-5">
-        <LumaGlyph size={32} className="text-primary flex-shrink-0" />
+        <LumaGlyph size={32} state="speaking" className="text-primary flex-shrink-0" />
         <p className="text-sm text-on-surface font-body">
           Based on your answer, I&apos;ve mapped your starting point across all 4 FLOW moves. Here&apos;s where you stand.
         </p>
@@ -84,7 +84,7 @@ export default function BaselineResultsPage() {
       {/* What Luma noticed */}
       <div className="bg-surface-container-low border border-outline-variant rounded-xl p-5 mb-6">
         <h3 className="text-sm font-label font-bold text-on-surface mb-2 flex items-center gap-2">
-          <LumaGlyph size={16} className="text-primary" />
+          <LumaGlyph size={16} state="none" className="text-primary" />
           What Luma noticed in your answer
         </h3>
         <p className="text-sm text-on-surface-variant font-body italic mb-3">

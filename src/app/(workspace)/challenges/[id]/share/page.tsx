@@ -16,7 +16,7 @@ export default function ShareScoreCardPage() {
           {/* Card Header */}
           <div className="flex justify-between items-center w-full mb-6">
             <div className="flex items-center gap-2">
-              <LumaGlyph size={32} className="text-primary" />
+              <LumaGlyph size={32} state="idle" className="text-primary" />
               <span className="font-headline font-bold text-primary text-lg">HackProduct</span>
             </div>
           </div>
@@ -74,7 +74,7 @@ export default function ShareScoreCardPage() {
         <div className="flex flex-col items-center w-full gap-6">
           {/* Luma Bubble */}
           <div className="flex items-start gap-4 max-w-[380px]">
-            <LumaGlyph size={64} className="text-primary flex-shrink-0" />
+            <LumaGlyph size={64} state="celebrating" className="text-primary flex-shrink-0" />
             <div className="bg-surface-container rounded-xl p-4 text-sm text-on-surface relative mt-2 border border-outline-variant/20 shadow-sm">
               <div className="absolute -left-2 top-4 w-4 h-4 bg-surface-container border-l border-t border-outline-variant/20 rotate-[-45deg]" />
               <p className="relative z-10">Share your score and challenge your network. Who else can crack this one?</p>

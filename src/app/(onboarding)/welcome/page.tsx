@@ -45,7 +45,7 @@ export default function WelcomePage() {
       <header className="fixed top-0 z-50 w-full bg-surface border-b border-outline-variant h-12 flex items-center shadow-sm">
         <div className="flex items-center justify-between px-6 w-full max-w-7xl mx-auto">
           <div className="flex items-center gap-2">
-            <LumaGlyph size={24} className="text-primary" />
+            <LumaGlyph size={24} state="idle" className="text-primary" />
             <span className="font-headline font-black text-xl text-primary">HackProduct</span>
           </div>
           <div className="hidden md:flex gap-6 items-center">

@@ -62,7 +62,7 @@ export default function ResultsPage() {
           <span className="font-headline text-2xl font-bold text-primary">HackProduct</span>
         </div>
         <div className="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden">
-          <LumaGlyph size={28} className="text-primary" />
+          <LumaGlyph size={28} state="idle" className="text-primary" />
         </div>
       </header>
 
@@ -75,7 +75,7 @@ export default function ResultsPage() {
         {/* Section 1: Luma Speaking Card */}
         <section className="bg-surface-container rounded-xl p-4 flex gap-4 items-start relative">
           <div className="shrink-0">
-            <LumaGlyph size={64} className="text-primary rounded-lg bg-white/50 p-1" />
+            <LumaGlyph size={64} state="speaking" className="text-primary rounded-lg bg-white/50 p-1" />
           </div>
           <div className="relative bg-white p-3 rounded-lg rounded-tl-none border border-outline-variant shadow-sm text-sm">
             <p className="text-on-surface-variant leading-relaxed">
