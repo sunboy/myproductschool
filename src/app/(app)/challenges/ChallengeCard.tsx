@@ -86,6 +86,12 @@ export function ChallengeCard({
         </div>
       )}
 
+      {/* Peer social signal — Wes Kao: community pull at card level */}
+      <div className="flex items-center gap-1.5 mb-3 text-[10px] text-on-surface-variant">
+        <span className="material-symbols-outlined text-xs text-primary/60">group</span>
+        <span>{(challenge.attempt_count ?? 0) > 0 ? `${challenge.attempt_count} engineers tried this` : 'Be the first to try this'}</span>
+      </div>
+
       {/* Footer: Start button + Discussion link */}
       <div className="flex items-center gap-2 mt-auto">
         <Link

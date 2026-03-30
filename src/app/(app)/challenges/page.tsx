@@ -125,10 +125,10 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-on-surface flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-base" style={{ fontVariationSettings: "'FILL' 1" }}>recommend</span>
-              Recommended for you
+              <span className="material-symbols-outlined text-primary text-base" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+              Featured Challenges
             </h2>
-            <span className="text-[10px] text-on-surface-variant font-medium">Picked for you</span>
+            <span className="text-[10px] text-on-surface-variant font-medium">Curated picks</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {challenges.slice(0, 3).map((challenge, idx) => (

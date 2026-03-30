@@ -50,6 +50,7 @@ function ReturningDashboard() {
   const [quickTakePool, setQuickTakePool] = useState<Array<{ id: string; scenario_text: string; move: string }>>([])
   const [quickTakeIdx, setQuickTakeIdx] = useState(0)
   const [inProgressChallenge, setInProgressChallenge] = useState<{ id: string; title: string; stepsCompleted: number } | null>(null)
+  const [progressBarAnimated, setProgressBarAnimated] = useState(false)
   const { moves, isLoading: movesLoading } = useMoveLevels()
   const { profile } = useProfile()
   const { challenge: cohortChallenge, submission: cohortSubmission, leaderboard: cohortLeaderboard } = useCohort()
@@ -84,6 +85,12 @@ function ReturningDashboard() {
         }
       })
       .catch(() => {})
+  }, [])
+
+  // Raph Koster: animate progress bars on mount
+  useEffect(() => {
+    const t = setTimeout(() => setProgressBarAnimated(true), 300)
+    return () => clearTimeout(t)
   }, [])
 
   const activeQuickTake = quickTakePool[quickTakeIdx] ?? quickTake
@@ -148,11 +155,14 @@ function ReturningDashboard() {
     return Math.round(Math.min(total * scale, 100))
   }, [moves])
 
+  // Streak-at-risk: show after 6pm (18:00) if user has a streak
+  const isStreakAtRisk = streakDays > 0 && new Date().getHours() >= 18
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
 
       {/* XP + Streak Status Bar — Luis von Ahn: persistent visible XP counter */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         {streakDays > 0 ? (
           <div className="flex items-center gap-2 bg-tertiary/10 border border-tertiary/20 rounded-full px-4 py-2">
             <span className="material-symbols-outlined text-tertiary text-base" style={{ fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
@@ -176,6 +186,19 @@ function ReturningDashboard() {
           </div>
         )}
       </div>
+
+      {/* Streak-at-risk banner — Luis von Ahn: late-day urgency nudge */}
+      {isStreakAtRisk && (
+        <div className="flex items-center gap-3 bg-tertiary/10 border border-tertiary/30 rounded-xl px-4 py-3">
+          <span className="material-symbols-outlined text-tertiary text-xl shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
+          <p className="text-sm font-semibold text-tertiary flex-1">
+            Your {streakDays}-day streak is at risk — practice before midnight to keep it alive.
+          </p>
+          <Link href="/challenges" className="shrink-0 bg-tertiary text-white text-xs font-bold px-4 py-2 rounded-full hover:opacity-90 transition-opacity">
+            Practice now
+          </Link>
+        </div>
+      )}
 
       {/* 1. Luma Greeting Card */}
       <section className="flex items-center gap-4 bg-primary-fixed/30 rounded-xl p-4 border border-primary/10">
@@ -320,7 +343,7 @@ function ReturningDashboard() {
             <div className="w-full bg-primary/10 h-2 rounded-full overflow-hidden">
               <div
                 className="h-full bg-primary rounded-full transition-all duration-700"
-                style={{ width: `${focusMove.progress_pct}%` }}
+                style={{ width: progressBarAnimated ? `${focusMove.progress_pct}%` : '0%' }}
               />
             </div>
             <p className="text-xs text-on-surface-variant mt-1.5">{focusMove.progress_pct}% toward Level {focusMove.level + 1}</p>
@@ -467,8 +490,8 @@ function ReturningDashboard() {
               </div>
               <div className="h-2 w-full bg-white rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-full"
-                  style={{ backgroundColor: m.color, width: `${m.progress}%` }}
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{ backgroundColor: m.color, width: progressBarAnimated ? `${m.progress}%` : '0%' }}
                 />
               </div>
             </div>

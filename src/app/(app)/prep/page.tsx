@@ -81,7 +81,11 @@ export default function PrepHubPage() {
             return (
               <button
                 key={company.id}
-                onClick={() => setSelectedCompany(company)}
+                onClick={() => {
+                  setSelectedCompany(company)
+                  // Zhang Yiming: persist for simulation pre-selection
+                  localStorage.setItem('hackproduct_prep_company', company.name)
+                }}
                 className={`flex-shrink-0 w-[120px] rounded-xl p-3 text-center transition-all hover:scale-105 ${isSelected ? 'bg-primary-fixed border-2 border-primary' : 'bg-surface-container hover:bg-surface-container-high border border-transparent'}`}
               >
                 <div className={`w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 font-bold shadow-sm ${colorClass}`}>{initial}</div>

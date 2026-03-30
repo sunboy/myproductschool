@@ -142,11 +142,11 @@ export default function WelcomePage() {
           </div>
 
           {/* Social Proof */}
-          <div className="pt-8 flex items-center justify-center gap-2 opacity-60">
+          <div className="pt-8 flex items-center justify-center gap-2 opacity-70">
             <div className="flex -space-x-2">
-              <div className="w-6 h-6 rounded-full border-2 border-surface bg-surface-container-high" />
-              <div className="w-6 h-6 rounded-full border-2 border-surface bg-surface-container" />
-              <div className="w-6 h-6 rounded-full border-2 border-surface bg-surface-container-highest" />
+              <div className="w-7 h-7 rounded-full border-2 border-surface bg-primary-fixed flex items-center justify-center text-[9px] font-bold text-primary">JL</div>
+              <div className="w-7 h-7 rounded-full border-2 border-surface bg-tertiary-container flex items-center justify-center text-[9px] font-bold text-tertiary">AC</div>
+              <div className="w-7 h-7 rounded-full border-2 border-surface bg-secondary-container flex items-center justify-center text-[9px] font-bold text-secondary">RK</div>
             </div>
             <p className="text-xs font-medium text-on-surface">
               Join engineers from Google, Meta, Stripe &amp; more

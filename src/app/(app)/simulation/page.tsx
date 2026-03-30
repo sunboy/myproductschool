@@ -1,16 +1,31 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 const COMPANIES = ['Meta', 'Google', 'Stripe', 'Airbnb']
 
 export default function SimulationPage() {
   const router = useRouter()
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null)
+  const [suggestedCompany, setSuggestedCompany] = useState<string | null>(null)
   const [difficulty, setDifficulty] = useState<'standard' | 'advanced'>('standard')
   const [isStarting, setIsStarting] = useState(false)
   const [startError, setStartError] = useState<string | null>(null)
+
+  // Zhang Yiming: pre-select company based on user's prep context
+  useEffect(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('hackproduct_prep_company') : null
+    if (saved && COMPANIES.includes(saved)) {
+      setSuggestedCompany(saved)
+      setSelectedCompany(saved)
+    } else {
+      // Default suggestion: Google (most common first prep target)
+      setSuggestedCompany('Google')
+      setSelectedCompany('Google')
+    }
+  }, [])
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10 space-y-10">
@@ -29,21 +44,32 @@ export default function SimulationPage() {
 
       {/* Company Selector */}
       <div className="space-y-4">
-        <h2 className="font-label text-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-          Choose a company
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="font-label text-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+            Choose a company
+          </h2>
+          {suggestedCompany && (
+            <div className="flex items-center gap-1.5 text-[11px] text-on-surface-variant">
+              <LumaGlyph size={16} state="none" className="text-primary" />
+              <span>Luma suggests: <span className="font-bold text-primary">{suggestedCompany}</span></span>
+            </div>
+          )}
+        </div>
         <div className="grid grid-cols-2 gap-4">
           {COMPANIES.map(company => (
             <button
               key={company}
               onClick={() => setSelectedCompany(company)}
-              className={`bg-surface-container rounded-xl p-5 text-center transition-all ${
+              className={`bg-surface-container rounded-xl p-5 text-center transition-all relative ${
                 selectedCompany === company
                   ? 'ring-2 ring-primary bg-primary-container text-on-primary-container'
                   : 'text-on-surface hover:bg-surface-container-high'
               }`}
             >
               <span className="font-headline text-lg font-bold">{company}</span>
+              {company === suggestedCompany && selectedCompany !== company && (
+                <span className="absolute top-1.5 right-1.5 text-[9px] font-bold text-primary bg-primary-fixed px-1.5 py-0.5 rounded-full">Suggested</span>
+              )}
             </button>
           ))}
         </div>

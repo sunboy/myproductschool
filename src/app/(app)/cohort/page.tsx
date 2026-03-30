@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { useCohort } from '@/hooks/useCohort'
 
@@ -19,6 +19,17 @@ export default function CohortPage() {
   const [responseText, setResponseText] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [teamModalOpen, setTeamModalOpen] = useState(false)
+  const userRowRef = useRef<HTMLTableRowElement>(null)
+
+  // Raph Koster: scroll the user's rank row into view after leaderboard loads
+  useEffect(() => {
+    if (!isLoading && submission && userRowRef.current) {
+      const t = setTimeout(() => {
+        userRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 600)
+      return () => clearTimeout(t)
+    }
+  }, [isLoading, submission])
   const [teamNotified, setTeamNotified] = useState(false)
   const [notifyEnabled, setNotifyEnabled] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -103,8 +114,18 @@ export default function CohortPage() {
             <span className="material-symbols-outlined text-primary">military_tech</span>
             This Week&apos;s Challenge
           </h1>
-          <p className="text-sm text-on-surface-variant ml-9">847 engineers competing in the current cohort</p>
+          <p className="text-sm text-on-surface-variant ml-9">{leaderboard.length > 0 ? leaderboard.length : 847} engineers competing in the current cohort</p>
         </div>
+        {/* Wes Kao: discussion link visible from leaderboard page */}
+        {challenge && (
+          <Link
+            href={`/challenges/${challenge.id}/discussion`}
+            className="flex items-center gap-2 text-sm font-bold text-primary bg-primary-fixed px-4 py-2 rounded-full hover:bg-primary-fixed/80 transition-colors"
+          >
+            <span className="material-symbols-outlined text-sm">forum</span>
+            View Discussion
+          </Link>
+        )}
       </div>
 
       {/* ── Challenge Hero Card ── */}
@@ -251,7 +272,7 @@ export default function CohortPage() {
               </tr>
 
               {/* USER RANK 47 */}
-              <tr className="h-14 bg-primary-fixed/30 border-y-2 border-primary/20">
+              <tr ref={userRowRef} className="h-14 bg-primary-fixed/30 border-y-2 border-primary/20">
                 <td className="px-6">
                   <span className="font-headline font-black text-primary">47</span>
                 </td>

@@ -87,7 +87,9 @@ async function fetchStudyPlans(): Promise<typeof STUDY_PLANS_MOCK> {
       duration: `${p.estimated_hours} hrs`,
       description: p.description ?? '',
       slug: p.slug,
-      participantCount: '+0',
+      participantCount: (p as unknown as { participant_count?: number }).participant_count
+        ? `+${(p as unknown as { participant_count: number }).participant_count}`
+        : '+0',
     }))
   } catch {
     return STUDY_PLANS_MOCK
@@ -153,8 +155,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
         <LumaGlyph size={40} state="speaking" className="text-primary shrink-0" />
         <div className="relative bg-white/60 px-4 py-2 rounded-2xl rounded-tl-none border border-white/40">
           <p className="text-sm text-on-primary-container font-medium leading-relaxed">
-            Based on your scores, I recommend starting with{' '}
-            <span className="font-bold underline decoration-primary/30">Traditional → Failure Analysis</span>.
+            Browse by paradigm to find challenges that match your role, or pick a Study Plan to follow a structured path.
           </p>
         </div>
       </section>
