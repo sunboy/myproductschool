@@ -2,8 +2,17 @@ import type { Metadata } from 'next'
 import { WaitlistForm } from '@/components/marketing/WaitlistForm'
 import { WaitlistCountdown } from '@/components/marketing/WaitlistCountdown'
 import { CyclingText } from '@/components/marketing/CyclingText'
+import { createAdminClient } from '@/lib/supabase/admin'
 
-const WAITLIST_COUNT = 1100 // TODO: fetch from supabase at build/request time
+async function getWaitlistCount(): Promise<number> {
+  try {
+    const supabase = createAdminClient()
+    const { count } = await supabase.from('waitlist').select('*', { count: 'exact', head: true })
+    return count ?? 0
+  } catch {
+    return 0
+  }
+}
 
 export const metadata: Metadata = {
   title: 'Join the Waitlist | Product Sense Practice for Engineers, PMs & Students',
@@ -123,9 +132,10 @@ const jsonLd = {
   ],
 }
 
-export default function WaitlistPage() {
-  const showSocial = WAITLIST_COUNT > 1000
-  const roundedCount = Math.floor(WAITLIST_COUNT / 100) * 100
+export default async function WaitlistPage() {
+  const waitlistCount = await getWaitlistCount()
+  const showSocial = waitlistCount > 1000
+  const roundedCount = Math.floor(waitlistCount / 100) * 100
 
   return (
     <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-background text-on-background font-body selection:bg-secondary-container selection:text-on-secondary-container flex flex-col">
@@ -143,7 +153,7 @@ export default function WaitlistPage() {
             <img src="/images/hackylogo.png" alt="HackProduct logo" className="w-8 h-8 object-contain" width={32} height={32} />
             HackProduct
           </span>
-          <WaitlistCountdown />
+          {/* <WaitlistCountdown /> */}
         </div>
       </nav>
 
