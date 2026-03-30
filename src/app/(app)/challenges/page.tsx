@@ -134,7 +134,31 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
         )}
       </div>
 
-      {/* Challenge Grid */}
+      {/* Recommended for you — Zhang Yiming: algorithmic surfacing above the fold */}
+      {!paradigm && !role && challenges.length >= 3 && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-on-surface flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-base" style={{ fontVariationSettings: "'FILL' 1" }}>recommend</span>
+              Recommended for you
+            </h2>
+            <span className="text-[10px] text-on-surface-variant font-medium">Based on your weakest move</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {challenges.slice(0, 3).map((challenge, idx) => (
+              <ChallengeCard
+                key={`rec-${challenge.id}`}
+                challenge={challenge}
+                paradigm={getParadigmLabel(idx)}
+              />
+            ))}
+          </div>
+          <div className="border-t border-outline-variant/30 mt-6 mb-2" />
+        </div>
+      )}
+
+      {/* All Challenges Grid */}
+      <h2 className="text-sm font-bold text-on-surface-variant uppercase tracking-wider mb-3">All Challenges</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {challenges.map((challenge, idx) => (
           <ChallengeCard

@@ -392,49 +392,76 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
         {/* ── RIGHT PANE — Answer Workspace (flex-1) ───────── */}
         <section className="flex-1 bg-surface flex flex-col overflow-hidden relative">
 
-          {/* Move Progress Bar */}
-          <div className="px-6 pt-4 pb-2 border-b border-outline-variant/30 flex items-center justify-between flex-shrink-0">
-            <div className="flex items-center gap-1 w-full max-w-lg">
-              {FLOW_STEPS.map((s, i) => {
-                const hasContent = (responses[i] ?? '').trim().length > 0
-                const isComplete = hasContent && i < activeStep
-                const isActive   = i === activeStep
+          {/* Move Progress Bar — Raph Koster: tension arc with completion %  */}
+          <div className="border-b border-outline-variant/30 flex-shrink-0">
+            {/* Thin progress track at very top */}
+            {(() => {
+              const completedSteps = FLOW_STEPS.filter((_, i) => (responses[i] ?? '').trim().length > 0).length
+              const pct = Math.round((completedSteps / FLOW_STEPS.length) * 100)
+              return (
+                <div className="w-full h-0.5 bg-outline-variant/20">
+                  <div
+                    className="h-full bg-primary transition-all duration-500"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              )
+            })()}
+            <div className="px-6 pt-3 pb-2 flex items-center justify-between">
+              <div className="flex items-center gap-1 w-full max-w-lg">
+                {FLOW_STEPS.map((s, i) => {
+                  const hasContent = (responses[i] ?? '').trim().length > 0
+                  const isComplete = hasContent && i < activeStep
+                  const isActive   = i === activeStep
 
-                return (
-                  <div key={s.key} className={`flex items-center gap-2 ${i > 0 ? '' : ''}`}>
-                    {i > 0 && i < FLOW_STEPS.length && (
-                      <div className="border-r border-outline-variant/30 h-4 mx-1" />
-                    )}
-                    <button
-                      onClick={() => setActiveStep(i)}
-                      className={`flex items-center gap-2 px-4 py-1.5 rounded-full transition-all ${
-                        isActive
-                          ? 'bg-primary-container text-on-primary-container'
-                          : isComplete
-                            ? ''
-                            : 'opacity-40'
-                      }`}
-                    >
-                      {isComplete ? (
-                        <div className="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs">✓</div>
-                      ) : isActive ? (
-                        <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>article</span>
-                      ) : (
-                        <span className="material-symbols-outlined text-sm">article</span>
+                  return (
+                    <div key={s.key} className={`flex items-center gap-2 ${i > 0 ? '' : ''}`}>
+                      {i > 0 && i < FLOW_STEPS.length && (
+                        <div className="border-r border-outline-variant/30 h-4 mx-1" />
                       )}
-                      <span className="text-xs font-bold">{s.label}</span>
-                    </button>
-                  </div>
-                )
-              })}
+                      <button
+                        onClick={() => setActiveStep(i)}
+                        className={`flex items-center gap-2 px-4 py-1.5 rounded-full transition-all ${
+                          isActive
+                            ? 'bg-primary-container text-on-primary-container'
+                            : isComplete
+                              ? 'text-primary'
+                              : 'opacity-40'
+                        }`}
+                      >
+                        {isComplete ? (
+                          <div className="w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-[10px]">✓</div>
+                        ) : isActive ? (
+                          <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>article</span>
+                        ) : (
+                          <span className="material-symbols-outlined text-sm">article</span>
+                        )}
+                        <span className="text-xs font-bold">{s.label}</span>
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="flex items-center gap-3">
+                {/* Completion % badge — Raph Koster: "don't stop now" signal */}
+                {(() => {
+                  const completedSteps = FLOW_STEPS.filter((_, i) => (responses[i] ?? '').trim().length > 0).length
+                  const pct = Math.round((completedSteps / FLOW_STEPS.length) * 100)
+                  return pct > 0 && pct < 100 ? (
+                    <span className="text-[10px] font-bold text-primary bg-primary-fixed/50 px-2 py-0.5 rounded-full">
+                      {pct}% done — keep going
+                    </span>
+                  ) : null
+                })()}
+                <button
+                  onClick={() => setFrameworkOpen(f => !f)}
+                  className="bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 transition-all"
+                >
+                  <span className="material-symbols-outlined text-sm">segment</span>
+                  ≡ Frameworks
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => setFrameworkOpen(f => !f)}
-              className="bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 transition-all"
-            >
-              <span className="material-symbols-outlined text-sm">segment</span>
-              ≡ Frameworks
-            </button>
           </div>
 
           {/* Active Content */}

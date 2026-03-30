@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
@@ -104,6 +104,10 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
   const searchParams = useSearchParams()
   const [challengeId, setChallengeId] = useState<string | null>(null)
   const [showRecommended, setShowRecommended] = useState(false)
+  const [barsAnimated, setBarsAnimated] = useState(false)
+  const [showLevelUp, setShowLevelUp] = useState(false)
+  const [prevLevel] = useState(2) // would come from pre-submission profile state in prod
+  const barsRef = useRef<HTMLDivElement>(null)
 
   // Resolve params
   useEffect(() => {
@@ -120,6 +124,14 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
   const feedbackText = getFeedbackText(feedback)
   const recommendedAnswer = getRecommendedAnswer(feedback)
   const interviewTip = getInterviewTip(feedback)
+
+  // Animate score bars into view after a short delay (game feel)
+  useEffect(() => {
+    if (!isLoading && realScores) {
+      const t = setTimeout(() => setBarsAnimated(true), 400)
+      return () => clearTimeout(t)
+    }
+  }, [isLoading, realScores])
 
   // Thinking traps: prefer semantic traps from feedback_json, then Luma-detected patterns
   const thinkingTraps = getThinkingTraps(feedback)
@@ -139,6 +151,19 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
     ? (attempt as { xp_awarded: number }).xp_awarded
     : null
 
+  // Simulate level-up detection — in prod this compares pre/post XP level thresholds
+  const newLevel = realScores ? Math.floor(overallScore / 25) + 1 : null
+  useEffect(() => {
+    if (newLevel !== null && newLevel > prevLevel) {
+      const t = setTimeout(() => setShowLevelUp(true), 1200)
+      return () => clearTimeout(t)
+    }
+  }, [newLevel, prevLevel])
+
+  // Community benchmark (mock — would come from /api/challenges/[id]/stats in prod)
+  const communityAvg = 62
+  const communityPercentile = overallScore > communityAvg ? Math.round(((overallScore - communityAvg) / (100 - communityAvg)) * 100) : null
+
   // Loading state
   if (isLoading) {
     return (
@@ -153,6 +178,53 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="p-6 max-w-[1400px] mx-auto w-full space-y-6 animate-fade-in-up">
+
+      {/* Level-Up Modal */}
+      {showLevelUp && newLevel !== null && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <div className="bg-background rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center space-y-4 animate-fade-in-up">
+            <LumaGlyph size={72} state="celebrating" className="text-primary mx-auto" />
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-tertiary mb-1">Level Up!</p>
+              <h2 className="text-3xl font-headline font-black text-on-surface">Level {newLevel}</h2>
+              <p className="text-sm text-on-surface-variant mt-2">Your Frame move just leveled up. Keep going — Level {newLevel + 1} is within reach.</p>
+            </div>
+            <button
+              onClick={() => setShowLevelUp(false)}
+              className="w-full bg-primary text-on-primary py-3 rounded-full font-bold text-sm hover:opacity-90 transition-opacity"
+            >
+              Nice! Continue
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Celebration Banner — always shown on feedback load when scores are real */}
+      {realScores && (
+        <section className="bg-primary-container/30 border border-primary/20 rounded-xl p-5 flex items-center gap-5">
+          <LumaGlyph size={56} state="celebrating" className="text-primary shrink-0" />
+          <div className="flex-1">
+            <h2 className="font-headline text-xl font-bold text-on-surface">
+              {overallScore >= 80 ? 'Outstanding work!' : overallScore >= 60 ? 'Good thinking!' : 'Challenge complete!'}
+            </h2>
+            <p className="text-sm text-on-surface-variant mt-0.5">
+              You scored <span className="font-bold text-primary">{Math.round(overallScore)}/100</span>
+              {communityPercentile !== null && (
+                <> — top <span className="font-bold text-tertiary">{communityPercentile}%</span> of submissions</>
+              )}
+              {communityPercentile === null && (
+                <> · Community avg: <span className="font-bold">{communityAvg}/100</span></>
+              )}
+            </p>
+          </div>
+          {xpEarned !== null && (
+            <div className="shrink-0 bg-primary text-on-primary rounded-xl px-5 py-3 text-center shadow-sm">
+              <span className="text-2xl font-black font-headline">+{xpEarned}</span>
+              <p className="text-[10px] font-bold uppercase tracking-wider">XP</p>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Page Header */}
       <section className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -169,6 +241,12 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
                   +{xpEarned} XP
                 </span>
               )}
+              {realScores && communityAvg && (
+                <span className="bg-surface-container text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[12px]">group</span>
+                  Community avg: {communityAvg}/100
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -178,6 +256,18 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
               <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
               Clean Run ✦
             </span>
+          )}
+          {/* Share score — Sebastian Thrun: shareable proof */}
+          {realScores && challengeId && (
+            <a
+              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://hackproduct.io')}&summary=${encodeURIComponent(`I scored ${Math.round(overallScore)}/100 on the HackProduct challenge: "${challengeTitle}". Sharpening my product thinking. hackproduct.io`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-[#0077b5] text-white px-4 py-2 rounded-full text-xs font-bold hover:bg-[#006097] transition-colors"
+            >
+              <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg>
+              Share Score
+            </a>
           )}
           <Link
             href={`/challenges/${challengeId}/discussion`}
@@ -234,18 +324,25 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
                 </svg>
               </div>
 
-              {/* Score Bars */}
-              <div className="flex-1 w-full space-y-4">
-                {DIMENSIONS.map(d => {
+              {/* Score Bars — animated reveal (Raph Koster: game feel) */}
+              <div ref={barsRef} className="flex-1 w-full space-y-4">
+                {DIMENSIONS.map((d, idx) => {
                   const score = scores[d.key] ?? 2.5
                   return (
-                    <div key={d.key} className="space-y-1">
+                    <div key={d.key} className="space-y-1" style={{ transitionDelay: `${idx * 120}ms` }}>
                       <div className="flex justify-between text-xs font-bold">
                         <span className="text-on-surface-variant">{d.label}</span>
                         <span style={{ color: d.color }}>{realScores ? `${score}/5` : '—'}</span>
                       </div>
-                      <div className="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full transition-all duration-700" style={{ backgroundColor: d.color, width: `${(score / 5) * 100}%` }} />
+                      <div className="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            backgroundColor: d.color,
+                            width: barsAnimated ? `${(score / 5) * 100}%` : '0%',
+                            transition: `width 700ms ease-out ${idx * 120}ms`,
+                          }}
+                        />
                       </div>
                     </div>
                   )

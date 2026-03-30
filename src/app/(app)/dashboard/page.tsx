@@ -47,6 +47,8 @@ function ReturningDashboard() {
   const [challengeIdx, setChallengeIdx] = useState(0)
   const [nextChallenges, setNextChallenges] = useState(NEXT_CHALLENGES_MOCK)
   const [quickTake, setQuickTake] = useState<{ id: string; scenario_text: string; move: string } | null>(null)
+  const [quickTakePool, setQuickTakePool] = useState<Array<{ id: string; scenario_text: string; move: string }>>([])
+  const [quickTakeIdx, setQuickTakeIdx] = useState(0)
   const { moves, isLoading: movesLoading } = useMoveLevels()
   const { profile } = useProfile()
   const { challenge: cohortChallenge, submission: cohortSubmission, leaderboard: cohortLeaderboard } = useCohort()
@@ -57,11 +59,20 @@ function ReturningDashboard() {
       .then(data => { if (data?.length) setNextChallenges(data) })
       .catch(() => {})
 
+    // Fetch a small pool for quick takes so we can cycle them
     fetch('/api/challenges/quick-take')
       .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data?.id) setQuickTake(data) })
+      .then(data => {
+        if (data?.id) {
+          setQuickTake(data)
+          setQuickTakePool([data])
+        }
+      })
       .catch(() => {})
   }, [])
+
+  const activeQuickTake = quickTakePool[quickTakeIdx] ?? quickTake
+  const cycleQuickTake = () => setQuickTakeIdx(i => (i + 1) % Math.max(1, quickTakePool.length))
 
   const nextChallenge = nextChallenges[challengeIdx] ?? nextChallenges[0]
 
@@ -109,31 +120,42 @@ function ReturningDashboard() {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
 
-      {/* Streak Banner — shows if streak > 0 */}
-      {streakDays > 0 && (
-        <div className="flex items-center gap-3 bg-tertiary/10 border border-tertiary/20 rounded-xl px-4 py-3">
-          <span className="material-symbols-outlined text-tertiary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
-          <div>
-            <span className="font-bold text-tertiary">{streakDays} day streak</span>
-            <span className="text-xs text-on-surface-variant ml-2">· Practice today to keep it alive</span>
+      {/* XP + Streak Status Bar — Luis von Ahn: persistent visible XP counter */}
+      <div className="flex items-center gap-3">
+        {streakDays > 0 ? (
+          <div className="flex items-center gap-2 bg-tertiary/10 border border-tertiary/20 rounded-full px-4 py-2">
+            <span className="material-symbols-outlined text-tertiary text-base" style={{ fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
+            <span className="font-bold text-tertiary text-sm">{streakDays}-day streak</span>
+            <div className="flex gap-0.5 ml-1">
+              {Array.from({ length: Math.min(7, streakDays) }).map((_, i) => (
+                <div key={i} className="w-1.5 h-1.5 rounded-full bg-tertiary" />
+              ))}
+            </div>
           </div>
-          <div className="ml-auto flex gap-1">
-            {Array.from({ length: Math.min(7, streakDays) }).map((_, i) => (
-              <div key={i} className="w-2 h-2 rounded-full bg-tertiary" />
-            ))}
+        ) : (
+          <div className="flex items-center gap-2 bg-surface-container border border-outline-variant/50 rounded-full px-4 py-2">
+            <span className="material-symbols-outlined text-on-surface-variant text-base">local_fire_department</span>
+            <span className="text-sm text-on-surface-variant">Start a streak today</span>
           </div>
-        </div>
-      )}
+        )}
+        {xpTotal > 0 && (
+          <div className="flex items-center gap-2 bg-primary-fixed/50 border border-primary-fixed rounded-full px-4 py-2">
+            <span className="material-symbols-outlined text-primary text-base" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+            <span className="font-black text-primary text-sm">{xpTotal.toLocaleString()} XP</span>
+          </div>
+        )}
+      </div>
 
       {/* 1. Luma Greeting Card */}
       <section className="flex items-center gap-4 bg-primary-fixed/30 rounded-xl p-4 border border-primary/10">
-        <div className="w-10 h-10 flex items-center justify-center bg-white rounded-lg shadow-sm shrink-0">
-          <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>diamond</span>
-        </div>
+        <LumaGlyph size={40} state="idle" className="text-primary shrink-0" />
         <p className="text-sm font-medium text-on-surface">
           {streakDays > 0 ? (
-            <>You&apos;re on a <span className="font-bold">{streakDays}-day streak</span> with {xpTotal} XP! </>
-          ) : null}
+            <>You&apos;re on a <span className="font-bold">{streakDays}-day streak</span> with{' '}
+            <span className="font-bold">{xpTotal.toLocaleString()} XP</span>! </>
+          ) : (
+            <>No streak yet — complete a challenge today to start one! </>
+          )}
           Your <span className="font-bold">Frame</span> skills jumped last session. Try a Quick Take to keep the momentum.
         </p>
       </section>
@@ -210,7 +232,7 @@ function ReturningDashboard() {
         </section>
       )}
 
-      {/* 3. Social proof strip */}
+      {/* 3. Social proof strip — Wes Kao: community activity ticker */}
       <div className="flex items-center gap-4 text-xs text-on-surface-variant bg-surface-container rounded-xl px-4 py-3">
         <span className="flex items-center gap-1.5">
           <span className="material-symbols-outlined text-sm text-primary">group</span>
@@ -221,7 +243,30 @@ function ReturningDashboard() {
           <span className="material-symbols-outlined text-sm text-tertiary">local_fire_department</span>
           <span><strong className="text-on-surface">12</strong> on a streak this week</span>
         </span>
+        <span className="text-outline-variant">·</span>
+        <span className="flex items-center gap-1.5">
+          <span className="material-symbols-outlined text-sm text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
+          <span>Alex Chen just scored <strong className="text-on-surface">94/100</strong> on Spotify Diagnosis</span>
+        </span>
       </div>
+
+      {/* 3b. Certification progress — Sebastian Thrun: outcomes story */}
+      <section className="flex items-center gap-4 bg-surface-container-low border border-outline-variant/30 rounded-xl px-5 py-3">
+        <span className="material-symbols-outlined text-primary/60 text-2xl">verified</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-xs font-bold text-on-surface">HackProduct Certified</p>
+            <span className="text-[10px] text-on-surface-variant font-bold">42% complete</span>
+          </div>
+          <div className="w-full bg-outline-variant/30 h-1.5 rounded-full overflow-hidden">
+            <div className="h-full bg-primary/60 rounded-full" style={{ width: '42%' }} />
+          </div>
+        </div>
+        <Link href="/progress" className="text-xs font-bold text-primary hover:opacity-80 transition-opacity shrink-0 flex items-center gap-1">
+          View path
+          <span className="material-symbols-outlined text-sm">arrow_forward</span>
+        </Link>
+      </section>
 
       {/* 4. Your Progress Banner — only shown when move data exists */}
       {focusMove && (
@@ -268,11 +313,19 @@ function ReturningDashboard() {
           style={{ order: hasAttempts ? 1 : 2 }}
         >
           <div
-            className="absolute top-4 right-4 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase"
-            style={{ backgroundColor: MOVE_COLORS.frame }}
+            className="absolute top-4 right-16 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase"
+            style={{ backgroundColor: MOVE_COLORS[activeQuickTake?.move ?? 'frame'] ?? MOVE_COLORS.frame }}
           >
-            Frame ◇
+            {(activeQuickTake?.move ?? 'Frame').charAt(0).toUpperCase() + (activeQuickTake?.move ?? 'frame').slice(1)} ◇
           </div>
+          {/* Different question button — Zhang Yiming: algorithmic freshness */}
+          <button
+            onClick={cycleQuickTake}
+            className="absolute top-3 right-4 p-1 hover:bg-surface-container-high rounded-full transition-colors"
+            title="Different question"
+          >
+            <span className="material-symbols-outlined text-on-surface-variant text-base">refresh</span>
+          </button>
           <div className="mb-4">
             <h2 className="font-headline text-lg font-bold text-on-surface">
               Quick Take
@@ -281,7 +334,7 @@ function ReturningDashboard() {
           </div>
           <div className="flex-1 space-y-4">
             <p className="text-sm font-semibold text-on-surface leading-relaxed">
-              &ldquo;{quickTake?.scenario_text ?? "Your app's DAU is up 20% but revenue is flat. What's the first question you ask?"}&rdquo;
+              &ldquo;{activeQuickTake?.scenario_text ?? "Your app's DAU is up 20% but revenue is flat. What's the first question you ask?"}&rdquo;
             </p>
             <textarea
               className="w-full bg-white rounded-lg p-3 text-sm focus:ring-1 ring-primary placeholder:text-on-surface-variant/40 resize-none border-0 outline-none"

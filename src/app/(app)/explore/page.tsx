@@ -226,14 +226,19 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                 <p className="text-xs text-on-surface-variant leading-snug">{plan.description}</p>
               </div>
               <div className="mt-4 pt-4 border-t border-outline-variant/20 flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <div className="flex -space-x-1.5">
-                    <div className="w-5 h-5 rounded-full bg-surface-container-high ring-2 ring-surface-container-low" />
-                    <div className="w-5 h-5 rounded-full bg-surface-dim ring-2 ring-surface-container-low" />
+                {/* Wes Kao: larger social proof avatars, more visible participant count */}
+                <div className="flex items-center gap-2">
+                  <div className="flex -space-x-2">
+                    <div className="w-7 h-7 rounded-full bg-primary-fixed ring-2 ring-surface-container-low flex items-center justify-center text-[9px] font-bold text-primary">A</div>
+                    <div className="w-7 h-7 rounded-full bg-tertiary-container ring-2 ring-surface-container-low flex items-center justify-center text-[9px] font-bold text-tertiary">B</div>
+                    <div className="w-7 h-7 rounded-full bg-secondary-container ring-2 ring-surface-container-low flex items-center justify-center text-[9px] font-bold text-secondary">C</div>
                   </div>
-                  <span className="text-[8px] font-bold text-on-surface-variant">{plan.participantCount}</span>
+                  <div>
+                    <span className="text-xs font-bold text-on-surface">{plan.participantCount} engineers</span>
+                    <span className="text-[10px] text-on-surface-variant block">enrolled</span>
+                  </div>
                 </div>
-                <span className="text-xs font-bold text-primary px-3 py-1 rounded-full border border-primary/20 hover:bg-primary/5">
+                <span className="text-xs font-bold text-primary px-3 py-1.5 rounded-full border border-primary/20 hover:bg-primary/5">
                   Start
                 </span>
               </div>
