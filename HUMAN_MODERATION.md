@@ -122,4 +122,28 @@ is worth the extra request; otherwise ISR every 10 minutes is cleaner.
 
 ---
 
+---
+
+## 9. ~~Profile page — Archetype share 404~~ RESOLVED
+
+**Resolution (Iteration 2)**: `src/app/(app)/profile/page.tsx` and `src/app/(app)/profile/share/page.tsx`
+already existed and are fully functional. No action needed.
+
+---
+
+## 10. Live Community Activity Feed
+
+**File**: `src/app/(app)/dashboard/page.tsx` — social proof strip
+
+**Issue**: The activity ticker ("Alex Chen just scored 94/100 on Spotify Diagnosis") is static mock
+data. A real implementation requires:
+- A `challenge_attempts` feed query showing recent high-scoring community submissions
+- Privacy model decision: should display names be shown, or anonymized?
+- Performance consideration: polling (every 60s) vs. Supabase real-time subscription
+
+**Action needed**: Decide on privacy consent model for the activity feed. Build
+`GET /api/activity/feed` endpoint once model is approved.
+
+---
+
 *Last updated: 2026-03-29 — Ralph Loop Iteration 2*
