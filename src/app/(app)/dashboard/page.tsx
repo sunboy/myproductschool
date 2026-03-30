@@ -9,6 +9,8 @@ import {
   getLeaderboardPeek,
   getUserNotes,
   getMoveLevel,
+  getUserInterviews,
+  type UserInterview,
 } from '@/lib/data/dashboard'
 import { getLumaContext } from '@/lib/notes/embeddings'
 import { getMockQuickTakePrompt } from '@/lib/mock'
@@ -69,6 +71,7 @@ export default async function DashboardPage() {
     leaderboard,
     userNotes,
     moveLevels,
+    interviews,
   ] = await Promise.all([
     userId ? getDashboardPreferences(userId) : null,
     userId ? getUserAnalyticsSummary(userId) : null,
@@ -77,6 +80,7 @@ export default async function DashboardPage() {
     userId ? getLeaderboardPeek(userId) : [],
     userId ? getUserNotes(userId) : [],
     userId ? getMoveLevel(userId) : [],
+    userId ? getUserInterviews(userId) : [],
   ])
 
   // Luma context from notes (wrap in try/catch — depends on OpenAI)
@@ -109,7 +113,7 @@ export default async function DashboardPage() {
 
   // Compute days until interview
   const daysUntilInterview = interviewDate
-    ? Math.max(0, Math.ceil((new Date(interviewDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    ? Math.max(0, Math.ceil((new Date(interviewDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
     : null
 
   // Coaching message fallback
@@ -207,6 +211,7 @@ export default async function DashboardPage() {
       <DashboardGrid
         visibleCards={visibleCards}
         dismissedCards={dismissedCards}
+        initialCardSizes={dashboardPrefs?.dashboard_card_sizes ?? {}}
         cardData={{
           notes: userNotes,
           hotChallenges,
@@ -224,6 +229,7 @@ export default async function DashboardPage() {
           featuredChallengeDifficulty: featuredChallenge.difficulty,
           interviewDate,
           interviewMeta,
+          interviews: interviews as UserInterview[],
           recentActivity,
           quickTakePrompt: getMockQuickTakePrompt(),
           lumaInsight: lumaContext,

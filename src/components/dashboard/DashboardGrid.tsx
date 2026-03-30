@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useRef, useCallback } from 'react'
+import type { UserInterview } from '@/lib/data/dashboard'
 import { DismissibleCard } from '@/components/dashboard/DismissibleCard'
 import { CardPicker } from '@/components/dashboard/CardPicker'
 import { DEFAULT_SIZES, COL_SPAN_CLASS } from '@/lib/dashboard-cards'
+import { saveCardSizes } from '@/app/actions/dashboard'
 import { QuickTakeCard } from '@/components/dashboard/cards/QuickTakeCard'
 import { NextChallengeCard } from '@/components/dashboard/cards/NextChallengeCard'
 import { MoveLevelsCard } from '@/components/dashboard/cards/MoveLevelsCard'
@@ -55,6 +57,7 @@ interface Note {
   content: string
   color: string
   pinned: boolean
+  created_at: string
 }
 
 interface RecentActivity {
@@ -81,6 +84,7 @@ export interface DashboardCardData {
   featuredChallengeDifficulty: string
   interviewDate: string | null
   interviewMeta: { company?: string; round?: string }
+  interviews: UserInterview[]
   recentActivity: RecentActivity[]
   quickTakePrompt: string
   lumaInsight: string | null
@@ -90,43 +94,57 @@ interface DashboardGridProps {
   visibleCards: string[]
   dismissedCards: string[]
   cardData: DashboardCardData
+  initialCardSizes?: Record<string, number>
 }
 
-const STORAGE_KEY = 'dashboard-card-sizes'
+function ResizeHandle({ onResize }: { onResize: (delta: number) => void }) {
+  const startX = useRef(0)
 
-export function DashboardGrid({ visibleCards, dismissedCards, cardData }: DashboardGridProps) {
-  const [sizes, setSizes] = useState<Record<string, 1 | 2 | 3>>(DEFAULT_SIZES)
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    startX.current = e.clientX
+    const handleMouseMove = (ev: MouseEvent) => {
+      const delta = ev.clientX - startX.current
+      if (Math.abs(delta) > 80) {
+        onResize(delta > 0 ? 1 : -1)
+        startX.current = ev.clientX
+      }
+    }
+    const handleMouseUp = () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+  }
+
+  return (
+    <div
+      onMouseDown={handleMouseDown}
+      className="absolute bottom-1 left-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity cursor-ew-resize w-6 h-6 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-container-highest"
+    >
+      <span className="material-symbols-outlined text-sm">drag_indicator</span>
+    </div>
+  )
+}
+
+export function DashboardGrid({ visibleCards, dismissedCards, cardData, initialCardSizes }: DashboardGridProps) {
+  const [sizes, setSizes] = useState<Record<string, number>>(initialCardSizes ?? DEFAULT_SIZES)
   const [pickerOpen, setPickerOpen] = useState(false)
 
-  // Load persisted sizes from localStorage on mount
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        const parsed = JSON.parse(stored) as Record<string, number>
-        const valid: Record<string, 1 | 2 | 3> = { ...DEFAULT_SIZES }
-        for (const [k, v] of Object.entries(parsed)) {
-          if (v === 1 || v === 2 || v === 3) valid[k] = v
-        }
-        setSizes(valid)
-      }
-    } catch {
-      // ignore parse errors
-    }
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const debouncedSave = useCallback((newSizes: Record<string, number>) => {
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => { saveCardSizes(newSizes) }, 500)
   }, [])
 
-  function resize(cardId: string, delta: 1 | -1) {
-    setSizes(prev => {
-      const current = prev[cardId] ?? DEFAULT_SIZES[cardId] ?? 1
-      const next = Math.max(1, Math.min(3, current + delta)) as 1 | 2 | 3
-      const updated = { ...prev, [cardId]: next }
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-      } catch {
-        // ignore storage errors
-      }
-      return updated
-    })
+  const handleResize = (cardId: string, delta: number) => {
+    const current = sizes[cardId] ?? DEFAULT_SIZES[cardId] ?? 1
+    const next = Math.max(1, Math.min(3, current + delta)) as 1 | 2 | 3
+    if (next === (current as 1 | 2 | 3)) return
+    const newSizes = { ...sizes, [cardId]: next }
+    setSizes(newSizes)
+    debouncedSave(newSizes)
   }
 
   function renderCardContent(cardId: string) {
@@ -161,7 +179,7 @@ export function DashboardGrid({ visibleCards, dismissedCards, cardData }: Dashbo
           />
         )
       case 'interview_countdown':
-        return <InterviewCountdownCard interviewDate={cardData.interviewDate} interviewMeta={cardData.interviewMeta} />
+        return <InterviewCountdownCard interviews={cardData.interviews} />
       case 'hot_challenges':
         return <HotChallengesCard challenges={cardData.hotChallenges} />
       case 'discussions':
@@ -192,25 +210,7 @@ export function DashboardGrid({ visibleCards, dismissedCards, cardData }: Dashbo
                 {content}
               </DismissibleCard>
 
-              {/* Resize buttons — bottom-right, visible on group hover */}
-              <div className="absolute bottom-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                <button
-                  onClick={() => resize(cardId, -1)}
-                  disabled={size <= 1}
-                  className="w-6 h-6 flex items-center justify-center rounded-full bg-surface-container-highest text-on-surface-variant hover:bg-outline-variant disabled:opacity-30 transition-colors"
-                  aria-label="Shrink card"
-                >
-                  <span className="material-symbols-outlined text-sm">remove</span>
-                </button>
-                <button
-                  onClick={() => resize(cardId, 1)}
-                  disabled={size >= 3}
-                  className="w-6 h-6 flex items-center justify-center rounded-full bg-surface-container-highest text-on-surface-variant hover:bg-outline-variant disabled:opacity-30 transition-colors"
-                  aria-label="Expand card"
-                >
-                  <span className="material-symbols-outlined text-sm">add</span>
-                </button>
-              </div>
+              <ResizeHandle onResize={(delta) => handleResize(cardId, delta)} />
             </div>
           )
         })}

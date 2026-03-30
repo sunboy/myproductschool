@@ -223,6 +223,25 @@ When working inside a git worktree (e.g. `.claude/worktrees/overhaul`):
   ```
 - **Verify the running server** — confirm `ps aux | grep "next dev"` shows the process rooted in the worktree path, not the main repo.
 
+## Reviewer Personas
+
+When asked to do a review (e.g. in a ralph-loop or any feedback pass), always use these 5 expert founder personas. Each brings a distinct lens validated against the product spec.
+
+| Persona | Company | Lens | Signature concern |
+|---|---|---|---|
+| **Wes Kao** | Maven | Social & cohort learning | Is it social? Are there cohort challenges, shared progress, community proof? |
+| **Sebastian Thrun** | Udacity | Credentials & outcomes | Does practice produce proof? Is there a shareable credential or badge at the end? |
+| **Zhang Yiming** | TikTok | Algorithmic content serving | Is content surfaced by algorithm or buried in menus? Should feel like a feed, not a bookshelf. |
+| **Luis von Ahn** | Duolingo | Engagement & gamification | XP, leagues, streaks, levels — is the engagement wrapper A-grade or C-grade? |
+| **Raph Koster** | Game design | Game feel & narrative | Does practice feel like a game? Is grading animated? Are there narrative arcs and progression stories? |
+
+### How to apply
+Each persona should give:
+- **3 things working well** (specific, with file/component references where relevant)
+- **Up to 3 action items** (concrete: file, element, what to change)
+
+Items that require a real human to moderate (live cohorts, live interviews, legal pages) go in `HUMAN_MODERATION.md`, not as action items.
+
 ## Key Conventions
 
 - `@/*` path alias maps to `./src/*`
@@ -269,3 +288,34 @@ When the user says "run a review" or "get feedback from the reviewers":
 1. Pick the relevant screen(s) or user journey being reviewed
 2. Speak as each reviewer in turn — give 3–5 specific, actionable observations per persona
 3. End with a prioritized list of the top 3 changes that all three would agree on
+
+---
+
+## Agent Team Configuration
+
+Use this pattern for any significant build task (3+ files, multiple concerns):
+
+### Structure
+- **Opus** — orchestrator only. Reads the plan, validates proof, approves or rejects. Never writes code.
+- **Sonnet** — developers. One agent per task. Must send proof to Opus and wait for explicit "APPROVED" before marking task complete.
+- **One task per developer** — never assign multiple tasks to one dev agent.
+
+### Workflow
+1. Create a team: `TeamCreate { team_name, description }`
+2. Create all tasks with `TaskCreate`, set `addBlockedBy` dependencies
+3. Spawn Opus first with full plan context and validation criteria
+4. Spawn wave 1 Sonnet devs (unblocked tasks) in a single message (parallel)
+5. As waves complete and Opus approves, spawn next wave devs
+6. Spawn final build-validator dev last (blocked on all others)
+7. Shut down each agent with `SendMessage shutdown_request` after their task is approved
+8. `TeamDelete` when all agents are terminated
+
+### Proof requirements (Opus enforces these before approving)
+- `npx tsc --noEmit` output — must be clean (pre-existing Deno errors in `supabase/functions/` are acceptable)
+- List of files created/modified
+- For UI tasks: brief description of what renders
+- No raw hex in `className` strings
+- Correct `'use server'` / `'use client'` directives
+
+### Example spawn message to a dev agent
+> "You are devN on the [team] team. You have ONE task: [Task #N — Title]. Working dir: [...]. Read [...] first. Implement [...]. After implementing: run tsc, send full output to opus saying 'Task N proof: [output]'. Wait for APPROVED from opus before marking task completed."
