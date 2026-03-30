@@ -29,7 +29,7 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
   const { paradigm, role, difficulty } = await searchParams
   const [, challenges] = await Promise.all([
     getDomains(),
-    getChallenges({ difficulty }),
+    getChallenges({ difficulty, paradigm, role }),
   ])
 
   const buildHref = (params: Record<string, string | undefined>) => {
