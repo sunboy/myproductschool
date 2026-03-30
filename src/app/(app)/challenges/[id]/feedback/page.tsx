@@ -475,6 +475,57 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
         )}
       </section>
 
+      {/* What To Practice Next — the motivational bridge */}
+      <section className="bg-primary-fixed/30 border border-primary/10 rounded-xl p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <LumaGlyph size={40} state="speaking" className="text-primary shrink-0" />
+          <div>
+            <h3 className="text-lg font-bold font-headline text-on-surface">What to practice next</h3>
+            <p className="text-xs text-on-surface-variant">Based on your performance on this challenge</p>
+          </div>
+        </div>
+
+        {/* Weakest dimension callout */}
+        {realScores && (() => {
+          const weakest = [...DIMENSIONS].sort((a, b) => (scores[a.key] ?? 0) - (scores[b.key] ?? 0))[0]
+          const weakScore = scores[weakest.key] ?? 0
+          return weakScore < 4 ? (
+            <div className="bg-white/60 rounded-xl p-4 border border-outline-variant/20 flex items-start gap-4">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${weakest.color}22` }}>
+                <span className="material-symbols-outlined" style={{ color: weakest.color, fontVariationSettings: "'FILL' 1" }}>target</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-on-surface mb-1">
+                  Focus area: <span style={{ color: weakest.color }}>{weakest.label}</span>
+                </p>
+                <p className="text-xs text-on-surface-variant leading-relaxed">
+                  You scored {weakScore}/5 here. Try another challenge that exercises this dimension.
+                  The guided mode (Frame → List → Optimize → Win) helps you practice each step deliberately.
+                </p>
+              </div>
+            </div>
+          ) : null
+        })()}
+
+        {/* Action buttons */}
+        <div className="flex items-center gap-3 pt-2">
+          <Link
+            href="/challenges"
+            className="flex-1 bg-primary text-on-primary rounded-full py-3 text-sm font-bold flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all"
+          >
+            <span className="material-symbols-outlined text-sm">play_arrow</span>
+            Pick next challenge
+          </Link>
+          <Link
+            href="/progress/skill-ladder"
+            className="flex items-center gap-2 bg-surface-container text-on-surface-variant px-5 py-3 rounded-full text-sm font-bold hover:bg-surface-container-high transition-colors"
+          >
+            <span className="material-symbols-outlined text-sm">leaderboard</span>
+            View skill ladder
+          </Link>
+        </div>
+      </section>
+
       <div className="h-10" />
     </div>
   )
