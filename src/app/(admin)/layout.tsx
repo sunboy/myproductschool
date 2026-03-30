@@ -7,6 +7,7 @@ const adminNav = [
   { href: '/admin/users', icon: 'group', label: 'Users' },
   { href: '/admin/luma-queue', icon: 'rate_review', label: 'Luma Queue' },
   { href: '/admin/revenue', icon: 'payments', label: 'Revenue' },
+  { href: '/admin/waitlist', icon: 'mail', label: 'Waitlist' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
