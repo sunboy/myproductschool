@@ -44,20 +44,20 @@ const FREEFORM_MAX_CHARS = 2000
 
 const COACHING_PROMPTS: Record<number, { thought: string; tip: string }> = {
   0: {
-    thought: 'Start by identifying who is affected and what the core tension is. What changed, and why does it matter?',
-    tip: 'Great product thinkers frame problems before jumping to solutions. Spend 30% of your time here.',
+    thought: 'Don\'t restate the symptom. Dig into what changed and why. What\'s the underlying tension between users and the product?',
+    tip: 'Staff-level engineers spend 30% of their time framing. The biggest trap? Jumping to "we should A/B test it" before understanding what broke.',
   },
   1: {
-    thought: "Think about the \u2018power users\u2019 who might find the share button intrusive vs. \u2018new users\u2019 who use it to brag.",
-    tip: "Don\u2019t treat all users as one group. Power users, new users, and casual users often respond very differently to the same change.",
+    thought: 'Who loses here and who gains? Segment by behavior — power users, new users, and casuals react very differently to the same change.',
+    tip: 'The aggregate fallacy kills more analyses than bad data. "Average users" don\'t exist. Be specific about which cohort you\'re diagnosing.',
   },
   2: {
-    thought: 'Consider the trade-offs between reverting the feature, iterating on it, or layering a new solution on top.',
-    tip: 'Use a 2x2 matrix: effort vs. impact. Name at least 3 options before picking one.',
+    thought: 'Name at least 3 concrete options before choosing. For each one: what\'s the cost, what\'s the signal, and what breaks?',
+    tip: 'A 2x2 matrix (effort vs. impact) is your best friend. The best option is rarely the most obvious one.',
   },
   3: {
-    thought: 'Tie your recommendation back to the core metric the team cares about. Be specific about expected outcomes.',
-    tip: 'Strong recommendations include a success metric, a timeline, and a rollback plan.',
+    thought: 'Your recommendation needs teeth: a specific metric, a timeline, and what you\'ll do if it fails. No hedging.',
+    tip: 'Weak recs say "we should test this." Strong recs say "Ship X to segment Y, measure Z in 2 weeks, roll back if below threshold."',
   },
 }
 

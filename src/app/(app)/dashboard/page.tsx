@@ -200,24 +200,28 @@ function ReturningDashboard() {
         </div>
       )}
 
-      {/* 1. Luma Greeting Card */}
-      <section className="flex items-center gap-4 bg-primary-fixed/30 rounded-xl p-4 border border-primary/10">
-        <LumaGlyph size={40} state={streakDays > 0 || focusMove ? 'speaking' : 'idle'} className="text-primary shrink-0" />
-        <p className="text-sm font-medium text-on-surface">
-          {streakDays > 0 ? (
-            <>You&apos;re on a <span className="font-bold">{streakDays}-day streak</span>
-            {xpTotal > 0 && <> with <span className="font-bold">{xpTotal.toLocaleString()} XP</span></>}!{' '}
-            {focusMove ? (
-              <>Your <span className="font-bold">{focusMove.move.charAt(0).toUpperCase() + focusMove.move.slice(1)}</span> move is at Level {focusMove.level} — keep practicing to reach Level {focusMove.level + 1}.</>
+      {/* 1. Luma Greeting Card — direct, actionable, answers "what now?" */}
+      <section className="flex items-start gap-4 bg-primary-fixed/30 rounded-xl p-4 border border-primary/10">
+        <LumaGlyph size={40} state={inProgressChallenge ? 'listening' : streakDays > 0 || focusMove ? 'speaking' : 'idle'} className="text-primary shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-on-surface leading-relaxed">
+            {inProgressChallenge ? (
+              <>You have an unfinished challenge: <span className="font-bold">{inProgressChallenge.title}</span> (step {inProgressChallenge.stepsCompleted}/4).{' '}
+              <Link href={`/challenges/${inProgressChallenge.id}`} className="font-bold text-primary hover:underline">Pick up where you left off →</Link></>
+            ) : streakDays > 0 ? (
+              <>
+                {profile?.display_name ? `${profile.display_name}, y` : 'Y'}ou&apos;re on a <span className="font-bold text-tertiary">{streakDays}-day streak</span>.{' '}
+                {focusMove ? (
+                  <>Your weakest move is <span className="font-bold">{focusMove.move.charAt(0).toUpperCase() + focusMove.move.slice(1)}</span> (Level {focusMove.level}) — the next challenge targets it.</>
+                ) : (
+                  <>Keep the momentum — try a Quick Take or start your next challenge.</>
+                )}
+              </>
             ) : (
-              <>Try a Quick Take to keep the momentum.</>
+              <>Welcome{profile?.display_name ? ` ${profile.display_name}` : ''}! Complete one challenge today to earn XP and start your streak. It takes about 10 minutes.</>
             )}
-            </>
-          ) : (
-            <>Welcome back{profile?.display_name ? `, ${profile.display_name}` : ''}!{' '}
-            Complete a challenge today to start a streak and earn XP.</>
-          )}
-        </p>
+          </p>
+        </div>
       </section>
 
       {/* 2. This Week's Community Challenge (cohort pinned card) */}
@@ -526,11 +530,14 @@ function NoCalibrationDashboard() {
       {/* 1. Calibration Hero Card */}
       <section className="relative overflow-hidden bg-primary-container rounded-xl p-10 flex items-center justify-between gap-10">
         <div className="z-10 max-w-2xl">
-          <h1 className="text-3xl font-headline font-bold text-on-surface mb-4">
-            Discover your product thinking level
+          <h1 className="text-3xl font-headline font-bold text-on-surface mb-2">
+            Where does your product thinking stand?
           </h1>
+          <p className="text-on-surface/60 text-sm mb-4 font-body">
+            Most engineers never get honest feedback on how they think about products — only on the code they ship.
+          </p>
           <p className="text-on-surface/80 text-base mb-8 leading-relaxed max-w-lg font-body">
-            Take a 10-minute calibration challenge. Luma will assess your baseline across all 4 thinking moves and assign your starting level.
+            Take a 5-minute calibration. Luma will diagnose your strengths and blind spots across 4 thinking moves — and build you a personalized practice plan.
           </p>
           <div className="flex items-center gap-6">
             <Link
@@ -603,35 +610,38 @@ function NoCalibrationDashboard() {
         </div>
       </section>
 
-      {/* 3. What to expect */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 border-t border-outline-variant">
-        {[
-          {
-            icon: 'psychology',
-            title: '4 thinking moves assessed',
-            desc: 'Evaluation of your ability to frame problems, split work, weigh trade-offs, and sell ideas.',
-          },
-          {
-            icon: 'timer',
-            title: '10 minutes, no pressure',
-            desc: 'A short, scenario-based exercise designed to feel like a real product discussion.',
-          },
-          {
-            icon: 'grade',
-            title: 'Staff-level benchmarks',
-            desc: 'See how you compare against expectations for Junior, Senior, and Staff product engineers.',
-          },
-        ].map((b) => (
-          <div key={b.title} className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-primary">{b.icon}</span>
+      {/* 3. What you get */}
+      <section className="pt-8 border-t border-outline-variant">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-on-surface-variant mb-6">What you&apos;ll get in 5 minutes</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            {
+              icon: 'radar',
+              title: 'Your skill radar',
+              desc: 'A 4-dimension score showing exactly where you\'re strong and where you have blind spots. No vague "you\'re doing great."',
+            },
+            {
+              icon: 'warning',
+              title: 'Thinking traps detected',
+              desc: 'Luma catches patterns like premature solutions, aggregate fallacies, and confirmation bias — things your manager never tells you.',
+            },
+            {
+              icon: 'route',
+              title: 'A personalized plan',
+              desc: 'Targeted challenges for your role and level. Practice the specific moves that will make the biggest difference.',
+            },
+          ].map((b) => (
+            <div key={b.title} className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-primary">{b.icon}</span>
+              </div>
+              <div>
+                <h4 className="font-bold text-sm mb-1 text-on-surface font-label">{b.title}</h4>
+                <p className="text-xs text-on-surface-variant leading-relaxed font-body">{b.desc}</p>
+              </div>
             </div>
-            <div>
-              <h4 className="font-bold text-sm mb-1 text-on-surface font-label">{b.title}</h4>
-              <p className="text-xs text-on-surface-variant leading-relaxed font-body">{b.desc}</p>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </section>
 
       {/* 4. Footer */}

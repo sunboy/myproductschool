@@ -205,13 +205,16 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
           <LumaGlyph size={56} state="celebrating" className="text-primary shrink-0" />
           <div className="flex-1">
             <h2 className="font-headline text-xl font-bold text-on-surface">
-              {overallScore >= 80 ? 'Outstanding work!' : overallScore >= 60 ? 'Good thinking!' : 'Challenge complete!'}
+              {overallScore >= 80 ? 'Outstanding work!' : overallScore >= 60 ? 'Solid thinking.' : overallScore >= 40 ? 'Good start.' : 'Challenge complete.'}
             </h2>
             <p className="text-sm text-on-surface-variant mt-0.5">
               You scored <span className="font-bold text-primary">{Math.round(overallScore)}/100</span>
               {communityPercentile !== null && (
                 <> — top <span className="font-bold text-tertiary">{communityPercentile}%</span> of submissions</>
               )}
+              {overallScore >= 80 && <span className="ml-1">— this is Staff-level product thinking.</span>}
+              {overallScore >= 60 && overallScore < 80 && <span className="ml-1">— a few moves need sharpening. Check below.</span>}
+              {overallScore < 60 && <span className="ml-1">— scroll down to see what Luma caught and what to practice next.</span>}
             </p>
           </div>
           {xpEarned !== null && (

@@ -431,9 +431,9 @@ export default function CohortPage() {
             className="bg-background rounded-2xl p-6 max-w-md w-full shadow-xl"
             onClick={e => e.stopPropagation()}
           >
-            <h2 className="font-headline text-xl font-bold mb-2">Team Cohorts — Coming Soon</h2>
+            <h2 className="font-headline text-xl font-bold mb-2">Team Cohorts</h2>
             <p className="text-sm text-on-surface-variant mb-4">
-              Private cohorts for engineering teams are in early access. Leave your email and we&apos;ll reach out when it&apos;s ready.
+              Private leaderboards for your engineering team. Compete on weekly challenges together, track team-wide skill growth, and build a culture of product thinking. Drop your work email and we&apos;ll set you up.
             </p>
             {teamNotified ? (
               <p className="text-sm font-bold text-primary text-center py-3">Thanks! We&apos;ll be in touch.</p>

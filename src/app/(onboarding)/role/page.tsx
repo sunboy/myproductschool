@@ -12,6 +12,7 @@ const ROLES = [
     badge: 'SWE',
     title: 'Software Engineer',
     description: 'Ship clean code but keep getting passed over for Staff',
+    painPoint: 'Your PRs get merged, but you never get asked "what should we build?"',
   },
   {
     id: 'data',
@@ -19,6 +20,7 @@ const ROLES = [
     badge: 'Data',
     title: 'Data Engineer',
     description: 'Build reliable pipelines but feel invisible to product decisions',
+    painPoint: 'You own the data, but PMs still make decisions without asking you.',
   },
   {
     id: 'ml',
@@ -26,6 +28,7 @@ const ROLES = [
     badge: 'ML',
     title: 'ML Engineer',
     description: 'Improve model accuracy but struggle to translate it to business impact',
+    painPoint: 'Your model improved recall by 12% — and nobody in leadership noticed.',
   },
   {
     id: 'devops',
@@ -33,6 +36,7 @@ const ROLES = [
     badge: 'DevOps',
     title: 'DevOps / SRE',
     description: 'Keep systems running but rarely get credit for product value',
+    painPoint: 'You prevented 3 outages last quarter. Nobody knows.',
   },
   {
     id: 'em',
@@ -40,13 +44,15 @@ const ROLES = [
     badge: 'EM',
     title: 'Eng Manager',
     description: 'Manage delivery but want to shape direction, not just execute',
+    painPoint: 'You run standups, clear blockers, hit deadlines — but never set the roadmap.',
   },
   {
     id: 'founding',
     icon: 'rocket_launch',
     badge: 'Founding',
     title: 'Founding Engineer',
-    description: 'You ARE the product team - need to think like a CPO',
+    description: 'You ARE the product team — need to think like a CPO',
+    painPoint: 'There is no PM. Every product call is on you.',
   },
 ]
 
@@ -169,11 +175,14 @@ export default function RoleSelectionPage() {
                       {role.badge}
                     </span>
                   </div>
-                  <h3 className="font-headline text-xl font-bold text-on-surface mb-2">
+                  <h3 className="font-headline text-xl font-bold text-on-surface mb-1">
                     {role.title}
                   </h3>
-                  <p className="font-body text-sm text-on-surface-variant leading-tight group-hover:text-on-surface-variant">
+                  <p className="font-body text-sm text-on-surface-variant leading-tight mb-2">
                     {role.description}
+                  </p>
+                  <p className="font-body text-[11px] text-on-surface-variant/60 italic leading-snug">
+                    {role.painPoint}
                   </p>
                 </button>
               )
@@ -203,13 +212,14 @@ export default function RoleSelectionPage() {
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </button>
           )}
-          <button
-            disabled
-            className="flex items-center gap-2 text-secondary font-label text-sm font-semibold opacity-50 cursor-not-allowed"
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2 text-secondary font-label text-sm font-semibold hover:text-primary transition-colors"
+            title="Go straight to challenges — you can calibrate later"
           >
-            Skip assessment
-            <span className="material-symbols-outlined">skip_next</span>
-          </button>
+            Skip to challenges
+            <span className="material-symbols-outlined text-sm">skip_next</span>
+          </Link>
         </div>
       </footer>
     </>
