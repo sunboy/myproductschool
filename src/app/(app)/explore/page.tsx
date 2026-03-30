@@ -116,15 +116,11 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   }
 
   const buildParadigmHref = (name: string) => {
+    // Navigate to Practice Hub filtered by this paradigm
     const params = new URLSearchParams()
+    params.set('paradigm', name.toLowerCase().replace(' ', '-'))
     if (activeRole !== 'All') params.set('role', activeRole)
-    if (activeParadigm === name) {
-      // Deselect — remove paradigm param
-      const qs = params.toString()
-      return qs ? `/explore?${qs}` : '/explore'
-    }
-    params.set('paradigm', name)
-    return `/explore?${params.toString()}`
+    return `/challenges?${params.toString()}`
   }
 
   return (
@@ -159,9 +155,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
         <LumaGlyph size={40} state="speaking" className="text-primary shrink-0" />
         <div className="relative bg-white/60 px-4 py-2 rounded-2xl rounded-tl-none border border-white/40 flex-1">
           <p className="text-sm text-on-primary-container font-medium leading-relaxed">
-            {activeParadigm
-              ? `Showing ${activeParadigm} challenges. These scenarios test how you think about ${activeParadigm === 'Traditional' ? 'classic product tradeoffs' : activeParadigm === 'AI-Assisted' ? 'AI augmentation and trust' : activeParadigm === 'Agentic' ? 'multi-agent systems and autonomy' : 'products that are impossible without AI'}.`
-              : 'New here? Start with a Traditional challenge to baseline your thinking, then explore AI paradigms once you have your skill radar.'}
+            New here? Start with a <strong>Traditional</strong> challenge to baseline your thinking, then explore AI paradigms once you have your skill radar.
           </p>
         </div>
       </section>
@@ -169,28 +163,19 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
       {/* Paradigms — compact 4-column strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {PARADIGMS.map(p => {
-          const isActive = activeParadigm === p.name
           return (
             <Link
               key={p.name}
               href={buildParadigmHref(p.name)}
-              className={`rounded-xl p-4 border-l-4 ${p.borderClass} hover:bg-surface-container transition-colors relative ${
-                isActive
-                  ? 'bg-surface-container ring-2 ring-primary/30'
-                  : 'bg-surface-container-low'
-              }`}
+              className={`rounded-xl p-4 border-l-4 ${p.borderClass} bg-surface-container-low hover:bg-surface-container hover:shadow-sm transition-all group relative`}
             >
-              {isActive && (
-                <span className="absolute top-2 right-2 material-symbols-outlined text-primary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
-                  check_circle
-                </span>
-              )}
               {/* Icon + name on same row */}
               <div className="flex items-center gap-2 mb-2">
                 <div className={`inline-flex p-1.5 ${p.bgClass} rounded-lg ${p.iconClass} shrink-0`}>
                   <span className="material-symbols-outlined text-[16px]">{p.icon}</span>
                 </div>
                 <h3 className="font-headline text-sm font-bold leading-tight">{p.name}</h3>
+                <span className="material-symbols-outlined text-on-surface-variant text-sm ml-auto opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all">arrow_forward</span>
               </div>
               <p className="text-[11px] text-on-surface-variant leading-snug mb-2">{p.description}</p>
               <div className="bg-white/50 rounded-lg px-2.5 py-1.5 border border-outline-variant/20 mb-1.5">
