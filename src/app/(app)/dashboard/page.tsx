@@ -202,15 +202,21 @@ function ReturningDashboard() {
 
       {/* 1. Luma Greeting Card */}
       <section className="flex items-center gap-4 bg-primary-fixed/30 rounded-xl p-4 border border-primary/10">
-        <LumaGlyph size={40} state="idle" className="text-primary shrink-0" />
+        <LumaGlyph size={40} state={streakDays > 0 || focusMove ? 'speaking' : 'idle'} className="text-primary shrink-0" />
         <p className="text-sm font-medium text-on-surface">
           {streakDays > 0 ? (
-            <>You&apos;re on a <span className="font-bold">{streakDays}-day streak</span> with{' '}
-            <span className="font-bold">{xpTotal.toLocaleString()} XP</span>! </>
+            <>You&apos;re on a <span className="font-bold">{streakDays}-day streak</span>
+            {xpTotal > 0 && <> with <span className="font-bold">{xpTotal.toLocaleString()} XP</span></>}!{' '}
+            {focusMove ? (
+              <>Your <span className="font-bold">{focusMove.move.charAt(0).toUpperCase() + focusMove.move.slice(1)}</span> move is at Level {focusMove.level} — keep practicing to reach Level {focusMove.level + 1}.</>
+            ) : (
+              <>Try a Quick Take to keep the momentum.</>
+            )}
+            </>
           ) : (
-            <>No streak yet — complete a challenge today to start one! </>
+            <>Welcome back{profile?.display_name ? `, ${profile.display_name}` : ''}!{' '}
+            Complete a challenge today to start a streak and earn XP.</>
           )}
-          Your <span className="font-bold">Frame</span> skills jumped last session. Try a Quick Take to keep the momentum.
         </p>
       </section>
 
@@ -286,22 +292,26 @@ function ReturningDashboard() {
         </section>
       )}
 
-      {/* 3. Social proof strip — Wes Kao: community activity ticker */}
-      <div className="flex items-center gap-4 text-xs text-on-surface-variant bg-surface-container rounded-xl px-4 py-3">
-        <span className="flex items-center gap-1.5">
+      {/* 3. Community activity strip — Wes Kao: cohort feeling */}
+      <div className="flex items-center gap-4 text-xs text-on-surface-variant bg-surface-container rounded-xl px-4 py-3 overflow-x-auto">
+        <span className="flex items-center gap-1.5 shrink-0">
           <span className="material-symbols-outlined text-sm text-primary">group</span>
-          <span><strong className="text-on-surface">47</strong> engineers practiced today</span>
+          <span>Engineers in the {new Date().getFullYear()} cohort</span>
         </span>
-        <span className="text-outline-variant">·</span>
-        <span className="flex items-center gap-1.5">
+        <span className="text-outline-variant shrink-0">·</span>
+        <span className="flex items-center gap-1.5 shrink-0">
           <span className="material-symbols-outlined text-sm text-tertiary">local_fire_department</span>
-          <span><strong className="text-on-surface">12</strong> on a streak this week</span>
+          <span>Streaks reset at midnight — practice daily to keep yours</span>
         </span>
-        <span className="text-outline-variant">·</span>
-        <span className="flex items-center gap-1.5">
-          <span className="material-symbols-outlined text-sm text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
-          <span>Alex Chen just scored <strong className="text-on-surface">94/100</strong> on Spotify Diagnosis</span>
-        </span>
+        {cohortLeaderboard.length > 0 && (
+          <>
+            <span className="text-outline-variant shrink-0">·</span>
+            <span className="flex items-center gap-1.5 shrink-0">
+              <span className="material-symbols-outlined text-sm text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
+              <span><strong className="text-on-surface">{cohortLeaderboard.length}</strong> engineers in this week&apos;s challenge</span>
+            </span>
+          </>
+        )}
       </div>
 
       {/* 3b. Certification progress — Sebastian Thrun: outcomes story */}
@@ -398,6 +408,7 @@ function ReturningDashboard() {
             onClick={cycleQuickTake}
             className="absolute top-3 right-4 p-1 hover:bg-surface-container-high rounded-full transition-colors"
             title="Different question"
+            aria-label="Show a different quick take question"
           >
             <span className="material-symbols-outlined text-on-surface-variant text-base">refresh</span>
           </button>
@@ -451,9 +462,11 @@ function ReturningDashboard() {
                 <span key={r} className="text-[9px] font-bold text-on-surface-variant bg-surface-container-highest/50 px-2 py-0.5 rounded-full border border-outline-variant/30 font-label">{r}</span>
               ))}
             </div>
-            <p className="text-xs italic text-on-surface-variant">
-              &ldquo;Your Communication is 2.8 — this targets that dimension&rdquo;
-            </p>
+            {focusMove && (
+              <p className="text-xs italic text-on-surface-variant">
+                &ldquo;Targets your <span className="font-semibold not-italic">{focusMove.move.charAt(0).toUpperCase() + focusMove.move.slice(1)}</span> move — currently Level {focusMove.level}&rdquo;
+              </p>
+            )}
           </div>
           <div className="mt-6 flex items-center gap-2">
             <Link
@@ -467,6 +480,7 @@ function ReturningDashboard() {
               onClick={() => setChallengeIdx(i => (i + 1) % nextChallenges.length)}
               className="px-4 py-2.5 border border-primary text-primary rounded-full hover:bg-primary/5 transition-colors"
               title="Shuffle challenge"
+              aria-label="Suggest a different challenge"
             >
               <span className="material-symbols-outlined text-base">refresh</span>
             </button>
@@ -631,7 +645,7 @@ function NoCalibrationDashboard() {
       {/* Luma Tip Overlay */}
       <div className="fixed bottom-6 right-6 max-w-xs bg-surface rounded-2xl shadow-xl p-4 border border-outline-variant flex gap-3 items-start z-50">
         <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center shrink-0">
-          <LumaGlyph size={20} className="text-on-primary" />
+          <LumaGlyph size={20} state="speaking" className="text-on-primary" />
         </div>
         <div>
           <p className="text-[11px] font-bold text-primary uppercase tracking-wider mb-1 font-label">Luma&apos;s Tip</p>
@@ -651,8 +665,38 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto p-6 flex items-center justify-center min-h-[200px]">
-        <span className="text-sm text-on-surface-variant animate-pulse">Loading your dashboard...</span>
+      <div className="max-w-7xl mx-auto space-y-4 animate-pulse">
+        {/* Status bar skeleton */}
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-36 bg-surface-container rounded-full" />
+          <div className="h-9 w-28 bg-surface-container rounded-full" />
+        </div>
+        {/* Luma card skeleton */}
+        <div className="flex items-center gap-4 bg-surface-container rounded-xl p-4">
+          <div className="w-10 h-10 rounded-full bg-surface-container-high shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="h-3 w-3/4 bg-surface-container-high rounded" />
+            <div className="h-3 w-1/2 bg-surface-container-high rounded" />
+          </div>
+        </div>
+        {/* Two-col grid skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="bg-surface-container rounded-xl p-4 h-48" />
+          <div className="bg-surface-container rounded-xl p-4 h-48" />
+        </div>
+        {/* Move levels skeleton */}
+        <div className="bg-surface-container rounded-xl p-4 space-y-4">
+          <div className="h-3 w-32 bg-surface-container-high rounded" />
+          {[1,2,3,4].map(i => (
+            <div key={i} className="space-y-1.5">
+              <div className="flex justify-between">
+                <div className="h-2.5 w-20 bg-surface-container-high rounded" />
+                <div className="h-2.5 w-16 bg-surface-container-high rounded" />
+              </div>
+              <div className="h-2 w-full bg-surface-container-high rounded-full" />
+            </div>
+          ))}
+        </div>
       </div>
     )
   }

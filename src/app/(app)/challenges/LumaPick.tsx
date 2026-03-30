@@ -37,7 +37,7 @@ export function LumaPick() {
 
   return (
     <div className="bg-primary-container/20 border border-primary-container/30 rounded-xl p-4 mb-6 flex items-center gap-4">
-      <LumaGlyph size={40} state="idle" className="text-primary flex-shrink-0" />
+      <LumaGlyph size={40} state="speaking" className="text-primary flex-shrink-0" />
       <div>
         <p className="text-sm font-bold text-primary">Luma&apos;s Pick: {data.challenge.title}</p>
         <p className="text-xs text-on-surface-variant">{data.tip}</p>

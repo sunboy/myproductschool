@@ -160,9 +160,9 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
     }
   }, [newLevel, prevLevel])
 
-  // Community benchmark (mock — would come from /api/challenges/[id]/stats in prod)
-  const communityAvg = 62
-  const communityPercentile = overallScore > communityAvg ? Math.round(((overallScore - communityAvg) / (100 - communityAvg)) * 100) : null
+  // Community benchmark — null until real data is available from /api/challenges/[id]/stats
+  const communityAvg: number | null = null
+  const communityPercentile: number | null = null
 
   // Loading state
   if (isLoading) {
@@ -212,9 +212,6 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
               {communityPercentile !== null && (
                 <> — top <span className="font-bold text-tertiary">{communityPercentile}%</span> of submissions</>
               )}
-              {communityPercentile === null && (
-                <> · Community avg: <span className="font-bold">{communityAvg}/100</span></>
-              )}
             </p>
           </div>
           {xpEarned !== null && (
@@ -261,10 +258,10 @@ export default function FeedbackPage({ params }: { params: Promise<{ id: string 
                   +{xpEarned} XP
                 </span>
               )}
-              {realScores && communityAvg && (
+              {realScores && communityPercentile !== null && (
                 <span className="bg-surface-container text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1">
                   <span className="material-symbols-outlined text-[12px]">group</span>
-                  Community avg: {communityAvg}/100
+                  Top {communityPercentile}% of submissions
                 </span>
               )}
             </div>

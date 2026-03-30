@@ -144,12 +144,18 @@ export default function WelcomePage() {
           {/* Social Proof */}
           <div className="pt-8 flex items-center justify-center gap-2 opacity-70">
             <div className="flex -space-x-2">
-              <div className="w-7 h-7 rounded-full border-2 border-surface bg-primary-fixed flex items-center justify-center text-[9px] font-bold text-primary">JL</div>
-              <div className="w-7 h-7 rounded-full border-2 border-surface bg-tertiary-container flex items-center justify-center text-[9px] font-bold text-tertiary">AC</div>
-              <div className="w-7 h-7 rounded-full border-2 border-surface bg-secondary-container flex items-center justify-center text-[9px] font-bold text-secondary">RK</div>
+              <div className="w-7 h-7 rounded-full border-2 border-surface bg-primary-fixed flex items-center justify-center">
+                <span className="material-symbols-outlined text-primary" style={{ fontSize: '14px' }}>engineering</span>
+              </div>
+              <div className="w-7 h-7 rounded-full border-2 border-surface bg-tertiary-container flex items-center justify-center">
+                <span className="material-symbols-outlined text-tertiary" style={{ fontSize: '14px' }}>engineering</span>
+              </div>
+              <div className="w-7 h-7 rounded-full border-2 border-surface bg-secondary-container flex items-center justify-center">
+                <span className="material-symbols-outlined text-secondary" style={{ fontSize: '14px' }}>engineering</span>
+              </div>
             </div>
             <p className="text-xs font-medium text-on-surface">
-              Join engineers from Google, Meta, Stripe &amp; more
+              Engineers from Google, Meta, Stripe &amp; more
             </p>
           </div>
 

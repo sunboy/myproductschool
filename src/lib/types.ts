@@ -426,6 +426,10 @@ export interface CalibrationResults {
   archetype_description: string
   starting_levels: Record<FlowMove, number>
   percentile: number
+  // Optional fields returned when Luma provides richer feedback
+  luma_observation?: string
+  strengths?: string[]
+  focus_area?: string
 }
 
 /* ── v2 Share Card ────────────────────────────────────────── */

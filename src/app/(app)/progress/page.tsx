@@ -2,8 +2,23 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
+import { useProfile } from '@/hooks/useProfile'
+
+interface RecentAttempt {
+  challenge_id: string
+  challenge_title: string
+  pattern_name: string | null
+  submitted_at: string
+}
+
+interface MasteryEntry {
+  challenge_id: string
+  score: number | null
+  is_completed: boolean
+}
 
 /* ---------- mock data ---------- */
 const FLOW_MOVES_MOCK = [
@@ -20,20 +35,9 @@ const MOVE_COLORS: Record<string, string> = {
   frame: '#5eaeff', list: '#2dd4a0', optimize: '#f59e0b', win: '#a78bfa',
 }
 
-const masteryGrid = [
-  'mastered','mastered','mastered','mid','mid',
-  'low','low','mid','mid','mid',
-  'unplayed','unplayed','unplayed','unplayed','unplayed',
-  'unplayed','unplayed','unplayed','unplayed','unplayed',
-] as const
+type SquareState = 'unplayed' | 'low' | 'mid' | 'mastered'
 
-const recentPatterns = [
-  { challenge: 'Uber Fleet Challenge', pattern: 'Composition Effect', date: 'Oct 12' },
-  { challenge: 'Stripe Payouts', pattern: 'Second-Order Thinking', date: 'Oct 08' },
-  { challenge: 'Netflix Ads Tier', pattern: 'Sunk Cost Fallacy', date: 'Oct 05' },
-]
-
-function squareColor(s: typeof masteryGrid[number]) {
+function squareColor(s: SquareState) {
   switch (s) {
     case 'unplayed': return 'bg-surface-container-highest'
     case 'low': return 'bg-error'
@@ -45,6 +49,22 @@ function squareColor(s: typeof masteryGrid[number]) {
 export default function ProgressPage() {
   const router = useRouter()
   const { moves } = useMoveLevels()
+  const { profile } = useProfile()
+  const [recentAttempts, setRecentAttempts] = useState<RecentAttempt[]>([])
+  const [masteryEntries, setMasteryEntries] = useState<MasteryEntry[]>([])
+
+  useEffect(() => {
+    // Fetch recent attempts for pattern display
+    fetch('/api/attempts?limit=5&include_patterns=true')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (Array.isArray(data)) setRecentAttempts(data) })
+      .catch(() => {})
+    // Fetch mastery map from completed challenges
+    fetch('/api/challenges/mastery')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (Array.isArray(data)) setMasteryEntries(data) })
+      .catch(() => {})
+  }, [])
 
   const flowMoves = moves.length > 0
     ? moves.map(m => ({
@@ -79,10 +99,29 @@ export default function ProgressPage() {
               <span className="material-symbols-outlined text-primary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>diamond</span>
               <span className="text-xs font-bold uppercase tracking-wider text-[#6750a4]">Thinking Archetype</span>
             </div>
-            <h2 className="text-3xl font-headline font-bold text-on-surface">The Analyst</h2>
-            <p className="text-sm text-on-surface-variant mt-2 max-w-md">
-              Strong at breaking down problems (<span className="font-bold text-primary">Frame + List</span>), developing your communication muscle (<span className="font-bold text-tertiary">Win</span>).
-            </p>
+            {profile?.archetype ? (
+              <>
+                <h2 className="text-3xl font-headline font-bold text-on-surface">{profile.archetype}</h2>
+                {profile.archetype_description && (
+                  <p className="text-sm text-on-surface-variant mt-2 max-w-md">{profile.archetype_description}</p>
+                )}
+              </>
+            ) : moves.length > 0 ? (
+              <>
+                <h2 className="text-3xl font-headline font-bold text-on-surface">The Analyst</h2>
+                <p className="text-sm text-on-surface-variant mt-2 max-w-md">
+                  {moves.length >= 2
+                    ? `Strong at ${moves.slice(0, 2).map(m => m.move.charAt(0).toUpperCase() + m.move.slice(1)).join(' + ')} — keep building the rest of your stack.`
+                    : 'Complete more challenges to unlock your full thinking archetype.'
+                  }
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-2xl font-headline font-bold text-on-surface">Complete calibration</h2>
+                <p className="text-sm text-on-surface-variant mt-2 max-w-md">Your thinking archetype unlocks after the calibration assessment.</p>
+              </>
+            )}
             <button
               onClick={() => router.push('/profile/share')}
               className="mt-4 flex items-center gap-2 bg-[#6750a4] text-white px-4 py-2 rounded-full text-xs font-bold hover:bg-[#5a4591] transition-colors"
@@ -92,7 +131,7 @@ export default function ProgressPage() {
             </button>
           </div>
           <div className="hidden sm:block">
-            <LumaGlyph size={128} state="celebrating" className="text-primary opacity-90" />
+            <LumaGlyph size={128} state={moves.length > 0 ? 'celebrating' : 'idle'} className="text-primary opacity-90" />
           </div>
         </section>
 
@@ -132,43 +171,82 @@ export default function ProgressPage() {
         {/* Mastery Map */}
         <section className="col-span-12 md:col-span-6 bg-surface-container rounded-xl p-5 border border-outline-variant/30">
           <h3 className="text-sm font-bold mb-1">Challenge Mastery Map</h3>
-          <p className="text-[11px] text-on-surface-variant mb-4">10 of 20 challenges attempted • 3 mastered</p>
-          <div className="grid grid-cols-5 gap-3 mb-6">
-            {masteryGrid.map((sq, i) => (
-              <div key={i} className={`w-6 h-6 rounded shadow-sm ${squareColor(sq)}`} />
-            ))}
-          </div>
+          {masteryEntries.length > 0 ? (
+            <>
+              <p className="text-[11px] text-on-surface-variant mb-4">
+                {masteryEntries.filter(e => e.is_completed).length} of {masteryEntries.length} challenges attempted
+                {' • '}
+                {masteryEntries.filter(e => e.score !== null && e.score >= 80).length} mastered
+              </p>
+              <div className="grid grid-cols-5 gap-3 mb-6">
+                {masteryEntries.slice(0, 20).map((entry, i) => {
+                  const sq = !entry.is_completed ? 'unplayed' : entry.score === null ? 'mid' : entry.score < 50 ? 'low' : entry.score < 80 ? 'mid' : 'mastered'
+                  return <div key={i} className={`w-6 h-6 rounded shadow-sm ${squareColor(sq)}`} />
+                })}
+                {/* Pad to 20 */}
+                {Array.from({ length: Math.max(0, 20 - masteryEntries.length) }).map((_, i) => (
+                  <div key={`pad-${i}`} className="w-6 h-6 rounded shadow-sm bg-surface-container-highest" />
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-[11px] text-on-surface-variant mb-4">Complete challenges to build your mastery map</p>
+              <div className="grid grid-cols-5 gap-3 mb-6">
+                {Array.from({ length: 20 }).map((_, i) => (
+                  <div key={i} className="w-6 h-6 rounded shadow-sm bg-surface-container-highest" />
+                ))}
+              </div>
+            </>
+          )}
           <div className="flex items-center gap-4 text-[10px] font-bold text-on-surface-variant pt-2 border-t border-outline-variant/20">
             <div className="flex items-center gap-1"><div className="w-2 h-2 rounded bg-surface-container-highest" /> Unplayed</div>
-            <div className="flex items-center gap-1"><div className="w-2 h-2 rounded bg-error" /> &lt;3 Score</div>
-            <div className="flex items-center gap-1"><div className="w-2 h-2 rounded bg-tertiary-container" /> 3-4 Score</div>
-            <div className="flex items-center gap-1"><div className="w-2 h-2 rounded bg-primary" /> 4+ Mastered</div>
+            <div className="flex items-center gap-1"><div className="w-2 h-2 rounded bg-error" /> &lt;50</div>
+            <div className="flex items-center gap-1"><div className="w-2 h-2 rounded bg-tertiary-container" /> 50–79</div>
+            <div className="flex items-center gap-1"><div className="w-2 h-2 rounded bg-primary" /> 80+ Mastered</div>
           </div>
         </section>
 
         {/* Recent Thinking Patterns */}
         <section className="col-span-12 md:col-span-6 bg-surface-container rounded-xl p-5 border border-outline-variant/30">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-sm font-bold">Recent Thinking Patterns</h3>
-            <Link href="/progress" className="text-[10px] font-bold text-primary hover:underline">View all 8 patterns →</Link>
+            <h3 className="text-sm font-bold">Recent Challenges</h3>
+            <Link href="/challenges" className="text-[10px] font-bold text-primary hover:underline">Browse all →</Link>
           </div>
-          <div className="flex flex-col gap-3">
-            {recentPatterns.map((p) => (
-              <div key={p.pattern} className="bg-white/60 p-3 rounded-lg border border-outline-variant/10 flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-bold">{p.pattern}</div>
-                  <div className="text-[10px] text-on-surface-variant">Source: {p.challenge} • {p.date}</div>
-                </div>
-                <span className="material-symbols-outlined text-xs text-on-surface-variant">open_in_new</span>
-              </div>
-            ))}
-          </div>
-          <button
-            onClick={() => window.print()}
-            className="w-full mt-4 py-2 border border-primary/30 rounded-full text-[11px] font-bold text-primary hover:bg-primary/5 transition-colors"
-          >
-            Export as PDF
-          </button>
+          {recentAttempts.length > 0 ? (
+            <div className="flex flex-col gap-3">
+              {recentAttempts.slice(0, 5).map((a, i) => (
+                <Link
+                  key={i}
+                  href={`/challenges/${a.challenge_id}/feedback`}
+                  className="bg-white/60 p-3 rounded-lg border border-outline-variant/10 flex items-center justify-between hover:bg-surface-container-high transition-colors"
+                >
+                  <div>
+                    <div className="text-xs font-bold truncate max-w-[200px]">{a.challenge_title}</div>
+                    <div className="text-[10px] text-on-surface-variant">
+                      {a.pattern_name ? `Pattern: ${a.pattern_name} • ` : ''}
+                      {new Date(a.submitted_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </div>
+                  </div>
+                  <span className="material-symbols-outlined text-xs text-on-surface-variant">open_in_new</span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-6 gap-3 text-center">
+              <LumaGlyph size={40} state="idle" className="text-primary" />
+              <p className="text-sm font-medium text-on-surface-variant">No challenges completed yet</p>
+              <Link href="/challenges" className="text-xs font-bold text-primary hover:underline">Start your first challenge →</Link>
+            </div>
+          )}
+          {recentAttempts.length > 0 && (
+            <Link
+              href="/challenges"
+              className="block w-full mt-4 py-2 border border-primary/30 rounded-full text-[11px] font-bold text-primary hover:bg-primary/5 transition-colors text-center"
+            >
+              Practice more challenges
+            </Link>
+          )}
         </section>
 
         {/* Your Growth — Frame Move */}

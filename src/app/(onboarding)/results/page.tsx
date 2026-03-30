@@ -149,25 +149,33 @@ export default function ResultsPage() {
           </p>
         </section>
 
-        {/* Section 4: Answer Callout */}
-        <section className="bg-white rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
-          <div className="p-5 border-l-4 border-primary">
-            <h3 className="text-xs font-bold text-secondary uppercase tracking-wider mb-3">What Luma noticed in your answer</h3>
-            <blockquote className="text-on-surface-variant italic text-sm leading-relaxed mb-4">
-              &ldquo;You clearly identified user segments and defined success criteria early. Your solution was structured and well-reasoned. However, the narrative around stakeholder buy-in was underdeveloped.&rdquo;
-            </blockquote>
-            <div className="flex flex-wrap gap-2">
-              <span className="bg-primary-fixed text-primary text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1">
-                <span className="material-symbols-outlined text-xs">check</span>
-                Criteria-based thinking
-              </span>
-              <span className="bg-tertiary-container/30 text-tertiary text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1">
-                <span className="material-symbols-outlined text-xs">arrow_forward</span>
-                Stakeholder narrative
-              </span>
+        {/* Section 4: Answer Callout — only show when real feedback from API */}
+        {results?.luma_observation && (
+          <section className="bg-white rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
+            <div className="p-5 border-l-4 border-primary">
+              <h3 className="text-xs font-bold text-secondary uppercase tracking-wider mb-3">What Luma noticed in your answer</h3>
+              <blockquote className="text-on-surface-variant italic text-sm leading-relaxed mb-4">
+                &ldquo;{results.luma_observation}&rdquo;
+              </blockquote>
+              {results.strengths && results.strengths.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {results.strengths.map((s: string) => (
+                    <span key={s} className="bg-primary-fixed text-primary text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1">
+                      <span className="material-symbols-outlined text-xs">check</span>
+                      {s}
+                    </span>
+                  ))}
+                  {results.focus_area && (
+                    <span className="bg-tertiary-container/30 text-tertiary text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1">
+                      <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                      {results.focus_area}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Section 5: Starting Levels */}
         <section className="grid grid-cols-2 md:flex md:flex-row gap-3">
