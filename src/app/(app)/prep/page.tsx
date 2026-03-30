@@ -12,6 +12,21 @@ interface Company {
   challenge_count: number
 }
 
+interface ChapterItem {
+  id: string
+  title: string
+  difficulty: string
+  best_score: number | null
+  is_completed: boolean
+}
+
+interface Chapter {
+  key: string
+  title: string
+  icon: string
+  items: ChapterItem[]
+}
+
 const COMPANIES_MOCK: Company[] = [
   { id: '1', name: 'Google', slug: 'google', challenge_count: 24 },
   { id: '2', name: 'Meta', slug: 'meta', challenge_count: 18 },
@@ -36,6 +51,7 @@ export default function PrepHubPage() {
   const [coachingDismissed, setCoachingDismissed] = useState(false)
   const [interviewDate, setInterviewDate] = useState<string | null>(null)
   const [expandedChapter, setExpandedChapter] = useState<number | null>(1)
+  const [chapters, setChapters] = useState<Chapter[]>([])
 
   const daysLeft = interviewDate
     ? Math.max(0, Math.ceil((new Date(interviewDate).getTime() - Date.now()) / 86400000))
@@ -55,6 +71,13 @@ export default function PrepHubPage() {
           setSelectedCompany(data[0])
         }
       })
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/prep/challenges')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.chapters?.length) setChapters(data.chapters) })
       .catch(() => {})
   }, [])
 
@@ -110,138 +133,68 @@ export default function PrepHubPage() {
               <span className="bg-primary-fixed text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">Recommended</span>
             </div>
 
-            {/* Chapters */}
+            {/* Chapters — dynamic from /api/prep/challenges */}
             <div className="space-y-3">
-              {/* Chapter 1: Expanded */}
-              <div className="border border-outline-variant rounded-xl overflow-hidden bg-white">
-                <button
-                  onClick={() => setExpandedChapter(expandedChapter === 1 ? null : 1)}
-                  className="w-full flex items-center justify-between p-4 bg-surface-container-high/30"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-primary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
-                    </div>
-                    <span className="font-bold text-sm">Chapter 1: Product Sense &amp; Logic</span>
+              {chapters.map((chapter, chIdx) => {
+                const isExpanded = expandedChapter === chIdx + 1
+                const completedCount = chapter.items.filter(i => i.is_completed).length
+                return (
+                  <div key={chapter.key} className="border border-outline-variant rounded-xl overflow-hidden bg-white">
+                    <button
+                      onClick={() => setExpandedChapter(isExpanded ? null : chIdx + 1)}
+                      className="w-full flex items-center justify-between p-4 bg-surface-container-high/30"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-primary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>{chapter.icon}</span>
+                        </div>
+                        <div className="text-left">
+                          <div className="font-bold text-sm">{chapter.title}</div>
+                          <div className="text-[10px] text-on-surface-variant">{completedCount}/{chapter.items.length} completed</div>
+                        </div>
+                      </div>
+                      <span className="material-symbols-outlined text-on-surface-variant">{isExpanded ? 'expand_less' : 'expand_more'}</span>
+                    </button>
+                    {isExpanded && (
+                      <div className="p-2 space-y-1">
+                        {chapter.items.map(item => (
+                          <Link
+                            key={item.id}
+                            href={`/challenges/${item.id}`}
+                            className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className={`material-symbols-outlined text-lg ${item.is_completed ? 'text-primary' : 'text-outline'}`} style={item.is_completed ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                                {item.is_completed ? 'check_circle' : 'radio_button_unchecked'}
+                              </span>
+                              <span className={`text-sm font-medium ${item.is_completed ? 'text-on-surface' : 'text-on-surface-variant'}`}>{item.title}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              {item.best_score != null ? (
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${item.best_score >= 70 ? 'text-primary bg-primary-fixed' : 'text-amber-700 bg-tertiary-container'}`}>
+                                  {item.best_score}/100
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Start</span>
+                              )}
+                              <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <span className="material-symbols-outlined text-on-surface-variant">{expandedChapter === 1 ? 'expand_less' : 'expand_more'}</span>
-                </button>
-                {expandedChapter === 1 && <div className="p-2 space-y-1">
-                  {/* Item 1 */}
-                  <Link href="/challenges" className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
-                    <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-primary text-lg">check_circle</span>
-                      <span className="text-sm font-medium">Improve Google Maps for commuters</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[10px] font-bold text-primary bg-primary-fixed px-2 py-0.5 rounded-full">78/100</span>
-                      <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                    </div>
-                  </Link>
-                  {/* Item 2 */}
-                  <Link href="/challenges" className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
-                    <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-primary text-lg">check_circle</span>
-                      <span className="text-sm font-medium">Design a new Google Workspace feature</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[10px] font-bold text-amber-700 bg-tertiary-container px-2 py-0.5 rounded-full">65/100</span>
-                      <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                    </div>
-                  </Link>
-                  {/* Item 3 */}
-                  <Link href="/challenges" className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
-                    <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-outline text-lg">radio_button_unchecked</span>
-                      <span className="text-sm font-medium text-on-surface-variant">Google Search quality metrics</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Start</span>
-                      <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                    </div>
-                  </Link>
-                  {/* Item 4 */}
-                  <Link href="/challenges" className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
-                    <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-outline text-lg">radio_button_unchecked</span>
-                      <span className="text-sm font-medium text-on-surface-variant italic">Concept: &apos;Platform thinking&apos;</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[10px] font-bold text-tertiary uppercase tracking-tighter">Review</span>
-                      <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                    </div>
-                  </Link>
-                </div>}
-              </div>
+                )
+              })}
 
-              {/* Chapter 2: Collapsed */}
-              <div className="border border-outline-variant rounded-xl overflow-hidden">
-                <button
-                  onClick={() => setExpandedChapter(expandedChapter === 2 ? null : 2)}
-                  className="w-full flex items-center justify-between p-4 bg-white"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-outline-variant/30 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-on-surface-variant text-sm">monitoring</span>
-                    </div>
-                    <div className="text-left">
-                      <div className="font-bold text-sm">Chapter 2: Execution &amp; Metrics</div>
-                      <div className="text-[10px] text-on-surface-variant uppercase tracking-widest">3 challenges · 2 concepts</div>
-                    </div>
-                  </div>
-                  <span className="material-symbols-outlined text-on-surface-variant">{expandedChapter === 2 ? 'expand_less' : 'expand_more'}</span>
-                </button>
-                {expandedChapter === 2 && (
-                  <div className="p-2 space-y-1">
-                    <Link href="/challenges" className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <span className="material-symbols-outlined text-outline text-lg">radio_button_unchecked</span>
-                        <span className="text-sm font-medium text-on-surface-variant">Define success metrics for Google Pay</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Start</span>
-                        <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                      </div>
-                    </Link>
-                    <Link href="/challenges" className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <span className="material-symbols-outlined text-outline text-lg">radio_button_unchecked</span>
-                        <span className="text-sm font-medium text-on-surface-variant">Diagnose a drop in YouTube watch time</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Start</span>
-                        <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                      </div>
-                    </Link>
-                    <Link href="/challenges" className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <span className="material-symbols-outlined text-outline text-lg">radio_button_unchecked</span>
-                        <span className="text-sm font-medium text-on-surface-variant italic">Concept: &apos;North Star metrics&apos;</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-bold text-tertiary uppercase tracking-tighter">Review</span>
-                        <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                      </div>
-                    </Link>
-                  </div>
-                )}
-              </div>
-
-              {/* Chapter 3: Locked */}
-              <div className="border border-outline-variant rounded-xl overflow-hidden opacity-60 bg-surface-container/50">
-                <div className="w-full flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-outline-variant/30 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-on-surface-variant text-sm">diversity_3</span>
-                    </div>
-                    <div className="text-left">
-                      <div className="font-bold text-sm">Chapter 3: Leadership &amp; Behavioral</div>
-                      <div className="text-[10px] text-primary font-bold">PRO ONLY</div>
-                    </div>
-                  </div>
-                  <span className="material-symbols-outlined text-on-surface-variant">lock</span>
+              {/* Show skeleton if still loading */}
+              {chapters.length === 0 && (
+                <div className="space-y-3 animate-pulse">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="border border-outline-variant rounded-xl p-4 h-14 bg-surface-container/50" />
+                  ))}
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
