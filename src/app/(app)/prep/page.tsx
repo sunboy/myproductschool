@@ -28,14 +28,14 @@ interface Chapter {
 }
 
 const COMPANIES_MOCK: Company[] = [
-  { id: '1', name: 'Google', slug: 'google', challenge_count: 24 },
-  { id: '2', name: 'Meta', slug: 'meta', challenge_count: 18 },
-  { id: '3', name: 'Stripe', slug: 'stripe', challenge_count: 12 },
-  { id: '4', name: 'Amazon', slug: 'amazon', challenge_count: 15 },
-  { id: '5', name: 'Apple', slug: 'apple', challenge_count: 8 },
-  { id: '6', name: 'Uber', slug: 'uber', challenge_count: 10 },
-  { id: '7', name: 'Airbnb', slug: 'airbnb', challenge_count: 6 },
-  { id: '8', name: 'DoorDash', slug: 'doordash', challenge_count: 5 },
+  { id: '1', name: 'Google', slug: 'google', challenge_count: 0 },
+  { id: '2', name: 'Meta', slug: 'meta', challenge_count: 0 },
+  { id: '3', name: 'Stripe', slug: 'stripe', challenge_count: 0 },
+  { id: '4', name: 'Amazon', slug: 'amazon', challenge_count: 0 },
+  { id: '5', name: 'Apple', slug: 'apple', challenge_count: 0 },
+  { id: '6', name: 'Uber', slug: 'uber', challenge_count: 0 },
+  { id: '7', name: 'Airbnb', slug: 'airbnb', challenge_count: 0 },
+  { id: '8', name: 'DoorDash', slug: 'doordash', challenge_count: 0 },
 ]
 
 const COMPANY_COLORS: Record<string, string> = {
@@ -113,7 +113,9 @@ export default function PrepHubPage() {
               >
                 <div className={`w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 font-bold shadow-sm ${colorClass}`}>{initial}</div>
                 <div className="text-sm font-bold text-on-surface truncate">{company.name}</div>
-                <div className={`text-[10px] font-bold ${isSelected ? 'text-primary' : 'text-on-surface-variant'}`}>{company.challenge_count} challenges</div>
+                {company.challenge_count > 0 && (
+                  <div className={`text-[10px] font-bold ${isSelected ? 'text-primary' : 'text-on-surface-variant'}`}>{company.challenge_count} challenges</div>
+                )}
               </button>
             )
           })}
@@ -229,9 +231,9 @@ export default function PrepHubPage() {
                     />
                   </div>
                 )}
-                <p className="text-[10px] text-on-surface-variant">Ahead of 72% of candidates</p>
+                <p className="text-[10px] text-on-surface-variant">Complete more challenges to track your progress</p>
                 <div className="w-full bg-outline-variant h-1 rounded-full mt-2 overflow-hidden">
-                  <div className="bg-primary h-full w-[72%]" />
+                  <div className="bg-primary h-full w-[35%]" />
                 </div>
               </div>
             </div>
@@ -277,7 +279,7 @@ export default function PrepHubPage() {
                 <div className="w-6 h-6 rounded-full border-2 border-surface-container bg-secondary-container flex items-center justify-center text-[8px] font-bold text-secondary">C</div>
                 <div className="w-6 h-6 rounded-full border-2 border-surface-container bg-surface-container-high flex items-center justify-center text-[8px] font-bold">+9</div>
               </div>
-              <span className="text-xs font-bold text-on-surface-variant">12 others prepping for Google</span>
+              <span className="text-xs font-bold text-on-surface-variant">Engineers practicing for {selectedCompany.name}</span>
             </div>
             <Link className="mt-3 block text-[11px] font-black text-primary uppercase tracking-widest hover:underline flex items-center gap-1" href="/cohort">
               Join discussion
@@ -292,7 +294,7 @@ export default function PrepHubPage() {
         <div className="bg-surface-container-low border border-outline-variant p-4 rounded-xl flex items-center gap-4">
           <LumaGlyph size={28} state="speaking" className="text-primary shrink-0" />
           <p className="text-sm text-on-surface-variant leading-tight flex-1">
-            <span className="font-bold text-on-surface">Luma&apos;s Tip:</span> Google heavily weighs <span className="text-primary font-bold italic">User Empathy</span> in Product Sense rounds. Try to focus on the &ldquo;Why&rdquo; before jumping to &ldquo;How&rdquo; in your framework.
+            <span className="font-bold text-on-surface">Luma&apos;s Tip:</span> Strong <span className="text-primary font-bold italic">Problem Framing</span> is the most common differentiator at Staff-level interviews. Before listing solutions, make sure you&apos;ve defined the core tension clearly.
           </p>
           <button
             onClick={() => setCoachingDismissed(true)}

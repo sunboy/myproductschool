@@ -7,8 +7,9 @@ const ROLES = ['All', 'SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng
 const PARADIGMS = [
   {
     name: 'Traditional',
-    description: 'Metrics, trade-offs, and prioritization — the core toolkit every PM needs cold.',
-    challengeCount: '~150 challenges',
+    description: 'Metrics, trade-offs, and prioritization — the core toolkit for senior and Staff roles.',
+    exampleChallenge: 'DAU/MAU looks great but revenue is flat. What\'s going on?',
+    challengeCount: 'Core collection',
     icon: 'architecture',
     borderClass: 'border-lens',
     bgClass: 'bg-lens-tint',
@@ -16,8 +17,9 @@ const PARADIGMS = [
   },
   {
     name: 'AI-Assisted',
-    description: 'Know when to trust AI output — prompting, validation, and keeping human judgment sharp.',
-    challengeCount: '~50 challenges',
+    description: 'When to trust AI output, how to validate, and keeping human judgment sharp.',
+    exampleChallenge: 'Your Copilot code passes tests but introduces a subtle security flaw.',
+    challengeCount: 'Growing library',
     icon: 'smart_toy',
     borderClass: 'border-frame',
     bgClass: 'bg-frame-tint',
@@ -26,7 +28,8 @@ const PARADIGMS = [
   {
     name: 'Agentic',
     description: 'Design multi-step AI systems — agents, evals, failure modes, and trust boundaries.',
-    challengeCount: '~70 challenges',
+    exampleChallenge: 'Your agent auto-approved 40 refunds overnight. 3 were fraudulent.',
+    challengeCount: 'Growing library',
     icon: 'hub',
     borderClass: 'border-win',
     bgClass: 'bg-win-tint',
@@ -34,8 +37,9 @@ const PARADIGMS = [
   },
   {
     name: 'AI-Native',
-    description: "Products that couldn't exist without AI — new interaction models, new risks.",
-    challengeCount: '~70 challenges',
+    description: "Products that couldn't exist without AI — entirely new interaction models and risks.",
+    exampleChallenge: 'Your AI tutor is great at math but hallucinates history. Ship or hold?',
+    challengeCount: 'Growing library',
     icon: 'neurology',
     borderClass: 'border-optimize',
     bgClass: 'bg-optimize-tint',
@@ -50,7 +54,7 @@ const STUDY_PLANS_MOCK = [
     duration: '6 weeks',
     description: 'Strategic technical leadership and high-stakes decision making.',
     slug: 'staff-engineer-path',
-    participantCount: '+12',
+    participantCount: '',
   },
   {
     title: '7-Day Prep',
@@ -58,7 +62,7 @@ const STUDY_PLANS_MOCK = [
     duration: '7 days',
     description: 'Intensive crash course for top-tier system design rounds.',
     slug: '7-day-prep',
-    participantCount: '+82',
+    participantCount: '',
   },
   {
     title: 'AI Product Fluency',
@@ -66,7 +70,7 @@ const STUDY_PLANS_MOCK = [
     duration: '4 weeks',
     description: 'Bridge the gap between engineering and AI product strategy.',
     slug: 'ai-product-fluency',
-    participantCount: '+45',
+    participantCount: '',
   },
 ]
 
@@ -89,7 +93,7 @@ async function fetchStudyPlans(): Promise<typeof STUDY_PLANS_MOCK> {
       slug: p.slug,
       participantCount: (p as unknown as { participant_count?: number }).participant_count
         ? `+${(p as unknown as { participant_count: number }).participant_count}`
-        : '+0',
+        : '',
     }))
   } catch {
     return STUDY_PLANS_MOCK
@@ -129,7 +133,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="font-headline text-2xl font-extrabold text-on-surface leading-tight">Explore Hub</h1>
-          <p className="text-sm text-on-surface-variant mt-0.5">Browse by paradigm, plan your path, or dive into concepts</p>
+          <p className="text-sm text-on-surface-variant mt-0.5">Real scenarios from real companies. Pick a paradigm or follow a structured plan.</p>
         </div>
       </section>
 
@@ -153,9 +157,11 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
       {/* Luma Recommendation Banner */}
       <section className="bg-primary-container/40 border border-primary-container rounded-xl p-4 flex items-center gap-4">
         <LumaGlyph size={40} state="speaking" className="text-primary shrink-0" />
-        <div className="relative bg-white/60 px-4 py-2 rounded-2xl rounded-tl-none border border-white/40">
+        <div className="relative bg-white/60 px-4 py-2 rounded-2xl rounded-tl-none border border-white/40 flex-1">
           <p className="text-sm text-on-primary-container font-medium leading-relaxed">
-            Browse by paradigm to find challenges that match your role, or pick a Study Plan to follow a structured path.
+            {activeParadigm
+              ? `Showing ${activeParadigm} challenges. These scenarios test how you think about ${activeParadigm === 'Traditional' ? 'classic product tradeoffs' : activeParadigm === 'AI-Assisted' ? 'AI augmentation and trust' : activeParadigm === 'Agentic' ? 'multi-agent systems and autonomy' : 'products that are impossible without AI'}.`
+              : 'New here? Start with a Traditional challenge to baseline your thinking, then explore AI paradigms once you have your skill radar.'}
           </p>
         </div>
       </section>
@@ -186,7 +192,10 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                 </div>
                 <h3 className="font-headline text-sm font-bold leading-tight">{p.name}</h3>
               </div>
-              <p className="text-[11px] text-on-surface-variant leading-snug mb-1.5">{p.description}</p>
+              <p className="text-[11px] text-on-surface-variant leading-snug mb-2">{p.description}</p>
+              <div className="bg-white/50 rounded-lg px-2.5 py-1.5 border border-outline-variant/20 mb-1.5">
+                <p className="text-[10px] text-on-surface-variant italic leading-snug">&ldquo;{p.exampleChallenge}&rdquo;</p>
+              </div>
               <p className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest">{p.challengeCount}</p>
             </Link>
           )
@@ -227,18 +236,21 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                 <p className="text-xs text-on-surface-variant leading-snug">{plan.description}</p>
               </div>
               <div className="mt-4 pt-4 border-t border-outline-variant/20 flex items-center justify-between">
-                {/* Wes Kao: larger social proof avatars, more visible participant count */}
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2">
-                    <div className="w-7 h-7 rounded-full bg-primary-fixed ring-2 ring-surface-container-low flex items-center justify-center text-[9px] font-bold text-primary">A</div>
-                    <div className="w-7 h-7 rounded-full bg-tertiary-container ring-2 ring-surface-container-low flex items-center justify-center text-[9px] font-bold text-tertiary">B</div>
-                    <div className="w-7 h-7 rounded-full bg-secondary-container ring-2 ring-surface-container-low flex items-center justify-center text-[9px] font-bold text-secondary">C</div>
+                {plan.participantCount ? (
+                  <div className="flex items-center gap-2">
+                    <div className="flex -space-x-2">
+                      <div className="w-7 h-7 rounded-full bg-primary-fixed ring-2 ring-surface-container-low flex items-center justify-center text-[9px] font-bold text-primary">A</div>
+                      <div className="w-7 h-7 rounded-full bg-tertiary-container ring-2 ring-surface-container-low flex items-center justify-center text-[9px] font-bold text-tertiary">B</div>
+                      <div className="w-7 h-7 rounded-full bg-secondary-container ring-2 ring-surface-container-low flex items-center justify-center text-[9px] font-bold text-secondary">C</div>
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-on-surface">{plan.participantCount} engineers</span>
+                      <span className="text-[10px] text-on-surface-variant block">enrolled</span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-xs font-bold text-on-surface">{plan.participantCount} engineers</span>
-                    <span className="text-[10px] text-on-surface-variant block">enrolled</span>
-                  </div>
-                </div>
+                ) : (
+                  <span className="text-xs text-on-surface-variant">Structured learning path</span>
+                )}
                 <span className="text-xs font-bold text-primary px-3 py-1.5 rounded-full border border-primary/20 hover:bg-primary/5">
                   Start
                 </span>

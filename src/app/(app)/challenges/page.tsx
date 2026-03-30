@@ -3,6 +3,7 @@ import { getDomains } from '@/lib/data/domains'
 import Link from 'next/link'
 import { ChallengeCard } from './ChallengeCard'
 import { LumaPick } from './LumaPick'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 interface ChallengesPageProps {
   searchParams: Promise<{ paradigm?: string; role?: string; difficulty?: string }>
@@ -145,15 +146,31 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
 
       {/* All Challenges Grid */}
       <h2 className="text-sm font-bold text-on-surface-variant uppercase tracking-wider mb-3">All Challenges</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {challenges.map((challenge, idx) => (
-          <ChallengeCard
-            key={challenge.id}
-            challenge={challenge}
-            paradigm={getParadigmLabel(idx)}
-          />
-        ))}
-      </div>
+      {challenges.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
+          <LumaGlyph size={64} state="idle" className="text-primary" />
+          <div>
+            <p className="text-base font-bold text-on-surface mb-1">No challenges match that filter</p>
+            <p className="text-sm text-on-surface-variant max-w-xs">
+              Try removing a filter, or{' '}
+              <Link href="/challenges" className="text-primary font-bold hover:underline">
+                view all challenges
+              </Link>
+              .
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {challenges.map((challenge, idx) => (
+            <ChallengeCard
+              key={challenge.id}
+              challenge={challenge}
+              paradigm={getParadigmLabel(idx)}
+            />
+          ))}
+        </div>
+      )}
     </main>
   )
 }

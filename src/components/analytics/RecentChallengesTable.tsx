@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { RecentAttempt } from '@/lib/types'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 interface Props {
   attempts: RecentAttempt[]
@@ -17,8 +18,20 @@ export function RecentChallengesTable({ attempts }: Props) {
       </div>
 
       {attempts.length === 0 ? (
-        <div className="p-12 text-center">
-          <p className="text-on-surface-variant text-sm">No challenges completed yet.</p>
+        <div className="p-12 text-center flex flex-col items-center gap-4">
+          <LumaGlyph size={56} state="idle" className="text-primary" />
+          <div>
+            <p className="font-bold text-on-surface mb-1">No challenges yet</p>
+            <p className="text-on-surface-variant text-sm max-w-xs mx-auto">
+              Complete your first challenge and Luma will track your progress here.
+            </p>
+          </div>
+          <Link
+            href="/challenges"
+            className="bg-primary text-on-primary rounded-full px-6 py-2 text-sm font-bold hover:opacity-90 transition-opacity"
+          >
+            Browse Challenges
+          </Link>
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -121,7 +134,7 @@ export function RecentChallengesTable({ attempts }: Props) {
 
                     {/* Arrow */}
                     <td className="px-8 py-5 text-right">
-                      <button className="material-symbols-outlined text-outline group-hover:text-primary transition-colors">
+                      <button className="material-symbols-outlined text-outline group-hover:text-primary transition-colors" aria-label={`View ${attempt.challenge_title}`}>
                         arrow_forward
                       </button>
                     </td>
