@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { useStudyPlans } from '@/hooks/useStudyPlans'
@@ -120,6 +121,7 @@ const MOVE_COLORS: Record<string, string> = {
 
 export default function StudyPlansPage() {
   const { plans: apiPlans, isLoading } = useStudyPlans()
+  const [insightDismissed, setInsightDismissed] = useState(false)
 
   // Map API plans to display format, fall back to mock if empty
   const plans: typeof PLANS_MOCK = apiPlans.length > 0
@@ -245,18 +247,23 @@ export default function StudyPlansPage() {
       </div>
 
       {/* ── Luma Insight ── */}
-      <div className="bg-primary-fixed rounded-xl p-4 flex items-center gap-5 border border-outline-variant">
-        <LumaGlyph size={48} state="speaking" className="text-primary shrink-0" />
-        <div className="flex-1">
-          <h4 className="font-headline font-bold text-primary text-sm mb-0.5">Luma&apos;s Insight</h4>
-          <p className="text-xs text-on-surface-variant leading-relaxed">
-            &ldquo;Consistent practice is key! Completion rates are 45% higher for users who finish at least one challenge in a Study Plan every 48 hours.&rdquo;
-          </p>
+      {!insightDismissed && (
+        <div className="bg-primary-fixed rounded-xl p-4 flex items-center gap-5 border border-outline-variant">
+          <LumaGlyph size={48} state="speaking" className="text-primary shrink-0" />
+          <div className="flex-1">
+            <h4 className="font-headline font-bold text-primary text-sm mb-0.5">Luma&apos;s Insight</h4>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              &ldquo;Consistent practice is key! Completion rates are 45% higher for users who finish at least one challenge in a Study Plan every 48 hours.&rdquo;
+            </p>
+          </div>
+          <button
+            onClick={() => setInsightDismissed(true)}
+            className="text-xs font-bold bg-white text-primary px-4 py-1.5 rounded-full border border-primary hover:bg-primary hover:text-white transition-colors"
+          >
+            Got it!
+          </button>
         </div>
-        <button className="text-xs font-bold bg-white text-primary px-4 py-1.5 rounded-full border border-primary hover:bg-primary hover:text-white transition-colors">
-          Got it!
-        </button>
-      </div>
+      )}
     </div>
   )
 }

@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 interface NotificationSettings {
   weekly_summary: boolean
@@ -43,10 +45,26 @@ const DEFAULT_NOTIFICATIONS: NotificationSettings = {
 }
 
 export default function SettingsPage() {
+  const router = useRouter()
   const [settings, setSettings] = useState<UserSettings | null>(null)
   const [dailyGoal, setDailyGoal] = useState(3)
   const [notifications, setNotifications] = useState<NotificationSettings>(DEFAULT_NOTIFICATIONS)
   const [saving, setSaving] = useState(false)
+  // Profile edits
+  const [displayName, setDisplayName] = useState('')
+  const [editingName, setEditingName] = useState(false)
+  const [profileSaving, setProfileSaving] = useState(false)
+  const [profileInitial, setProfileInitial] = useState('?')
+  // Learning preferences (local state only — persisted to localStorage)
+  const [flowFocus, setFlowFocus] = useState<string>(() =>
+    typeof window !== 'undefined' ? (localStorage.getItem('hackproduct_flow_focus') ?? 'List') : 'List'
+  )
+  const [difficulty, setDifficulty] = useState<string>(() =>
+    typeof window !== 'undefined' ? (localStorage.getItem('hackproduct_difficulty') ?? 'Mixed') : 'Mixed'
+  )
+  const [timezone, setTimezone] = useState<string>(() =>
+    typeof window !== 'undefined' ? (localStorage.getItem('hackproduct_timezone') ?? Intl.DateTimeFormat().resolvedOptions().timeZone) : 'Asia/Kolkata'
+  )
 
   useEffect(() => {
     fetch('/api/settings')
@@ -57,7 +75,35 @@ export default function SettingsPage() {
         setNotifications(data.notifications ?? DEFAULT_NOTIFICATIONS)
       })
       .catch(() => {})
+
+    fetch('/api/profile')
+      .then(r => r.ok ? r.json() : null)
+      .then((data: { display_name?: string } | null) => {
+        if (data?.display_name) {
+          setDisplayName(data.display_name)
+          setProfileInitial(data.display_name[0]?.toUpperCase() ?? '?')
+        }
+      })
+      .catch(() => {})
   }, [])
+
+  const saveDisplayName = async () => {
+    if (!displayName.trim()) return
+    setProfileSaving(true)
+    try {
+      await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ display_name: displayName.trim() }),
+      })
+      setProfileInitial(displayName.trim()[0]?.toUpperCase() ?? '?')
+      setEditingName(false)
+    } catch {
+      // ignore
+    } finally {
+      setProfileSaving(false)
+    }
+  }
 
   const patchSettings = useCallback(async (patch: Partial<{ notifications: NotificationSettings; daily_goal_count: number }>) => {
     setSaving(true)
@@ -96,11 +142,11 @@ export default function SettingsPage() {
       {/* Top App Bar — settings-specific */}
       <header className="flex justify-between items-center w-full px-8 py-6 sticky top-0 z-40 bg-surface border-b border-on-surface/10">
         <div className="flex items-center space-x-4">
-          <button className="material-symbols-outlined text-primary hover:opacity-70 transition-all">arrow_back</button>
+          <button onClick={() => router.back()} className="material-symbols-outlined text-primary hover:opacity-70 transition-all">arrow_back</button>
           <h2 className="font-headline text-2xl text-primary-container">Settings</h2>
         </div>
         <div className="flex items-center space-x-4">
-          {saving && <span className="text-xs text-outline animate-pulse">Saving…</span>}
+          {(saving || profileSaving) && <span className="text-xs text-outline animate-pulse">Saving…</span>}
           <button className="material-symbols-outlined text-outline hover:opacity-70">more_vert</button>
         </div>
       </header>
@@ -111,27 +157,42 @@ export default function SettingsPage() {
         <section className="bg-surface-container-high rounded-xl p-8 transition-all hover:bg-surface-container-highest">
           <h3 className="font-nunito text-xs font-bold uppercase tracking-[0.2em] text-outline mb-8">ACCOUNT</h3>
           <div className="flex items-center space-x-6 mb-10">
-            <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-on-primary text-2xl font-headline font-bold">S</div>
+            <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-on-primary text-2xl font-headline font-bold">{profileInitial}</div>
             <div>
-              <button className="text-primary font-bold hover:underline">Change photo</button>
+              <span className="text-primary font-bold text-sm">Avatar updates coming soon</span>
             </div>
           </div>
           <div className="space-y-6">
             {/* Name Row */}
             <div className="flex justify-between items-center py-4 border-b border-outline-variant/20">
-              <div>
+              <div className="flex-1 mr-4">
                 <label className="block text-xs text-outline font-bold mb-1">Display name</label>
-                <p className="font-nunito text-lg">Sandeep</p>
+                {editingName ? (
+                  <input
+                    autoFocus
+                    value={displayName}
+                    onChange={e => setDisplayName(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') saveDisplayName(); if (e.key === 'Escape') setEditingName(false) }}
+                    className="font-nunito text-lg border border-primary rounded-lg px-3 py-1 w-full focus:outline-none focus:ring-1 ring-primary"
+                  />
+                ) : (
+                  <p className="font-nunito text-lg">{displayName || 'Add your name'}</p>
+                )}
               </div>
-              <button className="material-symbols-outlined text-outline hover:text-primary transition-colors">edit</button>
+              <button
+                onClick={() => editingName ? saveDisplayName() : setEditingName(true)}
+                className="material-symbols-outlined text-outline hover:text-primary transition-colors"
+              >
+                {editingName ? 'check' : 'edit'}
+              </button>
             </div>
             {/* Email Row */}
             <div className="flex justify-between items-center py-4 border-b border-outline-variant/20">
               <div>
                 <label className="block text-xs text-outline font-bold mb-1">Email</label>
-                <p className="font-nunito text-lg">sandeep@example.com</p>
+                <p className="font-nunito text-lg text-on-surface-variant">Managed by your auth provider</p>
               </div>
-              <button className="material-symbols-outlined text-outline hover:text-primary transition-colors">edit</button>
+              <span className="material-symbols-outlined text-outline-variant">lock</span>
             </div>
             {/* Role Row */}
             <div className="flex justify-between items-center py-4 border-b border-outline-variant/20">
@@ -139,11 +200,17 @@ export default function SettingsPage() {
                 <label className="block text-xs text-outline font-bold mb-1">Role</label>
                 <p className="font-nunito text-lg italic">Engineer &rarr; PM</p>
               </div>
-              <button className="material-symbols-outlined text-outline hover:text-primary transition-colors">edit</button>
+              <Link href="/onboarding/role" className="material-symbols-outlined text-outline hover:text-primary transition-colors">edit</Link>
             </div>
           </div>
           <div className="mt-10">
-            <button className="bg-primary-container text-on-primary px-8 py-3 rounded-full font-bold hover:opacity-90 transition-all">Save changes</button>
+            <button
+              onClick={saveDisplayName}
+              disabled={profileSaving}
+              className="bg-primary-container text-on-primary px-8 py-3 rounded-full font-bold hover:opacity-90 transition-all disabled:opacity-50"
+            >
+              Save changes
+            </button>
           </div>
         </section>
 
@@ -208,27 +275,59 @@ export default function SettingsPage() {
             {/* Flow Focus */}
             <div className="p-4 bg-surface rounded-lg">
               <label className="block text-xs text-outline font-bold mb-3">Preferred FLOW focus</label>
-              <div className="flex items-center justify-between cursor-pointer">
-                <span className="font-headline text-xl">List</span>
-                <span className="material-symbols-outlined text-outline">expand_more</span>
-              </div>
+              <select
+                value={flowFocus}
+                onChange={e => {
+                  setFlowFocus(e.target.value)
+                  localStorage.setItem('hackproduct_flow_focus', e.target.value)
+                }}
+                className="font-headline text-xl bg-transparent w-full border-none outline-none cursor-pointer text-on-surface"
+              >
+                <option value="All">All</option>
+                <option value="Frame">Frame</option>
+                <option value="List">List</option>
+                <option value="Optimize">Optimize</option>
+                <option value="Win">Win</option>
+              </select>
             </div>
             {/* Difficulty */}
             <div className="p-4 bg-surface rounded-lg">
               <label className="block text-xs text-outline font-bold mb-3">Challenge difficulty</label>
-              <div className="flex items-center justify-between cursor-pointer">
-                <span className="font-headline text-xl">Mixed</span>
-                <span className="material-symbols-outlined text-outline">expand_more</span>
-              </div>
+              <select
+                value={difficulty}
+                onChange={e => {
+                  setDifficulty(e.target.value)
+                  localStorage.setItem('hackproduct_difficulty', e.target.value)
+                }}
+                className="font-headline text-xl bg-transparent w-full border-none outline-none cursor-pointer text-on-surface"
+              >
+                <option value="Mixed">Mixed</option>
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
             </div>
             {/* Timezone */}
             <div className="p-4 bg-surface rounded-lg">
               <label className="block text-xs text-outline font-bold mb-3">Reminder timezone</label>
-              <div className="flex items-center justify-between">
-                <span className="font-headline text-xl">Asia/Kolkata</span>
-                <button className="text-primary text-xs font-bold uppercase tracking-widest hover:underline">Change</button>
-              </div>
-              <p className="text-[10px] text-outline mt-1">(IST)</p>
+              <select
+                value={timezone}
+                onChange={e => {
+                  setTimezone(e.target.value)
+                  localStorage.setItem('hackproduct_timezone', e.target.value)
+                }}
+                className="font-headline text-xl bg-transparent w-full border-none outline-none cursor-pointer text-on-surface"
+              >
+                <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+                <option value="America/New_York">America/New_York (EST)</option>
+                <option value="America/Los_Angeles">America/Los_Angeles (PST)</option>
+                <option value="America/Chicago">America/Chicago (CST)</option>
+                <option value="Europe/London">Europe/London (GMT)</option>
+                <option value="Europe/Berlin">Europe/Berlin (CET)</option>
+                <option value="Asia/Singapore">Asia/Singapore (SGT)</option>
+                <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
+                <option value="Australia/Sydney">Australia/Sydney (AEDT)</option>
+              </select>
             </div>
           </div>
         </section>
@@ -244,11 +343,14 @@ export default function SettingsPage() {
               </div>
             </div>
             <div className="flex flex-col items-end gap-3">
-              <button className="bg-primary text-on-primary px-8 py-3 rounded-full font-bold hover:opacity-90 transition-all flex items-center space-x-2">
+              <Link
+                href="/pricing"
+                className="bg-primary text-on-primary px-8 py-3 rounded-full font-bold hover:opacity-90 transition-all flex items-center space-x-2"
+              >
                 <span>Upgrade to Pro</span>
                 <span className="material-symbols-outlined text-sm">arrow_forward</span>
-              </button>
-              <a className="text-xs text-outline font-bold hover:text-primary transition-colors" href="#">View billing history</a>
+              </Link>
+              <Link href="/settings/billing" className="text-xs text-outline font-bold hover:text-primary transition-colors">View billing history</Link>
             </div>
           </div>
         </section>
@@ -257,14 +359,34 @@ export default function SettingsPage() {
         <section className="bg-surface-container-high rounded-xl p-8">
           <h3 className="font-nunito text-xs font-bold uppercase tracking-[0.2em] text-outline mb-8">PRIVACY &amp; SECURITY</h3>
           <div className="flex flex-col md:flex-row gap-8">
-            <a className="flex items-center space-x-2 text-primary-container font-bold hover:opacity-70 transition-all group" href="#">
+            <button
+              onClick={async () => {
+                const res = await fetch('/api/profile/export')
+                if (!res.ok) { return }
+                const blob = await res.blob()
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = 'hackproduct-data.json'
+                a.click()
+                URL.revokeObjectURL(url)
+              }}
+              className="flex items-center space-x-2 text-primary-container font-bold hover:opacity-70 transition-all group"
+            >
               <span className="material-symbols-outlined">download</span>
               <span>Export my data</span>
-            </a>
-            <a className="flex items-center space-x-2 text-error font-bold hover:opacity-70 transition-all group" href="#">
+            </button>
+            <button
+              onClick={() => {
+                if (confirm('Are you sure you want to delete your account? This cannot be undone.')) {
+                  window.location.href = '/api/profile/delete-account'
+                }
+              }}
+              className="flex items-center space-x-2 text-error font-bold hover:opacity-70 transition-all group"
+            >
               <span className="material-symbols-outlined">delete_forever</span>
               <span>Delete account</span>
-            </a>
+            </button>
           </div>
         </section>
       </div>
@@ -275,8 +397,8 @@ export default function SettingsPage() {
           HackProduct v2.0 &middot; Sunboy Labs
         </div>
         <div className="flex space-x-6 text-outline font-nunito text-[10px] uppercase tracking-[0.25em]">
-          <a className="hover:text-primary transition-colors" href="#">Privacy Policy</a>
-          <a className="hover:text-primary transition-colors" href="#">Terms of Service</a>
+          <Link className="hover:text-primary transition-colors" href="/privacy">Privacy Policy</Link>
+          <Link className="hover:text-primary transition-colors" href="/terms">Terms of Service</Link>
         </div>
       </footer>
     </div>

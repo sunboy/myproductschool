@@ -84,7 +84,7 @@ export default function RoleSelectionPage() {
 
       {/* Help link */}
       <div className="flex justify-end mb-4">
-        <Link href="#" className="text-sm text-primary font-label font-semibold hover:underline flex items-center gap-1">
+        <Link href="mailto:hello@hackproduct.io" className="text-sm text-primary font-label font-semibold hover:underline flex items-center gap-1">
           <span className="material-symbols-outlined text-base">help</span>
           Help
         </Link>

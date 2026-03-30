@@ -18,7 +18,7 @@ export function GradientFooter() {
             </h4>
             <ul className="space-y-4 text-sm text-[#faf6f0]/70">
               <li>
-                <Link className="hover:text-white transition-colors" href="#">
+                <Link className="hover:text-white transition-colors" href="/about">
                   Methodology
                 </Link>
               </li>
@@ -28,7 +28,7 @@ export function GradientFooter() {
                 </Link>
               </li>
               <li>
-                <Link className="hover:text-white transition-colors" href="#">
+                <Link className="hover:text-white transition-colors" href="/dashboard">
                   AI Coach
                 </Link>
               </li>
@@ -45,22 +45,22 @@ export function GradientFooter() {
             </h4>
             <ul className="space-y-4 text-sm text-[#faf6f0]/70">
               <li>
-                <Link className="hover:text-white transition-colors" href="#">
+                <Link className="hover:text-white transition-colors" href="/about">
                   Documentation
                 </Link>
               </li>
               <li>
-                <Link className="hover:text-white transition-colors" href="#">
+                <Link className="hover:text-white transition-colors" href="/challenges">
                   Case Studies
                 </Link>
               </li>
               <li>
-                <Link className="hover:text-white transition-colors" href="#">
+                <Link className="hover:text-white transition-colors" href="/cohort">
                   Community
                 </Link>
               </li>
               <li>
-                <Link className="hover:text-white transition-colors" href="#">
+                <Link className="hover:text-white transition-colors" href="/prep/study-plans">
                   Guides
                 </Link>
               </li>
@@ -72,17 +72,17 @@ export function GradientFooter() {
             </h4>
             <ul className="space-y-4 text-sm text-[#faf6f0]/70">
               <li>
-                <Link className="hover:text-white transition-colors" href="#">
+                <Link className="hover:text-white transition-colors" href="/privacy">
                   Privacy
                 </Link>
               </li>
               <li>
-                <Link className="hover:text-white transition-colors" href="#">
+                <Link className="hover:text-white transition-colors" href="/terms">
                   Terms
                 </Link>
               </li>
               <li>
-                <Link className="hover:text-white transition-colors" href="#">
+                <Link className="hover:text-white transition-colors" href="/privacy">
                   Security
                 </Link>
               </li>
@@ -96,19 +96,23 @@ export function GradientFooter() {
           <div className="flex gap-6">
             <a
               className="text-[#faf6f0]/50 hover:text-white transition-colors"
-              href="#"
+              href="https://linkedin.com/company/hackproduct"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <span className="material-symbols-outlined text-xl">brand_family</span>
             </a>
             <a
               className="text-[#faf6f0]/50 hover:text-white transition-colors"
-              href="#"
+              href="https://twitter.com/hackproduct"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <span className="material-symbols-outlined text-xl">share</span>
             </a>
             <a
               className="text-[#faf6f0]/50 hover:text-white transition-colors"
-              href="#"
+              href="mailto:hello@hackproduct.io"
             >
               <span className="material-symbols-outlined text-xl">alternate_email</span>
             </a>

@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 interface StreakRecoveryModalProps {
@@ -8,6 +10,7 @@ interface StreakRecoveryModalProps {
 }
 
 export function StreakRecoveryModal({ isOpen, onClose }: StreakRecoveryModalProps) {
+  const router = useRouter()
   if (!isOpen) return null
 
   return (
@@ -61,7 +64,10 @@ export function StreakRecoveryModal({ isOpen, onClose }: StreakRecoveryModalProp
 
           {/* Primary Action */}
           <div className="w-full text-center mb-6">
-            <button className="w-full h-[52px] bg-primary hover:bg-primary-container text-white rounded-full font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
+            <button
+              onClick={() => { onClose(); router.push('/challenges') }}
+              className="w-full h-[52px] bg-primary hover:bg-primary-container text-white rounded-full font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+            >
               Start today&apos;s Quick Take
               <span className="material-symbols-outlined text-lg">arrow_forward</span>
             </button>
@@ -72,13 +78,20 @@ export function StreakRecoveryModal({ isOpen, onClose }: StreakRecoveryModalProp
 
           {/* Secondary Links */}
           <div className="flex flex-col items-center gap-3 mb-6">
-            <a className="text-primary text-sm font-semibold hover:underline flex items-center gap-1" href="#">
+            <Link
+              href="/challenges"
+              onClick={onClose}
+              className="text-primary text-sm font-semibold hover:underline flex items-center gap-1"
+            >
               Browse challenges instead
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
-            </a>
-            <a className="text-outline text-sm font-medium hover:text-on-surface-variant" href="#">
+            </Link>
+            <button
+              onClick={onClose}
+              className="text-outline text-sm font-medium hover:text-on-surface-variant"
+            >
               Remind me tonight
-            </a>
+            </button>
           </div>
 
           {/* Bottom Information Chip */}

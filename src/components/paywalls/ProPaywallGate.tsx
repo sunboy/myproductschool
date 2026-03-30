@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 interface ProPaywallGateProps {
@@ -163,18 +164,27 @@ export function ProPaywallGate({
 
             {/* CTAs */}
             <div className="w-full space-y-4 text-center">
-              <button className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-full transition-transform active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-primary/20">
+              <Link
+                href="/pricing"
+                className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-full transition-transform active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+              >
                 Unlock Pro <span className="material-symbols-outlined">arrow_forward</span>
-              </button>
+              </Link>
               <p className="text-xs text-on-surface-variant">
                 Free plan: 3 challenges · No coaching detail · No credential
               </p>
-              <button className="text-sm font-semibold text-on-surface-variant hover:text-on-surface underline underline-offset-4">
+              <Link
+                href="/pricing"
+                className="block text-sm font-semibold text-on-surface-variant hover:text-on-surface underline underline-offset-4"
+              >
                 Start 7-day free trial
-              </button>
-              <a className="block text-xs text-on-surface-variant/70 hover:text-primary flex items-center justify-center gap-1 transition-colors" href="#">
+              </Link>
+              <Link
+                href="/challenges"
+                className="block text-xs text-on-surface-variant/70 hover:text-primary flex items-center justify-center gap-1 transition-colors"
+              >
                 Or practice with free challenges <span className="material-symbols-outlined text-sm">arrow_outward</span>
-              </a>
+              </Link>
             </div>
 
             {/* Footer */}

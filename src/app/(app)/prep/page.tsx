@@ -35,6 +35,7 @@ export default function PrepHubPage() {
   const [selectedCompany, setSelectedCompany] = useState<Company>(COMPANIES_MOCK[0])
   const [coachingDismissed, setCoachingDismissed] = useState(false)
   const [interviewDate, setInterviewDate] = useState<string | null>(null)
+  const [expandedChapter, setExpandedChapter] = useState<number | null>(1)
 
   const daysLeft = interviewDate
     ? Math.max(0, Math.ceil((new Date(interviewDate).getTime() - Date.now()) / 86400000))
@@ -109,16 +110,19 @@ export default function PrepHubPage() {
             <div className="space-y-3">
               {/* Chapter 1: Expanded */}
               <div className="border border-outline-variant rounded-xl overflow-hidden bg-white">
-                <button className="w-full flex items-center justify-between p-4 bg-surface-container-high/30">
+                <button
+                  onClick={() => setExpandedChapter(expandedChapter === 1 ? null : 1)}
+                  className="w-full flex items-center justify-between p-4 bg-surface-container-high/30"
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                       <span className="material-symbols-outlined text-primary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
                     </div>
                     <span className="font-bold text-sm">Chapter 1: Product Sense &amp; Logic</span>
                   </div>
-                  <span className="material-symbols-outlined text-on-surface-variant">expand_less</span>
+                  <span className="material-symbols-outlined text-on-surface-variant">{expandedChapter === 1 ? 'expand_less' : 'expand_more'}</span>
                 </button>
-                <div className="p-2 space-y-1">
+                {expandedChapter === 1 && <div className="p-2 space-y-1">
                   {/* Item 1 */}
                   <Link href="/challenges" className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
                     <div className="flex items-center gap-3">
@@ -163,12 +167,15 @@ export default function PrepHubPage() {
                       <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
                     </div>
                   </Link>
-                </div>
+                </div>}
               </div>
 
               {/* Chapter 2: Collapsed */}
               <div className="border border-outline-variant rounded-xl overflow-hidden">
-                <button className="w-full flex items-center justify-between p-4 bg-white">
+                <button
+                  onClick={() => setExpandedChapter(expandedChapter === 2 ? null : 2)}
+                  className="w-full flex items-center justify-between p-4 bg-white"
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-outline-variant/30 flex items-center justify-center">
                       <span className="material-symbols-outlined text-on-surface-variant text-sm">monitoring</span>
@@ -178,8 +185,42 @@ export default function PrepHubPage() {
                       <div className="text-[10px] text-on-surface-variant uppercase tracking-widest">3 challenges · 2 concepts</div>
                     </div>
                   </div>
-                  <span className="material-symbols-outlined text-on-surface-variant">expand_more</span>
+                  <span className="material-symbols-outlined text-on-surface-variant">{expandedChapter === 2 ? 'expand_less' : 'expand_more'}</span>
                 </button>
+                {expandedChapter === 2 && (
+                  <div className="p-2 space-y-1">
+                    <Link href="/challenges" className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <span className="material-symbols-outlined text-outline text-lg">radio_button_unchecked</span>
+                        <span className="text-sm font-medium text-on-surface-variant">Define success metrics for Google Pay</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Start</span>
+                        <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                      </div>
+                    </Link>
+                    <Link href="/challenges" className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <span className="material-symbols-outlined text-outline text-lg">radio_button_unchecked</span>
+                        <span className="text-sm font-medium text-on-surface-variant">Diagnose a drop in YouTube watch time</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Start</span>
+                        <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                      </div>
+                    </Link>
+                    <Link href="/challenges" className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <span className="material-symbols-outlined text-outline text-lg">radio_button_unchecked</span>
+                        <span className="text-sm font-medium text-on-surface-variant italic">Concept: &apos;North Star metrics&apos;</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-bold text-tertiary uppercase tracking-tighter">Review</span>
+                        <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                      </div>
+                    </Link>
+                  </div>
+                )}
               </div>
 
               {/* Chapter 3: Locked */}

@@ -133,10 +133,10 @@ export default function WelcomePage() {
       {/* Footer */}
       <footer className="border-t border-outline-variant px-6 py-6">
         <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-6 text-sm text-on-surface-variant font-label">
-          <Link href="#" className="hover:text-on-surface transition-colors">Privacy</Link>
-          <Link href="#" className="hover:text-on-surface transition-colors">Terms</Link>
-          <Link href="#" className="hover:text-on-surface transition-colors">Contact</Link>
-          <Link href="#" className="hover:text-on-surface transition-colors">Manifesto</Link>
+          <Link href="/privacy" className="hover:text-on-surface transition-colors">Privacy</Link>
+          <Link href="/terms" className="hover:text-on-surface transition-colors">Terms</Link>
+          <Link href="mailto:hello@hackproduct.io" className="hover:text-on-surface transition-colors">Contact</Link>
+          <Link href="/home" className="hover:text-on-surface transition-colors">Manifesto</Link>
         </div>
       </footer>
     </div>

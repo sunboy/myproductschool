@@ -233,9 +233,9 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                   </div>
                   <span className="text-[8px] font-bold text-on-surface-variant">{plan.participantCount}</span>
                 </div>
-                <button className="text-xs font-bold text-primary px-3 py-1 rounded-full border border-primary/20 hover:bg-primary/5">
+                <span className="text-xs font-bold text-primary px-3 py-1 rounded-full border border-primary/20 hover:bg-primary/5">
                   Start
-                </button>
+                </span>
               </div>
             </Link>
           ))}

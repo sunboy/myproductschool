@@ -20,6 +20,13 @@ export default function CohortPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [teamModalOpen, setTeamModalOpen] = useState(false)
   const [teamNotified, setTeamNotified] = useState(false)
+  const [notifyEnabled, setNotifyEnabled] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('hackproduct_cohort_notify') !== 'false'
+    }
+    return true
+  })
+  const [justToggled, setJustToggled] = useState(false)
 
   const handleTeamNotify = () => {
     setTeamNotified(true)
@@ -279,11 +286,27 @@ export default function CohortPage() {
           </div>
         </div>
         <div className="flex items-center gap-6 w-full md:w-auto">
-          <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full border border-outline-variant">
-            <span className="text-xs font-bold text-on-surface-variant">Notify me</span>
-            <button className="relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-primary transition-colors duration-200 ease-in-out">
-              <span className="translate-x-5 pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out" />
-            </button>
+          <div className="flex flex-col items-end gap-1">
+            <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full border border-outline-variant">
+              <span className="text-xs font-bold text-on-surface-variant">Notify me</span>
+              <button
+                onClick={() => {
+                  const next = !notifyEnabled
+                  setNotifyEnabled(next)
+                  localStorage.setItem('hackproduct_cohort_notify', String(next))
+                  setJustToggled(true)
+                  setTimeout(() => setJustToggled(false), 2000)
+                }}
+                className={`relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${notifyEnabled ? 'bg-primary' : 'bg-outline-variant'}`}
+              >
+                <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${notifyEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+              </button>
+            </div>
+            {justToggled && (
+              <span className="text-[10px] text-on-surface-variant animate-fade-in-up">
+                {notifyEnabled ? "You'll get an email when results drop" : "Notifications off"}
+              </span>
+            )}
           </div>
           <Link href="/challenges" className="flex-1 md:flex-none px-6 py-2 border border-primary text-primary rounded-full text-sm font-bold hover:bg-primary-fixed transition-colors text-center">
             Preview Challenge

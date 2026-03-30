@@ -1,12 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 const COMPANIES = ['Meta', 'Google', 'Stripe', 'Airbnb']
 
 export default function SimulationPage() {
+  const router = useRouter()
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null)
   const [difficulty, setDifficulty] = useState<'standard' | 'advanced'>('standard')
+  const [isStarting, setIsStarting] = useState(false)
+  const [startError, setStartError] = useState<string | null>(null)
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10 space-y-10">
@@ -75,8 +79,38 @@ export default function SimulationPage() {
       </div>
 
       {/* CTA */}
-      <button className="bg-primary text-on-primary rounded-full w-full py-3.5 font-label font-semibold text-base hover:opacity-90 transition-opacity">
-        Start Mock Interview
+      {!selectedCompany && (
+        <p className="text-center text-xs text-on-surface-variant -mb-4">Select a company above to begin</p>
+      )}
+      {startError && (
+        <p className="text-center text-xs text-error -mb-4">{startError}</p>
+      )}
+      <button
+        disabled={isStarting || !selectedCompany}
+        onClick={async () => {
+          setStartError(null)
+          setIsStarting(true)
+          try {
+            const res = await fetch('/api/simulation/start', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ company: selectedCompany, difficulty }),
+            })
+            const data = await res.json()
+            if (data?.sessionId) {
+              router.push(`/simulation/${data.sessionId}`)
+            } else {
+              setStartError(data?.error ?? 'Could not start session. Try again.')
+              setIsStarting(false)
+            }
+          } catch {
+            setStartError('Network error. Please check your connection and try again.')
+            setIsStarting(false)
+          }
+        }}
+        className="bg-primary text-on-primary rounded-full w-full py-3.5 font-label font-semibold text-base hover:opacity-90 transition-opacity disabled:opacity-50"
+      >
+        {isStarting ? 'Starting…' : 'Start Mock Interview'}
       </button>
     </div>
   )

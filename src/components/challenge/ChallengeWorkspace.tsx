@@ -88,6 +88,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
   const [frameworkOpen, setFrameworkOpen] = useState(false)
   const [inputMode, setInputMode]         = useState<'text' | 'options'>('text')
   const [selectedOptions, setSelectedOptions] = useState<Set<number>>(new Set())
+  const [bookmarked, setBookmarked]       = useState(false)
 
   const { steps } = useSteps(challenge.id)
   const scaffoldOptions = steps[activeStep]?.scaffold_options ?? []
@@ -283,8 +284,8 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
           <section className="w-2/5 bg-surface-container-lowest border-r border-outline-variant flex flex-col overflow-y-auto p-6">
             <div className="flex items-start justify-between mb-4">
               <h1 className="font-headline text-lg font-bold leading-tight">{challenge.title}</h1>
-              <button className="text-on-surface-variant hover:text-primary">
-                <span className="material-symbols-outlined">bookmark</span>
+              <button onClick={() => setBookmarked(b => !b)} className={`hover:text-primary ${bookmarked ? 'text-primary' : 'text-on-surface-variant'}`}>
+                <span className="material-symbols-outlined" style={bookmarked ? { fontVariationSettings: "'FILL' 1" } : undefined}>bookmark</span>
               </button>
             </div>
             <div className="flex gap-2 mb-6">
@@ -597,10 +598,10 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
             <div className="flex-1 text-sm text-on-primary-container font-medium">
               <span className="font-bold">Pro tip:</span> {coaching.tip}
             </div>
-            <a className="text-primary font-bold text-sm hover:underline flex items-center gap-1 flex-shrink-0" href="#">
+            <Link href="/frameworks" className="text-primary font-bold text-sm hover:underline flex items-center gap-1 flex-shrink-0">
               More tips
               <span className="material-symbols-outlined text-sm">open_in_new</span>
-            </a>
+            </Link>
           </div>
         </section>
       </div>

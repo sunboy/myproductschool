@@ -163,16 +163,16 @@ export default function WelcomePage() {
             &copy; 2024 HackProduct. Built for engineers.
           </p>
           <div className="flex gap-6 items-center">
-            <Link href="#" className="text-xs font-medium uppercase tracking-wider text-secondary hover:text-primary transition-opacity opacity-80 hover:opacity-100">
+            <Link href="/privacy" className="text-xs font-medium uppercase tracking-wider text-secondary hover:text-primary transition-opacity opacity-80 hover:opacity-100">
               Privacy
             </Link>
-            <Link href="#" className="text-xs font-medium uppercase tracking-wider text-secondary hover:text-primary transition-opacity opacity-80 hover:opacity-100">
+            <Link href="/terms" className="text-xs font-medium uppercase tracking-wider text-secondary hover:text-primary transition-opacity opacity-80 hover:opacity-100">
               Terms
             </Link>
-            <Link href="#" className="text-xs font-medium uppercase tracking-wider text-secondary hover:text-primary transition-opacity opacity-80 hover:opacity-100">
+            <Link href="mailto:hello@hackproduct.io" className="text-xs font-medium uppercase tracking-wider text-secondary hover:text-primary transition-opacity opacity-80 hover:opacity-100">
               Support
             </Link>
-            <Link href="#" className="text-xs font-medium uppercase tracking-wider text-secondary hover:text-primary transition-opacity opacity-80 hover:opacity-100">
+            <Link href="/dashboard" className="text-xs font-medium uppercase tracking-wider text-secondary hover:text-primary transition-opacity opacity-80 hover:opacity-100">
               Luma Coach
             </Link>
           </div>

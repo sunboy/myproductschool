@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 
@@ -42,6 +43,7 @@ function squareColor(s: typeof masteryGrid[number]) {
 }
 
 export default function ProgressPage() {
+  const router = useRouter()
   const { moves } = useMoveLevels()
 
   const flowMoves = moves.length > 0
@@ -81,7 +83,10 @@ export default function ProgressPage() {
             <p className="text-sm text-on-surface-variant mt-2 max-w-md">
               Strong at breaking down problems (<span className="font-bold text-primary">Frame + List</span>), developing your communication muscle (<span className="font-bold text-tertiary">Win</span>).
             </p>
-            <button className="mt-4 flex items-center gap-2 bg-[#6750a4] text-white px-4 py-2 rounded-full text-xs font-bold hover:bg-[#5a4591] transition-colors">
+            <button
+              onClick={() => router.push('/profile/share')}
+              className="mt-4 flex items-center gap-2 bg-[#6750a4] text-white px-4 py-2 rounded-full text-xs font-bold hover:bg-[#5a4591] transition-colors"
+            >
               <span className="material-symbols-outlined text-sm">share</span>
               Share Archetype
             </button>
@@ -158,7 +163,10 @@ export default function ProgressPage() {
               </div>
             ))}
           </div>
-          <button className="w-full mt-4 py-2 border border-primary/30 rounded-full text-[11px] font-bold text-primary hover:bg-primary/5 transition-colors">
+          <button
+            onClick={() => window.print()}
+            className="w-full mt-4 py-2 border border-primary/30 rounded-full text-[11px] font-bold text-primary hover:bg-primary/5 transition-colors"
+          >
             Export as PDF
           </button>
         </section>

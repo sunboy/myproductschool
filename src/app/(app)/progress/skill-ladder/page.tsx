@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import type { CareerBenchmark } from '@/lib/types'
@@ -22,6 +23,7 @@ const relatedSkills = [
 ]
 
 export default function SkillLadderPage() {
+  const router = useRouter()
   const { moves } = useMoveLevels()
   const [benchmark, setBenchmark] = useState<CareerBenchmark | null>(null)
 
@@ -107,7 +109,12 @@ export default function SkillLadderPage() {
                 </div>
                 <p className="text-xs text-white/80 mt-0.5">Typical: APM / Junior PM</p>
               </div>
-              <button className="bg-white text-primary px-4 py-1.5 rounded-full text-xs font-bold hover:bg-white/90 transition-colors">Share →</button>
+              <button
+                onClick={() => router.push('/profile/share')}
+                className="bg-white text-primary px-4 py-1.5 rounded-full text-xs font-bold hover:bg-white/90 transition-colors"
+              >
+                Share →
+              </button>
             </div>
 
             {/* LEVEL 2 (Current) */}
