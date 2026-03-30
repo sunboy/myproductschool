@@ -1,8 +1,8 @@
 import { getChallenges } from '@/lib/data/challenges'
 import { getDomains } from '@/lib/data/domains'
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { ChallengeCard } from './ChallengeCard'
+import { LumaPick } from './LumaPick'
 
 interface ChallengesPageProps {
   searchParams: Promise<{ paradigm?: string; role?: string; difficulty?: string }>
@@ -51,22 +51,8 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
         <p className="text-sm text-on-surface-variant">Master product thinking through real-world scenarios.</p>
       </div>
 
-      {/* Luma's Pick Banner */}
-      <div className="bg-primary-container/20 border border-primary-container/30 rounded-xl p-4 mb-6 flex items-center gap-4">
-        <LumaGlyph size={40} className="text-primary flex-shrink-0" />
-        <div>
-          <p className="text-sm font-bold text-primary">Luma&apos;s Pick: The Feature That Backfired</p>
-          <p className="text-xs text-on-surface-variant">
-            This challenge targets your weakest move <span className="font-bold">(Communication)</span>. Practice explaining trade-offs clearly.
-          </p>
-        </div>
-        <Link
-          href="/challenges/c0000001-0000-0000-0000-000000000001"
-          className="ml-auto bg-primary text-on-primary text-xs font-bold px-4 py-2 rounded-full hover:opacity-90 transition-colors whitespace-nowrap"
-        >
-          Try Now
-        </Link>
-      </div>
+      {/* Luma's Pick Banner — dynamic, real challenge from API */}
+      <LumaPick />
 
       {/* Filters */}
       <div className="space-y-3 mb-8">
@@ -142,7 +128,7 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
               <span className="material-symbols-outlined text-primary text-base" style={{ fontVariationSettings: "'FILL' 1" }}>recommend</span>
               Recommended for you
             </h2>
-            <span className="text-[10px] text-on-surface-variant font-medium">Based on your weakest move</span>
+            <span className="text-[10px] text-on-surface-variant font-medium">Picked for you</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {challenges.slice(0, 3).map((challenge, idx) => (

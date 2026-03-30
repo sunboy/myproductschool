@@ -17,6 +17,31 @@ const MOCK_NEXT = {
   recommendation_type: 'weakest_move',
 }
 
+// Generate a topic-based tip from challenge data (used when user is uncalibrated)
+function topicTip(challenge: { title?: string; move_tags?: string[]; prompt_text?: string }): string {
+  const title = challenge.title ?? 'this challenge'
+  const move = challenge.move_tags?.[0]
+  const movePhrases: Record<string, string> = {
+    frame: 'how to frame ambiguous problems',
+    list: 'how to break down complex systems',
+    weigh: 'how to evaluate trade-offs under uncertainty',
+    sell: 'how to communicate decisions to stakeholders',
+  }
+  const movePhrase = move ? movePhrases[move] ?? 'product thinking' : 'product thinking'
+  return `This challenge teaches you ${movePhrase}. Give it a try — no prior scores needed.`
+}
+
+// Generate a move-targeted tip (used when user is calibrated)
+function moveTip(move: string, challengeTitle: string): string {
+  const tips: Record<string, string> = {
+    frame: `Practice defining the right problem before jumping to solutions.`,
+    list: `Work on breaking "${challengeTitle}" into its core components — this sharpens your List move.`,
+    weigh: `This is a great exercise in trade-off thinking — your Weigh move needs the most practice.`,
+    sell: `Focus on how you'd explain your reasoning to a stakeholder — that's your growth area.`,
+  }
+  return tips[move] ?? `This challenge targets your weakest move. Give it a shot.`
+}
+
 export async function GET() {
   if (process.env.USE_MOCK_DATA === 'true') {
     return NextResponse.json(MOCK_NEXT)
@@ -35,6 +60,7 @@ export async function GET() {
     adminClient.from('challenge_attempts').select('prompt_id').eq('user_id', user.id).not('submitted_at', 'is', null),
   ])
 
+  const isCalibrated = (levels ?? []).length > 0 && (completedAttempts ?? []).length > 0
   const weakestMove: FlowMove = (levels?.[0]?.move as FlowMove) ?? 'frame'
   const completedIds = (completedAttempts ?? []).map((a: { prompt_id: string }) => a.prompt_id)
 
@@ -63,7 +89,6 @@ export async function GET() {
     })
 
     if (novelChallenges && novelChallenges.length > 0) {
-      // Among novel challenges, prefer ones targeting the weakest move
       const weakestFirst = novelChallenges.find(
         (c: { move_tags: string[] }) => c.move_tags?.includes(weakestMove)
       ) ?? novelChallenges[0]
@@ -71,8 +96,10 @@ export async function GET() {
       return NextResponse.json({
         challenge: weakestFirst,
         reason: `Luma picked this to push you outside your thinking comfort zone`,
+        tip: topicTip(weakestFirst),
         targets_move: weakestMove,
         recommendation_type: 'semantic_novelty',
+        is_calibrated: isCalibrated,
       })
     }
   }
@@ -95,7 +122,6 @@ export async function GET() {
   const { data: challenge } = await query.limit(1).maybeSingle()
 
   if (!challenge) {
-    // Final fallback: any uncompleted challenge
     const fallbackQuery = adminClient
       .from('challenge_prompts')
       .select('id, title, prompt_text, difficulty, domain_id, move_tags, role_tags')
@@ -109,16 +135,24 @@ export async function GET() {
 
     return NextResponse.json({
       challenge: fallback,
-      reason: 'Continue building your product thinking skills',
+      reason: 'A good place to start',
+      tip: topicTip(fallback),
       targets_move: weakestMove,
       recommendation_type: 'fallback',
+      is_calibrated: isCalibrated,
     })
   }
 
   return NextResponse.json({
     challenge,
-    reason: `Targets your weakest move: ${weakestMove.charAt(0).toUpperCase() + weakestMove.slice(1)}`,
+    reason: isCalibrated
+      ? `Targets your weakest move: ${weakestMove.charAt(0).toUpperCase() + weakestMove.slice(1)}`
+      : 'A good place to start',
+    tip: isCalibrated
+      ? moveTip(weakestMove, challenge.title)
+      : topicTip(challenge),
     targets_move: weakestMove,
     recommendation_type: 'weakest_move',
+    is_calibrated: isCalibrated,
   })
 }
