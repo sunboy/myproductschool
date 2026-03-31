@@ -26,23 +26,37 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     setError(null)
 
     if (activeMode === 'login') {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) {
         setError(error.message)
       } else {
-        router.push('/dashboard')
+        // Check if user completed onboarding
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_completed_at')
+          .eq('id', data.user.id)
+          .single()
+        const dest = profile?.onboarding_completed_at ? '/dashboard' : '/onboarding/welcome'
+        router.push(dest)
         router.refresh()
       }
     } else {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: `${window.location.origin}/onboarding` }
+        options: {
+          data: { display_name: name },
+          emailRedirectTo: `${window.location.origin}/onboarding/welcome`,
+        }
       })
       if (error) {
         setError(error.message)
+      } else if (data.session) {
+        // Auto-confirmed (no email verification required in dev)
+        router.push('/onboarding/welcome')
+        router.refresh()
       } else {
-        setSuccess('Check your email to confirm your account.')
+        setSuccess('Check your email to confirm your account. You\'ll start with Luma next.')
       }
     }
     setLoading(false)
@@ -59,7 +73,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     <div className="min-h-screen flex">
       {/* Left panel */}
       <div className="w-2/5 bg-surface-container-low flex flex-col justify-center px-12 py-16">
-        <LumaGlyph size={48} animated className="text-primary mb-6" />
+        <LumaGlyph size={48} state="idle" className="text-primary mb-6" />
         <h2 className="font-headline text-3xl text-on-surface mb-3 leading-snug">
           Tell me where you are. I&apos;ll tell you where to go.
         </h2>

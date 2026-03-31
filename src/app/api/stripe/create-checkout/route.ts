@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
             name: 'HackProduct Pro',
             description: 'Unlimited challenges, model answers, and Luma Live coaching',
           },
-          unit_amount: 1200, // $12.00
+          unit_amount: 3900, // $39.00/month — create matching price in Stripe dashboard if switching to price_id
           recurring: { interval: 'month' },
         },
         quantity: 1,

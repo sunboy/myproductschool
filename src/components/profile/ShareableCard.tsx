@@ -8,7 +8,7 @@ interface ShareableCardProps {
   topDimension: string
   challengeCount: number
   streak: number
-  percentile: number
+  percentile: number | null
   lumaQuote: string
 }
 
@@ -35,8 +35,9 @@ export function ShareableCard({
 
   const handleShareLinkedIn = () => {
     const url = encodeURIComponent(window.location.origin + '/profile/share')
+    const percentileText = percentile !== null ? ` — Top ${percentile}%` : ''
     const text = encodeURIComponent(
-      `My ProductIQ score is ${score} — Top ${percentile}% on HackProduct! Check it out:`
+      `My ProductIQ score is ${score}${percentileText} on HackProduct! Check it out:`
     )
     window.open(
       `https://www.linkedin.com/sharing/share-offsite/?url=${url}&summary=${text}`,
@@ -65,8 +66,12 @@ export function ShareableCard({
           <span>{challengeCount} challenges</span>
           <span className="opacity-40">·</span>
           <span>{streak}-day streak</span>
-          <span className="opacity-40">·</span>
-          <span>Top {percentile}%</span>
+          {percentile !== null && (
+            <>
+              <span className="opacity-40">·</span>
+              <span>Top {percentile}%</span>
+            </>
+          )}
         </div>
 
         <p className="italic text-sm opacity-70 mt-4 text-center">

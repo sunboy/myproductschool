@@ -4,12 +4,12 @@ import { NextResponse, type NextRequest } from 'next/server'
 // ── Pre-launch gate ──────────────────────────────────────────
 // Set to true to restrict all routes to the waitlist page.
 // Flip to false (or remove the block) when ready to launch.
-const PRE_LAUNCH = true
+const PRE_LAUNCH = false
 
 const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist']
 
 // ── Post-launch route config ─────────────────────────────────
-const PUBLIC_ROUTES = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/waitlist', '/pricing', '/onboarding']
+const PUBLIC_ROUTES = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/waitlist', '/pricing', '/onboarding', '/dashboard', '/explore', '/challenges', '/progress', '/cohort', '/settings', '/prep', '/welcome', '/role', '/calibration', '/interview-prep']
 const AUTH_ROUTES = ['/login', '/signup', '/forgot-password', '/reset-password']
 
 export async function middleware(request: NextRequest) {
@@ -56,13 +56,38 @@ export async function middleware(request: NextRequest) {
 
   // Redirect authenticated users away from auth pages
   if (user && AUTH_ROUTES.some(r => pathname.startsWith(r))) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    // Check if onboarding is done — if not, send to onboarding
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('onboarding_completed_at')
+      .eq('id', user.id)
+      .single()
+    const dest = profile?.onboarding_completed_at ? '/dashboard' : '/onboarding/welcome'
+    return NextResponse.redirect(new URL(dest, request.url))
   }
 
-  // Protect app routes
-  const isPublic = PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith('/api/'))
+  // Protect app routes — allow onboarding, API, and public routes without profile check
+  const isPublic = PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/')) || pathname.startsWith('/api/')
   if (!user && !isPublic) {
     return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  // For authenticated users on app routes (not onboarding), check onboarding status
+  const isOnboarding = pathname.startsWith('/onboarding')
+  const isAppRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/explore')
+    || pathname.startsWith('/challenges') || pathname.startsWith('/progress')
+    || pathname.startsWith('/cohort') || pathname.startsWith('/prep')
+    || pathname.startsWith('/settings')
+
+  if (user && isAppRoute && !isOnboarding) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('onboarding_completed_at')
+      .eq('id', user.id)
+      .single()
+    if (profile && !profile.onboarding_completed_at) {
+      return NextResponse.redirect(new URL('/onboarding/welcome', request.url))
+    }
   }
 
   // Admin route protection (role check done in page/layout)

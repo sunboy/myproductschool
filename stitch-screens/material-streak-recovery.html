@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HackProduct - Streak Recovery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&amp;family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#4a7c59',
+                        'primary-container': '#78a886',
+                        'on-primary': '#ffffff',
+                        'secondary': '#6b6358',
+                        'secondary-container': '#f0e8db',
+                        'tertiary': '#705c30',
+                        'tertiary-container': '#c4a66a',
+                        'background': '#faf6f0',
+                        'surface': '#faf6f0',
+                        'surface-low': '#f5f1ea',
+                        'surface-container': '#f0ece4',
+                        'surface-high': '#eae6de',
+                        'on-surface': '#2e3230',
+                        'on-surface-variant': '#4a4e4a',
+                        'outline': '#74796e',
+                        'outline-variant': '#c4c8bc',
+                    },
+                    fontFamily: {
+                        "headline": ["Literata", "serif"],
+                        "body": ["Nunito Sans", "sans-serif"],
+                        "label": ["Nunito Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "2rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background-color: #faf6f0;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased text-on-surface">
+<!-- Dark Overlay Background -->
+<div class="fixed inset-0 bg-[#2e3230]/60 z-40 flex items-center justify-center p-4">
+<!-- Dismiss Button -->
+<button class="absolute top-6 right-6 flex items-center gap-1 text-white text-sm font-medium hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-base">close</span>
+            × Dismiss
+        </button>
+<!-- Main Modal -->
+<div class="bg-surface w-full max-w-[360px] rounded-2xl shadow-lg p-6 relative flex flex-col items-center">
+<!-- Luma Mascot Section -->
+<div class="mb-4 relative">
+<img alt="Luma Robot Mascot" class="w-20 h-20 object-contain" data-alt="A friendly geometric robot mascot named Luma wearing a green graduation cap, with bright glowing eyes and white speech dots expressing support." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0X3_xi6gYMjdEH1OpTC9hr7rJVO3LhG8WmvSf8CuCzvjn8SOPZNnNjS-FT99DlF44lBM8YdhwQ7y6MVwHySVJXXrZhmhpeO0gtQLZHORTCN_zwC8aOXR8EFPWbzZf8EJQe-0QpJFB3r_Lq6eX2R3W0vRySMh7rrVwbOzY8eUZz6DEQ-Homl4I4S7s6ehgS1MaaELJuZqQ_laKlP8elg1o00VtNUXx2TlQz1nz_zKHIeoXCcrDLfO74iDH--4ur3oIMTQBAaiwg49a"/>
+</div>
+<!-- Speech Bubble -->
+<div class="bg-white border border-outline-variant rounded-xl p-3 mb-6 relative">
+<p class="text-xs text-on-surface-variant text-center leading-relaxed">
+                    "Your skills didn't reset — just the counter. Let's get your streak back."
+                </p>
+<!-- Tooltip arrow -->
+<div class="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-t border-l border-outline-variant rotate-45"></div>
+</div>
+<!-- Typography Header -->
+<div class="text-center mb-6">
+<h1 class="font-headline text-2xl font-bold text-on-surface mb-2">Welcome back.</h1>
+<p class="text-base text-on-surface-variant leading-tight">Your 7-day streak ended.</p>
+<p class="text-[13px] text-outline mt-1">Streaks reset at midnight. You can start a new one right now.</p>
+</div>
+<!-- Last Session Card -->
+<div class="w-full bg-surface-container rounded-xl p-3 mb-6">
+<span class="text-[10px] uppercase tracking-wider text-outline font-bold block mb-1">Last time you practiced:</span>
+<div class="flex flex-col gap-2">
+<p class="text-sm font-semibold text-on-surface leading-snug">
+                        The Feature That Backfired · Optimize ◆ · 79/100
+                    </p>
+<div class="flex items-center">
+<span class="bg-outline-variant/30 text-outline text-[11px] px-2 py-0.5 rounded-full font-medium">3 days ago</span>
+</div>
+</div>
+</div>
+<!-- Primary Action -->
+<div class="w-full text-center mb-6">
+<button class="w-full h-[52px] bg-primary hover:bg-primary-container text-white rounded-full font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
+                    Start today's Quick Take
+                    <span class="material-symbols-outlined text-lg">arrow_forward</span>
+</button>
+<p class="text-[11px] text-outline mt-2 font-medium">
+                    90 seconds · Restarts your streak immediately
+                </p>
+</div>
+<!-- Secondary Links -->
+<div class="flex flex-col items-center gap-3 mb-6">
+<a class="text-primary text-sm font-semibold hover:underline flex items-center gap-1" href="#">
+                    Browse challenges instead
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+<a class="text-outline text-sm font-medium hover:text-on-surface-variant" href="#">
+                    Remind me tonight
+                </a>
+</div>
+<!-- Bottom Information Chip -->
+<div class="bg-tertiary-container/20 border border-tertiary-container/30 px-4 py-2 rounded-full flex items-center gap-2">
+<span class="text-tertiary text-[11px] font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">shield</span>
+                    Earn a Streak Shield after 7 days — it'll protect you next time.
+                </span>
+</div>
+</div>
+</div>
+<!-- Hidden Background Content (App UI Simulation) -->
+<div aria-hidden="true" class="min-h-screen bg-surface p-6 blur-sm pointer-events-none">
+<!-- Simplified Header -->
+<div class="flex justify-between items-center mb-8">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 bg-primary rounded-lg"></div>
+<span class="font-headline font-bold text-xl text-primary">HackProduct</span>
+</div>
+<div class="flex gap-4">
+<div class="w-10 h-4 bg-outline-variant rounded-full"></div>
+<div class="w-6 h-6 bg-outline-variant rounded-full"></div>
+</div>
+</div>
+<!-- Simplified Grid -->
+<div class="grid grid-cols-2 gap-4">
+<div class="h-32 bg-surface-container rounded-xl"></div>
+<div class="h-32 bg-surface-container rounded-xl"></div>
+<div class="h-48 col-span-2 bg-surface-container rounded-xl"></div>
+<div class="h-32 bg-surface-container rounded-xl"></div>
+<div class="h-32 bg-surface-container rounded-xl"></div>
+</div>
+</div>
+</body></html>

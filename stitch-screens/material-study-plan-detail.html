@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Staff Engineer Path | HackProduct</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400..900;1,400..900&amp;family=Nunito+Sans:ital,wght@0,200..1000;1,200..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#4a7c59",
+                        "primary-container": "#78a886",
+                        "primary-fixed": "#c8e8d0",
+                        secondary: "#6b6358",
+                        "secondary-container": "#f0e8db",
+                        tertiary: "#705c30",
+                        "tertiary-container": "#c4a66a",
+                        background: "#faf6f0",
+                        surface: "#ffffff",
+                        "surface-low": "#f5f1ea",
+                        "surface-container": "#f0ece4",
+                        "surface-high": "#eae6de",
+                        "surface-highest": "#e4e0d8",
+                        "on-surface": "#2e3230",
+                        "on-surface-variant": "#4a4e4a",
+                        outline: "#74796e",
+                        "outline-variant": "#c4c8bc",
+                        error: "#b83230"
+                    },
+                    fontFamily: {
+                        "headline": ["Literata", "serif"],
+                        "body": ["Nunito Sans", "sans-serif"],
+                        "label": ["Nunito Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background-color: #faf6f0;
+            color: #2e3230;
+        }
+        .Literata-headings {
+            font-family: 'Literata', serif;
+        }
+    </style>
+</head>
+<body class="bg-background">
+<!-- SideNavBar (Shared Component) -->
+<aside class="w-[220px] h-screen fixed left-0 top-0 border-r border-stone-200 bg-[#f5f1ea] flex flex-col p-4 gap-2 z-20">
+<div class="flex items-center gap-3 mb-6 px-2">
+<img alt="Luma mascot robot with green graduation cap" class="w-8 h-8" data-alt="A friendly small cream-colored robot mascot wearing a miniature green graduation cap, smiling warmly" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKqQgmiTDSTDn6bN82a8wQMYyi1dmGZpAb7LREllkdzLGGj7vm09faiy6rsKuDBS2uvPqwtLlInpxWhajZQ8TBpxV_UztKPXHPS6uj55EHPTOOfduUlEfjORCvKC3lzUG_6W2fGcAvzQcltUZLsNpd9neMmUpYMWMrvVT7exYPkjLBfc5Fn3tKD7SH-VUrnhieEAyh89sF88xygMP0tNWCWJhk8uk_2yzv1NfOleb0rHqsiPiCMKDmGQQ9KmMMepZ2oPTj68v3pzUK"/>
+<span class="text-xl font-bold text-[#4a7c59] font-serif">HackProduct</span>
+</div>
+<nav class="flex flex-col gap-1 flex-1">
+<a class="text-[#4a4e4a] hover:bg-stone-200 rounded-full px-4 py-2 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-sm font-medium">Home</span>
+</a>
+<!-- Active Tab: Explore (Study Plans fall under Explore) -->
+<a class="bg-[#78a886] text-white rounded-full px-4 py-2 flex items-center gap-3 shadow-sm" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">explore</span>
+<span class="text-sm font-medium">Explore</span>
+</a>
+<a class="text-[#4a4e4a] hover:bg-stone-200 rounded-full px-4 py-2 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">fitness_center</span>
+<span class="text-sm font-medium">Practice</span>
+</a>
+<a class="text-[#4a4e4a] hover:bg-stone-200 rounded-full px-4 py-2 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">workspace_premium</span>
+<span class="text-sm font-medium">Prep</span>
+</a>
+<a class="text-[#4a4e4a] hover:bg-stone-200 rounded-full px-4 py-2 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="text-sm font-medium">Progress</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-4">
+<div class="bg-white/50 p-3 rounded-xl border border-stone-200">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold uppercase tracking-wider text-secondary">Daily Goal</span>
+<span class="text-[10px] font-bold text-primary">80%</span>
+</div>
+<div class="w-full bg-stone-200 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[80%]"></div>
+</div>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 bg-tertiary-container text-on-surface text-xs font-bold rounded-full hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                Upgrade to Pro
+            </button>
+<button class="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white text-sm font-bold rounded-full hover:scale-95 transition-all duration-150">
+                Ask Luma
+            </button>
+</div>
+</aside>
+<!-- TopNavBar (Shared Component) -->
+<header class="h-12 w-full sticky top-0 z-10 bg-[#faf6f0] border-b border-stone-200 flex items-center justify-between px-6 ml-[220px] w-[calc(100%-220px)]">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+<input class="w-full bg-surface-low border-none rounded-full py-1.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-[#4a7c59] transition-all" placeholder="Search challenges or topics..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-3 bg-white px-3 py-1 rounded-full border border-stone-100 shadow-sm">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-orange-500 text-lg" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="text-xs font-bold">12</span>
+</div>
+<div class="w-px h-3 bg-stone-200"></div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-tertiary text-lg" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+<span class="text-xs font-bold">2,450 XP</span>
+</div>
+</div>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full border-2 border-primary-container" data-alt="Close-up headshot of a professional user profile avatar in a clean minimalist style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3dmIHeT8QJS5KRu77H1-URLNVquxGYY449hiYNyoyz--MfRP2jPt2Dx-kVTAVOxY76JW2l_SntOtp3CGePA2jSKO6atPPgUaovOT6ui1GaS2k2kDc9KIEghIbV1jQ2ieF-kSshRGnUJAPVZzNGd0BktgdOUjhKdrsuNAhtiLxiM4LRDjsPweFsaZTggKAvMRAIiNTNX5Z6whFv6HIoqSSR8knN3w-waXNFc3ivR3uLD0OKIX5YfTms7jI-_VwQ1R7-as7_MVT44lw"/>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-[220px] p-6 max-w-7xl mx-auto">
+<div class="grid grid-cols-12 gap-6">
+<!-- Plan Header Section -->
+<section class="col-span-12 lg:col-span-8 space-y-6">
+<div class="bg-white rounded-xl p-5 border border-stone-100 shadow-sm">
+<nav class="flex items-center gap-2 text-xs text-on-surface-variant mb-4">
+<a class="hover:text-primary transition-colors" href="#">Explore</a>
+<span class="material-symbols-outlined text-[10px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Study Plans</a>
+<span class="material-symbols-outlined text-[10px]">chevron_right</span>
+<span class="font-bold text-on-surface">Staff Engineer Path</span>
+</nav>
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+<div>
+<h1 class="text-2xl font-bold font-headline text-on-surface mb-2">Staff Engineer Path 🎯</h1>
+<div class="flex flex-wrap items-center gap-2">
+<span class="bg-primary-fixed text-primary px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide">SWE</span>
+<span class="text-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                                    6 weeks · 6 chapters · 30 challenges
+                                </span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="bg-secondary-container text-on-surface-variant hover:bg-stone-200 px-4 py-2 rounded-full text-sm font-bold transition-all">
+                                Mark as active
+                            </button>
+<button class="bg-primary text-white hover:opacity-90 px-5 py-2 rounded-full text-sm font-bold shadow-sm transition-all flex items-center gap-2">
+                                Continue Plan <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<p class="text-on-surface-variant text-sm max-w-2xl mb-6">
+                        The Blind 75 for product sense. 30 problems that build the complete toolkit for Senior → Staff.
+                    </p>
+<div class="space-y-2">
+<div class="flex justify-between items-end">
+<span class="text-xs font-bold text-primary">3 of 30 challenges completed</span>
+<span class="text-xs text-on-surface-variant font-medium">10% Complete</span>
+</div>
+<div class="w-full bg-stone-100 h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[10%]" style="transition: width 0.5s ease-out"></div>
+</div>
+</div>
+</div>
+<!-- Chapter Accordion List -->
+<div class="space-y-3">
+<!-- Chapter 1: Expanded -->
+<div class="bg-white rounded-xl border border-primary-container/30 overflow-hidden shadow-sm">
+<div class="p-4 flex items-center justify-between cursor-pointer bg-primary-fixed/20">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">1</div>
+<h2 class="text-lg font-bold font-headline text-on-surface">See Product in Code</h2>
+</div>
+<span class="material-symbols-outlined text-primary">expand_less</span>
+</div>
+<div class="divide-y divide-stone-100">
+<!-- Challenge Row 1 (Completed) -->
+<div class="p-4 hover:bg-surface-low transition-colors flex items-center justify-between gap-4">
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2 mb-1">
+<h3 class="text-sm font-bold text-on-surface truncate">The Feature That Backfired</h3>
+<span class="bg-secondary-container text-[10px] px-2 py-0.5 rounded-full font-bold">Traditional</span>
+</div>
+<div class="flex items-center gap-3 text-[11px] text-on-surface-variant">
+<span class="text-green-600 font-bold uppercase">Easy</span>
+<span class="flex items-center gap-1">SWE, Data</span>
+<span class="text-stone-300 font-normal">◇◈◆◎</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-xs font-bold text-primary flex items-center gap-1">Completed <span class="material-symbols-outlined text-sm">check_circle</span></span>
+</div>
+</div>
+<!-- Challenge Row 2 (Next Action) -->
+<div class="p-4 hover:bg-surface-low transition-colors flex items-center justify-between gap-4 bg-primary/5">
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2 mb-1">
+<h3 class="text-sm font-bold text-on-surface truncate">Power User Paradox</h3>
+<span class="bg-secondary-container text-[10px] px-2 py-0.5 rounded-full font-bold">Traditional</span>
+</div>
+<div class="flex items-center gap-3 text-[11px] text-on-surface-variant">
+<span class="text-orange-500 font-bold uppercase">Medium</span>
+<span class="flex items-center gap-1">SWE, Data, EM</span>
+<span class="text-stone-300 font-normal">◇◈◎</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-primary text-white px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 hover:opacity-90 transition-opacity">
+                                        Start <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Challenge Row 3 (Locked) -->
+<div class="p-4 opacity-70 flex items-center justify-between gap-4">
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2 mb-1">
+<h3 class="text-sm font-bold text-on-surface truncate">Funnel Drop Analysis</h3>
+<span class="bg-secondary-container text-[10px] px-2 py-0.5 rounded-full font-bold">Traditional</span>
+</div>
+<div class="flex items-center gap-3 text-[11px] text-on-surface-variant">
+<span class="text-orange-500 font-bold uppercase">Medium</span>
+<span class="flex items-center gap-1">Data, SWE</span>
+<span class="text-stone-300 font-normal">◇◈◆</span>
+</div>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="text-xs font-medium flex items-center gap-1">Locked <span class="material-symbols-outlined text-sm">lock</span></span>
+</div>
+</div>
+<!-- Challenge Row 4 (Locked) -->
+<div class="p-4 opacity-70 flex items-center justify-between gap-4">
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2 mb-1">
+<h3 class="text-sm font-bold text-on-surface truncate">The Activation Mystery</h3>
+<span class="bg-secondary-container text-[10px] px-2 py-0.5 rounded-full font-bold">Traditional</span>
+</div>
+<div class="flex items-center gap-3 text-[11px] text-on-surface-variant">
+<span class="text-error font-bold uppercase">Hard</span>
+<span class="flex items-center gap-1">SWE, Data</span>
+<span class="text-stone-300 font-normal">◇◈◆◎</span>
+</div>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="text-xs font-medium flex items-center gap-1">Locked <span class="material-symbols-outlined text-sm">lock</span></span>
+</div>
+</div>
+<!-- Challenge Row 5 (Locked) -->
+<div class="p-4 opacity-70 flex items-center justify-between gap-4">
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2 mb-1">
+<h3 class="text-sm font-bold text-on-surface truncate">Retention vs Revenue</h3>
+<span class="bg-secondary-container text-[10px] px-2 py-0.5 rounded-full font-bold">Traditional</span>
+</div>
+<div class="flex items-center gap-3 text-[11px] text-on-surface-variant">
+<span class="text-error font-bold uppercase">Hard</span>
+<span class="flex items-center gap-1">EM, SWE</span>
+<span class="text-stone-300 font-normal">◇◈◆◎</span>
+</div>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="text-xs font-medium flex items-center gap-1">Locked <span class="material-symbols-outlined text-sm">lock</span></span>
+</div>
+</div>
+</div>
+</div>
+<!-- Collapsed Chapters -->
+<div class="space-y-2">
+<div class="bg-white rounded-xl border border-stone-100 p-4 flex items-center justify-between cursor-not-allowed opacity-80">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-on-surface-variant text-xs font-bold">2</div>
+<h2 class="text-base font-bold text-on-surface-variant">Drive Decisions</h2>
+</div>
+<span class="material-symbols-outlined text-stone-400">lock</span>
+</div>
+<div class="bg-white rounded-xl border border-stone-100 p-4 flex items-center justify-between cursor-not-allowed opacity-80">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-on-surface-variant text-xs font-bold">3</div>
+<h2 class="text-base font-bold text-on-surface-variant">Systems &amp; Incentives</h2>
+</div>
+<span class="material-symbols-outlined text-stone-400">lock</span>
+</div>
+<div class="bg-white rounded-xl border border-stone-100 p-4 flex items-center justify-between cursor-not-allowed opacity-80">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-on-surface-variant text-xs font-bold">4</div>
+<h2 class="text-base font-bold text-on-surface-variant">AI-Era Thinking</h2>
+</div>
+<span class="material-symbols-outlined text-stone-400">lock</span>
+</div>
+<div class="bg-white rounded-xl border border-stone-100 p-4 flex items-center justify-between cursor-not-allowed opacity-80">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-on-surface-variant text-xs font-bold">5</div>
+<h2 class="text-base font-bold text-on-surface-variant">Hard Mode</h2>
+</div>
+<span class="material-symbols-outlined text-stone-400">lock</span>
+</div>
+<div class="bg-white rounded-xl border border-stone-100 p-4 flex items-center justify-between cursor-not-allowed opacity-80">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-on-surface-variant text-xs font-bold">6</div>
+<h2 class="text-base font-bold text-on-surface-variant">AI-Native Frontier</h2>
+</div>
+<span class="material-symbols-outlined text-stone-400">lock</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Sidebar Column -->
+<aside class="col-span-12 lg:col-span-4 space-y-6">
+<!-- Luma Tip Card -->
+<div class="bg-surface-container rounded-xl p-5 border border-primary-container/20">
+<div class="flex items-start gap-3 mb-3">
+<img alt="Luma robot icon" class="w-8 h-8 flex-shrink-0" data-alt="A friendly small robot mascot with a green cap, offering helpful advice as a companion" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCISTD9RoAamt0i_XjdypB5MuozCkTm_YVd8KmNv1t5JrRaemF1Chzb66luYIFRo2K0Y0XldZ-CdtjiqqClo2frNORs1OGzuzsjJ5QmlJ3Fvy0F3S8ql_AFanDvjPG0W1dUTl78LWABDMgmfDnmUmngYdwmCcIc929f0ZTBypRwweEiDtmDtgbIl7un3QVupIMu9Q5dimurlEh7u0RPZALhxpYeOiRy6U_n3JSFLGHXPi8PyFzIhiEUjds45TDC8JgQinFMUnuvnpRI"/>
+<div class="bg-white p-3 rounded-tr-xl rounded-br-xl rounded-bl-xl shadow-sm relative">
+<p class="text-xs font-medium text-on-surface leading-relaxed">
+                                Complete Chapter 1 to unlock Chapter 2. You're 1 challenge away!
+                            </p>
+<!-- speech bubble arrow -->
+<div class="absolute -left-1.5 top-2 w-3 h-3 bg-white rotate-45 border-l border-b border-white"></div>
+</div>
+</div>
+</div>
+<!-- Plan Stats Card -->
+<div class="bg-white rounded-xl border border-stone-100 p-4 shadow-sm">
+<h3 class="text-sm font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">analytics</span>
+                        Plan Insights
+                    </h3>
+<div class="space-y-4">
+<div class="flex justify-between items-center text-xs">
+<span class="text-on-surface-variant">Total Practicing</span>
+<span class="font-bold">1,240 Engineers</span>
+</div>
+<div class="flex justify-between items-center text-xs">
+<span class="text-on-surface-variant">Success Rate</span>
+<span class="font-bold">68%</span>
+</div>
+<div class="flex justify-between items-center text-xs">
+<span class="text-on-surface-variant">Est. Effort</span>
+<span class="font-bold">3h / week</span>
+</div>
+<hr class="border-stone-100"/>
+<div class="flex flex-col gap-2">
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Top Skills You'll Build</span>
+<div class="flex flex-wrap gap-1">
+<span class="bg-secondary-container text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-bold">Decision Making</span>
+<span class="bg-secondary-container text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-bold">System Incentives</span>
+<span class="bg-secondary-container text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-bold">Product Intuition</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Weekly Schedule -->
+<div class="bg-white rounded-xl border border-stone-100 p-4 shadow-sm">
+<h3 class="text-sm font-bold mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">calendar_month</span>
+                        My Schedule
+                    </h3>
+<div class="grid grid-cols-7 gap-1">
+<div class="flex flex-col items-center gap-1">
+<span class="text-[9px] uppercase font-bold text-on-surface-variant">M</span>
+<div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-[10px] text-white">✓</div>
+</div>
+<div class="flex flex-col items-center gap-1">
+<span class="text-[9px] uppercase font-bold text-on-surface-variant">T</span>
+<div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-[10px] text-white">✓</div>
+</div>
+<div class="flex flex-col items-center gap-1">
+<span class="text-[9px] uppercase font-bold text-on-surface-variant">W</span>
+<div class="w-6 h-6 rounded-full bg-primary-fixed border-2 border-primary flex items-center justify-center text-[10px] text-primary font-bold">3</div>
+</div>
+<div class="flex flex-col items-center gap-1">
+<span class="text-[9px] uppercase font-bold text-on-surface-variant">T</span>
+<div class="w-6 h-6 rounded-full bg-stone-100 flex items-center justify-center text-[10px] text-stone-400"></div>
+</div>
+<div class="flex flex-col items-center gap-1">
+<span class="text-[9px] uppercase font-bold text-on-surface-variant">F</span>
+<div class="w-6 h-6 rounded-full bg-stone-100 flex items-center justify-center text-[10px] text-stone-400"></div>
+</div>
+<div class="flex flex-col items-center gap-1">
+<span class="text-[9px] uppercase font-bold text-on-surface-variant">S</span>
+<div class="w-6 h-6 rounded-full bg-stone-100 flex items-center justify-center text-[10px] text-stone-400"></div>
+</div>
+<div class="flex flex-col items-center gap-1">
+<span class="text-[9px] uppercase font-bold text-on-surface-variant">S</span>
+<div class="w-6 h-6 rounded-full bg-stone-100 flex items-center justify-center text-[10px] text-stone-400"></div>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</main>
+</body></html>

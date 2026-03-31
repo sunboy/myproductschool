@@ -338,3 +338,89 @@ export interface ChallengeWithTopics extends ChallengeWithDomain {
   topics: Pick<Topic, 'slug' | 'title'>[]
   companies: Pick<CompanyProfile, 'slug' | 'name'>[]
 }
+
+// ── V2 FLOW SYSTEM TYPES ──────────────────────────────────────
+
+export type ParadigmV2 = 'traditional' | 'ai_assisted' | 'agentic' | 'ai_native'
+export type DifficultyV2 = 'warmup' | 'standard' | 'advanced' | 'staff_plus'
+export type FlowStep = 'frame' | 'list' | 'optimize' | 'win'
+export type OptionQuality = 'best' | 'good_but_incomplete' | 'surface' | 'plausible_wrong'
+export type ResponseType = 'pure_mcq' | 'mcq_plus_elaboration' | 'modified_option' | 'freeform'
+export type Competency = 'motivation_theory' | 'cognitive_empathy' | 'taste' | 'strategic_thinking' | 'creative_execution' | 'domain_expertise'
+export type UserRoleV2 = 'swe' | 'data_eng' | 'ml_eng' | 'devops' | 'founding_eng' | 'em' | 'tech_lead' | 'pm' | 'designer' | 'data_scientist'
+
+export interface Challenge {
+  id: string; title: string
+  scenario_role: string | null; scenario_context: string; scenario_trigger: string; scenario_question: string
+  engineer_standout: string | null
+  paradigm: ParadigmV2 | null; industry: string | null; sub_vertical: string | null
+  difficulty: DifficultyV2; estimated_minutes: number
+  primary_competencies: string[]; secondary_competencies: string[]
+  frameworks: string[]; relevant_roles: string[]; company_tags: string[]; tags: string[]
+  is_published: boolean; is_calibration: boolean; is_premium: boolean; created_at: string
+}
+
+export interface FlowStepRecord {
+  id: string; challenge_id: string; step: FlowStep; step_nudge: string | null
+  grading_weight: number; step_order: number
+}
+
+export interface StepQuestion {
+  id: string; flow_step_id: string; question_text: string; question_nudge: string | null
+  sequence: number; grading_weight_within_step: number; target_competencies: string[]
+}
+
+export interface FlowOption {
+  id: string; question_id: string; option_label: 'A' | 'B' | 'C' | 'D'
+  option_text: string; quality: OptionQuality; points: number
+  competencies: string[]; explanation: string
+}
+
+export interface ChallengeAttemptV2 {
+  id: string; user_id: string; challenge_id: string; role_id: UserRoleV2
+  total_score: number | null; max_score: number; grade_label: string | null
+  status: 'in_progress' | 'completed' | 'abandoned'
+  current_step: FlowStep | 'done'; current_question_sequence: number
+  time_spent_seconds: number; is_replay: boolean
+  started_at: string; completed_at: string | null
+}
+
+export interface StepAttemptRecord {
+  id: string; attempt_id: string; question_id: string; step: FlowStep
+  response_type: ResponseType; selected_option_id: string | null; user_text: string | null
+  score: number | null; weighted_score: number | null; quality_label: string | null
+  competencies_demonstrated: string[]; grading_explanation: string | null
+  rubric_alignment: { closest_option: string; alignment_score: number; exceeds_option: boolean } | null
+  grading_confidence: number | null
+  role_context: string | null; career_signal: string | null
+  time_spent_seconds: number
+}
+
+export interface LearnerCompetency {
+  user_id: string; competency: Competency; score: number
+  total_attempts: number; trend: 'improving' | 'declining' | 'steady' | 'insufficient_data'
+  trend_slope: number; last_updated: string
+}
+
+export interface RoleLens {
+  role_id: UserRoleV2; label: string; short_label: string
+  frame_weight: number; list_weight: number; optimize_weight: number; win_weight: number
+  competency_multipliers: Record<Competency, number>
+  frame_nudge: string | null; list_nudge: string | null
+  optimize_nudge: string | null; win_nudge: string | null
+}
+
+export const COMPETENCY_LABELS: Record<Competency, string> = {
+  motivation_theory: 'Motivation Theory', cognitive_empathy: 'Cognitive Empathy',
+  taste: 'Taste', strategic_thinking: 'Strategic Thinking',
+  creative_execution: 'Creative Execution', domain_expertise: 'Domain Expertise',
+}
+export const DIFFICULTY_V2_LABELS: Record<DifficultyV2, string> = {
+  warmup: 'Warm-up', standard: 'Standard', advanced: 'Advanced', staff_plus: 'Staff+',
+}
+export const PARADIGM_V2_LABELS: Record<ParadigmV2, string> = {
+  traditional: 'Traditional', ai_assisted: 'AI-Assisted', agentic: 'Agentic', ai_native: 'AI-Native',
+}
+export const QUALITY_POINTS: Record<OptionQuality, number> = {
+  best: 3, good_but_incomplete: 2, surface: 1, plausible_wrong: 0,
+}

@@ -1,9 +1,24 @@
 'use client'
 
+import { useState } from 'react'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { ChallengeDiscussion } from '@/lib/types'
+
+export interface DiscussionReply {
+  id: string
+  username: string
+  display_name?: string | null
+  content: string
+  created_at: string
+}
 
 interface Props {
   discussion: ChallengeDiscussion
+  challengeId: string
+  isOP?: boolean
+  upvoted?: boolean
+  onUpvote?: (id: string) => void
+  replies?: DiscussionReply[]
 }
 
 function relativeTime(dateStr: string): string {
@@ -24,131 +39,216 @@ function getInitials(username: string): string {
   return username.slice(0, 2).toUpperCase()
 }
 
-export function DiscussionThread({ discussion, isOP = false }: Props & { isOP?: boolean }) {
+export function DiscussionThread({
+  discussion,
+  challengeId,
+  isOP = false,
+  upvoted = false,
+  onUpvote,
+  replies = [],
+}: Props) {
+  const [showReply, setShowReply] = useState(false)
+  const [replyContent, setReplyContent] = useState('')
+  const [postingReply, setPostingReply] = useState(false)
+  const [replyPosted, setReplyPosted] = useState(false)
+
   const initials = getInitials(discussion.username ?? 'User')
 
-  // Main thread opener style (OP)
-  if (isOP) {
-    return (
-      <div className="bg-surface-container-lowest rounded-lg p-6 editorial-shadow ghost-border border-l-4 border-primary">
-        <div className="flex items-start gap-4 mb-4">
-          <div className="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
-            <span className="text-on-primary-container font-bold text-sm">{initials}</span>
-          </div>
-          <div className="flex-grow">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-bold text-on-surface">{discussion.username ?? 'Anonymous'}</span>
-              <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">
-                OP
-              </span>
-              <span className="text-xs text-outline">• {relativeTime(discussion.created_at)}</span>
-            </div>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="bg-secondary-container text-on-secondary-container text-xs px-2 py-0.5 rounded-md font-medium">
-                Senior PM @ Google
-              </span>
-            </div>
-            <p className="text-on-surface leading-relaxed mb-4">{discussion.content}</p>
-            <div className="flex items-center gap-3">
-              <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant text-sm font-bold border border-primary/20 hover:bg-primary-container transition-colors">
-                <span
-                  className="material-symbols-outlined text-sm"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  thumb_up
-                </span>
-                {discussion.upvote_count}
-              </button>
-              <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-highest text-on-surface-variant text-sm font-medium hover:bg-surface-dim transition-colors">
-                <span className="material-symbols-outlined text-sm">chat_bubble</span>
-                {discussion.reply_count ?? 0} Comments
-              </button>
-              <button className="material-symbols-outlined p-1.5 text-outline hover:bg-surface-dim rounded-full transition-colors">
-                share
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+  async function handlePostReply() {
+    if (!replyContent.trim() || postingReply) return
+    setPostingReply(true)
+    try {
+      await fetch(
+        `/api/challenges/${challengeId}/discussions/${discussion.id}/replies`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: replyContent }),
+        }
+      )
+      setReplyContent('')
+      setReplyPosted(true)
+      setShowReply(false)
+      setTimeout(() => setReplyPosted(false), 3000)
+    } catch {
+      // silently fail
+    } finally {
+      setPostingReply(false)
+    }
   }
 
-  // Expert pick reply style
-  if (discussion.is_expert_pick) {
-    return (
-      <div className="bg-surface-container-lowest rounded-lg p-6 editorial-shadow ghost-border border-l-4 border-tertiary">
-        <div className="flex items-start gap-3 mb-3">
-          <div className="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center flex-shrink-0">
-            <span className="text-on-tertiary-container font-bold text-sm">{initials}</span>
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-on-surface text-sm">{discussion.username ?? 'Anonymous'}</span>
-              <span className="bg-tertiary-container text-on-tertiary-container text-[10px] px-2 py-0.5 rounded-full uppercase font-bold">
-                Expert Pick
-              </span>
-              <span className="text-xs text-outline">• {relativeTime(discussion.created_at)}</span>
-            </div>
-            <span className="text-xs text-tertiary font-semibold">Staff Designer @ HackProduct</span>
-          </div>
-        </div>
-        <p className="text-on-surface-variant text-sm leading-relaxed mb-4">{discussion.content}</p>
-        <div className="flex items-center gap-4">
-          <button className="flex items-center gap-1.5 text-xs font-bold text-primary">
-            <span className="material-symbols-outlined text-sm">expand_less</span>
-            UPVOTE ({discussion.upvote_count})
-          </button>
-          <button className="text-xs font-semibold text-outline hover:text-primary transition-colors">
-            REPLY
-          </button>
-        </div>
-      </div>
-    )
-  }
+  const actionRow = (
+    <div className="flex items-center gap-3 mt-3">
+      <button
+        onClick={() => onUpvote?.(discussion.id)}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition-colors border"
+        style={
+          upvoted
+            ? { background: 'var(--color-primary-fixed)', borderColor: 'var(--color-primary)' }
+            : { background: 'var(--color-surface-container-highest)', borderColor: 'transparent' }
+        }
+      >
+        <span
+          className={`material-symbols-outlined text-sm ${upvoted ? 'text-primary' : 'text-on-surface-variant'}`}
+          style={{ fontVariationSettings: upvoted ? "'FILL' 1" : "'FILL' 0" }}
+        >
+          thumb_up
+        </span>
+        <span className={upvoted ? 'text-primary' : 'text-on-surface-variant'}>
+          {discussion.upvote_count}
+        </span>
+      </button>
 
-  // Regular reply style
-  return (
-    <div className="bg-surface-container-lowest rounded-lg p-6 editorial-shadow ghost-border">
-      <div className="flex items-start gap-3 mb-3">
-        <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
-          <span className="text-on-primary-container font-bold text-sm">{initials}</span>
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-on-surface text-sm">{discussion.username ?? 'Anonymous'}</span>
-            <span className="text-xs text-outline">• {relativeTime(discussion.created_at)}</span>
-          </div>
-          <span className="text-xs text-on-surface-variant">Design Engineer</span>
-        </div>
-      </div>
-      <p className="text-on-surface-variant text-sm leading-relaxed mb-4">{discussion.content}</p>
-      <div className="flex items-center gap-4">
-        <button className="flex items-center gap-1.5 text-xs font-bold text-outline hover:text-primary">
-          <span className="material-symbols-outlined text-sm">expand_less</span>
-          UPVOTE ({discussion.upvote_count})
+      <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-highest text-on-surface-variant text-sm font-medium hover:bg-surface-dim transition-colors border border-transparent">
+        <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 0" }}>
+          lightbulb
+        </span>
+        <span>{discussion.upvote_count}</span>
+      </button>
+
+      <button
+        onClick={() => setShowReply(v => !v)}
+        className="text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors px-2 py-1.5"
+      >
+        Reply
+      </button>
+
+      {replyPosted && (
+        <span className="text-xs text-primary font-bold flex items-center gap-1">
+          <span className="material-symbols-outlined text-xs">check_circle</span>
+          Reply posted
+        </span>
+      )}
+
+      <button className="ml-auto material-symbols-outlined text-base text-on-surface-variant hover:text-on-surface transition-colors p-1 rounded-full hover:bg-surface-container-highest">
+        more_horiz
+      </button>
+    </div>
+  )
+
+  const replyInput = showReply && (
+    <div className="mt-3 ml-4 border-l-2 border-outline-variant/30 pl-4 space-y-2">
+      <textarea
+        className="w-full text-sm bg-surface-container-low rounded-lg border border-outline-variant/40 p-3 resize-none focus:outline-none focus:ring-1 focus:ring-primary/50 text-on-surface placeholder:text-on-surface-variant/60"
+        rows={3}
+        placeholder="Write a reply..."
+        value={replyContent}
+        onChange={e => setReplyContent(e.target.value.slice(0, 500))}
+        disabled={postingReply}
+      />
+      <div className="flex items-center justify-end gap-2">
+        <button
+          onClick={() => { setShowReply(false); setReplyContent('') }}
+          className="text-xs font-semibold text-on-surface-variant hover:text-on-surface transition-colors px-3 py-1.5"
+        >
+          Cancel
         </button>
-        <button className="text-xs font-semibold text-outline hover:text-primary transition-colors">
-          REPLY
+        <button
+          onClick={handlePostReply}
+          disabled={postingReply || !replyContent.trim()}
+          className="bg-primary text-on-primary text-xs font-bold px-4 py-1.5 rounded-full disabled:opacity-50 hover:opacity-90 transition-opacity"
+        >
+          {postingReply ? 'Posting...' : 'Post Reply'}
         </button>
       </div>
     </div>
   )
-}
 
-// Sub-reply component for threaded replies
-export function SubReply({ username, content, time }: { username: string; content: string; time: string }) {
-  return (
-    <div className="ml-8 border-l border-surface-container-highest pl-4 mt-2">
-      <div className="flex items-start gap-3">
-        <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center">
-          <span className="material-symbols-outlined text-outline text-sm">person</span>
-        </div>
-        <div className="flex-grow">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-bold text-on-surface text-xs">{username}</span>
-            <span className="text-[10px] text-outline">• {time}</span>
+  const repliesList = replies.length > 0 && (
+    <div className="mt-3 ml-4 border-l-2 border-outline-variant/20 pl-4 space-y-3">
+      {replies.map(r => {
+        const replyName = r.display_name || r.username || 'Anonymous'
+        const isLumaReply = r.display_name?.startsWith('Luma')
+        return (
+          <div key={r.id} className="flex items-start gap-2">
+            {isLumaReply ? (
+              <LumaGlyph size={28} state="speaking" className="text-primary shrink-0" />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-surface-container-high flex items-center justify-center flex-shrink-0">
+                <span className="text-on-surface-variant text-[10px] font-bold">
+                  {getInitials(r.username ?? 'U')}
+                </span>
+              </div>
+            )}
+            <div>
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className="text-xs font-bold text-on-surface">{replyName}</span>
+                <span className="text-[10px] text-on-surface-variant">· {relativeTime(r.created_at)}</span>
+              </div>
+              <p className="text-xs text-on-surface-variant leading-relaxed">{r.content}</p>
+            </div>
           </div>
-          <p className="text-on-surface-variant text-xs leading-normal">{content}</p>
+        )
+      })}
+    </div>
+  )
+
+  // OP variant — green left border
+  if (isOP) {
+    return (
+      <div className="bg-white rounded-xl p-5 shadow-sm border border-outline-variant/20 border-l-4 border-l-primary">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
+            <span className="text-on-primary-container font-bold text-sm">{initials}</span>
+          </div>
+          <div className="flex-grow min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-2">
+              <span className="font-bold text-on-surface text-sm">{discussion.username ?? 'Anonymous'}</span>
+              <span className="bg-primary text-on-primary text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">
+                OP
+              </span>
+              <span className="text-xs text-on-surface-variant">· {relativeTime(discussion.created_at)}</span>
+            </div>
+            <p className="text-on-surface text-sm leading-relaxed">{discussion.content}</p>
+            {actionRow}
+            {replyInput}
+            {repliesList}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Expert pick variant — amber/tertiary left border with Luma branding
+  if (discussion.is_expert_pick) {
+    return (
+      <div className="bg-white rounded-xl p-5 shadow-sm border border-outline-variant/20 border-l-4 border-l-tertiary">
+        <div className="flex items-start gap-3">
+          <LumaGlyph size={36} state="speaking" className="text-primary shrink-0" />
+          <div className="flex-grow min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-2">
+              <span className="font-bold text-on-surface text-sm">Luma&apos;s Team</span>
+              <span className="bg-tertiary-container text-tertiary text-[10px] px-2 py-0.5 rounded-full uppercase font-bold">
+                Expert Pick
+              </span>
+              <span className="text-xs text-on-surface-variant">· {relativeTime(discussion.created_at)}</span>
+            </div>
+            <p className="text-on-surface text-sm leading-relaxed">{discussion.content}</p>
+            {actionRow}
+            {replyInput}
+            {repliesList}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Regular post variant
+  return (
+    <div className="bg-white rounded-xl p-5 shadow-sm border border-outline-variant/20">
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
+          <span className="text-on-primary-container font-bold text-sm">{initials}</span>
+        </div>
+        <div className="flex-grow min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-2">
+            <span className="font-bold text-on-surface text-sm">{discussion.username ?? 'Anonymous'}</span>
+            <span className="text-xs text-on-surface-variant">· {relativeTime(discussion.created_at)}</span>
+          </div>
+          <p className="text-on-surface text-sm leading-relaxed">{discussion.content}</p>
+          {actionRow}
+          {replyInput}
+          {repliesList}
         </div>
       </div>
     </div>

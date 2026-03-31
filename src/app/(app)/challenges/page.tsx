@@ -4,6 +4,7 @@ import { getTopics } from '@/lib/data/topics'
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { ChallengeCard } from '@/components/challenge/ChallengeCard'
+import { V2ChallengesSection } from './V2ChallengesSection'
 
 interface ChallengesPageProps {
   searchParams: Promise<{ domain?: string; difficulty?: string; company?: string; topic?: string; status?: string }>
@@ -259,6 +260,8 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
           </div>
         </div>
       )}
+      {/* V2 FLOW Challenges */}
+      <V2ChallengesSection />
     </div>
   )
 }

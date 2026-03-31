@@ -1,21 +1,43 @@
 interface Props {
-  participants: string
-  solutions: string
+  responseCount: number
+  participantCount: number
+  avgScore?: number
+  completedPct?: number
 }
 
-export function CommunityStatsPanel({ participants, solutions }: Props) {
+export function CommunityStatsPanel({ responseCount, participantCount, avgScore, completedPct }: Props) {
   return (
-    <div className="bg-surface-container-lowest rounded-lg p-6 editorial-shadow ghost-border">
-      <h3 className="font-headline font-bold text-xl mb-6 border-b border-outline-variant/10 pb-4">Challenge Stats</h3>
-      <div className="grid grid-cols-2 gap-4 text-center">
-        <div className="p-3 bg-surface-container-low rounded-lg">
-          <p className="text-[10px] uppercase font-bold text-on-surface-variant/60 mb-1">Participants</p>
-          <p className="text-xl font-headline font-bold">{participants}</p>
+    <div className="bg-white rounded-xl border border-outline-variant/20 p-4 shadow-sm">
+      <h3 className="text-sm font-bold text-on-surface mb-3">Community Stats</h3>
+      <div className="space-y-2.5">
+        <div className="flex items-center gap-2 text-sm text-on-surface-variant">
+          <span className="material-symbols-outlined text-base text-primary">forum</span>
+          <span><span className="font-bold text-on-surface">{responseCount}</span> responses</span>
         </div>
-        <div className="p-3 bg-surface-container-low rounded-lg">
-          <p className="text-[10px] uppercase font-bold text-on-surface-variant/60 mb-1">Solutions</p>
-          <p className="text-xl font-headline font-bold">{solutions}</p>
+        <div className="flex items-center gap-2 text-sm text-on-surface-variant">
+          <span className="material-symbols-outlined text-base text-primary">group</span>
+          <span><span className="font-bold text-on-surface">{participantCount}</span> participants</span>
         </div>
+        {avgScore !== undefined && (
+          <div className="flex items-center gap-2 text-sm text-on-surface-variant">
+            <span className="material-symbols-outlined text-base text-tertiary">bar_chart</span>
+            <span>Avg Score: <span className="font-bold text-on-surface">{avgScore.toFixed(1)}</span></span>
+          </div>
+        )}
+        {completedPct !== undefined && (
+          <div className="pt-1">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-on-surface-variant">Completed</span>
+              <span className="text-xs font-bold text-on-surface">{completedPct}%</span>
+            </div>
+            <div className="h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all"
+                style={{ width: `${Math.min(100, Math.max(0, completedPct))}%` }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

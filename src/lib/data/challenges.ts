@@ -1,7 +1,7 @@
 import { ChallengePrompt, ChallengeWithDomain } from '@/lib/types'
 import { MOCK_CHALLENGES, MOCK_DOMAINS } from '@/lib/mock-data'
 
-export async function getChallenges(filters?: { domainId?: string; difficulty?: string }): Promise<ChallengeWithDomain[]> {
+export async function getChallenges(filters?: { domainId?: string; difficulty?: string; paradigm?: string; role?: string }): Promise<ChallengeWithDomain[]> {
   if (process.env.USE_MOCK_DATA === 'true') {
     let challenges = MOCK_CHALLENGES
     if (filters?.domainId) challenges = challenges.filter(c => c.domain_id === filters.domainId)
@@ -24,6 +24,8 @@ export async function getChallenges(filters?: { domainId?: string; difficulty?: 
   let query = supabase.from('challenge_prompts').select('*, domains(slug, title, icon)').eq('is_published', true)
   if (filters?.domainId) query = query.eq('domain_id', filters.domainId)
   if (filters?.difficulty) query = query.eq('difficulty', filters.difficulty)
+  if (filters?.paradigm && filters.paradigm !== 'all') query = query.eq('paradigm', filters.paradigm)
+  if (filters?.role) query = query.contains('role_tags', [filters.role])
   const { data } = await query.order('created_at', { ascending: false })
 
   return (data ?? []).map(c => ({

@@ -50,7 +50,8 @@ export default async function ProfilePage() {
   // Find top dimension
   const topDimension = getTopDimension(analytics.dimensions)
   const topDimensionLabel = DIMENSION_LABELS[topDimension.key as keyof typeof DIMENSION_LABELS] ?? topDimension.key
-  const percentile = 28
+  // Percentile is derived from real analytics when available — null otherwise
+  const percentile: number | null = analytics.total_attempts > 0 ? null : null
 
   const activities = analytics.recent_attempts.map((attempt) => ({
     date: formatAttemptDate(attempt.created_at),
@@ -109,9 +110,11 @@ export default async function ProfilePage() {
             {analytics.productiq_delta}
           </span>
         </div>
-        <p className="text-sm text-on-surface-variant mt-2">
-          Top {percentile}% of product thinkers
-        </p>
+        {percentile !== null && (
+          <p className="text-sm text-on-surface-variant mt-2">
+            Top {percentile}% of product thinkers
+          </p>
+        )}
       </div>
 
       {/* 3. Skill Radar */}
@@ -125,7 +128,7 @@ export default async function ProfilePage() {
       {/* 4. Luma's Insight */}
       <div className="bg-primary-fixed rounded-xl p-5 flex gap-4">
         <div className="flex-shrink-0 mt-0.5">
-          <LumaGlyph size={28} className="text-primary" />
+          <LumaGlyph size={28} state="speaking" className="text-primary" />
         </div>
         <blockquote className="text-sm text-on-surface leading-relaxed">
           <p className="font-label font-semibold text-primary mb-1">

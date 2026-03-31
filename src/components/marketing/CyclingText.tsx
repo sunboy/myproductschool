@@ -21,7 +21,7 @@ export function CyclingText() {
   }, [])
 
   return (
-    <span className="inline-block relative overflow-hidden align-bottom" style={{ minWidth: '5ch' }}>
+    <span className="inline-block relative align-bottom" style={{ minWidth: '5ch' }}>
       <span
         className={`inline-block text-primary transition-all duration-300 ${
           animating

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&amp;family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#4a7c59',
+                        'primary-container': '#78a886',
+                        'primary-fixed': '#c8e8d0',
+                        'secondary': '#6b6358',
+                        'secondary-container': '#f0e8db',
+                        'tertiary': '#705c30',
+                        'tertiary-container': '#c4a66a',
+                        'surface': '#faf6f0',
+                        'surface-low': '#f5f1ea',
+                        'surface-container': '#f0ece4',
+                        'surface-high': '#eae6de',
+                        'on-surface': '#2e3230',
+                        'on-surface-variant': '#4a4e4a',
+                        'outline': '#74796e',
+                        'outline-variant': '#c4c8bc',
+                    },
+                    fontFamily: {
+                        "headline": ["Literata", "serif"],
+                        "body": ["Nunito Sans", "sans-serif"],
+                        "label": ["Nunito Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "2rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .radar-chart {
+            clip-path: polygon(50% 10%, 90% 40%, 75% 90%, 25% 90%, 10% 40%);
+        }
+    </style>
+</head>
+<body class="bg-[#2e3230]/80 min-h-screen flex items-center justify-center font-body text-on-surface p-4">
+<!-- Top Right Close -->
+<button class="fixed top-6 right-8 text-white flex items-center gap-2 font-medium hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-lg">close</span>
+<span>Close</span>
+</button>
+<div class="flex flex-col items-center gap-8 w-full max-w-[420px]">
+<!-- Score Card -->
+<div class="w-[360px] bg-surface rounded-2xl border border-primary/20 shadow-2xl overflow-hidden flex flex-col items-center p-6 relative">
+<!-- Card Header -->
+<div class="flex justify-between items-center w-full mb-6">
+<div class="flex items-center gap-2">
+<img class="w-8 h-8 object-contain" data-alt="Small friendly robot mascot Luma wearing a green graduation cap, jumping with joy and confetti for a celebration" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzXKSyR0FvDenuqRpJVezelvnW_FjtIW3qn_Bw16cR2krWqt5orVsnHEfDClx_V6BTcqNTF4v9rlCTwLqQ3KgV5cwoa9MUl2djj-I9H1guAWxR0ybRsfFrUrl8wBytwLkUq3pJ0B3G_PO_9UdPEWtgAT8Sz51CSTlMtVLCb_4M770tPWIY-x9p9wOXlpC2m6YoMMuNGz6S1Oy_erI-FpL4Yw1d-r21qpKNcg-slQmAgDGwOrWCMiFw-XnfmpE8V9baa8lSIV_rM-xY"/>
+<span class="font-headline font-bold text-primary text-lg">HackProduct</span>
+</div>
+</div>
+<!-- Score Display -->
+<div class="text-center mb-2">
+<span class="font-headline text-[64px] font-bold text-primary leading-none">84</span>
+<span class="font-headline text-2xl text-primary/60">/100</span>
+</div>
+<div class="text-center mb-4">
+<p class="font-semibold text-on-surface text-base px-4">The Feature That Backfired</p>
+<div class="mt-2 inline-flex items-center gap-1 bg-tertiary-container/30 text-tertiary px-3 py-1 rounded-full text-xs font-bold">
+<span>Optimize</span>
+<span class="material-symbols-outlined text-[10px]" style="font-variation-settings: 'FILL' 1;">diamond</span>
+</div>
+</div>
+<!-- Mini Radar Chart Mockup -->
+<div class="relative w-[120px] h-[120px] mb-6 flex items-center justify-center">
+<!-- Outer Pentagon -->
+<div class="absolute inset-0 border border-outline-variant radar-chart opacity-20"></div>
+<!-- Inner Pentagon (Filled Score) -->
+<div class="absolute inset-2 bg-primary/20 radar-chart border border-primary/40"></div>
+<!-- Labels Placeholder (Invisible, for spacing context) -->
+<div class="absolute -top-4 text-[8px] font-bold text-outline">FRAME</div>
+<div class="absolute -right-6 top-1/2 -translate-y-1/2 text-[8px] font-bold text-outline">WIN</div>
+<div class="absolute -left-8 top-1/2 -translate-y-1/2 text-[8px] font-bold text-outline">LENS</div>
+</div>
+<!-- Stats Bar -->
+<div class="flex items-center gap-3 text-xs text-on-surface-variant font-medium bg-surface-container rounded-lg px-4 py-2 mb-6">
+<span>Time: 4m 12s</span>
+<span class="text-outline-variant">•</span>
+<span>XP: +120</span>
+<span class="text-outline-variant">•</span>
+<span>Level: 3</span>
+</div>
+<!-- Footer Logo/URL -->
+<div class="mt-auto border-t border-outline-variant/30 pt-4 w-full text-center">
+<p class="text-[10px] tracking-widest uppercase font-bold text-outline-variant">hackproduct.com</p>
+</div>
+</div>
+<!-- Action Area -->
+<div class="flex flex-col items-center w-full gap-6">
+<!-- Luma Bubble -->
+<div class="flex items-start gap-4 max-w-[380px]">
+<img class="w-16 h-16 object-contain shrink-0" data-alt="A friendly robot mascot named Luma with a green graduation cap, a cream colored body, and a warm welcoming smile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDolw6Eeg6inDDLKKfZa3xv4aN_ur_kWy5fTE-YvdHHZB_J-MHLixkxfyf_LrjoFDWg8c8AGt8XzA_NqzWK2FvAUmmI1fV3HpcKig6qv_M2rBSYkuHEwsqlV6AO46M-xwH-To4kgPTp45N9O2tJRAeSBh9xftgjJlcIabiFsef7aGKunUWFtuSqIsQD573OLufD3BIAZ4Vabcin9NawJYKAEHFbh10PBacC8Vd6y6G6hBrZjbrQuJ-39jXfDLT92zfyOA9ofaurlNCE"/>
+<div class="bg-surface-container rounded-xl p-4 text-sm text-on-surface relative mt-2 border border-outline-variant/20 shadow-sm">
+<div class="absolute -left-2 top-4 w-4 h-4 bg-surface-container border-l border-t border-outline-variant/20 rotate-[-45deg]"></div>
+<p class="relative z-10">Share your score and challenge your network. Who else can crack this one?</p>
+</div>
+</div>
+<!-- Social Buttons -->
+<div class="flex flex-col gap-3 w-full">
+<button class="bg-[#0A66C2] text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all">
+                    Share to LinkedIn <span class="material-symbols-outlined text-base">arrow_forward</span>
+</button>
+<button class="bg-on-surface text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-all">
+                    Share to Twitter/X <span class="material-symbols-outlined text-base">arrow_forward</span>
+</button>
+<button class="border-2 border-primary text-primary w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary/5 transition-all">
+<span class="material-symbols-outlined text-base">content_copy</span>
+                    Copy image
+                </button>
+</div>
+<!-- Caption Preview -->
+<div class="w-full bg-on-surface/10 rounded-lg p-3 border border-white/10">
+<p class="text-[11px] text-white/70 leading-relaxed italic">
+                    Pre-filled caption: "I just scored 84/100 on The Feature That Backfired (Optimize move) on HackProduct 🎯"
+                </p>
+</div>
+<!-- Context Strip -->
+<div class="flex flex-col items-center gap-3 pt-2">
+<div class="flex -space-x-3">
+<div class="w-8 h-8 rounded-full border-2 border-[#2e3230] bg-surface-high flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A soft-focus profile avatar icon of a person with professional attire in a warm office lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUeb94nIG6polEj1Wqam-owYk17kHRS_vrEXa8vePvThIlc2tQHOBSKUgc11IVoJNGDeJ50I5vKAdH8z8vpn080mckllxpxQ6efCyT9Mg2o6cjXORQjyxtmkVe5TRDo38zzZnEQcEGV5FN-mY4Iu6EE_RXAIHcb641bF9GWJrcJ2LZLG40KdvHw0ljQUCDN-M95JEv6ngh25j14jqQK8Vobmvd5MOKjMyo9dyMLg2pIfq7UgJCny_MPdNilRN8QEKkHETOvwDSQekq"/>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-[#2e3230] bg-surface-high flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A blurred headshot of a person with glasses against a natural outdoor background for an anonymous profile effect" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfatfO3Tg5J9gG00iWcniMw9kR7q0JjoIai_dwY7EsgxDn-PY_HAPuXU99FmdJWZ_AUHp9GD5Q39HrrFly7y6E-RKlQxaXnTS6zW7BsAXWrVgpaJ9OW2AbHpv334_2qXKMNJ7kgXDsDsePYvrXJY_uxAA5-Wthp9ZtWrTp6JYLeeSq-8XSCbj9svRUuel8FssWx6Th1QTL7kyqmqbo1_YZZ2m0I2cmCzc1KZdM8JYrmnN5iSWOZC-F3bN69v7XW7kPzD9F2duh0Utl"/>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-[#2e3230] bg-surface-high flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A stylized anonymous avatar silhouette with soft teal and grey background gradient" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBluhcj8ueJWyPeSJ4BbscFlQYcNifvFgGZIg_dDf-AY1v0q-cZ9JcVuH_zj8oajbcbvsppb2VYJV5VKaQW9oUPThVqGoN6fFwM0T3UlgOl2WgM-E2cfI_WBn9cZW9V8KIPyG7kgVa8bvzKi0rfs3aBcJxxNmwzjZyBQQGnDDVufaEgt-y_8e1pQwW-HcAojwLuKpssw2J5qgZ6fe9JU3pj4995VEQsg2tJJFWjwZTmlNriVbTXu5598ezN1RccVfnCyBQQkfTNnenA"/>
+</div>
+</div>
+<div class="text-center">
+<p class="text-xs text-white/80">3 friends from your network have also attempted this challenge</p>
+<a class="text-xs text-primary-fixed font-bold hover:underline mt-1 inline-block" href="#">See how you compare →</a>
+</div>
+</div>
+</div>
+</div>
+</body></html>

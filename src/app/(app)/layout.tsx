@@ -8,7 +8,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <NavRail />
       <div className="flex flex-col flex-1 min-w-0">
         <TopBar />
-        <main className="flex-1 pb-20 md:pb-0">
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
           {children}
         </main>
       </div>

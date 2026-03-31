@@ -19,7 +19,7 @@ export function DiscussionInput({ challengeId, onSubmitted }: Props) {
       await fetch(`/api/challenges/${challengeId}/discussions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, userId: 'mock-user' }),
+        body: JSON.stringify({ content }),
       })
       setSubmitted(true)
       setContent('')

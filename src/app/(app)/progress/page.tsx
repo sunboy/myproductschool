@@ -8,6 +8,7 @@ import { DimensionMicroCard } from '@/components/analytics/DimensionMicroCard'
 import { RecentChallengesTable } from '@/components/analytics/RecentChallengesTable'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { FeedbackDimension, DIMENSION_LABELS } from '@/lib/types'
+import { LearnerDNASection } from './LearnerDNASection'
 
 interface ProgressPageProps {
   searchParams: Promise<{ period?: string }>
@@ -99,6 +100,9 @@ export default async function ProgressPage({ searchParams }: ProgressPageProps) 
               Your Metric Fluency improved 7 points this week — keep it up!
             </p>
           </div>
+        </div>
+        <div className="col-span-12 md:col-span-5">
+          <LearnerDNASection />
         </div>
       </div>
     </div>
