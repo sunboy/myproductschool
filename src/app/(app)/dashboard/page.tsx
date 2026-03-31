@@ -208,7 +208,7 @@ export default async function DashboardPage() {
           />
         )
       case 'interview_countdown':
-        return <InterviewCountdownCard interviewDate={interviewDate} />
+        return <InterviewCountdownCard interviews={interviewDate ? [{ id: '0', user_id: user?.id ?? '', company: null, role: null, round: null, interview_date: interviewDate, notes: null, created_at: interviewDate }] : []} />
       case 'hot_challenges':
         return <HotChallengesCard challenges={hotChallenges} />
       case 'discussions':

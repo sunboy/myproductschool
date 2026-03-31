@@ -16,7 +16,7 @@ function daysUntil(dateStr: string): number {
   return Math.max(0, Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
 }
 
-export function InterviewCountdownCard({ interviews }: InterviewCountdownCardProps) {
+export function InterviewCountdownCard({ interviews = [] }: InterviewCountdownCardProps) {
   const router = useRouter()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [, startTransition] = useTransition()

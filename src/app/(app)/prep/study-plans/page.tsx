@@ -131,13 +131,14 @@ export default function StudyPlansPage() {
         moveTag: p.move_tag ? p.move_tag.charAt(0).toUpperCase() + p.move_tag.slice(1) : 'Multi-move',
         moveTagBg: p.move_tag ? 'bg-secondary-container' : 'bg-secondary-container',
         moveTagText: p.move_tag ? 'text-on-surface' : 'text-on-surface',
-        roleTag: p.role_tags.join('+') || 'PM',
+        roleTag: (p.role_tags ?? []).join('+') || 'PM',
         borderColor: p.move_tag ? (MOVE_COLORS[p.move_tag] ?? '#4a7c59') : '#4a7c59',
         level: 'INTERMEDIATE' as const,
         description: p.description ?? '',
-        challenges: p.challenge_count,
+        challenges: p.challenge_count ?? 0,
         time: `~${p.estimated_hours} hrs`,
         cta: 'View Plan' as const,
+        rainbowBar: false,
       }))
     : PLANS_MOCK
 

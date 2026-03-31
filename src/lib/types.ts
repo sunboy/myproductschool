@@ -1,7 +1,7 @@
 export type Plan = 'free' | 'pro'
 export type Role = 'user' | 'admin'
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced'
-export type ChallengeMode = 'solo' | 'live'
+export type ChallengeMode = 'solo' | 'live' | 'guided' | 'freeform' | 'quick-take'
 export type FeedbackDimension = 'diagnostic_accuracy' | 'metric_fluency' | 'framing_precision' | 'recommendation_strength'
 
 export const DIMENSION_LABELS: Record<FeedbackDimension, string> = {
@@ -10,7 +10,18 @@ export const DIMENSION_LABELS: Record<FeedbackDimension, string> = {
   framing_precision: 'Framing Precision',
   recommendation_strength: 'Recommendation Strength',
 }
+
+export const FLOW_MOVE_LABELS: Record<FlowMove, string> = {
+  frame: 'Frame',
+  list: 'List',
+  optimize: 'Optimize',
+  win: 'Win',
+}
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing'
+
+export type UserRole = 'SWE' | 'Data Eng' | 'ML Eng' | 'DevOps' | 'EM' | 'Founding Eng'
+export type FlowMove = 'frame' | 'list' | 'optimize' | 'win'
+export type Paradigm = 'traditional' | 'ai-assisted' | 'agentic' | 'ai-native'
 
 export interface Profile {
   id: string
@@ -21,6 +32,10 @@ export interface Profile {
   streak_days: number
   xp_total: number
   onboarding_completed_at: string | null
+  preferred_role: UserRole | null
+  archetype: string | null
+  archetype_description: string | null
+  streak_shield_count: number
   created_at: string
   updated_at: string
 }
@@ -68,6 +83,8 @@ export interface ChallengePrompt {
   is_published: boolean
   created_at: string
   sub_questions?: string[]
+  paradigm?: string | null
+  move_tags?: FlowMove[]
   image_url?: string | null
 }
 
@@ -216,13 +233,15 @@ export interface Prescription {
 export interface ChallengeDiscussion {
   id: string
   challenge_id: string
-  user_id: string
+  user_id: string | null
+  display_name?: string | null
   content: string
   is_expert_pick: boolean
   upvote_count: number
   created_at: string
   username?: string
   reply_count?: number
+  upvoted_by?: string[]
 }
 
 export interface AnalyticsSummary {
@@ -278,70 +297,211 @@ export interface ProfileData {
   avatar_initials: string
 }
 
-// ── Topics & Study Plans (Explore Redesign) ─────────────────────
+/* ── v2 FLOW Move Types ───────────────────────────────────── */
 
-export interface Topic {
+export interface MoveLevel {
   id: string
-  domain_id: string
-  slug: string
-  title: string
-  description: string | null
-  icon: string | null
-  order_index: number
-  difficulty_range: string
-  is_published: boolean
+  user_id: string
+  move: FlowMove
+  level: number
+  progress_pct: number
+  xp: number
+  created_at: string
+  updated_at: string
+}
+
+export interface MoveLevelHistory {
+  id: string
+  user_id: string
+  move: FlowMove
+  xp_delta: number
+  source: 'challenge' | 'quick-take' | 'calibration' | 'cohort'
+  source_id: string | null
   created_at: string
 }
 
-export interface TopicWithProgress extends Topic {
-  concept_count: number
-  challenge_count: number
-  completed_challenges: number
-  progress_percentage: number
-  domain: Pick<Domain, 'slug' | 'title'>
-}
+/* ── v2 Study Plans ───────────────────────────────────────── */
 
 export interface StudyPlan {
   id: string
-  slug: string
   title: string
+  slug: string
   description: string | null
-  icon: string | null
-  difficulty: string
-  estimated_hours: number | null
+  estimated_hours: number
   is_published: boolean
+  created_at: string
+  move_tag?: FlowMove | null
+  role_tags?: string[]
+  challenge_count?: number
+  icon?: string | null
+  difficulty?: string
+  order_index?: number
+}
+
+export interface StudyPlanChapterChallenge {
+  id: string
+  title: string
+  difficulty: string
+  paradigm?: string | null
+}
+
+export interface StudyPlanChapter {
+  id: string
+  plan_id: string
+  title: string
   order_index: number
+  challenge_ids: string[]
+  challenges?: StudyPlanChapterChallenge[]
   created_at: string
 }
 
-export interface StudyPlanItem {
+export interface UserStudyPlan {
   id: string
+  user_id: string
   plan_id: string
-  item_type: 'challenge' | 'concept' | 'article'
-  challenge_id: string | null
-  concept_id: string | null
-  chapter_title: string | null
-  order_index: number
-  challenge?: ChallengeWithDomain
-  concept?: Concept
+  started_at: string
+  progress_pct: number
+  is_active: boolean
+  completed_challenges: string[]
 }
 
-export interface StudyPlanWithItems extends StudyPlan {
-  items: StudyPlanItem[]
-  item_count: number
-  chapter_count: number
-  completed_count: number
-  progress_percentage: number
+/* ── v2 Cohort ────────────────────────────────────────────── */
+
+export interface CohortChallenge {
+  id: string
+  title: string
+  prompt_text: string
+  difficulty: Difficulty
+  move_tag: FlowMove | null
+  week_start: string
+  week_end: string
+  is_active: boolean
+  created_at: string
 }
 
-export interface ChallengeWithTopics extends ChallengeWithDomain {
-  topics: Pick<Topic, 'slug' | 'title'>[]
-  companies: Pick<CompanyProfile, 'slug' | 'name'>[]
+export interface CohortSubmission {
+  id: string
+  user_id: string
+  cohort_challenge_id: string
+  response_text: string
+  score: number | null
+  feedback_json: Record<string, unknown> | null
+  submitted_at: string
 }
 
-// ── V2 FLOW SYSTEM TYPES ──────────────────────────────────────
+/* ── v2 Settings ──────────────────────────────────────────── */
 
-export type ParadigmV2 = 'traditional' | 'ai_assisted' | 'agentic' | 'ai_native'
+export interface UserSettings {
+  id: string
+  user_id: string
+  notifications: {
+    weekly_summary: boolean
+    streak_reminder: boolean
+    new_challenges: boolean
+    cohort_updates: boolean
+  }
+  daily_goal_count: number
+  preferred_role: UserRole | null
+  created_at: string
+  updated_at: string
+}
+
+/* ── v2 Extended Challenge Prompt ─────────────────────────── */
+
+export interface ChallengePromptV2 extends ChallengePrompt {
+  paradigm: Paradigm | null
+  move_tags: FlowMove[]
+  is_premium: boolean
+  role_tags: string[]
+}
+
+/* ── v2 Onboarding Calibration ────────────────────────────── */
+
+export interface CalibrationScores {
+  frame: number
+  list: number
+  optimize: number
+  win: number
+}
+
+export interface CalibrationResults {
+  scores: CalibrationScores
+  archetype: string
+  archetype_description: string
+  starting_levels: Record<FlowMove, number>
+  percentile: number
+  // Optional fields returned when Luma provides richer feedback
+  luma_observation?: string
+  strengths?: string[]
+  focus_area?: string
+}
+
+/* ── v2 Share Card ────────────────────────────────────────── */
+
+export interface ShareCardData {
+  score: number
+  challenge_title: string
+  move: FlowMove
+  user_display_name: string
+  xp_earned: number
+  percentile: number
+  share_url: string
+}
+
+/* ── v2 Career Benchmark ──────────────────────────────────── */
+
+export interface CareerBenchmark {
+  levels: { title: string; percentile: number }[]
+  user_level: string
+}
+
+/* ── v2 Challenge Steps ───────────────────────────────────── */
+
+export interface ChallengeStep {
+  id: string
+  challenge_id: string
+  move: FlowMove
+  step_index: number
+  prompt: string
+  hint: string | null
+  recommended: string | null
+  pattern_title: string | null
+  pattern_body: string | null
+  trap_ids: string[]
+  scaffold_options: string[]
+}
+
+/* ── v2 Quick Takes ───────────────────────────────────────── */
+
+export interface QuickTake {
+  id: string
+  scenario_text: string
+  paradigm: Paradigm
+  move: FlowMove
+  active_date: string
+}
+
+/* ── v2 Thinking Traps ────────────────────────────────────── */
+
+export interface ThinkingTrap {
+  id: string
+  name: string
+  description: string
+  fix_suggestion: string
+}
+
+/* ── v2 Session Events ────────────────────────────────────── */
+
+export interface SessionEvent {
+  id: string
+  user_id: string
+  event_type: string
+  payload: Record<string, unknown>
+  created_at: string
+}
+
+/* ── v2 FLOW Challenge System ───────────────────────────────── */
+
 export type DifficultyV2 = 'warmup' | 'standard' | 'advanced' | 'staff_plus'
 export type FlowStep = 'frame' | 'list' | 'optimize' | 'win'
 export type OptionQuality = 'best' | 'good_but_incomplete' | 'surface' | 'plausible_wrong'
@@ -353,7 +513,7 @@ export interface Challenge {
   id: string; title: string
   scenario_role: string | null; scenario_context: string; scenario_trigger: string; scenario_question: string
   engineer_standout: string | null
-  paradigm: ParadigmV2 | null; industry: string | null; sub_vertical: string | null
+  paradigm: Paradigm | null; industry: string | null; sub_vertical: string | null
   difficulty: DifficultyV2; estimated_minutes: number
   primary_competencies: string[]; secondary_competencies: string[]
   frameworks: string[]; relevant_roles: string[]; company_tags: string[]; tags: string[]
@@ -418,9 +578,60 @@ export const COMPETENCY_LABELS: Record<Competency, string> = {
 export const DIFFICULTY_V2_LABELS: Record<DifficultyV2, string> = {
   warmup: 'Warm-up', standard: 'Standard', advanced: 'Advanced', staff_plus: 'Staff+',
 }
-export const PARADIGM_V2_LABELS: Record<ParadigmV2, string> = {
-  traditional: 'Traditional', ai_assisted: 'AI-Assisted', agentic: 'Agentic', ai_native: 'AI-Native',
+export const PARADIGM_LABELS: Record<Paradigm, string> = {
+  traditional: 'Traditional', 'ai-assisted': 'AI-Assisted', agentic: 'Agentic', 'ai-native': 'AI-Native',
 }
 export const QUALITY_POINTS: Record<OptionQuality, number> = {
   best: 3, good_but_incomplete: 2, surface: 1, plausible_wrong: 0,
+}
+
+// ── V2 aliases (for components written against the v2 naming convention) ──
+export type ParadigmV2 = 'traditional' | 'ai_assisted' | 'agentic' | 'ai_native'
+export const PARADIGM_V2_LABELS: Record<ParadigmV2, string> = {
+  traditional: 'Traditional', ai_assisted: 'AI-Assisted', agentic: 'Agentic', ai_native: 'AI-Native',
+}
+
+// ── Topic types (used by explore and study plans) ─────────
+export interface Topic {
+  id: string
+  slug: string
+  title: string
+  description: string | null
+  domain_id: string
+  order_index: number
+  is_published: boolean
+  created_at: string
+  icon?: string | null
+  difficulty_range?: string
+}
+
+export interface TopicWithProgress extends Topic {
+  challenge_count: number
+  completed_count: number
+  progress_percentage: number
+  concept_count?: number
+  difficulty_range?: string
+  domain?: Pick<Domain, 'slug' | 'title'>
+  completed_challenges?: number
+}
+
+// ── StudyPlanWithItems (used by study plan detail page) ────
+export interface StudyPlanItem {
+  id: string
+  plan_id: string
+  item_type: 'challenge' | 'concept' | 'article'
+  challenge_id: string | null
+  concept_id: string | null
+  chapter_title: string | null
+  order_index: number
+  challenge?: ChallengeWithDomain
+  concept?: Concept
+}
+
+export interface StudyPlanWithItems extends StudyPlan {
+  items: StudyPlanItem[]
+  item_count: number
+  chapter_count: number
+  completed_count: number
+  progress_percentage: number
 }

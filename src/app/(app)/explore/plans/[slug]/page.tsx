@@ -43,10 +43,10 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
   if (!plan) notFound()
 
   const chapters = groupByChapter(plan.items)
-  const difficultyLabel =
-    plan.difficulty.charAt(0).toUpperCase() + plan.difficulty.slice(1)
+  const diff = plan.difficulty ?? 'intermediate'
+  const difficultyLabel = diff.charAt(0).toUpperCase() + diff.slice(1)
   const difficultyColor =
-    DIFFICULTY_COLORS[plan.difficulty] ?? 'bg-secondary-container text-on-secondary-container'
+    DIFFICULTY_COLORS[diff] ?? 'bg-secondary-container text-on-secondary-container'
 
   const coachingTip = `This plan is designed for engineers who want to build genuine product intuition. Don't rush — depth beats breadth. Complete each challenge before checking the model answer.`
 

@@ -15,6 +15,17 @@ import {
 
 export type { HotChallenge, DiscussionPreview, MoveLevel, LeaderboardEntry, UserNote, DashboardPreferences }
 
+export interface UserInterview {
+  id: string
+  user_id: string
+  company: string | null
+  role: string | null
+  round: string | null
+  interview_date: string
+  notes: string | null
+  created_at: string
+}
+
 // ── Dashboard preferences ────────────────────────────────────
 
 export async function getDashboardPreferences(userId: string): Promise<DashboardPreferences> {

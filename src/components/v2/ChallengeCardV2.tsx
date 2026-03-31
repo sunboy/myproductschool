@@ -13,7 +13,7 @@ interface ChallengeCardV2Props {
 }
 
 export function ChallengeCardV2({ challenge, onStart }: ChallengeCardV2Props) {
-  const paradigmLabel = challenge.paradigm ? PARADIGM_V2_LABELS[challenge.paradigm] : null
+  const paradigmLabel = challenge.paradigm ? (PARADIGM_V2_LABELS[challenge.paradigm as ParadigmV2] ?? challenge.paradigm) : null
   const difficultyLabel = DIFFICULTY_V2_LABELS[challenge.difficulty]
 
   return (

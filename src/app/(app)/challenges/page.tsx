@@ -1,267 +1,177 @@
 import { getChallenges } from '@/lib/data/challenges'
 import { getDomains } from '@/lib/data/domains'
-import { getTopics } from '@/lib/data/topics'
 import Link from 'next/link'
+import { ChallengeCard } from './ChallengeCard'
+import { LumaPick } from './LumaPick'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
-import { ChallengeCard } from '@/components/challenge/ChallengeCard'
-import { V2ChallengesSection } from './V2ChallengesSection'
 
 interface ChallengesPageProps {
-  searchParams: Promise<{ domain?: string; difficulty?: string; company?: string; topic?: string; status?: string }>
+  searchParams: Promise<{ paradigm?: string; role?: string; difficulty?: string }>
 }
 
-const COMPANY_TAGS = [
-  'Meta', 'Google', 'Stripe', 'Airbnb', 'Uber', 'DoorDash',
-  'Netflix', 'Spotify', 'Figma', 'Linear', 'Notion', 'Shopify',
-]
+const PARADIGMS = [
+  { key: 'all', label: 'All Paradigms', dot: null },
+  { key: 'traditional', label: 'Traditional', dot: 'bg-emerald-500' },
+  { key: 'ai-assisted', label: 'AI-Assisted', dot: 'bg-blue-500' },
+  { key: 'agentic', label: 'Agentic', dot: 'bg-purple-500' },
+  { key: 'ai-native', label: 'AI-Native', dot: 'bg-amber-500' },
+] as const
 
-const DIFFICULTY_CONFIG: Record<string, { activeClass: string; label: string }> = {
-  beginner: { activeClass: 'bg-primary text-on-primary', label: 'Easy' },
-  intermediate: { activeClass: 'bg-tertiary text-on-tertiary', label: 'Medium' },
-  advanced: { activeClass: 'bg-error text-on-error', label: 'Hard' },
+const ROLES = ['SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng'] as const
+
+const PARADIGM_LABELS = ['Traditional', 'AI-Assisted', 'Agentic', 'AI-Native'] as const
+function getParadigmLabel(index: number): string {
+  return PARADIGM_LABELS[index % PARADIGM_LABELS.length]
 }
 
-const STATUS_OPTIONS = [
-  { value: undefined, label: 'All' },
-  { value: 'new', label: 'New' },
-  { value: 'attempted', label: 'Attempted' },
-  { value: 'completed', label: 'Completed' },
-]
-
-const TOPIC_DISPLAY_LIMIT = 6
 
 export default async function ChallengesPage({ searchParams }: ChallengesPageProps) {
-  const { domain, difficulty, company, topic, status } = await searchParams
-  const [domains, challenges, topics] = await Promise.all([
+  const { paradigm, role, difficulty } = await searchParams
+  const [, challenges] = await Promise.all([
     getDomains(),
-    getChallenges({ difficulty }),
-    getTopics(),
+    getChallenges({ difficulty, paradigm, role }),
   ])
-
-  // Filter by domain slug if provided
-  let filteredChallenges = domain
-    ? challenges.filter(c => c.domain.slug === domain)
-    : challenges
-
-  // Filter by company tag if provided
-  if (company) {
-    filteredChallenges = filteredChallenges.filter(c =>
-      Array.isArray(c.tags) && (c.tags as string[]).some(t => t.toLowerCase() === company.toLowerCase())
-    )
-  }
-
-  // Filter by topic slug if provided
-  // (topic filtering is best-effort on tags since ChallengeWithDomain doesn't carry topic relations)
-  if (topic) {
-    filteredChallenges = filteredChallenges.filter(c =>
-      Array.isArray(c.tags) && (c.tags as string[]).some(t => t.toLowerCase().replace(/\s+/g, '-') === topic)
-    )
-  }
-
-  // Split into free (first 3) and premium (rest)
-  const freeChallenges = filteredChallenges.slice(0, 3)
-  const premiumChallenges = filteredChallenges.slice(3)
 
   const buildHref = (params: Record<string, string | undefined>) => {
     const p = new URLSearchParams()
-    if (params.domain) p.set('domain', params.domain)
-    if (params.difficulty) p.set('difficulty', params.difficulty)
-    if (params.company) p.set('company', params.company)
-    if (params.topic) p.set('topic', params.topic)
-    if (params.status) p.set('status', params.status)
+    const pa = params.paradigm ?? paradigm
+    const r = params.role ?? role
+    const d = params.difficulty ?? difficulty
+    if (pa && pa !== 'all') p.set('paradigm', pa)
+    if (r) p.set('role', r)
+    if (d) p.set('difficulty', d)
     const s = p.toString()
     return s ? `/challenges?${s}` : '/challenges'
   }
 
-  const visibleTopics = topics.slice(0, TOPIC_DISPLAY_LIMIT)
-  const extraTopicCount = topics.length > TOPIC_DISPLAY_LIMIT ? topics.length - TOPIC_DISPLAY_LIMIT : 0
-
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 space-y-3">
-      {/* Luma's Pick — single compact row */}
-      <div className="bg-primary-fixed rounded-xl p-2.5 flex items-center gap-2.5">
-        <LumaGlyph size={28} className="text-primary flex-shrink-0" />
-        <span className="text-xs font-bold text-primary uppercase tracking-wider flex-shrink-0">Luma&apos;s Pick</span>
-        <span className="text-on-surface-variant/40 text-xs flex-shrink-0">·</span>
-        <span className="text-sm font-medium text-on-surface flex-1 min-w-0 truncate">Spotify podcast discovery drop</span>
-        <Link
-          href="/challenges/c1000000-0000-0000-0000-000000000001"
-          className="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1 bg-primary text-on-primary rounded-full text-xs font-semibold hover:opacity-90 transition-opacity"
-        >
-          Start <span className="material-symbols-outlined text-sm leading-none">arrow_forward</span>
-        </Link>
+    <main className="p-6 max-w-7xl w-full mx-auto">
+      {/* Header Section */}
+      <div className="flex items-baseline gap-3 mb-6">
+        <h1 className="text-2xl font-bold font-headline text-primary">Practice Hub</h1>
+        <p className="text-sm text-on-surface-variant">Master product thinking through real-world scenarios.</p>
       </div>
 
-      <div>
-        <h1 className="font-headline text-3xl font-bold text-on-surface">Practice Hub</h1>
-        <p className="text-on-surface-variant mt-1">Choose a challenge and pick your mode.</p>
-      </div>
+      {/* Luma's Pick Banner — dynamic, real challenge from API */}
+      <LumaPick />
 
-      {/* Filter bar — 2 rows max */}
-      <div className="space-y-1.5">
-        {/* Row 1: Difficulty + Status */}
-        <div className="flex gap-1.5 flex-wrap items-center">
+      {/* Filters */}
+      <div className="space-y-3 mb-8">
+        {/* Role Filter — primary filter */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mr-2">Role:</span>
           <Link
-            href={buildHref({ domain, company, topic, status })}
-            className={`px-3 py-1 rounded-full text-xs font-label font-semibold transition-colors ${
-              !difficulty
-                ? 'bg-primary text-on-primary'
-                : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
+            href={buildHref({ role: undefined })}
+            className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+              !role ? 'bg-on-surface text-on-primary' : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
             }`}
           >
-            All
+            All Roles
           </Link>
-          {Object.entries(DIFFICULTY_CONFIG).map(([key, cfg]) => (
+          {ROLES.map(r => (
             <Link
-              key={key}
-              href={buildHref({ domain, difficulty: key, company, topic, status })}
-              className={`px-3 py-1 rounded-full text-xs font-label font-semibold transition-colors ${
-                difficulty === key
-                  ? cfg.activeClass
-                  : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
+              key={r}
+              href={buildHref({ role: role === r ? undefined : r })}
+              className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                role === r
+                  ? 'bg-on-surface text-on-primary'
+                  : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
               }`}
             >
-              {cfg.label}
-            </Link>
-          ))}
-          <span className="text-on-surface-variant/30 text-xs mx-0.5">|</span>
-          {STATUS_OPTIONS.map(opt => (
-            <Link
-              key={opt.label}
-              href={buildHref({ domain, difficulty, company, topic, status: opt.value })}
-              className={`px-3 py-1 rounded-full text-xs font-label transition-colors ${
-                status === opt.value
-                  ? 'bg-secondary text-on-secondary'
-                  : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
-              }`}
-            >
-              {opt.label}
+              {r}
             </Link>
           ))}
         </div>
 
-        {/* Row 2: Domains + Topics + Companies */}
-        <div className="flex gap-1.5 flex-wrap items-center">
-          <Link
-            href={buildHref({ difficulty, company, topic, status })}
-            className={`px-3 py-1 rounded-full text-xs font-label transition-colors border ${
-              !domain
-                ? 'border-primary text-primary bg-primary-container'
-                : 'border-outline-variant text-on-surface-variant bg-surface-container hover:bg-surface-container-high'
-            }`}
-          >
-            All Domains
-          </Link>
-          {domains.map(d => (
-            <Link
-              key={d.id}
-              href={buildHref({ domain: d.slug, difficulty, company, topic, status })}
-              className={`px-3 py-1 rounded-full text-xs font-label transition-colors border ${
-                domain === d.slug
-                  ? 'border-primary text-primary bg-primary-container'
-                  : 'border-outline-variant text-on-surface-variant bg-surface-container hover:bg-surface-container-high'
-              }`}
-            >
-              {d.title}
-            </Link>
-          ))}
-          {visibleTopics.length > 0 && (
-            <>
-              <span className="text-on-surface-variant/30 text-xs mx-0.5">|</span>
-              {visibleTopics.map(t => (
-                <Link
-                  key={t.id}
-                  href={buildHref({ domain, difficulty, company, topic: t.slug === topic ? undefined : t.slug, status })}
-                  className={`px-3 py-1 rounded-full text-xs font-label transition-colors border ${
-                    topic === t.slug
-                      ? 'border-primary text-primary bg-primary-container'
-                      : 'border-outline-variant text-on-surface-variant bg-surface-container hover:bg-surface-container-high'
-                  }`}
-                >
-                  {t.title}
-                </Link>
-              ))}
-              {extraTopicCount > 0 && (
-                <span className="text-xs text-on-surface-variant font-label">+{extraTopicCount} more</span>
-              )}
-            </>
-          )}
-          <span className="text-on-surface-variant/30 text-xs mx-0.5">|</span>
-          {COMPANY_TAGS.map(tag => (
-            <Link
-              key={tag}
-              href={buildHref({ domain, difficulty, company: company === tag ? undefined : tag, topic, status })}
-              className={`px-3 py-1 rounded-full text-xs font-label cursor-pointer transition-colors ${
-                company === tag
-                  ? 'bg-secondary text-on-secondary'
-                  : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'
-              }`}
-            >
-              {tag}
-            </Link>
-          ))}
+        {/* Challenge Type Filter (formerly Paradigm) */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mr-2">Challenge Type:</span>
+          {PARADIGMS.map(p => {
+            const isActive = (paradigm ?? 'all') === p.key
+            return (
+              <Link
+                key={p.key}
+                href={buildHref({ paradigm: p.key })}
+                className={`px-4 py-1.5 text-xs font-bold rounded-full flex items-center gap-2 transition-colors ${
+                  isActive
+                    ? 'bg-primary text-on-primary'
+                    : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
+                }`}
+              >
+                {p.dot && (
+                  <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-on-primary' : p.dot}`} />
+                )}
+                {!p.dot && isActive && (
+                  <span className="w-2 h-2 rounded-full bg-on-primary" />
+                )}
+                {p.label}
+              </Link>
+            )
+          })}
         </div>
-      </div>
 
-      {/* Free Challenges */}
-      <div>
-        <h2 className="text-xs font-label font-semibold uppercase tracking-wider text-on-surface-variant mb-2">Free Challenges</h2>
-        {freeChallenges.length === 0 ? (
-          <div className="text-center py-8 text-on-surface-variant">
-            <span className="material-symbols-outlined text-4xl mb-2 block">search_off</span>
-            <p>No free challenges match your filters.</p>
-          </div>
-        ) : (
-          <div className="space-y-1.5">
-            {freeChallenges.map((challenge, idx) => (
-              <ChallengeCard key={challenge.id} challenge={challenge} index={idx} />
-            ))}
-          </div>
+        {/* Challenge Type description — shown when a non-all type is active */}
+        {paradigm && paradigm !== 'all' && (
+          <p className="text-xs italic text-on-surface-variant pl-1">
+            {paradigm === 'traditional' && 'Classic PM thinking — metrics, trade-offs, prioritization'}
+            {paradigm === 'ai-assisted' && 'Using AI tools as a PM — prompting, validation, oversight'}
+            {paradigm === 'agentic' && 'Multi-step AI systems — agents, evals, failure modes'}
+            {paradigm === 'ai-native' && 'Products built entirely around AI — new paradigms'}
+          </p>
         )}
       </div>
 
-      {/* Pro Access Banner */}
-      <div className="bg-secondary-container rounded-xl p-3 flex items-center justify-between gap-4">
-        <div>
-          <h3 className="font-label font-semibold text-on-secondary-container">Unlock Pro Access</h3>
-          <p className="text-xs text-on-secondary-container mt-0.5">
-            Get unlimited challenges, model answers, and Luma&apos;s deeper coaching.
-          </p>
-        </div>
-        <a
-          href="/pricing"
-          className="bg-primary text-on-primary rounded-full px-4 py-1.5 text-xs font-label font-semibold whitespace-nowrap hover:opacity-90 transition-opacity"
-        >
-          Upgrade →
-        </a>
-      </div>
-
-      {/* Premium Challenges */}
-      {premiumChallenges.length > 0 && (
-        <div>
-          <h2 className="text-xs font-label font-semibold uppercase tracking-wider text-on-surface-variant mb-2 flex items-center gap-1.5">
-            <span
-              className="material-symbols-outlined text-on-surface-variant text-sm"
-              style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
-            >
-              lock
-            </span>
-            Premium Challenges
-          </h2>
-          <div className="space-y-1.5">
-            {premiumChallenges.map((challenge, idx) => (
+      {/* Recommended for you — Zhang Yiming: algorithmic surfacing above the fold */}
+      {!paradigm && !role && challenges.length >= 3 && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-on-surface flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-base" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+              Featured Challenges
+            </h2>
+            <span className="text-[10px] text-on-surface-variant font-medium">Curated picks</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {challenges.slice(0, 3).map((challenge, idx) => (
               <ChallengeCard
-                key={challenge.id}
+                key={`rec-${challenge.id}`}
                 challenge={challenge}
-                index={idx + 3}
-                locked
+                paradigm={getParadigmLabel(idx)}
               />
             ))}
           </div>
+          <div className="border-t border-outline-variant/30 mt-6 mb-2" />
         </div>
       )}
-      {/* V2 FLOW Challenges */}
-      <V2ChallengesSection />
-    </div>
+
+      {/* All Challenges Grid */}
+      <h2 className="text-sm font-bold text-on-surface-variant uppercase tracking-wider mb-3">All Challenges</h2>
+      {challenges.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
+          <LumaGlyph size={64} state="idle" className="text-primary" />
+          <div>
+            <p className="text-base font-bold text-on-surface mb-1">No challenges match that filter</p>
+            <p className="text-sm text-on-surface-variant max-w-xs">
+              Try removing a filter, or{' '}
+              <Link href="/challenges" className="text-primary font-bold hover:underline">
+                view all challenges
+              </Link>
+              .
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {challenges.map((challenge, idx) => (
+            <ChallengeCard
+              key={challenge.id}
+              challenge={challenge}
+              paradigm={getParadigmLabel(idx)}
+            />
+          ))}
+        </div>
+      )}
+    </main>
   )
 }
+

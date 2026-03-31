@@ -16,6 +16,7 @@ export async function getTopics(domainId?: string): Promise<TopicWithProgress[]>
         concept_count,
         challenge_count,
         completed_challenges: 0,
+        completed_count: 0,
         progress_percentage: 0,
       }
     })
@@ -40,6 +41,7 @@ export async function getTopics(domainId?: string): Promise<TopicWithProgress[]>
     concept_count: 0,
     challenge_count: 0,
     completed_challenges: 0,
+    completed_count: 0,
     progress_percentage: 0,
   }))
 }
@@ -59,6 +61,7 @@ export async function getTopicBySlug(slug: string): Promise<TopicWithProgress | 
       concept_count,
       challenge_count,
       completed_challenges: 0,
+      completed_count: 0,
       progress_percentage: 0,
     }
   }
@@ -81,6 +84,7 @@ export async function getTopicBySlug(slug: string): Promise<TopicWithProgress | 
     concept_count: 0,
     challenge_count: 0,
     completed_challenges: 0,
+    completed_count: 0,
     progress_percentage: 0,
   }
 }

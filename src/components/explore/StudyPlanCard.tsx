@@ -12,10 +12,10 @@ const DIFFICULTY_COLORS: Record<string, string> = {
 }
 
 export function StudyPlanCard({ plan }: StudyPlanCardProps) {
-  const difficultyLabel =
-    plan.difficulty.charAt(0).toUpperCase() + plan.difficulty.slice(1)
+  const diff = plan.difficulty ?? 'intermediate'
+  const difficultyLabel = diff.charAt(0).toUpperCase() + diff.slice(1)
   const difficultyColor =
-    DIFFICULTY_COLORS[plan.difficulty] ?? 'bg-secondary-container text-on-secondary-container'
+    DIFFICULTY_COLORS[diff] ?? 'bg-secondary-container text-on-secondary-container'
   const hasProgress = plan.progress_percentage > 0
   const ctaLabel = hasProgress ? 'Continue →' : 'Start →'
 
