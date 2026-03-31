@@ -139,9 +139,9 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-6 pb-32 space-y-6">
+    <div className="max-w-5xl mx-auto px-6 py-6 pb-32">
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 mb-6">
         <Link href={`/challenges/${id}/feedback${attempt ? `?attempt=${attempt}` : ''}`} className="p-2 rounded-lg hover:bg-surface-container transition-colors">
           <span className="material-symbols-outlined text-on-surface-variant">arrow_back</span>
         </Link>
@@ -153,8 +153,8 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
 
       {!hasPatterns ? (
         /* Empty state — strong submission */
-        <div className="flex flex-col items-center text-center py-10 space-y-4">
-          <LumaGlyph size={48} className="text-primary" state="reviewing" />
+        <div className="flex flex-col items-center text-center py-10 space-y-4 max-w-lg mx-auto">
+          <LumaGlyph size={48} className="text-primary" animated />
           <div>
             <h2 className="font-headline text-2xl text-on-surface mb-2">Strong session.</h2>
             <p className="text-on-surface-variant text-sm">No failure patterns detected this session. Keep building.</p>
@@ -166,78 +166,82 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
           </div>
         </div>
       ) : (
-        <>
-          {/* 1. One-line diagnosis */}
-          <div className="bg-primary-container rounded-2xl p-5 flex gap-3 items-start">
-            <LumaGlyph size={28} state="reviewing" className="text-primary shrink-0 mt-0.5" />
-            <div>
-              <p className="text-xs font-label font-semibold text-on-primary-container uppercase tracking-widest mb-1">Luma&apos;s diagnosis</p>
-              <p className="text-on-primary-container text-base font-medium">
-                {primaryPattern.pattern_id === 'FP-09'
-                  ? "You recognized the right area quickly, but failed to prioritize the first move."
-                  : primaryPattern.pattern_id === 'FP-04'
-                  ? "You know the right metrics — but you haven't explained why they're the right metrics."
-                  : `Pattern detected: ${primaryPattern.pattern_name}.`}
-              </p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-5 space-y-6">
+            {/* 1. One-line diagnosis */}
+            <div className="bg-primary-container rounded-2xl p-5 flex gap-3 items-start">
+              <LumaGlyph size={28} className="text-primary shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-label font-semibold text-on-primary-container uppercase tracking-widest mb-1">Luma&apos;s diagnosis</p>
+                <p className="text-on-primary-container text-base font-medium">
+                  {primaryPattern.pattern_id === 'FP-09'
+                    ? "You recognized the right area quickly, but failed to prioritize the first move."
+                    : primaryPattern.pattern_id === 'FP-04'
+                    ? "You know the right metrics — but you haven't explained why they're the right metrics."
+                    : `Pattern detected: ${primaryPattern.pattern_name}.`}
+                </p>
+              </div>
             </div>
+
+            {/* 5. Confidence calibration */}
+            {confidenceRating && (
+              <div className="bg-surface-container rounded-2xl p-5 space-y-1">
+                <p className="text-xs font-label font-semibold text-on-surface-variant uppercase tracking-widest mb-2">Confidence calibration</p>
+                <p className="text-sm text-on-surface">
+                  You rated yourself <span className="font-semibold">{confidenceRating}/5</span>. Your score was <span className="font-semibold">{displayScore.toFixed(1)}/{displayMaxScore.toFixed(1)}</span>.
+                </p>
+                <p className="text-sm text-on-surface-variant italic">
+                  {confidenceRating / 5 > displayScore / displayMaxScore + 0.1
+                    ? "You tend to overestimate your performance on this type of challenge."
+                    : confidenceRating / 5 < displayScore / displayMaxScore - 0.1
+                    ? "You tend to underestimate yourself — trust your product instincts more."
+                    : "Your confidence is well-calibrated to your actual performance."}
+                </p>
+              </div>
+            )}
           </div>
 
-          {/* 2. Skill movement */}
-          <div className="space-y-2">
-            <p className="text-xs font-label font-semibold text-on-surface-variant uppercase tracking-widest">Skill movement this session</p>
-            <SkillMovementRow deltas={skillDeltas} />
-          </div>
+          <div className="lg:col-span-7 space-y-6">
+            {/* 2. Skill movement */}
+            <div className="space-y-2">
+              <p className="text-xs font-label font-semibold text-on-surface-variant uppercase tracking-widest">Skill movement this session</p>
+              <SkillMovementRow deltas={skillDeltas} />
+            </div>
 
-          {/* 3. Primary failure pattern card */}
-          <DiagnosisCard
-            pattern={primaryPattern}
-            occurrenceCount={
-              userPatterns.find((p) => p.pattern_id === primaryPattern.pattern_id)?.occurrence_count ?? 1
-            }
-            isNew={false}
-            interviewRisk={PATTERN_CONSEQUENCES[primaryPattern.pattern_id]}
-          />
-
-          {/* 4. Secondary patterns (if any) */}
-          {detectedPatterns.slice(1).map(p => (
+            {/* 3. Primary failure pattern card */}
             <DiagnosisCard
-              key={p.pattern_id}
-              pattern={p}
+              pattern={primaryPattern}
               occurrenceCount={
-                userPatterns.find((up) => up.pattern_id === p.pattern_id)?.occurrence_count ?? 1
+                userPatterns.find((p) => p.pattern_id === primaryPattern.pattern_id)?.occurrence_count ?? 1
               }
               isNew={false}
+              interviewRisk={PATTERN_CONSEQUENCES[primaryPattern.pattern_id]}
             />
-          ))}
 
-          {/* 5. Confidence calibration */}
-          {confidenceRating && (
-            <div className="bg-surface-container rounded-2xl p-5 space-y-1">
-              <p className="text-xs font-label font-semibold text-on-surface-variant uppercase tracking-widest mb-2">Confidence calibration</p>
-              <p className="text-sm text-on-surface">
-                You rated yourself <span className="font-semibold">{confidenceRating}/5</span>. Your score was <span className="font-semibold">{displayScore.toFixed(1)}/{displayMaxScore.toFixed(1)}</span>.
-              </p>
-              <p className="text-sm text-on-surface-variant italic">
-                {confidenceRating / 5 > displayScore / displayMaxScore + 0.1
-                  ? "You tend to overestimate your performance on this type of challenge."
-                  : confidenceRating / 5 < displayScore / displayMaxScore - 0.1
-                  ? "You tend to underestimate yourself — trust your product instincts more."
-                  : "Your confidence is well-calibrated to your actual performance."}
-              </p>
+            {/* 4. Secondary patterns (if any) */}
+            {detectedPatterns.slice(1).map(p => (
+              <DiagnosisCard
+                key={p.pattern_id}
+                pattern={p}
+                occurrenceCount={
+                  userPatterns.find((up) => up.pattern_id === p.pattern_id)?.occurrence_count ?? 1
+                }
+                isNew={false}
+              />
+            ))}
+
+            {/* 6. Prescription */}
+            <div className="space-y-2">
+              <p className="text-xs font-label font-semibold text-on-surface-variant uppercase tracking-widest">Next prescription</p>
+              <PrescriptionCard
+                mode={prescription.mode}
+                challengeTitle={prescription.challenge_title}
+                challengeSlug={prescription.challenge_slug}
+                reason={prescription.reason}
+              />
             </div>
-          )}
-
-          {/* 6. Prescription */}
-          <div className="space-y-2">
-            <p className="text-xs font-label font-semibold text-on-surface-variant uppercase tracking-widest">Next prescription</p>
-            <PrescriptionCard
-              mode={prescription.mode}
-              challengeTitle={prescription.challenge_title}
-              challengeSlug={prescription.challenge_slug}
-              reason={prescription.reason}
-            />
           </div>
-        </>
+        </div>
       )}
     </div>
   )

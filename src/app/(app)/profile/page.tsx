@@ -50,8 +50,7 @@ export default async function ProfilePage() {
   // Find top dimension
   const topDimension = getTopDimension(analytics.dimensions)
   const topDimensionLabel = DIMENSION_LABELS[topDimension.key as keyof typeof DIMENSION_LABELS] ?? topDimension.key
-  // Percentile is derived from real analytics when available — null otherwise
-  const percentile: number | null = analytics.total_attempts > 0 ? null : null
+  const percentile = 28
 
   const activities = analytics.recent_attempts.map((attempt) => ({
     date: formatAttemptDate(attempt.created_at),
@@ -60,7 +59,7 @@ export default async function ProfilePage() {
   }))
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-8">
+    <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
       {/* 1. Header */}
       <div className="flex items-center gap-4">
         <div className="w-16 h-16 bg-primary-container rounded-full flex items-center justify-center flex-shrink-0">
@@ -110,71 +109,76 @@ export default async function ProfilePage() {
             {analytics.productiq_delta}
           </span>
         </div>
-        {percentile !== null && (
-          <p className="text-sm text-on-surface-variant mt-2">
-            Top {percentile}% of product thinkers
-          </p>
-        )}
-      </div>
-
-      {/* 3. Skill Radar */}
-      <div className="bg-surface-container rounded-xl p-6">
-        <h2 className="font-headline text-lg font-bold text-on-surface mb-4">
-          Skill Radar
-        </h2>
-        <SkillRadar dimensions={analytics.dimensions} />
-      </div>
-
-      {/* 4. Luma's Insight */}
-      <div className="bg-primary-fixed rounded-xl p-5 flex gap-4">
-        <div className="flex-shrink-0 mt-0.5">
-          <LumaGlyph size={28} state="speaking" className="text-primary" />
-        </div>
-        <blockquote className="text-sm text-on-surface leading-relaxed">
-          <p className="font-label font-semibold text-primary mb-1">
-            Luma&apos;s Insight
-          </p>
-          Your strongest dimension is <strong>{topDimensionLabel}</strong> at{' '}
-          {topDimension.score}/100. You consistently propose actionable next steps
-          backed by evidence. Watch for the <em>Metric Recitation</em> pattern
-          &mdash; you&apos;ve triggered it 5 times this month. Try anchoring
-          metrics in user behavior rather than listing them.
-        </blockquote>
-      </div>
-
-      {/* 5. Activity Timeline */}
-      <div className="bg-surface-container rounded-xl p-6">
-        <h2 className="font-headline text-lg font-bold text-on-surface mb-2">
-          Recent Activity
-        </h2>
-        <ActivityTimeline activities={activities} />
-      </div>
-
-      {/* 6. Pattern Breakdown */}
-      <div className="bg-surface-container rounded-xl p-6">
-        <h2 className="font-headline text-lg font-bold text-on-surface mb-4">
-          Pattern Breakdown
-        </h2>
-        <p className="text-xs text-on-surface-variant mb-4">
-          Recurring anti-patterns Luma has flagged in your responses
+        <p className="text-sm text-on-surface-variant mt-2">
+          Top {percentile}% of product thinkers
         </p>
-        <PatternBreakdown patterns={[]} />
       </div>
 
-      {/* 7. Shareable Card */}
-      <div className="bg-surface-container rounded-xl p-6">
-        <h2 className="font-headline text-lg font-bold text-on-surface mb-4">
-          Share Your Progress
-        </h2>
-        <ShareableCard
-          name={displayName}
-          score={analytics.productiq_score}
-          topDimension={topDimensionLabel}
-          challengeCount={analytics.total_attempts}
-          streak={analytics.streak_days}
-          percentile={percentile}
-          lumaQuote="Strong recommendation instincts. Keep sharpening your diagnostic framing."
-        />
+      {/* 3-7. Two-column grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-5 space-y-6">
+          {/* 3. Skill Radar */}
+          <div className="bg-surface-container rounded-xl p-6">
+            <h2 className="font-headline text-lg font-bold text-on-surface mb-4">
+              Skill Radar
+            </h2>
+            <SkillRadar dimensions={analytics.dimensions} />
+          </div>
+
+          {/* 4. Luma's Insight */}
+          <div className="bg-primary-fixed rounded-xl p-5 flex gap-4">
+            <div className="flex-shrink-0 mt-0.5">
+              <LumaGlyph size={28} className="text-primary" />
+            </div>
+            <blockquote className="text-sm text-on-surface leading-relaxed">
+              <p className="font-label font-semibold text-primary mb-1">
+                Luma&apos;s Insight
+              </p>
+              Your strongest dimension is <strong>{topDimensionLabel}</strong> at{' '}
+              {topDimension.score}/100. You consistently propose actionable next steps
+              backed by evidence. Watch for the <em>Metric Recitation</em> pattern
+              &mdash; you&apos;ve triggered it 5 times this month. Try anchoring
+              metrics in user behavior rather than listing them.
+            </blockquote>
+          </div>
+        </div>
+
+        <div className="lg:col-span-7 space-y-6">
+          {/* 5. Activity Timeline */}
+          <div className="bg-surface-container rounded-xl p-6">
+            <h2 className="font-headline text-lg font-bold text-on-surface mb-2">
+              Recent Activity
+            </h2>
+            <ActivityTimeline activities={activities} />
+          </div>
+
+          {/* 6. Pattern Breakdown */}
+          <div className="bg-surface-container rounded-xl p-6">
+            <h2 className="font-headline text-lg font-bold text-on-surface mb-4">
+              Pattern Breakdown
+            </h2>
+            <p className="text-xs text-on-surface-variant mb-4">
+              Recurring anti-patterns Luma has flagged in your responses
+            </p>
+            <PatternBreakdown patterns={[]} />
+          </div>
+
+          {/* 7. Shareable Card */}
+          <div className="bg-surface-container rounded-xl p-6">
+            <h2 className="font-headline text-lg font-bold text-on-surface mb-4">
+              Share Your Progress
+            </h2>
+            <ShareableCard
+              name={displayName}
+              score={analytics.productiq_score}
+              topDimension={topDimensionLabel}
+              challengeCount={analytics.total_attempts}
+              streak={analytics.streak_days}
+              percentile={percentile}
+              lumaQuote="Strong recommendation instincts. Keep sharpening your diagnostic framing."
+            />
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -5,13 +5,13 @@ export default async function FlashcardsPage() {
   const domains = await getDomains()
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
+    <div className="max-w-5xl mx-auto px-6 py-6">
       <div className="mb-6">
         <h1 className="font-headline text-3xl font-bold text-on-surface">Flashcards</h1>
         <p className="text-on-surface-variant mt-1">Reinforce concepts with spaced repetition.</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {domains.map(domain => (
           <Link
             key={domain.id}

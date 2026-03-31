@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackProduct | Master Product Sense & Accelerate Your Tech Career</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Literata:wght@400;600;700;800&family=Nunito+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        headline: ['Literata', 'serif'],
+                        body: ['Nunito Sans', 'sans-serif'],
+                        label: ['Nunito Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary':              '#4a7c59',
+                        'on-primary':           '#ffffff',
+                        'primary-container':    '#78a886',
+                        'primary-fixed':        '#c8e8d0',
+                        'primary-fixed-dim':    '#8ecf9e',
+                        'secondary':            '#6b6358',
+                        'on-secondary':         '#ffffff',
+                        'secondary-container':  '#f0e8db',
+                        'on-secondary-container': '#5e5548',
+                        'tertiary':             '#705c30',
+                        'tertiary-container':   '#c4a66a',
+                        'background':           '#faf6f0',
+                        'on-background':        '#2e3230',
+                        'surface':              '#faf6f0',
+                        'surface-container-low': '#f5f1ea',
+                        'surface-container':    '#f0ece4',
+                        'surface-container-high': '#eae6de',
+                        'on-surface':           '#2e3230',
+                        'on-surface-variant':   '#4a4e4a',
+                        'outline':              '#74796e',
+                        'outline-variant':      '#c4c8bc',
+                        'inverse-surface':      '#2e3230',
+                        'inverse-on-surface':   '#f5f0e8',
+                        'inverse-primary':      '#8ecf9e',
+                        'error':                '#b83230',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #faf6f0; color: #2e3230; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .filled-icon { font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20; }
+    </style>
+</head>
+<body class="font-body selection:bg-secondary-container selection:text-on-secondary-container lg:h-screen lg:overflow-hidden">
+
+    <!-- Nav — compact -->
+    <nav class="bg-background/80 backdrop-blur-lg border-b border-on-background/5 z-50 relative">
+        <div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+            <a href="#" class="text-xl font-headline font-bold text-on-background tracking-tight">
+                &lt; HackProduct
+            </a>
+            <div id="countdown" class="flex items-center gap-1.5 text-sm font-label font-semibold text-on-surface-variant">
+                <span class="material-symbols-outlined text-tertiary text-base filled-icon">timer</span>
+                <span>Beta opens in</span>
+                <span id="cd-days" class="tabular-nums font-bold text-on-background">--</span>d
+                <span id="cd-hours" class="tabular-nums font-bold text-on-background">--</span>h
+                <span id="cd-mins" class="tabular-nums font-bold text-on-background">--</span>m
+                <span id="cd-secs" class="tabular-nums font-bold text-on-background">--</span>s
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main — fills remaining viewport on desktop -->
+    <main class="lg:h-[calc(100vh-56px)] flex flex-col">
+
+        <!-- Hero: two-column grid -->
+        <section class="flex-1 max-w-7xl w-full mx-auto px-6 flex items-center">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 w-full py-8 lg:py-0">
+
+                <!-- Left: Copy + Form -->
+                <div class="order-2 lg:order-1 flex flex-col justify-center">
+                    <!-- Badge: countdown + social proof -->
+                    <div id="hero-badge" class="inline-flex items-center gap-2 bg-primary-fixed px-3 py-1.5 rounded-full mb-5 self-start">
+                        <span class="material-symbols-outlined text-primary text-base filled-icon">bolt</span>
+                        <span class="text-xs font-label font-bold tracking-wider uppercase text-on-background" id="badge-text">Beta — Limited Spots</span>
+                        <span class="hidden text-outline-variant text-xs" id="badge-sep">|</span>
+                        <span class="hidden items-center gap-1 text-xs font-label font-semibold text-on-surface-variant" id="badge-social">
+                            <span class="material-symbols-outlined text-tertiary text-sm filled-icon">group</span>
+                            Join <span id="badge-count"></span> others
+                        </span>
+                    </div>
+
+                    <!-- Headline -->
+                    <h1 class="font-headline font-bold text-3xl sm:text-4xl lg:text-[44px] leading-[1.15] text-on-background mb-4">
+                        Stop Guessing.<br>
+                        <span class="text-primary">Start Thinking</span>
+                        Like a Product Leader.
+                    </h1>
+
+                    <!-- Subhead -->
+                    <p class="text-base lg:text-lg text-on-surface-variant leading-relaxed mb-5 max-w-md">
+                        The practice gym where engineers build real product intuition. Bridge the gap to be a 100x engineer in the AI era.
+                    </p>
+
+                    <!-- Compact Value Props -->
+                    <div class="flex flex-col gap-1.5 mb-6 text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-lg filled-icon">check_circle</span>
+                            <span class="text-on-surface"><strong>Real feedback</strong> on every answer, with graded rubrics</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-lg filled-icon">check_circle</span>
+                            <span class="text-on-surface"><strong>Real cases</strong> from Startups and Big Tech</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-lg filled-icon">check_circle</span>
+                            <span class="text-on-surface"><strong>Product IQ tracking</strong>  watch the gap close</span>
+                        </div>
+                    </div>
+
+                    <!-- Form -->
+                    <form id="waitlist-form" class="flex flex-col gap-2.5 max-w-lg">
+                        <div class="flex flex-col sm:flex-row gap-2.5">
+                            <input
+                                id="wl-name"
+                                type="text"
+                                placeholder="Your name"
+                                required
+                                class="sm:w-36 px-4 py-3 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-body text-sm"
+                            >
+                            <input
+                                id="wl-email"
+                                type="email"
+                                placeholder="you@company.com"
+                                required
+                                class="flex-1 px-4 py-3 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-body text-sm"
+                            >
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-2.5">
+                            <input
+                                id="wl-company"
+                                type="text"
+                                placeholder="Company (optional)"
+                                class="sm:w-36 px-4 py-3 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-body text-sm"
+                            >
+                            <button
+                                type="submit"
+                                id="wl-btn"
+                                class="flex-1 bg-primary text-on-primary font-label font-bold text-sm px-6 py-3 rounded-full hover:bg-primary/90 hover:shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5 whitespace-nowrap"
+                            >
+                                Join Waitlist
+                                <span class="material-symbols-outlined text-base">arrow_forward</span>
+                            </button>
+                        </div>
+                        <p id="wl-msg" class="text-xs font-label text-on-surface-variant/60 mt-0.5 hidden"></p>
+                    </form>
+                    <p class="text-xs font-label text-on-surface-variant/60 mt-2">
+                        Free during beta. No credit card. Unsubscribe anytime.
+                    </p>
+                </div>
+
+                <!-- Right: Illustration -->
+                <div class="order-1 lg:order-2 flex items-center justify-center">
+                    <img
+                        src="hacky.png"
+                        alt="Hacky the robot studying product roadmaps"
+                        class="w-64 sm:w-72 lg:w-full lg:max-w-md h-auto"
+                        style="background-color: #faf6f0;"
+                    >
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        (function() {
+            // ── Config ──
+            const API_BASE = 'https://hackproduct.dev'; // change to your deployed URL
+            const WAITLIST_ENDPOINT = API_BASE + '/api/waitlist';
+
+            // ── Countdown ──
+            const target = new Date('2026-04-15T00:00:00').getTime();
+            const cd = { d: document.getElementById('cd-days'), h: document.getElementById('cd-hours'), m: document.getElementById('cd-mins'), s: document.getElementById('cd-secs') };
+            function tick() {
+                const gap = target - Date.now();
+                if (gap <= 0) {
+                    document.getElementById('countdown').innerHTML = '<span class="font-bold text-primary">Beta is live!</span>';
+                    return;
+                }
+                cd.d.textContent = String(Math.floor(gap / 86400000)).padStart(2, '0');
+                cd.h.textContent = String(Math.floor((gap % 86400000) / 3600000)).padStart(2, '0');
+                cd.m.textContent = String(Math.floor((gap % 3600000) / 60000)).padStart(2, '0');
+                cd.s.textContent = String(Math.floor((gap % 60000) / 1000)).padStart(2, '0');
+                requestAnimationFrame(tick);
+            }
+            tick();
+
+            // ── Badge social proof (show only if count > 1000) ──
+            const WAITLIST_COUNT = 1100; // replace with live API value
+            if (WAITLIST_COUNT > 1000) {
+                const rounded = Math.floor(WAITLIST_COUNT / 100) * 100;
+                document.getElementById('badge-count').textContent = rounded.toLocaleString() + '+';
+                document.getElementById('badge-sep').classList.remove('hidden');
+                document.getElementById('badge-sep').classList.add('inline');
+                document.getElementById('badge-social').classList.remove('hidden');
+                document.getElementById('badge-social').classList.add('inline-flex');
+            }
+
+            // ── Form submission ──
+            const form = document.getElementById('waitlist-form');
+            const btn = document.getElementById('wl-btn');
+            const msg = document.getElementById('wl-msg');
+
+            function showMsg(text, isError) {
+                msg.textContent = text;
+                msg.className = 'text-xs font-label mt-0.5 ' + (isError ? 'text-error' : 'text-primary font-semibold');
+                msg.classList.remove('hidden');
+            }
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const name = document.getElementById('wl-name').value.trim();
+                const email = document.getElementById('wl-email').value.trim();
+                const company = document.getElementById('wl-company').value.trim();
+
+                btn.disabled = true;
+                btn.innerHTML = '<span class="animate-pulse">Joining...</span>';
+                msg.classList.add('hidden');
+
+                try {
+                    const body = { name, email };
+                    if (company) body.company = company;
+
+                    const res = await fetch(WAITLIST_ENDPOINT, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body),
+                    });
+                    const data = await res.json();
+
+                    if (res.ok) {
+                        showMsg('You\'re on the list! We\'ll be in touch soon.', false);
+                        form.reset();
+                        btn.innerHTML = '<span class="material-symbols-outlined text-base filled-icon">check_circle</span> You\'re In';
+                        btn.classList.replace('bg-primary', 'bg-primary-container');
+                    } else if (res.status === 409) {
+                        showMsg('You\'re already on the waitlist!', false);
+                        btn.innerHTML = 'Join Waitlist <span class="material-symbols-outlined text-base">arrow_forward</span>';
+                        btn.disabled = false;
+                    } else {
+                        showMsg(data.error || 'Something went wrong. Try again.', true);
+                        btn.innerHTML = 'Join Waitlist <span class="material-symbols-outlined text-base">arrow_forward</span>';
+                        btn.disabled = false;
+                    }
+                } catch {
+                    showMsg('Network error. Please try again.', true);
+                    btn.innerHTML = 'Join Waitlist <span class="material-symbols-outlined text-base">arrow_forward</span>';
+                    btn.disabled = false;
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

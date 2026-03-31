@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackProduct | Master Product Sense & Accelerate Your Tech Career</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Literata:wght@400;600;700;800&family=Nunito+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        headline: ['Literata', 'serif'],
+                        body: ['Nunito Sans', 'sans-serif'],
+                        label: ['Nunito Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary':              '#4a7c59',
+                        'on-primary':           '#ffffff',
+                        'primary-container':    '#78a886',
+                        'primary-fixed':        '#c8e8d0',
+                        'primary-fixed-dim':    '#8ecf9e',
+                        'secondary':            '#6b6358',
+                        'on-secondary':         '#ffffff',
+                        'secondary-container':  '#f0e8db',
+                        'on-secondary-container': '#5e5548',
+                        'tertiary':             '#705c30',
+                        'tertiary-container':   '#c4a66a',
+                        'background':           '#faf6f0',
+                        'on-background':        '#2e3230',
+                        'surface':              '#faf6f0',
+                        'surface-container-low': '#f5f1ea',
+                        'surface-container':    '#f0ece4',
+                        'surface-container-high': '#eae6de',
+                        'on-surface':           '#2e3230',
+                        'on-surface-variant':   '#4a4e4a',
+                        'outline':              '#74796e',
+                        'outline-variant':      '#c4c8bc',
+                        'inverse-surface':      '#2e3230',
+                        'inverse-on-surface':   '#f5f0e8',
+                        'inverse-primary':      '#8ecf9e',
+                        'error':                '#b83230',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #faf6f0;
+            color: #2e3230;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20;
+        }
+        .footer-pattern {
+            background-color: #2e3230;
+            background-image: repeating-linear-gradient(
+                45deg,
+                rgba(255, 255, 255, 0.015) 0px,
+                rgba(255, 255, 255, 0.015) 2px,
+                transparent 2px,
+                transparent 12px
+            );
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-body selection:bg-secondary-container selection:text-on-secondary-container">
+
+    <!-- Nav -->
+    <nav class="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-on-background/5">
+        <div class="max-w-7xl mx-auto px-6 h-16 md:h-20 flex items-center justify-between">
+            <a href="#" class="text-xl md:text-2xl font-headline font-bold text-on-background tracking-tight">
+                &lt; HackProduct
+            </a>
+            <div class="flex items-center gap-4 md:gap-6">
+                <a href="#" class="hidden sm:block text-sm font-label font-medium text-on-surface-variant hover:text-primary transition-colors">
+                    Pricing
+                </a>
+                <a href="#" class="text-sm font-label font-bold text-on-background hover:text-primary transition-colors">
+                    Sign in
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow">
+
+        <!-- ── HERO: Two-column on desktop, stacked on mobile ── -->
+        <section class="max-w-7xl mx-auto px-6 pt-10 md:pt-16 lg:pt-20 pb-16 md:pb-24">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+
+                <!-- Left Column: Copy + Form -->
+                <div class="order-2 lg:order-1">
+                    <!-- Badge -->
+                    <div class="inline-flex items-center gap-2.5 bg-primary-fixed px-3.5 py-1.5 rounded-full mb-8">
+                        <span class="material-symbols-outlined text-primary text-lg filled-icon">bolt</span>
+                        <span class="text-xs font-label font-bold tracking-wider uppercase text-on-background">
+                            Beta — Limited Spots Remaining
+                        </span>
+                    </div>
+
+                    <!-- Headline -->
+                    <h1 class="font-headline font-bold text-4xl sm:text-5xl lg:text-6xl leading-[1.1] text-on-background mb-6">
+                        Stop Guessing.<br>
+                        <span class="text-primary">Start Thinking</span><br>
+                        Like a Product Leader.
+                    </h1>
+
+                    <!-- Subhead -->
+                    <p class="text-lg md:text-xl text-on-surface-variant leading-relaxed mb-8 max-w-lg">
+                        The practice gym where engineers build real product intuition — not through courses or theory, but through deliberate reps on the decisions that actually matter.
+                    </p>
+
+                    <!-- Value Props -->
+                    <div class="flex flex-col gap-3 mb-10">
+                        <div class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-primary text-xl filled-icon mt-0.5">check_circle</span>
+                            <span class="text-on-surface font-body"><strong>AI-powered feedback</strong> on every answer — not just right or wrong, but why</span>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-primary text-xl filled-icon mt-0.5">check_circle</span>
+                            <span class="text-on-surface font-body"><strong>Real case studies</strong> from companies like Spotify, Uber, and Stripe</span>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-primary text-xl filled-icon mt-0.5">check_circle</span>
+                            <span class="text-on-surface font-body"><strong>Track your Product IQ</strong> as it grows — see the gap closing in real time</span>
+                        </div>
+                    </div>
+
+                    <!-- Form -->
+                    <form class="flex flex-col gap-3 max-w-md" onsubmit="event.preventDefault(); alert('Waitlist joined!');">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input
+                                type="text"
+                                placeholder="Your name"
+                                required
+                                class="flex-1 px-4 py-3.5 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-body text-sm"
+                            >
+                            <input
+                                type="email"
+                                placeholder="you@company.com"
+                                required
+                                class="flex-1 px-4 py-3.5 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-body text-sm"
+                            >
+                        </div>
+                        <button
+                            type="submit"
+                            class="w-full sm:w-auto bg-primary text-on-primary font-label font-bold text-base px-8 py-3.5 rounded-full hover:bg-primary/90 hover:shadow-sm transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
+                        >
+                            Join the Waitlist
+                            <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                        </button>
+                    </form>
+                    <p class="text-xs font-label text-on-surface-variant/70 mt-3">
+                        Free during beta. No credit card required. Unsubscribe anytime.
+                    </p>
+                </div>
+
+                <!-- Right Column: Illustration -->
+                <div class="order-1 lg:order-2 flex justify-center lg:justify-end">
+                    <img
+                        src="hacky.png"
+                        alt="Hacky the robot studying product roadmaps"
+                        class="w-full max-w-sm sm:max-w-md lg:max-w-lg h-auto"
+                        style="background-color: #faf6f0;"
+                    >
+                </div>
+            </div>
+        </section>
+
+        <!-- ── SOCIAL PROOF BAR ── -->
+        <section class="border-y border-outline-variant/40 bg-surface-container-low">
+            <div class="max-w-7xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-tertiary text-xl filled-icon">group</span>
+                    <span class="text-sm font-label font-semibold text-on-surface">2,500+ on the waitlist</span>
+                </div>
+                <div class="hidden sm:block w-px h-5 bg-outline-variant"></div>
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-tertiary text-xl filled-icon">apartment</span>
+                    <span class="text-sm font-label font-semibold text-on-surface">Engineers from Google, Meta, Amazon</span>
+                </div>
+                <div class="hidden sm:block w-px h-5 bg-outline-variant"></div>
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-tertiary text-xl filled-icon">workspace_premium</span>
+                    <span class="text-sm font-label font-semibold text-on-surface">Backed by Google for Startups</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── WHY THIS MATTERS ── -->
+        <section class="max-w-7xl mx-auto px-6 py-16 md:py-24">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+                <!-- Left: The Problem -->
+                <div>
+                    <span class="inline-block text-xs font-label font-bold tracking-widest uppercase text-tertiary mb-4">The Problem</span>
+                    <h2 class="font-headline font-bold text-3xl md:text-4xl text-on-background leading-tight mb-6">
+                        Engineers don't fail product rounds because they're not smart enough.
+                    </h2>
+                    <p class="text-on-surface-variant text-lg leading-relaxed mb-6">
+                        They fail because product thinking is a <strong class="text-on-surface">trained skill</strong> — and there's nowhere to train it. You can LeetCode your way through coding rounds. But there's no gym for the question <em>"How would you improve Google Maps?"</em>
+                    </p>
+                    <p class="text-on-surface-variant text-lg leading-relaxed">
+                        Meanwhile, the engineers who <em>do</em> think in products ship better features, get promoted faster, and become the ones everyone wants on their team. That gap is costing you — whether you see it or not.
+                    </p>
+                </div>
+
+                <!-- Right: The Solution -->
+                <div>
+                    <span class="inline-block text-xs font-label font-bold tracking-widest uppercase text-primary mb-4">HackProduct</span>
+                    <h2 class="font-headline font-bold text-3xl md:text-4xl text-on-background leading-tight mb-6">
+                        Reps, not lectures. Feedback, not frameworks.
+                    </h2>
+                    <div class="space-y-5">
+                        <div class="flex gap-4 items-start bg-surface-container rounded-xl p-5">
+                            <span class="material-symbols-outlined text-primary text-2xl filled-icon mt-0.5">psychology</span>
+                            <div>
+                                <h3 class="font-label font-bold text-on-surface mb-1">Real Product Scenarios</h3>
+                                <p class="text-sm text-on-surface-variant leading-relaxed">Practice on actual product decisions — pricing, prioritization, metrics, strategy — not toy problems.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 items-start bg-surface-container rounded-xl p-5">
+                            <span class="material-symbols-outlined text-primary text-2xl filled-icon mt-0.5">auto_awesome</span>
+                            <div>
+                                <h3 class="font-label font-bold text-on-surface mb-1">Luma, Your AI Coach</h3>
+                                <p class="text-sm text-on-surface-variant leading-relaxed">Get structured, detailed feedback the moment you submit. Luma identifies blind spots you didn't know you had.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 items-start bg-surface-container rounded-xl p-5">
+                            <span class="material-symbols-outlined text-primary text-2xl filled-icon mt-0.5">trending_up</span>
+                            <div>
+                                <h3 class="font-label font-bold text-on-surface mb-1">Watch Yourself Improve</h3>
+                                <p class="text-sm text-on-surface-variant leading-relaxed">Your Product IQ score tracks growth across dimensions — strategy, metrics, user empathy, execution. See the compound effect.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── URGENCY / FINAL CTA ── -->
+        <section class="bg-inverse-surface text-inverse-on-surface">
+            <div class="max-w-4xl mx-auto px-6 py-16 md:py-20 text-center">
+                <span class="inline-flex items-center gap-2 bg-white/10 px-4 py-1.5 rounded-full text-xs font-label font-bold tracking-wider uppercase text-inverse-primary mb-6">
+                    <span class="material-symbols-outlined text-base filled-icon">timer</span>
+                    Beta closes soon
+                </span>
+                <h2 class="font-headline font-bold text-3xl md:text-5xl leading-tight mb-6">
+                    Every week you wait is another<br class="hidden sm:block"> product round you're not ready for.
+                </h2>
+                <p class="text-inverse-on-surface/70 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
+                    Beta users get free lifetime access, early feature input, and a head start that compounds. Once spots fill, the next cohort won't open for months.
+                </p>
+                <form class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto" onsubmit="event.preventDefault(); alert('Waitlist joined!');">
+                    <input
+                        type="email"
+                        placeholder="you@company.com"
+                        required
+                        class="flex-1 px-5 py-3.5 rounded-full bg-white/10 border border-white/20 text-inverse-on-surface placeholder-inverse-on-surface/40 focus:outline-none focus:border-inverse-primary focus:ring-2 focus:ring-inverse-primary/30 transition-all font-body text-sm"
+                    >
+                    <button
+                        type="submit"
+                        class="bg-inverse-primary text-inverse-surface font-label font-bold text-sm px-8 py-3.5 rounded-full hover:bg-primary-fixed-dim transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap"
+                    >
+                        Claim My Spot
+                        <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                    </button>
+                </form>
+                <p class="text-inverse-on-surface/40 text-xs font-label mt-4">
+                    Join 2,500+ engineers already on the list. No spam. Unsubscribe anytime.
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-pattern pt-14 pb-8 px-6 md:px-12 text-inverse-on-surface">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-8 mb-12">
+                <div class="md:col-span-5 flex flex-col">
+                    <a href="#" class="font-headline font-bold text-xl tracking-tight text-white mb-3">
+                        &lt; HackProduct
+                    </a>
+                    <p class="text-inverse-on-surface/50 text-sm max-w-xs leading-relaxed font-body">
+                        The practice gym for product minds. Building the next generation of high-impact product thinkers and technical leaders.
+                    </p>
+                </div>
+                <div class="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
+                    <div>
+                        <h4 class="font-label font-bold text-xs tracking-wider uppercase mb-4 text-inverse-on-surface/80">Platform</h4>
+                        <ul class="space-y-2.5">
+                            <li><a href="#" class="text-inverse-on-surface/50 hover:text-white text-sm font-body transition-colors">Methodology</a></li>
+                            <li><a href="#" class="text-inverse-on-surface/50 hover:text-white text-sm font-body transition-colors">Challenges</a></li>
+                            <li><a href="#" class="text-inverse-on-surface/50 hover:text-white text-sm font-body transition-colors">AI Coach</a></li>
+                            <li><a href="#" class="text-inverse-on-surface/50 hover:text-white text-sm font-body transition-colors">Pricing</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-label font-bold text-xs tracking-wider uppercase mb-4 text-inverse-on-surface/80">Resources</h4>
+                        <ul class="space-y-2.5">
+                            <li><a href="#" class="text-inverse-on-surface/50 hover:text-white text-sm font-body transition-colors">Interview Prep</a></li>
+                            <li><a href="#" class="text-inverse-on-surface/50 hover:text-white text-sm font-body transition-colors">Community</a></li>
+                            <li><a href="#" class="text-inverse-on-surface/50 hover:text-white text-sm font-body transition-colors">Guides</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-label font-bold text-xs tracking-wider uppercase mb-4 text-inverse-on-surface/80">Legal</h4>
+                        <ul class="space-y-2.5">
+                            <li><a href="#" class="text-inverse-on-surface/50 hover:text-white text-sm font-body transition-colors">Privacy</a></li>
+                            <li><a href="#" class="text-inverse-on-surface/50 hover:text-white text-sm font-body transition-colors">Terms</a></li>
+                            <li><a href="#" class="text-inverse-on-surface/50 hover:text-white text-sm font-body transition-colors">Security</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row justify-between items-center pt-6 border-t border-white/10 gap-3">
+                <p class="text-inverse-on-surface/30 text-xs font-label">
+                    &copy; 2026 HackProduct. The practice gym for product minds.
+                </p>
+                <div class="flex items-center gap-4">
+                    <a href="#" class="text-inverse-on-surface/30 hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-lg">link</span>
+                    </a>
+                    <a href="#" class="text-inverse-on-surface/30 hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-lg">public</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
