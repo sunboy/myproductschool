@@ -20,6 +20,35 @@ content/
 
 ---
 
+## Working in a Worktree
+
+Content generation is on `main`. To work on it without disturbing active dev branches (e.g. `feat/explore-redesign-v2`):
+
+```bash
+# From the repo root — creates a sibling directory checked out to main
+git worktree add ../myproductschool-content main
+cd ../myproductschool-content/content
+
+# Run the pipeline as normal
+python3 generate_challenges.py briefs --roles SWE,PM --count 2 --modules 3,4 --out briefs_batch2.json
+python3 generate_challenges.py run --briefs briefs_batch2.json --out challenges_batch2.json --parallel 8
+python3 generate_challenges.py merge --batch challenges_batch2.json --master challenges_all.json
+
+# Commit from inside the worktree
+git add challenges_all.json
+git commit -m "feat(content): add batch 2 — SWE/PM modules 3-4"
+```
+
+The worktree shares the same git history and remote as the main repo. Changes committed there are immediately visible on `main`. No branch switching, no stashing.
+
+To remove the worktree when done:
+
+```bash
+git worktree remove ../myproductschool-content
+```
+
+---
+
 ## The Pipeline
 
 Three commands. Run them in order.
