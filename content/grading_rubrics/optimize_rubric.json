@@ -1,0 +1,179 @@
+{
+  "step": "optimize",
+  "version": "1.0",
+  "description": "The Optimize step trains one reasoning move: naming what you are optimizing for before evaluating options, and naming what you give up by choosing it. 'It depends' is the enemy of this step — not because context doesn't matter, but because 'it depends' without a named criterion is an evasion, not a reasoning move. A strong Optimize answer completes this structure: we get X, we sacrifice Y, Y is acceptable because Z.",
+  "reasoning_move": "Name the optimization criterion explicitly, evaluate options against it, and name the sacrifice",
+
+  "criteria": [
+    {
+      "id": "O1",
+      "name": "Named optimization criterion",
+      "description": "Before comparing options, the user names what they are optimizing for — and why that criterion applies in this context. This is not a metric (though it often connects to one). It is a value or goal that the decision should serve. Weak answers evaluate options without stating the criterion first, which makes the evaluation impossible to verify or challenge.",
+      "strong_signals": [
+        "Names the criterion before comparing options ('we're optimizing for X because...')",
+        "Criterion is specific enough to differentiate between options",
+        "Explains why this criterion applies in this context, not just in general",
+        "Acknowledges that a different criterion would produce a different recommendation"
+      ],
+      "partial_signals": [
+        "Criterion is implied by the comparison but never named directly",
+        "Names a metric ('we should maximize retention') without explaining why retention is the right criterion here",
+        "Names the criterion but doesn't connect it to the options being evaluated"
+      ],
+      "failure_signals": [
+        "Evaluates options without naming a criterion ('option A is better because...')",
+        "Uses 'it depends' as the criterion",
+        "Names multiple criteria without prioritizing between them",
+        "Criterion is so broad it applies equally to all options ('we should do what's best for users')"
+      ],
+      "luma_coaching_weak": "You're comparing options, but you haven't named what you're comparing them against. State the criterion first: what does the right answer need to optimize for, and why does that apply here?",
+      "luma_coaching_failure": "Before evaluating options, name what success looks like. Not a metric — a goal. What does the decision need to accomplish? Once you have that, the options can be compared against it."
+    },
+    {
+      "id": "O2",
+      "name": "The naming of the sacrifice",
+      "description": "Every optimization choice gives up something. Strong Optimize answers name what is sacrificed by the chosen direction — not as a disclaimer, but as evidence that the choice was made deliberately. The structure is: 'We get X, we give up Y, and Y is acceptable because Z.' Missing the sacrifice means the answer reads as advocacy, not analysis.",
+      "structure": "We get X / we give up Y / Y is acceptable because Z",
+      "strong_signals": [
+        "Names what is explicitly given up by the chosen direction",
+        "Explains why the sacrifice is acceptable given the criterion",
+        "Acknowledges who bears the cost of the sacrifice (not everyone loses equally)",
+        "Names a condition under which the sacrifice would be unacceptable — showing the reasoning is bounded"
+      ],
+      "partial_signals": [
+        "Names a downside without framing it as a deliberate sacrifice",
+        "Notes that 'there are tradeoffs' without naming them",
+        "Names the sacrifice without explaining why it's acceptable"
+      ],
+      "failure_signals": [
+        "No sacrifice named — recommendation reads as strictly better with no cost",
+        "Sacrifice is named as a risk to mitigate rather than an inherent cost of the choice",
+        "Presents the sacrifice as someone else's problem to solve later"
+      ],
+      "luma_coaching_weak": "You've named what you gain. Now name what you give up — and more importantly, explain why giving it up is the right call here. A choice without a sacrifice isn't a tradeoff, it's a preference.",
+      "luma_coaching_failure": "Every decision gives something up. What does this one cost? Name the thing that gets worse, who bears that cost, and why it's an acceptable price for what you're getting."
+    },
+    {
+      "id": "O3",
+      "name": "Primary metric and guardrail",
+      "description": "Strong Optimize answers name a metric that would tell you whether the chosen direction is working — and a guardrail metric that would tell you if it's working but causing harm elsewhere. A primary metric without a guardrail can be gamed or optimized at the cost of something equally important.",
+      "strong_signals": [
+        "Names a primary metric that is specific, measurable, and tied to the criterion",
+        "Names a guardrail metric that would catch unintended negative consequences",
+        "Explains what the primary metric measures and what it could miss",
+        "Notes who would watch these metrics and at what cadence"
+      ],
+      "partial_signals": [
+        "Names a primary metric without a guardrail",
+        "Guardrail is named but doesn't connect to a real risk from the scenario",
+        "Metric is named at too high a level to be actionable ('user satisfaction')"
+      ],
+      "failure_signals": [
+        "No metric named — success is defined qualitatively without measurement",
+        "Metric is a vanity metric that doesn't connect to the criterion",
+        "Names metrics without explaining what they would tell you",
+        "Metric can be gamed in an obvious way that's not acknowledged"
+      ],
+      "luma_coaching_weak": "You have a metric. Now name the guardrail: what would tell you that the metric is going up but something else important is going down? The guardrail is what keeps you honest about the tradeoff.",
+      "luma_coaching_failure": "Name the metric that would tell you this decision is working. Then name the metric that would tell you it's working but breaking something else. Both matter."
+    },
+    {
+      "id": "O4",
+      "name": "Options evaluated against criterion",
+      "description": "Once the criterion is named, the options from the List step should be evaluated explicitly against it — not just described. Strong Optimize answers show the comparison, not just the conclusion. This is the step where reasoning is visible.",
+      "strong_signals": [
+        "Each option is evaluated against the named criterion, not just described",
+        "Options are ranked or eliminated with explicit reasoning tied to the criterion",
+        "At least one option from the List step is ruled out with a clear reason",
+        "The evaluation reveals something non-obvious about the options"
+      ],
+      "partial_signals": [
+        "Options are compared to each other but not to the criterion",
+        "The preferred option is described in more detail rather than evaluated",
+        "Ruling out an option is done by assertion ('this won't work') not by evaluation"
+      ],
+      "failure_signals": [
+        "Jumps from naming options to picking one without showing the evaluation",
+        "All options are described as having merit without differentiation",
+        "Criterion is named but never actually applied to the options"
+      ],
+      "luma_coaching_weak": "You've named the criterion and the options. Now show the comparison: for each option, does it satisfy the criterion better or worse than the others, and why? Make the evaluation visible.",
+      "luma_coaching_failure": "You've named a preferred option but haven't shown why it beats the others against your stated criterion. Walk through at least two options and show the comparison — not 'A is better than B,' but 'A scores higher on X because...'"
+    }
+  ],
+
+  "scoring": {
+    "method": "criteria-weighted",
+    "description": "O1 and O2 are primary — they represent the core reasoning move of the Optimize step. O3 and O4 add rigor and make the reasoning verifiable. A strong Optimize answer must score at least partial on O1 and O2.",
+    "weights": {
+      "O1": 0.30,
+      "O2": 0.30,
+      "O3": 0.20,
+      "O4": 0.20
+    },
+    "thresholds": {
+      "strong": 0.75,
+      "partial": 0.45,
+      "needs_work": 0.0
+    }
+  },
+
+  "output_format": {
+    "fields": {
+      "score": "strong | partial | needs_work",
+      "criteria_scores": {
+        "O1": "strong | partial | needs_work",
+        "O2": "strong | partial | needs_work",
+        "O3": "strong | partial | needs_work",
+        "O4": "strong | partial | needs_work"
+      },
+      "detected": "What Luma found in the answer — named specifically",
+      "missed": "What was expected but not present — named specifically",
+      "coaching": "One to three sentences. References the specific criterion missed. No praise for weak answers."
+    },
+    "example_strong": {
+      "score": "strong",
+      "criteria_scores": {
+        "O1": "strong",
+        "O2": "strong",
+        "O3": "strong",
+        "O4": "partial"
+      },
+      "detected": "You named the criterion (sprint velocity, given the Q3 deadline), named the sacrifice (the silent bug stays unresolved and trust continues to erode), and explained why that's acceptable in the short term (2% failure rate isn't yet visible in revenue). You named a primary metric (conversion rate post-launch) and a guardrail (support ticket volume for silent failures).",
+      "missed": "Your evaluation of the two options against the criterion was brief — you named why you chose the redesign but didn't show why the bug fix lost against the same criterion. Making the elimination explicit would strengthen the argument.",
+      "coaching": "Strong tradeoff reasoning. One addition: show why the bug fix loses against your criterion, not just why the redesign wins. 'The redesign scores higher on velocity because X' is stronger with 'the bug fix scores lower because Y.'"
+    },
+    "example_needs_work": {
+      "score": "needs_work",
+      "criteria_scores": {
+        "O1": "needs_work",
+        "O2": "needs_work",
+        "O3": "needs_work",
+        "O4": "needs_work"
+      },
+      "detected": "You recommended the checkout redesign because it's tied to OKRs.",
+      "missed": "No criterion named. No sacrifice named. No metrics. No comparison of options against a standard.",
+      "coaching": "Start here: what is this decision trying to optimize for — sprint velocity, trust, revenue, or something else? Once you have that, name what you give up by choosing the redesign over the bug fix. A recommendation without a named tradeoff isn't a product decision — it's a preference."
+    }
+  },
+
+  "anti_patterns_this_step_catches": [
+    "Using 'it depends' as a conclusion rather than a starting point",
+    "Recommending an option without naming the criterion it optimizes for",
+    "Naming the gain without naming the sacrifice",
+    "Picking the metric that looks best rather than the one that measures the right thing",
+    "Evaluating options by description rather than by comparison against a criterion",
+    "Treating all options as equally valid to avoid making a judgment"
+  ],
+
+  "module_notes": {
+    "MOD1_user_segmentation": "Optimize here is about which segment to win first — the criterion is usually some combination of market size and unmet need. The sacrifice is deprioritizing other segments who also have real problems.",
+    "MOD2_problem_identification": "Optimize is about which problem to solve given limited capacity. The criterion is frequency times severity times underservedness. The sacrifice is every other problem you're not solving this cycle.",
+    "MOD3_success_metrics": "Optimize is about which metric to adopt as the North Star. The criterion is: does this metric capture real user value, or just product activity? The guardrail is: what could be gamed if this metric goes up?",
+    "MOD4_product_improvement": "Optimize is about whether to improve distribution or add novelty. The criterion depends on where the product is in its lifecycle. The sacrifice of investing in distribution is that you don't build new things.",
+    "MOD5_tradeoffs": "This is where Optimize is most directly tested. The scenario will present competing priorities with real costs. The move: name the criterion, show the comparison, name the sacrifice explicitly.",
+    "MOD6_jobs_to_be_done": "Optimize is about which job to serve when users have conflicting functional, emotional, and social jobs. The criterion is which job, if served, creates retention. The sacrifice is the users whose other jobs go unserved.",
+    "MOD7_strategy": "Optimize is about which moat to invest in — and the criterion is defensibility over time, not ease of execution. The sacrifice is the short-term revenue from features that don't compound.",
+    "MOD8_mindset": "Optimize is about which engineering decisions to frame as product decisions and which to treat as implementation details. The criterion is: does this choice change user behavior or business outcomes?"
+  }
+}

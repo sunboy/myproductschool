@@ -1,0 +1,195 @@
+{
+  "step": "win",
+  "version": "1.0",
+  "description": "The Win step trains one reasoning move: making a specific, defensible, falsifiable call — and owning it. Most product thinking breaks down here. Users who reasoned well through Frame, List, and Optimize frequently hedge at Win, listing options instead of choosing one, or naming a recommendation so vague it can't be acted on or tested. The Win step is where thinking becomes a decision.",
+  "reasoning_move": "Make one specific recommendation, state why it beats the alternatives, and name how you will know if you were right",
+
+  "criteria": [
+    {
+      "id": "W1",
+      "name": "Specificity",
+      "description": "The recommendation names a concrete action, not a direction. 'Invest in retention' is not a recommendation — it's a priority. 'Ship the targeted one-screen fix within this sprint and measure support ticket volume for the earnings breakdown screen over the following two weeks' is a recommendation. Specificity makes the decision executable and reviewable.",
+      "strong_signals": [
+        "Names the specific action to take (not just the category of action)",
+        "Names who does what and when, if relevant to the decision",
+        "Specific enough that someone else could act on it without asking follow-up questions",
+        "If choosing between options named in the List step: names the option explicitly, not generically"
+      ],
+      "partial_signals": [
+        "Direction is clear but action is underspecified ('we should fix the screen')",
+        "Names the option but not the scope or constraint on it",
+        "Recommendation requires interpretation to execute"
+      ],
+      "failure_signals": [
+        "Recommendation is a priority, not an action ('focus on retention')",
+        "Names multiple options without choosing ('either A or B depending on X')",
+        "Recommendation is a restatement of the problem ('we should make users less confused')",
+        "Recommendation is contingent on information not available ('if we had data on X, then...')"
+      ],
+      "luma_coaching_weak": "The direction is right but the recommendation is underspecified. Add one layer of concreteness: what exactly gets built, changed, or shipped — and by when?",
+      "luma_coaching_failure": "This is a direction, not a recommendation. Someone receiving this couldn't act on it without asking three more questions. Make it specific: what do you do, when, and within what constraint?"
+    },
+    {
+      "id": "W2",
+      "name": "Defensibility",
+      "description": "The recommendation connects back to the reasoning in Frame, List, and Optimize. It doesn't emerge from thin air — it follows from the root cause identified, the options generated, and the criterion applied. A defensible recommendation can be challenged and its author can explain why it still holds. An indefensible recommendation is defended by assertion ('trust me') rather than reasoning.",
+      "strong_signals": [
+        "Explicitly connects the recommendation to the Frame diagnosis ('because the real problem is X, we do Y')",
+        "Names why this option beats the alternatives from the List step",
+        "Reasoning is traceable: someone following the logic could reconstruct how the recommendation was reached",
+        "Acknowledges the strongest counterargument and explains why the recommendation still holds"
+      ],
+      "partial_signals": [
+        "Recommendation follows from the reasoning but the connection isn't made explicit",
+        "Names why the recommendation is good without saying why alternatives are worse",
+        "Defensible reasoning but only against one counterargument"
+      ],
+      "failure_signals": [
+        "Recommendation appears without connection to prior reasoning",
+        "Defended by assertion ('this is the right call') rather than by logic",
+        "Recommendation contradicts a conclusion reached in a prior FLOW step",
+        "Cannot answer 'why not option B' without starting over"
+      ],
+      "luma_coaching_weak": "The recommendation is reasonable but the connection to your earlier reasoning isn't explicit. Show the thread: because you diagnosed X in Frame, and identified Y as the relevant criterion in Optimize, the conclusion is Z. Make that chain visible.",
+      "luma_coaching_failure": "Your recommendation appears disconnected from your earlier analysis. Why this option over the others you named? The answer should come from your Frame diagnosis and your Optimize criterion — not from a fresh judgment at this step."
+    },
+    {
+      "id": "W3",
+      "name": "Falsifiability",
+      "description": "A good recommendation names how you would know it was wrong. This is not pessimism — it's epistemic discipline. A falsifiable recommendation has a named test: a metric, a timeline, and a threshold. If that threshold isn't hit, the recommendation was wrong and should be revisited. Without falsifiability, there's no way to learn from the decision.",
+      "structure": "We will know this worked if [metric] reaches [threshold] by [timeline]. We will know it failed if [counter-signal].",
+      "strong_signals": [
+        "Names a specific metric that would confirm the recommendation is working",
+        "Names a threshold or direction for that metric ('above X,' 'improving week-over-week')",
+        "Names a timeline for when to evaluate",
+        "Names a counter-signal that would indicate the recommendation was wrong",
+        "Distinguishes between leading indicators (early signal) and lagging indicators (confirmed outcome)"
+      ],
+      "partial_signals": [
+        "Names a metric without a threshold or timeline",
+        "Names a timeline without a metric ('we'll reassess in two weeks')",
+        "Names what success looks like but not what failure looks like"
+      ],
+      "failure_signals": [
+        "No metric named — success is qualitative and unverifiable",
+        "Metric is a vanity metric that can't distinguish between the recommendation working and noise",
+        "No timeline named — decision is open-ended with no evaluation trigger",
+        "No counter-signal named — the recommendation has no failure condition"
+      ],
+      "luma_coaching_weak": "You've named what success looks like. Now name what failure looks like: what signal would tell you the recommendation was wrong, and when would you check for it?",
+      "luma_coaching_failure": "A recommendation without a test is a belief. Name the metric you'd watch, the threshold that would tell you it's working, and the timeline for the check. Without those three things, there's no way to know if this decision was right."
+    },
+    {
+      "id": "W4",
+      "name": "Ownership",
+      "description": "Strong Win answers don't hand the outcome back to someone else. The user names who is responsible for the result — whether that's themselves, a team, or a function — and what they would do if the recommendation is wrong. This is the difference between a recommendation and advice. Advice can be ignored. A recommendation with ownership has a named accountable party.",
+      "strong_signals": [
+        "Names who owns the metric and the evaluation",
+        "Names what they would do if the counter-signal appears (not 'we'd reassess' but 'we'd do X')",
+        "Stakes something: time, a sprint, a relationship, credibility",
+        "Names the escalation path if the decision needs to be reversed"
+      ],
+      "partial_signals": [
+        "Implies ownership without naming it ('the team should watch this metric')",
+        "Names a next step if wrong but doesn't own the evaluation",
+        "Recommends without naming who acts"
+      ],
+      "failure_signals": [
+        "Hands the outcome to someone else ('the PM should track this')",
+        "No named owner — recommendation is passive",
+        "Reversibility is treated as someone else's problem",
+        "Fallback if wrong is 'we'd revisit' without naming what that looks like"
+      ],
+      "luma_coaching_weak": "You've made a recommendation. Now say who owns the outcome — not the decision, but the result. Who watches the metric, and what do they do when the two-week check comes?",
+      "luma_coaching_failure": "A recommendation without an owner is a suggestion. Name who is accountable for this outcome, what they watch, and what they do if the signal says the recommendation was wrong."
+    }
+  ],
+
+  "scoring": {
+    "method": "criteria-weighted",
+    "description": "W1, W2, and W3 are primary — they represent the three qualities that make a recommendation actionable and trustworthy. W4 adds accountability and is the signal that separates product-minded thinkers from analysts. A strong Win must score at least partial on W1, W2, and W3.",
+    "weights": {
+      "W1": 0.30,
+      "W2": 0.25,
+      "W3": 0.30,
+      "W4": 0.15
+    },
+    "thresholds": {
+      "strong": 0.75,
+      "partial": 0.45,
+      "needs_work": 0.0
+    }
+  },
+
+  "output_format": {
+    "fields": {
+      "score": "strong | partial | needs_work",
+      "criteria_scores": {
+        "W1": "strong | partial | needs_work",
+        "W2": "strong | partial | needs_work",
+        "W3": "strong | partial | needs_work",
+        "W4": "strong | partial | needs_work"
+      },
+      "detected": "What Luma found in the answer — named specifically",
+      "missed": "What was expected but not present — named specifically",
+      "coaching": "One to three sentences. References the specific criterion missed. No praise for weak answers."
+    },
+    "example_strong": {
+      "score": "strong",
+      "criteria_scores": {
+        "W1": "strong",
+        "W2": "strong",
+        "W3": "strong",
+        "W4": "partial"
+      },
+      "detected": "You named the specific action (ship the targeted screen fix this sprint, hold the rebuild decision for 30 days), connected it to the Frame diagnosis (80% of tickets trace to one screen), named your primary metric (earnings breakdown support tickets per week), a threshold (below 5 per week, down from current 22), and a timeline (two-week check). You named the counter-signal: if tickets stay above 15 after the fix, the screen isn't the root cause and the rebuild case strengthens.",
+      "missed": "You didn't name who watches the metric or what they do when the two-week check happens. 'We'd reassess' is not a fallback — name the specific action.",
+      "coaching": "Strong Win. One gap: who owns the two-week check? Name the person and what they do if the ticket count doesn't drop. 'Priya pulls the data and escalates to the PM with the rebuild case' is an owner. 'We'd reassess' is not."
+    },
+    "example_partial": {
+      "score": "partial",
+      "criteria_scores": {
+        "W1": "partial",
+        "W2": "strong",
+        "W3": "partial",
+        "W4": "needs_work"
+      },
+      "detected": "You recommended the targeted fix over the rebuild, and you connected it to the Frame diagnosis (bug doesn't explain the timeline). Your reasoning is traceable.",
+      "missed": "The recommendation is underspecified — 'fix the screen' doesn't name scope, timeline, or constraint. Your falsification is vague: 'we'll know it worked if complaints go down' needs a threshold and a timeline. No owner named.",
+      "coaching": "The reasoning is right, the recommendation needs more concrete edges. Add: what specifically changes on the screen, when it ships, what metric you watch, what number means success, and who checks it on what date."
+    },
+    "example_needs_work": {
+      "score": "needs_work",
+      "criteria_scores": {
+        "W1": "needs_work",
+        "W2": "needs_work",
+        "W3": "needs_work",
+        "W4": "needs_work"
+      },
+      "detected": "You said the team should focus on retention.",
+      "missed": "No specific action. No connection to Frame/Optimize reasoning. No metric, no threshold, no timeline, no owner.",
+      "coaching": "This is a priority, not a recommendation. Start with one specific action: what gets built or changed, by when, measured by what? Then connect it back to your Frame diagnosis. Then name how you'd know if it was wrong."
+    }
+  },
+
+  "anti_patterns_this_step_catches": [
+    "Listing options instead of choosing one",
+    "Hedging ('it depends on X') after completing the prior FLOW steps that were supposed to resolve X",
+    "Recommending a direction instead of an action",
+    "No falsification condition — success is qualitative and unverifiable",
+    "Handing ownership to someone else (the PM, the data team, 'we')",
+    "Recommendation disconnected from Frame diagnosis and Optimize criterion",
+    "Vanity metrics that can't distinguish between the recommendation working and noise"
+  ],
+
+  "module_notes": {
+    "MOD1_user_segmentation": "Win here is naming the specific segment to build for first — not 'focus on power users' but 'build for first-time startup founders who need async coordination tools, measure by 30-day retention in that cohort.'",
+    "MOD2_problem_identification": "Win is naming the specific problem to solve this cycle, with a falsifiable test for whether solving it moved the needle on the root cause identified in Frame.",
+    "MOD3_success_metrics": "Win is proposing the specific metric to adopt as North Star, explaining why it beats alternatives, naming the guardrail, and stating who reviews it and how often.",
+    "MOD4_product_improvement": "Win is the specific improvement to ship — not 'improve the onboarding' but 'reduce the onboarding from 7 steps to 3 by removing the goal-setting step, measure by day-7 return rate, check after two weeks.'",
+    "MOD5_tradeoffs": "Win is the specific tradeoff call — 'we prioritize the redesign over the bug fix this sprint, we accept that the silent failure rate stays at 2% for 6 more weeks, we watch support volume and reverse if it exceeds 30 tickets per week.'",
+    "MOD6_jobs_to_be_done": "Win is naming the specific job to serve — 'we optimize for the emotional job (feeling less guilty after a bad week) over the functional job (tracking calories), we measure by session completion rate not app opens.'",
+    "MOD7_strategy": "Win is the specific strategic bet — which moat to invest in, what it requires to build, what it costs in the short term, and what signal in 6 months would indicate the bet is paying off.",
+    "MOD8_mindset": "Win is naming the specific engineering decision that needs a product framing — and making that case to the PM or EM. The falsification: did reframing this decision change the outcome or priority?"
+  }
+}
