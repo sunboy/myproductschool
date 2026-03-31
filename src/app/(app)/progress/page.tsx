@@ -6,6 +6,9 @@ import { useState, useEffect } from 'react'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
+import { useLearnerDNA } from '@/lib/v2/hooks/useLearnerDNA'
+import { CompetencyRadar } from '@/components/v2/CompetencyRadar'
+import { COMPETENCY_LABELS } from '@/lib/types'
 
 interface RecentAttempt {
   challenge_id: string
@@ -50,6 +53,7 @@ export default function ProgressPage() {
   const router = useRouter()
   const { moves } = useMoveLevels()
   const { profile } = useProfile()
+  const { dna } = useLearnerDNA()
   const [recentAttempts, setRecentAttempts] = useState<RecentAttempt[]>([])
   const [masteryEntries, setMasteryEntries] = useState<MasteryEntry[]>([])
 
@@ -167,6 +171,37 @@ export default function ProgressPage() {
             ))}
           </div>
         </section>
+
+        {/* Learner DNA Radar */}
+        {dna && dna.competencies.length > 0 && (
+          <section className="col-span-12 lg:col-span-5 bg-surface-container rounded-xl p-5 border border-outline-variant/30">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-sm font-bold">Learner DNA</h3>
+                <p className="text-[11px] text-on-surface-variant">6-axis competency profile</p>
+              </div>
+              <span className={`text-xs font-label font-semibold px-3 py-1 rounded-full ${
+                dna.overall_level === 'Expert' ? 'bg-primary text-on-primary' :
+                dna.overall_level === 'Advanced' ? 'bg-tertiary-container text-on-surface' :
+                dna.overall_level === 'Developing' ? 'bg-secondary-container text-on-secondary-container' :
+                'bg-surface-container-highest text-on-surface-variant'
+              }`}>
+                {dna.overall_level}
+              </span>
+            </div>
+            <CompetencyRadar
+              competencies={dna.competencies.map((c) => ({
+                label: COMPETENCY_LABELS[c.competency],
+                score: c.score,
+              }))}
+            />
+            {dna.weakest_link && (
+              <p className="text-[11px] text-on-surface-variant mt-3 text-center">
+                Focus area: <span className="font-semibold text-on-surface">{COMPETENCY_LABELS[dna.weakest_link]}</span>
+              </p>
+            )}
+          </section>
+        )}
 
         {/* Mastery Map */}
         <section className="col-span-12 md:col-span-6 bg-surface-container rounded-xl p-5 border border-outline-variant/30">

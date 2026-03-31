@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ChallengeCard } from './ChallengeCard'
 import { LumaPick } from './LumaPick'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { V2ChallengesSection } from './V2ChallengesSection'
 
 interface ChallengesPageProps {
   searchParams: Promise<{ paradigm?: string; role?: string; difficulty?: string }>
@@ -144,8 +145,12 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
         </div>
       )}
 
+      {/* V2 FLOW Challenges */}
+      <V2ChallengesSection />
+
       {/* All Challenges Grid */}
-      <h2 className="text-sm font-bold text-on-surface-variant uppercase tracking-wider mb-3">All Challenges</h2>
+      <div className="mt-10 pt-6 border-t border-outline-variant/30">
+      <h2 className="text-sm font-bold text-on-surface-variant uppercase tracking-wider mb-3">Classic Challenges</h2>
       {challenges.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
           <LumaGlyph size={64} state="idle" className="text-primary" />
@@ -171,6 +176,7 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
           ))}
         </div>
       )}
+      </div>
     </main>
   )
 }
