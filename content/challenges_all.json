@@ -1,0 +1,1385 @@
+{
+  "version": "1.0",
+  "description": "HackProduct master challenge library.",
+  "last_updated": "2026-03-31",
+  "total": 20,
+  "challenges": [
+    {
+      "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001",
+      "title": "The Dashboard Rebuild Question",
+      "format": "HP-DEBATE",
+      "company_type": "INTERNAL",
+      "paradigm": "TRAD",
+      "module": 5,
+      "roles": [
+        "TL"
+      ],
+      "difficulty": "Intermediate",
+      "estimated_minutes": 15,
+      "scenario": {
+        "body": "Amara is a tech lead at a ride-sharing company. The driver earnings dashboard is 4 years old. Support tickets pile up every week—drivers complain about it. Her PM has proposed a full rebuild: 6 months, new stack, cleaner architecture. It will definitely feel better. The PM showed mockups. They look nice. But Amara pulled the raw complaint data. 80% of the tickets point to one screen: the weekly earnings breakdown. It's confusing. The numbers don't line up the way drivers expect them to. Amara ran the numbers on a targeted fix: redesign that one screen, ship in 3 weeks, measure satisfaction after. Her gut says that solves the real problem. Her PM says a rebuild fixes everything at once—no half measures. Amara has the credibility to push back. She also knows that a 6-month rebuild is where scope grows quietly and launch dates slip. But killing a PM's vision costs political capital. She's in the room tomorrow. She needs a recommendation.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "A split screen: left side shows a cluttered, dated dashboard interface in muted grays; right side shows a polished, modern redesign in forest green and cream. Between them, a stopwatch ticking down. Silhouette style, no text."
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "Is the problem really scope or is it the diagnostic? Amara thinks the issue is buried in one screen. Her PM thinks the issue is systemic.",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "A tech lead holding a magnifying glass over a dashboard, zooming in on one specific area (the earnings breakdown). Behind it, a hazy outline of the full dashboard in the background. Silhouette, forest green tint."
+          },
+          "questions": [
+            "Why does Amara believe one screen causes 80% of the complaints, and how strong is that evidence?",
+            "What is Amara actually trying to fix—driver confusion, driver distrust, or driver switching to a competitor app?",
+            "If Amara is right about the root cause, does fixing one screen still leave room for the rebuild to happen later if needed?"
+          ]
+        },
+        "list": {
+          "concept": "Other people have a stake in this choice: drivers, the PM, the design team, the next tech lead who will inherit the code.",
+          "questions": [
+            "Who benefits from a quick 3-week fix, and who benefits from a 6-month rebuild?",
+            "What other options exist between a full rebuild and a one-screen patch?",
+            "If Amara blocks the rebuild, what does the PM do next—and will that outcome be better or worse?"
+          ]
+        },
+        "optimize": {
+          "concept": "Amara has to choose what she's optimizing for: shipping speed, code quality, risk, or team morale. You can't have all four.",
+          "questions": [
+            "What is the cost of being wrong about the one-screen fix—how bad would it be if drivers still complained after 3 weeks?",
+            "What does Amara give up if she says yes to the rebuild—engineering velocity, team focus, her credibility on the next hard call?",
+            "Is there a way to run the one-screen fix as a proof-of-concept that informs the rebuild decision?"
+          ]
+        },
+        "win": {
+          "concept": "Amara's recommendation should be a specific, falsifiable bet. Not a compromise. Not a both-sides hedge.",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "A tech lead at a crossroads, pointing toward one direction with confidence. Behind her, a single-lane road (the targeted fix) and a wider, longer highway (the rebuild). Silhouette, amber accent on the pointing hand."
+          },
+          "questions": [
+            "What single metric would Amara measure to know if the one-screen fix actually solved the problem?",
+            "If Amara recommends the targeted fix, what happens to the 20% of complaints she didn't address—and is that acceptable?",
+            "How would Amara phrase her recommendation so the PM feels heard, not blocked?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Saying yes to the rebuild because it feels cleaner, even though it's lower-ROI.",
+        "Framing the choice as tech purity vs. product pragmatism (it's not—both paths have product tradeoffs).",
+        "Treating the PM's vision as non-negotiable just because you want to be a team player.",
+        "Ignoring the political cost of saying no without understanding what comes next."
+      ],
+      "luma_coaching_hint": "The real tension here isn't scope vs. speed. It's diagnosis vs. gut. Amara has data suggesting the one-screen fix works. But she also knows that data can be selective. Before you recommend a path, ask yourself: what evidence would actually change my mind? If you can't name it, you're rationalizing, not deciding."
+    },
+    {
+      "id": "HP-SCENARIO-REAL-AI-ASSIST-MOD4-TL-002",
+      "title": "The AI Assistant Nobody Keeps Using",
+      "format": "HP-SCENARIO",
+      "company_type": "REAL",
+      "paradigm": "AI-ASSIST",
+      "module": 4,
+      "roles": [
+        "TL"
+      ],
+      "difficulty": "Intermediate",
+      "estimated_minutes": 15,
+      "scenario": {
+        "body": "Ben is a tech lead on Notion's editor team. Notion shipped an AI writing assistant in the editor six weeks ago. The surface metrics look good: 35% of power users have tried it. The team is happy. The product lead is happy. Then Ben dug into the session data. Users invoke the AI assistant, get a suggestion, and hit undo 60% of the time. They're not keeping the AI's work. The suggestions are grammatically correct. The tone is professional. But they don't sound like the user. A researcher tagged 50 session videos. In almost every one, the user read the AI suggestion, made a face, then deleted it and typed something from scratch. Some users tried the feature once and never returned. Others toggled it on and off searching for a mode where it actually helped. Ben was asked to propose how to improve the feature. He could make the AI more contextual. He could add a tone slider. He could change the sampling temperature. But he keeps thinking about the undo rate. The metric that matters isn't invocations—it's adoption. And adoption is sinking.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "A Notion-like editor interface with an AI suggestion appearing in the margin. A user's hand reaches toward the undo button (Ctrl+Z), hovering. The AI suggestion text fades to a lighter color as the undo happens. Silhouette, cream background with forest green accent on the undo action."
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "The problem isn't the feature—it's that the feature doesn't fit how users actually write.",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "A split image: left shows a user typing naturally with one style of voice; right shows the same user with the AI suggestion appearing, and their writing style shifts visibly. Silhouette, no text, amber tint on the mismatch."
+          },
+          "questions": [
+            "Why are users undoing AI suggestions if the suggestions are correct?",
+            "What does a 60% undo rate tell you that a 35% adoption rate doesn't?",
+            "Is the problem with the AI or with how the feature is positioned in the workflow?"
+          ]
+        },
+        "list": {
+          "concept": "There are multiple ways to interpret 'improve the feature.' Each one leads to a different solution.",
+          "questions": [
+            "Who is the feature actually for—users who want to write faster, or users who want to improve their writing?",
+            "What other AI-writing products exist, and what do they do differently when a user rejects a suggestion?",
+            "Could the feature be better, or is the fundamental idea—AI suggestions mid-flow—just not something this audience wants?"
+          ]
+        },
+        "optimize": {
+          "concept": "Ben can optimize for initial engagement, for retention, for user satisfaction, or for something else. The tradeoffs are real.",
+          "questions": [
+            "If Ben makes the AI tone more variable, does that fix the undo rate or just surface a deeper problem—that users don't trust AI suggestions at all?",
+            "What happens if Ben optimizes for power users only instead of trying to get the whole user base to use it?",
+            "Is the goal to increase the undo rate, the adoption rate, or the feature's actual impact on the user's final writing?"
+          ]
+        },
+        "win": {
+          "concept": "Ben needs to make a call: does this feature need a fix, a pivot, or a kill?",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "A tech lead standing at a desk with session video clips pinned around them like a detective board. One clip shows a user undoing, another shows a user deleting, another shows a user ignoring. Silhouette, forest green highlights on the clips Ben is studying."
+          },
+          "questions": [
+            "What is the single smallest change Ben could make to test whether the undo rate is about tone, or about trust, or about workflow fit?",
+            "If 80% of users who try the feature reject it, should Ben focus on fixing the feature or on understanding why those users were activated in the first place?",
+            "How would Ben know if this feature is genuinely better for Notion users, or if it's just better for Notion's positioning against competitors?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Assuming the metric (adoption) is the problem when the behavior (undo rate) is telling a different story.",
+        "Treating the feature as given and only tweaking knobs instead of asking if the feature should exist.",
+        "Optimizing for activation metrics (users who tried it) instead of retention metrics (users who kept using it).",
+        "Gathering more data about how to improve tone instead of data about whether users want AI assistance at all in their personal voice."
+      ],
+      "luma_coaching_hint": "When a feature has good invocation numbers but high abandonment, the feature isn't broken—the product-market fit is broken. Before you write code, figure out: are users rejecting this feature because it's bad, or because it solves the wrong problem? The 50 session videos are worth more than the aggregate metrics. Watch them. The users are telling you exactly what to do."
+    },
+    {
+      "id": "HP-SCENARIO-FICT-B2C-TRAD-MOD6-DES-001",
+      "title": "The Onboarding vs. Retention Paradox",
+      "format": "HP-SCENARIO",
+      "company_type": "FICT-B2C",
+      "paradigm": "TRAD",
+      "module": 6,
+      "roles": [
+        "DES"
+      ],
+      "difficulty": "Beginner",
+      "estimated_minutes": 15,
+      "scenario": {
+        "body": "Sofia is the product designer at Serenity, a meditation app. Her PM is frustrated. Onboarding completion is stuck at 34% — way below the 60% industry standard. Sofia ran five usability tests. Four users breezed through the flow. They said it was clear. But here's the thing: none of them opened the app again after two weeks.\n\nSofia dug deeper. Most users downloaded Serenity after a rough week. They wanted immediate relief. They wanted to sit down and feel better. But the onboarding asks them to set goals and pick a program first. That means deciding what kind of meditator they want to become. Most of them didn't know. They just wanted now.\n\nHer PM thinks the problem is the flow. Sofia isn't so sure. She suspects the real problem is that the app isn't doing the job users actually hired it to do. She can redesign the onboarding to get more people through it. But will it fix retention? She has to choose: optimize for completion, or optimize for the job users actually want done.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "A person sitting on a couch looking at their phone at night, face tired and stressed, silhouette only, warm cream background, forest green accent light from phone screen"
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "The real problem isn't usability — it's whether the product solves the job users hired it for.",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "Split screen silhouette: left side shows a designer at a desk redesigning screens, right side shows a user opening the app then closing it, amber dividing line between them"
+          },
+          "questions": [
+            "What's the difference between 'completing onboarding' and 'staying to use the app'?",
+            "Why did four users say the flow was clear, but none came back?",
+            "Is Sofia's PM asking her to solve a usability problem or a product problem?"
+          ]
+        },
+        "list": {
+          "concept": "There are many people affected by this decision, and many ways to frame what the real job is.",
+          "questions": [
+            "Who else at Serenity will be impacted by Sofia's choice — the PM, the CEO, the retention team, the investors?",
+            "What are all the ways users could be 'hiring' a meditation app — relief, habit, skill, community, status?",
+            "Beyond redesigning onboarding or changing the product, what other options does Sofia have?"
+          ]
+        },
+        "optimize": {
+          "concept": "Sofia has to pick what to optimize for, knowing that optimizing for one thing means giving up another.",
+          "questions": [
+            "If she optimizes for onboarding completion, what does she give up?",
+            "If she optimizes for retention, what does she give up?",
+            "What's the actual bottleneck — is it getting people in, or is it keeping them?"
+          ]
+        },
+        "win": {
+          "concept": "Make a specific call: what should Sofia recommend, and why?",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "A designer presenting to a group, pointing at a chart showing diverging paths labeled 'onboarding completion' and 'retention', silhouettes, forest green and amber colors"
+          },
+          "questions": [
+            "Based on the evidence, is the onboarding actually the problem Sofia should solve?",
+            "What would you recommend Sofia do first, and what evidence would prove you right or wrong?",
+            "How does Sofia sell her recommendation to her PM, given the pressure to fix the completion rate?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Assuming that good UX design automatically leads to retention",
+        "Treating the symptom (low completion) instead of diagnosing the cause (wrong job)",
+        "Ignoring user research that contradicts the PM's hypothesis",
+        "Optimizing for metrics without asking if they measure the right thing"
+      ],
+      "luma_coaching_hint": "Sofia's instinct is right — there's a gap between completing a task and finding value. The sharpest product decisions often come from noticing what usability tests don't tell you. In this case, four people said 'clear flow' but zero came back. That mismatch is the insight. What would you ask those four users to understand what they actually needed?"
+    },
+    {
+      "id": "INT-TRADE-REAL-AI-ASSIST-MOD5-DES-002",
+      "title": "Who Should AI Serve at Figma",
+      "format": "INT-TRADE",
+      "company_type": "REAL",
+      "paradigm": "AI-ASSIST",
+      "module": 5,
+      "roles": [
+        "DES"
+      ],
+      "difficulty": "Advanced",
+      "estimated_minutes": 20,
+      "scenario": {
+        "body": "James is a product designer at Figma, working on the new AI features team. Figma just shipped AI that can generate full UI layouts from a text prompt. Now comes the harder decision: how much control should the AI have?\n\nOption A: AI generates a complete layout. The designer edits from there. Fast. Requires less design knowledge. Non-designers can make something that looks professional in minutes.\n\nOption B: AI generates individual components. The designer requests them one at a time and assembles the layout. Slower. Requires more design judgment. Experienced designers keep full control.\n\nUser research is clear. Experienced designers hate Option A. They feel like they're babysitting the AI. New designers and non-designers love Option A. They can ship something polished without sweating the details.\n\nFigma's entire growth story depends on bringing in new users who aren't trained designers. But Figma's credibility depends on not losing the professionals who built the company. James has incomplete data, high stakes, and two audiences that want opposite products.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "Two silhouettes sitting back-to-back, one rapidly generating designs on a screen, one carefully crafting a single component with precision, warm cream background with forest green and amber accents"
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "You can build for expertise or for accessibility, but the same feature can't do both equally well.",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "A fork in the road silhouette, one path labeled with a bolt symbol (speed), one path labeled with a wrench symbol (control), amber and forest green pathways"
+          },
+          "questions": [
+            "What does 'creative control' actually mean to an experienced designer versus a new one?",
+            "If Option A ships and succeeds with non-designers, what happens to professional designers?",
+            "If Option B ships and succeeds with professionals, what happens to Figma's growth ambitions?"
+          ]
+        },
+        "list": {
+          "concept": "There are many stakeholders with different needs, and many ways to measure success.",
+          "questions": [
+            "Who benefits from Option A, and who loses? Same question for Option B.",
+            "What other constraints or opportunities is James missing — pricing, education, templates, plugins?",
+            "Is there a third option that splits the difference, or is this actually a binary choice?"
+          ]
+        },
+        "optimize": {
+          "concept": "James has to optimize for one thing, knowing what he's sacrificing.",
+          "questions": [
+            "If Figma optimizes for growth (more users, lower barrier), what does the product become?",
+            "If Figma optimizes for power users (deeper control, higher ceiling), what does the product become?",
+            "Which group has more switching cost, and which group would actually leave if unhappy?"
+          ]
+        },
+        "win": {
+          "concept": "Make a defensible call: which option should James recommend, and how would he sell it?",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "A hand pointing at a bar chart showing two different trajectories, one starting low and climbing, one starting high and leveling off, forest green and amber bars on warm cream background"
+          },
+          "questions": [
+            "Which audience matters more to Figma's future — new users or power users — and why?",
+            "What evidence would you need to feel confident in your call?",
+            "If you pick Option A and professionals start leaving, what's your backup plan?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Trying to make both groups happy with a compromise feature that serves neither",
+        "Optimizing for the loudest voice instead of the group with more business impact",
+        "Ignoring the switching cost and loyalty of existing power users",
+        "Making the decision based on short-term metrics instead of long-term platform health"
+      ],
+      "luma_coaching_hint": "This is a real tension with real stakes. You can't build a product that gives maximum speed to beginners and maximum control to experts at the same time — they pull in opposite directions. The key is to be honest about the trade-off and make an intentional bet. Which group does Figma need more in the next three years, and why? That's your answer."
+    },
+    {
+      "id": "HP-BRIEF-INTERNAL-TRAD-MOD5-EM-001",
+      "title": "The Silent Order Bug",
+      "format": "HP-BRIEF",
+      "company_type": "INTERNAL",
+      "paradigm": "TRAD",
+      "module": 5,
+      "roles": [
+        "EM"
+      ],
+      "difficulty": "Intermediate",
+      "estimated_minutes": 15,
+      "scenario": {
+        "body": "Rania runs an 8-person engineering team at a mid-size e-commerce platform. It's July, Q3 started last week. Marketing has been pushing a checkout redesign for six months. The business case is solid: conversion lift, reduced friction, tied to OKR targets. Engineering estimate: 10 weeks. But Rania's team also owns a known bug in the order management system. About 2% of orders fail silently. The customer sees a success page. The order never processes. Support is swamped fielding the fallout. Engineering has known about it for three months but it's never been formally escalated to leadership. It lives in a legacy system. Probably a two-week fix. Rania's VP sent a Slack message yesterday: \"Let's lock in the checkout redesign for Q3. It's critical for our numbers.\" Rania knows the silent failures are quietly eroding trust. She also knows the redesign is the right business play. She has one team. One quarter. She can't do both.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "Silhouette of a person standing at a fork in the road at dusk. One path glows with warm light ahead. The other path is darker, with a small warning sign barely visible in shadow. Warm cream background, forest green silhouette."
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "What is the real cost of the silent failure, and who pays it?",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "Split-screen silhouette: left side shows a customer holding a phone with a confused expression, right side shows a support agent with a pile of papers. Warm cream background, forest green silhouettes."
+          },
+          "questions": [
+            "What does Rania know about the scope of the 2% bug? How many customers, how much revenue, how many support tickets?",
+            "Is this really a bug, or is it a symptom of a larger architectural problem that will resurface after the redesign ships?",
+            "If Rania doesn't fix this in Q3, what happens in Q4? Does it become someone else's problem?"
+          ]
+        },
+        "list": {
+          "concept": "Who else is in this decision and what are they optimizing for?",
+          "questions": [
+            "What does the VP actually care about? Is it the conversion number, or the public launch, or hitting the OKR?",
+            "Who on Rania's team knows the legacy order system best? Is that person burned out? Would fixing the bug feel like growth or punishment?",
+            "Could Rania ship a partial redesign or a redesign plus a quick band-aid fix instead of an either-or?"
+          ]
+        },
+        "optimize": {
+          "concept": "What are you protecting, and what are you betting won't break?",
+          "questions": [
+            "Is the checkout redesign a competitive necessity, or a nice-to-have that happens to align with OKRs?",
+            "If you fix the silent bug first, do you gain credibility to push back on the VP's timeline later?",
+            "What does 'done' look like for each option? Redesign shipped? Bug fixed to zero? Support ticket backlog cleared?"
+          ]
+        },
+        "win": {
+          "concept": "Make a call. Defend it. Name the trade-off.",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "Silhouette of a person with hand raised in a confident gesture, standing before a small group. Warm light from above. Forest green and amber tones, warm cream background."
+          },
+          "questions": [
+            "Which problem would you escalate to your VP as the real blocker, and how would you frame it?",
+            "If you pick the redesign, what's your plan for the silent failures? Defer to Q4? Assign to another team? Sneak it in?",
+            "How do you know if you made the right call? What metric do you watch in Q4?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Assuming the bug will fix itself or that support can just handle it forever",
+        "Pitching the decision as a moral one ('trust is paramount') instead of a business one",
+        "Promising to do both things at reduced quality to avoid the trade-off",
+        "Not checking whether the VP actually understands the scope of the silent failures"
+      ],
+      "luma_coaching_hint": "EMs don't choose between good ideas and bad ideas. They choose between two good ideas and own the gap. The real skill here is translating technical risk into business language your VP speaks, and then making a defensible call that you can explain in six months if it goes wrong."
+    },
+    {
+      "id": "HP-POSTMORTEM-REAL-AI-ASSIST-MOD7-EM-002",
+      "title": "Code Velocity and Hidden Debt",
+      "format": "HP-POSTMORTEM",
+      "company_type": "REAL",
+      "paradigm": "AI-ASSIST",
+      "module": 7,
+      "roles": [
+        "EM"
+      ],
+      "difficulty": "Advanced",
+      "estimated_minutes": 20,
+      "scenario": {
+        "body": "It's November 2022. Twitter has been private for four weeks. Half the engineering staff has left. Elon's mandate is simple: ship faster. An AI coding assistant was rolled out to the entire remaining team two weeks ago. Jerome is a new EM managing one of the legacy systems teams. His engineers love the assistant. Pull requests that used to take two days now take four hours. But Jerome is noticing something. The AI is writing confident code for undocumented systems. It's hallucinating function signatures and legacy behavior. Three times in two weeks, deploys have gone out that broke downstream systems because the AI invented behavior that didn't exist. Support is fielding the fallout. The business wants velocity. Jerome's team is moving fast. But the platform is getting fragile. His VP asks him in a meeting: \"How do we keep up this speed without crashing?\" Jerome realizes the real question is different. The AI isn't the problem. The fact that critical systems are undocumented is the problem. The AI just made it visible and urgent.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "Silhouette of hands typing on a keyboard, with ghostly code characters flowing upward. Some characters are solid and clear, others are fading or distorted. Warm cream background, forest green silhouette with amber accents."
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "What does the AI assistant actually reveal about your engineering foundation?",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "Silhouette of a person shining a flashlight into a dark room, revealing cobwebs and old machinery in the corners. Warm cream background, forest green figure, amber light."
+          },
+          "questions": [
+            "If your AI assistant is hallucinating, which systems are truly undocumented? How many do you have?",
+            "Are the hallucinations random, or are they systematic? Is the AI picking up on patterns from old, deprecated code still in the repo?",
+            "How many of your recent speed wins came from the AI, and how many of your recent failures?"
+          ]
+        },
+        "list": {
+          "concept": "What needs to be protected, and what can you afford to move fast on?",
+          "questions": [
+            "Which systems are critical paths to revenue? Which ones can tolerate some risk?",
+            "Who owns the institutional knowledge for the fragile systems? Are they still at the company?",
+            "Could you split your team: one group documentingcritical systems, one group shipping new features with the AI?"
+          ]
+        },
+        "optimize": {
+          "concept": "You're optimizing for speed, but at what cost to reliability?",
+          "questions": [
+            "If you slow down to document the fragile systems, how much velocity do you lose in the next three months?",
+            "What happens to your credibility with the VP if you ask for a documentation sprint right now?",
+            "Is there a way to use the AI assistant to accelerate documentation instead of just code?"
+          ]
+        },
+        "win": {
+          "concept": "Make a call about what engineering quality protects.",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "Silhouette of a person drawing a line on the ground with a stick, marking a boundary. On one side, organized shapes. On the other, chaos. Warm cream background, forest green figure."
+          },
+          "questions": [
+            "Which three systems do you protect from AI-assisted changes, and why? How do you justify it to your VP?",
+            "Do you ask your engineers to slow down, or do you build better safeguards (code review, tests, staging)?",
+            "In six months, what does it look like if you made the right call? What does it look like if you didn't?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Blaming the AI tool instead of addressing the documentation gap",
+        "Assuming you can speed up forever without hitting a reliability wall",
+        "Protecting every system equally instead of being honest about what matters",
+        "Not testing the AI's output before it ships, then acting surprised when it fails"
+      ],
+      "luma_coaching_hint": "Speed tools like AI don't create new problems. They accelerate the problems that already exist. If your foundation is shaky, the AI will expose it faster. Your job isn't to slow down the AI or blame it. It's to decide what foundation matters enough to protect, and then build guardrails around it while everything else moves fast."
+    },
+    {
+      "id": "HP-SCENARIO-FICT-B2B-TRAD-MOD3-DE-001",
+      "title": "The Dashboard That Nobody Uses",
+      "format": "HP-SCENARIO",
+      "company_type": "FICT-B2B",
+      "paradigm": "TRAD",
+      "module": 3,
+      "roles": [
+        "DE"
+      ],
+      "difficulty": "Intermediate",
+      "estimated_minutes": 15,
+      "scenario": {
+        "body": "Marcus is a data engineer at Insight Analytics, a B2B SaaS company that sells self-serve dashboards to mid-market companies. His team spent six months building a product that lets customers visualize their sales funnel, conversion rates, and customer cohorts in real time.\n\nLast week, the PM published a metrics report. 800 unique users per week are opening the dashboard. 12,000 dashboard views per month. The PM showed this to the board and said the product is crushing it.\n\nBut then the sales team called an emergency meeting. Three of their top-10 customers are not renewing. When Marcus talked to them during exit interviews, the story was the same: \"We looked at it. Didn't really help us.\" That's when Marcus started digging into the session data himself.\n\nHe found the pattern. Most users open the dashboard, spend 90 seconds looking at one chart, then close it. They come back once a week, do the same thing, then leave. The 800 WAU number is real. The 12,000 views are real. But the value delivered is zero.\n\nMarcus is realizing that his team measured activity, not impact. The metrics that made the PM look good are not the metrics that matter to customers. He needs to figure out what actually tells the story of whether this product is working.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "Flat minimal icon: a dashboard screen with three colored boxes (forest green, warm cream, amber) inside. One box is glowing, the others are faded. Silhouette style. No text."
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "The real problem is not that users are inactive. It's that activity does not equal value.",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "Split screen: left side shows an upward arrow and checkmark (activity metrics). Right side shows a customer walking away (churn). Geometric, minimal, silhouette only."
+          },
+          "questions": [
+            "What do the 800 weekly users have in common? Are they all from customers who renewed?",
+            "Why would a customer look at a dashboard once and then stop? What would have to be true?",
+            "If activity metrics were the right measure, why are customers churning?"
+          ]
+        },
+        "list": {
+          "concept": "Map the space. What are all the ways a customer could get value from this product?",
+          "questions": [
+            "Who uses the dashboard? Is it the decision-maker, the analyst, the ops person, or someone else?",
+            "What decisions would a customer make differently if the dashboard worked? Be specific about one decision.",
+            "Besides logging in and looking, what other signals could tell you whether the product is working? (Hint: think about what happens after they see the data.)"
+          ]
+        },
+        "optimize": {
+          "concept": "Compare what you're measuring against what actually drives renewal.",
+          "questions": [
+            "If you had to pick one metric — WAU or something else — which would predict whether a customer renews? Why?",
+            "What would you have to give up by switching from WAU to this new metric? (What good thing would you lose sight of?)",
+            "How would you measure whether users are acting on the insights from the dashboard? What would that look like in the data?"
+          ]
+        },
+        "win": {
+          "concept": "Decide what metric you're going to own and defend to the PM.",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "A data chart with a single line trending upward. Below it, a silhouette of a person making a decision (hand raised, pointing). Forest green and amber accents. Minimal, geometric."
+          },
+          "questions": [
+            "What is the one metric you would change to? Define it in one sentence.",
+            "What would you tell the PM about why the 800 WAU number is misleading?",
+            "What does success look like in the next 90 days? How would you know the dashboard is actually creating value?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Assuming more activity always means more value",
+        "Trusting the first metric that is easy to measure",
+        "Not talking to customers about how they actually use the product",
+        "Optimizing for metrics that look good to executives instead of metrics that predict business outcomes"
+      ],
+      "luma_coaching_hint": "The gap between activity and impact is where most product metrics fail. When you see high engagement but churn, the first question is not 'how do we get more activity.' It's 'what were we measuring wrong?' Focus on the customer outcome, not the system metric."
+    },
+    {
+      "id": "INT-DIAG-REAL-AI-ASSIST-MOD2-DE-002",
+      "title": "The Anomaly Detection Red Herring",
+      "format": "INT-DIAG",
+      "company_type": "REAL",
+      "paradigm": "AI-ASSIST",
+      "module": 2,
+      "roles": [
+        "DE"
+      ],
+      "difficulty": "Advanced",
+      "estimated_minutes": 20,
+      "scenario": {
+        "body": "Soo-Jin is a data engineer on the payments and conversion team at Airbnb. On Monday morning, she gets a Slack message from the head of product: \"Booking conversion is down 8% week-over-week. Can you look into this?\" It's urgent. The business is noticing it.\n\nShe pulls the raw data. The drop is real. 8% is not noise. Then she runs it through the AI-powered anomaly detection system her team built last year. It flags 14 potential contributing factors.\n\nShe scans the list. There's a seasonal pattern from spring travel bookings. There's a minor UI change that went live on Wednesday affecting mobile search filters — but only 2% of traffic. There's a geo-specific outage in Southeast Asia from Saturday night that lasted four hours. There's a shift in user demographics. There's a change in average booking lead time.\n\nBut two signals stand out. One: the drop is concentrated in city-center listings on Thursday and Friday nights. Two: the price-to-review ratio for top-performing listings shifted up by 12% in the last 48 hours, but that's the opposite direction that usually predicts fewer bookings.\n\nThe problem: all 14 flags are technically correct. But only one or two of them are actually the cause. The AI is excellent at pattern-finding, but it can't tell her which question to ask first. Soo-Jin has 30 minutes to decide what she's going to investigate, because the product team is waiting for her to say what broke.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "Flat minimal chart with multiple colored bars and arrows pointing in different directions. One bar is red/amber (trending down). Around it, 14 small icons representing different data signals (calendar, location pin, user profile, filter icon, etc.) scattered and overlapping. Silhouette style, minimal."
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "The real problem is determining which signal is the actual cause, not listing all possible signals.",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "Silhouettes: one figure standing at a fork in the road with 14 arrows pointing in different directions. Only one or two arrows are glowing (forest green). Minimal geometric style."
+          },
+          "questions": [
+            "What does the 8% drop have in common? Is it across all cities, all listing types, all price points, or is it concentrated?",
+            "The anomaly detection tool found 14 signals. Which ones would cause fewer bookings by themselves, and which ones are just correlations?",
+            "Of the two signals that stand out — city-center Thursday/Friday drop and the price-review ratio shift — how would you test which one is actually causing the conversion loss?"
+          ]
+        },
+        "list": {
+          "concept": "Think like a user. What would have to change in the product for someone to stop booking?",
+          "questions": [
+            "Walk through a booking funnel. Where could the 8% drop happen? (Search? Filter? Listing page? Payment?) What does that tell you about which signals matter?",
+            "The price-review ratio went up. Does that make listings look better or worse to a user? What would that cause them to do?",
+            "Is this a supply problem (listings became less attractive), a demand problem (fewer people searching), or a trust problem (people are less confident in what they see)?"
+          ]
+        },
+        "optimize": {
+          "concept": "Compare the likelihood of each hypothesis based on what you know about user behavior.",
+          "questions": [
+            "If the city-center Thursday/Friday drop is real, what would explain it? Is there a competitor event, a platform issue, or a user behavior change?",
+            "The seasonal pattern flag and the UI change flag are both real signals. But which one would explain an 8% total drop? What math would you do?",
+            "What would you have to sacrifice by investigating the price-review ratio shift instead of the city-center drop? (What if you're wrong?)"
+          ]
+        },
+        "win": {
+          "concept": "Decide which hypothesis you're going to investigate first and why.",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "A single focused beam of light (forest green) pointing down at a data point, cutting through a background of faded signals. Silhouette, minimal geometric."
+          },
+          "questions": [
+            "Which of the 14 signals are you going to investigate first? State it in one sentence.",
+            "What is the fastest way to test whether this signal is the cause? (Not a full fix. A test.)",
+            "If your hypothesis is wrong, what's the second signal you'll check? How would you know?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Treating all anomaly flags as equally likely causes",
+        "Investigating the easiest signal instead of the most likely one",
+        "Confusing correlation with causation when multiple signals are present",
+        "Not thinking about the user journey when interpreting the data",
+        "Assuming AI tools have solved the diagnosis problem — they haven't, they've just expanded the search space"
+      ],
+      "luma_coaching_hint": "AI anomaly detection is powerful at finding patterns, but it finds lots of them. Your job is not to investigate all 14. Your job is to ask the right question. Think about the user — what changed in their experience that would make them book less? That's your hypothesis. Test that first. Everything else is noise."
+    },
+    {
+      "id": "INT-METRIC-REAL-TRAD-MOD3-DS-001",
+      "title": "Streak Recovery: Measuring Retention or Fear?",
+      "format": "INT-METRIC",
+      "company_type": "REAL",
+      "paradigm": "TRAD",
+      "module": 3,
+      "roles": [
+        "DS"
+      ],
+      "difficulty": "Intermediate",
+      "estimated_minutes": 15,
+      "scenario": {
+        "body": "You're a data scientist at Duolingo. Streaks are your biggest retention lever. Users with a 30-day streak are 40% more likely to return tomorrow than users without one. Leadership is excited. They want to launch 'streak recovery'—a feature that costs 500 gems (in-app currency) to restore a missed day. It's meant to smooth over life's chaos: a business trip, a sick day, a forgotten notification. On paper, it's a win for retention and revenue. But you've been digging into the data. Users driven by streak anxiety show lower lesson-completion quality than users learning for intrinsic reasons. They rush through lessons. They score lower on retention tests months later. The streak metric is going up. The learning metric is going down. You have data. Leadership has momentum. You need to decide: what are you actually measuring?",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "A calendar page with a bright streak chain intact on one half, broken chain on the other half, silhouette of a person looking between them with uncertainty"
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "The real problem is not how to measure recovery. It's whether recovery solves the right problem.",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "Two overlapping circles: one labeled 'retention' glowing bright, one labeled 'learning quality' dimmed, with a question mark where they overlap"
+          },
+          "questions": [
+            "What behavior is streak anxiety actually driving?",
+            "Is a recovered streak identical to an earned streak?",
+            "If people game the feature, what does that tell us about motivation?"
+          ]
+        },
+        "list": {
+          "concept": "Your stakeholders are not just leadership. Users have different needs, and your metrics touch them all.",
+          "questions": [
+            "Who benefits from streak recovery and who might be harmed?",
+            "What other retention mechanisms exist beyond the streak?",
+            "Could you measure quality of engagement without penalizing engagement rate?"
+          ]
+        },
+        "optimize": {
+          "concept": "Every metric you pick gains you something and costs you something else.",
+          "questions": [
+            "Are you optimizing for the next quarter or the next year?",
+            "What happens if you weight quality-adjusted retention instead of raw retention?",
+            "If you're wrong about this metric, what's the downside?"
+          ]
+        },
+        "win": {
+          "concept": "A defensible call is not the call leadership wants to hear. It's the call you can justify if the feature fails.",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "A data scientist at a desk with two reports side by side: one showing up arrows, one showing down arrows, choosing the honest one"
+          },
+          "questions": [
+            "What single metric would you tie streak recovery's success to, and why?",
+            "What is the minimum bar for quality you would require before scaling it?",
+            "If retention goes up but learning goes down, is that a win?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Reporting only the metric that looks good",
+        "Treating aggregate accuracy as a substitute for understanding user segments",
+        "Assuming retention is always the right goal",
+        "Letting leadership's excitement override the data you see"
+      ],
+      "luma_coaching_hint": "Good data science isn't about the numbers that sound best. It's about the question you're answering. Ask yourself: if this feature fails in 6 months, which of my metrics would have warned me?"
+    },
+    {
+      "id": "HP-SCENARIO-FICT-B2B-AI-NATIVE-MOD2-DS-002",
+      "title": "Model Accuracy vs. Segment Reality",
+      "format": "HP-SCENARIO",
+      "company_type": "FICT-B2B",
+      "paradigm": "AI-NATIVE",
+      "module": 2,
+      "roles": [
+        "DS"
+      ],
+      "difficulty": "Advanced",
+      "estimated_minutes": 20,
+      "scenario": {
+        "body": "Yemi is a data scientist at a three-person startup that built an AI sales forecasting tool. Eight months in, they have 12 enterprise customers. The model analyzes CRM logs, emails, and call recordings to predict deal closure. One afternoon, Dan—VP of Sales at their biggest customer—emails directly. 'Your model flagged 6 deals as high-probability last month. Four went dark. I'm losing confidence.' Yemi's stomach tightens. She pulls the data. Aggregate accuracy is 71%, beating their 65% benchmark. But Dan's deals are different. His team sells enterprise contracts with 9-month sales cycles. The model was trained mostly on mid-market deals with 3-month cycles. Dan's segment has almost no training data. The model works everywhere else. Just not for him. And he's noticing. The tension: you can have a product that's statistically sound but unusable for a paying customer. You need to decide what the real problem is—and what to admit about the product's readiness.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "A graph showing an upward accuracy trend, with one customer's silhouette falling off the right edge of the chart"
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "The real problem is not accuracy. It's that the product works for some segments and fails for others.",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "Two sales funnels side by side: one wide and predictable, one long and narrow, silhouette of a confused salesperson comparing them"
+          },
+          "questions": [
+            "Is 71% accuracy good if it doesn't apply to this customer's deals?",
+            "What does it mean that the model was trained on data that doesn't reflect his reality?",
+            "If you sell to enterprise but your data is mid-market, who's at fault?"
+          ]
+        },
+        "list": {
+          "concept": "This problem touches more people than just Dan. You need to see the full shape of it.",
+          "questions": [
+            "How many of your other 11 customers might have the same segment mismatch?",
+            "Who else could Dan influence—his peers, his board, his buying group?",
+            "What options exist beyond fixing the model for Dan's use case?"
+          ]
+        },
+        "optimize": {
+          "concept": "You're balancing short-term customer retention against long-term product integrity.",
+          "questions": [
+            "Should you retrain the model just for Dan, or pause sales to large-deal customers?",
+            "What's the cost of losing Dan versus the cost of a hasty fix?",
+            "Are you optimizing for keeping a customer or building a trustworthy product?"
+          ]
+        },
+        "win": {
+          "concept": "A defensible call here is honest about what the model can and cannot do for each customer type.",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "A data scientist showing Dan two segmented reports on a dashboard: one accurate, one acknowledging gap, choosing transparency"
+          },
+          "questions": [
+            "Do you tell Dan the model needs retraining for his segment, or do you retrain first and tell him after?",
+            "What segment of customers should you actually be selling to right now?",
+            "If you can't fix this in 30 days, what do you owe Dan?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Hiding segment-level failures behind aggregate accuracy",
+        "Overfitting a fix to one customer instead of addressing the root training gap",
+        "Assuming a customer will wait for retraining without losing trust",
+        "Selling to customer segments you don't have training data for"
+      ],
+      "luma_coaching_hint": "When a customer says the product isn't working, listen to what they're actually seeing. Aggregate accuracy is a lie if it masks failures in the segments your customers care about. The question is not 'how do I save this customer?' It's 'what should I have told this customer before they bought?'"
+    },
+    {
+      "id": "HP-SCENARIO-FICT-B2C-TRAD-MOD1-FE-001",
+      "title": "Founder's Dilemma: Broad Audience vs. Real Users",
+      "format": "HP-SCENARIO",
+      "company_type": "FICT-B2C",
+      "paradigm": "TRAD",
+      "module": 1,
+      "roles": [
+        "FE"
+      ],
+      "difficulty": "Intermediate",
+      "estimated_minutes": 15,
+      "scenario": {
+        "body": "Lena co-founded a personal finance app aimed at college grads with student loans. Two thousand users onboarded. Forty percent come back weekly. But investors keep asking: who is this actually for? Her co-founder says \"anyone with student debt.\" Lena watches the data differently. Her power users are 24-27 year-olds three months into their first real job, drowning in benefits paperwork and 401k jargon. Most are done paying loans. Loan management was the headline. Benefits clarity is the real itch. Lena has six weeks of runway before the next financing sprint. Narrowing the target means rewriting the marketing, potentially losing the broad user base they built. Keeping it broad means another round of investor skepticism. Pre-PMF, \"everyone\" solves nothing. But naming a specific person feels like shrinking the market.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "A silhouette of a person sitting at a desk surrounded by overlapping documents and papers, with a single document highlighted in bright amber, representing clarity amid confusion."
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "Are Lena's current users the actual target, or are they an accidental user group that doesn't drive the business?",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "Two overlapping circles: one labeled \"who we thought,\" one labeled \"who actually uses it,\" with the amber circle clearly larger."
+          },
+          "questions": [
+            "What behavior tells you that benefits clarity, not loan payoff, is the real problem Lena's users are solving?",
+            "Why would targeting loan payers and targeting fresh employees be fundamentally different product choices?",
+            "If the power users are 24-27 in first jobs, what other needs are they likely having that loan payers don't?"
+          ]
+        },
+        "list": {
+          "concept": "Who else is in this market, and what are the ways to own a segment without abandoning existing users?",
+          "questions": [
+            "Which competitors are already talking to fresh employees, and what are they missing?",
+            "Could Lena serve both loan payers and fresh employees, or would that split the product into two different stories?",
+            "If she narrows to first-job money anxiety, what adjacent problems does that unlock beyond benefits and 401ks?"
+          ]
+        },
+        "optimize": {
+          "concept": "Narrowing the market increases power with investors but risks losing the users who already trust the product.",
+          "questions": [
+            "How many of those 2,000 users would leave if the narrative shifted to \"we're for people in their first real job\"?",
+            "What would winning look like for Lena in six weeks: more investor confidence, more revenue, or clearer product direction?",
+            "Is the goal to add new users or to make the existing user base more valuable?"
+          ]
+        },
+        "win": {
+          "concept": "Lena should name the actual target user and let the market tell her if she's right or wrong.",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "A single silhouette of a person looking forward with clarity, holding a phone displaying a simplified interface, with warm amber lighting from above."
+          },
+          "questions": [
+            "What is the one sentence that describes Lena's actual user, and does it match what her co-founder believes?",
+            "If Lena pivots messaging to target fresh employees and engagement goes down, what does that tell her?",
+            "What metric would prove that narrowing the target was the right call?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Assuming that the broadest possible audience is always the safest bet — it's actually the riskiest",
+        "Treating user segmentation as a loss of potential rather than a gain in clarity",
+        "Letting investor feedback overrule actual user behavior data",
+        "Trying to serve multiple incompatible user groups with one product story"
+      ],
+      "luma_coaching_hint": "Pre-PMF founders often think that narrowing the market means losing. The opposite is true. Naming a specific person and building for them obsessively is how you find product-market fit. Investors don't invest in products for everyone. They invest in products for someone specific that you understand deeply."
+    },
+    {
+      "id": "INT-STRATEGY-FICT-B2B-AI-NATIVE-MOD7-FE-002",
+      "title": "Moat or Money: The AI Startup's Trade-off",
+      "format": "INT-STRATEGY",
+      "company_type": "FICT-B2B",
+      "paradigm": "AI-NATIVE",
+      "module": 7,
+      "roles": [
+        "FE"
+      ],
+      "difficulty": "Advanced",
+      "estimated_minutes": 20,
+      "scenario": {
+        "body": "Carlos co-founded a six-person legal AI startup. The product is not just AI-assisted. It is built entirely around one core capability: an AI that reads cases, identifies precedent, and drafts arguments. Three law firms pay eight thousand a month each. Competitors are shipping basic LLM layers on top of legal docs. Carlos knows that within six months, any team with compute and legal data can copy his approach. He has two paths. Path one: spend the next two months fine-tuning their model on proprietary legal data, building a moat that actually works. Path two: ship features the three customers are asking for, hit thirty thousand monthly recurring revenue, and raise money on traction. Both paths feel correct. The moat work is strategic and defensive. The customer work is tactical and revenue-generating. Carlos has eight weeks of cash. Picking the wrong priority kills the business either way: no moat means he loses to a better-funded team. No revenue means he has no proof the business works.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "A silhouette of a person at a fork in the road: one path leads upward with a glowing shield (moat), the other leads to stacked coins (revenue), both disappearing into uncertainty."
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "Is the real threat that competitors will copy the AI, or that customers will leave because Carlos isn't building what they need?",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "Two opposing forces shown as silhouettes: a large wave labeled \"competitor threat\" on one side, a figure with a clipboard labeled \"customer churn\" on the other."
+          },
+          "questions": [
+            "Why is Carlos' AI-first approach actually defensible, and why is it not?",
+            "What would it take for a well-funded competitor to match Carlos' model quality in six months?",
+            "What would cause one of the three law firms to leave, and is it more likely than competitive erosion?"
+          ]
+        },
+        "list": {
+          "concept": "What are the ways to build a real moat in AI, and which one does Carlos actually own?",
+          "questions": [
+            "Could Carlos own legal data, legal expertise, lawyer relationships, or model quality — and which of those is actually scarce?",
+            "What if the moat is not the model, but the understanding of lawyer workflow that Carlos has from his three customers?",
+            "Are there ways to serve customers and improve the moat simultaneously, or are they genuinely in conflict?"
+          ]
+        },
+        "optimize": {
+          "concept": "Carlos is optimizing for defensibility, but at the cost of capital efficiency and customer proof.",
+          "questions": [
+            "If Carlos ships customer features now and raises on thirty k MRR, how much runway does that buy him to build the moat later?",
+            "What happens to his competitive advantage if he waits two months and a funded competitor launches in the meantime?",
+            "Is the bottleneck his ability to serve customers, or his ability to train the model faster than competitors?"
+          ]
+        },
+        "win": {
+          "concept": "Carlos should ship customer features now and use the revenue to fund moat-building at scale.",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "A silhouette of a person climbing a mountain, holding both a shield (moat) and coins (revenue), with clear footing and forward momentum."
+          },
+          "questions": [
+            "What specific customer request should Carlos prioritize first to prove that the business model works?",
+            "How should he measure whether the two-month bet on customer features was the right call?",
+            "If competitors launch a comparable product within six months, what will actually protect Carlos' customers from switching?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Treating moat-building and revenue-generating as mutually exclusive when they can be sequential",
+        "Assuming that a technical moat is the only thing that matters in a capital-efficient startup",
+        "Ignoring customer churn risk while investing heavily in competitive differentiation",
+        "Building a moat that doesn't actually matter to customers or that customers can't perceive"
+      ],
+      "luma_coaching_hint": "At six people with eight weeks of cash, Carlos doesn't have time to do both perfectly. The right move is to prove the business works first, then scale the moat. A moat that protects nobody because the business didn't survive is useless. But a business with real customers can always buy the engineering and capital to build a moat faster than a bootstrapped team."
+    },
+    {
+      "id": "HP-SCENARIO-FICT-B2C-TRAD-MOD2-SWE-001",
+      "title": "The Silent Bug and the Bigger Drop",
+      "format": "HP-SCENARIO",
+      "company_type": "FICT-B2C",
+      "paradigm": "TRAD",
+      "module": 2,
+      "roles": [
+        "SWE"
+      ],
+      "difficulty": "Intermediate",
+      "estimated_minutes": 15,
+      "scenario": {
+        "body": "Priya is three days into sprint at Lens, a consumer photo-sharing app. The PM flags a bug: the 'share to story' button sometimes fails silently. Users tap it, nothing happens, they leave. Priya digs into the logs and finds the culprit in two hours—a race condition in the upload queue. She patches it and opens a PR. Then the PM stops by her desk. Story shares are down 40% over the last two months. Priya runs the data. The bug she fixed has been there three weeks. But the drop started seven weeks ago. Something else happened first, something that made story sharing less appealing long before the button broke. She has a working fix for the bug. But she doesn't know what caused the original crater. Her instinct says ship the fix and close the ticket. Her gut says something else.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "A diagonal split: left side shows a smartphone with a broken button icon, right side shows a downward trending graph line. Geometric, flat, use forest green and warm cream."
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "Define what problem you're actually solving. Fixing the reported bug and solving the real problem are not the same thing.",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "A silhouette figure standing at a fork in the road. One path has a small button icon, the other has a question mark. Minimal geometric style, forest green on cream."
+          },
+          "questions": [
+            "The bug is real and you fixed it. But look at the timeline: what does the gap between the drop (week 1) and the bug (week 3) tell you about what's actually happening?",
+            "Priya could fix the button and declare victory. What assumption would she be making about why users stopped sharing stories?",
+            "If you ship the fix without understanding the seven-week drop, what risk are you taking on?"
+          ]
+        },
+        "list": {
+          "concept": "Map the full space. There are multiple things that could cause story shares to crater—not just the button.",
+          "questions": [
+            "List all the things that happened between week 1 (the drop) and week 3 (the bug appeared). What data points does Priya have access to?",
+            "Besides 'button broken,' what are three other reasons someone might stop sharing stories to their followers?",
+            "Who would Priya need to talk to—beyond logs and metrics—to understand the real shift?"
+          ]
+        },
+        "optimize": {
+          "concept": "Compare your options against what matters. What are you optimizing for—a quick win, or user behavior?",
+          "questions": [
+            "If Priya ships the fix now, what does she learn in the next two weeks? If she digs into the drop first, what does she learn?",
+            "The PM is expecting a closed ticket this sprint. What are the consequences of each choice (ship vs. dig) on sprint velocity and on product clarity?",
+            "What would success look like for each path? Fewer crashes vs. restored user behavior are very different goals."
+          ]
+        },
+        "win": {
+          "concept": "Make a call. You can't do both in one sprint. What do you recommend and why?",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "A silhouette of a person holding a magnifying glass over a graph, with a green checkmark and an upward arrow. Flat geometric, amber accent color."
+          },
+          "questions": [
+            "Should Priya ship the button fix now or hold it while she investigates the seven-week drop? State your recommendation as a single sentence.",
+            "What is the one piece of evidence that would tell Priya whether her recommendation was right?",
+            "If the original drop turns out to be unrelated to the button (like a feature change or a competitor launch), how does that change what Priya does next?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Assuming the reported bug is the root cause just because it's reported",
+        "Treating a closed ticket as success when user behavior hasn't improved",
+        "Skipping the timeline analysis because the fix is already done"
+      ],
+      "luma_coaching_hint": "Look at the dates. The drop started before the bug existed. What does that tell you about cause and effect?"
+    },
+    {
+      "id": "INT-TRADE-REAL-AI-ASSIST-MOD5-SWE-002",
+      "title": "API Docs at Stripe: Time vs. Trust",
+      "format": "INT-TRADE",
+      "company_type": "REAL",
+      "paradigm": "AI-ASSIST",
+      "module": 5,
+      "roles": [
+        "SWE"
+      ],
+      "difficulty": "Advanced",
+      "estimated_minutes": 20,
+      "scenario": {
+        "body": "Marcus is a staff engineer on Stripe's developer experience team. For six months, his team has written API reference docs by hand—parsing code comments, crafting examples, ensuring consistency across hundreds of endpoints. It's tedious and slow. Three weeks per release. Then the PM brings in an AI writing tool that can auto-generate docs from code comments in a few hours. The math is obvious: 3 weeks saved, 6 releases a year, 18 weeks a year freed up. But Marcus has been at Stripe long enough to know something the PM doesn't: developer NPS correlates tightly with doc quality. And the AI tool is fast at breadth but bad at depth. It catches the happy path. It misses the edge cases, the warnings, the 'here's what Junior engineers get wrong' details that senior engineers rely on. The tool would catch maybe 80% of what humans catch. The PM needs a decision by Friday. Marcus has to name what trade he's actually making.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "A balance scale: one side has a clock/hourglass (time saved), the other side has a book with a checkmark (quality/trust). Flat geometric, forest green and amber on cream background."
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "Define what you're actually choosing between. It's not time vs. effort—it's time vs. a specific kind of trust.",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "A Venn diagram: left circle labeled 'speed', right circle labeled 'depth'. Silhouettes of different engineers (senior vs. junior) positioned differently in the circles. Geometric, flat."
+          },
+          "questions": [
+            "What is the relationship between doc quality and Stripe's developer retention or NPS? What evidence does Marcus have?",
+            "The AI tool is '80% as good' at docs. But 80% of what, exactly? Is it 80% complete coverage or 80% quality on each doc?",
+            "Who benefits from AI-generated docs and who gets hurt? Is it the same across all developer skill levels?"
+          ]
+        },
+        "list": {
+          "concept": "Map the space of outcomes. There are more than two ways to solve the time problem.",
+          "questions": [
+            "Besides 'use AI for everything' or 'keep writing by hand,' what are two other paths Stripe could take?",
+            "What if Stripe used AI to generate first drafts, then applied human review? What would that cost in time and what would it gain?",
+            "If Stripe cuts the doc scope (fewer examples, fewer edge cases) to free up time, what happens to developer experience?"
+          ]
+        },
+        "optimize": {
+          "concept": "Name the criterion. What is Stripe optimizing for—and what are you willing to trade?",
+          "questions": [
+            "Stripe's competitive advantage in the payment space is partly that developers trust the docs. How much time savings is worth a small dent in that trust?",
+            "If the docs get 20% worse, how long does it take for that to show up in NPS or churn? What would Marcus see in the data?",
+            "The PM sees 18 weeks saved. What does Marcus see that the PM doesn't when he looks at the same trade-off?"
+          ]
+        },
+        "win": {
+          "concept": "Make a call and say what you're betting on. Your recommendation has to be specific enough to execute.",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "A silhouette of a person at a desk with three different documents/paths extending forward. One is short and fast, one is balanced, one is detailed. Minimal, geometric, forest green."
+          },
+          "questions": [
+            "Should Marcus recommend the full AI tool, hybrid (AI + human review), or keep the status quo? State which one and why in one sentence.",
+            "What metric would prove Marcus right or wrong one year from now?",
+            "If the team picks AI and doc quality dips 20%, what is the fallback plan and how long does Marcus have before the decision becomes irreversible?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Measuring success only by time saved, not by downstream impact on developer behavior",
+        "Assuming all documentation is equally important or equally sensitive to quality drop",
+        "Treating the decision as binary when hybrid options exist"
+      ],
+      "luma_coaching_hint": "Think about who reads these docs and when they matter most. Is quality equally important for every audience and every use case?"
+    },
+    {
+      "id": "INT-IMPROVE-REAL-TRAD-MOD4-PM-001",
+      "title": "LinkedIn Job Search: Fixing Ghosting or Adding Transparency?",
+      "format": "INT-IMPROVE",
+      "company_type": "REAL",
+      "paradigm": "TRAD",
+      "module": 4,
+      "roles": [
+        "PM"
+      ],
+      "difficulty": "Intermediate",
+      "estimated_minutes": 15,
+      "scenario": {
+        "body": "You are a PM at LinkedIn. Sarah, a user researcher, came to you with a problem: 70% of job applicants never hear back from recruiters. Not a rejection. Not a waiting update. Just silence. Your support tickets are full of the word 'ghosting.' Surveys show candidates feel discouraged and stop applying after 3-4 silent weeks. Leadership saw this data and greenlit a feature: an Application Status Tracker. Candidates would see their application move through stages — 'Received,' 'Under Review,' 'Shortlisted,' 'Rejected.' It feels like a fix. It gives candidates clarity. It looks like progress. But you've been thinking about it differently. You asked your data team a question: do recruiters even know what stage most applications are in? They don't. Most applications languish because recruiters never move them forward. They're not actively rejecting. They're just not acting. The real problem might not be that candidates don't know what happened. It might be that recruiters have no workflow to actually review applications at all.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "Silhouette of a person staring at a phone screen, clock face visible on the screen, surrounded by floating question marks. Forest green and warm cream colors."
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "The real problem: are we solving for candidates not knowing, or recruiters not acting?",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "Split silhouette: on left a job seeker waiting, on right a recruiter drowning in an inbox. Forest green dividing line."
+          },
+          "questions": [
+            "What data would tell you whether the bottleneck is recruiter workflow or candidate visibility?",
+            "If recruiters do have a process for reviewing applications, why isn't the system reflecting it?",
+            "What happens to a candidate's behavior if they see 'Under Review' for 90 days straight?"
+          ]
+        },
+        "list": {
+          "concept": "Map the ecosystem: who benefits from a status tracker, and who doesn't?",
+          "questions": [
+            "Who are the non-obvious stakeholders here — not just candidates and recruiters, but hiring teams, talent teams, recruiting agencies?",
+            "What would each group do differently if they saw an Application Status Tracker?",
+            "What solutions exist today for recruiters to stay on top of their pipeline outside LinkedIn?"
+          ]
+        },
+        "optimize": {
+          "concept": "You can build a tracker, or you can fix the recruiter workflow, or both. What are you trading off?",
+          "questions": [
+            "If you build a tracker first, what happens to recruiter behavior — does it improve or does it just shift liability?",
+            "If you fix recruiter workflow first (better review tools, batch processing, reminders), would candidates stop complaining even without a tracker?",
+            "What's the cost of building a tracker that shows 'Under Review' forever versus the cost of fixing the root cause?"
+          ]
+        },
+        "win": {
+          "concept": "Make a call: build the tracker, fix recruiter workflow, or kill the feature and invest elsewhere?",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "Silhouette of a PM at a crossroads with three paths diverging into the distance. Warm cream background with forest green path markers."
+          },
+          "questions": [
+            "What metric would tell you 30 days in whether you picked right?",
+            "What would you tell leadership if the recruiter workflow fix takes twice as long as a tracker?",
+            "If you're wrong, what's the worst outcome — and is it worth the risk?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Assuming a feature that adds transparency will fix user behavior on its own",
+        "Building the proposed solution before validating the actual problem",
+        "Ignoring the recruiter side of the two-sided marketplace",
+        "Using NPS or satisfaction surveys as primary evidence when the real metric is outcome (response rate)"
+      ],
+      "luma_coaching_hint": "The trap here is agreeing with leadership because their proposal is concrete and feels like progress. But product thinking means asking: is this solving the real problem? Often the costly, visible feature (the tracker) distracts from the harder, invisible one (recruiter workflow). Push back on the diagnosis, not just the solution."
+    },
+    {
+      "id": "INT-DESIGN-FICT-B2C-AI-NATIVE-MOD1-PM-002",
+      "title": "AI Tutoring Platform: Expanding from K-12 to Adult Learners",
+      "format": "INT-DESIGN",
+      "company_type": "FICT-B2C",
+      "paradigm": "AI-NATIVE",
+      "module": 1,
+      "roles": [
+        "PM"
+      ],
+      "difficulty": "Advanced",
+      "estimated_minutes": 20,
+      "scenario": {
+        "body": "You are a PM at Lumina, an AI-native tutoring startup. Your platform uses real-time adaptive learning: the AI notices when a student is stuck, shifts its explanation style, breaks down concepts differently, and never repeats the same lesson twice. You have 200k K-12 users, strong retention, and a 4.8 star rating from parents. Your CEO, Maya, came to you with an expansion idea: adult learners. Specifically, people aged 25-40 learning to code to change careers. She says the learning engine already works. It learns how people learn. Why wouldn't it work for adults? The tech is the same. You have capacity. It's a greenfield market with high urgency (career switchers are motivated and willing to pay). She wants a scope by Friday. But as you think about it, you realize: a 10-year-old learning division and a 34-year-old learning Python to pay rent are not the same user. The reasons they show up are different. What counts as success is different. How they use the product is different. Even the learning styles are different. The AI might be the same, but the product is not.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "Silhouette of a young student at a desk with toys and textbooks on one side, and a silhouette of an adult at a laptop in a home office on the other. Different environments, different age, warm cream background."
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "What is actually different about these two learners? Is it just age, or is it something deeper?",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "Two silhouettes in different contexts — one in a classroom, one in a bedroom-office hybrid. Different body postures. Forest green and amber color contrast."
+          },
+          "questions": [
+            "What is each learner trying to achieve, and why does it matter to them?",
+            "What happens in each learner's life if they quit or slow down?",
+            "How much time does each one have to learn, and what does that mean for lesson design?"
+          ]
+        },
+        "list": {
+          "concept": "List the stakeholders and motivations in each segment. They are not the same.",
+          "questions": [
+            "For K-12: who is the buyer, and who is the user? For adults: are they the same person?",
+            "What are the failure modes? A K-12 student falls behind in math. A 34-year-old career switcher fails to land a job. Are those the same failure?",
+            "What friction exists in each segment that the product has to solve? (Parents, teachers, school schedules vs. job search timelines, employer requirements, self-doubt)"
+          ]
+        },
+        "optimize": {
+          "concept": "You can build one product for both, or two products, or pivot to focus on one. What do you give up?",
+          "questions": [
+            "If you optimize the adult experience (output: job-ready code, portfolio building, interview prep), does that break the K-12 experience (homework help, test prep)?",
+            "What is the minimum viable product for each segment, and are they the same MVP?",
+            "What is the real cost of serving both: product, go-to-market, support, success metrics?"
+          ]
+        },
+        "win": {
+          "concept": "Make a call on expansion scope: which segment do you target, and what does the first year roadmap look like?",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "Silhouette of a PM standing between two diverging paths, one leading to a school building, one leading to a office skyline. Forest green light on chosen path."
+          },
+          "questions": [
+            "What is your hypothesis for why the AI engine will work in the adult segment, and what would falsify it?",
+            "If you build for adults first as a greenfield, what do you learn that changes your K-12 product?",
+            "If the expansion fails, what's the salvage plan — and does it protect the core business?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Assuming that the same technology serves the same product experience for different segments",
+        "Conflating 'the engine works for learning' with 'the product will work for this user'",
+        "Underestimating go-to-market and acquisition cost differences between K-12 (B2B2C through schools) and adult learners (B2C direct)",
+        "Building a generic 'adaptive learning' product that doesn't optimize for either segment's real job to be done"
+      ],
+      "luma_coaching_hint": "The risk is saying yes too fast because the tech is proven and the market seems big. But you are not selling the AI engine. You are selling a product to a user with a specific problem. A K-12 parent cares about grades and homework. A career switcher cares about landing a job and confidence. Same engine. Different product. Do the segmentation work before you scope development."
+    },
+    {
+      "id": "INT-TRADE-REAL-AI-NATIVE-MOD5-MLE-001",
+      "title": "The 6% That Costs Everything",
+      "format": "INT-TRADE",
+      "company_type": "REAL",
+      "paradigm": "AI-NATIVE",
+      "module": 5,
+      "roles": [
+        "MLE"
+      ],
+      "difficulty": "Advanced",
+      "estimated_minutes": 20,
+      "scenario": {
+        "body": "Aarav shipped his first neural net for Netflix's recommendation system three years ago. He knows the machinery. He knows that offline metrics don't always predict user happiness. So when his new model crushed it in offline eval—6% better watch-time prediction—he ran an A/B test like a skeptic. Treatment group watched 8% more content in the first week. Good. But the survey numbers made him pause. Satisfaction dropped 3 points on a 100-point scale. Not huge, but consistent. He dug into the cohort data. Older users, fewer active clicks, longer sessions. They were binge-watching more because the model was getting better at *predicting binge behavior*, not necessarily at recommending things they'd love. The model was right about what people do. It was wrong about what they should do. His director wanted to ship. The model worked. The metric improved. But Aarav kept thinking about his grandmother, who'd told him Netflix had ruined her evenings.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "A hand holding a glowing neural network node, half emerald green and half amber, splitting apart like a prism. Silhouette. No text."
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "The metric you optimize is a bet about what matters—and you're not always right about what matters.",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "Two diverging paths: one labeled with an upward arrow, one labeled with a smiley face. Silhouette, forest green and amber. No text."
+          },
+          "questions": [
+            "What does the 6% improvement actually measure, and what does it miss?",
+            "If watch-time goes up and satisfaction goes down, what is the model optimizing for?",
+            "Who wins and who loses if you ship this model?"
+          ]
+        },
+        "list": {
+          "concept": "There are always more stakeholders than the metric surface.",
+          "questions": [
+            "Who's affected by longer watch sessions? Users, Netflix, creators, advertisers?",
+            "What are ways to measure if a recommendation is good beyond watch-time?",
+            "What would satisfy an older user more: a longer session or a curated one?"
+          ]
+        },
+        "optimize": {
+          "concept": "Optimize for watch-time, and you trade away trust. Optimize for satisfaction, and you shrink engagement. What are you actually optimizing for?",
+          "questions": [
+            "If you had to pick one—watch-time or reported satisfaction—which is Netflix's real north star?",
+            "What would you lose if you weighted satisfaction equally with watch-time in the model?",
+            "Is there a third metric that captures both engagement and user wellbeing?"
+          ]
+        },
+        "win": {
+          "concept": "Ship or hold. Make a call with what you know will happen and what you'll learn.",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "A decision point: a switch in forest green shadow, one side lit, one dark. Silhouette."
+          },
+          "questions": [
+            "What needs to change about how you measure success before you ship?",
+            "If you hold this model, what signal are you waiting for?",
+            "How would you explain your choice to your grandmother?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Treating the A/B test as the source of truth instead of a signal that requires interpretation.",
+        "Assuming higher engagement always means better product experience.",
+        "Deferring the values question ('what should users experience') to someone else's job."
+      ],
+      "luma_coaching_hint": "The hardest product calls happen when data splits. Watch-time said yes. Satisfaction said no. That split is telling you that your metric didn't capture the full picture. The real question isn't whether to ship—it's what you're willing to be wrong about."
+    },
+    {
+      "id": "HP-SCENARIO-FICT-B2C-AGENTIC-MOD7-MLE-002",
+      "title": "Trust, Then Autonomy",
+      "format": "HP-SCENARIO",
+      "company_type": "FICT-B2C",
+      "paradigm": "AGENTIC",
+      "module": 7,
+      "roles": [
+        "MLE"
+      ],
+      "difficulty": "Advanced",
+      "estimated_minutes": 20,
+      "scenario": {
+        "body": "Keiko's legal assistant AI can draft a contract in three minutes. It can read terms, spot issues, suggest edits. Users love it. The product has found product-market fit in a narrow slice: document drafting. Now her CEO wants to expand into autonomy. Let the agent read incoming emails, understand negotiation positions, draft responses, and send them with one click. The legal ops team at their pilot customers cheers. The general counsel at those same firms pulls Keiko aside: 'If that agent sends one bad email, it costs us a client. We'll never let it send on its own.' Keiko knows the agent is good. She tested it on 500 real negotiation threads. Error rate is 2%. But the pilots aren't asking for better accuracy. They're asking for a different relationship. They want to review before the agent touches the send button. The CEO says that defeats the purpose. Keiko has to decide what 'autonomous' actually means and what trust actually requires.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "A hand hovering over a send button. Two versions: one with fingers ready to press, one with the hand stopped mid-motion. Silhouette, forest green and amber. No text."
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "Autonomy without trust is a liability. Trust without autonomy is adoption resistance. You can't have both at the same time.",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "A scale: on one side a robot, on the other a person's face. Balanced and tipping. Silhouette, forest green. No text."
+          },
+          "questions": [
+            "What would have to happen for the general counsel to trust the agent with autonomous sends?",
+            "What does a 2% error rate mean in a negotiation context?",
+            "Is the blocker technical skill or organizational culture?"
+          ]
+        },
+        "list": {
+          "concept": "There are many ways to be autonomous. Most of them look like someone is still in control.",
+          "questions": [
+            "What are all the ways the agent could help without actually sending emails on its own?",
+            "Who else is involved in a negotiation besides the general counsel and the agent?",
+            "If the agent sends 99 good emails and then 1 bad one, how much of the moat disappears?"
+          ]
+        },
+        "optimize": {
+          "concept": "You're optimizing for efficiency. Your customer is optimizing for safety. The moat depends on which one you choose to prioritize.",
+          "questions": [
+            "If you build the send button, what does the customer do?",
+            "If you require review, does that destroy the product differentiation or just delay it?",
+            "What would a phased trust model look like? How do you earn the autonomy step by step?"
+          ]
+        },
+        "win": {
+          "concept": "Don't ask for permission to be autonomous. Earn permission by proving you deserve it.",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "A lock gradually opening, layers of tumblers falling into place one by one. Silhouette, amber to forest green gradient. No text."
+          },
+          "questions": [
+            "What's the smallest autonomous action the general counsel would tolerate right now?",
+            "How would you measure trust increasing over time?",
+            "What would success look like six months from now if you win the general counsel's confidence?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Assuming that better ML accuracy solves a trust problem.",
+        "Building the feature the CEO wants instead of the feature the customer will actually use.",
+        "Treating autonomy as a binary when it's a dial you can adjust."
+      ],
+      "luma_coaching_hint": "The general counsel isn't being cautious because the AI is bad. She's being cautious because the stakes are high and she owns the liability. You're not trying to convince her the agent is perfect—you're trying to earn her permission incrementally. Start with what she'll trust. Then expand."
+    },
+    {
+      "id": "HP-BRIEF-FICT-B2B-TRAD-MOD6-DEVOPS-001",
+      "title": "The 4-Minute Deploy Nobody Uses",
+      "format": "HP-BRIEF",
+      "company_type": "FICT-B2B",
+      "paradigm": "TRAD",
+      "module": 6,
+      "roles": [
+        "DEVOPS"
+      ],
+      "difficulty": "Beginner",
+      "estimated_minutes": 15,
+      "scenario": {
+        "body": "Tomasz spent three weeks building a deployment tool that cut deploy time from 25 minutes to 4 minutes. The math was clean: fewer manual steps, parallel execution, better error handling. He posted about it in Slack. Two weeks later, 11% of the team had switched over. He asked around. Most engineers said the same thing: \"Looks solid, just haven't had time to migrate.\" One senior engineer, Alex, was blunter: \"I don't trust it yet. I want to see someone else use it in prod first.\" Tomasz felt stuck. He'd solved the problem that mattered most to him. But it wasn't the problem that mattered most to them.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "A silhouette of a person standing at a command line, looking at a stopwatch and a deploy button glowing green beneath them, set against a warm cream background with forest green accents on the timer."
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "The real problem is not speed. It is trust.",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "A silhouette of two figures, one holding a blueprint and one holding their hands up with uncertainty, separated by a gap, against a cream background with amber lighting."
+          },
+          "questions": [
+            "What would it take for you to trust a new deploy tool in production?",
+            "What does 'trust' mean here—is it speed, reliability, visibility, or something else?",
+            "Who determines when a tool is safe to use at your company—you, your team, or someone else?"
+          ]
+        },
+        "list": {
+          "concept": "Three jobs matter here: getting deploys done fast, feeling in control, and not being the first person to take a risk.",
+          "questions": [
+            "Who are the people most likely to adopt this tool, and who are most resistant?",
+            "What would make Alex feel safe without waiting for someone else to go first?",
+            "How could Tomasz show the tool is reliable without asking people to bet production on it?"
+          ]
+        },
+        "optimize": {
+          "concept": "Speed saves seconds. Trust saves careers. You cannot optimize for both at the same time.",
+          "questions": [
+            "If you had to choose between making the tool 30% faster or making it 30% more transparent about what it does, which would move adoption?",
+            "What risk is the team actually afraid of—broken deploys, being blamed if something goes wrong, or having to relearn a new tool?",
+            "What would you give up to get the team to switch?"
+          ]
+        },
+        "win": {
+          "concept": "Run a safe pilot. Get one trusted engineer to use it for a week. Then broadcast their results.",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "A silhouette of a person at a command line with a green checkmark appearing above, radiating outward as ripples, against a cream background."
+          },
+          "questions": [
+            "Who is the one person on the team whose adoption would convince everyone else?",
+            "What does success look like for them in week one—zero failures, or just zero surprises?",
+            "How would you measure whether this pilot actually shifted trust, not just usage?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Assuming faster = better. (It is better, but it is not enough.)",
+        "Treating adoption as a communication problem when it is a trust problem.",
+        "Pushing the tool on the whole team at once instead of finding the smallest group that could convince others.",
+        "Measuring success by downloads instead of by regular usage."
+      ],
+      "luma_coaching_hint": "Internal tools fail because people build for the function (what the tool does) and miss the job (why people actually use it). The deploy tool works. The problem is that trust takes time. You cannot compress trust. You can only earn it publicly."
+    },
+    {
+      "id": "INT-IMPROVE-REAL-AI-ASSIST-MOD4-DEVOPS-002",
+      "title": "The Safe Label Problem",
+      "format": "INT-IMPROVE",
+      "company_type": "REAL",
+      "paradigm": "AI-ASSIST",
+      "module": 4,
+      "roles": [
+        "DEVOPS"
+      ],
+      "difficulty": "Intermediate",
+      "estimated_minutes": 15,
+      "scenario": {
+        "body": "Divya's CI/CD pipeline on GitHub Actions had grown over two years. It worked, but it was slow and expensive. GitHub's new AI feature scanned her workflow and flagged 12 optimization opportunities. It labeled three of them as 'safe'—things it was confident would not break anything. The other nine were marked 'review suggested'. Divya looked at the safe ones. One would strip out a logging step. Another would cache dependencies more aggressively. A third would use a faster runner type. All three made sense on paper. Her manager asked: 'Can we just apply the safe ones?' Divya hesitated. 'Safe' meant something to GitHub. But what did it mean for her team, which handled payment processing and had never had a deploy failure go unnoticed? She realized: GitHub made a product decision about what safe means. She had to decide whether that definition worked for her.",
+        "illustration_1": {
+          "placement": "before scenario",
+          "nano_banana_prompt": "A silhouette of a person looking at a checklist with items marked 'safe', 'review', and 'apply', with a glowing AI symbol in the corner, against a warm cream background with forest green checkmarks."
+        }
+      },
+      "flow": {
+        "frame": {
+          "concept": "Safe is not a fact. It is a judgment call someone made on your behalf.",
+          "illustration": {
+            "placement": "before frame questions",
+            "nano_banana_prompt": "A silhouette of two figures looking at a scale, one side labeled with numbers and the other with question marks, against a cream background with amber weights."
+          },
+          "questions": [
+            "What does 'safe' actually mean in the context of your specific infrastructure?",
+            "Who at GitHub defined safe, and what assumptions did they have to make?",
+            "What would happen if GitHub's definition of safe was different from yours?"
+          ]
+        },
+        "list": {
+          "concept": "You have options: apply them blind, audit all 12 manually, do a staged rollout, or ask GitHub to explain its reasoning.",
+          "questions": [
+            "What is the cost of each option—in time, risk, and confidence?",
+            "Who on your team would have to vouch for each recommendation if something broke?",
+            "What recommendations would you trust from GitHub without review, and what would require you to dig deeper?"
+          ]
+        },
+        "optimize": {
+          "concept": "You can move fast by trusting the AI. You can move safely by auditing everything. You cannot do both.",
+          "questions": [
+            "If you apply the three safe recommendations and one of them causes a subtle issue, what happens to your trust in the AI?",
+            "If you audit all 12 and it takes a week, what else does not get done?",
+            "Are you optimizing for speed, for never being surprised, or for knowing you can explain every change?"
+          ]
+        },
+        "win": {
+          "concept": "Apply one safe recommendation to a non-critical workflow first. Measure the impact. Then make a decision about the rest.",
+          "illustration": {
+            "placement": "after win questions",
+            "nano_banana_prompt": "A silhouette of a person at a control panel with one switch being pulled, success metrics showing upward, against a cream background with green and amber indicators."
+          },
+          "questions": [
+            "Which of the three safe recommendations affects your system least if it goes wrong?",
+            "How would you know if that change actually worked as intended?",
+            "After that test, would you be more likely to trust GitHub's safe label, or would you still want to audit the rest?"
+          ]
+        }
+      },
+      "anti_patterns": [
+        "Assuming GitHub's safety definition matches yours because you use the same platform.",
+        "Treating AI recommendations as if they are peer reviews from someone who knows your system.",
+        "Applying changes to critical infrastructure without understanding the reasoning behind them.",
+        "Conflating 'safe' (GitHub's assessment) with 'right for us' (your assessment)."
+      ],
+      "luma_coaching_hint": "AI-assisted tools shift responsibility to the user. GitHub can say a change is safe because it analyzed patterns. But you are responsible for knowing whether it is safe for your context. The label helps. It does not replace judgment."
+    }
+  ]
+}
