@@ -33,7 +33,7 @@ export function ProductIQCard({ score, delta, weeklyActivity, totalAttempts, dim
   ]
 
   return (
-    <div className="bg-surface-container-lowest p-6 rounded-xl editorial-shadow ghost-border relative overflow-hidden h-full">
+    <div className="bg-surface-container-lowest p-8 rounded-xl editorial-shadow ghost-border relative overflow-hidden h-full">
       {/* Header row */}
       <div className="flex justify-between items-start mb-8">
         <div>
@@ -41,7 +41,7 @@ export function ProductIQCard({ score, delta, weeklyActivity, totalAttempts, dim
           <p className="text-on-surface-variant text-sm font-medium">Global composite performance index</p>
         </div>
         <div className="flex flex-col items-end">
-          <span className="text-5xl font-headline font-black text-primary">{score}</span>
+          <span className="text-6xl font-headline font-black text-primary">{score}</span>
           <span className="text-primary text-sm font-bold flex items-center gap-1">
             <span
               className="material-symbols-outlined"

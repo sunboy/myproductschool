@@ -17,6 +17,7 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+
   if (!user && process.env.NEXT_PUBLIC_USE_MOCK_DATA !== 'true') redirect('/auth/login')
   const userId = user?.id ?? 'mock-user'
 
@@ -28,40 +29,41 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
     .single()
 
   if (v2Challenge) {
-    // V2 FLOW challenge — render FlowWorkspaceShell
-    const roleId = (role ?? 'swe') as UserRoleV2
+    const roleId = (role as UserRoleV2) ?? 'swe'
     return <FlowWorkspaceShell challengeId={id} initialRoleId={roleId} />
   }
-  // ── End v2 check — fall through to v1 workspace ──────────────
 
+  // ── V1 challenge ───────────────────────────────────────────────
   const challenge = await getChallengeById(id)
   if (!challenge) notFound()
 
   // ── Paywall: first 3 challenges free ──────────────────────────
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('plan')
-    .eq('id', userId)
-    .single()
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', userId)
+      .single()
 
-  const isPro = profile?.plan === 'pro'
+    const isPro = profile?.plan === 'pro'
 
-  if (!isPro) {
-    const adminClient = createAdminClient()
-    const { count } = await adminClient
-      .from('challenge_attempts')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .not('submitted_at', 'is', null)
+    if (!isPro) {
+      const adminClient = createAdminClient()
+      const { count } = await adminClient
+        .from('challenge_attempts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .not('submitted_at', 'is', null)
 
-    if ((count ?? 0) >= 3) {
-      return (
-        <ProPaywallGate
-          challengeTitle={challenge.title}
-          challengeCategory={challenge.tags?.[0] ?? 'Strategy'}
-          challengeDuration={`${challenge.estimated_minutes} mins`}
-        />
-      )
+      if ((count ?? 0) >= 3) {
+        return (
+          <ProPaywallGate
+            challengeTitle={challenge.title}
+            challengeCategory={challenge.tags?.[0] ?? 'Strategy'}
+            challengeDuration={`${challenge.estimated_minutes} mins`}
+          />
+        )
+      }
     }
   }
   // ── End paywall check ─────────────────────────────────────────

@@ -98,21 +98,6 @@ export function FlashcardSession({ domain, domainSlug, allDomains = [] }: Flashc
               Keep reviewing to strengthen recall. Spaced repetition works best with consistent daily practice.
             </p>
           </div>
-          {/* Practice bridge */}
-          <div className="bg-surface-container rounded-xl p-4 flex items-center gap-3 text-left">
-            <LumaGlyph size={24} className="text-primary flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-on-surface">Now practice what you learned</p>
-              <p className="text-xs text-on-surface-variant">Apply these concepts in a real challenge</p>
-            </div>
-            <Link
-              href={`/challenges?domain=${domainSlug}`}
-              className="shrink-0 px-4 py-2 bg-primary text-on-primary rounded-full text-xs font-bold font-label hover:opacity-90 transition-opacity"
-            >
-              Practice
-            </Link>
-          </div>
-
           <div className="flex gap-3 justify-center">
             <button onClick={() => window.location.reload()} className="px-6 py-3 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 transition-opacity">
               Study again

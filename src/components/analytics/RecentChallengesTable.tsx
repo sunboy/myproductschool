@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { RecentAttempt } from '@/lib/types'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 interface Props {
   attempts: RecentAttempt[]
@@ -9,7 +10,7 @@ export function RecentChallengesTable({ attempts }: Props) {
   return (
     <div className="bg-surface-container-lowest rounded-xl ghost-border editorial-shadow overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-surface-container-highest flex justify-between items-center">
+      <div className="px-8 py-6 border-b border-surface-container-highest flex justify-between items-center">
         <h3 className="font-headline text-xl font-bold text-on-background">Recent Challenges</h3>
         <Link href="/challenges" className="text-primary font-bold text-sm hover:underline">
           View All Challenges
@@ -17,20 +18,32 @@ export function RecentChallengesTable({ attempts }: Props) {
       </div>
 
       {attempts.length === 0 ? (
-        <div className="p-12 text-center">
-          <p className="text-on-surface-variant text-sm">No challenges completed yet.</p>
+        <div className="p-12 text-center flex flex-col items-center gap-4">
+          <LumaGlyph size={56} state="idle" className="text-primary" />
+          <div>
+            <p className="font-bold text-on-surface mb-1">No challenges yet</p>
+            <p className="text-on-surface-variant text-sm max-w-xs mx-auto">
+              Complete your first challenge and Luma will track your progress here.
+            </p>
+          </div>
+          <Link
+            href="/challenges"
+            className="bg-primary text-on-primary rounded-full px-6 py-2 text-sm font-bold hover:opacity-90 transition-opacity"
+          >
+            Browse Challenges
+          </Link>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-surface-container-low text-xs font-bold uppercase tracking-wider text-outline">
               <tr>
-                <th className="px-6 py-3">Challenge</th>
-                <th className="px-6 py-3">Domain</th>
-                <th className="px-6 py-3">Status</th>
-                <th className="px-6 py-3">Score</th>
-                <th className="px-6 py-3">Trend</th>
-                <th className="px-6 py-3"></th>
+                <th className="px-8 py-4">Challenge</th>
+                <th className="px-8 py-4">Domain</th>
+                <th className="px-8 py-4">Status</th>
+                <th className="px-8 py-4">Score</th>
+                <th className="px-8 py-4">Trend</th>
+                <th className="px-8 py-4"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-container-highest">
@@ -41,7 +54,7 @@ export function RecentChallengesTable({ attempts }: Props) {
                 return (
                   <tr key={attempt.id} className="hover:bg-surface-container-low transition-colors group">
                     {/* Challenge name with icon */}
-                    <td className="px-6 py-4">
+                    <td className="px-8 py-5">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center">
                           <span
@@ -56,10 +69,10 @@ export function RecentChallengesTable({ attempts }: Props) {
                     </td>
 
                     {/* Domain */}
-                    <td className="px-6 py-4 text-sm font-mono text-outline">{attempt.domain}</td>
+                    <td className="px-8 py-5 text-sm font-mono text-outline">{attempt.domain}</td>
 
                     {/* Status badge */}
-                    <td className="px-6 py-4">
+                    <td className="px-8 py-5">
                       {isCompleted ? (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
                           <span className="w-1.5 h-1.5 rounded-full bg-primary" />
@@ -74,14 +87,14 @@ export function RecentChallengesTable({ attempts }: Props) {
                     </td>
 
                     {/* Score */}
-                    <td className="px-6 py-4 font-bold">
+                    <td className="px-8 py-5 font-bold">
                       {attempt.status === 'in_progress' && attempt.score === 0
                         ? '\u2014'
                         : attempt.score}
                     </td>
 
                     {/* Trend sparkline */}
-                    <td className="px-6 py-4">
+                    <td className="px-8 py-5">
                       {isCompleted ? (
                         <div className="w-24 h-6 bg-primary/5 rounded flex items-center gap-0.5 px-1">
                           {attempt.trend.filter(v => v > 0).map((val, i, arr) => {
@@ -120,8 +133,8 @@ export function RecentChallengesTable({ attempts }: Props) {
                     </td>
 
                     {/* Arrow */}
-                    <td className="px-6 py-4 text-right">
-                      <button className="material-symbols-outlined text-outline group-hover:text-primary transition-colors">
+                    <td className="px-8 py-5 text-right">
+                      <button className="material-symbols-outlined text-outline group-hover:text-primary transition-colors" aria-label={`View ${attempt.challenge_title}`}>
                         arrow_forward
                       </button>
                     </td>

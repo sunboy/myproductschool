@@ -83,20 +83,43 @@ export function CaseContextPane({ challenge, domainTitle, domainIcon, timerEnabl
   const timerTextColor = timeLeft < 60 ? 'text-error' : timeLeft < 180 ? 'text-tertiary' : 'text-primary'
 
   return (
-    <section className="w-1/2 h-full overflow-y-auto bg-surface-container-low px-6 py-6 pb-24 flex flex-col gap-5">
+    <section className="w-1/2 h-full overflow-y-auto bg-surface-container-low px-16 py-12 pb-32">
 
-      {/* ── Back link ─────────────────────────────────────── */}
-      <div>
-        <Link href="/challenges" className="inline-flex items-center gap-1 text-xs text-on-surface-variant hover:text-primary transition-colors font-label">
-          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_back</span>
+      {/* ── Nav Row ───────────────────────────────────────── */}
+      <div className="flex items-center justify-between mb-8">
+        <Link href="/challenges" className="flex items-center gap-1.5 text-sm text-on-surface-variant hover:text-primary transition-colors font-label">
+          <span className="material-symbols-outlined text-base">arrow_back</span>
           Back to challenges
         </Link>
+        <button
+          onClick={onTimerToggle}
+          className={
+            timerEnabled
+              ? `flex items-center gap-1.5 bg-primary/10 ${timerTextColor} rounded-full px-3 py-1.5 font-label font-semibold text-sm transition-colors`
+              : 'flex items-center justify-center w-9 h-9 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors'
+          }
+          aria-label={timerEnabled ? 'Stop timer' : 'Start timer'}
+        >
+          <span
+            className="material-symbols-outlined"
+            style={{ fontSize: 18, fontVariationSettings: timerEnabled ? "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24" : "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
+          >
+            schedule
+          </span>
+          {timerEnabled && <span>{formatTime(timeLeft)}</span>}
+        </button>
       </div>
 
-      {/* ── Metadata Row ──────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-2">
-        {/* Domain chip — primary-fixed bg */}
-        <span className="bg-primary-fixed text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+      {/* ── Category Pills Row ────────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-2 mb-5">
+        {/* Domain chip */}
+        <span className="flex items-center gap-1.5 bg-primary/10 text-primary rounded-full text-[10px] font-bold uppercase tracking-wider px-3 py-1">
+          <span
+            className="material-symbols-outlined"
+            style={{ fontSize: 12, fontVariationSettings: "'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 16" }}
+          >
+            {domainIcon}
+          </span>
           {domainTitle}
         </span>
 
@@ -105,111 +128,136 @@ export function CaseContextPane({ challenge, domainTitle, domainIcon, timerEnabl
           {getDifficultyLabel(challenge.difficulty)}
         </span>
 
-        {/* Time chip */}
-        <span className="bg-surface-container text-on-surface-variant px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
-          ~{challenge.estimated_minutes} min
+        {/* Estimated time chip */}
+        <span className="flex items-center gap-1 border border-outline-variant rounded-full text-[10px] font-bold uppercase tracking-wider px-3 py-1 text-on-surface-variant">
+          <span
+            className="material-symbols-outlined"
+            style={{ fontSize: 11, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 16" }}
+          >
+            schedule
+          </span>
+          {challenge.estimated_minutes} min
         </span>
 
         {/* Company tag chip (if available) */}
         {companyTag && (
-          <span className="flex items-center gap-1 px-3 py-1 bg-white border border-outline-variant rounded-full text-[10px] font-bold">
+          <span className="border border-outline-variant rounded-full text-[10px] font-bold uppercase tracking-wider px-3 py-1 text-on-surface-variant">
             {companyTag}
           </span>
         )}
-
-        {/* Timer button — right-aligned */}
-        <button
-          onClick={onTimerToggle}
-          className={`ml-auto flex items-center gap-1.5 font-label font-semibold text-xs transition-colors ${
-            timerEnabled
-              ? `bg-primary/10 ${timerTextColor} rounded-full px-3 py-1.5`
-              : 'flex items-center justify-center w-8 h-8 rounded-full text-on-surface-variant hover:bg-surface-container-high'
-          }`}
-          aria-label={timerEnabled ? 'Stop timer' : 'Start timer'}
-        >
-          <span
-            className="material-symbols-outlined"
-            style={{ fontSize: 16, fontVariationSettings: timerEnabled ? "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24" : "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
-          >
-            schedule
-          </span>
-          {timerEnabled && <span>{formatTime(timeLeft)}</span>}
-        </button>
       </div>
 
-      {/* ── Title & Subtitle ──────────────────────────────── */}
-      <div>
-        <h2 className="text-2xl font-headline font-bold text-primary leading-tight mb-1">
-          {challenge.title}
-        </h2>
-        <p className="text-sm text-on-surface-variant font-medium">
-          {challenge.tags.slice(0, 3).map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(' • ')}
-        </p>
-      </div>
+      {/* ── Archival Subhead ──────────────────────────────── */}
+      <p className="text-[10px] font-extrabold text-outline uppercase tracking-[0.2em] mb-3">
+        Product Challenge &bull; Case Brief
+      </p>
+
+      {/* ── Challenge Title ───────────────────────────────── */}
+      <h1 className="text-4xl font-headline font-bold text-primary leading-tight mb-10">
+        {challenge.title}
+      </h1>
 
       {/* ── Scenario Card ─────────────────────────────────── */}
-      <div className="bg-white rounded-xl p-5 shadow-sm border border-outline-variant/30 flex gap-4">
-        <div className="shrink-0 w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center">
-          <span
-            className="material-symbols-outlined text-on-secondary-container"
-            style={{ fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24" }}
-          >
-            menu_book
+      <div
+        className="bg-surface-container-lowest p-8 rounded-2xl mb-6 space-y-6"
+        style={{ boxShadow: '0 4px 20px rgba(46,50,48,0.03)' }}
+      >
+        {/* Icon header row */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center flex-shrink-0">
+            <span
+              className="material-symbols-outlined text-on-secondary-container"
+              style={{ fontSize: 20, fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24" }}
+            >
+              menu_book
+            </span>
+          </div>
+          <span className="font-label font-bold text-sm text-on-surface tracking-widest uppercase">
+            The Scenario
           </span>
         </div>
-        <div>
-          <h3 className="text-xs font-bold text-secondary uppercase mb-2 tracking-widest">The Scenario</h3>
-          <p className="text-sm leading-relaxed text-on-surface font-body">
-            {challenge.prompt_text}
-          </p>
-          {challenge.image_url && (
-            <div className="rounded-xl overflow-hidden h-40 bg-surface-container-high mt-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={challenge.image_url}
-                alt="Visual context"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
+
+        {/* Body text */}
+        <p className="text-on-surface-variant leading-relaxed font-body">
+          {challenge.prompt_text}
+        </p>
+
+        {/* Image placeholder */}
+        <div className="rounded-xl overflow-hidden h-48 bg-surface-container-high flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2 text-on-surface-variant/30">
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 40, fontVariationSettings: "'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 48" }}
+            >
+              image
+            </span>
+            <span className="text-xs font-label font-medium uppercase tracking-wider">
+              Visual Context
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* ── Key Constraints ───────────────────────────────── */}
-      <div className="space-y-2">
-        <h3 className="text-xs font-bold text-secondary uppercase tracking-widest px-1">Key Constraints</h3>
-        <ol className="grid gap-2">
+      {/* ── Constraints / Sub-Questions Card ─────────────── */}
+      <div
+        className="bg-surface-container-lowest p-8 rounded-2xl mb-8 space-y-5"
+        style={{ boxShadow: '0 4px 20px rgba(46,50,48,0.03)' }}
+      >
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center flex-shrink-0">
+            <span
+              className="material-symbols-outlined text-on-secondary-container"
+              style={{ fontSize: 20, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24" }}
+            >
+              rule
+            </span>
+          </div>
+          <span className="font-label font-bold text-sm text-on-surface tracking-widest uppercase">
+            Key Constraints
+          </span>
+        </div>
+
+        {/* Numbered list */}
+        <ol className="space-y-4">
           {subQuestions.map((question, index) => (
-            <li key={index} className="flex gap-3 bg-surface-container/50 p-3 rounded-lg text-sm items-start">
-              <span className="flex items-center justify-center w-5 h-5 bg-white rounded-full text-[10px] font-bold text-primary shrink-0 border border-outline-variant mt-0.5">
+            <li key={index} className="flex items-start gap-4">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center mt-0.5">
                 {index + 1}
               </span>
-              <span className="text-on-surface font-body leading-relaxed">{question}</span>
+              <p className="text-on-surface-variant leading-relaxed font-body text-sm flex-1">
+                {question}
+              </p>
             </li>
           ))}
         </ol>
       </div>
 
-      {/* ── Footer: Tags + Framework Hint ─────────────────── */}
-      <div className="mt-auto pt-4 flex flex-wrap items-center gap-3">
-        {challenge.tags.length > 0 && (
-          <div className="flex gap-2 flex-wrap">
-            {challenge.tags.map((tag) => (
-              <span key={tag} className="text-[10px] font-bold text-outline uppercase">
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-        <div className="ml-auto flex items-center gap-2 bg-tertiary-container/20 px-3 py-1.5 rounded-full border border-tertiary-container/50">
-          <span className="text-[10px] font-bold text-tertiary uppercase">Try: {frameworkHint.split(' ')[1] || 'Framework'}</span>
-          <span
-            className="material-symbols-outlined text-sm text-tertiary"
-            style={{ fontSize: 14 }}
-          >
-            lightbulb
-          </span>
+      {/* ── Tags Row ──────────────────────────────────────── */}
+      {challenge.tags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-10">
+          {challenge.tags.map((tag) => (
+            <span
+              key={tag}
+              className="bg-secondary-container text-on-secondary-container rounded-full text-xs px-3 py-1 font-label font-medium"
+            >
+              {tag}
+            </span>
+          ))}
         </div>
+      )}
+
+      {/* ── Framework Hint Pill ───────────────────────────── */}
+      <div className="flex items-start gap-3 bg-primary px-5 py-3 rounded-full text-white shadow-lg">
+        <span
+          className="material-symbols-outlined flex-shrink-0 mt-0.5"
+          style={{ fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24" }}
+        >
+          lightbulb
+        </span>
+        <p className="text-sm font-label font-semibold leading-snug">
+          {frameworkHint}
+        </p>
       </div>
     </section>
   )
