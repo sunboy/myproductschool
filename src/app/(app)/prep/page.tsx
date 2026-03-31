@@ -1,294 +1,310 @@
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
-const COMPANIES = [
-  { slug: 'google', name: 'Google', challenges: 24, initial: 'G', color: 'bg-blue-100 text-blue-700' },
-  { slug: 'meta', name: 'Meta', challenges: 18, initial: 'M', color: 'bg-blue-100 text-blue-600' },
-  { slug: 'stripe', name: 'Stripe', challenges: 12, initial: 'S', color: 'bg-purple-100 text-purple-700' },
-  { slug: 'amazon', name: 'Amazon', challenges: 15, initial: 'A', color: 'bg-amber-100 text-amber-700' },
-  { slug: 'apple', name: 'Apple', challenges: 8, initial: 'A', color: 'bg-gray-100 text-gray-700' },
-  { slug: 'uber', name: 'Uber', challenges: 10, initial: 'U', color: 'bg-black/10 text-gray-800' },
+interface Company {
+  id: string
+  name: string
+  slug: string
+  challenge_count: number
+}
+
+interface ChapterItem {
+  id: string
+  title: string
+  difficulty: string
+  best_score: number | null
+  is_completed: boolean
+}
+
+interface Chapter {
+  key: string
+  title: string
+  icon: string
+  items: ChapterItem[]
+}
+
+const COMPANIES_MOCK: Company[] = [
+  { id: '1', name: 'Google', slug: 'google', challenge_count: 0 },
+  { id: '2', name: 'Meta', slug: 'meta', challenge_count: 0 },
+  { id: '3', name: 'Stripe', slug: 'stripe', challenge_count: 0 },
+  { id: '4', name: 'Amazon', slug: 'amazon', challenge_count: 0 },
+  { id: '5', name: 'Apple', slug: 'apple', challenge_count: 0 },
+  { id: '6', name: 'Uber', slug: 'uber', challenge_count: 0 },
+  { id: '7', name: 'Airbnb', slug: 'airbnb', challenge_count: 0 },
+  { id: '8', name: 'DoorDash', slug: 'doordash', challenge_count: 0 },
 ]
 
-const MOCK_CHAPTERS = [
-  {
-    title: 'Product Sense & Logic',
-    items: [
-      { type: 'challenge', title: 'Improve Google Maps for commuters', status: 'completed', score: 78 },
-      { type: 'challenge', title: 'Design a new Google Workspace feature', status: 'completed', score: 65 },
-      { type: 'challenge', title: 'Google Search quality metrics', status: 'new', score: null },
-    ],
-  },
-  {
-    title: 'Execution & Metrics',
-    items: [
-      { type: 'challenge', title: 'Define success metrics for YouTube Shorts', status: 'new', score: null },
-      { type: 'concept', title: 'North Star Metric', status: 'new', score: null },
-      { type: 'challenge', title: 'Investigate Google Ads CTR drop', status: 'new', score: null },
-    ],
-  },
-  {
-    title: 'Leadership & Behavioral',
-    items: [
-      { type: 'challenge', title: 'Cross-team alignment scenario', status: 'locked', score: null },
-      { type: 'challenge', title: 'Stakeholder management case', status: 'locked', score: null },
-    ],
-  },
-]
-
-function statusIcon(status: string) {
-  if (status === 'completed') return { icon: 'check_circle', cls: 'text-primary' }
-  if (status === 'locked') return { icon: 'lock', cls: 'text-on-surface-variant' }
-  return { icon: 'radio_button_unchecked', cls: 'text-on-surface-variant' }
+const COMPANY_COLORS: Record<string, string> = {
+  google: 'text-primary', meta: 'text-blue-600', stripe: 'text-indigo-500',
+  amazon: 'text-orange-500', apple: 'text-gray-800', uber: 'text-black',
+  airbnb: 'text-red-500', doordash: 'text-red-600',
 }
 
-function chapterCompletionLabel(items: typeof MOCK_CHAPTERS[0]['items']) {
-  const done = items.filter(i => i.status === 'completed').length
-  return `${done}/${items.length} complete`
-}
+export default function PrepHubPage() {
+  const router = useRouter()
+  const [companies, setCompanies] = useState<Company[]>(COMPANIES_MOCK)
+  const [selectedCompany, setSelectedCompany] = useState<Company>(COMPANIES_MOCK[0])
+  const [coachingDismissed, setCoachingDismissed] = useState(false)
+  const [interviewDate, setInterviewDate] = useState<string | null>(null)
+  const [expandedChapter, setExpandedChapter] = useState<number | null>(1)
+  const [chapters, setChapters] = useState<Chapter[]>([])
 
-interface PrepPageProps {
-  searchParams: Promise<{ company?: string }>
-}
+  const daysLeft = interviewDate
+    ? Math.max(0, Math.ceil((new Date(interviewDate).getTime() - new Date().getTime()) / 86400000))
+    : null
 
-export default async function PrepPage({ searchParams }: PrepPageProps) {
-  const params = await searchParams
-  const selectedSlug = params.company ?? 'google'
-  const selectedCompany = COMPANIES.find(c => c.slug === selectedSlug) ?? COMPANIES[0]
+  useEffect(() => {
+    const saved = localStorage.getItem('hackproduct_interview_date')
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (saved) setInterviewDate(saved)
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/prep/companies')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.length) {
+          setCompanies(data)
+          setSelectedCompany(data[0])
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/prep/challenges')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.chapters?.length) setChapters(data.chapters) })
+      .catch(() => {})
+  }, [])
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-2">
-        <span
-          className="material-symbols-outlined text-3xl text-tertiary"
-          style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 28" }}
-        >
-          workspace_premium
-        </span>
-        <h1 className="font-headline text-2xl text-on-surface">Interview Prep</h1>
-      </div>
-      <p className="text-on-surface-variant text-sm mb-6 ml-10">
-        Select a company. Luma builds your study plan.
-      </p>
-
-      {/* Company selector */}
-      <div className="flex flex-wrap gap-2 mb-8">
-        {COMPANIES.map(company => {
-          const isSelected = company.slug === selectedSlug
-          return (
-            <Link
-              key={company.slug}
-              href={`/prep?company=${company.slug}`}
-              className={`flex flex-col items-center gap-1.5 w-28 p-3 rounded-xl border-2 transition-all text-center ${
-                isSelected
-                  ? 'border-primary bg-primary-fixed'
-                  : 'border-outline-variant bg-surface-container hover:bg-surface-container-high'
-              }`}
-            >
-              <span
-                className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-label font-bold ${company.color}`}
-              >
-                {company.initial}
-              </span>
-              <span className="text-xs font-label font-semibold text-on-surface leading-tight">
-                {company.name}
-              </span>
-              <span className="text-[10px] text-on-surface-variant">{company.challenges} challenges</span>
-            </Link>
-          )
-        })}
+    <div className="p-6 bg-background space-y-6 max-w-7xl mx-auto w-full">
+      {/* Page Header */}
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 bg-primary-fixed rounded-xl flex items-center justify-center">
+          <span className="material-symbols-outlined text-primary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold font-headline text-on-surface leading-none">Prep Hub</h1>
+          <p className="text-sm text-on-surface-variant mt-1">Tell Luma where you&apos;re interviewing</p>
+        </div>
       </div>
 
-      {/* Main content grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left: Study plan chapters */}
-        <div className="lg:col-span-8 space-y-3">
-          <h2 className="font-label font-semibold text-on-surface-variant uppercase tracking-widest text-xs mb-3">
-            {selectedCompany.name} Study Plan
-          </h2>
-
-          {MOCK_CHAPTERS.map((chapter, ci) => {
-            const isFirst = ci === 0
+      {/* Section 1: Company Selector */}
+      <section className="relative">
+        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+          {companies.map(company => {
+            const isSelected = selectedCompany.id === company.id
+            const initial = company.name[0].toUpperCase()
+            const colorClass = COMPANY_COLORS[company.slug] ?? 'text-on-surface'
             return (
-              <details
-                key={chapter.title}
-                open={isFirst}
-                className="bg-surface-container rounded-xl overflow-hidden group"
+              <button
+                key={company.id}
+                onClick={() => {
+                  setSelectedCompany(company)
+                  // Zhang Yiming: persist for simulation pre-selection
+                  localStorage.setItem('hackproduct_prep_company', company.name)
+                }}
+                className={`flex-shrink-0 w-[120px] rounded-xl p-3 text-center transition-all hover:scale-105 ${isSelected ? 'bg-primary-fixed border-2 border-primary' : 'bg-surface-container hover:bg-surface-container-high border border-transparent'}`}
               >
-                <summary className="flex items-center justify-between px-4 py-3 cursor-pointer select-none hover:bg-surface-container-high transition-colors list-none">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="material-symbols-outlined text-base text-on-surface-variant group-open:rotate-90 transition-transform"
-                      style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-                    >
-                      chevron_right
-                    </span>
-                    <span className="font-label font-semibold text-sm text-on-surface">{chapter.title}</span>
-                  </div>
-                  <span className="text-xs text-on-surface-variant font-label">
-                    {chapterCompletionLabel(chapter.items)}
-                  </span>
-                </summary>
-
-                <div className="divide-y divide-outline-variant border-t border-outline-variant">
-                  {chapter.items.map((item, ii) => {
-                    const { icon, cls } = statusIcon(item.status)
-                    const isLocked = item.status === 'locked'
-                    return (
-                      <div
-                        key={ii}
-                        className={`flex items-center gap-3 px-4 h-10 ${isLocked ? 'opacity-50' : ''}`}
-                      >
-                        {/* Status icon */}
-                        <span
-                          className={`material-symbols-outlined text-base shrink-0 ${cls}`}
-                          style={{ fontVariationSettings: `'FILL' ${item.status === 'completed' ? 1 : 0}, 'wght' 400, 'GRAD' 0, 'opsz' 20` }}
-                        >
-                          {icon}
-                        </span>
-
-                        {/* Type badge */}
-                        <span
-                          className={`text-[10px] font-label font-semibold px-2 py-0.5 rounded-full shrink-0 ${
-                            item.type === 'challenge'
-                              ? 'bg-primary text-on-primary'
-                              : 'bg-secondary text-on-secondary'
-                          }`}
-                        >
-                          {item.type}
-                        </span>
-
-                        {/* Title */}
-                        <span className="text-sm text-on-surface truncate flex-1">{item.title}</span>
-
-                        {/* Score */}
-                        {item.score !== null && (
-                          <span className="text-xs font-label font-semibold text-primary shrink-0">
-                            {item.score}%
-                          </span>
-                        )}
-
-                        {/* Mode pills — only for non-locked challenges */}
-                        {item.type === 'challenge' && !isLocked && (
-                          <div className="flex items-center gap-1 shrink-0">
-                            <Link
-                              href="/challenges/c1000000-0000-0000-0000-000000000001"
-                              className="text-[10px] font-label font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                            >
-                              Solo
-                            </Link>
-                            <Link
-                              href="/challenges/c1000000-0000-0000-0000-000000000001?mode=live"
-                              className="text-[10px] font-label font-semibold px-2 py-0.5 rounded-full border border-outline-variant text-on-surface-variant hover:bg-surface-container-high transition-colors"
-                            >
-                              Live
-                            </Link>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              </details>
+                <div className={`w-8 h-8 rounded-full bg-white flex items-center justify-center mx-auto mb-2 font-bold shadow-sm ${colorClass}`}>{initial}</div>
+                <div className="text-sm font-bold text-on-surface truncate">{company.name}</div>
+                {company.challenge_count > 0 && (
+                  <div className={`text-[10px] font-bold ${isSelected ? 'text-primary' : 'text-on-surface-variant'}`}>{company.challenge_count} challenges</div>
+                )}
+              </button>
             )
           })}
         </div>
+      </section>
 
-        {/* Right: Sidebar cards */}
-        <div className="lg:col-span-4 space-y-4">
-          {/* Prep Status */}
-          <div className="bg-surface-container rounded-xl p-4">
-            <h3 className="font-label font-semibold text-sm text-on-surface mb-3">Prep Status</h3>
+      {/* Section 2: Selected Company Detail */}
+      <div className="grid grid-cols-12 gap-6">
+        {/* Left Column: Study Plan */}
+        <div className="col-span-12 lg:col-span-8 space-y-4">
+          <div className="bg-surface-container rounded-xl p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold font-headline flex items-center gap-2">
+                <span className="w-6 h-6 rounded bg-white flex items-center justify-center text-[10px] text-primary border border-outline-variant">{selectedCompany.name[0]}</span>
+                {selectedCompany.name} Study Plan
+              </h2>
+              <span className="bg-primary-fixed text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">Recommended</span>
+            </div>
 
-            {/* Readiness ring (simplified) */}
-            <div className="flex items-center gap-4 mb-3">
-              <div className="relative w-16 h-16 shrink-0">
-                <svg viewBox="0 0 64 64" className="w-full h-full -rotate-90">
-                  <circle cx="32" cy="32" r="26" fill="none" stroke="#e4e0d8" strokeWidth="6" />
-                  <circle
-                    cx="32"
-                    cy="32"
-                    r="26"
-                    fill="none"
-                    stroke="#4a7c59"
-                    strokeWidth="6"
-                    strokeDasharray={`${2 * Math.PI * 26}`}
-                    strokeDashoffset={`${2 * Math.PI * 26 * (1 - 0.32)}`}
-                    strokeLinecap="round"
-                  />
+            {/* Chapters — dynamic from /api/prep/challenges */}
+            <div className="space-y-3">
+              {chapters.map((chapter, chIdx) => {
+                const isExpanded = expandedChapter === chIdx + 1
+                const completedCount = chapter.items.filter(i => i.is_completed).length
+                return (
+                  <div key={chapter.key} className="border border-outline-variant rounded-xl overflow-hidden bg-white">
+                    <button
+                      onClick={() => setExpandedChapter(isExpanded ? null : chIdx + 1)}
+                      className="w-full flex items-center justify-between p-4 bg-surface-container-high/30"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-primary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>{chapter.icon}</span>
+                        </div>
+                        <div className="text-left">
+                          <div className="font-bold text-sm">{chapter.title}</div>
+                          <div className="text-[10px] text-on-surface-variant">{completedCount}/{chapter.items.length} completed</div>
+                        </div>
+                      </div>
+                      <span className="material-symbols-outlined text-on-surface-variant">{isExpanded ? 'expand_less' : 'expand_more'}</span>
+                    </button>
+                    {isExpanded && (
+                      <div className="p-2 space-y-1">
+                        {chapter.items.map(item => (
+                          <Link
+                            key={item.id}
+                            href={`/challenges/${item.id}`}
+                            className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className={`material-symbols-outlined text-lg ${item.is_completed ? 'text-primary' : 'text-outline'}`} style={item.is_completed ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                                {item.is_completed ? 'check_circle' : 'radio_button_unchecked'}
+                              </span>
+                              <span className={`text-sm font-medium ${item.is_completed ? 'text-on-surface' : 'text-on-surface-variant'}`}>{item.title}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              {item.best_score != null ? (
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${item.best_score >= 70 ? 'text-primary bg-primary-fixed' : 'text-amber-700 bg-tertiary-container'}`}>
+                                  {item.best_score}/100
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Start</span>
+                              )}
+                              <span className="material-symbols-outlined text-on-surface-variant text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+
+              {/* Show skeleton if still loading */}
+              {chapters.length === 0 && (
+                <div className="space-y-3 animate-pulse">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="border border-outline-variant rounded-xl p-4 h-14 bg-surface-container/50" />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Status & Simulation */}
+        <div className="col-span-12 lg:col-span-4 space-y-4">
+          {/* Prep Status Card */}
+          <div className="bg-surface-container rounded-xl p-5 shadow-sm border border-white/50">
+            <h3 className="font-bold text-sm mb-4">Prep Status</h3>
+            <div className="flex items-center gap-6">
+              <div className="relative w-20 h-20 flex items-center justify-center">
+                <svg className="w-full h-full -rotate-90">
+                  <circle className="text-outline-variant" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" strokeWidth="6" />
+                  <circle className="text-primary" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" strokeDasharray="213.6" strokeDashoffset="138.8" strokeWidth="6" />
                 </svg>
-                <span className="absolute inset-0 flex items-center justify-center font-label font-bold text-sm text-primary">
-                  32%
-                </span>
+                <span className="absolute text-xl font-black font-headline text-on-surface">35%</span>
               </div>
-              <div>
-                <p className="font-label font-semibold text-on-surface text-sm">Readiness</p>
-                <p className="text-xs text-on-surface-variant leading-tight mt-0.5">
-                  Ahead of 72% of candidates
-                </p>
+              <div className="flex-1 space-y-1">
+                {daysLeft !== null ? (
+                  <div className="text-xs font-bold text-orange-700">{daysLeft} days until interview</div>
+                ) : (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs text-on-surface-variant">Interview date:</span>
+                    <input
+                      type="date"
+                      className="text-xs border border-outline-variant rounded-lg px-2 py-1 bg-surface-container focus:outline-none focus:border-primary"
+                      min={new Date().toISOString().split('T')[0]}
+                      onChange={e => {
+                        setInterviewDate(e.target.value)
+                        localStorage.setItem('hackproduct_interview_date', e.target.value)
+                      }}
+                    />
+                  </div>
+                )}
+                <p className="text-[10px] text-on-surface-variant">Complete more challenges to track your progress</p>
+                <div className="w-full bg-outline-variant h-1 rounded-full mt-2 overflow-hidden">
+                  <div className="bg-primary h-full w-[35%]" />
+                </div>
               </div>
-            </div>
-
-            {/* Days countdown */}
-            <div className="flex items-center gap-2 bg-surface-container-high rounded-lg px-3 py-2">
-              <span
-                className="material-symbols-outlined text-base text-tertiary"
-                style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-              >
-                calendar_month
-              </span>
-              <span className="text-xs text-on-surface">
-                <strong className="font-label font-bold text-tertiary">14 days</strong> until your interview
-              </span>
             </div>
           </div>
 
-          {/* Luma's Prep Advice */}
-          <div className="bg-primary-fixed rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <LumaGlyph size={40} />
-              <span className="font-label font-semibold text-sm text-on-surface">
-                Luma&apos;s Prep Advice
-              </span>
+          {/* Mock Interview Simulation */}
+          <div className="bg-primary-fixed rounded-xl p-5 shadow-sm relative overflow-hidden group">
+            {/* Background Luma */}
+            <div className="absolute -right-2 -bottom-2 opacity-10 group-hover:scale-110 transition-transform duration-500">
+              <LumaGlyph size={128} state="idle" className="text-primary" />
             </div>
-            <p className="text-sm text-on-surface-variant leading-relaxed">
-              You have 14 days — focus on Product Sense first. Use{' '}
-              <strong className="font-semibold text-on-surface">Solo mode</strong> to practice quickly, then switch
-              to <strong className="font-semibold text-on-surface">Live mode</strong> in week two to simulate real
-              interview pressure. Aim for 3 challenges per day.
-            </p>
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-4">
+                <LumaGlyph size={40} state="speaking" className="text-primary" />
+                <div>
+                  <h3 className="font-black font-headline text-primary leading-none">Practice with Luma</h3>
+                  <p className="text-[10px] font-bold text-primary/70 uppercase tracking-tighter">AI-Powered Simulation</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between mb-5 px-1">
+                <span className="text-xs font-bold text-primary">Standard</span>
+                <div className="w-8 h-4 bg-primary/20 rounded-full relative p-0.5 cursor-pointer">
+                  <div className="w-3 h-3 bg-white rounded-full shadow-sm" />
+                </div>
+                <span className="text-xs font-bold text-primary/40">Advanced</span>
+              </div>
+              <button
+                onClick={() => router.push('/simulation')}
+                className="w-full bg-primary text-on-primary py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#3d6549] transition-colors shadow-md"
+              >
+                Start Simulation
+                <span className="material-symbols-outlined text-sm">arrow_forward</span>
+              </button>
+            </div>
           </div>
 
-          {/* Community */}
-          <div className="bg-surface-container rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span
-                className="material-symbols-outlined text-base text-primary"
-                style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-              >
-                group
-              </span>
-              <h3 className="font-label font-semibold text-sm text-on-surface">Community</h3>
+          {/* Community Card */}
+          <div className="bg-surface-container rounded-xl p-4 shadow-sm border border-outline-variant/30">
+            <div className="flex items-center gap-3">
+              <div className="flex -space-x-2">
+                <div className="w-6 h-6 rounded-full border-2 border-surface-container bg-primary-fixed flex items-center justify-center text-[8px] font-bold text-primary">A</div>
+                <div className="w-6 h-6 rounded-full border-2 border-surface-container bg-tertiary-container flex items-center justify-center text-[8px] font-bold text-tertiary">B</div>
+                <div className="w-6 h-6 rounded-full border-2 border-surface-container bg-secondary-container flex items-center justify-center text-[8px] font-bold text-secondary">C</div>
+                <div className="w-6 h-6 rounded-full border-2 border-surface-container bg-surface-container-high flex items-center justify-center text-[8px] font-bold">+9</div>
+              </div>
+              <span className="text-xs font-bold text-on-surface-variant">Engineers practicing for {selectedCompany.name}</span>
             </div>
-            <p className="text-xs text-on-surface-variant mb-3">
-              12 others are currently prepping for {selectedCompany.name}.
-            </p>
-            <Link
-              href="#"
-              className="inline-flex items-center gap-1.5 text-xs font-label font-semibold text-primary hover:underline"
-            >
-              <span
-                className="material-symbols-outlined text-sm"
-                style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-              >
-                forum
-              </span>
-              Join the discussion
+            <Link className="mt-3 block text-[11px] font-black text-primary uppercase tracking-widest hover:underline flex items-center gap-1" href="/cohort">
+              Join discussion
+              <span className="material-symbols-outlined text-xs">chevron_right</span>
             </Link>
           </div>
         </div>
       </div>
+
+      {/* Footer Coaching Strip */}
+      {!coachingDismissed && (
+        <div className="bg-surface-container-low border border-outline-variant p-4 rounded-xl flex items-center gap-4">
+          <LumaGlyph size={28} state="speaking" className="text-primary shrink-0" />
+          <p className="text-sm text-on-surface-variant leading-tight flex-1">
+            <span className="font-bold text-on-surface">Luma&apos;s Tip:</span> Strong <span className="text-primary font-bold italic">Problem Framing</span> is the most common differentiator at Staff-level interviews. Before listing solutions, make sure you&apos;ve defined the core tension clearly.
+          </p>
+          <button
+            onClick={() => setCoachingDismissed(true)}
+            className="text-xs font-bold text-primary px-4 py-2 hover:bg-primary-fixed rounded-full transition-colors"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
     </div>
   )
 }

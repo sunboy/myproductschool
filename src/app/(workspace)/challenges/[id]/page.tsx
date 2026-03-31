@@ -17,7 +17,8 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  if (!user && process.env.NEXT_PUBLIC_USE_MOCK_DATA !== 'true') redirect('/auth/login')
+  const userId = user?.id ?? 'mock-user'
 
   // ── V2 FLOW challenge check ────────────────────────────────────
   const { data: v2Challenge } = await supabase
@@ -40,7 +41,7 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
   const { data: profile } = await supabase
     .from('profiles')
     .select('plan')
-    .eq('id', user.id)
+    .eq('id', userId)
     .single()
 
   const isPro = profile?.plan === 'pro'
@@ -50,7 +51,7 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
     const { count } = await adminClient
       .from('challenge_attempts')
       .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .not('submitted_at', 'is', null)
 
     if ((count ?? 0) >= 3) {
