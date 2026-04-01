@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { USE_MOCK_DATA } from '@/lib/mock'
 import { calculateStepScore } from '@/lib/v2/skills/step-score-calculator'
 import { aggregateChallenge } from '@/lib/v2/skills/score-aggregator'
 import { updateCompetencies } from '@/lib/v2/skills/competency-updater'
@@ -11,7 +12,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const isMock = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+  const isMock = USE_MOCK_DATA
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -214,5 +215,5 @@ export async function POST(
     max_score: 1.0,
   }))
 
-  return NextResponse.json({ total_score, max_score, grade_label, xp_awarded: xp_earned, xp_earned, competency_deltas, step_breakdown })
+  return NextResponse.json({ total_score, max_score, grade_label, xp_awarded: xp_earned, competency_deltas, step_breakdown })
 }

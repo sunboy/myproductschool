@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { USE_MOCK_DATA } from '@/lib/mock'
 import type { FlowOption, FlowStep, ResponseType } from '@/lib/types'
 import { routeResponse, gradePureMCQ } from '@/lib/v2/skills/grading-router'
 import { scoreOption } from '@/lib/v2/skills/option-scorer'
@@ -51,7 +52,7 @@ export async function POST(
   }
 
   // Auth
-  const isMock = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+  const isMock = USE_MOCK_DATA
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user && !isMock) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -168,7 +169,7 @@ export async function POST(
 
   } else {
     // modified_option or freeform — full AI evaluation
-    const textToGrade = response_type === 'modified_option' ? (user_text ?? '') : (user_text ?? '')
+    const textToGrade = user_text ?? ''
     if (!textToGrade.trim()) {
       return NextResponse.json({ error: 'user_text required for freeform/modified_option' }, { status: 400 })
     }

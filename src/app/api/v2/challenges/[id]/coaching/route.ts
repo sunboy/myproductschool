@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { USE_MOCK_DATA } from '@/lib/mock'
 import { getLumaContext } from '@/lib/v2/luma-context'
 
 const anthropic = new Anthropic({
@@ -12,7 +13,8 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const isMock = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+  const isMock = USE_MOCK_DATA
+  const { id: challengeId } = await params
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -25,8 +27,6 @@ export async function POST(
       career_signal: 'This kind of thinking shows up in staff-level design reviews.',
     })
   }
-
-  const { id: challengeId } = await params
   const body = await req.json().catch(() => ({})) as {
     attempt_id?: string
     question_id?: string
