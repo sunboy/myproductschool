@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import type { FlowStep, ResponseType, UserRoleV2 } from '@/lib/types'
+import type { FlowStep, ResponseType, UserRoleV2, ChallengeDiscussion } from '@/lib/types'
 import { useChallengeV2 } from '@/lib/v2/hooks/useChallengeV2'
 import { useFlowStep } from '@/lib/v2/hooks/useFlowStep'
 import { FlowStepper } from './FlowStepper'
@@ -51,6 +51,11 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
   const [careerSignal, setCareerSignal] = useState('')
   const [completionData, setCompletionData] = useState<CompletionData | null>(null)
 
+  // Discussions state
+  const [showDiscuss, setShowDiscuss] = useState(false)
+  const [discussions, setDiscussions] = useState<ChallengeDiscussion[]>([])
+  const [discussLoading, setDiscussLoading] = useState(false)
+
   const startTimeRef = useRef<number>(Date.now())
 
   const { stepData, loading: stepLoading, submitting, error: stepError, submitAnswer, fetchCoaching, loadStep } = useFlowStep(challengeId, currentStep)
@@ -72,13 +77,15 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
     }
   }, [detail, attemptId])
 
-  // Load step data when step + attemptId are ready
+  // Load step data when step + attemptId are ready; reset discuss state on step change
   useEffect(() => {
     if (attemptId && phase === 'question') {
       setQuestionIdx(0)
       setSelectedOptionId(null)
       setElaboration('')
       setRevealedOptions([])
+      setShowDiscuss(false)
+      setDiscussions([])
       startTimeRef.current = Date.now()
       void loadStep(attemptId)
     }
@@ -87,6 +94,18 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
   }, [currentStep, attemptId, phase])
 
   const currentQuestion = stepData?.questions[questionIdx] ?? null
+
+  const handleToggleDiscuss = useCallback(async () => {
+    if (showDiscuss) { setShowDiscuss(false); return }
+    setShowDiscuss(true)
+    if (discussions.length > 0) return // already loaded
+    setDiscussLoading(true)
+    try {
+      const res = await fetch(`/api/challenges/${challengeId}/discussions`)
+      if (res.ok) setDiscussions(await res.json())
+    } catch { /* fail open */ }
+    finally { setDiscussLoading(false) }
+  }, [showDiscuss, discussions, challengeId])
 
   const callComplete = useCallback(async () => {
     try {
@@ -308,6 +327,133 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
                 <p className="font-body text-sm text-inverse-on-surface leading-relaxed">{ch.scenario_question}</p>
               </div>
             )}
+
+            {/* Current question + inline discussions (only during question phase) */}
+            {phase === 'question' && currentQuestion && (
+              <div className="flex flex-col gap-3 pt-2 border-t border-outline-variant">
+
+                {/* Question title + discuss button inline */}
+                <div className="flex items-start gap-2">
+                  <p className="font-headline text-base text-on-surface leading-snug flex-1">
+                    {currentQuestion.question_text}
+                  </p>
+                  <button
+                    onClick={handleToggleDiscuss}
+                    className={[
+                      'flex items-center gap-1 rounded-full border px-2.5 py-1 font-label text-xs font-semibold flex-shrink-0 mt-0.5 transition-colors',
+                      showDiscuss
+                        ? 'border-primary text-primary bg-primary-fixed'
+                        : 'border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary hover:bg-primary-fixed',
+                    ].join(' ')}
+                  >
+                    <span
+                      className="material-symbols-outlined text-[13px]"
+                      style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
+                    >
+                      forum
+                    </span>
+                    {discussions.length > 0 && (
+                      <span className="bg-primary text-on-primary rounded-full text-[9px] font-bold px-1.5 py-px leading-tight">
+                        {discussions.length}
+                      </span>
+                    )}
+                  </button>
+                </div>
+
+                {/* Inline discussion panel */}
+                {showDiscuss && (
+                  <div className="rounded-xl border border-outline-variant overflow-hidden bg-white">
+
+                    {/* Panel header */}
+                    <div className="flex items-center justify-between px-3.5 py-2.5 bg-surface-container-low border-b border-outline-variant">
+                      <div className="flex items-center gap-1.5 font-label text-xs font-bold text-on-surface-variant uppercase tracking-wide">
+                        <span
+                          className="material-symbols-outlined text-[13px] text-primary"
+                          style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}
+                        >
+                          forum
+                        </span>
+                        {discussLoading ? 'Loading…' : `${discussions.length} comment${discussions.length !== 1 ? 's' : ''}`}
+                      </div>
+                      <a
+                        href={`/challenges/${challengeId}/discussion`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-1 font-label text-[11px] text-on-surface-variant hover:text-primary transition-colors opacity-70 hover:opacity-100"
+                      >
+                        <span
+                          className="material-symbols-outlined text-[11px]"
+                          style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}
+                        >
+                          open_in_new
+                        </span>
+                        Full thread
+                      </a>
+                    </div>
+
+                    {/* Thread list */}
+                    <div className="max-h-56 overflow-y-auto divide-y divide-outline-variant/30">
+                      {discussLoading ? (
+                        <div className="py-6 flex justify-center">
+                          <LumaGlyph size={28} state="reviewing" className="text-primary" />
+                        </div>
+                      ) : discussions.length === 0 ? (
+                        <p className="py-5 text-center font-body text-xs text-on-surface-variant">No comments yet. Be the first!</p>
+                      ) : (
+                        discussions.map((d) => (
+                          <div
+                            key={d.id}
+                            className={['px-3.5 py-3', d.is_expert_pick ? 'border-l-2 border-l-tertiary' : ''].join(' ')}
+                          >
+                            <div className="flex items-center gap-1.5 mb-1.5">
+                              {d.is_expert_pick ? (
+                                <LumaGlyph size={20} state="speaking" className="text-primary shrink-0" />
+                              ) : (
+                                <div className="w-5 h-5 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
+                                  <span className="font-label text-[8px] font-bold text-on-surface">
+                                    {(d.username ?? 'U').slice(0, 2).toUpperCase()}
+                                  </span>
+                                </div>
+                              )}
+                              <span className="font-label text-xs font-bold text-on-surface">
+                                {d.is_expert_pick ? "Luma's Team" : (d.username ?? 'Anonymous')}
+                              </span>
+                              {d.is_expert_pick && (
+                                <span className="font-label text-[9px] font-bold text-tertiary bg-tertiary-container rounded-full px-1.5 py-px uppercase">
+                                  Expert Pick
+                                </span>
+                              )}
+                            </div>
+                            <p className="font-body text-xs text-on-surface leading-relaxed">{d.content}</p>
+                            <div className="flex items-center gap-2 mt-2">
+                              <button className="flex items-center gap-1 font-label text-[10px] text-on-surface-variant bg-surface-container-highest rounded-full px-2 py-0.5">
+                                <span
+                                  className="material-symbols-outlined text-[11px]"
+                                  style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}
+                                >
+                                  thumb_up
+                                </span>
+                                {d.upvote_count}
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {/* Post input */}
+                    <DiscussionInputInline
+                      challengeId={challengeId}
+                      onPosted={() => {
+                        setDiscussions([])
+                        fetch(`/api/challenges/${challengeId}/discussions`)
+                          .then(r => r.json()).then(setDiscussions).catch(() => {})
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </section>
@@ -468,6 +614,48 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
         )}
       </section>
       </div>
+    </div>
+  )
+}
+
+// ── Inline discussion input ────────────────────────────────────
+
+function DiscussionInputInline({ challengeId, onPosted }: { challengeId: string; onPosted: () => void }) {
+  const [text, setText] = useState('')
+  const [posting, setPosting] = useState(false)
+
+  async function post() {
+    if (!text.trim() || posting) return
+    setPosting(true)
+    try {
+      await fetch(`/api/challenges/${challengeId}/discussions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: text }),
+      })
+      setText('')
+      onPosted()
+    } catch { /* fail open */ }
+    finally { setPosting(false) }
+  }
+
+  return (
+    <div className="flex items-center gap-2 px-3.5 py-2.5 border-t border-outline-variant bg-surface-container-low">
+      <input
+        value={text}
+        onChange={e => setText(e.target.value.slice(0, 500))}
+        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void post() } }}
+        placeholder="Add to the discussion…"
+        disabled={posting}
+        className="flex-1 bg-surface-container border border-outline-variant rounded-lg px-3 py-1.5 font-body text-xs text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:border-primary"
+      />
+      <button
+        onClick={() => void post()}
+        disabled={posting || !text.trim()}
+        className="bg-primary text-on-primary font-label text-xs font-bold px-3 py-1.5 rounded-lg disabled:opacity-40 hover:opacity-90 transition-opacity"
+      >
+        {posting ? 'Posting…' : 'Post'}
+      </button>
     </div>
   )
 }
