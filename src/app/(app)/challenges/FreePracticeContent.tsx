@@ -46,7 +46,7 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
   }
 
   return (
-    <main className="p-6 max-w-7xl w-full mx-auto">
+    <div>
       {/* Header Section */}
       <div className="flex items-baseline gap-3 mb-6">
         <h1 className="text-2xl font-bold font-headline text-primary">Practice Hub</h1>
@@ -173,7 +173,7 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
         </div>
       )}
       <V2ChallengesSection />
-    </main>
+    </div>
   )
 }
 
