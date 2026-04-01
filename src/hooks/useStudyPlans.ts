@@ -15,7 +15,7 @@ export function useStudyPlans() {
       const res = await fetch('/api/study-plans')
       if (!res.ok) throw new Error('Failed to fetch study plans')
       const data = await res.json()
-      setPlans(data)
+      setPlans(Array.isArray(data) ? data : (data?.plans ?? []))
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error')
     } finally {
