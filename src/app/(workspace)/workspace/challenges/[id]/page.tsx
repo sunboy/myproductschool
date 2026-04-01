@@ -12,7 +12,7 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user && process.env.NEXT_PUBLIC_USE_MOCK_DATA !== 'true') redirect('/auth/login')
+  if (!user && process.env.NEXT_PUBLIC_USE_MOCK_DATA !== 'true') redirect('/login')
 
   const roleId = (role as UserRoleV2) ?? 'swe'
   return <FlowWorkspaceShell challengeId={id} initialRoleId={roleId} />

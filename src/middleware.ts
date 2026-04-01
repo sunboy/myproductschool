@@ -9,11 +9,17 @@ const PRE_LAUNCH = false
 const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist', '/luma-preview']
 
 // ── Post-launch route config ─────────────────────────────────
-const PUBLIC_ROUTES = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/waitlist', '/waitlist-b', '/pricing', '/onboarding', '/dashboard', '/explore', '/challenges', '/progress', '/cohort', '/settings', '/prep', '/welcome', '/role', '/calibration', '/interview-prep']
+const PUBLIC_ROUTES = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/waitlist', '/waitlist-b', '/pricing', '/onboarding', '/dashboard', '/explore', '/challenges', '/progress', '/cohort', '/settings', '/prep', '/welcome', '/role', '/calibration', '/interview-prep', '/workspace']
 const AUTH_ROUTES = ['/login', '/signup', '/forgot-password', '/reset-password']
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+
+  // ── Post-launch: normal auth flow ──────────────────────
+  // Bypass auth in mock/testing mode
+  if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || process.env.USE_MOCK_DATA === 'true') {
+    return NextResponse.next()
+  }
 
   // ── Pre-launch: only waitlist + its API are accessible ──
   if (PRE_LAUNCH) {
@@ -22,12 +28,6 @@ export async function middleware(request: NextRequest) {
     if (!isAllowed) {
       return NextResponse.redirect(new URL('/waitlist', request.url))
     }
-    return NextResponse.next()
-  }
-
-  // ── Post-launch: normal auth flow ──────────────────────
-  // Bypass auth in mock/testing mode
-  if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || process.env.USE_MOCK_DATA === 'true') {
     return NextResponse.next()
   }
 
