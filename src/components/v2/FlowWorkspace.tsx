@@ -167,6 +167,19 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
     setLastResult(null)
   }, [lastResult, currentStep, callComplete])
 
+  const handleStepClick = useCallback((step: FlowStep) => {
+    if (!completedSteps.includes(step)) return
+    setCurrentStep(step)
+    setQuestionIdx(0)
+    setSelectedOptionId(null)
+    setElaboration('')
+    setRevealedOptions([])
+    setRevealed(false)
+    setLastResult(null)
+    setRoleContext('')
+    setCareerSignal('')
+  }, [completedSteps])
+
   const handleStartChallenge = useCallback(async () => {
     setPhase('loading')
     const attempt = await startAttempt(initialRoleId)
@@ -354,7 +367,13 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
 
             {/* Stepper + nudge header */}
             <div className="border-b border-outline-variant px-6 py-3 flex-shrink-0 space-y-2">
-              <FlowStepper currentStep={currentStep} completedSteps={completedSteps} />
+              <FlowStepper
+                currentStep={currentStep}
+                completedSteps={completedSteps}
+                onStepClick={handleStepClick}
+                questionIdx={questionIdx}
+                questionCount={stepData?.questions.length}
+              />
               {stepData?.nudge && (
                 <div className="flex items-start gap-2 bg-secondary-container rounded-xl px-4 py-2.5">
                   <span
