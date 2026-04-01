@@ -104,9 +104,9 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
           step_breakdown: data.step_breakdown ?? [],
           competency_deltas: data.competency_deltas ?? [],
         })
+        setPhase('complete')
       }
     } catch { /* ignore */ }
-    setPhase('complete')
   }, [challengeId, attemptId])
 
   const handleSubmit = useCallback(async () => {
@@ -316,6 +316,15 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
         : selectedOptionId !== null)
     : false
 
+  const stepIdx = FLOW_STEPS.indexOf(currentStep)
+  const isLastStep = stepIdx === FLOW_STEPS.length - 1
+  const nextStepLabel = !isLastStep
+    ? FLOW_STEPS[stepIdx + 1].charAt(0).toUpperCase() + FLOW_STEPS[stepIdx + 1].slice(1)
+    : ''
+  const nextButtonLabel = lastResult?.step_complete
+    ? (isLastStep ? 'See Results →' : `Next: ${nextStepLabel} →`)
+    : 'Next question →'
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
       <FlowStepper currentStep={currentStep} completedSteps={completedSteps} />
@@ -385,9 +394,7 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
               onClick={handleNext}
               className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity"
             >
-              {lastResult?.step_complete
-                ? (FLOW_STEPS.indexOf(currentStep) === FLOW_STEPS.length - 1 ? 'See Results →' : `Next: ${FLOW_STEPS[FLOW_STEPS.indexOf(currentStep) + 1].charAt(0).toUpperCase() + FLOW_STEPS[FLOW_STEPS.indexOf(currentStep) + 1].slice(1)} →`)
-                : 'Next question →'}
+              {nextButtonLabel}
             </button>
           ) : (
             <button
