@@ -12,9 +12,19 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const isMock = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!user && !isMock) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userId = user?.id ?? 'mock-user-00000000-0000-0000-0000-000000000000'
+
+  if (isMock) {
+    return NextResponse.json({
+      role_context: 'As a software engineer, framing the problem before jumping to solutions is the instinct that separates senior engineers from mid-level ones.',
+      career_signal: 'This kind of thinking shows up in staff-level design reviews.',
+    })
+  }
 
   const { id: challengeId } = await params
   const body = await req.json().catch(() => ({})) as {
@@ -38,7 +48,7 @@ export async function POST(
     .from('challenge_attempts_v2')
     .select('role_id, user_id')
     .eq('id', attempt_id)
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .single()
 
   if (attemptError || !attempt) {
@@ -49,7 +59,7 @@ export async function POST(
 
   // Freeform path — no selected option
   if (!option_id) {
-    const cacheKey = `${user.id}:${challengeId}:${step}:${question_id}:freeform`
+    const cacheKey = `${userId}:${challengeId}:${step}:${question_id}:freeform`
 
     const { data: cached } = await admin
       .from('coaching_cache')
@@ -80,7 +90,7 @@ export async function POST(
     const questionText = question?.question_text ?? ''
     const scenarioContext = challenge?.scenario_context ?? ''
     const scenarioTrigger = challenge?.scenario_trigger ?? ''
-    const lumaContext = await getLumaContext(user.id, challengeId, step)
+    const lumaContext = await getLumaContext(userId, challengeId, step)
 
     const systemPrompt = `You are Luma, an AI coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
     let userPrompt = `The learner is a ${roleLabel} who just answered the ${step} step.
@@ -147,7 +157,7 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
 
   // Option-based path
   // Cache key: userId:challengeId:step:questionId:optionId:roleId
-  const cacheKey = `${user.id}:${challengeId}:${step}:${question_id}:${option_id}:${roleId}`
+  const cacheKey = `${userId}:${challengeId}:${step}:${question_id}:${option_id}:${roleId}`
 
   // Check coaching_cache for hit
   const { data: cached } = await admin
@@ -209,7 +219,7 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
   const questionText = question?.question_text ?? ''
 
   // Get Luma context for personalization
-  const lumaContext = await getLumaContext(user.id, challengeId, step)
+  const lumaContext = await getLumaContext(userId, challengeId, step)
 
   // Build the prompt
   const systemPrompt = `You are Luma, Luma is an AI coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`

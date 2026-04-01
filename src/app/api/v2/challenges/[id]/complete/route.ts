@@ -11,9 +11,31 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const isMock = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!user && !isMock) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userId = user?.id ?? 'mock-user-00000000-0000-0000-0000-000000000000'
+
+  if (isMock) {
+    return NextResponse.json({
+      total_score: 2.4,
+      max_score: 3.0,
+      grade_label: 'Strong',
+      xp_awarded: 240,
+      step_breakdown: [
+        { step: 'frame', score: 2.4, max_score: 3.0 },
+        { step: 'list', score: 2.1, max_score: 3.0 },
+        { step: 'optimize', score: 2.7, max_score: 3.0 },
+        { step: 'win', score: 2.4, max_score: 3.0 },
+      ],
+      competency_deltas: [
+        { competency: 'strategic_thinking', before: 50, after: 56 },
+        { competency: 'cognitive_empathy', before: 50, after: 53 },
+      ],
+    })
+  }
 
   const { id: challengeId } = await params
   const body = await req.json()
@@ -30,7 +52,7 @@ export async function POST(
     .from('challenge_attempts_v2')
     .select('id, role_id, user_id, status')
     .eq('id', attempt_id)
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .eq('challenge_id', challengeId)
     .single()
 
@@ -101,7 +123,7 @@ export async function POST(
   const { data: existingCompetencies } = await admin
     .from('learner_competencies')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
 
   const currentCompetencies: LearnerCompetency[] = existingCompetencies ?? []
 
@@ -139,7 +161,7 @@ export async function POST(
           )
           .map((r: { score: number | null }) => r.score ?? 0)
         const { trend, slope } = analyzeTrend(scores)
-        return { ...c, user_id: user.id, trend, trend_slope: slope }
+        return { ...c, user_id: userId, trend, trend_slope: slope }
       }),
       { onConflict: 'user_id,competency' }
     )
@@ -152,18 +174,18 @@ export async function POST(
   const { data: currentProfile } = await admin
     .from('profiles')
     .select('xp_total')
-    .eq('id', user.id)
+    .eq('id', userId)
     .single()
 
   if (currentProfile) {
     await admin
       .from('profiles')
       .update({ xp_total: (currentProfile.xp_total ?? 0) + xp_earned })
-      .eq('id', user.id)
+      .eq('id', userId)
   }
 
   // Fire-and-forget streak RPC — do NOT await
-  admin.rpc('update_user_streak', { p_user_id: user.id }).then(() => {}, () => {})
+  admin.rpc('update_user_streak', { p_user_id: userId }).then(() => {}, () => {})
 
   // Update challenge_attempts_v2
   await admin
@@ -179,7 +201,7 @@ export async function POST(
 
   // Insert luma_context_v2 row
   await admin.from('luma_context_v2').insert({
-    user_id: user.id,
+    user_id: userId,
     context_type: 'challenge_insight',
     content: `Completed ${challengeId} with score ${total_score.toFixed(2)}/${max_score.toFixed(2)} (${grade_label})`,
     is_active: true,

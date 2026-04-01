@@ -7,9 +7,12 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const isMock = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!user && !isMock) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userId = user?.id ?? 'mock-user-00000000-0000-0000-0000-000000000000'
 
   const { id: challenge_id } = await params
   const body = await req.json().catch(() => ({})) as { role_id?: UserRoleV2 }
@@ -21,7 +24,7 @@ export async function POST(
   const { data: existing } = await adminClient
     .from('challenge_attempts_v2')
     .select('id, challenge_id, role_id, current_step, current_question_sequence, status')
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .eq('challenge_id', challenge_id)
     .eq('status', 'in_progress')
     .order('started_at', { ascending: false })
@@ -48,13 +51,13 @@ export async function POST(
     adminClient
       .from('subscriptions')
       .select('plan')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('status', 'active')
       .maybeSingle(),
     adminClient
       .from('challenge_attempts_v2')
       .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .gte('started_at', today),
   ])
 
@@ -70,7 +73,7 @@ export async function POST(
   const { data: attempt, error } = await adminClient
     .from('challenge_attempts_v2')
     .insert({
-      user_id: user.id,
+      user_id: userId,
       challenge_id,
       role_id,
       status: 'in_progress',

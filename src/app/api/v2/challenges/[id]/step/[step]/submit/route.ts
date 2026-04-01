@@ -51,9 +51,11 @@ export async function POST(
   }
 
   // Auth
+  const isMock = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!user && !isMock) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userId = user?.id ?? 'mock-user-00000000-0000-0000-0000-000000000000'
 
   const adminClient = createAdminClient()
 
@@ -62,7 +64,7 @@ export async function POST(
     .from('challenge_attempts_v2')
     .select('id, user_id, status, current_step, current_question_sequence')
     .eq('id', attempt_id)
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .single()
 
   if (attemptError || !attempt) {
@@ -164,7 +166,7 @@ export async function POST(
       return NextResponse.json({ error: 'user_text required for freeform/modified_option' }, { status: 400 })
     }
     const { gradeFreeform } = await import('@/lib/v2/skills/ai/freeform-grader')
-    const aiResult = await gradeFreeform(textToGrade, options, scenario, step, targetCompetencies, user.id)
+    const aiResult = await gradeFreeform(textToGrade, options, scenario, step, targetCompetencies, userId)
     score = aiResult.score
     quality_label = aiResult.quality_label
     competencies_demonstrated = aiResult.competencies_demonstrated
@@ -174,34 +176,36 @@ export async function POST(
 
   // ── Persist step_attempt ──────────────────────────────────
 
-  const { error: insertError } = await adminClient
-    .from('step_attempts')
-    .insert({
-      attempt_id,
-      question_id,
-      step,
-      response_type,
-      selected_option_id: selected_option_id ?? null,
-      user_text: user_text ?? null,
-      score,
-      quality_label,
-      competencies_demonstrated,
-      grading_explanation,
-      grading_confidence,
-      time_spent_seconds,
-    })
+  if (!isMock) {
+    const { error: insertError } = await adminClient
+      .from('step_attempts')
+      .insert({
+        attempt_id,
+        question_id,
+        step,
+        response_type,
+        selected_option_id: selected_option_id ?? null,
+        user_text: user_text ?? null,
+        score,
+        quality_label,
+        competencies_demonstrated,
+        grading_explanation,
+        grading_confidence,
+        time_spent_seconds,
+      })
 
-  if (insertError) {
-    console.error('[submit] Failed to insert step_attempt:', insertError)
-    return NextResponse.json({ error: 'Failed to save attempt' }, { status: 500 })
+    if (insertError) {
+      console.error('[submit] Failed to insert step_attempt:', insertError)
+      return NextResponse.json({ error: 'Failed to save attempt' }, { status: 500 })
+    }
+
+    // ── Update current_question_sequence ─────────────────────
+
+    await adminClient
+      .from('challenge_attempts_v2')
+      .update({ current_question_sequence: (attempt.current_question_sequence ?? 0) + 1 })
+      .eq('id', attempt_id)
   }
-
-  // ── Update current_question_sequence ─────────────────────
-
-  await adminClient
-    .from('challenge_attempts_v2')
-    .update({ current_question_sequence: (attempt.current_question_sequence ?? 0) + 1 })
-    .eq('id', attempt_id)
 
   // ── Check step completion ─────────────────────────────────
 

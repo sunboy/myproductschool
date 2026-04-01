@@ -43,9 +43,12 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; step: string }> }
 ) {
+  const isMock = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!user && !isMock) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userId = user?.id ?? 'mock-user-00000000-0000-0000-0000-000000000000'
 
   const { id: challenge_id, step: stepParam } = await params
 
@@ -81,7 +84,7 @@ export async function GET(
     .from('challenge_attempts_v2')
     .select('id, role_id, user_id')
     .eq('id', attempt_id)
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .single()
 
   if (attemptError || !attempt) {
@@ -135,7 +138,7 @@ export async function GET(
     .single()
 
   // Build seed for deterministic shuffle: hash(userId + challengeId + step)
-  const seedInput = user.id + challenge_id + step
+  const seedInput = userId + challenge_id + step
   const seed = hashString(seedInput)
 
   // Build the response — shuffle options per question using deterministic seed

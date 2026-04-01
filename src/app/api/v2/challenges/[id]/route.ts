@@ -20,9 +20,12 @@ export async function GET(
 ) {
   const { id } = await params
 
+  const isMock = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!user && !isMock) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userId = user?.id ?? 'mock-user-00000000-0000-0000-0000-000000000000'
 
   // Fetch challenge
   const { data: challenge, error: challengeError } = await supabase
@@ -72,7 +75,7 @@ export async function GET(
   const { data: currentAttempt } = await supabase
     .from('challenge_attempts_v2')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .eq('challenge_id', id)
     .eq('status', 'in_progress')
     .order('started_at', { ascending: false })
