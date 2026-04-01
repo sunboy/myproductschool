@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
-import type { UserRole } from '@/lib/types'
+import type { UserRoleV2 } from '@/lib/types'
 
-const VALID_ROLES: UserRole[] = ['SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng']
+const VALID_ROLES: UserRoleV2[] = ['swe', 'data_eng', 'ml_eng', 'devops', 'em', 'founding_eng', 'tech_lead', 'pm', 'designer', 'data_scientist']
 
 export async function POST(request: Request) {
   if (process.env.NEXT_PUBLIC_MOCK_MODE === 'true') {
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { role } = body as { role: UserRole }
+  const { role } = body as { role: UserRoleV2 }
 
   if (!role || !VALID_ROLES.includes(role)) {
     return NextResponse.json({ error: `role must be one of: ${VALID_ROLES.join(', ')}` }, { status: 400 })

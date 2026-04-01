@@ -60,6 +60,7 @@ interface UseFlowStepReturn {
     questionId: string
     optionId: string | null
     roleId: string
+    userText?: string | null
   }) => Promise<{ role_context: string; career_signal: string } | null>
 }
 
@@ -128,6 +129,7 @@ export function useFlowStep(challengeId: string, step: FlowStep): UseFlowStepRet
     questionId: string
     optionId: string | null
     roleId: string
+    userText?: string | null
   }): Promise<{ role_context: string; career_signal: string } | null> => {
     try {
       const res = await fetch(`/api/v2/challenges/${challengeId}/coaching`, {
@@ -138,6 +140,7 @@ export function useFlowStep(challengeId: string, step: FlowStep): UseFlowStepRet
           question_id: params.questionId,
           option_id: params.optionId,
           role_id: params.roleId,
+          user_text: params.userText ?? null,
           step,
         }),
       })

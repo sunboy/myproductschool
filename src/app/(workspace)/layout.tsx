@@ -8,7 +8,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
       <NavRail />
       <div className="flex flex-col flex-1 min-w-0">
         <TopBar />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-hidden">
           {children}
         </main>
       </div>

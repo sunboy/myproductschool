@@ -49,7 +49,7 @@ const ROLES = [
   {
     id: 'founding_eng',
     icon: 'rocket_launch',
-    badge: 'Founding',
+    badge: 'Founding Eng',
     title: 'Founding Engineer',
     description: 'You ARE the product team — need to think like a CPO',
     painPoint: 'There is no PM. Every product call is on you.',

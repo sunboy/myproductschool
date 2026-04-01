@@ -245,33 +245,6 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
               Freeform
             </button>
           </div>
-          <button
-            onClick={() => setFrameworkOpen(f => !f)}
-            className="flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors"
-          >
-            <span className="material-symbols-outlined">menu_open</span>
-            Frameworks
-          </button>
-          <div className="h-6 w-px bg-outline-variant" />
-          {/* Streak + XP */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 bg-tertiary-container/30 px-2 py-0.5 rounded-full border border-tertiary-container/50">
-              <span className="material-symbols-outlined text-xs text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
-              <span className="text-xs font-bold text-tertiary">5</span>
-            </div>
-            <div className="flex items-center gap-1 bg-primary-fixed/50 px-2 py-0.5 rounded-full border border-primary-fixed">
-              <span className="text-xs font-bold text-primary">1250 XP</span>
-            </div>
-          </div>
-          {/* Avatar */}
-          <div className="flex items-center gap-2">
-            <button className="p-1 hover:bg-surface-container-high rounded-full transition-colors">
-              <span className="material-symbols-outlined text-on-surface-variant">notifications</span>
-            </button>
-            <div className="h-8 w-8 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant flex items-center justify-center">
-              <span className="material-symbols-outlined text-on-surface-variant text-lg">account_circle</span>
-            </div>
-          </div>
         </div>
       </header>
 

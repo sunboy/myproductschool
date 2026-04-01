@@ -29,7 +29,7 @@ export function useStudyPlan(slug: string): StudyPlanDetail {
       const data = await res.json()
       setPlan(data.plan ?? null)
       setChapters(data.chapters ?? [])
-      setUserProgress(data.userProgress ?? null)
+      setUserProgress(data.userProgress ?? data.user_progress ?? null)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error')
     } finally {
@@ -38,13 +38,13 @@ export function useStudyPlan(slug: string): StudyPlanDetail {
   }, [slug])
 
   const activate = useCallback(async () => {
-    const res = await fetch(`/api/study-plans/${slug}`, {
+    const res = await fetch(`/api/study-plans/${slug}/activate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     })
     if (!res.ok) throw new Error('Failed to activate study plan')
     const data = await res.json()
-    setUserProgress(data)
+    setUserProgress(data.user_plan ?? data)
   }, [slug])
 
   useEffect(() => { fetchPlan() }, [fetchPlan])

@@ -54,7 +54,7 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
 
   const startTimeRef = useRef<number>(Date.now())
 
-  const { stepData, loading: stepLoading, submitting, error: stepError, submitAnswer, fetchCoaching } = useFlowStep(challengeId, currentStep)
+  const { stepData, loading: stepLoading, submitting, error: stepError, submitResult, loadStep, submitAnswer, fetchCoaching } = useFlowStep(challengeId, currentStep)
 
   // Bootstrap: load challenge + start attempt
   useEffect(() => {
@@ -87,28 +87,10 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
       setElaboration('')
       setRevealedOptions([])
       startTimeRef.current = Date.now()
-      stepData === null && void useFlowStepLoad()
+      void loadStep(attemptId)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep, attemptId, phase])
-
-  // We can't call hook conditionally — expose load via imperative call
-  const [, forceLoad] = useState(0)
-  const useFlowStepLoad = useCallback(async () => {
-    if (!attemptId) return
-    // Trigger load by refreshing stepData
-    forceLoad((n) => n + 1)
-  }, [attemptId])
-
-  // Load step when step changes
-  const { loadStep } = useFlowStep(challengeId, currentStep)
-  useEffect(() => {
-    if (attemptId && phase === 'question') {
-      void loadStep(attemptId)
-    }
-  // loadStep changes when step changes — that's intended
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentStep, attemptId])
 
   const currentQuestion = stepData?.questions[questionIdx] ?? null
 
@@ -137,6 +119,7 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
       questionId: currentQuestion.id,
       optionId: selectedOptionId,
       roleId: initialRoleId,
+      userText: elaboration || null,
     })
     if (coaching) {
       setRoleContext(coaching.role_context)

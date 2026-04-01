@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
@@ -33,9 +33,14 @@ export default function StudyPlanDetailPage() {
   const router = useRouter()
   const slug = typeof params.slug === 'string' ? params.slug : Array.isArray(params.slug) ? params.slug[0] : ''
 
-  const { plan, chapters, userProgress, isLoading, error } = useStudyPlan(slug)
+  const { plan, chapters, userProgress, isLoading, error, activate } = useStudyPlan(slug)
   const [expandedChapter, setExpandedChapter] = useState<string | null>(null)
-  const [isActive, setIsActive] = useState(userProgress?.is_active ?? false)
+  const [isActive, setIsActive] = useState(false)
+  const [isActivating, setIsActivating] = useState(false)
+
+  useEffect(() => {
+    if (userProgress?.is_active !== undefined) setIsActive(userProgress.is_active)
+  }, [userProgress?.is_active])
 
   // Once plan loads, expand first chapter by default
   const firstChapterId = chapters[0]?.id ?? null
@@ -99,13 +104,31 @@ export default function StudyPlanDetailPage() {
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setIsActive(true)}
-                  className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${isActive ? 'bg-primary-fixed text-primary' : 'bg-secondary-container text-on-surface-variant hover:bg-surface-container-high'}`}
+                  disabled={isActive || isActivating}
+                  onClick={async () => {
+                    if (isActive || isActivating) return
+                    setIsActivating(true)
+                    try {
+                      await activate()
+                      setIsActive(true)
+                    } finally {
+                      setIsActivating(false)
+                    }
+                  }}
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition-all disabled:cursor-default ${isActive ? 'bg-primary-fixed text-primary' : 'bg-secondary-container text-on-surface-variant hover:bg-surface-container-high'}`}
                 >
-                  {isActive ? 'Active Plan ✓' : 'Mark as active'}
+                  {isActivating ? 'Activating…' : isActive ? 'Active Plan ✓' : 'Mark as active'}
                 </button>
                 <button
-                  onClick={() => router.push('/challenges')}
+                  onClick={async () => {
+                    if (!isActive) {
+                      setIsActivating(true)
+                      try { await activate(); setIsActive(true) } finally { setIsActivating(false) }
+                    }
+                    const allIds = chapters.flatMap(ch => ch.challenge_ids ?? [])
+                    const nextId = allIds.find(id => !completedIds.has(id))
+                    router.push(nextId ? `/challenges/${nextId}` : '/challenges')
+                  }}
                   className="bg-primary text-white hover:opacity-90 px-5 py-2 rounded-full text-sm font-bold shadow-sm transition-all flex items-center gap-2"
                 >
                   Continue Plan <span className="material-symbols-outlined text-sm">arrow_forward</span>

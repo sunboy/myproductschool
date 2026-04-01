@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ChallengeCard } from './ChallengeCard'
 import { LumaPick } from './LumaPick'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { V2ChallengesSection } from './V2ChallengesSection'
 
 interface ChallengesPageProps {
   searchParams: Promise<{ paradigm?: string; role?: string; difficulty?: string }>
@@ -171,6 +172,7 @@ export default async function ChallengesPage({ searchParams }: ChallengesPagePro
           ))}
         </div>
       )}
+      <V2ChallengesSection />
     </main>
   )
 }

@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
+import { LearnerDNASection } from './LearnerDNASection'
 
 interface RecentAttempt {
   challenge_id: string
@@ -166,6 +167,11 @@ export default function ProgressPage() {
               </div>
             ))}
           </div>
+        </section>
+
+        {/* Learner DNA */}
+        <section className="col-span-12 lg:col-span-5">
+          <LearnerDNASection />
         </section>
 
         {/* Mastery Map */}

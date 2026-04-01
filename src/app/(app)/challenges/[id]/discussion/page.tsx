@@ -16,6 +16,7 @@ export default function ChallengeDiscussionPage() {
   const id = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : ''
 
   const [discussions, setDiscussions] = useState<ChallengeDiscussion[]>([])
+  const [challengeTitle, setChallengeTitle] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [upvotedIds, setUpvotedIds] = useState<Set<string>>(new Set())
 
@@ -32,6 +33,13 @@ export default function ChallengeDiscussionPage() {
   }, [id])
 
   useEffect(() => { fetchDiscussions() }, [fetchDiscussions])
+
+  useEffect(() => {
+    fetch(`/api/challenges/${id}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.title) setChallengeTitle(data.title) })
+      .catch(() => {})
+  }, [id])
 
   async function handleUpvote(discussionId: string) {
     // Optimistic update
@@ -59,7 +67,9 @@ export default function ChallengeDiscussionPage() {
     <div className="max-w-7xl mx-auto px-6 py-6 pb-24">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs text-on-surface-variant mb-6">
-        <Link href="/challenges" className="hover:text-primary transition-colors">Challenges</Link>
+        <Link href={`/challenges/${id}`} className="hover:text-primary transition-colors">
+          {challengeTitle ?? 'Challenge'}
+        </Link>
         <span className="material-symbols-outlined text-[10px]">chevron_right</span>
         <span className="text-on-surface font-bold">Discussion</span>
       </nav>

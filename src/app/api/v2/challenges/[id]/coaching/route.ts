@@ -8,7 +8,7 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
-export async function GET(
+export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -17,14 +17,18 @@ export async function GET(
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id: challengeId } = await params
-  const { searchParams } = new URL(req.url)
-  const attempt_id = searchParams.get('attempt_id')
-  const question_id = searchParams.get('question_id')
-  const option_id = searchParams.get('option_id')
-  const step = searchParams.get('step')
+  const body = await req.json().catch(() => ({})) as {
+    attempt_id?: string
+    question_id?: string
+    option_id?: string
+    step?: string
+    role_id?: string
+    user_text?: string
+  }
+  const { attempt_id, question_id, option_id, step, user_text } = body
 
-  if (!attempt_id || !question_id || !option_id || !step) {
-    return NextResponse.json({ error: 'Missing required params: attempt_id, question_id, option_id, step' }, { status: 400 })
+  if (!attempt_id || !question_id || !step) {
+    return NextResponse.json({ error: 'Missing required fields: attempt_id, question_id, step' }, { status: 400 })
   }
 
   const admin = createAdminClient()
@@ -43,8 +47,107 @@ export async function GET(
 
   const roleId = attempt.role_id as string
 
-  // Cache key: challengeId:step:questionId:optionId:roleId
-  const cacheKey = `${challengeId}:${step}:${question_id}:${option_id}:${roleId}`
+  // Freeform path — no selected option
+  if (!option_id) {
+    const cacheKey = `${user.id}:${challengeId}:${step}:${question_id}:freeform`
+
+    const { data: cached } = await admin
+      .from('coaching_cache')
+      .select('role_context, career_signal, hit_count')
+      .eq('cache_key', cacheKey)
+      .single()
+
+    if (cached) {
+      await admin
+        .from('coaching_cache')
+        .update({ hit_count: cached.hit_count + 1, last_hit_at: new Date().toISOString() })
+        .eq('cache_key', cacheKey)
+      return NextResponse.json({ role_context: cached.role_context, career_signal: cached.career_signal, cached: true })
+    }
+
+    // Cache miss — fetch question + challenge + role lens
+    const [
+      { data: question },
+      { data: challenge },
+      { data: roleLens },
+    ] = await Promise.all([
+      admin.from('step_questions').select('question_text').eq('id', question_id).single(),
+      admin.from('challenges').select('scenario_context, scenario_trigger').eq('id', challengeId).single(),
+      admin.from('role_lenses').select('label').eq('role_id', roleId).single(),
+    ])
+
+    const roleLabel = roleLens?.label ?? roleId
+    const questionText = question?.question_text ?? ''
+    const scenarioContext = challenge?.scenario_context ?? ''
+    const scenarioTrigger = challenge?.scenario_trigger ?? ''
+    const lumaContext = await getLumaContext(user.id, challengeId, step)
+
+    const systemPrompt = `You are Luma, an AI coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
+    let userPrompt = `The learner is a ${roleLabel} who just answered the ${step} step.
+Challenge: ${scenarioContext} ${scenarioTrigger}
+Question: ${questionText}
+Their answer: "${user_text ?? '(no answer provided)'}"`
+
+    if (lumaContext) {
+      userPrompt += `\n\nLearner context:\n${lumaContext}`
+    }
+
+    userPrompt += `
+
+Generate two short paragraphs:
+1. "role_context" (2-3 sentences): Connect their answer to a real-world situation a ${roleLabel} faces.
+2. "career_signal" (1 sentence): How this skill/gap affects their career. Be concrete.
+
+Tone: Direct, warm. Senior ${roleLabel} mentoring a junior. No filler.
+Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
+
+    const message = await anthropic.messages.create({
+      model: 'claude-opus-4-6',
+      max_tokens: 800,
+      thinking: { type: 'adaptive' },
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+    })
+
+    let rawText = ''
+    for (const block of message.content) {
+      if (block.type === 'text') { rawText = block.text; break }
+    }
+
+    let role_context = ''
+    let career_signal = ''
+    try {
+      const parsed = JSON.parse(rawText)
+      role_context = parsed.role_context ?? ''
+      career_signal = parsed.career_signal ?? ''
+    } catch {
+      const rcMatch = rawText.match(/"role_context"\s*:\s*"([^"]+)"/)
+      const csMatch = rawText.match(/"career_signal"\s*:\s*"([^"]+)"/)
+      role_context = rcMatch?.[1] ?? ''
+      career_signal = csMatch?.[1] ?? ''
+    }
+
+    await admin.from('coaching_cache').upsert({
+      cache_key: cacheKey,
+      role_context,
+      career_signal,
+      hit_count: 0,
+      last_hit_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    })
+
+    await admin
+      .from('step_attempts')
+      .update({ role_context, career_signal })
+      .eq('attempt_id', attempt_id)
+      .eq('question_id', question_id)
+
+    return NextResponse.json({ role_context, career_signal, cached: false })
+  }
+
+  // Option-based path
+  // Cache key: userId:challengeId:step:questionId:optionId:roleId
+  const cacheKey = `${user.id}:${challengeId}:${step}:${question_id}:${option_id}:${roleId}`
 
   // Check coaching_cache for hit
   const { data: cached } = await admin

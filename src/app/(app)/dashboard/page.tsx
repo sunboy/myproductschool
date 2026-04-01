@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { createClient } from '@/lib/supabase/server'
 import { getUserAnalyticsSummary } from '@/lib/data/analytics'
@@ -23,6 +22,7 @@ import { DiscussionsCard } from '@/components/dashboard/cards/DiscussionsCard'
 import { LeaderboardPeekCard } from '@/components/dashboard/cards/LeaderboardPeekCard'
 import { RecentActivityCard } from '@/components/dashboard/cards/RecentActivityCard'
 import { NotesCard } from '@/components/dashboard/cards/NotesCard'
+import { DashboardActionButtons } from '@/components/dashboard/DashboardActionButtons'
 
 function getGreeting(): string {
   const hour = new Date().getHours()
@@ -256,20 +256,7 @@ export default async function DashboardPage() {
           <p className="font-headline font-bold text-lg text-on-surface">{getGreeting()}, {displayName}!</p>
           <p className="text-sm text-on-surface-variant">{lumaContext ?? coachingMessage}</p>
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <Link
-            href="/challenges"
-            className="bg-primary text-on-primary px-4 py-2 rounded-full text-sm font-label font-semibold hover:opacity-90 transition-opacity whitespace-nowrap"
-          >
-            Daily Challenge
-          </Link>
-          <Link
-            href="/challenges"
-            className="border border-outline-variant text-on-surface px-4 py-2 rounded-full text-sm font-label font-semibold hover:bg-surface-container transition-colors whitespace-nowrap"
-          >
-            Resume Learning
-          </Link>
-        </div>
+        <DashboardActionButtons />
       </div>
 
       {/* Bento Grid */}

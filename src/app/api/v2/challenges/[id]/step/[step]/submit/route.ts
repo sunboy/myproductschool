@@ -164,7 +164,7 @@ export async function POST(
       return NextResponse.json({ error: 'user_text required for freeform/modified_option' }, { status: 400 })
     }
     const { gradeFreeform } = await import('@/lib/v2/skills/ai/freeform-grader')
-    const aiResult = await gradeFreeform(textToGrade, options, scenario, step, targetCompetencies)
+    const aiResult = await gradeFreeform(textToGrade, options, scenario, step, targetCompetencies, user.id)
     score = aiResult.score
     quality_label = aiResult.quality_label
     competencies_demonstrated = aiResult.competencies_demonstrated
@@ -288,6 +288,7 @@ export async function POST(
   return NextResponse.json({
     score,
     quality_label,
+    grade_label: quality_label,
     explanation: grading_explanation,
     competencies_demonstrated,
     step_complete: stepComplete,

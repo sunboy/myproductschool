@@ -205,7 +205,7 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
             </div>
 
             <Link
-              href="#"
+              href={`/prep/study-plans/${slug}`}
               className="mt-4 block bg-primary text-on-primary rounded-full px-5 py-2 text-sm font-label font-semibold text-center hover:opacity-90 transition-opacity"
             >
               {plan.progress_percentage > 0 ? 'Continue Plan' : 'Start Plan'}

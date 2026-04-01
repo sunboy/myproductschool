@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { calculateStepScore } from '@/lib/v2/skills/step-score-calculator'
 import { aggregateChallenge } from '@/lib/v2/skills/score-aggregator'
 import { updateCompetencies } from '@/lib/v2/skills/competency-updater'
+import { analyzeTrend } from '@/lib/v2/skills/trend-analyzer'
 import type { FlowStep, LearnerCompetency, RoleLens } from '@/lib/types'
 
 export async function POST(
@@ -128,10 +129,18 @@ export async function POST(
     roleLens as RoleLens,
   )
 
-  // Upsert updated competencies to learner_competencies table
+  // Upsert updated competencies to learner_competencies table, with trend data
   if (updatedCompetencies.length > 0) {
     await admin.from('learner_competencies').upsert(
-      updatedCompetencies.map((c) => ({ ...c, user_id: user.id })),
+      updatedCompetencies.map((c) => {
+        const scores = attemptRows
+          .filter((r: { competencies_demonstrated: string[] }) =>
+            r.competencies_demonstrated?.includes(c.competency)
+          )
+          .map((r: { score: number | null }) => r.score ?? 0)
+        const { trend, slope } = analyzeTrend(scores)
+        return { ...c, user_id: user.id, trend, trend_slope: slope }
+      }),
       { onConflict: 'user_id,competency' }
     )
   }
@@ -177,5 +186,11 @@ export async function POST(
     created_at: new Date().toISOString(),
   })
 
-  return NextResponse.json({ total_score, max_score, grade_label, xp_earned, competency_deltas })
+  const step_breakdown = stepResults.map((s) => ({
+    step: s.step,
+    score: s.step_score,
+    max_score: 1.0,
+  }))
+
+  return NextResponse.json({ total_score, max_score, grade_label, xp_awarded: xp_earned, xp_earned, competency_deltas, step_breakdown })
 }

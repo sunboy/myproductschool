@@ -63,5 +63,25 @@ export async function POST(request: Request) {
       { onConflict: 'user_id,move' }
     )
 
+  // Seed initial learner_competencies (6 axes) — score=50 neutral midpoint
+  const ALL_COMPETENCIES = [
+    'motivation_theory', 'cognitive_empathy', 'taste',
+    'strategic_thinking', 'creative_execution', 'domain_expertise',
+  ]
+  await adminClient
+    .from('learner_competencies')
+    .upsert(
+      ALL_COMPETENCIES.map(comp => ({
+        user_id: user.id,
+        competency: comp,
+        score: 50,
+        total_attempts: 0,
+        trend: 'steady',
+        trend_slope: 0,
+        last_updated: new Date().toISOString(),
+      })),
+      { onConflict: 'user_id,competency' }
+    )
+
   return NextResponse.json({ attempt_id: attempt.id })
 }

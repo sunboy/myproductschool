@@ -30,11 +30,14 @@ export async function POST(
 
   if (existing) {
     return NextResponse.json({
-      attempt_id: existing.id,
-      challenge_id: existing.challenge_id,
-      role_id: existing.role_id,
-      current_step: existing.current_step,
-      current_question_sequence: existing.current_question_sequence,
+      attempt: {
+        id: existing.id,
+        challenge_id: existing.challenge_id,
+        role_id: existing.role_id,
+        current_step: existing.current_step,
+        current_question_sequence: existing.current_question_sequence,
+        status: existing.status,
+      },
       is_resume: true,
     })
   }
@@ -82,11 +85,14 @@ export async function POST(
   }
 
   return NextResponse.json({
-    attempt_id: attempt.id,
-    challenge_id: attempt.challenge_id,
-    role_id: attempt.role_id,
-    current_step: attempt.current_step,
-    current_question_sequence: attempt.current_question_sequence,
+    attempt: {
+      id: attempt.id,
+      challenge_id: attempt.challenge_id,
+      role_id: attempt.role_id,
+      current_step: attempt.current_step,
+      current_question_sequence: attempt.current_question_sequence,
+      status: 'in_progress',
+    },
     is_resume: false,
   })
 }
