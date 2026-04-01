@@ -635,3 +635,52 @@ export interface StudyPlanWithItems extends StudyPlan {
   completed_count: number
   progress_percentage: number
 }
+
+// ── Learn Section ─────────────────────────────────────────────
+
+export type LearnDifficulty = 'foundation' | 'beginner' | 'intermediate' | 'advanced' | 'new-era' | 'entry-point'
+
+export interface LearnModule {
+  id: string
+  slug: string
+  name: string
+  tagline: string
+  difficulty: LearnDifficulty
+  chapter_count: number
+  est_minutes: number
+  cover_color: string    // dark hex e.g. '#1a3a2a'
+  accent_color: string   // primary accent hex e.g. '#4a7c59'
+  sort_order: number
+  created_at: string
+}
+
+export interface LearnChapter {
+  id: string
+  module_id: string
+  slug: string
+  title: string
+  subtitle: string
+  sort_order: number
+  hook_text: string
+  body_mdx: string
+  created_at: string
+}
+
+export interface UserLearnProgress {
+  id: string
+  user_id: string
+  module_id: string
+  chapter_id: string
+  completed_at: string | null
+}
+
+// Enriched for UI
+export interface LearnModuleWithProgress extends LearnModule {
+  completed_chapters: number
+  progress_percentage: number
+}
+
+export interface LearnChapterWithProgress extends LearnChapter {
+  is_completed: boolean
+  is_unlocked: boolean  // true if previous chapter is done or sort_order === 1
+}
