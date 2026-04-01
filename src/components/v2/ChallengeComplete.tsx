@@ -77,21 +77,21 @@ export function ChallengeComplete({
         {/* Step breakdown */}
         <div className="bg-surface-container rounded-xl p-5 space-y-4">
           <h2 className="font-headline text-base text-on-surface">Step breakdown</h2>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="space-y-3">
             {stepBreakdown.map(({ step, score, maxScore: ms }) => {
               const pct = ms > 0 ? (score / ms) * 100 : 0
               return (
-                <div key={step} className="space-y-2">
-                  <p className="font-label text-xs text-on-surface-variant text-center">{STEP_LABELS[step]}</p>
-                  <div className="h-16 bg-surface-container-high rounded-lg overflow-hidden flex items-end">
+                <div key={step} className="flex items-center gap-3">
+                  <span className="font-label text-sm text-on-surface-variant w-16 shrink-0">{STEP_LABELS[step]}</span>
+                  <div className="flex-1 h-2.5 bg-surface-container-high rounded-full overflow-hidden">
                     <div
-                      className="w-full bg-primary rounded-lg transition-all duration-500"
-                      style={{ height: `${Math.max(4, pct)}%` }}
+                      className="h-full bg-primary rounded-full transition-all duration-500"
+                      style={{ width: `${Math.max(2, pct)}%` }}
                     />
                   </div>
-                  <p className="font-label text-xs text-center text-on-surface">
+                  <span className="font-label text-sm text-on-surface w-14 text-right shrink-0">
                     {score.toFixed(1)}<span className="text-on-surface-variant">/{ms.toFixed(0)}</span>
-                  </p>
+                  </span>
                 </div>
               )
             })}
