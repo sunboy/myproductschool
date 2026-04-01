@@ -42,13 +42,3 @@ export function BottomTabs() {
     </nav>
   )
 }
-             <span className={`text-[10px] ${active ? 'font-semibold' : 'font-medium'}`}>
-                {tab.label}
-              </span>
-            </Link>
-          )
-        })}
-      </div>
-    </nav>
-  )
-}
