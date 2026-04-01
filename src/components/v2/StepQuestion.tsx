@@ -32,9 +32,15 @@ interface StepQuestionProps {
 }
 
 const ELABORATION_LABELS: Partial<Record<ResponseType, string>> = {
-  mcq_plus_elaboration: 'Explain your reasoning',
-  modified_option: 'Describe your modification',
+  mcq_plus_elaboration: 'Explain your reasoning (optional)',
+  modified_option: 'Modify or extend this answer',
   freeform: 'Your answer',
+}
+
+const ELABORATION_PLACEHOLDERS: Partial<Record<ResponseType, string>> = {
+  mcq_plus_elaboration: 'Add your reasoning…',
+  modified_option: 'Describe how you\'d change or extend this option…',
+  freeform: 'Write your full answer here…',
 }
 
 export function StepQuestion({
@@ -51,6 +57,7 @@ export function StepQuestion({
   const showOptions = responseType !== 'freeform'
   const showElaboration = responseType !== 'pure_mcq'
   const elaborationLabel = ELABORATION_LABELS[responseType] ?? 'Your answer'
+  const elaborationPlaceholder = ELABORATION_PLACEHOLDERS[responseType] ?? 'Write your answer…'
 
   return (
     <div className="space-y-4">
@@ -82,7 +89,7 @@ export function StepQuestion({
             value={elaboration}
             onChange={(e) => onElaborationChange(e.target.value)}
             disabled={disabled}
-            placeholder={responseType === 'freeform' ? 'Write your full answer here…' : 'Add your reasoning…'}
+            placeholder={elaborationPlaceholder}
             className="w-full rounded-xl border border-outline-variant bg-surface-container p-3 text-on-surface font-body text-sm resize-none min-h-[100px] focus:outline-none focus:border-primary disabled:opacity-60 disabled:cursor-not-allowed"
           />
         </div>

@@ -223,7 +223,22 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
   // ── Two-column workspace ───────────────────────────────────────
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden">
+
+      {/* Challenge header bar */}
+      <div className="h-12 border-b border-outline-variant flex items-center px-4 gap-3 flex-shrink-0 bg-background">
+        <button
+          onClick={onExit ?? (() => window.history.back())}
+          className="p-1 hover:bg-surface-container-high rounded-full transition-colors"
+        >
+          <span className="material-symbols-outlined text-on-surface-variant text-[20px]">arrow_back</span>
+        </button>
+        <span className="font-headline font-semibold text-base text-on-surface truncate">
+          {detail?.challenge.title ?? 'Loading…'}
+        </span>
+      </div>
+
+      <div className="flex flex-1 overflow-hidden">
 
       {/* LEFT PANE — scenario context (fixed width, scrollable) */}
       <section className="w-2/5 bg-surface-container-low border-r border-outline-variant flex flex-col overflow-y-auto p-6 gap-5">
@@ -375,13 +390,19 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
                 />
               ) : null}
 
-              {/* Luma coaching bubble — shown after reveal */}
-              {revealed && (roleContext || careerSignal) && (
+              {/* Luma coaching bubble — always shown after reveal, loading state while coaching fetches */}
+              {revealed && (
                 <div className="flex items-start gap-3 bg-surface-container-low rounded-xl p-4 border border-outline-variant">
-                  <LumaGlyph size={40} state="speaking" className="text-primary shrink-0" />
+                  <LumaGlyph size={40} state={roleContext ? 'speaking' : 'reviewing'} className="text-primary shrink-0" />
                   <div className="flex-1 min-w-0 space-y-1">
-                    {roleContext && <p className="font-body text-sm text-on-surface">{roleContext}</p>}
-                    {careerSignal && <p className="font-body text-xs text-on-surface-variant italic">{careerSignal}</p>}
+                    {roleContext ? (
+                      <>
+                        <p className="font-body text-sm text-on-surface">{roleContext}</p>
+                        {careerSignal && <p className="font-body text-xs text-on-surface-variant italic">{careerSignal}</p>}
+                      </>
+                    ) : (
+                      <p className="font-body text-sm text-on-surface-variant">Luma is thinking…</p>
+                    )}
                   </div>
                 </div>
               )}
@@ -410,7 +431,12 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
                   ) : (
                     <button
                       onClick={handleSubmit}
-                      disabled={!(currentQuestion.response_type === 'freeform' ? elaboration.trim().length > 0 : selectedOptionId !== null) || submitting}
+                      disabled={!(() => {
+                        const rt = currentQuestion.response_type
+                        if (rt === 'freeform') return elaboration.trim().length > 0
+                        if (rt === 'modified_option') return selectedOptionId !== null && elaboration.trim().length > 0
+                        return selectedOptionId !== null // pure_mcq, mcq_plus_elaboration
+                      })() || submitting}
                       className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       {submitting ? 'Grading…' : 'Submit'}
@@ -422,6 +448,7 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
           </div>
         )}
       </section>
+      </div>
     </div>
   )
 }
