@@ -79,16 +79,23 @@ export async function GET(
 
   const flow_step_id = flowStep.id as string
 
-  // Fetch the attempt to get role_id
-  const { data: attempt, error: attemptError } = await adminClient
-    .from('challenge_attempts_v2')
-    .select('id, role_id, user_id')
-    .eq('id', attempt_id)
-    .eq('user_id', userId)
-    .single()
+  // Fetch the attempt to get role_id (skip ownership check in mock mode)
+  let attempt: { id: string; role_id: string; user_id: string }
 
-  if (attemptError || !attempt) {
-    return NextResponse.json({ error: 'Attempt not found or unauthorized' }, { status: 404 })
+  if (isMock) {
+    attempt = { id: attempt_id, role_id: 'swe', user_id: userId }
+  } else {
+    const { data: attemptData, error: attemptError } = await adminClient
+      .from('challenge_attempts_v2')
+      .select('id, role_id, user_id')
+      .eq('id', attempt_id)
+      .eq('user_id', userId)
+      .single()
+
+    if (attemptError || !attemptData) {
+      return NextResponse.json({ error: 'Attempt not found or unauthorized' }, { status: 404 })
+    }
+    attempt = attemptData as { id: string; role_id: string; user_id: string }
   }
 
   // Fetch step questions ordered by sequence — include response_type

@@ -18,6 +18,21 @@ export async function POST(
   const body = await req.json().catch(() => ({})) as { role_id?: UserRoleV2 }
   const role_id: UserRoleV2 = body.role_id ?? 'swe'
 
+  // In mock mode return a synthetic attempt — no DB write (mock-user is not in auth.users)
+  if (isMock) {
+    return NextResponse.json({
+      attempt: {
+        id: 'mock-attempt-00000000-0000-0000-0000-000000000000',
+        challenge_id,
+        role_id,
+        current_step: 'frame',
+        current_question_sequence: 1,
+        status: 'in_progress',
+      },
+      is_resume: false,
+    })
+  }
+
   const adminClient = createAdminClient()
 
   // Check for existing in-progress attempt — return it (resume)

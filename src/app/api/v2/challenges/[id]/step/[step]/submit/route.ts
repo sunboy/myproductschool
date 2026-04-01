@@ -59,20 +59,27 @@ export async function POST(
 
   const adminClient = createAdminClient()
 
-  // Verify attempt ownership
-  const { data: attempt, error: attemptError } = await adminClient
-    .from('challenge_attempts_v2')
-    .select('id, user_id, status, current_step, current_question_sequence')
-    .eq('id', attempt_id)
-    .eq('user_id', userId)
-    .single()
+  // Verify attempt ownership (skip in mock mode — attempt is synthetic)
+  const mockAttempt = { id: attempt_id, user_id: userId, status: 'in_progress', current_step: 'frame', current_question_sequence: 1 }
+  let attempt: typeof mockAttempt
 
-  if (attemptError || !attempt) {
-    return NextResponse.json({ error: 'Attempt not found or unauthorized' }, { status: 404 })
-  }
+  if (isMock) {
+    attempt = mockAttempt
+  } else {
+    const { data: attemptData, error: attemptError } = await adminClient
+      .from('challenge_attempts_v2')
+      .select('id, user_id, status, current_step, current_question_sequence')
+      .eq('id', attempt_id)
+      .eq('user_id', userId)
+      .single()
 
-  if (attempt.status !== 'in_progress') {
-    return NextResponse.json({ error: 'Attempt is not in progress' }, { status: 400 })
+    if (attemptError || !attemptData) {
+      return NextResponse.json({ error: 'Attempt not found or unauthorized' }, { status: 404 })
+    }
+    if (attemptData.status !== 'in_progress') {
+      return NextResponse.json({ error: 'Attempt is not in progress' }, { status: 400 })
+    }
+    attempt = attemptData as typeof mockAttempt
   }
 
   // Load full rubric options for this question (all 4)
@@ -198,9 +205,11 @@ export async function POST(
       console.error('[submit] Failed to insert step_attempt:', insertError)
       return NextResponse.json({ error: 'Failed to save attempt' }, { status: 500 })
     }
+  }
 
-    // ── Update current_question_sequence ─────────────────────
+  // ── Update current_question_sequence ─────────────────────
 
+  if (!isMock) {
     await adminClient
       .from('challenge_attempts_v2')
       .update({ current_question_sequence: (attempt.current_question_sequence ?? 0) + 1 })
@@ -224,19 +233,32 @@ export async function POST(
 
   const totalQuestions = totalQuestionsCount ?? 0
 
-  // Count answered questions in this step
-  const { count: answeredCount } = await adminClient
-    .from('step_attempts')
-    .select('id', { count: 'exact', head: true })
-    .eq('attempt_id', attempt_id)
-    .eq('step', step)
+  let stepComplete: boolean
+  if (isMock) {
+    // In mock mode step_attempts aren't persisted — derive completion from the submitted
+    // question's sequence number vs total questions in the step
+    const { data: submittedQuestion } = await adminClient
+      .from('step_questions')
+      .select('sequence')
+      .eq('id', question_id)
+      .single()
+    const questionSequence = submittedQuestion?.sequence ?? 1
+    stepComplete = questionSequence >= totalQuestions && totalQuestions > 0
+  } else {
+    // Count answered questions in this step from DB
+    const { count: answeredCount } = await adminClient
+      .from('step_attempts')
+      .select('id', { count: 'exact', head: true })
+      .eq('attempt_id', attempt_id)
+      .eq('step', step)
 
-  const answered = answeredCount ?? 0
-  const stepComplete = answered >= totalQuestions && totalQuestions > 0
+    const answered = answeredCount ?? 0
+    stepComplete = answered >= totalQuestions && totalQuestions > 0
+  }
 
   let stepScore: number | undefined
 
-  if (stepComplete) {
+  if (stepComplete && !isMock) {
     // Fetch all step_attempts for this step to compute weighted score
     const { data: stepAttempts } = await adminClient
       .from('step_attempts')
