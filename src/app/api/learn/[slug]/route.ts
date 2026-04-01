@@ -4,12 +4,12 @@ import { NextResponse } from 'next/server'
 import type { LearnModule, LearnChapter } from '@/lib/types'
 import { LEARN_MODULES_SEED, LEARN_CHAPTERS_SEED } from '@/lib/learn-seed'
 
-function buildMockModule(slug: string): { module: LearnModule; chapters: LearnChapter[] } | null {
+function buildMockModule(slug: string): { module: LearnModule; chapters: object[] } | null {
   const seedModule = LEARN_MODULES_SEED.find(m => m.slug === slug)
   if (!seedModule) return null
   const module: LearnModule = { ...seedModule, id: `mock-${slug}`, created_at: new Date().toISOString() }
   const chapterDefs = LEARN_CHAPTERS_SEED[slug] ?? []
-  const chapters: LearnChapter[] = chapterDefs.map((c, i) => ({
+  const chapters = chapterDefs.map((c, i) => ({
     id: `mock-${slug}-ch-${i + 1}`,
     module_id: module.id,
     slug: `chapter-${i + 1}`,
@@ -19,6 +19,8 @@ function buildMockModule(slug: string): { module: LearnModule; chapters: LearnCh
     hook_text: c.hook_text,
     body_mdx: `# ${c.title}\n\n*${c.subtitle}*\n\n${c.hook_text}\n\n---\n\n*Full chapter content coming soon.*`,
     created_at: new Date().toISOString(),
+    is_completed: false,
+    is_unlocked: i === 0,
   }))
   return { module, chapters }
 }
