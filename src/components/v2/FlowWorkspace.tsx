@@ -257,19 +257,6 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
   return (
     <div className="flex flex-col h-full overflow-hidden">
 
-      {/* Challenge header bar */}
-      <div className="h-12 border-b border-outline-variant flex items-center px-4 gap-3 flex-shrink-0 bg-background">
-        <button
-          onClick={onExit ?? (() => window.history.back())}
-          className="p-1 hover:bg-surface-container-high rounded-full transition-colors"
-        >
-          <span className="material-symbols-outlined text-on-surface-variant text-[20px]">arrow_back</span>
-        </button>
-        <span className="font-headline font-semibold text-base text-on-surface truncate">
-          {detail?.challenge.title ?? 'Loading…'}
-        </span>
-      </div>
-
       <div className="flex flex-1 overflow-hidden">
 
       {/* LEFT PANE — scenario context (fixed width, scrollable) */}
@@ -284,6 +271,13 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
         ) : (
           <>
             <div>
+              <button
+                onClick={onExit ?? (() => window.history.back())}
+                className="flex items-center gap-1 font-label text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors mb-2"
+              >
+                <span className="material-symbols-outlined text-[14px]">arrow_back</span>
+                Back
+              </button>
               <h1 className="font-headline text-xl text-on-surface mb-3">{ch.title}</h1>
               <div className="flex flex-wrap gap-2">
                 {ch.scenario_role && (
