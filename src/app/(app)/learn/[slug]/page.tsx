@@ -134,11 +134,13 @@ function ChapterPane({
   chapterSlug,
   moduleData,
   onNext,
+  onComplete,
 }: {
   moduleSlug: string
   chapterSlug: string
   moduleData: ModuleData | null
   onNext: (slug: string) => void
+  onComplete: () => void
 }) {
   const { data, isLoading, markComplete, isMarkingComplete } = useLearnChapter(moduleSlug, chapterSlug)
   const [markedDone, setMarkedDone] = useState(false)
@@ -194,7 +196,7 @@ function ChapterPane({
       <div className="px-5 py-3 border-t border-outline-variant bg-surface-container-low flex items-center justify-between flex-shrink-0">
         {!markedDone ? (
           <button
-            onClick={async () => { await markComplete(); setMarkedDone(true) }}
+            onClick={async () => { await markComplete(); setMarkedDone(true); onComplete() }}
             disabled={isMarkingComplete}
             className="inline-flex items-center gap-1.5 bg-primary text-on-primary rounded-full px-4 py-2 text-xs font-bold font-label disabled:opacity-50 hover:opacity-90 transition-opacity"
           >
@@ -279,8 +281,9 @@ function AfterThisModule({ currentSlug }: { currentSlug: string }) {
 
 function ModulePageInner({ slug }: { slug: string }) {
   const router = useRouter()
+
   const searchParams = useSearchParams()
-  const { data, isLoading, error } = useLearnModule(slug)
+  const { data, isLoading, error, refetch } = useLearnModule(slug)
   const [activeChapterSlug, setActiveChapterSlug] = useState<string | null>(null)
 
   // Sync active chapter from URL param or auto-select on data load
@@ -367,6 +370,7 @@ function ModulePageInner({ slug }: { slug: string }) {
               chapterSlug={activeChapterSlug}
               moduleData={data}
               onNext={handleNext}
+              onComplete={refetch}
             />
           ) : (
             <ChapterEmptyState />
