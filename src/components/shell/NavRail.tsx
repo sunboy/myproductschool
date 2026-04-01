@@ -6,6 +6,7 @@ import { LumaGlyph } from './LumaGlyph'
 const navItems = [
   { href: '/dashboard', icon: 'home',              label: 'Home' },
   { href: '/explore',   icon: 'explore',           label: 'Explore' },
+  { href: '/learn',     icon: 'auto_stories',      label: 'Learn' },
   { href: '/challenges',icon: 'fitness_center',    label: 'Practice' },
   { href: '/prep',      icon: 'workspace_premium', label: 'Prep' },
   { href: '/progress',  icon: 'bar_chart',         label: 'Progress' },
