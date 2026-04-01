@@ -3,11 +3,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const tabs = [
-  { href: '/dashboard', icon: 'home', label: 'Home' },
-  { href: '/explore', icon: 'explore', label: 'Explore' },
-  { href: '/learn', icon: 'auto_stories', label: 'Learn' },
+  { href: '/dashboard',  icon: 'home',           label: 'Home'     },
+  { href: '/learn',      icon: 'auto_stories',   label: 'Learn'    },
   { href: '/challenges', icon: 'fitness_center', label: 'Practice' },
-  { href: '/profile', icon: 'person', label: 'Profile' },
+  { href: '/progress',   icon: 'bar_chart',      label: 'Progress' },
 ]
 
 export function BottomTabs() {

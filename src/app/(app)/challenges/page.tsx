@@ -1,179 +1,86 @@
-import { getChallenges } from '@/lib/data/challenges'
-import { getDomains } from '@/lib/data/domains'
-import Link from 'next/link'
-import { ChallengeCard } from './ChallengeCard'
-import { LumaPick } from './LumaPick'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
-import { V2ChallengesSection } from './V2ChallengesSection'
+'use client'
 
-interface ChallengesPageProps {
-  searchParams: Promise<{ paradigm?: string; role?: string; difficulty?: string }>
-}
+import { Suspense, useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { FreePracticeContent } from './FreePracticeContent'
+import { GuidedTab } from './GuidedTab'
 
-const PARADIGMS = [
-  { key: 'all', label: 'All Paradigms', dot: null },
-  { key: 'traditional', label: 'Traditional', dot: 'bg-emerald-500' },
-  { key: 'ai-assisted', label: 'AI-Assisted', dot: 'bg-blue-500' },
-  { key: 'agentic', label: 'Agentic', dot: 'bg-purple-500' },
-  { key: 'ai-native', label: 'AI-Native', dot: 'bg-amber-500' },
-] as const
+type Tab = 'free' | 'guided'
 
-const ROLES = ['SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng'] as const
+function ChallengesShell() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const activeTab: Tab = tabParam === 'guided' ? 'guided' : 'free'
 
-const PARADIGM_LABELS = ['Traditional', 'AI-Assisted', 'Agentic', 'AI-Native'] as const
-function getParadigmLabel(index: number): string {
-  return PARADIGM_LABELS[index % PARADIGM_LABELS.length]
-}
-
-
-export default async function ChallengesPage({ searchParams }: ChallengesPageProps) {
-  const { paradigm, role, difficulty } = await searchParams
-  const [, challenges] = await Promise.all([
-    getDomains(),
-    getChallenges({ difficulty, paradigm, role }),
-  ])
-
-  const buildHref = (params: Record<string, string | undefined>) => {
-    const p = new URLSearchParams()
-    const pa = params.paradigm ?? paradigm
-    const r = params.role ?? role
-    const d = params.difficulty ?? difficulty
-    if (pa && pa !== 'all') p.set('paradigm', pa)
-    if (r) p.set('role', r)
-    if (d) p.set('difficulty', d)
-    const s = p.toString()
-    return s ? `/challenges?${s}` : '/challenges'
+  const switchTab = (tab: Tab) => {
+    if (tab === 'guided') {
+      router.push('/challenges?tab=guided')
+    } else {
+      router.push('/challenges')
+    }
   }
+
+  // Build searchParams promise for FreePracticeContent
+  const [freeSearchParams, setFreeSearchParams] = useState<Promise<{ paradigm?: string; role?: string; difficulty?: string; tab?: string }>>(
+    Promise.resolve({
+      paradigm: searchParams.get('paradigm') ?? undefined,
+      role: searchParams.get('role') ?? undefined,
+      difficulty: searchParams.get('difficulty') ?? undefined,
+      tab: searchParams.get('tab') ?? undefined,
+    })
+  )
+
+  useEffect(() => {
+    setFreeSearchParams(Promise.resolve({
+      paradigm: searchParams.get('paradigm') ?? undefined,
+      role: searchParams.get('role') ?? undefined,
+      difficulty: searchParams.get('difficulty') ?? undefined,
+      tab: searchParams.get('tab') ?? undefined,
+    }))
+  }, [searchParams])
 
   return (
     <main className="p-6 max-w-7xl w-full mx-auto">
-      {/* Header Section */}
-      <div className="flex items-baseline gap-3 mb-6">
-        <h1 className="text-2xl font-bold font-headline text-primary">Practice Hub</h1>
-        <p className="text-sm text-on-surface-variant">Master product thinking through real-world scenarios.</p>
+      {/* Tab Toggle */}
+      <div className="flex items-center gap-1 mb-6 bg-surface-container rounded-xl p-1 w-fit">
+        <button
+          onClick={() => switchTab('free')}
+          className={`px-5 py-2 rounded-lg text-sm font-bold transition-colors ${
+            activeTab === 'free'
+              ? 'bg-primary text-on-primary shadow-sm'
+              : 'text-on-surface-variant hover:text-on-surface'
+          }`}
+        >
+          Free Practice
+        </button>
+        <button
+          onClick={() => switchTab('guided')}
+          className={`px-5 py-2 rounded-lg text-sm font-bold transition-colors ${
+            activeTab === 'guided'
+              ? 'bg-primary text-on-primary shadow-sm'
+              : 'text-on-surface-variant hover:text-on-surface'
+          }`}
+        >
+          Guided Prep
+        </button>
       </div>
 
-      {/* Luma's Pick Banner — dynamic, real challenge from API */}
-      <LumaPick />
-
-      {/* Filters */}
-      <div className="space-y-3 mb-8">
-        {/* Role Filter — primary filter */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mr-2">Role:</span>
-          <Link
-            href={buildHref({ role: undefined })}
-            className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-              !role ? 'bg-on-surface text-on-primary' : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
-            }`}
-          >
-            All Roles
-          </Link>
-          {ROLES.map(r => (
-            <Link
-              key={r}
-              href={buildHref({ role: role === r ? undefined : r })}
-              className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                role === r
-                  ? 'bg-on-surface text-on-primary'
-                  : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
-              }`}
-            >
-              {r}
-            </Link>
-          ))}
-        </div>
-
-        {/* Challenge Type Filter (formerly Paradigm) */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mr-2">Challenge Type:</span>
-          {PARADIGMS.map(p => {
-            const isActive = (paradigm ?? 'all') === p.key
-            return (
-              <Link
-                key={p.key}
-                href={buildHref({ paradigm: p.key })}
-                className={`px-4 py-1.5 text-xs font-bold rounded-full flex items-center gap-2 transition-colors ${
-                  isActive
-                    ? 'bg-primary text-on-primary'
-                    : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
-                }`}
-              >
-                {p.dot && (
-                  <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-on-primary' : p.dot}`} />
-                )}
-                {!p.dot && isActive && (
-                  <span className="w-2 h-2 rounded-full bg-on-primary" />
-                )}
-                {p.label}
-              </Link>
-            )
-          })}
-        </div>
-
-        {/* Challenge Type description — shown when a non-all type is active */}
-        {paradigm && paradigm !== 'all' && (
-          <p className="text-xs italic text-on-surface-variant pl-1">
-            {paradigm === 'traditional' && 'Classic PM thinking — metrics, trade-offs, prioritization'}
-            {paradigm === 'ai-assisted' && 'Using AI tools as a PM — prompting, validation, oversight'}
-            {paradigm === 'agentic' && 'Multi-step AI systems — agents, evals, failure modes'}
-            {paradigm === 'ai-native' && 'Products built entirely around AI — new paradigms'}
-          </p>
-        )}
-      </div>
-
-      {/* Recommended for you — Zhang Yiming: algorithmic surfacing above the fold */}
-      {!paradigm && !role && challenges.length >= 3 && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-on-surface flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-base" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-              Featured Challenges
-            </h2>
-            <span className="text-[10px] text-on-surface-variant font-medium">Curated picks</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {challenges.slice(0, 3).map((challenge, idx) => (
-              <ChallengeCard
-                key={`rec-${challenge.id}`}
-                challenge={challenge}
-                paradigm={getParadigmLabel(idx)}
-              />
-            ))}
-          </div>
-          <div className="border-t border-outline-variant/30 mt-6 mb-2" />
-        </div>
-      )}
-
-      {/* All Challenges Grid */}
-      <h2 className="text-sm font-bold text-on-surface-variant uppercase tracking-wider mb-3">All Challenges</h2>
-      {challenges.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
-          <LumaGlyph size={64} state="idle" className="text-primary" />
-          <div>
-            <p className="text-base font-bold text-on-surface mb-1">No challenges match that filter</p>
-            <p className="text-sm text-on-surface-variant max-w-xs">
-              Try removing a filter, or{' '}
-              <Link href="/challenges" className="text-primary font-bold hover:underline">
-                view all challenges
-              </Link>
-              .
-            </p>
-          </div>
-        </div>
+      {activeTab === 'free' ? (
+        <Suspense fallback={<div className="animate-pulse h-64 bg-surface-container rounded-xl" />}>
+          <FreePracticeContent searchParams={freeSearchParams} />
+        </Suspense>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {challenges.map((challenge, idx) => (
-            <ChallengeCard
-              key={challenge.id}
-              challenge={challenge}
-              paradigm={getParadigmLabel(idx)}
-            />
-          ))}
-        </div>
+        <GuidedTab />
       )}
-      <V2ChallengesSection />
     </main>
   )
 }
 
+export default function ChallengesPage() {
+  return (
+    <Suspense fallback={<div className="p-6 animate-pulse h-64 bg-surface-container rounded-xl" />}>
+      <ChallengesShell />
+    </Suspense>
+  )
+}

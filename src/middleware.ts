@@ -9,7 +9,7 @@ const PRE_LAUNCH = false
 const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist', '/luma-preview']
 
 // ── Post-launch route config ─────────────────────────────────
-const PUBLIC_ROUTES = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/waitlist', '/waitlist-b', '/pricing', '/onboarding', '/dashboard', '/explore', '/challenges', '/progress', '/cohort', '/settings', '/prep', '/welcome', '/role', '/calibration', '/interview-prep', '/workspace']
+const PUBLIC_ROUTES = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/waitlist', '/waitlist-b', '/pricing', '/onboarding', '/dashboard', '/explore', '/challenges', '/progress', '/cohort', '/settings', '/prep', '/welcome', '/role', '/calibration', '/interview-prep', '/workspace', '/learn/modules', '/learn/domains', '/learn/plans']
 const AUTH_ROUTES = ['/login', '/signup', '/forgot-password', '/reset-password']
 
 export async function middleware(request: NextRequest) {
@@ -77,7 +77,7 @@ export async function middleware(request: NextRequest) {
   const isAppRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/explore')
     || pathname.startsWith('/challenges') || pathname.startsWith('/progress')
     || pathname.startsWith('/cohort') || pathname.startsWith('/prep')
-    || pathname.startsWith('/settings')
+    || pathname.startsWith('/settings') || pathname.startsWith('/learn')
 
   if (user && isAppRoute && !isOnboarding) {
     const { data: profile } = await supabase
