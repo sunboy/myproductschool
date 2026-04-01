@@ -6,7 +6,6 @@ import { useChallengeV2 } from '@/lib/v2/hooks/useChallengeV2'
 import { useFlowStep } from '@/lib/v2/hooks/useFlowStep'
 import { FlowStepper } from './FlowStepper'
 import { StepQuestion } from './StepQuestion'
-import { StepReveal } from './StepReveal'
 import { ChallengeComplete } from './ChallengeComplete'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
@@ -39,45 +38,39 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
   const [attemptId, setAttemptId] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState<FlowStep>('frame')
   const [completedSteps, setCompletedSteps] = useState<FlowStep[]>([])
-  const [phase, setPhase] = useState<'loading' | 'question' | 'reveal' | 'complete'>('loading')
+  const [phase, setPhase] = useState<'intro' | 'loading' | 'question' | 'complete'>('intro')
 
   // Per-question state
   const [questionIdx, setQuestionIdx] = useState(0)
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null)
   const [elaboration, setElaboration] = useState('')
   const [revealedOptions, setRevealedOptions] = useState<RevealedOption[]>([])
-  const [stepScore, setStepScore] = useState(0)
-  const [stepGrade, setStepGrade] = useState('')
+  const [revealed, setRevealed] = useState(false)
+  const [lastResult, setLastResult] = useState<{ step_complete: boolean } | null>(null)
   const [roleContext, setRoleContext] = useState('')
   const [careerSignal, setCareerSignal] = useState('')
   const [completionData, setCompletionData] = useState<CompletionData | null>(null)
 
   const startTimeRef = useRef<number>(Date.now())
 
-  const { stepData, loading: stepLoading, submitting, error: stepError, submitResult, loadStep, submitAnswer, fetchCoaching } = useFlowStep(challengeId, currentStep)
+  const { stepData, loading: stepLoading, submitting, error: stepError, submitAnswer, fetchCoaching, loadStep } = useFlowStep(challengeId, currentStep)
 
-  // Bootstrap: load challenge + start attempt
+  // Bootstrap: load challenge
   useEffect(() => {
     reload()
   }, [reload])
 
+  // Resume in-progress attempt; otherwise stay on intro
   useEffect(() => {
     if (detail && !attemptId) {
       if (detail.current_attempt?.status === 'in_progress') {
         setAttemptId(detail.current_attempt.id)
         setCurrentStep(detail.current_attempt.current_step === 'done' ? 'frame' : detail.current_attempt.current_step as FlowStep)
         setPhase('question')
-      } else {
-        startAttempt(initialRoleId).then((attempt) => {
-          if (attempt) {
-            setAttemptId(attempt.id)
-            setCurrentStep('frame')
-            setPhase('question')
-          }
-        })
       }
+      // otherwise stay on 'intro' — user clicks Start
     }
-  }, [detail, attemptId, initialRoleId, startAttempt])
+  }, [detail, attemptId])
 
   // Load step data when step + attemptId are ready
   useEffect(() => {
@@ -93,6 +86,28 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
   }, [currentStep, attemptId, phase])
 
   const currentQuestion = stepData?.questions[questionIdx] ?? null
+
+  const callComplete = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/v2/challenges/${challengeId}/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ attempt_id: attemptId }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setCompletionData({
+          total_score: data.total_score,
+          max_score: data.max_score,
+          grade_label: data.grade_label,
+          xp_awarded: data.xp_awarded,
+          step_breakdown: data.step_breakdown ?? [],
+          competency_deltas: data.competency_deltas ?? [],
+        })
+      }
+    } catch { /* ignore */ }
+    setPhase('complete')
+  }, [challengeId, attemptId])
 
   const handleSubmit = useCallback(async () => {
     if (!attemptId || !currentQuestion) return
@@ -110,8 +125,8 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
     if (!result) return
 
     setRevealedOptions(result.revealed_options ?? [])
-    setStepScore(result.score)
-    setStepGrade(result.grade_label)
+    setRevealed(true)
+    setLastResult({ step_complete: result.step_complete })
 
     // Fetch coaching
     const coaching = await fetchCoaching({
@@ -125,70 +140,143 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
       setRoleContext(coaching.role_context)
       setCareerSignal(coaching.career_signal)
     }
-
-    if (result.step_complete) {
-      setPhase('reveal')
-    } else {
-      // Advance to next question
-      setQuestionIdx((i) => i + 1)
-      setSelectedOptionId(null)
-      setElaboration('')
-      setRevealedOptions([])
-      startTimeRef.current = Date.now()
-    }
   }, [attemptId, currentQuestion, selectedOptionId, elaboration, submitAnswer, fetchCoaching, initialRoleId])
 
-  const handleNextStep = useCallback(async () => {
-    const stepIdx = FLOW_STEPS.indexOf(currentStep)
-    const isLast = stepIdx === FLOW_STEPS.length - 1
+  const handleNext = useCallback(() => {
+    setRevealed(false)
+    setSelectedOptionId(null)
+    setElaboration('')
+    setRevealedOptions([])
+    startTimeRef.current = Date.now()
 
-    if (isLast) {
-      // Call complete endpoint
-      try {
-        const res = await fetch(`/api/v2/challenges/${challengeId}/complete`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ attempt_id: attemptId }),
-        })
-        if (res.ok) {
-          const data = await res.json()
-          setCompletionData({
-            total_score: data.total_score,
-            max_score: data.max_score,
-            grade_label: data.grade_label,
-            xp_awarded: data.xp_awarded,
-            step_breakdown: data.step_breakdown ?? [],
-            competency_deltas: data.competency_deltas ?? [],
-          })
-          setPhase('complete')
-        }
-      } catch {
-        // fail silently — show complete anyway
-        setPhase('complete')
+    if (lastResult?.step_complete) {
+      const stepIdx = FLOW_STEPS.indexOf(currentStep)
+      if (stepIdx === FLOW_STEPS.length - 1) {
+        // Last step done — call complete endpoint
+        void callComplete()
+      } else {
+        setCompletedSteps((prev) => [...prev, currentStep])
+        setCurrentStep(FLOW_STEPS[stepIdx + 1])
+        setPhase('question')
       }
     } else {
-      setCompletedSteps((prev) => [...prev, currentStep])
-      setCurrentStep(FLOW_STEPS[stepIdx + 1])
+      setQuestionIdx((i) => i + 1)
+    }
+    setLastResult(null)
+  }, [lastResult, currentStep, callComplete])
+
+  const handleStartChallenge = useCallback(async () => {
+    setPhase('loading')
+    const attempt = await startAttempt(initialRoleId)
+    if (attempt) {
+      setAttemptId(attempt.id)
+      setCurrentStep('frame')
       setPhase('question')
     }
-  }, [challengeId, currentStep, attemptId])
+  }, [startAttempt, initialRoleId])
 
   // ── Render states ──────────────────────────────────────────────
-
-  if (challengeLoading || phase === 'loading') {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <LumaGlyph size={56} state="reviewing" className="text-primary" />
-        <p className="font-body text-on-surface-variant text-sm">Loading challenge…</p>
-      </div>
-    )
-  }
 
   if (challengeError) {
     return (
       <div className="text-center py-12 space-y-2">
         <p className="font-body text-error text-sm">{challengeError}</p>
         <button onClick={reload} className="text-primary font-label text-sm underline">Retry</button>
+      </div>
+    )
+  }
+
+  if (phase === 'intro') {
+    const ch = detail?.challenge
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+        {/* Role + meta badges */}
+        {ch && (
+          <div className="flex flex-wrap items-center gap-2">
+            {ch.scenario_role && (
+              <span className="bg-primary-container text-on-surface rounded-full px-3 py-1 font-label text-sm font-semibold">
+                {ch.scenario_role}
+              </span>
+            )}
+            {ch.industry && (
+              <span className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 font-label text-xs">
+                {ch.industry}
+              </span>
+            )}
+            {ch.difficulty && (
+              <span className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 font-label text-xs capitalize">
+                {ch.difficulty}
+              </span>
+            )}
+            {ch.estimated_minutes && (
+              <span className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 font-label text-xs">
+                {ch.estimated_minutes} min
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Title */}
+        {ch && (
+          <h1 className="font-headline text-2xl text-on-surface">{ch.title}</h1>
+        )}
+
+        {/* Situation + trigger */}
+        {ch?.scenario_context && (
+          <div className="bg-surface-container rounded-xl p-5 space-y-1">
+            <p className="font-label text-xs text-on-surface-variant uppercase tracking-wide">The situation</p>
+            <p className="font-body text-sm text-on-surface">{ch.scenario_context}</p>
+          </div>
+        )}
+        {ch?.scenario_trigger && (
+          <div className="bg-surface-container rounded-xl p-5 space-y-1">
+            <p className="font-label text-xs text-on-surface-variant uppercase tracking-wide">What just happened</p>
+            <p className="font-body text-sm text-on-surface">{ch.scenario_trigger}</p>
+          </div>
+        )}
+
+        {/* Your challenge — dark card */}
+        {ch?.scenario_question && (
+          <div className="bg-inverse-surface rounded-xl p-5 space-y-1">
+            <p className="font-label text-xs text-inverse-on-surface uppercase tracking-wide opacity-70">Your challenge</p>
+            <p className="font-body text-sm text-inverse-on-surface">{ch.scenario_question}</p>
+          </div>
+        )}
+
+        {/* FLOW preview */}
+        <div className="grid grid-cols-4 gap-2">
+          {([
+            { step: 'frame', label: 'Frame', desc: 'Define the problem' },
+            { step: 'list', label: 'List', desc: 'Map the space' },
+            { step: 'optimize', label: 'Optimize', desc: 'Sharpen trade-offs' },
+            { step: 'win', label: 'Win', desc: 'Make the call' },
+          ] as const).map(({ step, label, desc }) => (
+            <div key={step} className="bg-surface-container-low rounded-xl p-3 text-center space-y-1">
+              <p className="font-label text-sm font-semibold text-on-surface">{label}</p>
+              <p className="font-label text-xs text-on-surface-variant">{desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <div className="flex justify-end">
+          <button
+            onClick={handleStartChallenge}
+            disabled={challengeLoading || !detail}
+            className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {challengeLoading ? 'Loading…' : 'Start Challenge →'}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (challengeLoading || phase === 'loading') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <LumaGlyph size={56} state="reviewing" className="text-primary" />
+        <p className="font-body text-on-surface-variant text-sm">Loading challenge…</p>
       </div>
     )
   }
@@ -211,30 +299,13 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
           setAttemptId(null)
           setCompletedSteps([])
           setCurrentStep('frame')
-          setPhase('loading')
+          setRevealed(false)
+          setLastResult(null)
+          setPhase('intro')
           reload()
         }}
         onNextChallenge={onExit ?? (() => window.history.back())}
       />
-    )
-  }
-
-  if (phase === 'reveal') {
-    const stepIdx = FLOW_STEPS.indexOf(currentStep)
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        <FlowStepper currentStep={currentStep} completedSteps={completedSteps} />
-        <StepReveal
-          step={currentStep}
-          stepScore={stepScore}
-          maxScore={3.0}
-          gradeLabel={stepGrade}
-          roleContext={roleContext}
-          careerSignal={careerSignal}
-          onNext={handleNextStep}
-          isLastStep={stepIdx === FLOW_STEPS.length - 1}
-        />
-      </div>
     )
   }
 
@@ -249,12 +320,14 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
       <FlowStepper currentStep={currentStep} completedSteps={completedSteps} />
 
-      {/* Challenge context */}
+      {/* Compact context bar */}
       {detail && (
-        <div className="bg-surface-container-low rounded-xl p-4 space-y-1">
-          <h1 className="font-headline text-lg text-on-surface">{detail.challenge.title}</h1>
-          {detail.challenge.scenario_question && (
-            <p className="font-body text-sm text-on-surface-variant">{detail.challenge.scenario_question}</p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-body text-sm text-on-surface-variant truncate">{detail.challenge.title}</span>
+          {detail.challenge.scenario_role && (
+            <span className="bg-primary-container text-on-surface rounded-full px-2.5 py-0.5 font-label text-xs font-semibold shrink-0">
+              {detail.challenge.scenario_role}
+            </span>
           )}
         </div>
       )}
@@ -285,23 +358,46 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
           responseType={currentQuestion.response_type}
           selectedOptionId={selectedOptionId}
           elaboration={elaboration}
-          revealed={false}
+          revealed={revealed}
+          revealedOptions={revealedOptions}
           onOptionSelect={setSelectedOptionId}
           onElaborationChange={setElaboration}
-          disabled={submitting}
+          disabled={submitting || revealed}
         />
       ) : null}
 
-      {/* Submit */}
+      {/* Luma coaching bubble — shown after reveal */}
+      {revealed && (roleContext || careerSignal) && (
+        <div className="flex items-start gap-3 bg-surface-container-low rounded-xl p-4 border border-outline-variant">
+          <LumaGlyph size={40} state="speaking" className="text-primary shrink-0" />
+          <div className="flex-1 min-w-0 space-y-1">
+            {roleContext && <p className="font-body text-sm text-on-surface">{roleContext}</p>}
+            {careerSignal && <p className="font-body text-xs text-on-surface-variant italic">{careerSignal}</p>}
+          </div>
+        </div>
+      )}
+
+      {/* Submit / Next toggle */}
       {currentQuestion && (
         <div className="flex justify-end">
-          <button
-            onClick={handleSubmit}
-            disabled={!canSubmit || submitting}
-            className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {submitting ? 'Grading…' : 'Submit'}
-          </button>
+          {revealed ? (
+            <button
+              onClick={handleNext}
+              className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity"
+            >
+              {lastResult?.step_complete
+                ? (FLOW_STEPS.indexOf(currentStep) === FLOW_STEPS.length - 1 ? 'See Results →' : `Next: ${FLOW_STEPS[FLOW_STEPS.indexOf(currentStep) + 1].charAt(0).toUpperCase() + FLOW_STEPS[FLOW_STEPS.indexOf(currentStep) + 1].slice(1)} →`)
+                : 'Next question →'}
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={!canSubmit || submitting}
+              className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {submitting ? 'Grading…' : 'Submit'}
+            </button>
+          )}
         </div>
       )}
     </div>
