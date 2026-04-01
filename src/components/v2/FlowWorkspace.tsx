@@ -82,7 +82,8 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
       startTimeRef.current = Date.now()
       void loadStep(attemptId)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // loadStep is derived from currentStep via useCallback; including it causes double-fetch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep, attemptId, phase])
 
   const currentQuestion = stepData?.questions[questionIdx] ?? null
@@ -147,12 +148,13 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
     setSelectedOptionId(null)
     setElaboration('')
     setRevealedOptions([])
+    setRoleContext('')
+    setCareerSignal('')
     startTimeRef.current = Date.now()
 
     if (lastResult?.step_complete) {
       const stepIdx = FLOW_STEPS.indexOf(currentStep)
       if (stepIdx === FLOW_STEPS.length - 1) {
-        // Last step done — call complete endpoint
         void callComplete()
       } else {
         setCompletedSteps((prev) => [...prev, currentStep])
@@ -175,111 +177,18 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
     }
   }, [startAttempt, initialRoleId])
 
-  // ── Render states ──────────────────────────────────────────────
+  // ── Error state ────────────────────────────────────────────────
 
   if (challengeError) {
     return (
-      <div className="text-center py-12 space-y-2">
+      <div className="flex flex-col items-center justify-center h-full gap-3">
         <p className="font-body text-error text-sm">{challengeError}</p>
         <button onClick={reload} className="text-primary font-label text-sm underline">Retry</button>
       </div>
     )
   }
 
-  if (phase === 'intro') {
-    const ch = detail?.challenge
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
-        {/* Role + meta badges */}
-        {ch && (
-          <div className="flex flex-wrap items-center gap-2">
-            {ch.scenario_role && (
-              <span className="bg-primary-container text-on-surface rounded-full px-3 py-1 font-label text-sm font-semibold">
-                {ch.scenario_role}
-              </span>
-            )}
-            {ch.industry && (
-              <span className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 font-label text-xs">
-                {ch.industry}
-              </span>
-            )}
-            {ch.difficulty && (
-              <span className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 font-label text-xs capitalize">
-                {ch.difficulty}
-              </span>
-            )}
-            {ch.estimated_minutes && (
-              <span className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 font-label text-xs">
-                {ch.estimated_minutes} min
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Title */}
-        {ch && (
-          <h1 className="font-headline text-2xl text-on-surface">{ch.title}</h1>
-        )}
-
-        {/* Situation + trigger */}
-        {ch?.scenario_context && (
-          <div className="bg-surface-container rounded-xl p-5 space-y-1">
-            <p className="font-label text-xs text-on-surface-variant uppercase tracking-wide">The situation</p>
-            <p className="font-body text-sm text-on-surface">{ch.scenario_context}</p>
-          </div>
-        )}
-        {ch?.scenario_trigger && (
-          <div className="bg-surface-container rounded-xl p-5 space-y-1">
-            <p className="font-label text-xs text-on-surface-variant uppercase tracking-wide">What just happened</p>
-            <p className="font-body text-sm text-on-surface">{ch.scenario_trigger}</p>
-          </div>
-        )}
-
-        {/* Your challenge — dark card */}
-        {ch?.scenario_question && (
-          <div className="bg-inverse-surface rounded-xl p-5 space-y-1">
-            <p className="font-label text-xs text-inverse-on-surface uppercase tracking-wide opacity-70">Your challenge</p>
-            <p className="font-body text-sm text-inverse-on-surface">{ch.scenario_question}</p>
-          </div>
-        )}
-
-        {/* FLOW preview */}
-        <div className="grid grid-cols-4 gap-2">
-          {([
-            { step: 'frame', label: 'Frame', desc: 'Define the problem' },
-            { step: 'list', label: 'List', desc: 'Map the space' },
-            { step: 'optimize', label: 'Optimize', desc: 'Sharpen trade-offs' },
-            { step: 'win', label: 'Win', desc: 'Make the call' },
-          ] as const).map(({ step, label, desc }) => (
-            <div key={step} className="bg-surface-container-low rounded-xl p-3 text-center space-y-1">
-              <p className="font-label text-sm font-semibold text-on-surface">{label}</p>
-              <p className="font-label text-xs text-on-surface-variant">{desc}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <div className="flex justify-end">
-          <button
-            onClick={handleStartChallenge}
-            disabled={challengeLoading || !detail}
-            className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {challengeLoading ? 'Loading…' : 'Start Challenge →'}
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  if (challengeLoading || phase === 'loading') {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <LumaGlyph size={56} state="reviewing" className="text-primary" />
-        <p className="font-body text-on-surface-variant text-sm">Loading challenge…</p>
-      </div>
-    )
-  }
+  // ── Complete — full-width results ──────────────────────────────
 
   if (phase === 'complete' && completionData && detail) {
     return (
@@ -309,104 +218,210 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
     )
   }
 
-  // phase === 'question'
-  const canSubmit = currentQuestion
-    ? (currentQuestion.response_type === 'freeform'
-        ? elaboration.trim().length > 0
-        : selectedOptionId !== null)
-    : false
+  const ch = detail?.challenge
 
-  const stepIdx = FLOW_STEPS.indexOf(currentStep)
-  const isLastStep = stepIdx === FLOW_STEPS.length - 1
-  const nextStepLabel = !isLastStep
-    ? FLOW_STEPS[stepIdx + 1].charAt(0).toUpperCase() + FLOW_STEPS[stepIdx + 1].slice(1)
-    : ''
-  const nextButtonLabel = lastResult?.step_complete
-    ? (isLastStep ? 'See Results →' : `Next: ${nextStepLabel} →`)
-    : 'Next question →'
+  // ── Two-column workspace ───────────────────────────────────────
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-      <FlowStepper currentStep={currentStep} completedSteps={completedSteps} />
+    <div className="flex h-full overflow-hidden">
 
-      {/* Compact context bar */}
-      {detail && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-body text-sm text-on-surface-variant truncate">{detail.challenge.title}</span>
-          {detail.challenge.scenario_role && (
-            <span className="bg-primary-container text-on-surface rounded-full px-2.5 py-0.5 font-label text-xs font-semibold shrink-0">
-              {detail.challenge.scenario_role}
-            </span>
-          )}
-        </div>
-      )}
+      {/* LEFT PANE — scenario context (fixed width, scrollable) */}
+      <section className="w-2/5 bg-surface-container-low border-r border-outline-variant flex flex-col overflow-y-auto p-6 gap-5">
 
-      {/* Nudge */}
-      {stepData?.nudge && (
-        <div className="flex items-start gap-2 bg-secondary-container rounded-xl px-4 py-3">
-          <span
-            className="material-symbols-outlined text-on-secondary-container text-[18px] shrink-0 mt-0.5"
-            style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-          >
-            lightbulb
-          </span>
-          <p className="font-body text-sm text-on-secondary-container">{stepData.nudge}</p>
-        </div>
-      )}
-
-      {/* Question */}
-      {stepLoading ? (
-        <div className="flex justify-center py-8">
-          <LumaGlyph size={40} state="reviewing" className="text-primary" />
-        </div>
-      ) : stepError ? (
-        <p className="font-body text-error text-sm text-center">{stepError}</p>
-      ) : currentQuestion ? (
-        <StepQuestion
-          question={currentQuestion}
-          responseType={currentQuestion.response_type}
-          selectedOptionId={selectedOptionId}
-          elaboration={elaboration}
-          revealed={revealed}
-          revealedOptions={revealedOptions}
-          onOptionSelect={setSelectedOptionId}
-          onElaborationChange={setElaboration}
-          disabled={submitting || revealed}
-        />
-      ) : null}
-
-      {/* Luma coaching bubble — shown after reveal */}
-      {revealed && (roleContext || careerSignal) && (
-        <div className="flex items-start gap-3 bg-surface-container-low rounded-xl p-4 border border-outline-variant">
-          <LumaGlyph size={40} state="speaking" className="text-primary shrink-0" />
-          <div className="flex-1 min-w-0 space-y-1">
-            {roleContext && <p className="font-body text-sm text-on-surface">{roleContext}</p>}
-            {careerSignal && <p className="font-body text-xs text-on-surface-variant italic">{careerSignal}</p>}
+        {/* Title + badges */}
+        {challengeLoading || !ch ? (
+          <div className="space-y-3 animate-pulse">
+            <div className="h-5 bg-surface-container rounded w-3/4" />
+            <div className="h-4 bg-surface-container rounded w-1/2" />
           </div>
-        </div>
-      )}
+        ) : (
+          <>
+            <div>
+              <h1 className="font-headline text-xl text-on-surface mb-3">{ch.title}</h1>
+              <div className="flex flex-wrap gap-2">
+                {ch.scenario_role && (
+                  <span className="bg-primary-container text-on-surface rounded-full px-3 py-1 font-label text-xs font-semibold">
+                    {ch.scenario_role}
+                  </span>
+                )}
+                {ch.industry && (
+                  <span className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 font-label text-xs">
+                    {ch.industry}
+                  </span>
+                )}
+                {ch.difficulty && (
+                  <span className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 font-label text-xs capitalize">
+                    {ch.difficulty}
+                  </span>
+                )}
+              </div>
+            </div>
 
-      {/* Submit / Next toggle */}
-      {currentQuestion && (
-        <div className="flex justify-end">
-          {revealed ? (
-            <button
-              onClick={handleNext}
-              className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity"
-            >
-              {nextButtonLabel}
-            </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={!canSubmit || submitting}
-              className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {submitting ? 'Grading…' : 'Submit'}
-            </button>
-          )}
-        </div>
-      )}
+            {/* The situation */}
+            {ch.scenario_context && (
+              <div className="space-y-1.5">
+                <p className="font-label text-xs text-on-surface-variant uppercase tracking-wide">The situation</p>
+                <p className="font-body text-sm text-on-surface leading-relaxed">{ch.scenario_context}</p>
+              </div>
+            )}
+
+            {/* What just happened */}
+            {ch.scenario_trigger && (
+              <div className="space-y-1.5">
+                <p className="font-label text-xs text-on-surface-variant uppercase tracking-wide">What just happened</p>
+                <p className="font-body text-sm text-on-surface leading-relaxed">{ch.scenario_trigger}</p>
+              </div>
+            )}
+
+            {/* Your challenge */}
+            {ch.scenario_question && (
+              <div className="bg-inverse-surface rounded-xl p-4 space-y-1">
+                <p className="font-label text-xs text-inverse-on-surface uppercase tracking-wide opacity-70">Your challenge</p>
+                <p className="font-body text-sm text-inverse-on-surface leading-relaxed">{ch.scenario_question}</p>
+              </div>
+            )}
+          </>
+        )}
+      </section>
+
+      {/* RIGHT PANE — guided questions */}
+      <section className="flex-1 flex flex-col overflow-hidden bg-surface">
+
+        {/* Loading spinner */}
+        {(challengeLoading || phase === 'loading') && (
+          <div className="flex flex-col items-center justify-center flex-1 gap-4">
+            <LumaGlyph size={56} state="reviewing" className="text-primary" />
+            <p className="font-body text-on-surface-variant text-sm">Loading challenge…</p>
+          </div>
+        )}
+
+        {/* Intro — shown before attempt starts */}
+        {phase === 'intro' && !challengeLoading && (
+          <div className="flex flex-col items-center justify-center flex-1 px-8 gap-6">
+            <div className="w-full max-w-md space-y-4">
+              <LumaGlyph size={48} state="idle" className="text-primary mx-auto block" />
+              <div className="text-center space-y-2">
+                <h2 className="font-headline text-lg text-on-surface">Ready to practice?</h2>
+                <p className="font-body text-sm text-on-surface-variant">
+                  You&apos;ll travel through 4 FLOW steps — Frame, List, Optimize, Win — answering guided questions at each step.
+                </p>
+              </div>
+
+              {/* FLOW preview tiles */}
+              <div className="grid grid-cols-4 gap-2">
+                {([
+                  { step: 'frame', label: 'Frame', desc: 'Define the problem' },
+                  { step: 'list',  label: 'List',  desc: 'Map the space' },
+                  { step: 'optimize', label: 'Optimize', desc: 'Sharpen trade-offs' },
+                  { step: 'win',  label: 'Win',   desc: 'Make the call' },
+                ] as const).map(({ step, label, desc }) => (
+                  <div key={step} className="bg-surface-container rounded-xl p-3 text-center space-y-1">
+                    <p className="font-label text-xs font-semibold text-on-surface">{label}</p>
+                    <p className="font-label text-xs text-on-surface-variant">{desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={handleStartChallenge}
+                disabled={challengeLoading || !detail}
+                className="w-full bg-primary text-on-primary rounded-full px-6 py-3 font-label font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {challengeLoading ? 'Loading…' : 'Start Challenge →'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Question flow */}
+        {phase === 'question' && !challengeLoading && (
+          <div className="flex flex-col flex-1 overflow-hidden">
+
+            {/* Stepper + nudge header */}
+            <div className="border-b border-outline-variant px-6 py-3 flex-shrink-0 space-y-2">
+              <FlowStepper currentStep={currentStep} completedSteps={completedSteps} />
+              {stepData?.nudge && (
+                <div className="flex items-start gap-2 bg-secondary-container rounded-xl px-4 py-2.5">
+                  <span
+                    className="material-symbols-outlined text-on-secondary-container text-[18px] shrink-0 mt-0.5"
+                    style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
+                  >
+                    lightbulb
+                  </span>
+                  <p className="font-body text-sm text-on-secondary-container">{stepData.nudge}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Scrollable question area */}
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+              {stepLoading ? (
+                <div className="flex justify-center py-8">
+                  <LumaGlyph size={40} state="reviewing" className="text-primary" />
+                </div>
+              ) : stepError ? (
+                <p className="font-body text-error text-sm text-center">{stepError}</p>
+              ) : currentQuestion ? (
+                <StepQuestion
+                  question={currentQuestion}
+                  responseType={currentQuestion.response_type}
+                  selectedOptionId={selectedOptionId}
+                  elaboration={elaboration}
+                  revealed={revealed}
+                  revealedOptions={revealedOptions}
+                  onOptionSelect={setSelectedOptionId}
+                  onElaborationChange={setElaboration}
+                  disabled={submitting || revealed}
+                />
+              ) : null}
+
+              {/* Luma coaching bubble — shown after reveal */}
+              {revealed && (roleContext || careerSignal) && (
+                <div className="flex items-start gap-3 bg-surface-container-low rounded-xl p-4 border border-outline-variant">
+                  <LumaGlyph size={40} state="speaking" className="text-primary shrink-0" />
+                  <div className="flex-1 min-w-0 space-y-1">
+                    {roleContext && <p className="font-body text-sm text-on-surface">{roleContext}</p>}
+                    {careerSignal && <p className="font-body text-xs text-on-surface-variant italic">{careerSignal}</p>}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Submit / Next — pinned footer */}
+            {currentQuestion && (
+              <div className="border-t border-outline-variant px-6 py-4 flex justify-end flex-shrink-0">
+                {(() => {
+                  const stepIdx = FLOW_STEPS.indexOf(currentStep)
+                  const isLastStep = stepIdx === FLOW_STEPS.length - 1
+                  const nextStepLabel = !isLastStep
+                    ? FLOW_STEPS[stepIdx + 1].charAt(0).toUpperCase() + FLOW_STEPS[stepIdx + 1].slice(1)
+                    : ''
+                  const nextButtonLabel = lastResult?.step_complete
+                    ? (isLastStep ? 'See Results →' : `Next: ${nextStepLabel} →`)
+                    : 'Next question →'
+
+                  return revealed ? (
+                    <button
+                      onClick={handleNext}
+                      className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity"
+                    >
+                      {nextButtonLabel}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleSubmit}
+                      disabled={!(currentQuestion.response_type === 'freeform' ? elaboration.trim().length > 0 : selectedOptionId !== null) || submitting}
+                      className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {submitting ? 'Grading…' : 'Submit'}
+                    </button>
+                  )
+                })()}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
     </div>
   )
 }
