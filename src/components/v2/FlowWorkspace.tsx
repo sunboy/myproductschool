@@ -271,13 +271,38 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
         ) : (
           <>
             <div>
-              <button
-                onClick={onExit ?? (() => window.history.back())}
-                className="flex items-center gap-1 font-label text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors mb-2"
-              >
-                <span className="material-symbols-outlined text-[14px]">arrow_back</span>
-                Back
-              </button>
+              <div className="flex items-center justify-between mb-2">
+                <button
+                  onClick={onExit ?? (() => window.history.back())}
+                  className="flex items-center gap-1 font-label text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[14px]">arrow_back</span>
+                  Back
+                </button>
+                {phase === 'question' && currentQuestion && (
+                  <button
+                    onClick={handleToggleDiscuss}
+                    className={[
+                      'flex items-center gap-1 rounded-full border px-2.5 py-1 font-label text-xs font-semibold transition-colors',
+                      showDiscuss
+                        ? 'border-primary text-primary bg-primary-fixed'
+                        : 'border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary hover:bg-primary-fixed',
+                    ].join(' ')}
+                  >
+                    <span
+                      className="material-symbols-outlined text-[13px]"
+                      style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
+                    >
+                      forum
+                    </span>
+                    {discussions.length > 0 && (
+                      <span className="bg-primary text-on-primary rounded-full text-[9px] font-bold px-1.5 py-px leading-tight">
+                        {discussions.length}
+                      </span>
+                    )}
+                  </button>
+                )}
+              </div>
               <h1 className="font-headline text-xl text-on-surface mb-3">{ch.title}</h1>
               <div className="flex flex-wrap gap-2">
                 {ch.scenario_role && (
@@ -326,33 +351,10 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
             {phase === 'question' && currentQuestion && (
               <div className="flex flex-col gap-3 pt-2 border-t border-outline-variant">
 
-                {/* Question title + discuss button inline */}
-                <div className="flex items-start gap-2">
-                  <p className="font-headline text-base text-on-surface leading-snug flex-1">
-                    {currentQuestion.question_text}
-                  </p>
-                  <button
-                    onClick={handleToggleDiscuss}
-                    className={[
-                      'flex items-center gap-1 rounded-full border px-2.5 py-1 font-label text-xs font-semibold flex-shrink-0 mt-0.5 transition-colors',
-                      showDiscuss
-                        ? 'border-primary text-primary bg-primary-fixed'
-                        : 'border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary hover:bg-primary-fixed',
-                    ].join(' ')}
-                  >
-                    <span
-                      className="material-symbols-outlined text-[13px]"
-                      style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-                    >
-                      forum
-                    </span>
-                    {discussions.length > 0 && (
-                      <span className="bg-primary text-on-primary rounded-full text-[9px] font-bold px-1.5 py-px leading-tight">
-                        {discussions.length}
-                      </span>
-                    )}
-                  </button>
-                </div>
+                {/* Question title */}
+                <p className="font-headline text-base text-on-surface leading-snug">
+                  {currentQuestion.question_text}
+                </p>
 
                 {/* Inline discussion panel */}
                 {showDiscuss && (
