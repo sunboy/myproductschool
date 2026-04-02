@@ -32,6 +32,7 @@ export async function GET(
   if (isMock) {
     const mockChallenge: Challenge = {
       id,
+      slug: id.replace(/^c\d+-/, ''),
       title: 'Improve Spotify\'s Podcast Discovery',
       scenario_role: 'Product Manager, Podcasts',
       scenario_context: 'Spotify has 5M+ podcast titles but only 8% of users who open the Podcasts tab ever save or follow a podcast. The team suspects a discovery problem but hasn\'t yet investigated root causes.',

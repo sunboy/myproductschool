@@ -60,7 +60,7 @@ export function ChallengeCard({
       </div>
 
       {/* Title */}
-      <Link href={`/challenges/${challenge.id}`}>
+      <Link href={`/challenges/${challenge.slug ?? challenge.id}`}>
         <h3 className="font-bold text-base mb-2 group-hover:text-primary transition-colors">
           {challenge.title}
         </h3>
@@ -95,13 +95,13 @@ export function ChallengeCard({
       {/* Footer: Start button + Discussion link */}
       <div className="flex items-center gap-2 mt-auto">
         <Link
-          href={`/challenges/${challenge.id}`}
+          href={`/challenges/${challenge.slug ?? challenge.id}`}
           className="flex-1 py-2 bg-primary text-on-primary text-xs font-bold rounded-full flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
         >
           Start <span className="material-symbols-outlined text-sm">arrow_forward</span>
         </Link>
         <Link
-          href={`/challenges/${challenge.id}/discussion`}
+          href={`/challenges/${challenge.slug ?? challenge.id}/discussion`}
           className="p-2 rounded-full bg-surface-container-high text-on-surface-variant hover:text-primary hover:bg-surface-container-highest transition-colors"
           title="Discussion"
         >

@@ -88,7 +88,7 @@ export function V2ChallengesSection() {
             <ChallengeCardV2
               key={c.id}
               challenge={c}
-              onStart={(id) => router.push(`/workspace/challenges/${id}`)}
+              onStart={() => router.push(`/workspace/challenges/${c.slug ?? c.id}`)}
             />
           ))}
         </div>

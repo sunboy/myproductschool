@@ -214,7 +214,7 @@ export default function StudyPlanDetailPage() {
                                 </span>
                               ) : (
                                 <Link
-                                  href={`/challenges/${c.id}`}
+                                  href={`/challenges/${c.slug ?? c.id}`}
                                   className="bg-primary text-white px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 hover:opacity-90 transition-opacity"
                                 >
                                   Start <span className="material-symbols-outlined text-sm">arrow_forward</span>

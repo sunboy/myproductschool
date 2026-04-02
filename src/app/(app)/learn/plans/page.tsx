@@ -30,6 +30,7 @@ interface PersonalisedPlan {
 function PersonalisedPlanCard() {
   const [plan, setPlan] = useState<PersonalisedPlan | null | undefined>(undefined)
   const [challengeTitles, setChallengeTitles] = useState<Record<string, string>>({})
+  const [challengeSlugs, setChallengeSlugs] = useState<Record<string, string>>({})
   const [generating, setGenerating] = useState(false)
   const [rebuilding, setRebuilding] = useState(false)
 
@@ -49,10 +50,15 @@ function PersonalisedPlanCard() {
     allIds.forEach(id => params.append('ids', id))
     fetch(`/api/challenges/by-ids?${params}`)
       .then(r => r.json())
-      .then((data: { challenges: Array<{ id: string; title: string }> }) => {
-        const map: Record<string, string> = {}
-        for (const c of data.challenges ?? []) map[c.id] = c.title
-        setChallengeTitles(map)
+      .then((data: { challenges: Array<{ id: string; slug?: string; title: string }> }) => {
+        const titleMap: Record<string, string> = {}
+        const slugMap: Record<string, string> = {}
+        for (const c of data.challenges ?? []) {
+          titleMap[c.id] = c.title
+          if (c.slug) slugMap[c.id] = c.slug
+        }
+        setChallengeTitles(titleMap)
+        setChallengeSlugs(slugMap)
       })
       .catch(() => {})
   }, [plan])
@@ -141,7 +147,7 @@ function PersonalisedPlanCard() {
               {week.challenge_ids.map(cid => (
                 <Link
                   key={cid}
-                  href={`/workspace/challenges/${cid}`}
+                  href={`/workspace/challenges/${challengeSlugs[cid] ?? cid}`}
                   className="flex items-center gap-2 bg-surface/80 hover:bg-surface rounded-lg px-3 py-1.5 group transition-colors"
                 >
                   <span className="material-symbols-outlined text-sm text-on-surface-variant group-hover:text-primary transition-colors">exercise</span>

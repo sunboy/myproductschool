@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       challenges: ids.map(id => ({
         id,
+        slug: id.replace(/^c\d+-/, ''),
         title: id.replace(/-/g, ' ').replace(/^c\d+ ?/, '').replace(/\b\w/g, c => c.toUpperCase()),
       })),
     })
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('challenges')
-    .select('id, title')
+    .select('id, title, slug')
     .in('id', ids)
 
   if (error) {

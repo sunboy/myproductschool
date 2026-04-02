@@ -548,6 +548,7 @@ async function seed() {
       .from('challenges')
       .upsert({
         id: c.id,
+        slug: c.id.replace(/^c\d+-/, ''),
         title: c.title,
         scenario_role: c.scenario_role,
         scenario_context: c.scenario_context,

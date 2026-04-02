@@ -14,6 +14,7 @@ interface Company {
 
 interface ChapterItem {
   id: string
+  slug?: string
   title: string
   difficulty: string
   best_score: number | null
@@ -150,7 +151,7 @@ export function GuidedTab() {
                         {chapter.items.map(item => (
                           <Link
                             key={item.id}
-                            href={`/challenges/${item.id}`}
+                            href={`/challenges/${item.slug ?? item.id}`}
                             className="flex items-center justify-between p-2.5 hover:bg-surface-container rounded-lg group transition-colors"
                           >
                             <div className="flex items-center gap-3">

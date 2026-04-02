@@ -74,6 +74,7 @@ export interface Flashcard {
 
 export interface ChallengePrompt {
   id: string
+  slug?: string
   domain_id: string
   title: string
   prompt_text: string
@@ -340,6 +341,7 @@ export interface StudyPlan {
 
 export interface StudyPlanChapterChallenge {
   id: string
+  slug?: string
   title: string
   difficulty: string
   paradigm?: string | null
@@ -511,7 +513,7 @@ export type Competency = 'motivation_theory' | 'cognitive_empathy' | 'taste' | '
 export type UserRoleV2 = 'swe' | 'data_eng' | 'ml_eng' | 'devops' | 'founding_eng' | 'em' | 'tech_lead' | 'pm' | 'designer' | 'data_scientist'
 
 export interface Challenge {
-  id: string; title: string
+  id: string; slug: string; title: string
   scenario_role: string | null; scenario_context: string; scenario_trigger: string; scenario_question: string
   engineer_standout: string | null
   paradigm: Paradigm | null; industry: string | null; sub_vertical: string | null
