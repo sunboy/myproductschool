@@ -18,7 +18,7 @@ export async function middleware(request: NextRequest) {
 
   // ── Post-launch: normal auth flow ──────────────────────
   // Bypass auth in mock/testing mode
-  if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || IS_MOCK) {
+  if (IS_MOCK) {
     return NextResponse.next()
   }
 
