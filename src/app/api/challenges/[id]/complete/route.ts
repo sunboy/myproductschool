@@ -201,10 +201,31 @@ export async function POST(
     .eq('id', attempt_id)
 
   // Insert luma_context row
+  const challengeTitle = challengeId.replace(/-/g, ' ').replace(/^c\d+ /, '')
+
+  // Transform deltas object to array format with before/after values
+  const deltaEntries = Object.entries(competency_deltas).map(([competency, deltaValue]) => {
+    const current = updatedCompetencies.find(c => c.competency === competency)
+    const before = (currentCompetencies.find(c => c.competency === competency)?.score ?? 50)
+    const after = (current?.score ?? before)
+    return { competency, before, after, delta: deltaValue }
+  })
+
+  const topDelta = deltaEntries.length > 0
+    ? [...deltaEntries].sort((a, b) => (b.after - b.before) - (a.after - a.before))[0]
+    : null
+  const watchDelta = deltaEntries.length > 0
+    ? deltaEntries[deltaEntries.length - 1]
+    : null
+
+  const contentStr = topDelta && topDelta.after > topDelta.before
+    ? `Completed "${challengeTitle}": ${grade_label} (${total_score.toFixed(2)}/${max_score.toFixed(2)}). Top competency shown: ${topDelta.competency}. Watch: ${watchDelta?.competency ?? 'keep practising'}.`
+    : `Completed "${challengeTitle}": ${grade_label} (${total_score.toFixed(2)}/${max_score.toFixed(2)}).`
+
   await admin.from('luma_context').insert({
     user_id: userId,
     context_type: 'challenge_insight',
-    content: `Completed ${challengeId} with score ${total_score.toFixed(2)}/${max_score.toFixed(2)} (${grade_label})`,
+    content: contentStr,
     is_active: true,
     created_at: new Date().toISOString(),
   })
@@ -215,5 +236,5 @@ export async function POST(
     max_score: 1.0,
   }))
 
-  return NextResponse.json({ total_score, max_score, grade_label, xp_awarded: xp_earned, competency_deltas, step_breakdown })
+  return NextResponse.json({ total_score, max_score, grade_label, xp_awarded: xp_earned, competency_deltas: deltaEntries, step_breakdown })
 }
