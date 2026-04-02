@@ -1,44 +1,83 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import type { CalibrationResults } from '@/lib/types'
 
-// ── Types ────────────────────────────────────────────────────
-type CalibStep = 0 | 1 | 2 | 3 | 4
-
-const FLOW_MOVES = [
-  { key: 'frame', symbol: '◇', label: 'Frame', color: '#e8f5e9', textColor: '#2e7d32', desc: 'Define the real problem' },
-  { key: 'list',  symbol: '◈', label: 'List',  color: '#e3f2fd', textColor: '#1565c0', desc: 'Surface options & trade-offs' },
-  { key: 'optimize', symbol: '◆', label: 'Optimize', color: '#fce4ec', textColor: '#ad1457', desc: 'Sharpen the recommendation' },
-  { key: 'win',   symbol: '◎', label: 'Win',   color: '#fff8e1', textColor: '#f57f17', desc: 'Deliver the answer clearly' },
+// ─────────────────────────────────────────────
+// Question bank
+// Each question has 4 options scored A/B/C/D
+// where A = most advanced, D = least
+// ─────────────────────────────────────────────
+const QUESTIONS = [
+  // ── Frame move ──────────────────────────────
+  {
+    move: 'frame',
+    q: 'You\'re a PM at OpenAI. Leadership just told you Sora is being discontinued — effective in 60 days. What\'s your first move?',
+    luma: 'Frame move — I\'m watching how you define the problem before jumping to solutions.',
+    options: [
+      { id: 'A', text: 'Ask why it\'s being discontinued — cost, safety, low adoption, or strategic pivot? The framing changes everything' },
+      { id: 'B', text: 'Identify who the most affected users are and what they\'ll lose' },
+      { id: 'C', text: 'Look at usage data to understand whether this is a surprise or something the metrics already showed' },
+      { id: 'D', text: 'Draft a migration plan to move Sora users to alternative tools' },
+    ],
+  },
+  {
+    move: 'frame',
+    q: 'An exec says "Sora failed because the market wasn\'t ready for AI video." How do you respond?',
+    luma: 'Still on Frame — how you challenge (or accept) a narrative reveals your instincts.',
+    options: [
+      { id: 'A', text: '"That\'s a story, not a finding — what data are we looking at to separate market timing from product fit?"' },
+      { id: 'B', text: 'Ask whether competitors in AI video saw similar drop-off, or if this is OpenAI-specific' },
+      { id: 'C', text: 'Check whether Sora\'s retention curves differed by use case — creators vs. enterprise vs. hobbyists' },
+      { id: 'D', text: 'Agree to do user interviews before drawing conclusions' },
+    ],
+  },
+  // ── List move ───────────────────────────────
+  {
+    move: 'list',
+    q: 'Sora had strong trial signups but low repeat usage. Which user segment do you investigate first?',
+    luma: 'List move — I\'m watching how you slice a messy problem into distinct groups.',
+    options: [
+      { id: 'A', text: 'Users who generated more than 3 videos vs. those who only tried once — behaviour over demographics' },
+      { id: 'B', text: 'Professional creators vs. casual experimenters — different jobs to be done' },
+      { id: 'C', text: 'Users who came via API vs. the web UI — channel likely signals intent' },
+      { id: 'D', text: 'Users who churned in week 1 vs. week 4 — timing of drop-off reveals the friction point' },
+    ],
+  },
+  {
+    move: 'list',
+    q: 'You have one query to run before a 30-minute exec readout on why Sora failed. What do you pull?',
+    luma: 'Still on List — your first-choice metric tells me how you prioritise signal over noise.',
+    options: [
+      { id: 'A', text: 'Week-over-week active users split by use case (creative, research, enterprise) — shows where value was and wasn\'t landing' },
+      { id: 'B', text: 'Video generation completion rate — did users start and abandon, or not return after first success?' },
+      { id: 'C', text: 'Cohort retention at day 1, 7, and 30 — when exactly did users stop coming back?' },
+      { id: 'D', text: 'NPS from churned users — qualitative signal on the core disappointment' },
+    ],
+  },
 ]
 
-const STEP_LABELS = ['Intro', 'Frame', 'List', 'Grading', 'Results']
+const FLOW_MOVES = [
+  { key: 'frame',    symbol: '◇', label: 'Frame',    color: '#e8f5e9', textColor: '#2e7d32', desc: 'Define the real problem' },
+  { key: 'list',     symbol: '◈', label: 'List',     color: '#e3f2fd', textColor: '#1565c0', desc: 'Surface options & trade-offs' },
+  { key: 'optimize', symbol: '◆', label: 'Optimize', color: '#fce4ec', textColor: '#ad1457', desc: 'Sharpen the recommendation' },
+  { key: 'win',      symbol: '◎', label: 'Win',      color: '#fff8e1', textColor: '#f57f17', desc: 'Deliver the answer clearly' },
+]
 
-// ── Transition helper ────────────────────────────────────────
-function useStepTransition() {
-  const [step, setStep] = useState<CalibStep>(0)
-  const [exiting, setExiting] = useState(false)
-  const [direction, setDirection] = useState<'forward' | 'back'>('forward')
+// ─────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────
+// Screens: 0=intro, 1-4=questions, 5=grading, 6=results
+type Screen = 0 | 1 | 2 | 3 | 4 | 5 | 6
 
-  function advance(to: CalibStep, dir: 'forward' | 'back' = 'forward') {
-    setDirection(dir)
-    setExiting(true)
-    setTimeout(() => {
-      setStep(to)
-      setExiting(false)
-    }, 220)
-  }
-
-  return { step, exiting, direction, advance }
-}
-
-// ── Radar chart (reused from results/page.tsx pattern) ───────
-function RadarChart({ scores, radarVisible }: { scores: CalibrationResults['scores']; radarVisible: boolean }) {
+// ─────────────────────────────────────────────
+// Radar chart
+// ─────────────────────────────────────────────
+function RadarChart({ scores, visible }: { scores: CalibrationResults['scores']; visible: boolean }) {
   return (
-    <div className="relative w-56 h-56 flex items-center justify-center mx-auto">
+    <div className="relative w-52 h-52 flex items-center justify-center mx-auto">
       <svg className="w-full h-full -rotate-45" viewBox="0 0 200 200">
         <circle cx="100" cy="100" r="80" fill="none" stroke="#eae6de" strokeWidth="1" />
         <circle cx="100" cy="100" r="60" fill="none" stroke="#eae6de" strokeWidth="1" />
@@ -49,269 +88,236 @@ function RadarChart({ scores, radarVisible }: { scores: CalibrationResults['scor
         <polygon
           points={`100,${100 - scores.frame * 0.8} ${100 + scores.list * 0.8},100 100,${100 + scores.optimize * 0.8} ${100 - scores.win * 0.8},100`}
           fill="#4a7c59"
-          fillOpacity={radarVisible ? 0.4 : 0}
+          fillOpacity={visible ? 0.4 : 0}
           stroke="#4a7c59"
           strokeWidth="2"
           style={{
             transition: 'fill-opacity 800ms ease-out, transform 800ms ease-out',
             transformOrigin: '100px 100px',
-            transform: radarVisible ? 'scale(1)' : 'scale(0)',
+            transform: visible ? 'scale(1)' : 'scale(0)',
           }}
         />
       </svg>
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 text-center">
-        <span className="block text-[9px] font-bold text-on-surface-variant uppercase tracking-wider">Frame</span>
-        <span className="text-xs font-bold text-primary">{scores.frame}</span>
-      </div>
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 text-center">
-        <span className="block text-[9px] font-bold text-on-surface-variant uppercase tracking-wider">List</span>
-        <span className="text-xs font-bold text-primary">{scores.list}</span>
-      </div>
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 text-center">
-        <span className="block text-[9px] font-bold text-on-surface-variant uppercase tracking-wider">Opt.</span>
-        <span className="text-xs font-bold text-primary">{scores.optimize}</span>
-      </div>
-      <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 text-center">
-        <span className="block text-[9px] font-bold text-on-surface-variant uppercase tracking-wider">Win</span>
-        <span className="text-xs font-bold text-primary">{scores.win}</span>
-      </div>
+      {[
+        { label: 'Frame',    pos: 'top-0 left-1/2 -translate-x-1/2 -translate-y-1', val: scores.frame },
+        { label: 'List',     pos: 'right-0 top-1/2 -translate-y-1/2 translate-x-3', val: scores.list },
+        { label: 'Optimize', pos: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1', val: scores.optimize },
+        { label: 'Win',      pos: 'left-0 top-1/2 -translate-y-1/2 -translate-x-3', val: scores.win },
+      ].map(l => (
+        <div key={l.label} className={`absolute ${l.pos} text-center`}>
+          <span className="block text-[9px] font-bold text-on-surface-variant uppercase tracking-wider">{l.label}</span>
+          <span className="text-xs font-bold text-primary">{l.val}</span>
+        </div>
+      ))}
     </div>
   )
 }
 
-// ── Main page ────────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// Main page
+// ─────────────────────────────────────────────
 export default function CalibrationPage() {
   const router = useRouter()
-  const { step, exiting, direction, advance } = useStepTransition()
 
-  // Step 1 answers
-  const [assumptions, setAssumptions] = useState('')
-  const [reframe, setReframe] = useState('')
+  const [screen, setScreen] = useState<Screen>(0)
+  const [exiting, setExiting] = useState(false)
+  const [direction, setDirection] = useState<'forward' | 'back'>('forward')
 
-  // Step 2 answers
-  const [segmentation, setSegmentation] = useState('')
-
-  // Timer (step 1 + 2)
-  const [seconds, setSeconds] = useState(522)
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  // Answers: questionIndex → chosen option id
+  const [answers, setAnswers] = useState<Record<number, string>>({})
+  // Which option just got selected (for pulse animation)
+  const [justSelected, setJustSelected] = useState<string | null>(null)
 
   // Results
   const [results, setResults] = useState<CalibrationResults | null>(null)
   const [radarVisible, setRadarVisible] = useState(false)
   const [isCompleting, setIsCompleting] = useState(false)
 
-  // Road animation progress
-  const roadProgress = step / 4
-  const pathLength = 1200
-  const roadOffset = pathLength * (1 - roadProgress)
+  // Road progress based on screen (0–6)
+  const roadOffset = 1200 * (1 - screen / 6)
 
-  // Start timer when entering step 1
-  useEffect(() => {
-    if (step === 1) {
-      timerRef.current = setInterval(() => setSeconds(s => s > 0 ? s - 1 : 0), 1000)
-    } else if (step > 2) {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-    return () => { if (timerRef.current) clearInterval(timerRef.current) }
-  }, [step])
+  // ── Screen transitions ──────────────────────
+  function goTo(s: Screen, dir: 'forward' | 'back' = 'forward') {
+    setDirection(dir)
+    setExiting(true)
+    setTimeout(() => {
+      setScreen(s)
+      setExiting(false)
+      setJustSelected(null)
+    }, 200)
+  }
 
-  // Grading step: fetch results then auto-advance
+  // ── Grading: fetch results + auto-advance ───
   useEffect(() => {
-    if (step !== 3) return
-    let done = false
-    const minDelay = new Promise(r => setTimeout(r, 2500))
-    const fetchResults = fetch('/api/onboarding/results')
+    if (screen !== 5) return
+    let cancelled = false
+    const minWait = new Promise(r => setTimeout(r, 2800))
+    const fetch$ = fetch('/api/onboarding/results')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setResults(data) })
       .catch(() => {})
-
-    Promise.all([minDelay, fetchResults]).then(() => {
-      if (!done) advance(4)
+    Promise.all([minWait, fetch$]).then(() => {
+      if (!cancelled) goTo(6)
     })
-    return () => { done = true }
-  }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
+    return () => { cancelled = true }
+  }, [screen]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Animate radar on results step
+  // ── Radar reveal on results ─────────────────
   useEffect(() => {
-    if (step !== 4) return
-    const t = setTimeout(() => setRadarVisible(true), 400)
+    if (screen !== 6) return
+    const t = setTimeout(() => setRadarVisible(true), 500)
     return () => clearTimeout(t)
-  }, [step])
+  }, [screen])
 
-  const formatTime = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`
+  // ── Handle option tap ───────────────────────
+  function handleSelect(questionIdx: number, optionId: string) {
+    if (justSelected) return // debounce double-tap
+    setJustSelected(optionId)
+    setAnswers(prev => ({ ...prev, [questionIdx]: optionId }))
 
-  async function handleNext() {
-    if (step === 1) {
-      // Submit Frame answers (non-fatal)
-      fetch('/api/onboarding/calibration/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ move: 'frame', answers: { assumptions, reframe } }),
-      }).catch(() => {})
-      advance(2)
-    } else if (step === 2) {
-      // Submit List answers (non-fatal)
-      fetch('/api/onboarding/calibration/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ move: 'list', answers: { segmentation } }),
-      }).catch(() => {})
-      advance(3)
-    }
+    // Auto-advance after brief moment so the selection "lands"
+    setTimeout(() => {
+      const nextScreen = (screen + 1) as Screen
+      if (screen === 4) {
+        // Last question — submit both moves, go to grading
+        submitAnswers({ ...answers, [questionIdx]: optionId })
+        goTo(5)
+      } else {
+        goTo(nextScreen)
+      }
+    }, 420)
   }
 
-  async function handleComplete(destination: '/dashboard' | '/prep') {
+  function submitAnswers(finalAnswers: Record<number, string>) {
+    const frameAnswer = `Q1: ${finalAnswers[0] ?? '?'} | Q2: ${finalAnswers[1] ?? '?'}`
+    const listAnswer  = `Q3: ${finalAnswers[2] ?? '?'} | Q4: ${finalAnswers[3] ?? '?'}`
+    fetch('/api/onboarding/calibration/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        responses: { frame: frameAnswer, list: listAnswer },
+      }),
+    }).catch(() => {})
+  }
+
+  async function handleComplete(dest: '/dashboard' | '/prep') {
     setIsCompleting(true)
-    try {
-      await fetch('/api/onboarding/complete', { method: 'POST' })
-    } catch { /* non-fatal */ }
-    router.push(destination)
+    try { await fetch('/api/onboarding/complete', { method: 'POST' }) } catch { /* ok */ }
+    router.push(dest)
   }
 
-  const wordCount = segmentation.trim().split(/\s+/).filter(Boolean).length
-  const wordCountOk = wordCount >= 80 && wordCount <= 150
+  // ── Derived ─────────────────────────────────
+  const isQuestion = screen >= 1 && screen <= 4
+  const qIdx = screen - 1  // 0-based index into QUESTIONS
+  const currentQ = isQuestion ? QUESTIONS[qIdx] : null
 
-  // Fallback scores if API didn't return results
+  // Which FLOW move pills are done/active
+  // Frame = questions 1+2 (screens 1-2), List = questions 3+4 (screens 3-4)
+  const frameDone  = screen > 2
+  const frameActive = screen === 1 || screen === 2
+  const listDone   = screen > 4
+  const listActive  = screen === 3 || screen === 4
+
   const scores = results?.scores ?? { frame: 72, list: 58, optimize: 65, win: 44 }
   const archetype = results?.archetype ?? 'The Systematic Builder'
-  const archetypeDescription = results?.archetype_description ?? 'You construct solutions methodically with strong framing, but your narrative communication needs development.'
+  const archetypeDescription = results?.archetype_description ?? 'You construct solutions methodically with strong framing, but narrative communication is the area to develop.'
   const percentile = results?.percentile ?? 61
   const startingLevels = results?.starting_levels ?? { frame: 3, list: 2, optimize: 2, win: 1 }
 
-  // Content animation classes
   const contentClass = exiting
     ? direction === 'forward'
-      ? 'opacity-0 -translate-x-8 transition-all duration-200'
-      : 'opacity-0 translate-x-8 transition-all duration-200'
+      ? 'opacity-0 -translate-x-6 transition-all duration-200 pointer-events-none'
+      : 'opacity-0 translate-x-6 transition-all duration-200 pointer-events-none'
     : 'opacity-100 translate-x-0 transition-all duration-300'
-
-  const showTimer = step === 1 || step === 2
-  const showPills = step >= 1 && step <= 4
-  const showBack = step === 2
-  const showNext = step === 1 || step === 2
-  const nextDisabled = step === 2 && !wordCountOk
 
   return (
     <div className="min-h-screen flex flex-col bg-surface overflow-hidden">
 
-      {/* ── Road background SVG ── */}
-      <svg
-        className="fixed inset-0 w-full h-full pointer-events-none z-0"
-        viewBox="0 0 1200 800"
-        preserveAspectRatio="xMidYMid slice"
-        aria-hidden="true"
-      >
-        {/* Faint wide road */}
-        <path
-          d="M-100,200 C150,200 300,350 600,350 C900,350 1050,200 1300,180"
-          fill="none" stroke="#4a7c59" strokeWidth="80" strokeLinecap="round" opacity="0.035"
-        />
-        {/* Dashed centre line — animates forward */}
-        <path
-          d="M-100,200 C150,200 300,350 600,350 C900,350 1050,200 1300,180"
-          fill="none" stroke="#4a7c59" strokeWidth="2.5"
-          strokeDasharray="18 12" strokeLinecap="round" opacity="0.12"
-          style={{
-            strokeDashoffset: roadOffset,
-            transition: 'stroke-dashoffset 600ms cubic-bezier(0.4,0,0.2,1)',
-          }}
-        />
-        {/* Lower secondary road */}
-        <path
-          d="M-100,580 C200,580 400,480 700,480 C1000,480 1100,560 1300,540"
-          fill="none" stroke="#4a7c59" strokeWidth="50" strokeLinecap="round" opacity="0.025"
-        />
-        {/* Journey dots */}
+      {/* ── Road background ── */}
+      <svg className="fixed inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <path d="M-100,200 C150,200 300,350 600,350 C900,350 1050,200 1300,180" fill="none" stroke="#4a7c59" strokeWidth="80" strokeLinecap="round" opacity="0.03" />
+        <path d="M-100,200 C150,200 300,350 600,350 C900,350 1050,200 1300,180" fill="none" stroke="#4a7c59" strokeWidth="2.5" strokeDasharray="18 12" strokeLinecap="round" opacity="0.1"
+          style={{ strokeDashoffset: roadOffset, transition: 'stroke-dashoffset 600ms cubic-bezier(0.4,0,0.2,1)' }} />
+        <path d="M-100,580 C200,580 400,480 700,480 C1000,480 1100,560 1300,540" fill="none" stroke="#4a7c59" strokeWidth="50" strokeLinecap="round" opacity="0.02" />
         <circle cx="200" cy="210" r="6" fill="#4a7c59" opacity="0.07" />
-        <circle cx="450" cy="295" r="5" fill="#4a7c59" opacity="0.06" />
-        <circle cx="700" cy="355" r="7" fill="#4a7c59" opacity="0.07" />
+        <circle cx="600" cy="355" r="7" fill="#4a7c59" opacity="0.06" />
         <circle cx="950" cy="270" r="5" fill="#4a7c59" opacity="0.05" />
       </svg>
 
       {/* ── Top bar ── */}
       <header className="relative z-10 h-12 flex items-center justify-between px-6 bg-background/90 backdrop-blur-sm border-b border-outline-variant flex-shrink-0">
         <span className="font-headline font-bold text-primary text-base tracking-tight">HackProduct</span>
-        <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
-          {step === 0 ? 'Calibration' : `Step ${step} of 4`}
-        </span>
-        {showTimer ? (
-          <div className="flex items-center gap-1.5 text-primary font-mono font-bold text-sm">
-            <span className="material-symbols-outlined text-base">timer</span>
-            {formatTime(seconds)}
-          </div>
-        ) : (
-          <div className="w-20" />
+        {isQuestion && (
+          <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
+            {screen} of 4
+          </span>
         )}
+        <div className="w-20" />
       </header>
 
-      {/* ── Step pills (steps 1–4) ── */}
-      {showPills && (
-        <div className="relative z-10 flex items-center justify-center gap-3 px-6 py-2.5 bg-background/80 backdrop-blur-sm border-b border-outline-variant/50 flex-shrink-0">
-          {FLOW_MOVES.map((m, i) => {
-            const moveStep = i + 1
-            const isDone = step > moveStep
-            const isActive = step === moveStep
-            return (
-              <div key={m.key} className="flex items-center gap-2">
-                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-all duration-300 ${
-                  isDone ? 'bg-primary text-on-primary' :
-                  isActive ? 'bg-white text-primary border-2 border-primary shadow-sm' :
-                  'bg-surface-container-high text-on-surface-variant opacity-50'
-                }`}>
-                  {isDone
-                    ? <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                    : <span>{m.symbol}</span>
-                  }
-                  {m.label}
-                </div>
-                {i < FLOW_MOVES.length - 1 && (
-                  <div className={`w-5 h-0.5 rounded-full transition-all duration-500 ${isDone ? 'bg-primary' : 'bg-outline-variant'}`} />
-                )}
+      {/* ── Step pills (question screens + grading + results) ── */}
+      {screen >= 1 && screen <= 6 && (
+        <div className="relative z-10 flex items-center justify-center gap-3 px-6 py-2 bg-background/80 backdrop-blur-sm border-b border-outline-variant/40 flex-shrink-0">
+          {[
+            { symbol: '◇', label: 'Frame',    done: frameDone,  active: frameActive },
+            { symbol: '◈', label: 'List',     done: listDone,   active: listActive },
+            { symbol: '◆', label: 'Optimize', done: false,      active: false },
+            { symbol: '◎', label: 'Win',      done: false,      active: false },
+          ].map((m, i) => (
+            <div key={m.label} className="flex items-center gap-1.5">
+              <div className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all duration-300 ${
+                m.done   ? 'bg-primary text-on-primary' :
+                m.active ? 'bg-white text-primary border-2 border-primary shadow-sm' :
+                           'bg-surface-container-high text-on-surface-variant opacity-40'
+              }`}>
+                {m.done
+                  ? <span className="material-symbols-outlined text-[11px]" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
+                  : <span>{m.symbol}</span>
+                }
+                {m.label}
               </div>
-            )
-          })}
+              {i < 3 && (
+                <div className={`w-4 h-0.5 rounded-full transition-all duration-500 ${m.done ? 'bg-primary' : 'bg-outline-variant'}`} />
+              )}
+            </div>
+          ))}
         </div>
       )}
 
       {/* ── Main content ── */}
-      <main className="relative z-10 flex-1 overflow-y-auto pb-24">
-        <div className={`max-w-2xl mx-auto px-5 py-6 ${contentClass}`}>
+      <main className="relative z-10 flex-1 overflow-y-auto">
+        <div className={`max-w-xl mx-auto px-5 py-8 ${contentClass}`}>
 
-          {/* ── Step 0: Intro ── */}
-          {step === 0 && (
-            <div className="flex flex-col items-center text-center gap-6 pt-4">
+          {/* ── Screen 0: Intro ── */}
+          {screen === 0 && (
+            <div className="flex flex-col items-center text-center gap-6">
               <div className="animate-luma-glow">
-                <LumaGlyph size={96} state="celebrating" className="text-primary" />
+                <LumaGlyph size={88} state="celebrating" />
               </div>
               <div>
-                <h1 className="font-headline text-3xl font-bold text-on-surface mb-3 leading-tight">
+                <h1 className="font-headline text-3xl font-bold text-on-surface mb-2 leading-tight">
                   Let&apos;s find your baseline
                 </h1>
-                <p className="text-sm text-on-surface-variant max-w-sm mx-auto leading-relaxed">
-                  4 quick moves. ~10 minutes. No right answers — Luma reads how you think, not what you know.
+                <p className="text-sm text-on-surface-variant max-w-xs mx-auto leading-relaxed">
+                  4 quick questions. No typing — just pick the option that sounds most like you.
                 </p>
               </div>
 
-              {/* FLOW move cards */}
-              <div className="grid grid-cols-2 gap-3 w-full max-w-sm">
+              <div className="grid grid-cols-2 gap-2.5 w-full max-w-xs">
                 {FLOW_MOVES.map(m => (
-                  <div
-                    key={m.key}
-                    className="rounded-xl p-4 flex flex-col gap-1.5 text-left"
-                    style={{ background: m.color }}
-                  >
-                    <div className="text-xl font-bold" style={{ color: m.textColor }}>{m.symbol}</div>
-                    <div className="font-bold text-sm text-on-surface">{m.label}</div>
-                    <div className="text-[11px] text-on-surface-variant leading-snug">{m.desc}</div>
+                  <div key={m.key} className="rounded-xl p-3.5 flex flex-col gap-1 text-left" style={{ background: m.color }}>
+                    <span className="text-lg font-bold" style={{ color: m.textColor }}>{m.symbol}</span>
+                    <span className="font-bold text-sm text-on-surface">{m.label}</span>
+                    <span className="text-[11px] text-on-surface-variant leading-snug">{m.desc}</span>
                   </div>
                 ))}
               </div>
 
               <button
-                onClick={() => advance(1)}
+                onClick={() => goTo(1)}
                 className="inline-flex items-center gap-2 bg-primary text-on-primary rounded-full px-8 py-3 font-label font-bold text-sm shadow-lg shadow-primary/25 hover:brightness-110 active:scale-95 transition-all"
               >
-                Start calibration
+                Let&apos;s go
                 <span className="material-symbols-outlined text-base">arrow_forward</span>
               </button>
               <a href="/challenges" className="text-xs text-on-surface-variant hover:text-on-surface underline underline-offset-2 transition-colors">
@@ -320,172 +326,106 @@ export default function CalibrationPage() {
             </div>
           )}
 
-          {/* ── Step 1: Frame ── */}
-          {step === 1 && (
-            <div className="space-y-4 animate-fade-in-up">
-              {/* Luma tip */}
-              <div className="flex items-start gap-3 bg-primary-fixed rounded-xl p-4">
-                <LumaGlyph size={40} state="listening" className="text-primary flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-on-surface leading-relaxed">
-                  <span className="font-bold text-primary">Frame move: </span>
-                  I&apos;ll assess how you define the problem space. There are no right answers — I&apos;m looking at how you think, not what you know.
-                </p>
+          {/* ── Screens 1–4: Questions ── */}
+          {isQuestion && currentQ && (
+            <div className="space-y-5">
+              {/* Move badge + Luma tip */}
+              <div className="flex items-start gap-3 bg-primary-fixed rounded-2xl p-4">
+                <LumaGlyph size={36} state="listening" className="flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-on-surface leading-relaxed italic">&ldquo;{currentQ.luma}&rdquo;</p>
               </div>
 
-              {/* Challenge prompt */}
-              <div className="bg-surface-container rounded-xl p-5">
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">AI-Assisted</span>
-                  <span className="bg-primary-fixed text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Product Strategy</span>
-                  <span className="bg-tertiary-container/40 text-tertiary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">B2C</span>
-                </div>
-                <h2 className="font-headline text-xl font-bold text-on-surface mb-2 leading-tight">
-                  Spotify is seeing a 15% drop in podcast listening among 25–34 year olds
-                </h2>
-                <p className="text-sm text-on-surface-variant leading-relaxed">
-                  You&apos;re the PM. What&apos;s the real problem here — and how would you frame it for your team?
-                </p>
+              {/* Question */}
+              <h2 className="font-headline text-xl font-bold text-on-surface leading-snug px-1">
+                {currentQ.q}
+              </h2>
+
+              {/* Options */}
+              <div className="space-y-2.5">
+                {currentQ.options.map(opt => {
+                  const isSelected = justSelected === opt.id
+                  const otherSelected = justSelected && justSelected !== opt.id
+                  return (
+                    <button
+                      key={opt.id}
+                      onClick={() => handleSelect(qIdx, opt.id)}
+                      disabled={!!justSelected}
+                      className={`w-full text-left rounded-2xl px-5 py-4 flex items-start gap-3.5 transition-all duration-200 border-2 ${
+                        isSelected
+                          ? 'bg-primary border-primary text-on-primary shadow-lg shadow-primary/25 scale-[1.02]'
+                          : otherSelected
+                          ? 'bg-surface-container border-transparent text-on-surface opacity-35'
+                          : 'bg-surface-container border-transparent text-on-surface hover:border-primary/30 hover:bg-primary-fixed/60 active:scale-[0.99]'
+                      }`}
+                    >
+                      <span className={`mt-0.5 flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all ${
+                        isSelected
+                          ? 'bg-on-primary text-primary border-on-primary'
+                          : 'border-outline-variant text-on-surface-variant'
+                      }`}>
+                        {isSelected
+                          ? <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
+                          : opt.id
+                        }
+                      </span>
+                      <span className={`text-sm font-medium leading-relaxed ${isSelected ? 'font-semibold' : ''}`}>
+                        {opt.text}
+                      </span>
+                    </button>
+                  )
+                })}
               </div>
 
-              {/* Q1 */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-bold text-on-surface">
-                  <span className="w-5 h-5 rounded-full bg-primary-fixed text-primary text-[10px] font-bold flex items-center justify-center flex-shrink-0">1</span>
-                  What assumptions are baked into the way this problem was stated?
-                </label>
-                <div className="relative">
-                  <textarea
-                    value={assumptions}
-                    onChange={e => setAssumptions(e.target.value.slice(0, 500))}
-                    rows={5}
-                    placeholder="Think about what the data does and doesn't tell you…"
-                    className="w-full bg-surface-container-high border border-outline-variant/50 rounded-xl p-4 text-sm outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all placeholder:text-on-surface-variant/40 resize-none"
-                  />
-                  <span className="absolute bottom-2.5 right-3 text-[10px] font-bold text-on-surface-variant/50">{assumptions.length}/500</span>
-                </div>
-              </div>
-
-              {/* Q2 */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-bold text-on-surface">
-                  <span className="w-5 h-5 rounded-full bg-primary-fixed text-primary text-[10px] font-bold flex items-center justify-center flex-shrink-0">2</span>
-                  How would you reframe this problem to open up more solution space?
-                </label>
-                <div className="relative">
-                  <textarea
-                    value={reframe}
-                    onChange={e => setReframe(e.target.value.slice(0, 500))}
-                    rows={5}
-                    placeholder="A good reframe changes what solutions become possible…"
-                    className="w-full bg-surface-container-high border border-outline-variant/50 rounded-xl p-4 text-sm outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all placeholder:text-on-surface-variant/40 resize-none"
-                  />
-                  <span className="absolute bottom-2.5 right-3 text-[10px] font-bold text-on-surface-variant/50">{reframe.length}/500</span>
-                </div>
-              </div>
+              {/* Back link — subtle, only on screens 2+ */}
+              {screen > 1 && !justSelected && (
+                <button
+                  onClick={() => goTo((screen - 1) as Screen, 'back')}
+                  className="flex items-center gap-1 text-xs text-on-surface-variant hover:text-on-surface transition-colors mt-2 mx-auto"
+                >
+                  <span className="material-symbols-outlined text-sm">arrow_back</span>
+                  Back
+                </button>
+              )}
             </div>
           )}
 
-          {/* ── Step 2: List ── */}
-          {step === 2 && (
-            <div className="space-y-4 animate-fade-in-up">
-              {/* Luma tip */}
-              <div className="flex items-start gap-3 bg-primary-fixed rounded-xl p-4">
-                <LumaGlyph size={40} state="listening" className="text-primary flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-on-surface leading-relaxed">
-                  <span className="font-bold text-primary">List move: </span>
-                  I&apos;m looking at whether you can identify distinct, non-overlapping user segments — not just symptoms.
-                </p>
-              </div>
-
-              {/* Challenge prompt */}
-              <div className="bg-surface-container rounded-xl p-5">
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Traditional</span>
-                  <span className="bg-primary-fixed text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Product Strategy</span>
-                </div>
-                <h2 className="font-headline text-xl font-bold text-on-surface mb-2 leading-tight">
-                  The Feature That Backfired
-                </h2>
-                <p className="text-sm text-on-surface-variant leading-relaxed mb-3">
-                  Spotify shipped a social share button. Downloads went up 12%, but sessions per user dropped 18% and purchases fell 9%. You&apos;re the PM reviewing the post-launch data.
-                </p>
-                <div className="flex gap-2 flex-wrap">
-                  <span className="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-700">
-                    <span className="material-symbols-outlined text-sm">trending_down</span>
-                    New User Retention: −5%
-                  </span>
-                  <span className="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-green-50 text-green-700">
-                    <span className="material-symbols-outlined text-sm">trending_up</span>
-                    Viral K-Factor: +0.3
-                  </span>
-                </div>
-              </div>
-
-              {/* Segmentation textarea */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-bold text-on-surface">
-                  <span className="w-5 h-5 rounded-full bg-primary-fixed text-primary text-[10px] font-bold flex items-center justify-center flex-shrink-0">1</span>
-                  Segment the affected users into 3 distinct behavioral groups. What differentiates each one?
-                </label>
-                <div className="relative">
-                  <textarea
-                    value={segmentation}
-                    onChange={e => setSegmentation(e.target.value)}
-                    rows={8}
-                    placeholder="Describe each segment — who they are, how they interact with the feature, and what metric tells their story…"
-                    className="w-full bg-surface-container-high border border-outline-variant/50 rounded-xl p-4 text-sm outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all placeholder:text-on-surface-variant/40 resize-none"
-                  />
-                  <span className={`absolute bottom-2.5 right-3 text-[10px] font-bold transition-colors ${
-                    wordCount === 0 ? 'text-on-surface-variant/50' :
-                    wordCountOk ? 'text-primary' : wordCount < 80 ? 'text-tertiary' : 'text-error'
-                  }`}>
-                    {wordCount} / 80–150 words
-                  </span>
-                </div>
-                {wordCount > 0 && !wordCountOk && (
-                  <p className="text-[11px] text-tertiary font-medium pl-1">
-                    {wordCount < 80 ? `${80 - wordCount} more words to go` : `Trim to 150 words (${wordCount - 150} over)`}
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ── Step 3: Grading ── */}
-          {step === 3 && (
-            <div className="flex flex-col items-center justify-center text-center gap-6 pt-12 min-h-[360px]">
+          {/* ── Screen 5: Grading ── */}
+          {screen === 5 && (
+            <div className="flex flex-col items-center justify-center text-center gap-6 pt-16 min-h-[400px]">
               <div className="animate-luma-glow">
-                <LumaGlyph size={80} state="reviewing" className="text-primary" />
+                <LumaGlyph size={80} state="reviewing" />
               </div>
-              <div className="animate-fade-in">
-                <h2 className="font-headline text-2xl font-bold text-on-surface mb-2">
+              <div className="animate-fade-in space-y-2">
+                <h2 className="font-headline text-2xl font-bold text-on-surface">
                   Luma is reading your answers…
                 </h2>
                 <p className="text-sm text-on-surface-variant">Mapping your thinking across all 4 FLOW moves</p>
               </div>
-              <div className="dot-pulse flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-primary inline-block" />
-                <span className="w-2 h-2 rounded-full bg-primary inline-block" />
-                <span className="w-2 h-2 rounded-full bg-primary inline-block" />
+              <div className="dot-pulse flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block" />
+                <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block" />
+                <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block" />
               </div>
             </div>
           )}
 
-          {/* ── Step 4: Results ── */}
-          {step === 4 && (
-            <div className="space-y-5 animate-fade-in-up">
+          {/* ── Screen 6: Results ── */}
+          {screen === 6 && (
+            <div className="space-y-5 pb-8">
               {/* Header */}
-              <div className="flex flex-col items-center text-center gap-3 pt-2">
-                <LumaGlyph size={64} state="celebrating" className="text-primary animate-luma-glow" />
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className="animate-luma-glow">
+                  <LumaGlyph size={64} state="celebrating" />
+                </div>
                 <div>
                   <h1 className="font-headline text-2xl font-bold text-on-surface mb-1">Your baseline is set!</h1>
                   <p className="text-sm text-on-surface-variant">Here&apos;s where you stand across the 4 FLOW moves.</p>
                 </div>
               </div>
 
-              {/* Radar + percentile */}
+              {/* Radar */}
               <div className="bg-white rounded-2xl shadow-sm border border-outline-variant/30 p-5">
-                <RadarChart scores={scores} radarVisible={radarVisible} />
+                <RadarChart scores={scores} visible={radarVisible} />
                 <div className="mt-4 flex justify-center">
                   <span className="bg-secondary-container text-on-secondary-container text-xs font-bold px-3 py-1 rounded-full">
                     Better than {percentile}% of engineers at your stage
@@ -517,11 +457,8 @@ export default function CalibrationPage() {
                   const level = startingLevels[m.key as keyof typeof startingLevels] ?? 1
                   const isFocus = level < 2
                   return (
-                    <div
-                      key={m.key}
-                      className={`rounded-xl p-3 flex flex-col items-center gap-1.5 border ${isFocus ? 'border-tertiary-container/60' : 'border-outline-variant/40'} bg-white`}
-                    >
-                      <span className="text-lg">{m.symbol}</span>
+                    <div key={m.key} className={`rounded-xl p-3 flex flex-col items-center gap-1.5 border bg-white ${isFocus ? 'border-tertiary-container/60' : 'border-outline-variant/40'}`}>
+                      <span className="text-base">{m.symbol}</span>
                       <span className="text-[9px] font-bold text-on-surface-variant uppercase">{m.label}</span>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isFocus ? 'border border-tertiary text-tertiary' : 'bg-primary text-on-primary'}`}>
                         {isFocus ? 'Focus' : `Lvl ${level}`}
@@ -532,7 +469,7 @@ export default function CalibrationPage() {
               </div>
 
               {/* CTAs */}
-              <div className="space-y-3 pt-2">
+              <div className="space-y-3 pt-1">
                 <button
                   onClick={() => handleComplete('/dashboard')}
                   disabled={isCompleting}
@@ -554,36 +491,6 @@ export default function CalibrationPage() {
 
         </div>
       </main>
-
-      {/* ── Footer bar (steps 1–2) ── */}
-      {(showNext || showBack) && (
-        <footer className="relative z-10 fixed bottom-0 left-0 right-0 h-16 flex items-center justify-between px-8 bg-background/90 backdrop-blur-sm border-t border-outline-variant">
-          {showBack ? (
-            <button
-              onClick={() => advance((step - 1) as CalibStep, 'back')}
-              className="flex items-center gap-1.5 text-on-surface-variant font-label font-bold text-sm hover:text-on-surface transition-colors"
-            >
-              <span className="material-symbols-outlined text-base">arrow_back</span>
-              Back
-            </button>
-          ) : (
-            <div />
-          )}
-
-          <p className="hidden lg:block text-xs text-on-surface-variant italic">
-            &ldquo;Take your time. Luma sees your reasoning, not just keywords.&rdquo;
-          </p>
-
-          <button
-            onClick={handleNext}
-            disabled={nextDisabled}
-            className="inline-flex items-center gap-2 bg-primary text-on-primary rounded-full px-8 py-2.5 font-label font-bold text-sm shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {step === 1 ? 'Next: List' : 'Submit for grading'}
-            <span className="material-symbols-outlined text-base">arrow_forward</span>
-          </button>
-        </footer>
-      )}
     </div>
   )
 }
