@@ -28,7 +28,8 @@ interface PersonalisedPlan {
 }
 
 function PersonalisedPlanCard() {
-  const [plan, setPlan] = useState<PersonalisedPlan | null | undefined>(undefined) // undefined = loading
+  const [plan, setPlan] = useState<PersonalisedPlan | null | undefined>(undefined)
+  const [challengeTitles, setChallengeTitles] = useState<Record<string, string>>({})
   const [generating, setGenerating] = useState(false)
   const [rebuilding, setRebuilding] = useState(false)
 
@@ -38,6 +39,23 @@ function PersonalisedPlanCard() {
       .then(data => setPlan(data.plan ?? null))
       .catch(() => setPlan(null))
   }, [])
+
+  // Fetch challenge titles whenever the plan changes
+  useEffect(() => {
+    if (!plan) return
+    const allIds = plan.move_sequence.flatMap(w => w.challenge_ids)
+    if (!allIds.length) return
+    const params = new URLSearchParams()
+    allIds.forEach(id => params.append('ids', id))
+    fetch(`/api/challenges/by-ids?${params}`)
+      .then(r => r.json())
+      .then((data: { challenges: Array<{ id: string; title: string }> }) => {
+        const map: Record<string, string> = {}
+        for (const c of data.challenges ?? []) map[c.id] = c.title
+        setChallengeTitles(map)
+      })
+      .catch(() => {})
+  }, [plan])
 
   const handleGenerate = async () => {
     setGenerating(true)
@@ -69,23 +87,21 @@ function PersonalisedPlanCard() {
     }
   }
 
-  // Loading state
   if (plan === undefined) {
-    return <div className="h-32 bg-surface-container rounded-xl animate-pulse mb-6" />
+    return <div className="h-24 bg-surface-container rounded-xl animate-pulse mb-6" />
   }
 
-  // No plan — show CTA
   if (plan === null) {
     return (
-      <div className="bg-surface-container rounded-xl p-6 mb-6 border border-outline-variant flex items-center gap-4">
-        <LumaGlyph size={40} state={generating ? 'reviewing' : 'idle'} className="text-primary shrink-0" />
+      <div className="bg-surface-container rounded-xl p-5 mb-6 border border-outline-variant flex items-center gap-4">
+        <LumaGlyph size={36} state={generating ? 'reviewing' : 'idle'} className="text-primary shrink-0" />
         <div className="flex-1">
-          <p className="font-headline text-base text-on-surface font-semibold mb-1">Build your personalised study plan</p>
-          <p className="font-body text-sm text-on-surface-variant mb-3">Luma will create a custom 4-week plan based on your calibration results and current skill level.</p>
+          <p className="font-headline text-sm text-on-surface font-semibold mb-0.5">Build your personalised study plan</p>
+          <p className="font-body text-xs text-on-surface-variant mb-3">Luma will create a custom 4-week plan based on your calibration results and skill level.</p>
           <button
             onClick={handleGenerate}
             disabled={generating}
-            className="bg-primary text-on-primary rounded-full px-5 py-2 font-label text-sm font-semibold disabled:opacity-60"
+            className="bg-primary text-on-primary rounded-full px-4 py-1.5 font-label text-xs font-semibold disabled:opacity-60"
           >
             {generating ? 'Building...' : 'Build my plan'}
           </button>
@@ -94,41 +110,51 @@ function PersonalisedPlanCard() {
     )
   }
 
-  // Plan exists — show hero card
   return (
-    <div className="bg-primary-container rounded-xl p-6 mb-6 border border-outline-variant animate-luma-card">
+    <div className="bg-primary-container rounded-xl p-4 mb-6 border border-outline-variant animate-luma-card">
       {/* Header */}
-      <div className="flex items-start gap-3 mb-4">
-        <LumaGlyph size={40} state={rebuilding ? 'reviewing' : 'speaking'} className="text-primary shrink-0" />
-        <div className="flex-1">
-          <p className="font-label text-xs text-primary font-semibold uppercase tracking-wide mb-0.5">Your Plan — by Luma</p>
-          <h2 className="font-headline text-lg text-on-surface font-semibold">{plan.title}</h2>
-          <p className="font-body text-sm text-on-surface-variant mt-1">{plan.luma_rationale}</p>
+      <div className="flex items-center gap-2.5 mb-2">
+        <LumaGlyph size={26} state={rebuilding ? 'reviewing' : 'speaking'} className="text-primary shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="font-label text-[10px] text-primary font-semibold uppercase tracking-wide leading-none mb-0.5">Your Plan — by Luma</p>
+          <h2 className="font-headline text-sm text-on-surface font-semibold leading-snug truncate">{plan.title}</h2>
         </div>
+        <button
+          onClick={handleRebuild}
+          disabled={rebuilding}
+          className="font-label text-[10px] text-primary hover:underline shrink-0 disabled:opacity-60"
+        >
+          {rebuilding ? 'Rebuilding…' : 'Rebuild'}
+        </button>
       </div>
 
-      {/* Week breakdown */}
-      <div className="space-y-2 mb-4">
+      <p className="font-body text-[11px] text-on-surface-variant mb-3 leading-relaxed">{plan.luma_rationale}</p>
+
+      {/* Week breakdown with real challenge links */}
+      <div className="space-y-2">
         {plan.move_sequence?.map((week: { week: number; focus_move: string; theme: string; challenge_ids: string[] }) => (
-          <div key={week.week} className="bg-surface rounded-lg px-4 py-2.5 flex items-center justify-between">
-            <div>
-              <span className="font-label text-xs text-on-surface-variant">Week {week.week} — {week.theme}</span>
-              <p className="font-body text-sm text-on-surface">{week.challenge_ids.length} challenge{week.challenge_ids.length !== 1 ? 's' : ''} · {week.focus_move} move</p>
+          <div key={week.week}>
+            <p className="font-label text-[10px] text-primary font-semibold uppercase tracking-wide mb-1 px-1">
+              Week {week.week} · {week.theme} <span className="text-on-surface-variant normal-case font-normal">({week.focus_move})</span>
+            </p>
+            <div className="space-y-0.5">
+              {week.challenge_ids.map(cid => (
+                <Link
+                  key={cid}
+                  href={`/workspace/challenges/${cid}`}
+                  className="flex items-center gap-2 bg-surface/80 hover:bg-surface rounded-lg px-3 py-1.5 group transition-colors"
+                >
+                  <span className="material-symbols-outlined text-sm text-on-surface-variant group-hover:text-primary transition-colors">exercise</span>
+                  <span className="font-body text-xs text-on-surface flex-1 truncate group-hover:text-primary transition-colors">
+                    {challengeTitles[cid] ?? cid}
+                  </span>
+                  <span className="material-symbols-outlined text-xs text-on-surface-variant group-hover:text-primary transition-colors">arrow_forward</span>
+                </Link>
+              ))}
             </div>
-            <span className="material-symbols-outlined text-on-surface-variant text-xl">arrow_forward</span>
           </div>
         ))}
       </div>
-
-      {/* Rebuild button */}
-      <button
-        onClick={handleRebuild}
-        disabled={rebuilding}
-        className="font-label text-xs text-primary hover:underline flex items-center gap-1 disabled:opacity-60"
-      >
-        {rebuilding ? <LumaGlyph size={16} state="reviewing" className="text-primary" /> : null}
-        {rebuilding ? 'Rebuilding...' : 'Rebuild plan'}
-      </button>
     </div>
   )
 }
