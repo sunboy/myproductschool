@@ -83,6 +83,22 @@ export async function POST(
     attempt = attemptData as typeof mockAttempt
   }
 
+  // Mock mode: synthetic grade for mock question IDs (no DB lookup)
+  if (isMock && question_id.startsWith('mock-q-')) {
+    const mockScore = 2.5
+    const mockGradeLabel = 'Good'
+    return NextResponse.json({
+      score: mockScore,
+      quality_label: 'good_but_incomplete',
+      grade_label: mockGradeLabel,
+      explanation: 'Mock grading: selected option scored as good.',
+      competencies_demonstrated: ['strategic_thinking'],
+      step_complete: false,
+      step_score: mockScore,
+      revealed_options: [],
+    })
+  }
+
   // Load full rubric options for this question (all 4)
   const { data: optionsRaw, error: optionsError } = await adminClient
     .from('flow_options')

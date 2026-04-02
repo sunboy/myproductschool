@@ -295,9 +295,13 @@ async function journey4(): Promise<void> {
   await test('GET /api/challenges/growth-snapshot — returns snapshot', async () => {
     const { status, body } = await request('GET', '/api/challenges/growth-snapshot')
     assert(status === 200, `Expected 200, got ${status}`)
+    assertShape(body, ['first', 'latest'], 'growth snapshot response')
     const b = body as Record<string, unknown>
     if (b.first !== null && b.first !== undefined) {
       assertShape(b.first, ['excerpt', 'grade_label', 'total_score'], 'growth snapshot first')
+    }
+    if (b.latest !== null && b.latest !== undefined) {
+      assertShape(b.latest, ['excerpt', 'grade_label', 'total_score'], 'growth snapshot latest')
     }
   })
 }
