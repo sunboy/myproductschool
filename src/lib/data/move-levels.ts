@@ -1,4 +1,5 @@
 import { FlowMove, MoveLevel, MoveLevelHistory } from '@/lib/types'
+import { IS_MOCK } from '@/lib/mock'
 
 const XP_THRESHOLDS = [0, 100, 300, 600, 1000, 1500]
 
@@ -35,7 +36,7 @@ const MOCK_MOVE_LEVELS: MoveLevel[] = (['frame', 'list', 'optimize', 'win'] as F
 }))
 
 export async function getMoveLevels(userId: string): Promise<MoveLevel[]> {
-  if (process.env.USE_MOCK_DATA === 'true') return MOCK_MOVE_LEVELS
+  if (IS_MOCK) return MOCK_MOVE_LEVELS
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
@@ -47,7 +48,7 @@ export async function getMoveLevelDetail(
   userId: string,
   move: FlowMove
 ): Promise<{ level: MoveLevel | null; history: MoveLevelHistory[] }> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return { level: MOCK_MOVE_LEVELS.find(m => m.move === move) ?? null, history: [] }
   }
 
@@ -73,7 +74,7 @@ export async function updateMoveLevels(
   source: MoveLevelHistory['source'] = 'challenge',
   sourceId: string | null = null
 ): Promise<void> {
-  if (process.env.USE_MOCK_DATA === 'true') return
+  if (IS_MOCK) return
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()

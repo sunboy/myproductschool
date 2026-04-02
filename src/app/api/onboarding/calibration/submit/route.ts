@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 import type { FlowMove } from '@/lib/types'
 import type { OptionQuality } from '@/lib/types'
 import { QUESTIONS } from '@/lib/calibration/questions'
+import { IS_MOCK } from '@/lib/mock'
 
 interface CalibrationResponses {
   frame?: string
@@ -81,7 +82,7 @@ function scoreToLevel(score: number): number {
 }
 
 export async function POST(request: Request) {
-  if (process.env.NEXT_PUBLIC_MOCK_MODE === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json({ attempt_id: 'mock-calibration-1' })
   }
 

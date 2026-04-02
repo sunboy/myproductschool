@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { LUMA_CHAT_SYSTEM_PROMPT } from '@/lib/luma/system-prompt'
+import { IS_MOCK } from '@/lib/mock'
+import { createClient } from '@/lib/supabase/server'
+import { getLumaContext, buildLumaContextString } from '@/lib/luma-context'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -26,12 +29,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ reply: null })
   }
 
-  if (process.env.USE_MOCK_DATA === 'true' || !process.env.ANTHROPIC_API_KEY) {
+  if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
     const reply = MOCK_REPLIES[Math.floor(Math.random() * MOCK_REPLIES.length)]
     return NextResponse.json({ reply })
   }
 
   try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    const contextBlock = user ? buildLumaContextString(await getLumaContext(user.id), 'chat') : ''
+    const systemPrompt = contextBlock
+      ? LUMA_CHAT_SYSTEM_PROMPT + '\n\n## Learner Context\n' + contextBlock
+      : LUMA_CHAT_SYSTEM_PROMPT
+
     // Build message history
     const messages: Anthropic.MessageParam[] = []
 
@@ -59,7 +70,7 @@ export async function POST(req: NextRequest) {
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 300,
-      system: LUMA_CHAT_SYSTEM_PROMPT,
+      system: systemPrompt,
       messages,
     })
 

@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { IS_MOCK } from '@/lib/mock'
 
 // ── Pre-launch gate ──────────────────────────────────────────
 // Set to true to restrict all routes to the waitlist page.
@@ -17,7 +18,7 @@ export async function middleware(request: NextRequest) {
 
   // ── Post-launch: normal auth flow ──────────────────────
   // Bypass auth in mock/testing mode
-  if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return NextResponse.next()
   }
 

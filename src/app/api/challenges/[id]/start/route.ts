@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { USE_MOCK_DATA } from '@/lib/mock'
+import { IS_MOCK } from '@/lib/mock'
 import type { UserRoleV2 } from '@/lib/types'
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const isMock = USE_MOCK_DATA
+  const isMock = IS_MOCK
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -38,7 +38,7 @@ export async function POST(
 
   // Check for existing in-progress attempt — return it (resume)
   const { data: existing } = await adminClient
-    .from('challenge_attempts_v2')
+    .from('challenge_attempts')
     .select('id, challenge_id, role_id, current_step, current_question_sequence, status')
     .eq('user_id', userId)
     .eq('challenge_id', challenge_id)
@@ -71,7 +71,7 @@ export async function POST(
       .eq('status', 'active')
       .maybeSingle(),
     adminClient
-      .from('challenge_attempts_v2')
+      .from('challenge_attempts')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
       .gte('started_at', today),
@@ -87,7 +87,7 @@ export async function POST(
 
   // Create new attempt
   const { data: attempt, error } = await adminClient
-    .from('challenge_attempts_v2')
+    .from('challenge_attempts')
     .insert({
       user_id: userId,
       challenge_id,

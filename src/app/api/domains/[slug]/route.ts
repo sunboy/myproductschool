@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { IS_MOCK } from '@/lib/mock'
 
 export async function GET(
   _req: NextRequest,
@@ -8,7 +9,7 @@ export async function GET(
 ) {
   const { slug } = await params
 
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json({
       domain: { id: 'mock-d1', slug, title: 'Retention', description: 'Diagnosing drop-off', icon: 'trending_up', order_index: 1, is_published: true, created_at: new Date().toISOString() },
       challenges: [],

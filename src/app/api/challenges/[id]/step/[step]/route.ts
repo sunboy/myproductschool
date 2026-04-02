@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { USE_MOCK_DATA } from '@/lib/mock'
+import { IS_MOCK } from '@/lib/mock'
 import type { FlowStep } from '@/lib/types'
 import { resolveNudge } from '@/lib/v2/skills/nudge-resolver'
 
@@ -44,7 +44,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; step: string }> }
 ) {
-  const isMock = USE_MOCK_DATA
+  const isMock = IS_MOCK
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -179,7 +179,7 @@ export async function GET(
     attempt = { id: attempt_id, role_id: 'swe', user_id: userId }
   } else {
     const { data: attemptData, error: attemptError } = await adminClient
-      .from('challenge_attempts_v2')
+      .from('challenge_attempts')
       .select('id, role_id, user_id')
       .eq('id', attempt_id)
       .eq('user_id', userId)

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { IS_MOCK } from '@/lib/mock'
 
 export async function GET(request: Request) {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     const { MOCK_FLASHCARDS, MOCK_CONCEPTS } = await import('@/lib/mock-data')
     const { searchParams } = new URL(request.url)
     const domainSlug = searchParams.get('domainSlug')
@@ -77,7 +78,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
   }
 
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json({ success: true })
   }
 

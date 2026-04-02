@@ -7,6 +7,7 @@ import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { LumaFeedbackItem } from '@/lib/types'
+import { IS_MOCK } from '@/lib/mock'
 
 const dimensionConfig: Record<string, { label: string; icon: string }> = {
   diagnostic_accuracy: { label: 'Diagnostic Accuracy', icon: 'manage_search' },
@@ -31,7 +32,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
   const challenge = await getChallengeById(id)
   if (!challenge) notFound()
 
-  const isMock = process.env.USE_MOCK_DATA === 'true' || attempt === 'mock' || !attempt
+  const isMock = IS_MOCK || attempt === 'mock' || !attempt
 
   let feedback: LumaFeedbackItem[] = isMock ? MOCK_FEEDBACK : []
   let feedbackFull: typeof MOCK_FEEDBACK_FULL | undefined = isMock ? MOCK_FEEDBACK_FULL : undefined
@@ -349,22 +350,6 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             <div>
               <p className="font-label font-semibold text-on-tertiary-fixed-variant mb-1">Key Insight</p>
               <p className="text-sm text-on-tertiary-fixed-variant">{full.key_insight}</p>
-            </div>
-          </div>
-
-          {/* Related concepts to review */}
-          <div className="space-y-2">
-            <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider font-label">Related concepts to review</p>
-            <div className="flex flex-wrap gap-2">
-              <Link href="/explore" className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 text-xs font-label font-semibold hover:opacity-80 transition-opacity">
-                Metric Fluency
-              </Link>
-              <Link href="/explore" className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 text-xs font-label font-semibold hover:opacity-80 transition-opacity">
-                Root Cause Analysis
-              </Link>
-              <Link href="/explore" className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 text-xs font-label font-semibold hover:opacity-80 transition-opacity">
-                Problem Framing
-              </Link>
             </div>
           </div>
 

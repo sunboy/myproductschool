@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { USE_MOCK_DATA } from '@/lib/mock'
+import { IS_MOCK } from '@/lib/mock'
 import type { FlowOption, FlowStep, ResponseType } from '@/lib/types'
 import { routeResponse, gradePureMCQ } from '@/lib/v2/skills/grading-router'
 import { scoreOption } from '@/lib/v2/skills/option-scorer'
@@ -52,7 +52,7 @@ export async function POST(
   }
 
   // Auth
-  const isMock = USE_MOCK_DATA
+  const isMock = IS_MOCK
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user && !isMock) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -68,7 +68,7 @@ export async function POST(
     attempt = mockAttempt
   } else {
     const { data: attemptData, error: attemptError } = await adminClient
-      .from('challenge_attempts_v2')
+      .from('challenge_attempts')
       .select('id, user_id, status, current_step, current_question_sequence')
       .eq('id', attempt_id)
       .eq('user_id', userId)
@@ -81,6 +81,22 @@ export async function POST(
       return NextResponse.json({ error: 'Attempt is not in progress' }, { status: 400 })
     }
     attempt = attemptData as typeof mockAttempt
+  }
+
+  // Mock mode: synthetic grade for mock question IDs (no DB lookup)
+  if (isMock && question_id.startsWith('mock-q-')) {
+    const mockScore = 2.5
+    const mockGradeLabel = 'Good'
+    return NextResponse.json({
+      score: mockScore,
+      quality_label: 'good_but_incomplete',
+      grade_label: mockGradeLabel,
+      explanation: 'Mock grading: selected option scored as good.',
+      competencies_demonstrated: ['strategic_thinking'],
+      step_complete: false,
+      step_score: mockScore,
+      revealed_options: [],
+    })
   }
 
   // Load full rubric options for this question (all 4)
@@ -212,7 +228,7 @@ export async function POST(
 
   if (!isMock) {
     await adminClient
-      .from('challenge_attempts_v2')
+      .from('challenge_attempts')
       .update({ current_question_sequence: (attempt.current_question_sequence ?? 0) + 1 })
       .eq('id', attempt_id)
   }
@@ -291,7 +307,7 @@ export async function POST(
     // Advance to next step
     const next = nextStep(step)
     await adminClient
-      .from('challenge_attempts_v2')
+      .from('challenge_attempts')
       .update({
         current_step: next,
         ...(next === 'done' ? { status: 'completed', completed_at: new Date().toISOString() } : {}),

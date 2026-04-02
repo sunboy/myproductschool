@@ -1,4 +1,5 @@
 import {
+  IS_MOCK,
   MOCK_HOT_CHALLENGES,
   MOCK_DISCUSSIONS,
   MOCK_MOVE_LEVELS,
@@ -29,7 +30,7 @@ export interface UserInterview {
 // ── Dashboard preferences ────────────────────────────────────
 
 export async function getDashboardPreferences(userId: string): Promise<DashboardPreferences> {
-  if (process.env.USE_MOCK_DATA === 'true') return MOCK_DASHBOARD_PREFERENCES
+  if (IS_MOCK) return MOCK_DASHBOARD_PREFERENCES
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
@@ -50,7 +51,7 @@ export async function getDashboardPreferences(userId: string): Promise<Dashboard
 // ── Hot challenges ───────────────────────────────────────────
 
 export async function getHotChallenges(): Promise<HotChallenge[]> {
-  if (process.env.USE_MOCK_DATA === 'true') return MOCK_HOT_CHALLENGES
+  if (IS_MOCK) return MOCK_HOT_CHALLENGES
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
@@ -75,7 +76,7 @@ export async function getHotChallenges(): Promise<HotChallenge[]> {
 // ── Latest discussions ───────────────────────────────────────
 
 export async function getLatestDiscussions(): Promise<DiscussionPreview[]> {
-  if (process.env.USE_MOCK_DATA === 'true') return MOCK_DISCUSSIONS
+  if (IS_MOCK) return MOCK_DISCUSSIONS
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
@@ -99,7 +100,7 @@ export async function getLatestDiscussions(): Promise<DiscussionPreview[]> {
 // ── Leaderboard peek ─────────────────────────────────────────
 
 export async function getLeaderboardPeek(userId: string): Promise<LeaderboardEntry[]> {
-  if (process.env.USE_MOCK_DATA === 'true') return MOCK_LEADERBOARD
+  if (IS_MOCK) return MOCK_LEADERBOARD
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
@@ -148,7 +149,7 @@ export async function getLeaderboardPeek(userId: string): Promise<LeaderboardEnt
 // ── User notes ───────────────────────────────────────────────
 
 export async function getUserNotes(userId: string): Promise<UserNote[]> {
-  if (process.env.USE_MOCK_DATA === 'true') return MOCK_USER_NOTES
+  if (IS_MOCK) return MOCK_USER_NOTES
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()

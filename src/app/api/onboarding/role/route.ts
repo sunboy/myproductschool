@@ -2,11 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import type { UserRoleV2 } from '@/lib/types'
+import { IS_MOCK } from '@/lib/mock'
 
 const VALID_ROLES: UserRoleV2[] = ['swe', 'data_eng', 'ml_eng', 'devops', 'em', 'founding_eng', 'tech_lead', 'pm', 'designer', 'data_scientist']
 
 export async function POST(request: Request) {
-  if (process.env.NEXT_PUBLIC_MOCK_MODE === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json({ success: true })
   }
 

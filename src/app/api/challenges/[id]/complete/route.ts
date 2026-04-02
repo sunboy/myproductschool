@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { USE_MOCK_DATA } from '@/lib/mock'
+import { IS_MOCK } from '@/lib/mock'
 import { calculateStepScore } from '@/lib/v2/skills/step-score-calculator'
 import { aggregateChallenge } from '@/lib/v2/skills/score-aggregator'
 import { updateCompetencies } from '@/lib/v2/skills/competency-updater'
@@ -12,7 +12,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const isMock = USE_MOCK_DATA
+  const isMock = IS_MOCK
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -50,7 +50,7 @@ export async function POST(
 
   // Fetch the attempt to verify ownership and get role_id
   const { data: attempt, error: attemptError } = await admin
-    .from('challenge_attempts_v2')
+    .from('challenge_attempts')
     .select('id, role_id, user_id, status')
     .eq('id', attempt_id)
     .eq('user_id', userId)
@@ -188,9 +188,9 @@ export async function POST(
   // Fire-and-forget streak RPC — do NOT await
   admin.rpc('update_user_streak', { p_user_id: userId }).then(() => {}, () => {})
 
-  // Update challenge_attempts_v2
+  // Update challenge_attempts
   await admin
-    .from('challenge_attempts_v2')
+    .from('challenge_attempts')
     .update({
       status: 'completed',
       total_score,
@@ -200,8 +200,8 @@ export async function POST(
     })
     .eq('id', attempt_id)
 
-  // Insert luma_context_v2 row
-  await admin.from('luma_context_v2').insert({
+  // Insert luma_context row
+  await admin.from('luma_context').insert({
     user_id: userId,
     context_type: 'challenge_insight',
     content: `Completed ${challengeId} with score ${total_score.toFixed(2)}/${max_score.toFixed(2)} (${grade_label})`,

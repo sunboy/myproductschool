@@ -29,7 +29,7 @@ export function V2ChallengesSection() {
     if (selectedParadigm) params.set('paradigm', selectedParadigm)
     if (selectedDifficulty) params.set('difficulty', selectedDifficulty)
     setLoading(true)
-    fetch(`/api/v2/challenges?${params.toString()}`)
+    fetch(`/api/challenges?${params.toString()}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data?.challenges) setChallenges(data.challenges)

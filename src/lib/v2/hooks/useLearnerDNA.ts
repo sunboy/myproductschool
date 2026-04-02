@@ -31,7 +31,7 @@ export function useLearnerDNA(): UseLearnerDNAReturn {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/v2/dna')
+      const res = await fetch('/api/dna')
       if (!res.ok) throw new Error(`Failed to load DNA: ${res.status}`)
       const data = await res.json()
       setDNA(data)

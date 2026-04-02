@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import {
   getHotChallenges,
   getLeaderboardPeek,
@@ -102,15 +103,79 @@ export default async function DashboardPage() {
     userId ? getMoveLevel(userId) : [],
   ])
 
-  // Fetch two distinct challenges: one for Quick Take, one for Next Challenge
-  const { data: challengeRows } = await supabase
-    .from('challenge_prompts')
-    .select('id, title, estimated_minutes, domain_id')
-    .eq('is_published', true)
-    .limit(2)
+  // Fetch personalized Quick Take and Next Challenge via admin client
+  // (mirrors the logic in /api/challenges/quick-take and /api/challenges/next)
+  const adminClient = createAdminClient()
 
-  const quickTakeChallenge = challengeRows?.[0] ?? null
-  const nextChallenge = challengeRows?.[1] ?? challengeRows?.[0] ?? null
+  // Quick Take: use quick_take_prompts (not the legacy challenge_prompts table)
+  const today = new Date().toISOString().split('T')[0]
+  const { data: todayQuickTake } = await adminClient
+    .from('quick_take_prompts')
+    .select('id, prompt_text, move')
+    .gte('created_at', today)
+    .eq('is_published', true)
+    .limit(1)
+    .maybeSingle()
+
+  let quickTakePrompt = todayQuickTake
+
+  if (!quickTakePrompt) {
+    // Fall back to any published quick take
+    const { data: anyQuickTake } = await adminClient
+      .from('quick_take_prompts')
+      .select('id, prompt_text, move')
+      .eq('is_published', true)
+      .limit(1)
+      .maybeSingle()
+    quickTakePrompt = anyQuickTake ?? null
+  }
+
+  // Next Challenge: use /api/challenges/next logic — weakest move targeting
+  // Get user's weakest move, completed challenge IDs, and pick a personalized challenge
+  let nextChallenge: { id: string; title: string; difficulty: string; domain_id?: string | null } | null = null
+
+  if (userId) {
+    const [{ data: moveLevelsForNext }, { data: completedAttempts }] = await Promise.all([
+      adminClient
+        .from('move_levels')
+        .select('move, xp')
+        .eq('user_id', userId)
+        .order('xp', { ascending: true })
+        .limit(1),
+      adminClient
+        .from('challenge_attempts')
+        .select('challenge_id')
+        .eq('user_id', userId)
+        .eq('status', 'completed'),
+    ])
+
+    const weakestMove = (moveLevelsForNext?.[0]?.move as string) ?? 'frame'
+    const completedIds = (completedAttempts ?? []).map((a: { challenge_id: string }) => a.challenge_id)
+
+    let nextQuery = adminClient
+      .from('challenge_prompts')
+      .select('id, title, difficulty, domain_id')
+      .eq('is_published', true)
+      .contains('move_tags', [weakestMove])
+
+    if (completedIds.length > 0) {
+      nextQuery = nextQuery.not('id', 'in', `(${completedIds.join(',')})`)
+    }
+
+    const { data: personalizedNext } = await nextQuery.limit(1).maybeSingle()
+    nextChallenge = personalizedNext ?? null
+  }
+
+  if (!nextChallenge) {
+    // Final fallback: any published challenge
+    const { data: fallbackChallenge } = await adminClient
+      .from('challenge_prompts')
+      .select('id, title, difficulty, domain_id')
+      .eq('is_published', true)
+      .limit(1)
+      .maybeSingle()
+    nextChallenge = fallbackChallenge ?? null
+  }
 
   const coachingMessage = streakDays > 0
     ? `You're on a ${streakDays}-day streak — keep the momentum going.`
@@ -157,14 +222,14 @@ export default async function DashboardPage() {
           {/* Hero row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <QuickTakeCard
-              prompt={quickTakeChallenge?.title ?? 'The Marketplace Retention Loop'}
-              challengeId={quickTakeChallenge?.id ?? 'orientation'}
+              prompt={quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
+              challengeId={quickTakePrompt?.id ?? 'orientation'}
               lumaContext={null}
             />
             <NextChallengeCard
               title={nextChallenge?.title ?? 'Designing a Metric Dashboard for a B2B SaaS Tool'}
               domain="Product Strategy"
-              difficulty="Medium"
+              difficulty={nextChallenge?.difficulty ?? 'Medium'}
               challengeId={nextChallenge?.id ?? 'orientation'}
               lumaInsight={null}
             />

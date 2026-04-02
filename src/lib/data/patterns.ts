@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import type { PatternSummary, UserFailurePattern } from '@/lib/types'
+import { IS_MOCK } from '@/lib/mock'
 
 export async function getUserPatternSummary(userId: string): Promise<PatternSummary[]> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return [
       { user_id: userId, pattern_id: 'FP-09', pattern_name: 'Unprioritized Investigation', occurrence_count: 4, last_seen: new Date().toISOString(), avg_confidence: 0.85 },
       { user_id: userId, pattern_id: 'FP-04', pattern_name: 'Metric Recitation', occurrence_count: 2, last_seen: new Date().toISOString(), avg_confidence: 0.75 },
@@ -24,7 +25,7 @@ export async function getUserPatternSummary(userId: string): Promise<PatternSumm
 }
 
 export async function getPatternsByAttempt(attemptId: string): Promise<UserFailurePattern[]> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return [
       {
         id: 'mock-pattern-1',

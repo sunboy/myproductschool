@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { FlowMove, MoveLevel, MoveLevelHistory } from '@/lib/types'
+import { IS_MOCK } from '@/lib/mock'
 
 const VALID_MOVES: FlowMove[] = ['frame', 'list', 'optimize', 'win']
 
@@ -17,7 +18,7 @@ export async function GET(
     return NextResponse.json({ error: 'Invalid move. Must be one of: frame, list, optimize, win' }, { status: 400 })
   }
 
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json({
       move: move as FlowMove,
       level: 2,

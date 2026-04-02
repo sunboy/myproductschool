@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { IS_MOCK } from '@/lib/mock'
 
 export async function POST(req: NextRequest) {
   const { companyId } = await req.json()
 
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json({ sessionId: 'mock-session-001' })
   }
 

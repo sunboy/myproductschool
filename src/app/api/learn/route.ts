@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import type { LearnModule } from '@/lib/types'
 import { LEARN_MODULES_SEED } from '@/lib/learn-seed'
+import { IS_MOCK } from '@/lib/mock'
 
 const MOCK_MODULES: LearnModule[] = LEARN_MODULES_SEED.map((m, i) => ({
   ...m,
@@ -11,7 +12,7 @@ const MOCK_MODULES: LearnModule[] = LEARN_MODULES_SEED.map((m, i) => ({
 }))
 
 export async function GET() {
-  if (process.env.NEXT_PUBLIC_MOCK_MODE === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json({ modules: MOCK_MODULES })
   }
 

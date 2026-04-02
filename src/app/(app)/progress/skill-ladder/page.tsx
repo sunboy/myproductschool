@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
-import type { CareerBenchmark } from '@/lib/types'
+import type { CareerBenchmark, FlowMove } from '@/lib/types'
 
 function buildLinkedInUrl(moveName: string, level: number): string {
   const now = new Date()
@@ -14,33 +14,52 @@ function buildLinkedInUrl(moveName: string, level: number): string {
   return `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${certName}&issueYear=${now.getFullYear()}&issueMonth=${now.getMonth() + 1}&certUrl=${certUrl}`
 }
 
-/* ---------- mock data ---------- */
-const relatedSkills = [
-  { name: 'Logic', level: 3 },
-  { name: 'Metrics', level: 4 },
-  { name: 'Design', level: 1 },
-  { name: 'Strategy', level: 2 },
-]
+interface DnaRecommendation {
+  challenge_id: string | null
+  title: string | null
+  reason: string | null
+}
 
-export default function SkillLadderPage() {
+function SkillLadderContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { moves } = useMoveLevels()
   const [benchmark, setBenchmark] = useState<CareerBenchmark | null>(null)
+  const [recommendation, setRecommendation] = useState<DnaRecommendation | null>(null)
 
   useEffect(() => {
     fetch('/api/career-benchmark')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setBenchmark(data) })
       .catch(() => {})
+    fetch('/api/dna/recommend')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setRecommendation(data) })
+      .catch(() => {})
   }, [])
 
-  // Use first move from API as the focus move (defaulting to frame)
-  const focusMove = moves[0]
-  const moveLabel = focusMove
-    ? focusMove.move.charAt(0).toUpperCase() + focusMove.move.slice(1)
-    : 'Frame'
+  // Determine selected move: URL param takes precedence, then weakest move
+  const moveParam = searchParams.get('move') as FlowMove | null
+  const weakestMove: FlowMove = moves.length > 0
+    ? moves.reduce((a, b) => a.progress_pct < b.progress_pct ? a : b).move
+    : 'frame'
+  const selectedMove: FlowMove = moveParam ?? weakestMove
+
+  // Move-aware rung labels
+  const MOVE_LEVEL_NAMES: Record<string, string[]> = {
+    frame:    ['Frame Finder',    'Frame Builder',    'Frame Strategist',    'Frame Expert',    'Frame Master'],
+    list:     ['List Finder',     'List Builder',     'List Strategist',     'List Expert',     'List Master'],
+    optimize: ['Optimize Finder', 'Optimize Builder', 'Optimize Strategist', 'Optimize Expert', 'Optimize Master'],
+    win:      ['Win Finder',      'Win Builder',      'Win Strategist',      'Win Expert',      'Win Master'],
+  }
+  const moveLevelNames = MOVE_LEVEL_NAMES[selectedMove] ?? MOVE_LEVEL_NAMES.frame
+
+  // Data for the selected move
+  const focusMove = moves.find(m => m.move === selectedMove) ?? moves[0]
+  const moveLabel = selectedMove.charAt(0).toUpperCase() + selectedMove.slice(1)
   const moveLevel = focusMove?.level ?? 2
-  const moveProgress = focusMove?.progress_pct ?? 62
+  const moveProgress = focusMove?.progress_pct ?? 0
+  const moveXp = focusMove?.xp ?? 0
   const userLevel = benchmark?.user_level ?? 'PM-2'
 
   return (
@@ -52,7 +71,7 @@ export default function SkillLadderPage() {
         <span className="material-symbols-outlined text-[10px]">chevron_right</span>
         <span>Skill Ladder</span>
         <span className="material-symbols-outlined text-[10px]">chevron_right</span>
-        <span className="text-primary font-bold flex items-center gap-1">List Move <span className="material-symbols-outlined text-[12px]">view_in_ar</span></span>
+        <span className="text-primary font-bold flex items-center gap-1">{moveLabel} Move <span className="material-symbols-outlined text-[12px]">view_in_ar</span></span>
       </nav>
 
       {/* ── Header Section ── */}
@@ -63,9 +82,9 @@ export default function SkillLadderPage() {
           </div>
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl font-headline font-bold text-primary">List Move</h1>
-              <span className="bg-primary-fixed text-primary px-3 py-0.5 rounded-full text-xs font-bold border border-primary/20">Level 2 — List Builder</span>
-              <span className="bg-tertiary text-white px-2 py-0.5 rounded-full text-[10px] font-bold border border-tertiary/20">FLOW Move: List</span>
+              <h1 className="text-2xl font-headline font-bold text-primary">{moveLabel} Move</h1>
+              <span className="bg-primary-fixed text-primary px-3 py-0.5 rounded-full text-xs font-bold border border-primary/20">Level {moveLevel}</span>
+              <span className="bg-tertiary text-white px-2 py-0.5 rounded-full text-[10px] font-bold border border-tertiary/20">FLOW Move: {moveLabel}</span>
             </div>
             <p className="text-on-surface-variant text-sm mt-1">Find the right angle to see through a problem</p>
           </div>
@@ -103,9 +122,9 @@ export default function SkillLadderPage() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-bold">Level 1 — List Finder · Beginner</h3>
+                  <h3 className="font-bold">Level 1 — {moveLevelNames[0]} · Beginner</h3>
                   <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold">🥉 Earned Jan 2026</span>
-                  <span className="bg-white/10 px-2 py-0.5 rounded-full text-[10px] font-bold border border-white/20">FLOW: List</span>
+                  <span className="bg-white/10 px-2 py-0.5 rounded-full text-[10px] font-bold border border-white/20">{`FLOW: ${moveLabel}`}</span>
                 </div>
                 <p className="text-xs text-white/80 mt-0.5">Typical: APM / Junior PM</p>
               </div>
@@ -124,41 +143,57 @@ export default function SkillLadderPage() {
               </div>
               <div className="flex justify-between items-start mb-4 flex-wrap gap-2">
                 <div>
-                  <h3 className="font-bold text-primary text-lg">Level 2 — List Builder · Developing</h3>
+                  <h3 className="font-bold text-primary text-lg">Level 2 — {moveLevelNames[1]} · Developing</h3>
                   <p className="text-xs text-on-surface-variant font-medium">Focus: Multi-stakeholder alignment &amp; edge-case discovery</p>
                 </div>
                 <div className="flex gap-2">
-                  <span className="bg-tertiary text-white px-2 py-0.5 rounded-full text-[10px] font-bold">FLOW: List</span>
+                  <span className="bg-tertiary text-white px-2 py-0.5 rounded-full text-[10px] font-bold">{`FLOW: ${moveLabel}`}</span>
                   <span className="bg-tertiary-container text-tertiary px-3 py-1 rounded-full text-xs font-bold border border-tertiary/20">6 challenges remaining</span>
                 </div>
               </div>
               <div className="mb-6">
                 <div className="flex justify-between text-xs font-bold mb-1.5 text-on-surface">
-                  <span>Progress to Level 3</span>
-                  <span>1,240 / 2,000 XP (62%)</span>
+                  <span>Progress to Level {moveLevel + 1}</span>
+                  <span>{moveXp.toLocaleString()} XP · {moveProgress}%</span>
                 </div>
                 <div className="w-full bg-white/50 rounded-full h-3 p-0.5 border border-primary/20">
-                  <div className="bg-primary h-full rounded-full transition-all duration-1000" style={{ width: '62%' }} />
+                  <div className="bg-primary h-full rounded-full transition-all duration-1000" style={{ width: `${moveProgress}%` }} />
                 </div>
               </div>
               {/* Recommended Challenge Card */}
               <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 border border-primary/10">
                 <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-2">Luma&apos;s Pick for you</p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-surface-container rounded-lg flex items-center justify-center text-primary">
-                      <span className="material-symbols-outlined">analytics</span>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-on-surface">DAU/MAU ratio declining</h4>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] flex items-center gap-0.5 bg-surface-container-low px-1.5 py-0.5 rounded border border-outline-variant">List <span className="material-symbols-outlined text-[10px]">view_in_ar</span></span>
-                        <span className="text-[10px] text-error font-bold uppercase">Hard</span>
+                {recommendation && recommendation.challenge_id ? (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-surface-container rounded-lg flex items-center justify-center text-primary">
+                        <span className="material-symbols-outlined">analytics</span>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-on-surface">{recommendation.title}</h4>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] flex items-center gap-0.5 bg-surface-container-low px-1.5 py-0.5 rounded border border-outline-variant">{moveLabel} <span className="material-symbols-outlined text-[10px]">view_in_ar</span></span>
+                        </div>
                       </div>
                     </div>
+                    <Link href={`/challenges/${recommendation.challenge_id}`} className="bg-primary text-white px-5 py-2 rounded-full text-sm font-bold hover:shadow-md transition-all active:scale-95">Start →</Link>
                   </div>
-                  <Link href="/challenges" className="bg-primary text-white px-5 py-2 rounded-full text-sm font-bold hover:shadow-md transition-all active:scale-95">Start →</Link>
-                </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-surface-container rounded-lg flex items-center justify-center text-primary">
+                        <span className="material-symbols-outlined">fitness_center</span>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-on-surface">Practice your weakest move</h4>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] flex items-center gap-0.5 bg-surface-container-low px-1.5 py-0.5 rounded border border-outline-variant">{moveLabel} <span className="material-symbols-outlined text-[10px]">view_in_ar</span></span>
+                        </div>
+                      </div>
+                    </div>
+                    <Link href={`/challenges?move=${selectedMove}`} className="bg-primary text-white px-5 py-2 rounded-full text-sm font-bold hover:shadow-md transition-all active:scale-95">Browse →</Link>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -169,7 +204,7 @@ export default function SkillLadderPage() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-on-surface-variant">Level 3 — List Strategist · Proficient</h3>
+                  <h3 className="font-bold text-on-surface-variant">Level 3 — {moveLevelNames[2]} · Proficient</h3>
                   <span className="material-symbols-outlined text-outline text-lg" style={{ fontVariationSettings: "'FILL' 0" }}>workspace_premium</span>
                 </div>
                 <p className="text-xs text-on-surface-variant mt-0.5">Complete 6 more List challenges (2 Hard)</p>
@@ -186,7 +221,7 @@ export default function SkillLadderPage() {
                 <span className="material-symbols-outlined text-outline-variant">lock</span>
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-outline">Level 4 — List Expert</h3>
+                <h3 className="font-bold text-outline">Level 4 — {moveLevelNames[3]}</h3>
                 <p className="text-xs text-outline mt-0.5">Master system-wide perspective moves</p>
                 <div className="mt-1 text-[10px] font-bold text-tertiary/60 uppercase tracking-tight">FLOW: Frame → List → Optimize → Win</div>
               </div>
@@ -199,7 +234,7 @@ export default function SkillLadderPage() {
                 <span className="material-symbols-outlined text-outline-variant">lock</span>
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-outline">Level 5 — List Master</h3>
+                <h3 className="font-bold text-outline">Level 5 — {moveLevelNames[4]}</h3>
                 <div className="mt-1 text-[10px] font-bold text-tertiary/40 uppercase tracking-tight">FLOW: Mastery</div>
               </div>
               <span className="material-symbols-outlined text-outline-variant text-2xl">diamond</span>
@@ -217,8 +252,8 @@ export default function SkillLadderPage() {
               <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg">
                 <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>view_in_ar</span>
               </div>
-              <h4 className="text-lg font-headline font-bold text-primary">List Builder</h4>
-              <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">Level 2</p>
+              <h4 className="text-lg font-headline font-bold text-primary">{moveLabel}</h4>
+              <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">Level {moveLevel}</p>
               <div className="mt-4 flex items-center gap-2 bg-primary-fixed px-3 py-1 rounded-full text-[10px] font-black text-primary">
                 <span className="material-symbols-outlined text-xs" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                 HACKPRODUCT VERIFIED
@@ -257,20 +292,7 @@ export default function SkillLadderPage() {
                   <div className="absolute -bottom-6 right-0 text-[9px] font-bold text-outline whitespace-nowrap">Principal</div>
                 </div>
               </div>
-              <p className="text-[11px] text-on-surface-variant italic leading-relaxed pt-2">Your current &lsquo;List Move&rsquo; skill score puts you in the top 15% of Mid-Level PMs in the tech industry.</p>
-            </div>
-          </div>
-
-          {/* Related Skills */}
-          <div className="bg-surface-container rounded-xl p-5 border border-outline-variant/30">
-            <h3 className="text-sm font-bold text-on-surface mb-3">Related Skills</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {relatedSkills.map((s) => (
-                <div key={s.name} className="bg-surface-container-low p-3 rounded-lg border border-outline-variant/20">
-                  <p className="text-[10px] font-bold text-on-surface-variant mb-1 uppercase">{s.name}</p>
-                  <p className="text-xs font-bold text-on-surface">Level {s.level}</p>
-                </div>
-              ))}
+              <p className="text-[11px] text-on-surface-variant italic leading-relaxed pt-2">Your current &lsquo;{moveLabel} Move&rsquo; skill score puts you in the top 15% of Mid-Level PMs in the tech industry.</p>
             </div>
           </div>
 
@@ -279,11 +301,19 @@ export default function SkillLadderPage() {
             <span className="material-symbols-outlined text-tertiary text-lg">info</span>
             <p className="text-[11px] text-tertiary font-medium leading-tight">
               <span className="font-bold block mb-0.5">FLOW Framework</span>
-              The List move is one of 4 FLOW thinking moves: Frame · List · Optimize · Win
+              The {moveLabel} move is one of 4 FLOW thinking moves: Frame · List · Optimize · Win
             </p>
           </div>
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SkillLadderPage() {
+  return (
+    <Suspense fallback={<div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">Loading...</div>}>
+      <SkillLadderContent />
+    </Suspense>
   )
 }

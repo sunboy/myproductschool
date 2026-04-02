@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { LEARN_MODULES_SEED, LEARN_CHAPTERS_SEED } from '@/lib/learn-seed'
+import { IS_MOCK } from '@/lib/mock'
 
 export async function GET(
   _req: Request,
@@ -9,7 +10,7 @@ export async function GET(
 ) {
   const { slug, chapter } = await params
 
-  if (process.env.NEXT_PUBLIC_MOCK_MODE === 'true') {
+  if (IS_MOCK) {
     const seedModule = LEARN_MODULES_SEED.find(m => m.slug === slug)
     if (!seedModule) return NextResponse.json({ error: 'Not found' }, { status: 404 })
     const chapterDefs = LEARN_CHAPTERS_SEED[slug] ?? []

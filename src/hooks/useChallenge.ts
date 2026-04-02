@@ -9,7 +9,7 @@ interface ChallengeDetail {
   current_attempt: ChallengeAttemptV2 | null
 }
 
-interface UseChallengeV2Return {
+interface UseChallengeReturn {
   detail: ChallengeDetail | null
   loading: boolean
   error: string | null
@@ -17,7 +17,7 @@ interface UseChallengeV2Return {
   reload: () => Promise<void>
 }
 
-export function useChallengeV2(challengeId: string): UseChallengeV2Return {
+export function useChallenge(challengeId: string): UseChallengeReturn {
   const [detail, setDetail] = useState<ChallengeDetail | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -26,7 +26,7 @@ export function useChallengeV2(challengeId: string): UseChallengeV2Return {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/v2/challenges/${challengeId}`)
+      const res = await fetch(`/api/challenges/${challengeId}`)
       if (!res.ok) throw new Error(`Failed to load challenge: ${res.status}`)
       const data = await res.json()
       setDetail(data)
@@ -40,7 +40,7 @@ export function useChallengeV2(challengeId: string): UseChallengeV2Return {
   const startAttempt = useCallback(async (roleId: UserRoleV2): Promise<ChallengeAttemptV2 | null> => {
     setError(null)
     try {
-      const res = await fetch(`/api/v2/challenges/${challengeId}/start`, {
+      const res = await fetch(`/api/challenges/${challengeId}/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role_id: roleId }),
