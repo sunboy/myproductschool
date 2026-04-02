@@ -57,6 +57,52 @@ const QUESTIONS = [
       { id: 'D', text: 'NPS from churned users — qualitative signal on the core disappointment' },
     ],
   },
+  // ── Optimize move ────────────────────────────
+  {
+    move: 'optimize',
+    q: 'You\'ve identified that Sora\'s best users were professional video editors who needed frame-level control. Leadership wants a fix in 6 weeks. What do you cut?',
+    luma: 'Optimize move — I\'m watching how you sharpen a solution under real constraints.',
+    options: [
+      { id: 'A', text: 'Ship frame-level editing only for the top 500 power users as a closed beta — learn before scaling' },
+      { id: 'B', text: 'Cut the 6-week timeline — a half-built feature for professionals will hurt more than help' },
+      { id: 'C', text: 'Scope down to one workflow (e.g. trim + caption sync) that solves 80% of the professional pain' },
+      { id: 'D', text: 'Negotiate scope with engineering to understand what\'s feasible before committing to anything' },
+    ],
+  },
+  {
+    move: 'optimize',
+    q: 'Three possible bets: (A) re-launch with a freemium tier, (B) pivot to an API-first product for enterprises, (C) double down on creator tools for professional video editors. How do you choose?',
+    luma: 'Still on Optimize — how you weigh bets under uncertainty reveals your product judgement.',
+    options: [
+      { id: 'A', text: 'Run a quick assumption map — list the 2 most critical unknowns for each bet, pick the one with the most validated assumptions' },
+      { id: 'B', text: 'Go where the existing traction points — check which segment had the highest activation rate and double down there' },
+      { id: 'C', text: 'Freemium is default — it lowers acquisition cost and lets the product speak for itself' },
+      { id: 'D', text: 'Take it to a leadership review with a one-pager on each option — get alignment before going deep on any' },
+    ],
+  },
+  // ── Win move ─────────────────────────────────
+  {
+    move: 'win',
+    q: 'You\'re presenting your recommendation to re-launch Sora as an API-first product to the leadership team. You have 5 minutes. What\'s your opener?',
+    luma: 'Win move — I\'m watching how you land an idea with clarity and conviction.',
+    options: [
+      { id: 'A', text: '"Sora didn\'t fail — it found the wrong customer. Here\'s who actually needs it and what we do next."' },
+      { id: 'B', text: 'Walk through the data story first: signups, drop-off, segment behaviour, then the recommendation' },
+      { id: 'C', text: 'Open with a competitor doing this well to establish urgency before proposing the pivot' },
+      { id: 'D', text: 'State the recommendation up front, then spend 4 minutes on the evidence behind it' },
+    ],
+  },
+  {
+    move: 'win',
+    q: 'An engineering lead pushes back: "We built Sora for consumers — pivoting to API-first means rewriting the auth layer." How do you respond?',
+    luma: 'Still on Win — how you handle a hard pushback in the room is the real test.',
+    options: [
+      { id: 'A', text: '"That\'s a real constraint — help me understand the scope and we\'ll build it into the roadmap estimate"' },
+      { id: 'B', text: '"We can phase it — ship read-only API access first to validate demand before touching auth"' },
+      { id: 'C', text: 'Acknowledge the concern, park it, and bring it back with a concrete proposal after the meeting' },
+      { id: 'D', text: '"Fair point — let\'s figure out if there\'s a path that avoids the rewrite before we commit"' },
+    ],
+  },
 ]
 
 const FLOW_MOVES = [
@@ -69,8 +115,8 @@ const FLOW_MOVES = [
 // ─────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────
-// Screens: 0=intro, 1-4=questions, 5=grading, 6=results
-type Screen = 0 | 1 | 2 | 3 | 4 | 5 | 6
+// Screens: 0=intro, 1-8=questions, 9=grading, 10=results
+type Screen = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
 
 // ─────────────────────────────────────────────
 // Radar chart
@@ -133,8 +179,8 @@ export default function CalibrationPage() {
   const [radarVisible, setRadarVisible] = useState(false)
   const [isCompleting, setIsCompleting] = useState(false)
 
-  // Road progress based on screen (0–6)
-  const roadOffset = 1200 * (1 - screen / 6)
+  // Road progress based on screen (0–10)
+  const roadOffset = 1200 * (1 - screen / 10)
 
   // ── Screen transitions ──────────────────────
   function goTo(s: Screen, dir: 'forward' | 'back' = 'forward') {
@@ -149,7 +195,7 @@ export default function CalibrationPage() {
 
   // ── Grading: fetch results + auto-advance ───
   useEffect(() => {
-    if (screen !== 5) return
+    if (screen !== 9) return
     let cancelled = false
     const minWait = new Promise(r => setTimeout(r, 2800))
     const fetch$ = fetch('/api/onboarding/results')
@@ -157,14 +203,14 @@ export default function CalibrationPage() {
       .then(data => { if (data) setResults(data) })
       .catch(() => {})
     Promise.all([minWait, fetch$]).then(() => {
-      if (!cancelled) goTo(6)
+      if (!cancelled) goTo(10)
     })
     return () => { cancelled = true }
   }, [screen]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Radar reveal on results ─────────────────
   useEffect(() => {
-    if (screen !== 6) return
+    if (screen !== 10) return
     const t = setTimeout(() => setRadarVisible(true), 500)
     return () => clearTimeout(t)
   }, [screen])
@@ -178,10 +224,10 @@ export default function CalibrationPage() {
     // Auto-advance after brief moment so the selection "lands"
     setTimeout(() => {
       const nextScreen = (screen + 1) as Screen
-      if (screen === 4) {
-        // Last question — submit both moves, go to grading
+      if (screen === 8) {
+        // Last question — submit all moves, go to grading
         submitAnswers({ ...answers, [questionIdx]: optionId })
-        goTo(5)
+        goTo(9)
       } else {
         goTo(nextScreen)
       }
@@ -189,13 +235,15 @@ export default function CalibrationPage() {
   }
 
   function submitAnswers(finalAnswers: Record<number, string>) {
-    const frameAnswer = `Q1: ${finalAnswers[0] ?? '?'} | Q2: ${finalAnswers[1] ?? '?'}`
-    const listAnswer  = `Q3: ${finalAnswers[2] ?? '?'} | Q4: ${finalAnswers[3] ?? '?'}`
+    const frameAnswer    = `Q1: ${finalAnswers[0] ?? '?'} | Q2: ${finalAnswers[1] ?? '?'}`
+    const listAnswer     = `Q3: ${finalAnswers[2] ?? '?'} | Q4: ${finalAnswers[3] ?? '?'}`
+    const optimizeAnswer = `Q5: ${finalAnswers[4] ?? '?'} | Q6: ${finalAnswers[5] ?? '?'}`
+    const winAnswer      = `Q7: ${finalAnswers[6] ?? '?'} | Q8: ${finalAnswers[7] ?? '?'}`
     fetch('/api/onboarding/calibration/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        responses: { frame: frameAnswer, list: listAnswer },
+        responses: { frame: frameAnswer, list: listAnswer, optimize: optimizeAnswer, win: winAnswer },
       }),
     }).catch(() => {})
   }
@@ -207,16 +255,20 @@ export default function CalibrationPage() {
   }
 
   // ── Derived ─────────────────────────────────
-  const isQuestion = screen >= 1 && screen <= 4
+  const isQuestion = screen >= 1 && screen <= 8
   const qIdx = screen - 1  // 0-based index into QUESTIONS
   const currentQ = isQuestion ? QUESTIONS[qIdx] : null
 
   // Which FLOW move pills are done/active
-  // Frame = questions 1+2 (screens 1-2), List = questions 3+4 (screens 3-4)
-  const frameDone  = screen > 2
-  const frameActive = screen === 1 || screen === 2
-  const listDone   = screen > 4
-  const listActive  = screen === 3 || screen === 4
+  // Frame=1-2, List=3-4, Optimize=5-6, Win=7-8
+  const frameDone      = screen > 2
+  const frameActive    = screen === 1 || screen === 2
+  const listDone       = screen > 4
+  const listActive     = screen === 3 || screen === 4
+  const optimizeDone   = screen > 6
+  const optimizeActive = screen === 5 || screen === 6
+  const winDone        = screen > 8
+  const winActive      = screen === 7 || screen === 8
 
   const scores = results?.scores ?? { frame: 72, list: 58, optimize: 65, win: 44 }
   const archetype = results?.archetype ?? 'The Systematic Builder'
@@ -249,20 +301,20 @@ export default function CalibrationPage() {
         <span className="font-headline font-bold text-primary text-base tracking-tight">HackProduct</span>
         {isQuestion && (
           <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
-            {screen} of 4
+            {screen} of 8
           </span>
         )}
         <div className="w-20" />
       </header>
 
       {/* ── Step pills (question screens + grading + results) ── */}
-      {screen >= 1 && screen <= 6 && (
+      {screen >= 1 && screen <= 10 && (
         <div className="relative z-10 flex items-center justify-center gap-3 px-6 py-2 bg-background/80 backdrop-blur-sm border-b border-outline-variant/40 flex-shrink-0">
           {[
-            { symbol: '◇', label: 'Frame',    done: frameDone,  active: frameActive },
-            { symbol: '◈', label: 'List',     done: listDone,   active: listActive },
-            { symbol: '◆', label: 'Optimize', done: false,      active: false },
-            { symbol: '◎', label: 'Win',      done: false,      active: false },
+            { symbol: '◇', label: 'Frame',    done: frameDone,     active: frameActive },
+            { symbol: '◈', label: 'List',     done: listDone,      active: listActive },
+            { symbol: '◆', label: 'Optimize', done: optimizeDone,  active: optimizeActive },
+            { symbol: '◎', label: 'Win',      done: winDone,       active: winActive },
           ].map((m, i) => (
             <div key={m.label} className="flex items-center gap-1.5">
               <div className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all duration-300 ${
@@ -299,7 +351,7 @@ export default function CalibrationPage() {
                   Let&apos;s find your baseline
                 </h1>
                 <p className="text-sm text-on-surface-variant max-w-xs mx-auto leading-relaxed">
-                  4 quick questions. No typing — just pick the option that sounds most like you.
+                  8 quick questions across all 4 FLOW moves. No typing — just pick the option that sounds most like you.
                 </p>
               </div>
 
@@ -389,8 +441,8 @@ export default function CalibrationPage() {
             </div>
           )}
 
-          {/* ── Screen 5: Grading ── */}
-          {screen === 5 && (
+          {/* ── Screen 9: Grading ── */}
+          {screen === 9 && (
             <div className="flex flex-col items-center justify-center text-center gap-6 pt-16 min-h-[400px]">
               <div className="animate-luma-glow">
                 <LumaGlyph size={80} state="reviewing" />
@@ -409,8 +461,8 @@ export default function CalibrationPage() {
             </div>
           )}
 
-          {/* ── Screen 6: Results ── */}
-          {screen === 6 && (
+          {/* ── Screen 10: Results ── */}
+          {screen === 10 && (
             <div className="space-y-5 pb-8">
               {/* Header */}
               <div className="flex flex-col items-center text-center gap-3">
