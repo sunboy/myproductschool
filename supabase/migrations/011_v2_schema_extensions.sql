@@ -78,9 +78,9 @@ DO $$ BEGIN
   CREATE POLICY "Service role manages move levels" ON move_levels FOR ALL USING (auth.role() = 'service_role');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TRIGGER move_levels_updated_at
-  BEFORE UPDATE ON move_levels
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER move_levels_updated_at BEFORE UPDATE ON move_levels FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ── NEW: move_level_history ───────────────────────────────────
 
@@ -294,9 +294,9 @@ DO $$ BEGIN
   CREATE POLICY "Users manage own settings" ON user_settings FOR ALL USING (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TRIGGER user_settings_updated_at
-  BEFORE UPDATE ON user_settings
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER user_settings_updated_at BEFORE UPDATE ON user_settings FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ── NEW: session_events ───────────────────────────────────────
 
