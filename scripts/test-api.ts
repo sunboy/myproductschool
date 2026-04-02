@@ -224,7 +224,6 @@ async function journey3(): Promise<void> {
     })
     assert(status === 200, `Expected 200, got ${status}`)
     const b = body as Record<string, unknown>
-    assertExists(b.nudge !== undefined ? b.nudge ?? 'has-nudge-key' : undefined, 'nudge key should exist')
     // nudge may be null for empty draft — but key must exist
     assert('nudge' in b, 'body should have nudge key')
   })
@@ -279,9 +278,9 @@ async function journey4(): Promise<void> {
       return
     }
     assert(status === 200, `Expected 200, got ${status}`)
-    // body.challenge may be null — that's ok
+    // body.challenge may be null — that's ok, but the key should be present
     const b = body as Record<string, unknown>
-    assert('challenge' in b || status === 200, 'response should be ok')
+    assert('challenge' in b, 'response should have challenge key (may be null)')
   })
 
   await test('GET /api/challenges/quick-take — returns quick-take', async () => {
