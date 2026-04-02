@@ -274,7 +274,6 @@ async function journey4(): Promise<void> {
   await test('GET /api/challenges/next — returns next challenge', async () => {
     const { status, body } = await request('GET', '/api/challenges/next')
     if (status === 401) {
-      console.log('    (401 expected: /api/challenges/next has no mock bypass)')
       return
     }
     assert(status === 200, `Expected 200, got ${status}`)
@@ -283,13 +282,14 @@ async function journey4(): Promise<void> {
     assert('challenge' in b, 'response should have challenge key (may be null)')
   })
 
-  await test('GET /api/challenges/quick-take — returns quick-take', async () => {
-    const { status } = await request('GET', '/api/challenges/quick-take')
+  await test('GET /api/challenges/quick-take — returns quick-take prompt', async () => {
+    const { status, body } = await request('GET', '/api/challenges/quick-take')
     if (status === 401) {
-      console.log('    (401 expected: /api/challenges/quick-take has no mock bypass)')
       return
     }
     assert(status === 200, `Expected 200, got ${status}`)
+    // Mock returns { id, prompt_text, move, time_limit_seconds }
+    assertShape(body, ['id', 'prompt_text'], 'quick-take response')
   })
 
   await test('GET /api/challenges/growth-snapshot — returns snapshot', async () => {
