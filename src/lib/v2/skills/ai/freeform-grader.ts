@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
 import type { FlowOption, FlowStep } from '@/lib/types'
-import { getLumaContext } from '@/lib/luma-context'
+import { getLumaContext, buildLumaContextString } from '@/lib/luma-context'
 
 const client = new Anthropic()
 
@@ -82,7 +82,8 @@ export async function gradeFreeform(
   const wrong = options.find(o => o.quality === 'plausible_wrong')
 
   // Inject Luma context for personalization (fail open)
-  const lumaContext = userId ? await getLumaContext(userId, '', step) : ''
+  const lumaCtx = userId ? await getLumaContext(userId) : null
+  const lumaContext = lumaCtx ? buildLumaContextString(lumaCtx, 'feedback') : ''
 
   const prompt = `You are a product sense grading agent. Grade this response against 4 rubric exemplars.${lumaContext ? `\n\nLEARNER CONTEXT:\n${lumaContext}` : ''}
 

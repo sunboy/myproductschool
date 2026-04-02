@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { USE_MOCK_DATA } from '@/lib/mock'
-import { getLumaContext } from '@/lib/luma-context'
+import { getLumaContext, buildLumaContextString } from '@/lib/luma-context'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -90,7 +90,8 @@ export async function POST(
     const questionText = question?.question_text ?? ''
     const scenarioContext = challenge?.scenario_context ?? ''
     const scenarioTrigger = challenge?.scenario_trigger ?? ''
-    const lumaContext = await getLumaContext(userId, challengeId, step)
+    const lumaCtx = await getLumaContext(userId)
+    const lumaContext = buildLumaContextString(lumaCtx, 'chat')
 
     const systemPrompt = `You are Luma, an AI coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
     let userPrompt = `The learner is a ${roleLabel} who just answered the ${step} step.
@@ -219,7 +220,8 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
   const questionText = question?.question_text ?? ''
 
   // Get Luma context for personalization
-  const lumaContext = await getLumaContext(userId, challengeId, step)
+  const lumaCtxOption = await getLumaContext(userId)
+  const lumaContext = buildLumaContextString(lumaCtxOption, 'chat')
 
   // Build the prompt
   const systemPrompt = `You are Luma, Luma is an AI coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
