@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import type { CalibrationResults } from '@/lib/types'
 
@@ -113,10 +114,110 @@ const FLOW_MOVES = [
 ]
 
 // ─────────────────────────────────────────────
+// Debrief content — one per FLOW move
+// interpretations[move][optionId] = Luma's read on that choice
+// ─────────────────────────────────────────────
+const DEBRIEF = {
+  frame: {
+    illustration: '/images/hacky_thinking.png',
+    gradient: 'bg-frame-gradient',
+    tint: 'bg-frame-tint',
+    symbol: '◇',
+    label: 'Frame',
+    what: 'Frame is the move where you decide what problem you\'re actually solving. Most people skip it — they jump straight to solutions before questioning the brief. Strong framers slow down, challenge assumptions, and redefine the problem so the solution space becomes clearer.',
+    why: 'The best product decisions start with the right question. If you Frame wrong, every subsequent move — no matter how sharp — solves the wrong thing.',
+    interpretations: {
+      '0': {
+        A: 'You went for root cause before anything else. That\'s a strong Frame instinct — "why" shapes everything that follows.',
+        B: 'You started with the human cost. That\'s empathy-first framing — valuable, but can sometimes lead you to solutions before you\'ve defined the problem clearly.',
+        C: 'You reached for data to check your assumptions. Good calibration instinct — let\'s see what the numbers actually say before deciding what the problem is.',
+        D: 'You moved to action quickly. Watch the impulse to fix before you\'ve framed — migration plans can lock in an assumption you haven\'t tested yet.',
+      },
+      '1': {
+        A: 'You called out the narrative directly. That\'s precise Frame thinking — separating a story from a finding is exactly the move.',
+        B: 'You looked for context before pushback. Checking comparables first is a smart way to pressure-test a claim without being adversarial.',
+        C: 'You went for segmentation to stress-test the hypothesis. Good instinct — retention curves by use case can prove or disprove the story quickly.',
+        D: 'You deferred to research. Not wrong, but leading with "let\'s do interviews" before reframing the exec\'s claim can look like avoidance.',
+      },
+    },
+  },
+  list: {
+    illustration: '/images/hacky_practice.png',
+    gradient: 'bg-lens-gradient',
+    tint: 'bg-lens-tint',
+    symbol: '◈',
+    label: 'List',
+    what: 'List is the move where you break a complex problem into distinct, non-overlapping pieces. Not a brainstorm dump — a structured decomposition. You\'re looking for the segments, dimensions, or options that collectively cover the problem space without overlapping.',
+    why: 'A well-structured List prevents you from solving the loudest part of a problem while the real driver hides in a corner. It also shows stakeholders you\'ve thought past the obvious.',
+    interpretations: {
+      '2': {
+        A: 'You segmented by behaviour, not identity. That\'s the sharp List instinct — what users did tells you more than who they are.',
+        B: 'You split by jobs-to-be-done. Solid framing — different use cases often have fundamentally different needs and drop-off patterns.',
+        C: 'You split by acquisition channel. That\'s a useful dimension — intent often correlates with how someone found the product.',
+        D: 'You split by timing of churn. Good diagnostic thinking — but this is more of an Optimize move. At List stage, you want the full population mapped first.',
+      },
+      '3': {
+        A: 'You pulled the segmented view upfront. That\'s strong List thinking — you want the whole population mapped before drawing any conclusions.',
+        B: 'You looked at completion rate — does the product deliver its core promise? Solid instinct, focused on the product side of the equation.',
+        C: 'Cohort retention curves are the canonical way to find the drop-off point. Time-based segmentation is a core List move.',
+        D: 'NPS from churned users gives you signal, but it\'s lagging and self-selected. As a first pull, you\'d want something that shows you where, not just whether.',
+      },
+    },
+  },
+  optimize: {
+    illustration: '/images/hacky_learning.png',
+    gradient: 'bg-optimize-gradient',
+    tint: 'bg-optimize-tint',
+    symbol: '◆',
+    label: 'Optimize',
+    what: 'Optimize is where you sharpen from many options to the best one given real constraints — time, resources, risk, and evidence. It\'s not about picking the perfect option in a vacuum, it\'s about making the best defensible call with what you actually have.',
+    why: 'Anyone can list options. Optimize is what separates PMs who produce clarity from PMs who produce decks full of bullets. Stakeholders need a recommendation, not a menu.',
+    interpretations: {
+      '4': {
+        A: 'You defaulted to a closed beta — learn before scaling. That\'s a sharp Optimize move under time pressure: real signal, low blast radius.',
+        B: 'You pushed back on the timeline. Protecting quality over speed is a valid call — but it needs to be paired with a counter-proposal, not just a "no."',
+        C: 'You scoped to one high-impact workflow. That\'s classic 80/20 Optimize thinking — find the version of the solution that proves the value fastest.',
+        D: 'You went to engineering first to understand feasibility. Sensible, but in an Optimize move you want to come in with a scoped option to negotiate around, not a blank question.',
+      },
+      '5': {
+        A: 'You ran an assumption map before committing. That\'s rigorous Optimize thinking — validate the riskiest assumption in each bet before investing.',
+        B: 'You followed existing traction. Smart shortcut — activation rate is a real signal, and doubling down on what\'s working beats a cold bet.',
+        C: 'You defaulted to freemium. Sometimes that\'s right, but "it\'s the default" isn\'t an Optimize argument — it\'s a pattern without a rationale.',
+        D: 'You called a leadership review before deciding. That\'s alignment-first, not Optimize-first. In a real decision, you\'d want a PoV before the meeting.',
+      },
+    },
+  },
+  win: {
+    illustration: '/images/hacky_celebrate.png',
+    gradient: 'bg-win-gradient',
+    tint: 'bg-win-tint',
+    symbol: '◎',
+    label: 'Win',
+    what: 'Win is the move where you land your recommendation with clarity and conviction. It\'s not just communication polish — it\'s structuring your argument so the most important thing lands first, handling pushback without losing the thread, and leaving the room with a clear decision.',
+    why: 'A brilliant product call that can\'t be communicated isn\'t a product call — it\'s a document nobody reads. Win is what makes the other three moves count.',
+    interpretations: {
+      '6': {
+        A: 'You opened with the reframe. "Sora didn\'t fail — it found the wrong customer" is a killer opener. Challenges the premise before anyone can anchor on "failure."',
+        B: 'You led with the data story. Rigorous, but in 5 minutes, walking through evidence before landing a point risks losing the room before you get there.',
+        C: 'You opened with a competitor. Urgency framing can work, but it can also feel like fear-mongering if your recommendation isn\'t already clear.',
+        D: 'Recommendation first, evidence after — that\'s a strong Win structure. Clean BLUF (Bottom Line Up Front) keeps the audience with you.',
+      },
+      '7': {
+        A: 'You acknowledged the constraint and absorbed it into the plan. That\'s the Win move — you didn\'t fight the pushback, you used it.',
+        B: 'You proposed a phased approach on the spot. Strong Win response — you\'re redirecting the concern into a scoped solution without conceding the direction.',
+        C: 'You parked the concern to regroup later. Sometimes right, but in the room it can read as "I don\'t have an answer." Better to have a partial answer live.',
+        D: 'You opened a collaborative path forward. "Let\'s figure out if there\'s a path" keeps the door open without committing to something you can\'t deliver.',
+      },
+    },
+  },
+}
+
+// ─────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────
 // Screens: 0=intro, 1-8=questions, 9=grading, 10=results
-type Screen = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
+// 11=Frame debrief, 12=List debrief, 13=Optimize debrief, 14=Win debrief
+type Screen = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14
 
 // ─────────────────────────────────────────────
 // Radar chart
@@ -179,8 +280,9 @@ export default function CalibrationPage() {
   const [radarVisible, setRadarVisible] = useState(false)
   const [isCompleting, setIsCompleting] = useState(false)
 
-  // Road progress based on screen (0–10)
-  const roadOffset = 1200 * (1 - screen / 10)
+  // Road progress driven by question progress (screens 1-8), maxes out at 8
+  const roadProgress = screen >= 1 && screen <= 8 ? screen : screen > 8 ? 8 : 0
+  const roadOffset = 1200 * (1 - roadProgress / 8)
 
   // ── Screen transitions ──────────────────────
   function goTo(s: Screen, dir: 'forward' | 'back' = 'forward') {
@@ -223,13 +325,18 @@ export default function CalibrationPage() {
 
     // Auto-advance after selection lands
     setTimeout(() => {
-      const nextScreen = (screen + 1) as Screen
-      if (screen === 8) {
-        // Last question — submit all moves, go to grading
+      if (screen === 2) {
+        goTo(11) // Frame debrief
+      } else if (screen === 4) {
+        goTo(12) // List debrief
+      } else if (screen === 6) {
+        goTo(13) // Optimize debrief
+      } else if (screen === 8) {
+        // Win debrief — also submit answers
         submitAnswers({ ...answers, [questionIdx]: optionId })
-        goTo(9)
+        goTo(14)
       } else {
-        goTo(nextScreen)
+        goTo((screen + 1) as Screen)
       }
     }, 680)
   }
@@ -259,16 +366,26 @@ export default function CalibrationPage() {
   const qIdx = screen - 1  // 0-based index into QUESTIONS
   const currentQ = isQuestion ? QUESTIONS[qIdx] : null
 
+  // Debrief screens
+  const isDebrief = screen === 11 || screen === 12 || screen === 13 || screen === 14
+  const debriefMoveKey = screen === 11 ? 'frame' : screen === 12 ? 'list' : screen === 13 ? 'optimize' : screen === 14 ? 'win' : null
+  const debriefMove = debriefMoveKey ? DEBRIEF[debriefMoveKey as keyof typeof DEBRIEF] : null
+  // Question indices for the move on the current debrief screen
+  const debriefQ1Idx = screen === 11 ? 0 : screen === 12 ? 2 : screen === 13 ? 4 : screen === 14 ? 6 : 0
+  const debriefQ2Idx = debriefQ1Idx + 1
+  // Next question screen after this debrief
+  const debriefNextScreen: Screen = screen === 11 ? 3 : screen === 12 ? 5 : screen === 13 ? 7 : 9
+
   // Which FLOW move pills are done/active
-  // Frame=1-2, List=3-4, Optimize=5-6, Win=7-8
-  const frameDone      = screen > 2
-  const frameActive    = screen === 1 || screen === 2
-  const listDone       = screen > 4
-  const listActive     = screen === 3 || screen === 4
-  const optimizeDone   = screen > 6
-  const optimizeActive = screen === 5 || screen === 6
-  const winDone        = screen > 8
-  const winActive      = screen === 7 || screen === 8
+  // Frame=1-2 (debrief=11), List=3-4 (debrief=12), Optimize=5-6 (debrief=13), Win=7-8 (debrief=14)
+  const frameDone      = screen === 12 || screen === 13 || screen === 14 || screen >= 9
+  const frameActive    = screen === 1 || screen === 2 || screen === 11
+  const listDone       = screen === 13 || screen === 14 || screen >= 9
+  const listActive     = screen === 3 || screen === 4 || screen === 12
+  const optimizeDone   = screen === 14 || screen >= 9
+  const optimizeActive = screen === 5 || screen === 6 || screen === 13
+  const winDone        = screen >= 9
+  const winActive      = screen === 7 || screen === 8 || screen === 14
 
   const scores = results?.scores ?? { frame: 72, list: 58, optimize: 65, win: 44 }
   const archetype = results?.archetype ?? 'The Systematic Builder'
@@ -307,8 +424,8 @@ export default function CalibrationPage() {
         <div className="w-20" />
       </header>
 
-      {/* ── Step pills (question screens + grading + results) ── */}
-      {screen >= 1 && screen <= 10 && (
+      {/* ── Step pills (question screens + debrief + grading + results) ── */}
+      {screen >= 1 && screen <= 14 && (
         <div className="relative z-10 flex items-center justify-center gap-3 px-6 py-2 bg-background/80 backdrop-blur-sm border-b border-outline-variant/40 flex-shrink-0">
           {[
             { symbol: '◇', label: 'Frame',    done: frameDone,     active: frameActive },
@@ -438,6 +555,88 @@ export default function CalibrationPage() {
                   Back
                 </button>
               )}
+            </div>
+          )}
+
+          {/* ── Screens 11–14: Move debriefs ── */}
+          {isDebrief && debriefMove && (
+            <div className="space-y-5 pb-8 animate-fade-in-up">
+
+              {/* Illustration + gradient header */}
+              <div className={`${debriefMove.gradient} rounded-3xl overflow-hidden relative`} style={{ minHeight: 200 }}>
+                <div className="absolute inset-0 opacity-20"
+                  style={{ background: 'radial-gradient(ellipse at 70% 50%, white 0%, transparent 70%)' }} />
+                <div className="relative flex items-end justify-between px-6 pt-6 pb-0">
+                  <div className="pb-6">
+                    <span className="text-white/70 text-xs font-bold uppercase tracking-widest block mb-1">FLOW Move</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-white text-3xl font-bold leading-none">{debriefMove.symbol}</span>
+                      <span className="font-headline text-4xl font-bold text-white leading-none">{debriefMove.label}</span>
+                    </div>
+                  </div>
+                  <Image
+                    src={debriefMove.illustration}
+                    alt={`${debriefMove.label} move illustration`}
+                    width={130}
+                    height={130}
+                    className="object-contain drop-shadow-lg flex-shrink-0"
+                    style={{ marginBottom: -4 }}
+                  />
+                </div>
+              </div>
+
+              {/* What this move is */}
+              <div className={`${debriefMove.tint} rounded-2xl p-5`}>
+                <h3 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">What is {debriefMove.label}?</h3>
+                <p className="text-sm text-on-surface leading-relaxed">{debriefMove.what}</p>
+              </div>
+
+              {/* Why it matters */}
+              <div className="bg-surface-container rounded-2xl p-5 border border-outline-variant/40">
+                <h3 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Why it matters</h3>
+                <p className="text-sm text-on-surface-variant leading-relaxed italic">{debriefMove.why}</p>
+              </div>
+
+              {/* Luma's read on their answers */}
+              <div className="bg-primary-fixed rounded-2xl p-5 space-y-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <LumaGlyph size={32} state="speaking" className="flex-shrink-0" />
+                  <span className="text-xs font-bold text-primary uppercase tracking-wider">Luma&apos;s read on your answers</span>
+                </div>
+
+                {/* Q1 of this move */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="bg-primary text-on-primary text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      Q{debriefQ1Idx + 1} — You picked {answers[debriefQ1Idx] ?? '?'}
+                    </span>
+                  </div>
+                  <p className="text-sm text-on-surface leading-relaxed">
+                    {(debriefMove.interpretations as Record<string, Record<string, string>>)[String(debriefQ1Idx)]?.[answers[debriefQ1Idx] ?? ''] ?? 'Interesting choice — Luma is building your profile.'}
+                  </p>
+                </div>
+
+                {/* Q2 of this move */}
+                <div className="space-y-1.5 pt-2 border-t border-primary/20">
+                  <div className="flex items-center gap-2">
+                    <span className="bg-primary text-on-primary text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      Q{debriefQ2Idx + 1} — You picked {answers[debriefQ2Idx] ?? '?'}
+                    </span>
+                  </div>
+                  <p className="text-sm text-on-surface leading-relaxed">
+                    {(debriefMove.interpretations as Record<string, Record<string, string>>)[String(debriefQ2Idx)]?.[answers[debriefQ2Idx] ?? ''] ?? 'Interesting choice — Luma is building your profile.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Continue CTA */}
+              <button
+                onClick={() => goTo(debriefNextScreen)}
+                className="w-full bg-primary text-on-primary font-label font-bold py-3.5 rounded-full flex items-center justify-center gap-2 shadow-md shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all"
+              >
+                {screen === 14 ? 'See your results' : `On to ${screen === 11 ? 'List' : screen === 12 ? 'Optimize' : 'Win'} →`}
+                <span className="material-symbols-outlined text-base">arrow_forward</span>
+              </button>
             </div>
           )}
 
