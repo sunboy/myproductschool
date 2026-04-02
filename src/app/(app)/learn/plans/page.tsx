@@ -96,7 +96,7 @@ function PersonalisedPlanCard() {
 
   // Plan exists — show hero card
   return (
-    <div className="bg-primary-container rounded-xl p-6 mb-6 border border-outline-variant">
+    <div className="bg-primary-container rounded-xl p-6 mb-6 border border-outline-variant animate-luma-card">
       {/* Header */}
       <div className="flex items-start gap-3 mb-4">
         <LumaGlyph size={40} state={rebuilding ? 'reviewing' : 'speaking'} className="text-primary shrink-0" />
@@ -202,7 +202,7 @@ export default function PlansPage() {
       <PersonalisedPlanCard />
 
       {!movesLoading && lumaPick && (
-        <div className="bg-primary-fixed rounded-xl p-5 flex gap-4 items-start mb-6 border border-outline-variant">
+        <div className="bg-primary-fixed rounded-xl p-5 flex gap-4 items-start mb-6 border border-outline-variant animate-luma-card">
           <LumaGlyph size={36} state="speaking" className="text-primary shrink-0 mt-0.5" />
           <div>
             <p className="font-label text-xs text-primary font-semibold uppercase tracking-wide mb-1">Luma&apos;s Pick</p>

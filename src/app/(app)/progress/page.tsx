@@ -23,7 +23,7 @@ function LumaReflectionCard() {
   }, [])
 
   return (
-    <div className="bg-surface-container rounded-xl p-5 flex gap-4 items-start mb-6">
+    <div className="bg-surface-container rounded-xl p-5 flex gap-4 items-start mb-6 animate-luma-card">
       <LumaGlyph size={40} state="speaking" className="text-primary shrink-0 mt-1" />
       <div>
         <p className="font-label text-sm text-primary font-semibold mb-1">Luma&rsquo;s reflection</p>

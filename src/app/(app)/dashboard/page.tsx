@@ -228,7 +228,7 @@ export default async function DashboardPage() {
     <div className="max-w-5xl mx-auto px-6 py-6 space-y-4">
 
       {/* Luma Greeting Bar */}
-      <div className="bg-primary-fixed rounded-2xl p-4 flex flex-wrap items-center gap-4">
+      <div className="bg-primary-fixed rounded-2xl p-4 flex flex-wrap items-center gap-4 animate-luma-card">
         <LumaGlyph size={52} state={isCalibrated ? 'idle' : 'celebrating'} className="flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="font-headline font-bold text-lg text-on-surface">
