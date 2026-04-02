@@ -1,28 +1,18 @@
+import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { createClient } from '@/lib/supabase/server'
-import { getUserAnalyticsSummary } from '@/lib/data/analytics'
 import {
-  getDashboardPreferences,
   getHotChallenges,
-  getLatestDiscussions,
   getLeaderboardPeek,
-  getUserNotes,
   getMoveLevel,
 } from '@/lib/data/dashboard'
-import { getLumaContextFromNotes } from '@/lib/notes/embeddings'
-import { restoreCard } from '@/app/actions/dashboard'
-import { DismissibleCard } from '@/components/dashboard/DismissibleCard'
 import { QuickTakeCard } from '@/components/dashboard/cards/QuickTakeCard'
 import { NextChallengeCard } from '@/components/dashboard/cards/NextChallengeCard'
 import { MoveLevelsCard } from '@/components/dashboard/cards/MoveLevelsCard'
-import { ProductIQCard } from '@/components/dashboard/cards/ProductIQCard'
-import { InterviewCountdownCard } from '@/components/dashboard/cards/InterviewCountdownCard'
 import { HotChallengesCard } from '@/components/dashboard/cards/HotChallengesCard'
-import { DiscussionsCard } from '@/components/dashboard/cards/DiscussionsCard'
 import { LeaderboardPeekCard } from '@/components/dashboard/cards/LeaderboardPeekCard'
-import { RecentActivityCard } from '@/components/dashboard/cards/RecentActivityCard'
-import { NotesCard } from '@/components/dashboard/cards/NotesCard'
-import { DashboardActionButtons } from '@/components/dashboard/DashboardActionButtons'
+import { InterviewCountdownCard } from '@/components/dashboard/cards/InterviewCountdownCard'
+import type { UserInterview } from '@/lib/data/dashboard'
 
 function getGreeting(): string {
   const hour = new Date().getHours()
@@ -31,30 +21,54 @@ function getGreeting(): string {
   return 'Good evening'
 }
 
-const DEFAULT_CARD_ORDER = [
-  'quick_take',
-  'next_challenge',
-  'move_levels',
-  'productiq',
-  'interview_countdown',
-  'hot_challenges',
-  'discussions',
-  'leaderboard',
-  'notes',
-  'recent_activity',
-]
+function CalibrationHero() {
+  return (
+    <div className="bg-primary rounded-2xl p-8 flex flex-col items-center text-center gap-4">
+      <LumaGlyph size={72} state="celebrating" className="text-on-primary" />
+      <div>
+        <h2 className="font-headline text-2xl font-bold text-on-primary mb-2">Find your starting point</h2>
+        <p className="text-on-primary/75 text-sm max-w-sm mx-auto leading-relaxed">
+          A quick 5-minute calibration challenge shows Luma where your product thinking stands — so it can guide you to the right challenges.
+        </p>
+      </div>
+      <Link
+        href="/calibration"
+        className="inline-flex items-center gap-2 bg-on-primary text-primary rounded-full px-6 py-2.5 font-label font-bold text-sm hover:opacity-90 transition-opacity"
+      >
+        <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
+        Start calibration
+      </Link>
+      <Link href="/challenges" className="text-on-primary/60 text-xs hover:text-on-primary/80 transition-colors underline underline-offset-2">
+        Browse challenges first →
+      </Link>
+    </div>
+  )
+}
 
-const colSpan: Record<string, string> = {
-  quick_take: 'lg:col-span-3',
-  next_challenge: 'lg:col-span-2',
-  move_levels: 'lg:col-span-1',
-  productiq: 'lg:col-span-2',
-  interview_countdown: 'lg:col-span-1',
-  hot_challenges: 'lg:col-span-1',
-  discussions: 'lg:col-span-1',
-  leaderboard: 'lg:col-span-1',
-  notes: 'lg:col-span-1',
-  recent_activity: 'lg:col-span-2',
+function LockedMoveLevels() {
+  const moves = ['Frame', 'List', 'Optimize', 'Win']
+  return (
+    <div className="bg-surface-container rounded-xl p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-headline font-semibold text-base text-on-surface">FLOW Move Levels</h3>
+        <div className="flex items-center gap-1 text-xs text-on-surface-variant">
+          <span className="material-symbols-outlined text-sm">lock</span>
+          Unlocks after calibration
+        </div>
+      </div>
+      <div className="grid grid-cols-4 gap-3 opacity-40 blur-[1px] pointer-events-none select-none">
+        {moves.map(move => (
+          <div key={move} className="bg-surface-container-high rounded-xl p-3 flex flex-col gap-2">
+            <div className="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center">
+              <span className="material-symbols-outlined text-base text-on-surface-variant">lock</span>
+            </div>
+            <div className="text-xs font-bold text-on-surface">{move}</div>
+            <div className="h-1 bg-surface-container-highest rounded-full" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 export default async function DashboardPage() {
@@ -65,8 +79,8 @@ export default async function DashboardPage() {
   let streakDays = 0
   let xpTotal = 0
   let interviewDate: string | null = null
+  let isCalibrated = false
 
-  // Profile data
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
@@ -78,219 +92,106 @@ export default async function DashboardPage() {
     streakDays = profile?.streak_days ?? 0
     xpTotal = profile?.xp_total ?? 0
     interviewDate = profile?.interview_date ?? null
+    isCalibrated = !!profile?.onboarding_completed_at
   }
 
-  // Parallel data fetching
   const userId = user?.id ?? ''
-  const [
-    dashboardPrefs,
-    analytics,
-    hotChallenges,
-    discussions,
-    leaderboard,
-    userNotes,
-    moveLevels,
-  ] = await Promise.all([
-    userId ? getDashboardPreferences(userId) : null,
-    userId ? getUserAnalyticsSummary(userId) : null,
+  const [hotChallenges, leaderboard, moveLevels] = await Promise.all([
     getHotChallenges(),
-    getLatestDiscussions(),
     userId ? getLeaderboardPeek(userId) : [],
-    userId ? getUserNotes(userId) : [],
     userId ? getMoveLevel(userId) : [],
   ])
 
-  // Luma context from notes (wrap in try/catch — depends on OpenAI)
-  let lumaContext: string | null = null
-  if (userId) {
-    try {
-      lumaContext = await getLumaContextFromNotes(userId, 'product thinking')
-    } catch {
-      lumaContext = null
-    }
-  }
-
-  // Featured challenge for Quick Take + Next Challenge
-  let featuredChallenge = { id: '', title: 'The Marketplace Retention Loop', domain: 'Product Strategy', difficulty: 'Medium' }
-  const { data: challenge } = await supabase
+  // Fetch two distinct challenges: one for Quick Take, one for Next Challenge
+  const { data: challengeRows } = await supabase
     .from('challenge_prompts')
     .select('id, title, estimated_minutes, domain_id')
     .eq('is_published', true)
-    .limit(1)
-    .single()
+    .limit(2)
 
-  if (challenge) {
-    featuredChallenge = {
-      id: challenge.id,
-      title: challenge.title,
-      difficulty: 'Medium',
-      domain: 'Product Strategy',
-    }
-  }
+  const quickTakeChallenge = challengeRows?.[0] ?? null
+  const nextChallenge = challengeRows?.[1] ?? challengeRows?.[0] ?? null
 
-  // Compute days until interview
-  const daysUntilInterview = interviewDate
-    ? Math.max(0, Math.ceil((new Date(interviewDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-    : null
-
-  // Coaching message fallback
   const coachingMessage = streakDays > 0
     ? `You're on a ${streakDays}-day streak — keep the momentum going.`
     : 'Build your product instincts one challenge at a time.'
 
-  // ProductIQ data
-  const productiqScore = analytics ? Math.round(analytics.productiq_score) : 72
-  const productiqDelta = analytics?.productiq_delta ?? 0
-  const weeklyActivity = analytics?.weekly_activity ?? [2, 1, 3, 0, 2, 1, 2]
-  const dimensions = analytics
-    ? [
-        { label: 'Diagnostic Accuracy', score: analytics.dimensions.diagnostic_accuracy.score },
-        { label: 'Metric Fluency', score: analytics.dimensions.metric_fluency.score },
-        { label: 'Framing Precision', score: analytics.dimensions.framing_precision.score },
-        { label: 'Recommendation Strength', score: analytics.dimensions.recommendation_strength.score },
-      ]
-    : [
-        { label: 'Diagnostic Accuracy', score: 74 },
-        { label: 'Metric Fluency', score: 68 },
-        { label: 'Framing Precision', score: 80 },
-        { label: 'Recommendation Strength', score: 71 },
-      ]
-
-  // Recent activity from analytics
-  const recentActivity = (analytics?.recent_attempts ?? [])
-    .filter(a => a.status === 'completed')
-    .slice(0, 4)
-    .map(a => ({
-      name: a.challenge_title,
-      domain: a.domain,
-      score: a.score,
-      date: new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    }))
-
-  // Card visibility
-  const cardOrder = (dashboardPrefs?.dashboard_cards ?? DEFAULT_CARD_ORDER) as string[]
-  const dismissedCards = (dashboardPrefs?.dismissed_cards ?? []) as string[]
-  const visibleCards = cardOrder.filter((id: string) => !dismissedCards.includes(id))
-
-  // Leaderboard user rank
   const userEntry = (leaderboard as { rank: number; isCurrentUser?: boolean }[]).find(e => e.isCurrentUser)
   const userRank = userEntry?.rank ?? 0
 
-  function renderCard(cardId: string) {
-    switch (cardId) {
-      case 'quick_take':
-        return (
-          <QuickTakeCard
-            prompt={featuredChallenge.title}
-            challengeId={featuredChallenge.id || 'orientation'}
-            lumaContext={lumaContext}
-          />
-        )
-      case 'next_challenge':
-        return (
-          <NextChallengeCard
-            title={featuredChallenge.title}
-            domain={featuredChallenge.domain}
-            difficulty={featuredChallenge.difficulty}
-            challengeId={featuredChallenge.id || 'orientation'}
-            lumaInsight={lumaContext}
-          />
-        )
-      case 'move_levels':
-        return <MoveLevelsCard levels={moveLevels} />
-      case 'productiq':
-        return (
-          <ProductIQCard
-            score={productiqScore}
-            delta={productiqDelta}
-            weeklyActivity={weeklyActivity}
-            dimensions={dimensions}
-          />
-        )
-      case 'interview_countdown':
-        return <InterviewCountdownCard interviews={interviewDate ? [{ id: '0', user_id: user?.id ?? '', company: null, role: null, round: null, interview_date: interviewDate, notes: null, created_at: interviewDate }] : []} />
-      case 'hot_challenges':
-        return <HotChallengesCard challenges={hotChallenges} />
-      case 'discussions':
-        return <DiscussionsCard discussions={discussions} />
-      case 'leaderboard':
-        return <LeaderboardPeekCard entries={leaderboard} userRank={userRank} />
-      case 'notes':
-        return <NotesCard notes={userNotes} />
-      case 'recent_activity':
-        return <RecentActivityCard activities={recentActivity} />
-      default:
-        return null
-    }
-  }
+  const interviews: UserInterview[] = interviewDate
+    ? [{ id: '0', user_id: userId, company: null, role: null, round: null, interview_date: interviewDate, notes: null, created_at: interviewDate }]
+    : []
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-6 space-y-4">
+    <div className="max-w-5xl mx-auto px-6 py-6 space-y-4">
 
-      {/* Stats Strip */}
-      <div className="flex flex-wrap items-center gap-2 mb-2">
-        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-tertiary-container text-on-tertiary-container rounded-full text-sm font-label font-semibold">
-          <span className="material-symbols-outlined text-base">local_fire_department</span>
-          {streakDays} day streak
-        </span>
-        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-secondary-container text-on-secondary-container rounded-full text-sm font-label font-semibold">
-          <span className="material-symbols-outlined text-base">bolt</span>
-          {xpTotal.toLocaleString()} XP
-        </span>
-        {daysUntilInterview !== null && (
-          <span className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-fixed text-on-surface rounded-full text-sm font-label font-semibold">
-            <span className="material-symbols-outlined text-base">calendar_today</span>
-            Interview in {daysUntilInterview} days
-          </span>
-        )}
-        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-fixed text-on-surface rounded-full text-sm font-label font-semibold">
-          <span className="material-symbols-outlined text-base">target</span>
-          3/5 today
-        </span>
-      </div>
-
-      {/* Greeting Banner */}
-      <div className="bg-primary-fixed rounded-xl p-4 flex flex-wrap items-center gap-4 mb-4">
-        <LumaGlyph size={48} state="idle" className="flex-shrink-0" />
+      {/* Luma Greeting Bar */}
+      <div className="bg-primary-fixed rounded-2xl p-4 flex flex-wrap items-center gap-4">
+        <LumaGlyph size={52} state={isCalibrated ? 'idle' : 'celebrating'} className="flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="font-headline font-bold text-lg text-on-surface">{getGreeting()}, {displayName}!</p>
-          <p className="text-sm text-on-surface-variant">{lumaContext ?? coachingMessage}</p>
+          <p className="font-headline font-bold text-lg text-on-surface">
+            {isCalibrated ? `${getGreeting()}, ${displayName}!` : `Welcome, ${displayName}!`}
+          </p>
+          <p className="text-sm text-on-surface-variant">
+            {isCalibrated ? coachingMessage : "I'm Luma, your product thinking coach. Let's find your starting point."}
+          </p>
         </div>
-        <DashboardActionButtons />
+        {isCalibrated && (
+          <div className="flex gap-2 flex-shrink-0">
+            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/60 rounded-full text-xs font-label font-bold text-on-surface">
+              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1", color: '#c94b1b' }}>local_fire_department</span>
+              {streakDays} days
+            </span>
+            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/60 rounded-full text-xs font-label font-bold text-on-surface">
+              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1", color: '#4a7c59' }}>bolt</span>
+              {xpTotal.toLocaleString()} XP
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {visibleCards.map((cardId: string) => {
-          const card = renderCard(cardId)
-          if (!card) return null
-          return (
-            <div key={cardId} className={colSpan[cardId] ?? 'lg:col-span-1'}>
-              <DismissibleCard cardId={cardId}>
-                {card}
-              </DismissibleCard>
-            </div>
-          )
-        })}
-      </div>
+      {/* State A — Calibrated */}
+      {isCalibrated && (
+        <>
+          {/* Hero row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <QuickTakeCard
+              prompt={quickTakeChallenge?.title ?? 'The Marketplace Retention Loop'}
+              challengeId={quickTakeChallenge?.id ?? 'orientation'}
+              lumaContext={null}
+            />
+            <NextChallengeCard
+              title={nextChallenge?.title ?? 'Designing a Metric Dashboard for a B2B SaaS Tool'}
+              domain="Product Strategy"
+              difficulty="Medium"
+              challengeId={nextChallenge?.id ?? 'orientation'}
+              lumaInsight={null}
+            />
+          </div>
 
-      {/* Restore Footer */}
-      {dismissedCards.length > 0 && (
-        <div className="mt-6 pt-4 border-t border-outline-variant/30 flex items-center gap-3 flex-wrap">
-          <span className="text-sm text-on-surface-variant">
-            {dismissedCards.length} card{dismissedCards.length > 1 ? 's' : ''} hidden
-          </span>
-          {dismissedCards.map((cardId: string) => (
-            <form key={cardId} action={restoreCard.bind(null, cardId)}>
-              <button
-                type="submit"
-                className="text-xs px-3 py-1 bg-surface-container-high text-on-surface rounded-full hover:bg-surface-container-highest transition-colors capitalize"
-              >
-                + {cardId.replace(/_/g, ' ')}
-              </button>
-            </form>
-          ))}
-        </div>
+          {/* FLOW Move Levels */}
+          <MoveLevelsCard levels={moveLevels} />
+
+          {/* Secondary row */}
+          <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
+            <HotChallengesCard challenges={hotChallenges} />
+            <LeaderboardPeekCard entries={leaderboard} userRank={userRank} />
+          </div>
+
+          {/* Interview Countdown — conditional */}
+          {interviewDate && (
+            <InterviewCountdownCard interviews={interviews} />
+          )}
+        </>
+      )}
+
+      {/* State B — Uncalibrated */}
+      {!isCalibrated && (
+        <>
+          <CalibrationHero />
+          <LockedMoveLevels />
+        </>
       )}
     </div>
   )
