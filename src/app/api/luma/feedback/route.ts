@@ -9,6 +9,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { LumaFeedbackSchema, clampFeedbackScores } from '@/lib/luma/feedback-schema'
 import { logEvent } from '@/lib/data/events'
 import { IS_MOCK } from '@/lib/mock'
+import { getLumaContext, buildLumaContextString } from '@/lib/luma-context'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -27,6 +28,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const lumaCtx = userId ? await getLumaContext(userId) : null
+    const contextBlock = lumaCtx ? buildLumaContextString(lumaCtx, 'feedback') : ''
+    const systemPrompt = contextBlock
+      ? LUMA_FEEDBACK_SYSTEM_PROMPT + '\n\n## Learner Context\n' + contextBlock
+      : LUMA_FEEDBACK_SYSTEM_PROMPT
+
     const userMessage = {
       role: 'user' as const,
       content: buildFeedbackUserPrompt(
@@ -39,7 +46,7 @@ export async function POST(req: NextRequest) {
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 2000,
-      system: LUMA_FEEDBACK_SYSTEM_PROMPT,
+      system: systemPrompt,
       messages: [userMessage],
     })
 
@@ -58,7 +65,7 @@ export async function POST(req: NextRequest) {
         const retryResponse = await client.messages.create({
           model: 'claude-sonnet-4-6',
           max_tokens: 1500,
-          system: LUMA_FEEDBACK_SYSTEM_PROMPT + '\n\nCRITICAL: Return ONLY a valid JSON object. No markdown, no explanation, no code blocks. Raw JSON only.',
+          system: systemPrompt + '\n\nCRITICAL: Return ONLY a valid JSON object. No markdown, no explanation, no code blocks. Raw JSON only.',
           messages: [userMessage, { role: 'assistant', content: rawText }, { role: 'user', content: 'The JSON was invalid. Return only the raw JSON object with no surrounding text.' }],
         })
         const retryText = retryResponse.content[0].type === 'text' ? retryResponse.content[0].text : '{}'

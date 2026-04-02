@@ -4,6 +4,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { LUMA_CHAT_SYSTEM_PROMPT } from '@/lib/luma/system-prompt'
 import { NextResponse } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
+import { getLumaContext, buildLumaContextString } from '@/lib/luma-context'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -31,12 +32,16 @@ export async function POST(
   if (sessionError || !session) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
   if (session.status === 'completed') return NextResponse.json({ error: 'Session already completed' }, { status: 400 })
 
-  const { data: existingTurns } = await adminClient
-    .from('simulation_turns')
-    .select('role, content, turn_index')
-    .eq('session_id', id)
-    .order('turn_index', { ascending: true })
+  const [existingTurnsResult, lumaCtx] = await Promise.all([
+    adminClient
+      .from('simulation_turns')
+      .select('role, content, turn_index')
+      .eq('session_id', id)
+      .order('turn_index', { ascending: true }),
+    getLumaContext(user.id),
+  ])
 
+  const existingTurns = existingTurnsResult.data
   const nextTurnIndex = (existingTurns?.length ?? 0)
 
   const companyContext = session.company_profiles
@@ -45,7 +50,9 @@ export async function POST(
   const challengeContext = session.challenge_prompts
     ? `\n\nChallenge prompt: ${session.challenge_prompts.prompt_text}`
     : ''
-  const systemPrompt = LUMA_CHAT_SYSTEM_PROMPT + companyContext + challengeContext
+  const candidateContext = buildLumaContextString(lumaCtx, 'chat')
+  const baseSystemPrompt = LUMA_CHAT_SYSTEM_PROMPT + companyContext + challengeContext
+  const systemPrompt = baseSystemPrompt + (candidateContext ? '\n\n## Candidate Profile\n' + candidateContext : '')
 
   const messages = [
     ...(existingTurns ?? []).map(t => ({

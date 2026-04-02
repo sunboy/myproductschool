@@ -4,6 +4,7 @@ import { LUMA_NUDGE_SYSTEM_PROMPT, buildNudgeUserPrompt } from '@/lib/luma/syste
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { IS_MOCK } from '@/lib/mock'
+import { getLumaContext, buildLumaContextString } from '@/lib/luma-context'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -29,11 +30,13 @@ export async function POST(req: NextRequest) {
   }
 
   // Nudge rate limiting
+  let nudgeUserId: string | undefined
   if (attemptId) {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (!authError && user) {
+      nudgeUserId = user.id
       const adminClient = createAdminClient()
       const { count } = await adminClient
         .from('nudge_usage')
@@ -59,11 +62,17 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  const lumaCtx = nudgeUserId ? await getLumaContext(nudgeUserId) : null
+  const contextBlock = lumaCtx ? buildLumaContextString(lumaCtx, 'nudge') : ''
+  const systemPrompt = contextBlock
+    ? LUMA_NUDGE_SYSTEM_PROMPT + '\n\n' + contextBlock
+    : LUMA_NUDGE_SYSTEM_PROMPT
+
   try {
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 150,
-      system: LUMA_NUDGE_SYSTEM_PROMPT,
+      system: systemPrompt,
       messages: [
         {
           role: 'user',
