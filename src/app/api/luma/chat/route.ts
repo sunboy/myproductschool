@@ -34,15 +34,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ reply })
   }
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  const contextBlock = user ? buildLumaContextString(await getLumaContext(user.id), 'chat') : ''
-  const systemPrompt = contextBlock
-    ? LUMA_CHAT_SYSTEM_PROMPT + '\n\n## Learner Context\n' + contextBlock
-    : LUMA_CHAT_SYSTEM_PROMPT
-
   try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    const contextBlock = user ? buildLumaContextString(await getLumaContext(user.id), 'chat') : ''
+    const systemPrompt = contextBlock
+      ? LUMA_CHAT_SYSTEM_PROMPT + '\n\n## Learner Context\n' + contextBlock
+      : LUMA_CHAT_SYSTEM_PROMPT
+
     // Build message history
     const messages: Anthropic.MessageParam[] = []
 
