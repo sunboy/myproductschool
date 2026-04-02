@@ -133,7 +133,7 @@ export default async function DashboardPage() {
 
   // Next Challenge: use /api/challenges/next logic — weakest move targeting
   // Get user's weakest move, completed challenge IDs, and pick a personalized challenge
-  let nextChallenge: { id: string; title: string; difficulty: string; domain_id?: string | null } | null = null
+  let nextChallenge: { id: string; title: string; difficulty: string; domain_id?: string | null; luma_insight?: string | null } | null = null
 
   if (userId) {
     const [{ data: moveLevelsForNext }, { data: completedAttempts }] = await Promise.all([
@@ -145,13 +145,13 @@ export default async function DashboardPage() {
         .limit(1),
       adminClient
         .from('challenge_attempts')
-        .select('challenge_id')
+        .select('prompt_id')
         .eq('user_id', userId)
         .eq('status', 'completed'),
     ])
 
     const weakestMove = (moveLevelsForNext?.[0]?.move as string) ?? 'frame'
-    const completedIds = (completedAttempts ?? []).map((a: { challenge_id: string }) => a.challenge_id)
+    const completedIds = (completedAttempts ?? []).map((a: { prompt_id: string }) => a.prompt_id)
 
     let nextQuery = adminClient
       .from('challenge_prompts')
@@ -184,8 +184,10 @@ export default async function DashboardPage() {
 
   // Personalised Luma greeting using weakest competency context
   let lumaGreeting = coachingMessage  // fallback to streak message
+
   if (userId && isCalibrated) {
     const lumaCtx = await getLumaContext(userId)
+
     if (lumaCtx.weakestCompetency) {
       const competencyLabels: Record<string, string> = {
         motivation_theory: 'motivation & user psychology',
@@ -199,6 +201,19 @@ export default async function DashboardPage() {
       lumaGreeting = streakDays > 0
         ? `${streakDays}-day streak going strong. Your next unlock: ${label}.`
         : `Your next growth area: ${label}. Try a challenge targeting it today.`
+    }
+
+    // Attach luma_insight to nextChallenge from weakest FLOW move
+    if (nextChallenge && lumaCtx.moveLevels.length > 0) {
+      const weakestFlowMove = [...lumaCtx.moveLevels].sort((a, b) => a.level - b.level)[0]
+      const moveLabels: Record<string, string> = {
+        frame: 'frame',
+        list: 'list',
+        weigh: 'weigh',
+        sell: 'sell',
+      }
+      const label = moveLabels[weakestFlowMove.move] ?? weakestFlowMove.move
+      nextChallenge = { ...nextChallenge, luma_insight: `Your ${label} move is at Level ${weakestFlowMove.level} — this challenge drills exactly that.` }
     }
   }
 
@@ -252,7 +267,7 @@ export default async function DashboardPage() {
               domain="Product Strategy"
               difficulty={nextChallenge?.difficulty ?? 'Medium'}
               challengeId={nextChallenge?.id ?? 'orientation'}
-              lumaInsight={null}
+              lumaInsight={nextChallenge?.luma_insight ?? null}
             />
           </div>
 
