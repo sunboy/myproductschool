@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { USE_MOCK_DATA } from '@/lib/mock'
-import { getLumaContext } from '@/lib/v2/luma-context'
+import { getLumaContext } from '@/lib/luma-context'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,

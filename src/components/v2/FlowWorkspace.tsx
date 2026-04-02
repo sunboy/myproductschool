@@ -109,7 +109,7 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
 
   const callComplete = useCallback(async () => {
     try {
-      const res = await fetch(`/api/v2/challenges/${challengeId}/complete`, {
+      const res = await fetch(`/api/challenges/${challengeId}/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ attempt_id: attemptId }),
