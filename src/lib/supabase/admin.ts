@@ -9,6 +9,12 @@ export function createAdminClient() {
         autoRefreshToken: false,
         persistSession: false,
       },
+      realtime: {
+        params: { eventsPerSecond: -1 },
+      },
+      global: {
+        fetch: fetch.bind(globalThis),
+      },
     }
   )
 }
