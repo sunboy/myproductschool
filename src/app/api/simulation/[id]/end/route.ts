@@ -20,7 +20,7 @@ export async function POST(
   const adminClient = createAdminClient()
 
   const [sessionResult, turnsResult] = await Promise.all([
-    adminClient.from('simulation_sessions').select('*').eq('id', id).eq('user_id', user.id).single(),
+    adminClient.from('simulation_sessions').select('*, company_profiles(name)').eq('id', id).eq('user_id', user.id).single(),
     adminClient.from('simulation_turns').select('role, content, turn_index').eq('session_id', id).order('turn_index', { ascending: true }),
   ])
 
@@ -50,6 +50,35 @@ export async function POST(
     debrief_json: debrief,
     completed_at: new Date().toISOString(),
   }).eq('id', id)
+
+  // Insert luma_context challenge_insight (fire-and-forget, non-mock only)
+  if (!IS_MOCK && process.env.ANTHROPIC_API_KEY) {
+    const debriefAny = debrief as { dimensions?: Array<{ dimension: string; score: number }> }
+    const dimensions = debriefAny.dimensions ?? []
+    let strongestDimension: string | undefined
+    let weakestDimension: string | undefined
+    if (dimensions.length > 0) {
+      const sorted = [...dimensions].sort((a, b) => b.score - a.score)
+      strongestDimension = sorted[0].dimension
+      weakestDimension = sorted[sorted.length - 1].dimension
+      // Only set weakest as a growth area if it's meaningfully lower than strongest
+      if (sorted[0].score === sorted[sorted.length - 1].score) {
+        weakestDimension = undefined
+      }
+    }
+    const sessionData = sessionResult.data as { company_profiles?: { name?: string } | null }
+    const companyName = sessionData.company_profiles?.name ?? undefined
+    const contentStr = strongestDimension
+      ? `Completed simulation${companyName ? ' "' + companyName + '"' : ''}. Strongest dimension: ${strongestDimension}. Growth area: ${weakestDimension ?? 'keep practising'}.`
+      : `Completed simulation${companyName ? ' "' + companyName + '"' : ''}.`
+    adminClient.from('luma_context').insert({
+      user_id: user.id,
+      context_type: 'challenge_insight',
+      content: contentStr,
+      is_active: true,
+      created_at: new Date().toISOString(),
+    }).then(() => {}, () => {})
+  }
 
   // Trigger achievement check
   await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/achievements/check`, {
