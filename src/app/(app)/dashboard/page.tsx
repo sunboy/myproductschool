@@ -144,13 +144,13 @@ export default async function DashboardPage() {
         .limit(1),
       adminClient
         .from('challenge_attempts')
-        .select('prompt_id')
+        .select('challenge_id')
         .eq('user_id', userId)
-        .not('submitted_at', 'is', null),
+        .eq('status', 'completed'),
     ])
 
     const weakestMove = (moveLevelsForNext?.[0]?.move as string) ?? 'frame'
-    const completedIds = (completedAttempts ?? []).map((a: { prompt_id: string }) => a.prompt_id)
+    const completedIds = (completedAttempts ?? []).map((a: { challenge_id: string }) => a.challenge_id)
 
     let nextQuery = adminClient
       .from('challenge_prompts')
