@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import type { LearnModule, LearnChapter } from '@/lib/types'
 import { LEARN_MODULES_SEED, LEARN_CHAPTERS_SEED } from '@/lib/learn-seed'
+import { IS_MOCK } from '@/lib/mock'
 
 function buildMockModule(slug: string): { module: LearnModule; chapters: object[] } | null {
   const seedModule = LEARN_MODULES_SEED.find(m => m.slug === slug)
@@ -31,7 +32,7 @@ export async function GET(
 ) {
   const { slug } = await params
 
-  if (process.env.NEXT_PUBLIC_MOCK_MODE === 'true') {
+  if (IS_MOCK) {
     const mock = buildMockModule(slug)
     if (!mock) return NextResponse.json({ error: 'Not found' }, { status: 404 })
     return NextResponse.json(mock)

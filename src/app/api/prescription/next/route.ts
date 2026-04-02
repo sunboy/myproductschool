@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { FAILURE_PATTERNS } from '@/lib/luma/system-prompt'
 import type { Prescription, PatternSummary } from '@/lib/types'
+import { IS_MOCK } from '@/lib/mock'
 
 // Pattern-to-mode mapping (prescribed_mode from FAILURE_PATTERNS)
 // diagnose → spotlight, debate → workshop
@@ -38,7 +39,7 @@ export async function GET(req: NextRequest) {
   const userId = req.nextUrl.searchParams.get('userId')
 
   // Mock mode
-  if (process.env.USE_MOCK_DATA === 'true' || !userId || userId === 'mock') {
+  if (IS_MOCK || !userId || userId === 'mock') {
     return NextResponse.json(MOCK_PRESCRIPTION)
   }
 

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
+import { IS_MOCK } from '@/lib/mock'
 
 const BENCHMARK_LEVELS = [
   { title: 'Junior Engineer', percentile: 25 },
@@ -11,7 +12,7 @@ const BENCHMARK_LEVELS = [
 ]
 
 export async function GET() {
-  if (process.env.NEXT_PUBLIC_MOCK_MODE === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json({
       levels: BENCHMARK_LEVELS,
       user_level: 'Senior Engineer',

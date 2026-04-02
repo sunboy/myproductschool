@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { LUMA_NUDGE_SYSTEM_PROMPT, buildNudgeUserPrompt } from '@/lib/luma/system-prompt'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { IS_MOCK } from '@/lib/mock'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ nudge: null })
   }
 
-  if (process.env.USE_MOCK_DATA === 'true' || !process.env.ANTHROPIC_API_KEY) {
+  if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
     const randomNudge = MOCK_NUDGES[Math.floor(Math.random() * MOCK_NUDGES.length)]
     return NextResponse.json({ nudge: randomNudge })
   }

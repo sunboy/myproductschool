@@ -1,4 +1,5 @@
 import { FlowMove, QuickTake } from '@/lib/types'
+import { IS_MOCK } from '@/lib/mock'
 
 const MOCK_QUICK_TAKES: QuickTake[] = [
   {
@@ -18,7 +19,7 @@ const MOCK_QUICK_TAKES: QuickTake[] = [
 ]
 
 export async function getTodaysQuickTake(): Promise<QuickTake | null> {
-  if (process.env.USE_MOCK_DATA === 'true') return MOCK_QUICK_TAKES[0]
+  if (IS_MOCK) return MOCK_QUICK_TAKES[0]
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
@@ -32,7 +33,7 @@ export async function getTodaysQuickTake(): Promise<QuickTake | null> {
 }
 
 export async function getRandomQuickTake(weakestMove?: FlowMove): Promise<QuickTake | null> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     if (weakestMove) return MOCK_QUICK_TAKES.find(qt => qt.move === weakestMove) ?? MOCK_QUICK_TAKES[0]
     return MOCK_QUICK_TAKES[Math.floor(Math.random() * MOCK_QUICK_TAKES.length)]
   }

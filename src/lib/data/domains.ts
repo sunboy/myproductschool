@@ -1,8 +1,9 @@
 import { DomainWithProgress } from '@/lib/types'
 import { MOCK_DOMAINS } from '@/lib/mock-data'
+import { IS_MOCK } from '@/lib/mock'
 
 export async function getDomains(): Promise<DomainWithProgress[]> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return MOCK_DOMAINS.map(domain => ({
       ...domain,
       concept_count: 4,
@@ -26,7 +27,7 @@ export async function getDomains(): Promise<DomainWithProgress[]> {
 }
 
 export async function getDomainBySlug(slug: string) {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return MOCK_DOMAINS.find(d => d.slug === slug) ?? null
   }
 

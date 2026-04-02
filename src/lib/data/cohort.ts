@@ -1,4 +1,5 @@
 import { CohortChallenge, CohortSubmission } from '@/lib/types'
+import { IS_MOCK } from '@/lib/mock'
 
 const MOCK_COHORT_CHALLENGE: CohortChallenge = {
   id: 'mock-cc-1',
@@ -13,7 +14,7 @@ const MOCK_COHORT_CHALLENGE: CohortChallenge = {
 }
 
 export async function getCurrentCohortChallenge(): Promise<CohortChallenge | null> {
-  if (process.env.USE_MOCK_DATA === 'true') return MOCK_COHORT_CHALLENGE
+  if (IS_MOCK) return MOCK_COHORT_CHALLENGE
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
@@ -31,7 +32,7 @@ export async function getCurrentCohortChallenge(): Promise<CohortChallenge | nul
 export async function getCohortLeaderboard(
   challengeId: string
 ): Promise<(CohortSubmission & { display_name: string | null; avatar_url: string | null })[]> {
-  if (process.env.USE_MOCK_DATA === 'true') return []
+  if (IS_MOCK) return []
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
@@ -55,7 +56,7 @@ export async function submitCohortResponse(
   challengeId: string,
   text: string
 ): Promise<CohortSubmission | null> {
-  if (process.env.USE_MOCK_DATA === 'true') return null
+  if (IS_MOCK) return null
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()

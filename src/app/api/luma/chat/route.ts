@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { LUMA_CHAT_SYSTEM_PROMPT } from '@/lib/luma/system-prompt'
+import { IS_MOCK } from '@/lib/mock'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ reply: null })
   }
 
-  if (process.env.USE_MOCK_DATA === 'true' || !process.env.ANTHROPIC_API_KEY) {
+  if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
     const reply = MOCK_REPLIES[Math.floor(Math.random() * MOCK_REPLIES.length)]
     return NextResponse.json({ reply })
   }

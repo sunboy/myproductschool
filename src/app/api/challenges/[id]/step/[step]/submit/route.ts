@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { USE_MOCK_DATA } from '@/lib/mock'
+import { IS_MOCK } from '@/lib/mock'
 import type { FlowOption, FlowStep, ResponseType } from '@/lib/types'
 import { routeResponse, gradePureMCQ } from '@/lib/v2/skills/grading-router'
 import { scoreOption } from '@/lib/v2/skills/option-scorer'
@@ -52,7 +52,7 @@ export async function POST(
   }
 
   // Auth
-  const isMock = USE_MOCK_DATA
+  const isMock = IS_MOCK
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user && !isMock) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

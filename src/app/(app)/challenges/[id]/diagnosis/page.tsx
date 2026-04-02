@@ -8,6 +8,7 @@ import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { DiagnosisCard } from '@/components/challenge/DiagnosisCard'
 import { SkillMovementRow } from '@/components/challenge/SkillMovementRow'
 import { PrescriptionCard } from '@/components/challenge/PrescriptionCard'
+import { IS_MOCK } from '@/lib/mock'
 
 // Interview risk per pattern (consequence sentence)
 const PATTERN_CONSEQUENCES: Record<string, string> = {
@@ -63,7 +64,7 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
   const challenge = await getChallengeById(id)
   if (!challenge) notFound()
 
-  const isMock = process.env.USE_MOCK_DATA === 'true' || attempt === 'mock' || !attempt
+  const isMock = IS_MOCK || attempt === 'mock' || !attempt
 
   let detectedPatterns: FailurePattern[] = []
   let skillDeltas: SkillDelta[] = ZERO_DELTAS

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
+import { IS_MOCK } from '@/lib/mock'
 
 const MOCK_SETTINGS = {
   id: 'settings-1',
@@ -18,7 +19,7 @@ const MOCK_SETTINGS = {
 }
 
 export async function GET() {
-  if (process.env.NEXT_PUBLIC_MOCK_MODE === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json(MOCK_SETTINGS)
   }
 
@@ -52,7 +53,7 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  if (process.env.NEXT_PUBLIC_MOCK_MODE === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json(MOCK_SETTINGS)
   }
 

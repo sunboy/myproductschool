@@ -1,9 +1,11 @@
+import { IS_MOCK } from '@/lib/mock'
+
 export function logEvent(
   userId: string,
   eventType: string,
   payload: Record<string, unknown> = {}
 ): void {
-  if (process.env.USE_MOCK_DATA === 'true') return
+  if (IS_MOCK) return
 
   // Fire-and-forget — intentionally not awaited
   import('@/lib/supabase/server').then(({ createClient }) =>

@@ -1,3 +1,6 @@
+export const IS_MOCK = process.env.USE_MOCK_DATA === 'true' || process.env.NEXT_PUBLIC_MOCK_MODE === 'true'
+
+// Legacy alias — prefer IS_MOCK for new code
 export const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
 
 // ── Dashboard mock data ──────────────────────────────────────

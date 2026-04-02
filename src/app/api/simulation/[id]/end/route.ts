@@ -4,6 +4,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { LUMA_SIMULATION_DEBRIEF_PROMPT } from '@/lib/luma/system-prompt'
 import { LumaFeedbackSchema, clampFeedbackScores } from '@/lib/luma/feedback-schema'
 import { NextResponse } from 'next/server'
+import { IS_MOCK } from '@/lib/mock'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -29,7 +30,7 @@ export async function POST(
   const transcript = (turnsResult.data ?? []).map(t => `${t.role === 'luma' ? 'Interviewer' : 'Candidate'}: ${t.content}`).join('\n\n')
 
   let debrief: object
-  if (process.env.USE_MOCK_DATA === 'true' || !process.env.ANTHROPIC_API_KEY) {
+  if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
     debrief = { overall_score: 72, dimensions: [], strengths: ['Clear structure'], improvements: ['Add more metrics'], detected_patterns: [], interview_summary: 'Good overall performance.' }
   } else {
     const response = await anthropic.messages.create({

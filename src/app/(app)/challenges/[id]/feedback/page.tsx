@@ -7,6 +7,7 @@ import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { LumaFeedbackItem } from '@/lib/types'
+import { IS_MOCK } from '@/lib/mock'
 
 const dimensionConfig: Record<string, { label: string; icon: string }> = {
   diagnostic_accuracy: { label: 'Diagnostic Accuracy', icon: 'manage_search' },
@@ -31,7 +32,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
   const challenge = await getChallengeById(id)
   if (!challenge) notFound()
 
-  const isMock = process.env.USE_MOCK_DATA === 'true' || attempt === 'mock' || !attempt
+  const isMock = IS_MOCK || attempt === 'mock' || !attempt
 
   let feedback: LumaFeedbackItem[] = isMock ? MOCK_FEEDBACK : []
   let feedbackFull: typeof MOCK_FEEDBACK_FULL | undefined = isMock ? MOCK_FEEDBACK_FULL : undefined

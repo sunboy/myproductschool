@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import type { StudyPlan } from '@/lib/types'
+import { IS_MOCK } from '@/lib/mock'
 
 const MOCK_PLANS: StudyPlan[] = [
   {
@@ -31,7 +32,7 @@ const MOCK_PLANS: StudyPlan[] = [
 ]
 
 export async function GET() {
-  if (process.env.NEXT_PUBLIC_MOCK_MODE === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json({ plans: MOCK_PLANS })
   }
 

@@ -1,7 +1,8 @@
 import { VocabularyProgress } from '@/lib/types'
+import { IS_MOCK } from '@/lib/mock'
 
 export async function getVocabularyProgress(userId: string): Promise<VocabularyProgress[]> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return []
   }
 
@@ -16,7 +17,7 @@ export async function upsertVocabularyProgress(
   conceptId: string,
   confidence: number
 ): Promise<void> {
-  if (process.env.USE_MOCK_DATA === 'true') return
+  if (IS_MOCK) return
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
@@ -38,7 +39,7 @@ export async function upsertVocabularyProgress(
 }
 
 export async function getDueFlashcards(userId: string, domainId?: string) {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     const { MOCK_FLASHCARDS, MOCK_CONCEPTS } = await import('@/lib/mock-data')
     const concepts = domainId ? MOCK_CONCEPTS.filter(c => c.domain_id === domainId) : MOCK_CONCEPTS
     const conceptIds = concepts.map(c => c.id)

@@ -1,8 +1,9 @@
 import { ChallengePrompt, ChallengeWithDomain } from '@/lib/types'
 import { MOCK_CHALLENGES, MOCK_DOMAINS } from '@/lib/mock-data'
+import { IS_MOCK } from '@/lib/mock'
 
 export async function getChallenges(filters?: { domainId?: string; difficulty?: string; paradigm?: string; role?: string }): Promise<ChallengeWithDomain[]> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     let challenges = MOCK_CHALLENGES
     if (filters?.domainId) challenges = challenges.filter(c => c.domain_id === filters.domainId)
     if (filters?.difficulty) challenges = challenges.filter(c => c.difficulty === filters.difficulty)
@@ -38,7 +39,7 @@ export async function getChallenges(filters?: { domainId?: string; difficulty?: 
 }
 
 export async function getChallengeById(id: string): Promise<ChallengePrompt | null> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return MOCK_CHALLENGES.find(c => c.id === id) ?? null
   }
 

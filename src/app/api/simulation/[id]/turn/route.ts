@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import Anthropic from '@anthropic-ai/sdk'
 import { LUMA_CHAT_SYSTEM_PROMPT } from '@/lib/luma/system-prompt'
 import { NextResponse } from 'next/server'
+import { IS_MOCK } from '@/lib/mock'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -55,7 +56,7 @@ export async function POST(
   ]
 
   let lumaReply: string
-  if (process.env.USE_MOCK_DATA === 'true' || !process.env.ANTHROPIC_API_KEY) {
+  if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
     lumaReply = "That's an interesting perspective. Can you walk me through how you'd measure the success of that approach? What specific metrics would you track in the first 30 days?"
   } else {
     const response = await anthropic.messages.create({

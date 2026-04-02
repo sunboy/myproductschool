@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { USE_MOCK_DATA } from '@/lib/mock'
+import { IS_MOCK } from '@/lib/mock'
 import { getLumaContext, buildLumaContextString } from '@/lib/luma-context'
 
 const anthropic = new Anthropic({
@@ -13,7 +13,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const isMock = USE_MOCK_DATA
+  const isMock = IS_MOCK
   const { id: challengeId } = await params
 
   const supabase = await createClient()

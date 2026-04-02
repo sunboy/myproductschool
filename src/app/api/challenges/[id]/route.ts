@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { USE_MOCK_DATA } from '@/lib/mock'
+import { IS_MOCK } from '@/lib/mock'
 import type { Challenge, FlowStepRecord, ChallengeAttemptV2 } from '@/lib/types'
 
 interface StepSummary {
@@ -21,7 +21,7 @@ export async function GET(
 ) {
   const { id } = await params
 
-  const isMock = USE_MOCK_DATA
+  const isMock = IS_MOCK
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

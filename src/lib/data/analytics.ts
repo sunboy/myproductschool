@@ -1,8 +1,9 @@
 import { AnalyticsSummary, ChallengeDiscussion } from '@/lib/types'
 import { MOCK_ANALYTICS_SUMMARY, MOCK_DISCUSSIONS } from '@/lib/mock-data'
 import { createClient } from '@supabase/supabase-js'
+import { IS_MOCK } from '@/lib/mock'
 
-const USE_MOCK = process.env.USE_MOCK_DATA === 'true'
+const USE_MOCK = IS_MOCK
 
 function getAdminClient() {
   return createClient(

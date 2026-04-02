@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { FlowMove } from '@/lib/types'
+import { IS_MOCK } from '@/lib/mock'
 
 const MOCK_QUICK_TAKE = {
   id: 'mock-qt-1',
@@ -11,7 +12,7 @@ const MOCK_QUICK_TAKE = {
 }
 
 export async function GET() {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json(MOCK_QUICK_TAKE)
   }
 

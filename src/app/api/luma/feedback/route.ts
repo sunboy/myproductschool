@@ -8,6 +8,7 @@ import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { LumaFeedbackSchema, clampFeedbackScores } from '@/lib/luma/feedback-schema'
 import { logEvent } from '@/lib/data/events'
+import { IS_MOCK } from '@/lib/mock'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Mock mode: return fixture feedback as a stream
-  if (process.env.USE_MOCK_DATA === 'true' || !process.env.ANTHROPIC_API_KEY) {
+  if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(MOCK_FEEDBACK_FULL)
   }
 
