@@ -70,13 +70,13 @@ CREATE INDEX IF NOT EXISTS idx_move_levels_user ON move_levels(user_id);
 
 ALTER TABLE move_levels ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view own move levels"
-  ON move_levels FOR SELECT
-  USING (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can view own move levels" ON move_levels FOR SELECT USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE POLICY "Service role manages move levels"
-  ON move_levels FOR ALL
-  USING (auth.role() = 'service_role');
+DO $$ BEGIN
+  CREATE POLICY "Service role manages move levels" ON move_levels FOR ALL USING (auth.role() = 'service_role');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 CREATE TRIGGER move_levels_updated_at
   BEFORE UPDATE ON move_levels
@@ -98,13 +98,13 @@ CREATE INDEX IF NOT EXISTS idx_move_history_user ON move_level_history(user_id, 
 
 ALTER TABLE move_level_history ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view own move history"
-  ON move_level_history FOR SELECT
-  USING (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can view own move history" ON move_level_history FOR SELECT USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE POLICY "Service role manages move history"
-  ON move_level_history FOR ALL
-  USING (auth.role() = 'service_role');
+DO $$ BEGIN
+  CREATE POLICY "Service role manages move history" ON move_level_history FOR ALL USING (auth.role() = 'service_role');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ── NEW: challenge_steps ──────────────────────────────────────
 
@@ -129,12 +129,13 @@ CREATE INDEX IF NOT EXISTS idx_challenge_steps_challenge
 
 ALTER TABLE challenge_steps ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view challenge steps"
-  ON challenge_steps FOR SELECT USING (true);
+DO $$ BEGIN
+  CREATE POLICY "Anyone can view challenge steps" ON challenge_steps FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE POLICY "Admins manage challenge steps"
-  ON challenge_steps FOR ALL
-  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Admins manage challenge steps" ON challenge_steps FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ── NEW: thinking_traps ───────────────────────────────────────
 
@@ -149,12 +150,13 @@ CREATE TABLE IF NOT EXISTS thinking_traps (
 
 ALTER TABLE thinking_traps ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view thinking traps"
-  ON thinking_traps FOR SELECT USING (true);
+DO $$ BEGIN
+  CREATE POLICY "Anyone can view thinking traps" ON thinking_traps FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE POLICY "Admins manage thinking traps"
-  ON thinking_traps FOR ALL
-  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Admins manage thinking traps" ON thinking_traps FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ── NEW: study_plans ──────────────────────────────────────────
 
@@ -173,13 +175,13 @@ CREATE TABLE IF NOT EXISTS study_plans (
 
 ALTER TABLE study_plans ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view published study plans"
-  ON study_plans FOR SELECT
-  USING (is_published = true);
+DO $$ BEGIN
+  CREATE POLICY "Anyone can view published study plans" ON study_plans FOR SELECT USING (is_published = true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE POLICY "Admins manage study plans"
-  ON study_plans FOR ALL
-  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Admins manage study plans" ON study_plans FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ── NEW: study_plan_chapters ──────────────────────────────────
 
@@ -196,12 +198,13 @@ CREATE INDEX IF NOT EXISTS idx_chapters_plan ON study_plan_chapters(plan_id, ord
 
 ALTER TABLE study_plan_chapters ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view study plan chapters"
-  ON study_plan_chapters FOR SELECT USING (true);
+DO $$ BEGIN
+  CREATE POLICY "Anyone can view study plan chapters" ON study_plan_chapters FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE POLICY "Admins manage study plan chapters"
-  ON study_plan_chapters FOR ALL
-  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Admins manage study plan chapters" ON study_plan_chapters FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ── NEW: user_study_plans ─────────────────────────────────────
 
@@ -218,9 +221,9 @@ CREATE TABLE IF NOT EXISTS user_study_plans (
 
 ALTER TABLE user_study_plans ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users manage own study plan enrollment"
-  ON user_study_plans FOR ALL
-  USING (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users manage own study plan enrollment" ON user_study_plans FOR ALL USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ── NEW: cohort_challenges ────────────────────────────────────
 
@@ -239,12 +242,13 @@ CREATE TABLE IF NOT EXISTS cohort_challenges (
 
 ALTER TABLE cohort_challenges ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view cohort challenges"
-  ON cohort_challenges FOR SELECT USING (true);
+DO $$ BEGIN
+  CREATE POLICY "Anyone can view cohort challenges" ON cohort_challenges FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE POLICY "Admins manage cohort challenges"
-  ON cohort_challenges FOR ALL
-  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Admins manage cohort challenges" ON cohort_challenges FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ── NEW: cohort_submissions ───────────────────────────────────
 
@@ -264,12 +268,13 @@ CREATE INDEX IF NOT EXISTS idx_cohort_subs_challenge
 
 ALTER TABLE cohort_submissions ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users manage own cohort submissions"
-  ON cohort_submissions FOR ALL
-  USING (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users manage own cohort submissions" ON cohort_submissions FOR ALL USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE POLICY "Anyone can view cohort scores"
-  ON cohort_submissions FOR SELECT USING (true);
+DO $$ BEGIN
+  CREATE POLICY "Anyone can view cohort scores" ON cohort_submissions FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ── NEW: user_settings ────────────────────────────────────────
 
@@ -285,9 +290,9 @@ CREATE TABLE IF NOT EXISTS user_settings (
 
 ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users manage own settings"
-  ON user_settings FOR ALL
-  USING (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users manage own settings" ON user_settings FOR ALL USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 CREATE TRIGGER user_settings_updated_at
   BEFORE UPDATE ON user_settings
@@ -308,13 +313,13 @@ CREATE INDEX IF NOT EXISTS idx_session_events_type ON session_events(event_type,
 
 ALTER TABLE session_events ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view own session events"
-  ON session_events FOR SELECT
-  USING (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can view own session events" ON session_events FOR SELECT USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE POLICY "Service role manages session events"
-  ON session_events FOR ALL
-  USING (auth.role() = 'service_role');
+DO $$ BEGIN
+  CREATE POLICY "Service role manages session events" ON session_events FOR ALL USING (auth.role() = 'service_role');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ── NEW: quick_takes ──────────────────────────────────────────
 
@@ -331,12 +336,13 @@ CREATE INDEX IF NOT EXISTS idx_quick_takes_date ON quick_takes(active_date DESC)
 
 ALTER TABLE quick_takes ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view quick takes"
-  ON quick_takes FOR SELECT USING (true);
+DO $$ BEGIN
+  CREATE POLICY "Anyone can view quick takes" ON quick_takes FOR SELECT USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE POLICY "Admins manage quick takes"
-  ON quick_takes FOR ALL
-  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Admins manage quick takes" ON quick_takes FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ── IVFFLAT vector indexes ────────────────────────────────────
 
