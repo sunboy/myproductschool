@@ -83,19 +83,44 @@ export async function POST(
     attempt = attemptData as typeof mockAttempt
   }
 
-  // Mock mode: synthetic grade for mock question IDs (no DB lookup)
-  if (isMock && question_id.startsWith('mock-q-')) {
-    const mockScore = 2.5
-    const mockGradeLabel = 'Good'
+  // ── Mock mode short-circuit ───────────────────────────────────
+  if (isMock) {
+    // Determine which question in the step (1 or 2) by parsing mock question id
+    // Mock IDs follow pattern: mock-q-{step}-{num} e.g. mock-q-frame-1
+    const parts = question_id.split('-') // ['mock','q','frame','1'] or ['mock','q','win','1']
+    const qNum = parseInt(parts[parts.length - 1] ?? '1', 10)
+    const stepQuestionCount: Record<string, number> = {
+      frame: 2, list: 2, optimize: 2, win: 1,
+    }
+    const totalQs = stepQuestionCount[step] ?? 2
+    const isLastQuestion = qNum >= totalQs
+
+    // Build mock revealed options — the selected one is 'best', others are lower quality
+    const MOCK_OPTION_SUFFIXES = ['A', 'B', 'C', 'D']
+    const mockRevealedOptions = MOCK_OPTION_SUFFIXES.map((label, i) => {
+      const optId = `${question_id}-${label}`
+      const isSelected = optId === selected_option_id
+      return {
+        id: optId,
+        option_label: label,
+        option_text: '',
+        quality: isSelected ? 'best' : (i === 0 ? 'good_but_incomplete' : 'surface') as string,
+        points: isSelected ? 3.0 : (i === 0 ? 2.75 : 1.75),
+        explanation: isSelected
+          ? 'Strong choice — this demonstrates diagnostic precision before jumping to solutions.'
+          : 'This option misses a key dimension of the problem.',
+      }
+    })
+
     return NextResponse.json({
-      score: mockScore,
-      quality_label: 'good_but_incomplete',
-      grade_label: mockGradeLabel,
-      explanation: 'Mock grading: selected option scored as good.',
-      competencies_demonstrated: ['strategic_thinking'],
-      step_complete: false,
-      step_score: mockScore,
-      revealed_options: [],
+      score: 85,
+      quality_label: 'best',
+      grade_label: 'best',
+      explanation: 'You framed the problem before jumping to solutions — a strong signal of diagnostic precision.',
+      competencies_demonstrated: ['diagnostic_accuracy', 'framing_precision'],
+      step_complete: isLastQuestion,
+      ...(isLastQuestion ? { step_score: 82 } : {}),
+      revealed_options: mockRevealedOptions,
     })
   }
 

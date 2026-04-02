@@ -79,7 +79,7 @@ const CHALLENGES = [
             sequence: 1,
             grading_weight_within_step: 1.0,
             target_competencies: ['strategic_thinking'],
-            response_type: 'pure_mcq',
+            response_type: 'mcq_plus_elaboration',
             options: [
               { option_label: 'A', option_text: 'Survey all users asking "are you receiving too many notifications?"', quality: 'surface', points: 1, competencies: ['cognitive_empathy'], explanation: 'Self-reported surveys are noisy and leading. Users will say yes to any "too many" question.' },
               { option_label: 'B', option_text: 'Segment DAU/MAU by notification volume received; check if high-volume users churn faster', quality: 'best', points: 3, competencies: ['strategic_thinking'], explanation: 'Behavioral segmentation directly tests the hypothesis with observable data. It also surfaces whether volume is causal or correlational.' },
@@ -115,7 +115,7 @@ const CHALLENGES = [
             sequence: 2,
             grading_weight_within_step: 0.4,
             target_competencies: ['strategic_thinking'],
-            response_type: 'pure_mcq',
+            response_type: 'mcq_plus_elaboration',
             options: [
               { option_label: 'A', option_text: 'Notification open rate', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Open rate is a proxy — it can increase while overall engagement decreases if you simply send fewer but more clickbait notifications.' },
               { option_label: 'B', option_text: 'DAU/MAU recovery to ≥70% within 60 days', quality: 'best', points: 3, competencies: ['strategic_thinking'], explanation: 'DAU/MAU is the north star metric that was declining. Recovery here confirms the fix addressed the root cause, not just a symptom.' },
@@ -207,7 +207,7 @@ const CHALLENGES = [
             sequence: 1,
             grading_weight_within_step: 1.0,
             target_competencies: ['strategic_thinking'],
-            response_type: 'pure_mcq',
+            response_type: 'mcq_plus_elaboration',
             options: [
               { option_label: 'A', option_text: 'Measure override rate by role level and compare model predictions to hire outcomes 6 months later', quality: 'best', points: 3, competencies: ['strategic_thinking'], explanation: 'Outcome-based evaluation is the gold standard for model quality. Override rate by segment identifies where the model underperforms.' },
               { option_label: 'B', option_text: 'Run a user survey asking recruiters to rate their trust in the AI on a 1–10 scale', quality: 'surface', points: 1, competencies: ['cognitive_empathy'], explanation: 'Surveys measure perception, not model quality. You need both, but perception data alone won\'t tell you if the model is actually wrong.' },
@@ -243,7 +243,7 @@ const CHALLENGES = [
             sequence: 2,
             grading_weight_within_step: 0.3,
             target_competencies: ['cognitive_empathy', 'motivation_theory'],
-            response_type: 'pure_mcq',
+            response_type: 'mcq_plus_elaboration',
             options: [
               { option_label: 'A', option_text: 'Offer a discount and apologize for the AI\'s poor performance', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Discounts address commercial risk but don\'t fix the trust problem. The client needs a credible technical fix, not a price reduction.' },
               { option_label: 'B', option_text: 'Acknowledge the model limitation, share the diagnostic data, and commit to a 90-day improvement plan with senior-role confidence labels shipped in 2 weeks', quality: 'best', points: 3, competencies: ['cognitive_empathy', 'motivation_theory'], explanation: 'Transparency + specific timeline + near-term product fix demonstrates accountability without over-promising. This is enterprise trust repair.' },
@@ -335,7 +335,7 @@ const CHALLENGES = [
             sequence: 1,
             grading_weight_within_step: 1.0,
             target_competencies: ['domain_expertise'],
-            response_type: 'pure_mcq',
+            response_type: 'mcq_plus_elaboration',
             options: [
               { option_label: 'A', option_text: 'The vector database index and the system prompt', quality: 'good_but_incomplete', points: 2, competencies: ['domain_expertise'], explanation: 'Correct but incomplete — tool call responses and fine-tuned model weights are also staleness risks, especially for pricing.' },
               { option_label: 'B', option_text: 'Vector DB index, system prompt, any fine-tuned model weights, and cached tool call responses', quality: 'best', points: 3, competencies: ['domain_expertise'], explanation: 'All four are real staleness vectors in production agent systems. Missing any one of them creates a blind spot in freshness monitoring.' },
@@ -371,7 +371,7 @@ const CHALLENGES = [
             sequence: 2,
             grading_weight_within_step: 0.4,
             target_competencies: ['cognitive_empathy', 'motivation_theory'],
-            response_type: 'pure_mcq',
+            response_type: 'mcq_plus_elaboration',
             options: [
               { option_label: 'A', option_text: 'Agree to shut it down and offer a 2-week timeline to rebuild with human-in-the-loop for all financial actions', quality: 'surface', points: 1, competencies: ['cognitive_empathy'], explanation: 'Agrees too quickly and over-corrects. You\'re giving up 40% automation value to fix a scoped problem.' },
               { option_label: 'B', option_text: 'Propose an immediate partial rollback: disable only refund actions while preserving the 70% of non-financial ticket automation, with a 48-hour fix timeline for the pricing API integration', quality: 'best', points: 3, competencies: ['cognitive_empathy', 'motivation_theory'], explanation: 'Scoped rollback preserves most automation value, directly addresses the risk, and gives a credible timeline. Shows you understand the actual failure scope.' },
@@ -463,7 +463,7 @@ const CHALLENGES = [
             sequence: 1,
             grading_weight_within_step: 1.0,
             target_competencies: ['strategic_thinking', 'cognitive_empathy'],
-            response_type: 'pure_mcq',
+            response_type: 'mcq_plus_elaboration',
             options: [
               { option_label: 'A', option_text: 'Company size: freelancer vs. SMB vs. enterprise', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Company size is a reasonable proxy but doesn\'t capture the key axis: contract complexity and legal risk exposure.' },
               { option_label: 'B', option_text: 'Use case risk: low-stakes templates (NDAs, service agreements) vs. high-stakes bespoke contracts (M&A, fundraising)', quality: 'best', points: 3, competencies: ['strategic_thinking', 'cognitive_empathy'], explanation: 'Risk-based segmentation directly maps to willingness to pay — a startup closing a $5M round will pay far more than someone generating an NDA.' },
@@ -499,7 +499,7 @@ const CHALLENGES = [
             sequence: 2,
             grading_weight_within_step: 0.4,
             target_competencies: ['strategic_thinking', 'domain_expertise'],
-            response_type: 'pure_mcq',
+            response_type: 'mcq_plus_elaboration',
             options: [
               { option_label: 'A', option_text: 'Lower prices proportionally as costs fall to stay competitive', quality: 'surface', points: 1, competencies: ['strategic_thinking'], explanation: 'Competing on cost is a race to the bottom. As inference costs fall, value capture should increase, not decrease.' },
               { option_label: 'B', option_text: 'Hold pricing and reinvest margin into network effects (case precedent databases, clause libraries) that create defensibility independent of model cost', quality: 'best', points: 3, competencies: ['strategic_thinking', 'domain_expertise'], explanation: 'Infrastructure moat strategy: use falling model costs to expand margin and invest in data assets that differentiate you as models commoditize.' },

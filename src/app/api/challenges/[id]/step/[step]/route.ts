@@ -71,7 +71,7 @@ export async function GET(
         nudge: 'Define the problem before proposing solutions. What does "8% follow rate" actually mean — is that low?',
         questions: [
           {
-            id: 'mock-q-frame-1', question_text: 'What is the core problem you\'re being asked to solve?', question_nudge: 'Separate the symptom (low follow rate) from the actual problem.', response_type: 'pure_mcq', sequence: 1, grading_weight_within_step: 0.5, already_answered: false,
+            id: 'mock-q-frame-1', question_text: 'What is the core problem you\'re being asked to solve?', question_nudge: 'Separate the symptom (low follow rate) from the actual problem.', response_type: 'mcq_plus_elaboration', sequence: 1, grading_weight_within_step: 0.5, already_answered: false,
             options: [
               { id: 'mock-q-frame-1-A', option_label: 'A', option_text: 'Users don\'t know podcasts exist on Spotify' },
               { id: 'mock-q-frame-1-B', option_label: 'B', option_text: 'Users discover podcasts but don\'t find them worth following' },
@@ -80,7 +80,7 @@ export async function GET(
             ],
           },
           {
-            id: 'mock-q-frame-2', question_text: 'A stakeholder says "users just don\'t like podcasts." How do you respond?', question_nudge: 'How do you handle a narrative being presented as a finding?', response_type: 'pure_mcq', sequence: 2, grading_weight_within_step: 0.5, already_answered: false,
+            id: 'mock-q-frame-2', question_text: 'A stakeholder says "users just don\'t like podcasts." How do you respond?', question_nudge: 'How do you handle a narrative being presented as a finding?', response_type: 'mcq_plus_elaboration', sequence: 2, grading_weight_within_step: 0.5, already_answered: false,
             options: [
               { id: 'mock-q-frame-2-A', option_label: 'A', option_text: '"That\'s a hypothesis — what data supports it? Spotify\'s own podcast listening hours have grown YoY."' },
               { id: 'mock-q-frame-2-B', option_label: 'B', option_text: 'Agree to run a user survey to test the hypothesis' },
@@ -94,7 +94,7 @@ export async function GET(
         nudge: 'Break the user population into non-overlapping segments before diagnosing. Who are the different types of users hitting this funnel?',
         questions: [
           {
-            id: 'mock-q-list-1', question_text: 'Which user segments would you investigate first to understand the low follow rate?', question_nudge: 'Think about behaviour, not just demographics.', response_type: 'pure_mcq', sequence: 1, grading_weight_within_step: 0.5, already_answered: false,
+            id: 'mock-q-list-1', question_text: 'Which user segments would you investigate first to understand the low follow rate?', question_nudge: 'Think about behaviour, not just demographics.', response_type: 'mcq_plus_elaboration', sequence: 1, grading_weight_within_step: 0.5, already_answered: false,
             options: [
               { id: 'mock-q-list-1-A', option_label: 'A', option_text: 'Users who opened the Podcasts tab vs. those who never have — understand who is even in the funnel' },
               { id: 'mock-q-list-1-B', option_label: 'B', option_text: 'New users vs. returning users — acquisition might be driving the low rate' },
@@ -103,7 +103,7 @@ export async function GET(
             ],
           },
           {
-            id: 'mock-q-list-2', question_text: 'What is the first metric you pull to diagnose where users drop off in the podcast discovery funnel?', question_nudge: 'Pick the signal that tells you WHERE the problem is, not just that it exists.', response_type: 'pure_mcq', sequence: 2, grading_weight_within_step: 0.5, already_answered: false,
+            id: 'mock-q-list-2', question_text: 'What is the first metric you pull to diagnose where users drop off in the podcast discovery funnel?', question_nudge: 'Pick the signal that tells you WHERE the problem is, not just that it exists.', response_type: 'mcq_plus_elaboration', sequence: 2, grading_weight_within_step: 0.5, already_answered: false,
             options: [
               { id: 'mock-q-list-2-A', option_label: 'A', option_text: 'Step-by-step funnel: Tab open → Episode played → Follow action seen → Follow clicked' },
               { id: 'mock-q-list-2-B', option_label: 'B', option_text: 'Average session length on the Podcasts tab' },
@@ -117,7 +117,7 @@ export async function GET(
         nudge: 'You\'ve identified the problem. Now sharpen from many options to the best bet given real constraints.',
         questions: [
           {
-            id: 'mock-q-optimize-1', question_text: 'Data shows 60% of users who play a podcast episode never see the follow button. What do you do?', question_nudge: 'Scope your solution to the specific problem you\'ve diagnosed.', response_type: 'pure_mcq', sequence: 1, grading_weight_within_step: 0.5, already_answered: false,
+            id: 'mock-q-optimize-1', question_text: 'Data shows 60% of users who play a podcast episode never see the follow button. What do you do?', question_nudge: 'Scope your solution to the specific problem you\'ve diagnosed.', response_type: 'mcq_plus_elaboration', sequence: 1, grading_weight_within_step: 0.5, already_answered: false,
             options: [
               { id: 'mock-q-optimize-1-A', option_label: 'A', option_text: 'Ship a persistent follow CTA on the episode player — one change, high-impact placement' },
               { id: 'mock-q-optimize-1-B', option_label: 'B', option_text: 'Redesign the entire Podcasts tab to prioritise following' },
@@ -126,7 +126,7 @@ export async function GET(
             ],
           },
           {
-            id: 'mock-q-optimize-2', question_text: 'You have engineering bandwidth for one change. Which bet do you prioritise?', question_nudge: 'Think about evidence, impact, and reversibility.', response_type: 'pure_mcq', sequence: 2, grading_weight_within_step: 0.5, already_answered: false,
+            id: 'mock-q-optimize-2', question_text: 'You have engineering bandwidth for one change. Which bet do you prioritise?', question_nudge: 'Think about evidence, impact, and reversibility.', response_type: 'mcq_plus_elaboration', sequence: 2, grading_weight_within_step: 0.5, already_answered: false,
             options: [
               { id: 'mock-q-optimize-2-A', option_label: 'A', option_text: 'Persistent follow CTA in the player — directly addresses the diagnosed gap, fast to ship, easy to measure' },
               { id: 'mock-q-optimize-2-B', option_label: 'B', option_text: 'Personalised podcast shelf on home — broader reach but doesn\'t fix the funnel drop-off' },
@@ -140,7 +140,7 @@ export async function GET(
         nudge: 'Land your recommendation clearly. State it first, then back it with evidence.',
         questions: [
           {
-            id: 'mock-q-win-1', question_text: 'You\'re presenting your recommendation to the VP of Content. What\'s your opening line?', question_nudge: 'Lead with the answer, not the process.', response_type: 'pure_mcq', sequence: 1, grading_weight_within_step: 1.0, already_answered: false,
+            id: 'mock-q-win-1', question_text: 'You\'re presenting your recommendation to the VP of Content. What\'s your opening line?', question_nudge: 'Lead with the answer, not the process.', response_type: 'mcq_plus_elaboration', sequence: 1, grading_weight_within_step: 1.0, already_answered: false,
             options: [
               { id: 'mock-q-win-1-A', option_label: 'A', option_text: '"60% of listeners never see the follow button — one player UI change could 2x our follow rate."' },
               { id: 'mock-q-win-1-B', option_label: 'B', option_text: '"I looked at the data, ran some analysis, and here\'s what I found across three segments..."' },
