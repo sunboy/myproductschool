@@ -7,6 +7,7 @@ import {
   getLeaderboardPeek,
   getMoveLevel,
 } from '@/lib/data/dashboard'
+import { getLumaContext } from '@/lib/luma-context'
 import { QuickTakeCard } from '@/components/dashboard/cards/QuickTakeCard'
 import { NextChallengeCard } from '@/components/dashboard/cards/NextChallengeCard'
 import { MoveLevelsCard } from '@/components/dashboard/cards/MoveLevelsCard'
@@ -181,6 +182,26 @@ export default async function DashboardPage() {
     ? `You're on a ${streakDays}-day streak — keep the momentum going.`
     : 'Build your product instincts one challenge at a time.'
 
+  // Personalised Luma greeting using weakest competency context
+  let lumaGreeting = coachingMessage  // fallback to streak message
+  if (userId && isCalibrated) {
+    const lumaCtx = await getLumaContext(userId)
+    if (lumaCtx.weakestCompetency) {
+      const competencyLabels: Record<string, string> = {
+        motivation_theory: 'motivation & user psychology',
+        cognitive_empathy: 'user empathy',
+        taste: 'product taste',
+        strategic_thinking: 'strategic thinking',
+        creative_execution: 'creative execution',
+        domain_expertise: 'domain expertise',
+      }
+      const label = competencyLabels[lumaCtx.weakestCompetency] ?? lumaCtx.weakestCompetency
+      lumaGreeting = streakDays > 0
+        ? `${streakDays}-day streak going strong. Your next unlock: ${label}.`
+        : `Your next growth area: ${label}. Try a challenge targeting it today.`
+    }
+  }
+
   const userEntry = (leaderboard as { rank: number; isCurrentUser?: boolean }[]).find(e => e.isCurrentUser)
   const userRank = userEntry?.rank ?? 0
 
@@ -199,7 +220,7 @@ export default async function DashboardPage() {
             {isCalibrated ? `${getGreeting()}, ${displayName}!` : `Welcome, ${displayName}!`}
           </p>
           <p className="text-sm text-on-surface-variant">
-            {isCalibrated ? coachingMessage : "I'm Luma, your product thinking coach. Let's find your starting point."}
+            {isCalibrated ? lumaGreeting : "I'm Luma, your product thinking coach. Let's find your starting point."}
           </p>
         </div>
         {isCalibrated && (
