@@ -8,6 +8,35 @@ import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
 import { LearnerDNASection } from './LearnerDNASection'
 
+function LumaReflectionCard() {
+  const [reflection, setReflection] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/luma/growth-reflection', { method: 'POST' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.reflection) setReflection(data.reflection)
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  return (
+    <div className="bg-surface-container rounded-xl p-5 flex gap-4 items-start mb-6">
+      <LumaGlyph size={40} state="speaking" className="text-primary shrink-0 mt-1" />
+      <div>
+        <p className="font-label text-sm text-primary font-semibold mb-1">Luma&rsquo;s reflection</p>
+        {loading ? (
+          <p className="font-body text-sm text-on-surface-variant">Loading reflection...</p>
+        ) : reflection ? (
+          <p className="font-body text-sm text-on-surface">{reflection}</p>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 interface RecentAttempt {
   challenge_id: string
   challenge_title: string
@@ -270,6 +299,11 @@ export default function ProgressPage() {
               Practice more challenges
             </Link>
           )}
+        </section>
+
+        {/* Luma Growth Reflection */}
+        <section className="col-span-12">
+          <LumaReflectionCard />
         </section>
 
         {/* Your Growth — Frame Move */}
