@@ -190,7 +190,7 @@ export default function CalibrationPage() {
       setScreen(s)
       setExiting(false)
       setJustSelected(null)
-    }, 200)
+    }, 360)
   }
 
   // ── Grading: fetch results + auto-advance ───
@@ -221,7 +221,7 @@ export default function CalibrationPage() {
     setJustSelected(optionId)
     setAnswers(prev => ({ ...prev, [questionIdx]: optionId }))
 
-    // Auto-advance after brief moment so the selection "lands"
+    // Auto-advance after selection lands
     setTimeout(() => {
       const nextScreen = (screen + 1) as Screen
       if (screen === 8) {
@@ -231,7 +231,7 @@ export default function CalibrationPage() {
       } else {
         goTo(nextScreen)
       }
-    }, 420)
+    }, 680)
   }
 
   function submitAnswers(finalAnswers: Record<number, string>) {
@@ -278,9 +278,9 @@ export default function CalibrationPage() {
 
   const contentClass = exiting
     ? direction === 'forward'
-      ? 'opacity-0 -translate-x-6 transition-all duration-200 pointer-events-none'
-      : 'opacity-0 translate-x-6 transition-all duration-200 pointer-events-none'
-    : 'opacity-100 translate-x-0 transition-all duration-300'
+      ? 'opacity-0 -translate-x-10 transition-all duration-300 pointer-events-none'
+      : 'opacity-0 translate-x-10 transition-all duration-300 pointer-events-none'
+    : 'opacity-100 translate-x-0 transition-all duration-500'
 
   return (
     <div className="min-h-screen flex flex-col bg-surface overflow-hidden">
@@ -289,7 +289,7 @@ export default function CalibrationPage() {
       <svg className="fixed inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
         <path d="M-100,200 C150,200 300,350 600,350 C900,350 1050,200 1300,180" fill="none" stroke="#4a7c59" strokeWidth="80" strokeLinecap="round" opacity="0.03" />
         <path d="M-100,200 C150,200 300,350 600,350 C900,350 1050,200 1300,180" fill="none" stroke="#4a7c59" strokeWidth="2.5" strokeDasharray="18 12" strokeLinecap="round" opacity="0.1"
-          style={{ strokeDashoffset: roadOffset, transition: 'stroke-dashoffset 600ms cubic-bezier(0.4,0,0.2,1)' }} />
+          style={{ strokeDashoffset: roadOffset, transition: 'stroke-dashoffset 800ms cubic-bezier(0.4,0,0.2,1)' }} />
         <path d="M-100,580 C200,580 400,480 700,480 C1000,480 1100,560 1300,540" fill="none" stroke="#4a7c59" strokeWidth="50" strokeLinecap="round" opacity="0.02" />
         <circle cx="200" cy="210" r="6" fill="#4a7c59" opacity="0.07" />
         <circle cx="600" cy="355" r="7" fill="#4a7c59" opacity="0.06" />
