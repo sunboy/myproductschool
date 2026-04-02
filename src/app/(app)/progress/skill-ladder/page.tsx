@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
@@ -20,7 +20,7 @@ interface DnaRecommendation {
   reason: string | null
 }
 
-export default function SkillLadderPage() {
+function SkillLadderContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { moves } = useMoveLevels()
@@ -124,7 +124,7 @@ export default function SkillLadderPage() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-bold">Level 1 — {moveLevelNames[0]} · Beginner</h3>
                   <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold">🥉 Earned Jan 2026</span>
-                  <span className="bg-white/10 px-2 py-0.5 rounded-full text-[10px] font-bold border border-white/20">FLOW: List</span>
+                  <span className="bg-white/10 px-2 py-0.5 rounded-full text-[10px] font-bold border border-white/20">{`FLOW: ${moveLabel}`}</span>
                 </div>
                 <p className="text-xs text-white/80 mt-0.5">Typical: APM / Junior PM</p>
               </div>
@@ -147,7 +147,7 @@ export default function SkillLadderPage() {
                   <p className="text-xs text-on-surface-variant font-medium">Focus: Multi-stakeholder alignment &amp; edge-case discovery</p>
                 </div>
                 <div className="flex gap-2">
-                  <span className="bg-tertiary text-white px-2 py-0.5 rounded-full text-[10px] font-bold">FLOW: List</span>
+                  <span className="bg-tertiary text-white px-2 py-0.5 rounded-full text-[10px] font-bold">{`FLOW: ${moveLabel}`}</span>
                   <span className="bg-tertiary-container text-tertiary px-3 py-1 rounded-full text-xs font-bold border border-tertiary/20">6 challenges remaining</span>
                 </div>
               </div>
@@ -307,5 +307,13 @@ export default function SkillLadderPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SkillLadderPage() {
+  return (
+    <Suspense fallback={<div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">Loading...</div>}>
+      <SkillLadderContent />
+    </Suspense>
   )
 }
