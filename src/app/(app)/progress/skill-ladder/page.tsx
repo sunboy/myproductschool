@@ -45,6 +45,15 @@ export default function SkillLadderPage() {
     : 'frame'
   const selectedMove: FlowMove = moveParam ?? weakestMove
 
+  // Move-aware rung labels
+  const MOVE_LEVEL_NAMES: Record<string, string[]> = {
+    frame:    ['Frame Finder',    'Frame Builder',    'Frame Strategist',    'Frame Expert',    'Frame Master'],
+    list:     ['List Finder',     'List Builder',     'List Strategist',     'List Expert',     'List Master'],
+    optimize: ['Optimize Finder', 'Optimize Builder', 'Optimize Strategist', 'Optimize Expert', 'Optimize Master'],
+    win:      ['Win Finder',      'Win Builder',      'Win Strategist',      'Win Expert',      'Win Master'],
+  }
+  const moveLevelNames = MOVE_LEVEL_NAMES[selectedMove] ?? MOVE_LEVEL_NAMES.frame
+
   // Data for the selected move
   const focusMove = moves.find(m => m.move === selectedMove) ?? moves[0]
   const moveLabel = selectedMove.charAt(0).toUpperCase() + selectedMove.slice(1)
@@ -113,7 +122,7 @@ export default function SkillLadderPage() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-bold">Level 1 — List Finder · Beginner</h3>
+                  <h3 className="font-bold">Level 1 — {moveLevelNames[0]} · Beginner</h3>
                   <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold">🥉 Earned Jan 2026</span>
                   <span className="bg-white/10 px-2 py-0.5 rounded-full text-[10px] font-bold border border-white/20">FLOW: List</span>
                 </div>
@@ -134,7 +143,7 @@ export default function SkillLadderPage() {
               </div>
               <div className="flex justify-between items-start mb-4 flex-wrap gap-2">
                 <div>
-                  <h3 className="font-bold text-primary text-lg">Level 2 — List Builder · Developing</h3>
+                  <h3 className="font-bold text-primary text-lg">Level 2 — {moveLevelNames[1]} · Developing</h3>
                   <p className="text-xs text-on-surface-variant font-medium">Focus: Multi-stakeholder alignment &amp; edge-case discovery</p>
                 </div>
                 <div className="flex gap-2">
@@ -195,7 +204,7 @@ export default function SkillLadderPage() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-on-surface-variant">Level 3 — List Strategist · Proficient</h3>
+                  <h3 className="font-bold text-on-surface-variant">Level 3 — {moveLevelNames[2]} · Proficient</h3>
                   <span className="material-symbols-outlined text-outline text-lg" style={{ fontVariationSettings: "'FILL' 0" }}>workspace_premium</span>
                 </div>
                 <p className="text-xs text-on-surface-variant mt-0.5">Complete 6 more List challenges (2 Hard)</p>
@@ -212,7 +221,7 @@ export default function SkillLadderPage() {
                 <span className="material-symbols-outlined text-outline-variant">lock</span>
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-outline">Level 4 — List Expert</h3>
+                <h3 className="font-bold text-outline">Level 4 — {moveLevelNames[3]}</h3>
                 <p className="text-xs text-outline mt-0.5">Master system-wide perspective moves</p>
                 <div className="mt-1 text-[10px] font-bold text-tertiary/60 uppercase tracking-tight">FLOW: Frame → List → Optimize → Win</div>
               </div>
@@ -225,7 +234,7 @@ export default function SkillLadderPage() {
                 <span className="material-symbols-outlined text-outline-variant">lock</span>
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-outline">Level 5 — List Master</h3>
+                <h3 className="font-bold text-outline">Level 5 — {moveLevelNames[4]}</h3>
                 <div className="mt-1 text-[10px] font-bold text-tertiary/40 uppercase tracking-tight">FLOW: Mastery</div>
               </div>
               <span className="material-symbols-outlined text-outline-variant text-2xl">diamond</span>
