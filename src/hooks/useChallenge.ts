@@ -9,7 +9,7 @@ interface ChallengeDetail {
   current_attempt: ChallengeAttemptV2 | null
 }
 
-interface UseChallengeV2Return {
+interface UseChallengeReturn {
   detail: ChallengeDetail | null
   loading: boolean
   error: string | null
@@ -17,7 +17,7 @@ interface UseChallengeV2Return {
   reload: () => Promise<void>
 }
 
-export function useChallengeV2(challengeId: string): UseChallengeV2Return {
+export function useChallenge(challengeId: string): UseChallengeReturn {
   const [detail, setDetail] = useState<ChallengeDetail | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

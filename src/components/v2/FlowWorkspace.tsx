@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import type { FlowStep, ResponseType, UserRoleV2, ChallengeDiscussion } from '@/lib/types'
-import { useChallengeV2 } from '@/lib/v2/hooks/useChallengeV2'
+import { useChallenge } from '@/hooks/useChallenge'
 import { useFlowStep } from '@/lib/v2/hooks/useFlowStep'
 import { FlowStepper } from './FlowStepper'
 import { StepQuestion } from './StepQuestion'
@@ -33,7 +33,7 @@ interface FlowWorkspaceProps {
 }
 
 export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorkspaceProps) {
-  const { detail, loading: challengeLoading, error: challengeError, startAttempt, reload } = useChallengeV2(challengeId)
+  const { detail, loading: challengeLoading, error: challengeError, startAttempt, reload } = useChallenge(challengeId)
 
   const [attemptId, setAttemptId] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState<FlowStep>('frame')

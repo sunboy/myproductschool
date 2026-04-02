@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
 import type { FlowOption, FlowStep } from '@/lib/types'
-import { getLumaContext } from '@/lib/v2/luma-context'
+import { getLumaContext } from '@/lib/luma-context'
 
 const client = new Anthropic()
 
