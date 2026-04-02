@@ -154,21 +154,37 @@ export default function SkillLadderPage() {
               {/* Recommended Challenge Card */}
               <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 border border-primary/10">
                 <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-2">Luma&apos;s Pick for you</p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-surface-container rounded-lg flex items-center justify-center text-primary">
-                      <span className="material-symbols-outlined">analytics</span>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-on-surface">DAU/MAU ratio declining</h4>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] flex items-center gap-0.5 bg-surface-container-low px-1.5 py-0.5 rounded border border-outline-variant">List <span className="material-symbols-outlined text-[10px]">view_in_ar</span></span>
-                        <span className="text-[10px] text-error font-bold uppercase">Hard</span>
+                {recommendation && recommendation.challenge_id ? (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-surface-container rounded-lg flex items-center justify-center text-primary">
+                        <span className="material-symbols-outlined">analytics</span>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-on-surface">{recommendation.title}</h4>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] flex items-center gap-0.5 bg-surface-container-low px-1.5 py-0.5 rounded border border-outline-variant">{moveLabel} <span className="material-symbols-outlined text-[10px]">view_in_ar</span></span>
+                        </div>
                       </div>
                     </div>
+                    <Link href={`/challenges/${recommendation.challenge_id}`} className="bg-primary text-white px-5 py-2 rounded-full text-sm font-bold hover:shadow-md transition-all active:scale-95">Start →</Link>
                   </div>
-                  <Link href="/challenges" className="bg-primary text-white px-5 py-2 rounded-full text-sm font-bold hover:shadow-md transition-all active:scale-95">Start →</Link>
-                </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-surface-container rounded-lg flex items-center justify-center text-primary">
+                        <span className="material-symbols-outlined">fitness_center</span>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-on-surface">Practice your weakest move</h4>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] flex items-center gap-0.5 bg-surface-container-low px-1.5 py-0.5 rounded border border-outline-variant">{moveLabel} <span className="material-symbols-outlined text-[10px]">view_in_ar</span></span>
+                        </div>
+                      </div>
+                    </div>
+                    <Link href={`/challenges?move=${selectedMove}`} className="bg-primary text-white px-5 py-2 rounded-full text-sm font-bold hover:shadow-md transition-all active:scale-95">Browse →</Link>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -227,8 +243,8 @@ export default function SkillLadderPage() {
               <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg">
                 <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>view_in_ar</span>
               </div>
-              <h4 className="text-lg font-headline font-bold text-primary">List Builder</h4>
-              <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">Level 2</p>
+              <h4 className="text-lg font-headline font-bold text-primary">{moveLabel}</h4>
+              <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">Level {moveLevel}</p>
               <div className="mt-4 flex items-center gap-2 bg-primary-fixed px-3 py-1 rounded-full text-[10px] font-black text-primary">
                 <span className="material-symbols-outlined text-xs" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                 HACKPRODUCT VERIFIED
@@ -267,7 +283,7 @@ export default function SkillLadderPage() {
                   <div className="absolute -bottom-6 right-0 text-[9px] font-bold text-outline whitespace-nowrap">Principal</div>
                 </div>
               </div>
-              <p className="text-[11px] text-on-surface-variant italic leading-relaxed pt-2">Your current &lsquo;List Move&rsquo; skill score puts you in the top 15% of Mid-Level PMs in the tech industry.</p>
+              <p className="text-[11px] text-on-surface-variant italic leading-relaxed pt-2">Your current &lsquo;{moveLabel} Move&rsquo; skill score puts you in the top 15% of Mid-Level PMs in the tech industry.</p>
             </div>
           </div>
 
@@ -276,7 +292,7 @@ export default function SkillLadderPage() {
             <span className="material-symbols-outlined text-tertiary text-lg">info</span>
             <p className="text-[11px] text-tertiary font-medium leading-tight">
               <span className="font-bold block mb-0.5">FLOW Framework</span>
-              The List move is one of 4 FLOW thinking moves: Frame · List · Optimize · Win
+              The {moveLabel} move is one of 4 FLOW thinking moves: Frame · List · Optimize · Win
             </p>
           </div>
         </div>
