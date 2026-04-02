@@ -231,6 +231,19 @@ Use this pattern for any significant build task (3+ files, multiple concerns):
 ### Example spawn message to a dev agent
 > "You are devN on the [team] team. You have ONE task: [Task #N — Title]. Working dir: [...]. Read [...] first. Implement [...]. After implementing: run tsc, send full output to opus saying 'Task N proof: [output]'. Wait for APPROVED from opus before marking task completed."
 
+## API Routes
+
+Full API inventory: see [`API_DOCS.md`](./API_DOCS.md) at the repo root.
+
+### Calibration flow (key onboarding path)
+1. `POST /api/onboarding/role` — saves `profiles.preferred_role`
+2. `POST /api/onboarding/calibration/submit` — seeds `calibration_attempts` (status=grading), `move_levels` (4 FLOW moves at level 1), `learner_competencies` (6 axes at score 50)
+3. `GET /api/onboarding/results` — reads `calibration_attempts.scores_json` + `profiles.archetype` + `move_levels`
+4. `POST /api/onboarding/complete` — sets `profiles.onboarding_completed_at`
+
+### Mock mode
+Set `NEXT_PUBLIC_MOCK_MODE=true` to bypass auth and DB on onboarding routes. Results route returns hardcoded archetype + scores. Many routes also check `USE_MOCK_DATA=true` for challenge and simulation flows.
+
 ## Key Conventions
 
 - `@/*` path alias maps to `./src/*`
