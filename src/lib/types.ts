@@ -14,13 +14,13 @@ export const DIMENSION_LABELS: Record<FeedbackDimension, string> = {
 export const FLOW_MOVE_LABELS: Record<FlowMove, string> = {
   frame: 'Frame',
   list: 'List',
-  optimize: 'Optimize',
-  win: 'Win',
+  weigh: 'Weigh',
+  sell: 'Sell',
 }
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing'
 
 export type UserRole = 'SWE' | 'Data Eng' | 'ML Eng' | 'DevOps' | 'EM' | 'Founding Eng'
-export type FlowMove = 'frame' | 'list' | 'optimize' | 'win'
+export type FlowMove = 'frame' | 'list' | 'weigh' | 'sell'
 export type Paradigm = 'traditional' | 'ai-assisted' | 'agentic' | 'ai-native'
 
 export interface Profile {

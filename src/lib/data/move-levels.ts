@@ -24,7 +24,7 @@ function progressPct(xp: number): number {
   return Math.round(((xp - lo) / (hi - lo)) * 100)
 }
 
-const MOCK_MOVE_LEVELS: MoveLevel[] = (['frame', 'list', 'optimize', 'win'] as FlowMove[]).map((move, i) => ({
+const MOCK_MOVE_LEVELS: MoveLevel[] = (['frame', 'list', 'weigh', 'sell'] as FlowMove[]).map((move, i) => ({
   id: `mock-ml-${i}`,
   user_id: 'mock-user',
   move,
@@ -83,7 +83,7 @@ export async function updateMoveLevels(
   const existingMap: Record<string, MoveLevel> = {}
   for (const row of existing ?? []) existingMap[row.move] = row
 
-  const moves: FlowMove[] = ['frame', 'list', 'optimize', 'win']
+  const moves: FlowMove[] = ['frame', 'list', 'weigh', 'sell']
   const historyRows: Omit<MoveLevelHistory, 'id' | 'created_at'>[] = []
   const upsertRows: Omit<MoveLevel, 'id' | 'created_at'>[] = []
 

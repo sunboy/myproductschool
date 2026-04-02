@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useStudyPlans } from '@/hooks/useStudyPlans'
-import type { StudyPlan } from '@/lib/types'
+import { useMoveLevels } from '@/hooks/useMoveLevels'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import type { StudyPlan, FlowMove } from '@/lib/types'
 
 const FLOW_FILTERS = [
   { id: 'all',      label: 'All' },
@@ -37,10 +39,41 @@ function StudyPlanCard({ plan }: { plan: StudyPlan }) {
   )
 }
 
+function getLumaPickReason(move: FlowMove): string {
+  switch (move) {
+    case 'frame':
+      return 'Framing problems clearly is your growth edge — this plan targets it directly.'
+    case 'list':
+      return 'Generating strong solution lists is your next unlock — this plan is built for it.'
+    case 'weigh':
+      return 'Your weigh move is your growth area — this plan builds trade-off thinking directly.'
+    case 'sell':
+      return 'Communicating decisions is your next unlock — this plan sharpens your sell move.'
+    default:
+      return 'This plan matches your current skill level.'
+  }
+}
+
 export default function PlansPage() {
   const { plans, isLoading } = useStudyPlans()
+  const { moves, isLoading: movesLoading } = useMoveLevels()
   const [filter, setFilter] = useState('all')
   const filtered = filter === 'all' ? plans : plans.filter(p => p.move_tag?.toLowerCase() === filter)
+
+  // Derive weakest FLOW move — lowest level, then lowest xp as tiebreaker
+  const weakestMove = useMemo<FlowMove | null>(() => {
+    if (!moves.length) return null
+    const sorted = [...moves].sort((a, b) => a.level !== b.level ? a.level - b.level : a.xp - b.xp)
+    return sorted[0].move
+  }, [moves])
+
+  // Pick the first published plan that matches the weakest move
+  const lumaPick = useMemo<StudyPlan | null>(() => {
+    if (!weakestMove || !plans.length) return null
+    return plans.find(p => p.move_tag?.toLowerCase() === weakestMove) ?? null
+  }, [weakestMove, plans])
+
+  const lumaPickReason = weakestMove ? getLumaPickReason(weakestMove) : 'This plan matches your current skill level.'
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-6">
@@ -51,6 +84,17 @@ export default function PlansPage() {
       </div>
       <h1 className="font-headline text-2xl font-bold text-on-surface mb-1">Study Plans</h1>
       <p className="font-body text-sm text-on-surface-variant mb-6">Curated challenge paths — by FLOW move, role, or level</p>
+
+      {!movesLoading && lumaPick && (
+        <div className="bg-primary-fixed rounded-xl p-5 flex gap-4 items-start mb-6 border border-outline-variant">
+          <LumaGlyph size={36} state="speaking" className="text-primary shrink-0 mt-0.5" />
+          <div>
+            <p className="font-label text-xs text-primary font-semibold uppercase tracking-wide mb-1">Luma&apos;s Pick</p>
+            <p className="font-headline text-base text-on-surface font-semibold">{lumaPick.title}</p>
+            <p className="font-body text-sm text-on-surface-variant mt-1">{lumaPickReason}</p>
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-2 flex-wrap mb-6">
         {FLOW_FILTERS.map(f => (

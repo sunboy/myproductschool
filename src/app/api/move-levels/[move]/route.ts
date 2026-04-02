@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import type { FlowMove, MoveLevel, MoveLevelHistory } from '@/lib/types'
 import { IS_MOCK } from '@/lib/mock'
 
-const VALID_MOVES: FlowMove[] = ['frame', 'list', 'optimize', 'win']
+const VALID_MOVES: FlowMove[] = ['frame', 'list', 'weigh', 'sell']
 
 const XP_PER_LEVEL = 500
 
@@ -15,7 +15,7 @@ export async function GET(
   const { move } = await params
 
   if (!VALID_MOVES.includes(move as FlowMove)) {
-    return NextResponse.json({ error: 'Invalid move. Must be one of: frame, list, optimize, win' }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid move. Must be one of: frame, list, weigh, sell' }, { status: 400 })
   }
 
   if (IS_MOCK) {

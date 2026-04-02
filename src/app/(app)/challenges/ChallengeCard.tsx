@@ -6,8 +6,8 @@ import type { ChallengeWithDomain, FlowMove } from '@/lib/types'
 const MOVE_DISPLAY: Record<FlowMove, { label: string; symbol: string; color: string }> = {
   frame:    { label: 'Frame',    symbol: '◇', color: 'text-blue-600' },
   list:     { label: 'List',     symbol: '◈', color: 'text-rose-600' },
-  optimize: { label: 'Optimize', symbol: '◆', color: 'text-amber-600' },
-  win:      { label: 'Win',      symbol: '◎', color: 'text-emerald-600' },
+  weigh: { label: 'Weigh', symbol: '◆', color: 'text-amber-600' },
+  sell:  { label: 'Sell',  symbol: '◎', color: 'text-emerald-600' },
 }
 
 function getParadigmBadgeClass(paradigm: string): string {

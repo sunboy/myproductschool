@@ -53,8 +53,8 @@ export default function ResultsPage() {
     ? [
         { icon: 'diamond',  name: 'Frame',    level: `Level ${results.starting_levels.frame}`,    highlight: results.starting_levels.frame < 2 },
         { icon: 'vignette', name: 'List',     level: `Level ${results.starting_levels.list}`,     highlight: results.starting_levels.list < 2 },
-        { icon: 'pentagon', name: 'Optimize', level: `Level ${results.starting_levels.optimize}`, highlight: results.starting_levels.optimize < 2 },
-        { icon: 'circle',   name: 'Win',      level: `Level ${results.starting_levels.win}`,      highlight: results.starting_levels.win < 2 },
+        { icon: 'pentagon', name: 'Weigh', level: `Level ${results.starting_levels.weigh}`, highlight: results.starting_levels.weigh < 2 },
+        { icon: 'circle',   name: 'Sell',  level: `Level ${results.starting_levels.sell}`,  highlight: results.starting_levels.sell < 2 },
       ]
     : STARTING_LEVELS_MOCK
 
