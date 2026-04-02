@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { useStudyPlans } from '@/hooks/useStudyPlans'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
@@ -17,6 +17,120 @@ const FLOW_FILTERS = [
 
 const MOVE_COLORS: Record<string, string> = {
   frame: '#3b5bdb', list: '#4a7c59', optimize: '#705c30', win: '#6b21a8',
+}
+
+interface PersonalisedPlan {
+  id: string
+  title: string
+  luma_rationale: string
+  status: string
+  move_sequence: Array<{ week: number; focus_move: string; theme: string; challenge_ids: string[] }>
+}
+
+function PersonalisedPlanCard() {
+  const [plan, setPlan] = useState<PersonalisedPlan | null | undefined>(undefined) // undefined = loading
+  const [generating, setGenerating] = useState(false)
+  const [rebuilding, setRebuilding] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/study-plans/personalised')
+      .then(r => r.json())
+      .then(data => setPlan(data.plan ?? null))
+      .catch(() => setPlan(null))
+  }, [])
+
+  const handleGenerate = async () => {
+    setGenerating(true)
+    try {
+      const res = await fetch('/api/study-plans/personalised/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      const data = await res.json()
+      setPlan(data)
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  const handleRebuild = async () => {
+    setRebuilding(true)
+    try {
+      const res = await fetch('/api/study-plans/personalised/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ force: true }),
+      })
+      const data = await res.json()
+      setPlan(data)
+    } finally {
+      setRebuilding(false)
+    }
+  }
+
+  // Loading state
+  if (plan === undefined) {
+    return <div className="h-32 bg-surface-container rounded-xl animate-pulse mb-6" />
+  }
+
+  // No plan — show CTA
+  if (plan === null) {
+    return (
+      <div className="bg-surface-container rounded-xl p-6 mb-6 border border-outline-variant flex items-center gap-4">
+        <LumaGlyph size={40} state={generating ? 'reviewing' : 'idle'} className="text-primary shrink-0" />
+        <div className="flex-1">
+          <p className="font-headline text-base text-on-surface font-semibold mb-1">Build your personalised study plan</p>
+          <p className="font-body text-sm text-on-surface-variant mb-3">Luma will create a custom 4-week plan based on your calibration results and current skill level.</p>
+          <button
+            onClick={handleGenerate}
+            disabled={generating}
+            className="bg-primary text-on-primary rounded-full px-5 py-2 font-label text-sm font-semibold disabled:opacity-60"
+          >
+            {generating ? 'Building...' : 'Build my plan'}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Plan exists — show hero card
+  return (
+    <div className="bg-primary-container rounded-xl p-6 mb-6 border border-outline-variant">
+      {/* Header */}
+      <div className="flex items-start gap-3 mb-4">
+        <LumaGlyph size={40} state={rebuilding ? 'reviewing' : 'speaking'} className="text-primary shrink-0" />
+        <div className="flex-1">
+          <p className="font-label text-xs text-primary font-semibold uppercase tracking-wide mb-0.5">Your Plan — by Luma</p>
+          <h2 className="font-headline text-lg text-on-surface font-semibold">{plan.title}</h2>
+          <p className="font-body text-sm text-on-surface-variant mt-1">{plan.luma_rationale}</p>
+        </div>
+      </div>
+
+      {/* Week breakdown */}
+      <div className="space-y-2 mb-4">
+        {plan.move_sequence?.map((week: { week: number; focus_move: string; theme: string; challenge_ids: string[] }) => (
+          <div key={week.week} className="bg-surface rounded-lg px-4 py-2.5 flex items-center justify-between">
+            <div>
+              <span className="font-label text-xs text-on-surface-variant">Week {week.week} — {week.theme}</span>
+              <p className="font-body text-sm text-on-surface">{week.challenge_ids.length} challenge{week.challenge_ids.length !== 1 ? 's' : ''} · {week.focus_move} move</p>
+            </div>
+            <span className="material-symbols-outlined text-on-surface-variant text-xl">arrow_forward</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Rebuild button */}
+      <button
+        onClick={handleRebuild}
+        disabled={rebuilding}
+        className="font-label text-xs text-primary hover:underline flex items-center gap-1 disabled:opacity-60"
+      >
+        {rebuilding ? <LumaGlyph size={16} state="reviewing" className="text-primary" /> : null}
+        {rebuilding ? 'Rebuilding...' : 'Rebuild plan'}
+      </button>
+    </div>
+  )
 }
 
 function StudyPlanCard({ plan }: { plan: StudyPlan }) {
@@ -84,6 +198,8 @@ export default function PlansPage() {
       </div>
       <h1 className="font-headline text-2xl font-bold text-on-surface mb-1">Study Plans</h1>
       <p className="font-body text-sm text-on-surface-variant mb-6">Curated challenge paths — by FLOW move, role, or level</p>
+
+      <PersonalisedPlanCard />
 
       {!movesLoading && lumaPick && (
         <div className="bg-primary-fixed rounded-xl p-5 flex gap-4 items-start mb-6 border border-outline-variant">
