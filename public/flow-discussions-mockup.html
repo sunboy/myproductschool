@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FLOW Workspace — Discussions Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&family=Nunito+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --primary: #4a7c59;
+    --primary-fixed: #c8e8d0;
+    --primary-container: #78a886;
+    --on-primary: #ffffff;
+    --secondary-container: #f0e8db;
+    --on-secondary-container: #5e5548;
+    --tertiary: #705c30;
+    --tertiary-container: #c4a66a;
+    --background: #faf6f0;
+    --surface: #faf6f0;
+    --surface-container-low: #f5f1ea;
+    --surface-container: #f0ece4;
+    --surface-container-high: #eae6de;
+    --surface-container-highest: #e4e0d8;
+    --on-surface: #2e3230;
+    --on-surface-variant: #4a4e4a;
+    --outline-variant: #c4c8bc;
+    --inverse-surface: #2e3230;
+    --inverse-on-surface: #f5f0e8;
+  }
+  body { font-family: 'Nunito Sans', sans-serif; background: #e8e4dc; display: flex; justify-content: center; padding: 32px 16px; min-height: 100vh; }
+  .material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; font-size: 16px; line-height: 1; letter-spacing: normal; text-transform: none; display: inline-block; white-space: nowrap; direction: ltr; -webkit-font-smoothing: antialiased; font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20; }
+
+  /* Page chrome */
+  .page { width: 1100px; }
+  .page-title { font-family: 'Literata', serif; font-size: 22px; color: var(--on-surface); margin-bottom: 6px; }
+  .page-subtitle { font-size: 13px; color: var(--on-surface-variant); margin-bottom: 20px; }
+  .tabs { display: flex; border-bottom: 2px solid var(--outline-variant); margin-bottom: 28px; }
+  .tab { padding: 10px 20px; font-size: 13px; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; color: var(--on-surface-variant); font-family: 'Nunito Sans', sans-serif; }
+  .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+  /* Workspace shell */
+  .workspace { background: var(--background); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 8px 40px rgba(0,0,0,0.18); }
+  .header { height: 48px; border-bottom: 1px solid var(--outline-variant); display: flex; align-items: center; padding: 0 16px; gap: 12px; flex-shrink: 0; background: var(--background); }
+  .header-back { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--on-surface-variant); }
+  .header-title { font-family: 'Literata', serif; font-weight: 600; font-size: 15px; color: var(--on-surface); }
+
+  /* Two-column body */
+  .body { display: flex; overflow: hidden; }
+
+  /* LEFT PANE — scrollable */
+  .left-pane { width: 40%; background: var(--surface-container-low); border-right: 1px solid var(--outline-variant); display: flex; flex-direction: column; overflow-y: auto; padding: 24px; gap: 20px; }
+  .scenario-title { font-family: 'Literata', serif; font-size: 18px; color: var(--on-surface); font-weight: 600; }
+  .badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .badge { background: var(--secondary-container); color: var(--on-secondary-container); border-radius: 99px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
+  .badge.primary { background: var(--primary-container); color: var(--on-surface); }
+  .section-label { font-size: 10px; color: var(--on-surface-variant); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+  .section-body { font-size: 13px; color: var(--on-surface); line-height: 1.6; margin-top: 4px; }
+  .your-challenge { background: var(--inverse-surface); border-radius: 12px; padding: 16px; }
+  .your-challenge .section-label { color: rgba(245,240,232,0.6); }
+  .your-challenge .section-body { color: var(--inverse-on-surface); }
+
+  /* ── Question block (inside left pane) ── */
+  .question-block { display: flex; flex-direction: column; gap: 12px; }
+
+  /* Question title row: headline + discuss button inline */
+  .question-title-row { display: flex; align-items: flex-start; gap: 10px; }
+  .question-text { font-family: 'Literata', serif; font-size: 17px; color: var(--on-surface); font-weight: 400; line-height: 1.5; flex: 1; }
+
+  /* Discuss button — sits inline with question title */
+  .discuss-btn {
+    display: flex; align-items: center; gap: 4px;
+    padding: 4px 10px 4px 8px;
+    border-radius: 99px;
+    border: 1.5px solid var(--outline-variant);
+    background: transparent;
+    font-size: 11px; font-weight: 700; font-family: 'Nunito Sans', sans-serif;
+    color: var(--on-surface-variant);
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    margin-top: 3px; /* optical alignment with first line of text */
+  }
+  .discuss-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-fixed); }
+  .discuss-btn.active { border-color: var(--primary); color: var(--primary); background: var(--primary-fixed); }
+  .discuss-btn .forum-icon { font-size: 14px; font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; }
+  .discuss-btn .count { background: var(--primary); color: white; border-radius: 99px; font-size: 9px; font-weight: 800; padding: 1px 5px; min-width: 16px; text-align: center; line-height: 1.4; }
+  .discuss-btn.active .count { background: var(--primary); }
+
+  /* ── Inline discussion panel (left pane, below question) ── */
+  .discussion-panel { border: 1px solid var(--outline-variant); border-radius: 12px; overflow: hidden; background: white; }
+  .dp-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--outline-variant); background: var(--surface-container-low); }
+  .dp-title { font-size: 11px; font-weight: 700; color: var(--on-surface-variant); text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap: 5px; }
+  .dp-title .material-symbols-outlined { font-size: 14px; color: var(--primary); font-variation-settings: 'FILL' 0, 'wght' 400; }
+  .dp-link { font-size: 11px; color: var(--on-surface-variant); text-decoration: none; display: flex; align-items: center; gap: 3px; opacity: 0.65; }
+  .dp-link:hover { color: var(--primary); opacity: 1; }
+  .dp-link .material-symbols-outlined { font-size: 12px; font-variation-settings: 'FILL' 0, 'wght' 400; }
+
+  .dp-threads { display: flex; flex-direction: column; gap: 1px; background: var(--outline-variant); }
+  .thread { background: white; padding: 12px 14px; }
+  .thread.expert { border-left: 3px solid var(--tertiary); }
+  .thread-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--primary-container); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: var(--on-surface); flex-shrink: 0; }
+  .avatar.luma { font-size: 13px; background: var(--secondary-container); }
+  .username { font-size: 12px; font-weight: 700; color: var(--on-surface); }
+  .timestamp { font-size: 10px; color: var(--on-surface-variant); }
+  .expert-badge { font-size: 9px; font-weight: 700; color: var(--tertiary); background: var(--tertiary-container); border-radius: 99px; padding: 1px 6px; text-transform: uppercase; }
+  .thread-body { font-size: 12px; color: var(--on-surface); line-height: 1.55; }
+  .thread-actions { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .ta-btn { display: flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 99px; background: var(--surface-container-highest); border: none; font-size: 11px; color: var(--on-surface-variant); cursor: pointer; font-family: 'Nunito Sans', sans-serif; font-weight: 600; }
+  .ta-btn .material-symbols-outlined { font-size: 12px; font-variation-settings: 'FILL' 0, 'wght' 400; }
+  .ta-btn.up { background: var(--primary-fixed); color: var(--primary); }
+  .ta-btn.up .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400; }
+  .reply-btn { font-size: 11px; color: var(--on-surface-variant); cursor: pointer; font-weight: 600; padding: 3px 6px; background: none; border: none; font-family: 'Nunito Sans', sans-serif; }
+
+  .dp-input { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--outline-variant); background: white; }
+  .dp-input input { flex: 1; border: 1px solid var(--outline-variant); border-radius: 8px; padding: 7px 11px; font-size: 12px; font-family: 'Nunito Sans', sans-serif; color: var(--on-surface); background: var(--surface-container-low); outline: none; }
+  .dp-input button { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 700; font-family: 'Nunito Sans', sans-serif; cursor: pointer; }
+
+  /* RIGHT PANE */
+  .right-pane { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--surface); }
+  .stepper { border-bottom: 1px solid var(--outline-variant); padding: 12px 24px; flex-shrink: 0; }
+  .stepper-row { display: flex; align-items: center; gap: 6px; }
+  .step-pill { display: flex; align-items: center; gap: 6px; border-radius: 99px; padding: 6px 14px; font-size: 13px; font-weight: 600; flex: 1; justify-content: center; }
+  .step-pill.active { background: var(--primary); color: var(--on-primary); }
+  .step-pill.done { background: var(--primary-fixed); color: var(--on-surface); cursor: pointer; }
+  .step-pill.pending { background: var(--surface-container); color: var(--on-surface-variant); opacity: 0.6; }
+  .connector { width: 12px; height: 2px; flex-shrink: 0; background: var(--outline-variant); }
+  .connector.done { background: var(--primary); }
+
+  .question-scroll { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+  .nudge { display: flex; align-items: flex-start; gap: 8px; background: var(--secondary-container); border-radius: 12px; padding: 10px 14px; }
+  .nudge .material-symbols-outlined { font-size: 17px; color: var(--on-secondary-container); flex-shrink: 0; margin-top: 1px; font-variation-settings: 'FILL' 0, 'wght' 400; }
+  .nudge p { font-size: 13px; color: var(--on-secondary-container); line-height: 1.5; }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option { background: var(--surface-container); border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 12px 16px; font-size: 13px; color: var(--on-surface); display: flex; align-items: flex-start; gap: 10px; }
+  .option.selected { border-color: var(--primary); background: var(--primary-fixed); }
+  .opt-label { font-weight: 700; color: var(--primary); font-size: 12px; min-width: 18px; margin-top: 1px; }
+  .elaboration { display: flex; flex-direction: column; gap: 6px; }
+  .elab-label { font-size: 12px; color: var(--on-surface-variant); font-weight: 600; }
+  .elab-textarea { width: 100%; border: 1.5px solid var(--outline-variant); border-radius: 10px; background: var(--surface-container); padding: 10px 12px; font-size: 13px; font-family: 'Nunito Sans', sans-serif; color: var(--on-surface); resize: none; min-height: 80px; outline: none; }
+  .footer { border-top: 1px solid var(--outline-variant); padding: 12px 24px; display: flex; justify-content: flex-end; flex-shrink: 0; }
+  .submit-btn { background: var(--primary); color: white; border: none; border-radius: 99px; padding: 10px 28px; font-size: 13px; font-weight: 700; font-family: 'Nunito Sans', sans-serif; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1 class="page-title">FLOW Workspace — Inline Discussions</h1>
+  <p class="page-subtitle">Discuss button sits inline with the question title on the left pane. Click to expand thread below the question.</p>
+
+  <div class="tabs">
+    <div class="tab active" onclick="show('closed')">Discuss button — closed</div>
+    <div class="tab" onclick="show('open')">Discuss panel — open</div>
+  </div>
+
+  <!-- ══ STATE: CLOSED ══ -->
+  <div id="closed" class="workspace">
+    <div class="header">
+      <div class="header-back"><span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 0">arrow_back</span></div>
+      <div class="header-title">Notification Fatigue: Fixing a B2B SaaS Drop-off</div>
+    </div>
+    <div class="body" style="height:640px">
+
+      <!-- LEFT PANE -->
+      <div class="left-pane">
+        <div>
+          <h2 class="scenario-title">Notification Fatigue</h2>
+          <div class="badge-row">
+            <span class="badge primary">Senior PM, Growth</span>
+            <span class="badge">B2B SaaS</span>
+            <span class="badge">Medium</span>
+          </div>
+        </div>
+        <div><p class="section-label">The situation</p><p class="section-body">You work on a B2B SaaS project management tool. DAU/MAU is declining. Exit surveys cite "too many notifications." The activity digest feature shipped 6 months ago and usage is at 18%.</p></div>
+        <div><p class="section-label">What just happened</p><p class="section-body">Three enterprise accounts threatened to churn due to "notification overload." Support tickets about notification settings are up 40% MoM.</p></div>
+        <div class="your-challenge"><p class="section-label">Your challenge</p><p class="section-body">How do you diagnose and fix the notification fatigue problem without sacrificing engagement for power users?</p></div>
+
+        <!-- Question block -->
+        <div class="question-block">
+          <div class="question-title-row">
+            <p class="question-text">What metric should you use as the primary success indicator for the fix?</p>
+            <!-- Discuss button — no count yet implies 0, show just the icon -->
+            <button class="discuss-btn" onclick="show('open')" title="View discussions">
+              <span class="material-symbols-outlined forum-icon">forum</span>
+              <span>4</span>
+            </button>
+          </div>
+          <!-- No discussion panel here -->
+        </div>
+      </div>
+
+      <!-- RIGHT PANE -->
+      <div class="right-pane">
+        <div class="stepper">
+          <div class="stepper-row">
+            <div class="step-pill done"><span class="material-symbols-outlined">check_circle</span> Frame</div>
+            <div class="connector done"></div>
+            <div class="step-pill done"><span class="material-symbols-outlined">check_circle</span> List</div>
+            <div class="connector"></div>
+            <div class="step-pill active"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 0">tune</span> Optimize</div>
+            <div class="connector"></div>
+            <div class="step-pill pending"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 0">emoji_events</span> Win</div>
+          </div>
+        </div>
+        <div class="question-scroll">
+          <div class="nudge"><span class="material-symbols-outlined">lightbulb</span><p>Think about what matters most to enterprise customers vs power users, and how you'd measure the tradeoff.</p></div>
+          <p style="font-family:'Literata',serif;font-size:17px;color:var(--on-surface);line-height:1.5">Which intervention best addresses notification fatigue without sacrificing engagement for power users?</p>
+          <div class="options">
+            <div class="option selected"><span class="opt-label">A</span><span>Build a per-notification-type toggle UI so users can manually opt out of categories</span></div>
+            <div class="option"><span class="opt-label">B</span><span>Implement a relevance-scoring model that batches low-priority notifications into a daily digest</span></div>
+            <div class="option"><span class="opt-label">C</span><span>Disable the activity digest feature and revert to pre-feature notification logic</span></div>
+            <div class="option"><span class="opt-label">D</span><span>Add a global "quiet hours" feature with a 9am–5pm work window default</span></div>
+          </div>
+          <div class="elaboration">
+            <p class="elab-label">Explain your reasoning (optional)</p>
+            <textarea class="elab-textarea" placeholder="Add your reasoning…"></textarea>
+          </div>
+        </div>
+        <div class="footer"><button class="submit-btn">Submit</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height:36px"></div>
+
+  <!-- ══ STATE: OPEN ══ -->
+  <div id="open" class="workspace" style="display:none">
+    <div class="header">
+      <div class="header-back"><span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 0">arrow_back</span></div>
+      <div class="header-title">Notification Fatigue: Fixing a B2B SaaS Drop-off</div>
+    </div>
+    <div class="body" style="height:740px">
+
+      <!-- LEFT PANE — scrollable, discussion panel appears below question -->
+      <div class="left-pane">
+        <div>
+          <h2 class="scenario-title">Notification Fatigue</h2>
+          <div class="badge-row">
+            <span class="badge primary">Senior PM, Growth</span>
+            <span class="badge">B2B SaaS</span>
+            <span class="badge">Medium</span>
+          </div>
+        </div>
+        <div><p class="section-label">The situation</p><p class="section-body">You work on a B2B SaaS project management tool. DAU/MAU is declining. Exit surveys cite "too many notifications." The activity digest feature shipped 6 months ago and usage is at 18%.</p></div>
+        <div><p class="section-label">What just happened</p><p class="section-body">Three enterprise accounts threatened to churn due to "notification overload." Support tickets about notification settings are up 40% MoM.</p></div>
+        <div class="your-challenge"><p class="section-label">Your challenge</p><p class="section-body">How do you diagnose and fix the notification fatigue problem without sacrificing engagement for power users?</p></div>
+
+        <!-- Question block with discussion panel open -->
+        <div class="question-block">
+          <div class="question-title-row">
+            <p class="question-text">What metric should you use as the primary success indicator for the fix?</p>
+            <button class="discuss-btn active" onclick="show('closed')" title="Hide discussions">
+              <span class="material-symbols-outlined forum-icon">forum</span>
+              <span>4</span>
+            </button>
+          </div>
+
+          <!-- ── Discussion panel ── -->
+          <div class="discussion-panel">
+            <div class="dp-header">
+              <div class="dp-title">
+                <span class="material-symbols-outlined">forum</span>
+                4 comments
+              </div>
+              <a href="#" class="dp-link">
+                <span class="material-symbols-outlined">open_in_new</span>
+                Full thread
+              </a>
+            </div>
+
+            <div class="dp-threads">
+              <!-- Expert pick -->
+              <div class="thread expert">
+                <div class="thread-meta">
+                  <div class="avatar luma">🤖</div>
+                  <span class="username">Luma's Team</span>
+                  <span class="expert-badge">Expert Pick</span>
+                  <span class="timestamp">· 2d ago</span>
+                </div>
+                <p class="thread-body">Notification-open rate is a vanity metric here — it stays high even if users are annoyed. The real signal is weekly active notification interactions per user, segmented by tier. Enterprise churn is the lagging indicator you're trying to move.</p>
+                <div class="thread-actions">
+                  <button class="ta-btn up"><span class="material-symbols-outlined">thumb_up</span> 9</button>
+                  <button class="reply-btn">Reply</button>
+                </div>
+              </div>
+
+              <!-- Post 1 -->
+              <div class="thread">
+                <div class="thread-meta">
+                  <div class="avatar">AK</div>
+                  <span class="username">alex_k</span>
+                  <span class="timestamp">· 1d ago</span>
+                </div>
+                <p class="thread-body">I used notification dismissal rate as my primary — if users are dismissing without reading, that's the clearest churn signal. Luma's point on segmentation is key though.</p>
+                <div class="thread-actions">
+                  <button class="ta-btn"><span class="material-symbols-outlined">thumb_up</span> 4</button>
+                  <button class="reply-btn">Reply</button>
+                </div>
+              </div>
+
+              <!-- Post 2 -->
+              <div class="thread">
+                <div class="thread-meta">
+                  <div class="avatar" style="background:var(--secondary-container)">PM</div>
+                  <span class="username">priya_m</span>
+                  <span class="timestamp">· 5h ago</span>
+                </div>
+                <p class="thread-body">Don't forget to track support ticket volume as a guardrail metric — if it keeps rising post-fix, the intervention didn't land.</p>
+                <div class="thread-actions">
+                  <button class="ta-btn"><span class="material-symbols-outlined">thumb_up</span> 2</button>
+                  <button class="reply-btn">Reply</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="dp-input">
+              <input type="text" placeholder="Add to the discussion…" />
+              <button>Post</button>
+            </div>
+          </div>
+          <!-- end discussion panel -->
+
+        </div>
+      </div>
+
+      <!-- RIGHT PANE (unchanged) -->
+      <div class="right-pane">
+        <div class="stepper">
+          <div class="stepper-row">
+            <div class="step-pill done"><span class="material-symbols-outlined">check_circle</span> Frame</div>
+            <div class="connector done"></div>
+            <div class="step-pill done"><span class="material-symbols-outlined">check_circle</span> List</div>
+            <div class="connector"></div>
+            <div class="step-pill active"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 0">tune</span> Optimize</div>
+            <div class="connector"></div>
+            <div class="step-pill pending"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 0">emoji_events</span> Win</div>
+          </div>
+        </div>
+        <div class="question-scroll">
+          <div class="nudge"><span class="material-symbols-outlined">lightbulb</span><p>Think about what matters most to enterprise customers vs power users, and how you'd measure the tradeoff.</p></div>
+          <p style="font-family:'Literata',serif;font-size:17px;color:var(--on-surface);line-height:1.5">Which intervention best addresses notification fatigue without sacrificing engagement for power users?</p>
+          <div class="options">
+            <div class="option selected"><span class="opt-label">A</span><span>Build a per-notification-type toggle UI so users can manually opt out of categories</span></div>
+            <div class="option"><span class="opt-label">B</span><span>Implement a relevance-scoring model that batches low-priority notifications into a daily digest</span></div>
+            <div class="option"><span class="opt-label">C</span><span>Disable the activity digest feature and revert to pre-feature notification logic</span></div>
+            <div class="option"><span class="opt-label">D</span><span>Add a global "quiet hours" feature with a 9am–5pm work window default</span></div>
+          </div>
+          <div class="elaboration">
+            <p class="elab-label">Explain your reasoning (optional)</p>
+            <textarea class="elab-textarea" placeholder="Add your reasoning…"></textarea>
+          </div>
+        </div>
+        <div class="footer"><button class="submit-btn">Submit</button></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function show(state) {
+  document.getElementById('closed').style.display = state === 'closed' ? 'flex' : 'none';
+  document.getElementById('open').style.display = state === 'open' ? 'flex' : 'none';
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && state === 'closed') || (i === 1 && state === 'open'));
+  });
+}
+</script>
+</body>
+</html>

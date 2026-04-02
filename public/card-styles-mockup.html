@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Card Style Options</title>
+<link href="https://fonts.googleapis.com/css2?family=Literata:wght@400;600;700&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #4a7c59;
+  --on-primary: #ffffff;
+  --primary-fixed: #c8e8d0;
+  --primary-fixed-dim: #a8d4b8;
+  --background: #faf6f0;
+  --surface-container-low: #f5f1ea;
+  --surface-container: #f0ece4;
+  --surface-container-high: #eae6de;
+  --surface-container-highest: #e4e0d8;
+  --on-surface: #2e3230;
+  --on-surface-variant: #4a4e4a;
+  --outline-variant: #c4c8bc;
+  --secondary-container: #f0e8db;
+  --on-secondary-container: #5e5548;
+  --tertiary: #705c30;
+  --tertiary-fixed: #f5e6c8;
+
+  /* Section tints */
+  --modules-tint: #eaf4ee;
+  --modules-tint-strong: #c8e8d0;
+  --modules-accent: #4a7c59;
+  --domains-tint: #fef3e2;
+  --domains-tint-strong: #f5e0b0;
+  --domains-accent: #8a6020;
+  --plans-tint: #e8edf8;
+  --plans-tint-strong: #c4d0ee;
+  --plans-accent: #3a5a9e;
+}
+
+body {
+  font-family: 'Nunito Sans', sans-serif;
+  background: #ddd9d0;
+  color: var(--on-surface);
+  padding: 24px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-family: 'Literata', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--on-surface);
+  margin-bottom: 4px;
+}
+.subtitle { font-size: 12px; color: var(--on-surface-variant); margin-bottom: 20px; }
+
+/* ── Style picker ── */
+.style-picker {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.style-btn {
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 2px solid var(--outline-variant);
+  background: white;
+  color: var(--on-surface-variant);
+  transition: all 0.15s;
+  font-family: 'Nunito Sans', sans-serif;
+}
+.style-btn:hover { border-color: var(--primary); color: var(--primary); }
+.style-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+/* ── Layout ── */
+.learn-page {
+  background: var(--background);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+  max-width: 780px;
+}
+
+.page-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--outline-variant);
+}
+.page-title { font-family: 'Literata', serif; font-size: 22px; font-weight: 700; }
+.page-subtitle { font-size: 12px; color: var(--on-surface-variant); margin-top: 2px; }
+
+.page-body {
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ── Section header ── */
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  margin-bottom: 10px;
+}
+.section-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--on-surface-variant);
+}
+.view-all {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* ── Scroll row ── */
+.scroll-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 4px 24px 8px;
+  scrollbar-width: none;
+}
+.scroll-row::-webkit-scrollbar { display: none; }
+
+/* ── Section strip (for option C) ── */
+.section-strip {
+  padding: 14px 0 4px;
+  margin: 0;
+}
+
+/* ── Base card ── */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  border-radius: 14px;
+  padding: 14px;
+  min-width: 172px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+.card-icon {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  background: var(--primary-fixed);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 2px;
+}
+.card-icon .material-symbols-outlined { font-size: 18px; color: var(--primary); }
+
+.card-title { font-family: 'Literata', serif; font-size: 13px; font-weight: 700; color: var(--on-surface); line-height: 1.3; }
+.card-body { font-size: 11px; color: var(--on-surface-variant); line-height: 1.4; }
+
+.mini-progress { height: 4px; background: var(--surface-container-highest); border-radius: 99px; overflow: hidden; }
+.mini-fill { height: 100%; background: var(--primary); border-radius: 99px; }
+
+.badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: var(--secondary-container); color: var(--on-secondary-container); }
+.badge.green { background: var(--primary-fixed); color: var(--primary); }
+.badge.amber { background: var(--tertiary-fixed); color: var(--tertiary); }
+.badge.blue { background: #e0eaf8; color: #3a5a9e; }
+.footer-row { display: flex; gap: 5px; flex-wrap: wrap; }
+
+/* Domain pill (compact) */
+.domain-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 76px;
+  flex-shrink: 0;
+  cursor: pointer;
+  padding: 10px 8px;
+  border-radius: 14px;
+  transition: background 0.12s;
+}
+.domain-pill:hover { background: var(--surface-container-high); }
+.domain-icon {
+  width: 44px; height: 44px;
+  border-radius: 13px;
+  background: var(--primary-fixed);
+  display: flex; align-items: center; justify-content: center;
+}
+.domain-icon .material-symbols-outlined { font-size: 20px; color: var(--primary); }
+.domain-label { font-size: 11px; font-weight: 700; color: var(--on-surface); text-align: center; }
+.domain-count { font-size: 10px; color: var(--on-surface-variant); }
+
+/* ════════════════════════════════════
+   OPTION A — Per-section tint
+   Cards get subtle tinted bg per group
+   ════════════════════════════════════ */
+.opt-a .modules-card {
+  background: var(--modules-tint);
+}
+.opt-a .modules-card .card-icon { background: var(--modules-tint-strong); }
+.opt-a .modules-card .card-icon .material-symbols-outlined { color: var(--modules-accent); }
+.opt-a .modules-card .mini-fill { background: var(--modules-accent); }
+.opt-a .modules-card .badge.green { background: var(--modules-tint-strong); color: var(--modules-accent); }
+
+.opt-a .domains-card {
+  background: var(--domains-tint);
+}
+.opt-a .domains-card .domain-icon { background: var(--domains-tint-strong); }
+.opt-a .domains-card .domain-icon .material-symbols-outlined { color: var(--domains-accent); }
+
+.opt-a .plans-card {
+  background: var(--plans-tint);
+}
+.opt-a .plans-card .card-icon { background: var(--plans-tint-strong); }
+.opt-a .plans-card .card-icon .material-symbols-outlined { color: var(--plans-accent); }
+.opt-a .plans-card .mini-fill { background: var(--plans-accent); }
+
+/* ════════════════════════════════════
+   OPTION B — Colored top border
+   Cards white, 3px top border per group
+   ════════════════════════════════════ */
+.opt-b .card, .opt-b .domain-pill {
+  background: white;
+}
+.opt-b .modules-card { border-top: 3px solid var(--modules-accent); }
+.opt-b .domains-card { border-top: 3px solid var(--domains-accent); }
+.opt-b .plans-card   { border-top: 3px solid var(--plans-accent); }
+.opt-b .domain-pill.domains-card { border-top: 3px solid var(--domains-accent); border-radius: 14px; }
+
+/* ════════════════════════════════════
+   OPTION C — Section gradient wash
+   Section container has bg gradient,
+   cards stay neutral
+   ════════════════════════════════════ */
+.opt-c .modules-strip {
+  background: linear-gradient(to right, #e8f4ed, transparent);
+  padding: 14px 0 6px;
+}
+.opt-c .domains-strip {
+  background: linear-gradient(to right, #fef4e4, transparent);
+  padding: 14px 0 6px;
+}
+.opt-c .plans-strip {
+  background: linear-gradient(to right, #eaeff8, transparent);
+  padding: 14px 0 6px;
+}
+.opt-c .card, .opt-c .domain-pill { background: var(--surface-container); }
+
+/* ════════════════════════════════════
+   OPTION D — Cover band
+   Top colored band per card (content-own color),
+   rest stays neutral
+   ════════════════════════════════════ */
+.opt-d .card, .opt-d .domain-pill { background: white; gap: 0; padding: 0; overflow: hidden; }
+.opt-d .card .card-body-inner { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; }
+.cover-band {
+  height: 44px;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+}
+.cover-band .material-symbols-outlined { font-size: 16px; color: rgba(255,255,255,0.9); }
+.cover-band-label { font-family: 'Literata', serif; font-size: 11px; font-weight: 700; color: white; }
+
+.opt-d .domain-pill { flex-direction: column; padding: 0; border-radius: 14px; }
+.opt-d .domain-band { height: 48px; width: 100%; display: flex; align-items: center; justify-content: center; border-radius: 14px 14px 0 0; }
+.opt-d .domain-band .material-symbols-outlined { font-size: 22px; color: white; }
+.opt-d .domain-foot { padding: 6px 4px; text-align: center; }
+
+/* Neutral option (no style active) */
+.opt-none .card { background: var(--surface-container); }
+.opt-none .domain-pill { background: transparent; }
+</style>
+</head>
+<body>
+
+<h1>Card Color Style Options</h1>
+<p class="subtitle">All four options applied to the Learn hub — Modules (green), Domains (amber), Study Plans (blue). Click to switch.</p>
+
+<!-- Style picker -->
+<div class="style-picker">
+  <button class="style-btn" onclick="setStyle('none')">None (baseline)</button>
+  <button class="style-btn active" onclick="setStyle('a')">A — Per-section tint</button>
+  <button class="style-btn" onclick="setStyle('b')">B — Colored top border</button>
+  <button class="style-btn" onclick="setStyle('c')">C — Section gradient wash</button>
+  <button class="style-btn" onclick="setStyle('d')">D — Cover band</button>
+</div>
+
+<!-- Learn page preview -->
+<div class="learn-page">
+  <div class="page-header">
+    <div class="page-title">Learn</div>
+    <div class="page-subtitle">Orient yourself, build theory, follow a structured path</div>
+  </div>
+
+  <div class="page-body opt-a" id="learn-body">
+
+    <!-- ── MODULES ── -->
+    <div class="modules-strip section-strip" id="modules-strip">
+      <div class="section-head">
+        <span class="section-label">Course Modules</span>
+        <span class="view-all">View all →</span>
+      </div>
+      <div class="scroll-row" id="modules-row">
+
+        <div class="card modules-card" id="m1">
+          <!-- cover band (option D) -->
+          <div class="cover-band" id="m1-band" style="background:var(--modules-accent);">
+            <span class="material-symbols-outlined">foundation</span>
+            <span class="cover-band-label">Product Foundations</span>
+          </div>
+          <div class="card-body-inner">
+            <div class="card-icon" id="m1-icon"><span class="material-symbols-outlined">foundation</span></div>
+            <div class="card-title" id="m1-title">Product Foundations</div>
+            <div class="card-body">Metrics, trade-offs, user needs.</div>
+            <div class="mini-progress"><div class="mini-fill" style="width:70%"></div></div>
+            <div class="footer-row"><span class="badge green">7/10 done</span><span class="badge">~45 min</span></div>
+          </div>
+        </div>
+
+        <div class="card modules-card" id="m2">
+          <div class="cover-band" id="m2-band" style="background:#5b8fbe;">
+            <span class="material-symbols-outlined">smart_toy</span>
+            <span class="cover-band-label">AI-Assisted Thinking</span>
+          </div>
+          <div class="card-body-inner">
+            <div class="card-icon" id="m2-icon"><span class="material-symbols-outlined">smart_toy</span></div>
+            <div class="card-title" id="m2-title">AI-Assisted Thinking</div>
+            <div class="card-body">Trust, validate, keep judgment sharp.</div>
+            <div class="mini-progress"><div class="mini-fill" style="width:20%"></div></div>
+            <div class="footer-row"><span class="badge">2/8 done</span><span class="badge">~60 min</span></div>
+          </div>
+        </div>
+
+        <div class="card modules-card" id="m3">
+          <div class="cover-band" id="m3-band" style="background:#7c6f9e;">
+            <span class="material-symbols-outlined">hub</span>
+            <span class="cover-band-label">Agentic Systems</span>
+          </div>
+          <div class="card-body-inner">
+            <div class="card-icon" id="m3-icon"><span class="material-symbols-outlined">hub</span></div>
+            <div class="card-title" id="m3-title">Agentic Systems</div>
+            <div class="card-body">Agents, evals, failure modes.</div>
+            <div class="mini-progress"><div class="mini-fill" style="width:0%"></div></div>
+            <div class="footer-row"><span class="badge">Not started</span><span class="badge">~90 min</span></div>
+          </div>
+        </div>
+
+        <div class="card modules-card" id="m4">
+          <div class="cover-band" id="m4-band" style="background:#b87c4a;">
+            <span class="material-symbols-outlined">neurology</span>
+            <span class="cover-band-label">AI-Native Products</span>
+          </div>
+          <div class="card-body-inner">
+            <div class="card-icon" id="m4-icon"><span class="material-symbols-outlined">neurology</span></div>
+            <div class="card-title" id="m4-title">AI-Native Products</div>
+            <div class="card-body">New interaction models and risks.</div>
+            <div class="mini-progress"><div class="mini-fill" style="width:0%"></div></div>
+            <div class="footer-row"><span class="badge">Not started</span><span class="badge">~75 min</span></div>
+          </div>
+        </div>
+
+        <div class="card modules-card" id="m5">
+          <div class="cover-band" id="m5-band" style="background:#6b6358;">
+            <span class="material-symbols-outlined">bar_chart</span>
+            <span class="cover-band-label">Metrics Mastery</span>
+          </div>
+          <div class="card-body-inner">
+            <div class="card-icon" id="m5-icon"><span class="material-symbols-outlined">bar_chart</span></div>
+            <div class="card-title" id="m5-title">Metrics Mastery</div>
+            <div class="card-body">Read numbers, spot traps, act on signal.</div>
+            <div class="mini-progress"><div class="mini-fill" style="width:0%"></div></div>
+            <div class="footer-row"><span class="badge">Not started</span><span class="badge">~50 min</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── DOMAINS ── -->
+    <div class="domains-strip section-strip" id="domains-strip">
+      <div class="section-head">
+        <span class="section-label">Domains</span>
+        <span class="view-all">View all →</span>
+      </div>
+      <div class="scroll-row" style="gap:6px;" id="domains-row">
+
+        <div class="domain-pill domains-card">
+          <div class="domain-band" style="background:var(--domains-accent);">
+            <div class="domain-icon" id="di1"><span class="material-symbols-outlined">notifications</span></div>
+          </div>
+          <div class="domain-band-alt" style="display:none;"></div>
+          <div class="domain-foot">
+            <div class="domain-label">Notifications</div>
+            <div class="domain-count">12 challenges</div>
+          </div>
+        </div>
+
+        <div class="domain-pill domains-card">
+          <div class="domain-band" style="background:var(--domains-accent);">
+            <div class="domain-icon"><span class="material-symbols-outlined">search</span></div>
+          </div>
+          <div class="domain-foot">
+            <div class="domain-label">Search</div>
+            <div class="domain-count">8 challenges</div>
+          </div>
+        </div>
+
+        <div class="domain-pill domains-card">
+          <div class="domain-band" style="background:var(--domains-accent);">
+            <div class="domain-icon"><span class="material-symbols-outlined">trending_up</span></div>
+          </div>
+          <div class="domain-foot">
+            <div class="domain-label">Growth</div>
+            <div class="domain-count">15 challenges</div>
+          </div>
+        </div>
+
+        <div class="domain-pill domains-card">
+          <div class="domain-band" style="background:var(--domains-accent);">
+            <div class="domain-icon"><span class="material-symbols-outlined">payments</span></div>
+          </div>
+          <div class="domain-foot">
+            <div class="domain-label">Monetisation</div>
+            <div class="domain-count">9 challenges</div>
+          </div>
+        </div>
+
+        <div class="domain-pill domains-card">
+          <div class="domain-band" style="background:var(--domains-accent);">
+            <div class="domain-icon"><span class="material-symbols-outlined">people</span></div>
+          </div>
+          <div class="domain-foot">
+            <div class="domain-label">Retention</div>
+            <div class="domain-count">11 challenges</div>
+          </div>
+        </div>
+
+        <div class="domain-pill domains-card">
+          <div class="domain-band" style="background:var(--domains-accent);">
+            <div class="domain-icon"><span class="material-symbols-outlined">speed</span></div>
+          </div>
+          <div class="domain-foot">
+            <div class="domain-label">Performance</div>
+            <div class="domain-count">7 challenges</div>
+          </div>
+        </div>
+
+        <div class="domain-pill domains-card">
+          <div class="domain-band" style="background:var(--domains-accent);">
+            <div class="domain-icon"><span class="material-symbols-outlined">security</span></div>
+          </div>
+          <div class="domain-foot">
+            <div class="domain-label">Trust & Safety</div>
+            <div class="domain-count">6 challenges</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── STUDY PLANS ── -->
+    <div class="plans-strip section-strip" id="plans-strip">
+      <div class="section-head">
+        <span class="section-label">Study Plans</span>
+        <span class="view-all">View all →</span>
+      </div>
+      <div class="scroll-row" id="plans-row">
+
+        <div class="card plans-card">
+          <div class="cover-band" style="background:var(--primary);">
+            <span class="material-symbols-outlined">route</span>
+            <span class="cover-band-label">Staff Engineer Path</span>
+          </div>
+          <div class="card-body-inner">
+            <div class="card-icon"><span class="material-symbols-outlined">route</span></div>
+            <div class="footer-row"><span class="badge green">Frame</span><span class="badge">SWE</span><span class="badge amber">Intermediate</span></div>
+            <div class="card-title">Staff Engineer Path</div>
+            <div class="card-body">Strategic leadership and high-stakes decisions.</div>
+            <div class="mini-progress"><div class="mini-fill" style="width:35%; background:var(--plans-accent);"></div></div>
+            <div class="footer-row"><span class="badge">7 challenges · ~6 hrs</span></div>
+          </div>
+        </div>
+
+        <div class="card plans-card">
+          <div class="cover-band" style="background:#705c30;">
+            <span class="material-symbols-outlined">bolt</span>
+            <span class="cover-band-label">7-Day Prep Sprint</span>
+          </div>
+          <div class="card-body-inner">
+            <div class="card-icon"><span class="material-symbols-outlined">bolt</span></div>
+            <div class="footer-row"><span class="badge amber">Win</span><span class="badge">All roles</span></div>
+            <div class="card-title">7-Day Prep Sprint</div>
+            <div class="card-body">Build product instincts fast before an interview.</div>
+            <div class="mini-progress"><div class="mini-fill" style="width:0%;"></div></div>
+            <div class="footer-row"><span class="badge">7 challenges · ~5 hrs</span></div>
+          </div>
+        </div>
+
+        <div class="card plans-card">
+          <div class="cover-band" style="background:#3a5a9e;">
+            <span class="material-symbols-outlined">psychology</span>
+            <span class="cover-band-label">ML Product Thinking</span>
+          </div>
+          <div class="card-body-inner">
+            <div class="card-icon"><span class="material-symbols-outlined">psychology</span></div>
+            <div class="footer-row"><span class="badge blue">List</span><span class="badge">ML Eng</span></div>
+            <div class="card-title">ML Product Thinking</div>
+            <div class="card-body">Evals, tradeoffs, trust for ML systems.</div>
+            <div class="mini-progress"><div class="mini-fill" style="width:0%;"></div></div>
+            <div class="footer-row"><span class="badge">6 challenges · ~4 hrs</span></div>
+          </div>
+        </div>
+
+        <div class="card plans-card">
+          <div class="cover-band" style="background:#5a4a8a;">
+            <span class="material-symbols-outlined">group</span>
+            <span class="cover-band-label">Engineering Manager Track</span>
+          </div>
+          <div class="card-body-inner">
+            <div class="card-icon"><span class="material-symbols-outlined">group</span></div>
+            <div class="footer-row"><span class="badge" style="background:#ece8f5;color:#5a4f8a;">Optimize</span><span class="badge">EM</span></div>
+            <div class="card-title">Engineering Manager Track</div>
+            <div class="card-body">People, roadmaps, cross-functional trade-offs.</div>
+            <div class="mini-progress"><div class="mini-fill" style="width:0%;"></div></div>
+            <div class="footer-row"><span class="badge">8 challenges · ~7 hrs</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /page-body -->
+</div><!-- /learn-page -->
+
+<script>
+const STYLES = {
+  none: 'opt-none',
+  a: 'opt-a',
+  b: 'opt-b',
+  c: 'opt-c',
+  d: 'opt-d',
+}
+
+// Elements that change visibility per style
+const coverBands = document.querySelectorAll('.cover-band')
+const cardIcons  = document.querySelectorAll('.card .card-icon')
+const cardTitlesInBody = document.querySelectorAll('.card .card-body-inner .card-title')
+const domainBands = document.querySelectorAll('.domain-band')
+const domainFoot  = document.querySelectorAll('.domain-foot')
+
+function setStyle(style) {
+  // Update button states
+  document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'))
+  event.target.classList.add('active')
+
+  // Remove all opt-* classes from body
+  const body = document.getElementById('learn-body')
+  Object.values(STYLES).forEach(c => body.classList.remove(c))
+  body.classList.add(STYLES[style])
+
+  // Show/hide cover bands and icons based on style
+  const showBands = style === 'd'
+  coverBands.forEach(b => b.style.display = showBands ? 'flex' : 'none')
+  domainBands.forEach(b => {
+    // For non-D: domain-pill goes back to column icon layout
+    b.style.display = showBands ? 'flex' : 'none'
+  })
+
+  // For option D: hide icon inside card-body-inner, show cover band title
+  cardIcons.forEach(i => i.style.display = showBands ? 'none' : 'flex')
+
+  // Domain pills: restructure for non-D
+  document.querySelectorAll('.domain-pill').forEach(pill => {
+    if (style === 'd') {
+      pill.style.flexDirection = 'column'
+      pill.style.padding = '0'
+      pill.style.minWidth = '80px'
+    } else {
+      pill.style.flexDirection = 'column'
+      pill.style.padding = '10px 8px'
+      pill.style.minWidth = '76px'
+    }
+  })
+
+  // For option A/B/C/none: domain icon needs its own bg color
+  document.querySelectorAll('.domain-icon').forEach(di => {
+    if (style === 'a') {
+      di.style.background = 'var(--domains-tint-strong)'
+      di.querySelector('.material-symbols-outlined').style.color = 'var(--domains-accent)'
+    } else if (style === 'b' || style === 'c' || style === 'none') {
+      di.style.background = 'var(--primary-fixed)'
+      di.querySelector('.material-symbols-outlined').style.color = 'var(--primary)'
+    }
+    // D handled by CSS
+  })
+}
+
+// Init: hide cover bands on load (option A is default)
+coverBands.forEach(b => b.style.display = 'none')
+domainBands.forEach(b => b.style.display = 'none')
+</script>
+</body>
+</html>

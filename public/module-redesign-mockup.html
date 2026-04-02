@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module Screen Redesign Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Literata:wght@400;600;700&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #4a7c59;
+    --on-primary: #ffffff;
+    --primary-container: #78a886;
+    --primary-fixed: #c8e8d0;
+    --background: #faf6f0;
+    --surface: #faf6f0;
+    --surface-container-low: #f5f1ea;
+    --surface-container: #f0ece4;
+    --surface-container-high: #eae6de;
+    --surface-container-highest: #e4e0d8;
+    --on-surface: #2e3230;
+    --on-surface-variant: #4a4e4a;
+    --outline-variant: #c4c8bc;
+    --secondary-container: #f0e8db;
+    --on-secondary-container: #5e5548;
+    --tertiary: #705c30;
+  }
+
+  body {
+    font-family: 'Nunito Sans', sans-serif;
+    background: #e8e4dc;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+    gap: 16px;
+  }
+
+  h1.page-label {
+    font-family: 'Literata', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #888;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    align-self: flex-start;
+    margin-bottom: 4px;
+  }
+
+  /* Simulate the app shell (TopBar + NavRail) */
+  .app-shell {
+    display: flex;
+    width: 960px;
+    height: 680px;
+    background: var(--background);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  }
+
+  /* NavRail */
+  .nav-rail {
+    width: 80px;
+    background: var(--surface-container-low);
+    border-right: 1px solid var(--outline-variant);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 12px;
+    border-radius: 16px;
+    cursor: pointer;
+    width: 68px;
+    transition: background 0.15s;
+  }
+  .nav-item.active {
+    background: var(--primary-fixed);
+  }
+  .nav-item .mat-icon {
+    font-size: 22px;
+    color: var(--on-surface-variant);
+  }
+  .nav-item.active .mat-icon { color: var(--primary); }
+  .nav-item span.label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--on-surface-variant);
+    letter-spacing: 0.02em;
+  }
+  .nav-item.active span.label { color: var(--primary); }
+
+  /* Main content area (everything to the right of NavRail) */
+  .main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* TopBar */
+  .top-bar {
+    height: 52px;
+    border-bottom: 1px solid var(--outline-variant);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 8px;
+    flex-shrink: 0;
+    background: var(--background);
+  }
+  .top-bar .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--on-surface-variant);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: background 0.1s;
+  }
+  .top-bar .back-btn:hover { background: var(--surface-container); }
+  .top-bar .back-btn .mat-icon { font-size: 16px; }
+  .top-bar .breadcrumb {
+    font-size: 12px;
+    color: var(--on-surface-variant);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .top-bar .breadcrumb .sep { opacity: 0.4; }
+  .top-bar .breadcrumb .current { font-weight: 700; color: var(--on-surface); }
+
+  /* ─── NEW THREE-COLUMN LAYOUT ─── */
+  .module-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr 240px;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── LEFT COLUMN: Chapter list ── */
+  .chapter-list-col {
+    border-right: 1px solid var(--outline-variant);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Module mini-header inside left col */
+  .module-mini-header {
+    padding: 14px 14px 12px;
+    border-bottom: 1px solid var(--outline-variant);
+    flex-shrink: 0;
+  }
+  .module-mini-header .module-color-bar {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    background: #1a3a2a;
+  }
+  .module-mini-header .module-name {
+    font-family: 'Literata', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--on-surface);
+    line-height: 1.2;
+    margin-bottom: 3px;
+  }
+  .module-mini-header .module-meta {
+    font-size: 10px;
+    color: var(--on-surface-variant);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .module-mini-header .difficulty-badge {
+    background: var(--primary-fixed);
+    color: var(--primary);
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Chapter rows in left col */
+  .chapter-rows {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .chapter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.12s;
+    position: relative;
+  }
+  .chapter-row:hover { background: var(--surface-container); }
+  .chapter-row.active {
+    background: var(--primary-fixed);
+  }
+  .chapter-row.locked {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .chapter-row .ch-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    flex-shrink: 0;
+    background: var(--surface-container-highest);
+    color: var(--on-surface-variant);
+  }
+  .chapter-row.active .ch-num {
+    background: var(--primary);
+    color: white;
+  }
+  .chapter-row.completed .ch-num {
+    background: var(--primary-fixed);
+    color: var(--primary);
+  }
+  .chapter-row .ch-text {
+    flex: 1;
+    min-width: 0;
+  }
+  .chapter-row .ch-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--on-surface);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .chapter-row.active .ch-title { color: var(--primary); }
+  .chapter-row.locked .ch-title { color: var(--on-surface-variant); }
+  .chapter-row .ch-sub {
+    font-size: 10px;
+    color: var(--on-surface-variant);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .chapter-row .ch-done-icon {
+    font-size: 14px;
+    color: var(--primary);
+    flex-shrink: 0;
+  }
+  .chapter-row .ch-lock-icon {
+    font-size: 14px;
+    color: var(--on-surface-variant);
+    flex-shrink: 0;
+    opacity: 0.5;
+  }
+
+  /* ── MIDDLE COLUMN: Chapter content ── */
+  .chapter-content-col {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chapter-content-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--on-surface-variant);
+    padding: 40px;
+    text-align: center;
+  }
+  .chapter-content-empty .mat-icon { font-size: 40px; opacity: 0.3; }
+  .chapter-content-empty p { font-size: 13px; opacity: 0.6; }
+
+  /* Hook card at top of chapter content */
+  .chapter-hook-card {
+    padding: 20px 24px 16px;
+    flex-shrink: 0;
+    background: #1a3a2a;
+    position: relative;
+    overflow: hidden;
+  }
+  .chapter-hook-card .ch-num-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .chapter-hook-card .ch-content-title {
+    font-family: 'Literata', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    line-height: 1.25;
+    margin-bottom: 8px;
+  }
+  .chapter-hook-card .ch-hook {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.55;
+    font-style: italic;
+  }
+
+  /* Chapter body */
+  .chapter-body {
+    padding: 20px 24px;
+    flex: 1;
+  }
+  .chapter-body h2 {
+    font-family: 'Literata', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--on-surface);
+    margin: 18px 0 8px;
+  }
+  .chapter-body p {
+    font-size: 13px;
+    color: var(--on-surface-variant);
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+  .chapter-body strong { color: var(--on-surface); font-weight: 700; }
+  .chapter-body .highlight-box {
+    background: var(--primary-fixed);
+    border-left: 3px solid var(--primary);
+    padding: 10px 14px;
+    border-radius: 0 8px 8px 0;
+    margin: 14px 0;
+    font-size: 12px;
+    color: var(--on-surface);
+    line-height: 1.6;
+  }
+
+  /* Mark complete / next chapter footer */
+  .chapter-footer {
+    padding: 14px 24px;
+    border-top: 1px solid var(--outline-variant);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    background: var(--surface-container-low);
+  }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--primary);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 7px 16px;
+    border-radius: 100px;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-primary .mat-icon { font-size: 15px; }
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface-container-high);
+    color: var(--on-surface);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 7px 16px;
+    border-radius: 100px;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-secondary .mat-icon { font-size: 15px; }
+
+  /* ── RIGHT COLUMN: Progress + What's next ── */
+  .sidebar-col {
+    border-left: 1px solid var(--outline-variant);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 14px 12px;
+  }
+
+  .sidebar-section {
+    background: var(--surface-container);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .sidebar-section-title {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+
+  /* Progress ring */
+  .progress-ring-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .progress-text-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .progress-text-stack .frac {
+    font-size: 18px;
+    font-weight: 800;
+    font-family: 'Literata', serif;
+    color: var(--on-surface);
+  }
+  .progress-text-stack .frac span { font-size: 13px; color: var(--on-surface-variant); }
+  .progress-text-stack .label {
+    font-size: 10px;
+    color: var(--on-surface-variant);
+  }
+  .progress-bar-row {
+    margin-top: 10px;
+  }
+  .progress-bar-bg {
+    height: 5px;
+    background: var(--surface-container-highest);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 3px;
+    width: 28%;
+  }
+  .progress-bar-label {
+    font-size: 10px;
+    color: var(--on-surface-variant);
+    margin-top: 4px;
+    text-align: right;
+  }
+
+  /* Next module cards */
+  .next-module-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.12s;
+    margin-bottom: 6px;
+  }
+  .next-module-card:last-child { margin-bottom: 0; }
+  .next-module-card:hover { background: var(--surface-container-high); }
+  .next-module-color {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    flex-shrink: 0;
+  }
+  .next-module-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--on-surface);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .next-module-meta {
+    font-size: 10px;
+    color: var(--on-surface-variant);
+  }
+  .mat-icon-sm { font-size: 16px; color: var(--on-surface-variant); }
+
+  /* Luma tip card */
+  .luma-tip {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: var(--primary-fixed);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .luma-tip .luma-glyph {
+    width: 28px;
+    height: 28px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .luma-tip .luma-glyph .mat-icon { font-size: 16px; color: white; }
+  .luma-tip p {
+    font-size: 11px;
+    color: var(--on-surface);
+    line-height: 1.55;
+  }
+  .luma-tip p strong { font-weight: 800; color: var(--primary); }
+
+</style>
+</head>
+<body>
+
+<h1 class="page-label">Module Screen — Redesign Mockup</h1>
+
+<!-- ═══════════════════════════════════════════════
+     STATE A: Chapter selected (content showing)
+═══════════════════════════════════════════════ -->
+<h1 class="page-label" style="font-size:11px;color:#aaa;margin-top:8px">State A — Chapter selected (content in right pane)</h1>
+
+<div class="app-shell">
+
+  <!-- NavRail -->
+  <nav class="nav-rail">
+    <div class="nav-item">
+      <span class="material-symbols-outlined mat-icon">home</span>
+      <span class="label">Home</span>
+    </div>
+    <div class="nav-item active">
+      <span class="material-symbols-outlined mat-icon">auto_stories</span>
+      <span class="label">Learn</span>
+    </div>
+    <div class="nav-item">
+      <span class="material-symbols-outlined mat-icon">fitness_center</span>
+      <span class="label">Practice</span>
+    </div>
+    <div class="nav-item">
+      <span class="material-symbols-outlined mat-icon">bar_chart</span>
+      <span class="label">Progress</span>
+    </div>
+  </nav>
+
+  <!-- Main area -->
+  <div class="main-area">
+
+    <!-- Top bar with breadcrumb -->
+    <div class="top-bar">
+      <div class="back-btn">
+        <span class="material-symbols-outlined mat-icon">arrow_back</span>
+        All modules
+      </div>
+      <div class="breadcrumb">
+        <span class="sep">/</span>
+        <span>Learn</span>
+        <span class="sep">/</span>
+        <span class="current">FLOW Framework</span>
+      </div>
+    </div>
+
+    <!-- Three-column layout -->
+    <div class="module-layout">
+
+      <!-- LEFT: Chapter list -->
+      <div class="chapter-list-col">
+        <!-- Module mini-header -->
+        <div class="module-mini-header">
+          <div class="module-color-bar"></div>
+          <div class="module-name">FLOW Framework</div>
+          <div class="module-meta">
+            <span class="difficulty-badge">Foundation</span>
+            <span>7 chapters · 45 min</span>
+          </div>
+        </div>
+
+        <!-- Chapter rows -->
+        <div class="chapter-rows">
+          <div class="chapter-row completed">
+            <div class="ch-num">
+              <span class="material-symbols-outlined" style="font-size:13px;font-variation-settings:'FILL' 1">check</span>
+            </div>
+            <div class="ch-text">
+              <div class="ch-title">Why engineers think backwards</div>
+              <div class="ch-sub">How before why</div>
+            </div>
+            <span class="material-symbols-outlined ch-done-icon">check_circle</span>
+          </div>
+
+          <div class="chapter-row active">
+            <div class="ch-num">2</div>
+            <div class="ch-text">
+              <div class="ch-title">F — Frame</div>
+              <div class="ch-sub">Define before you solve</div>
+            </div>
+          </div>
+
+          <div class="chapter-row">
+            <div class="ch-num">3</div>
+            <div class="ch-text">
+              <div class="ch-title">L — List</div>
+              <div class="ch-sub">Enumerate before you pick</div>
+            </div>
+          </div>
+
+          <div class="chapter-row">
+            <div class="ch-num">4</div>
+            <div class="ch-text">
+              <div class="ch-title">O — Optimize</div>
+              <div class="ch-sub">Trade-offs and constraints</div>
+            </div>
+          </div>
+
+          <div class="chapter-row locked">
+            <div class="ch-num">5</div>
+            <div class="ch-text">
+              <div class="ch-title">W — Win</div>
+              <div class="ch-sub">Close with confidence</div>
+            </div>
+            <span class="material-symbols-outlined ch-lock-icon">lock</span>
+          </div>
+
+          <div class="chapter-row locked">
+            <div class="ch-num">6</div>
+            <div class="ch-text">
+              <div class="ch-title">Putting it together</div>
+              <div class="ch-sub">Full FLOW in practice</div>
+            </div>
+            <span class="material-symbols-outlined ch-lock-icon">lock</span>
+          </div>
+
+          <div class="chapter-row locked">
+            <div class="ch-num">7</div>
+            <div class="ch-text">
+              <div class="ch-title">When FLOW breaks down</div>
+              <div class="ch-sub">Edge cases and recovery</div>
+            </div>
+            <span class="material-symbols-outlined ch-lock-icon">lock</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MIDDLE: Chapter content -->
+      <div class="chapter-content-col">
+        <!-- Hook card -->
+        <div class="chapter-hook-card">
+          <div class="ch-num-label">Chapter 2 · Define before you solve</div>
+          <div class="ch-content-title">F — Frame</div>
+          <div class="ch-hook">"A precise problem statement is worth more than ten solutions. Engineers default to solutions — great PMs default to questions."</div>
+        </div>
+
+        <!-- Body -->
+        <div class="chapter-body">
+          <h2>The framing trap</h2>
+          <p>Most engineers presented with a product problem immediately begin generating solutions. This is deeply wired — it's what makes engineers effective at their jobs. But in product thinking, jumping to solutions before framing the problem is the single most common failure mode.</p>
+
+          <div class="highlight-box">
+            <strong>The FLOW principle:</strong> You cannot optimize a solution to the wrong problem. Framing comes first — always.
+          </div>
+
+          <h2>What good framing looks like</h2>
+          <p>Good framing answers three questions before any solution is considered: <strong>Who has the problem?</strong> <strong>What are they actually trying to do?</strong> And <strong>what does success look like for them?</strong></p>
+          <p>Notice these are not technical questions. They are human questions. The best product engineers learn to hold two mental models simultaneously: the technical and the human.</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="chapter-footer">
+          <button class="btn-primary">
+            <span class="material-symbols-outlined mat-icon" style="font-variation-settings:'FILL' 1">check_circle</span>
+            Mark complete
+          </button>
+          <button class="btn-secondary">
+            Next chapter
+            <span class="material-symbols-outlined mat-icon">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- RIGHT: Sidebar -->
+      <div class="sidebar-col">
+
+        <!-- Luma tip -->
+        <div class="luma-tip">
+          <div class="luma-glyph">
+            <span class="material-symbols-outlined mat-icon">school</span>
+          </div>
+          <p><strong>Luma tip:</strong> Complete chapters in order — each builds on the last. Framing is the hardest to unlearn once you've skipped it.</p>
+        </div>
+
+        <!-- Progress -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Your Progress</div>
+          <div class="progress-ring-row">
+            <svg width="52" height="52" viewBox="0 0 52 52">
+              <circle cx="26" cy="26" r="20" fill="none" stroke="#e4e0d8" stroke-width="4"/>
+              <circle cx="26" cy="26" r="20" fill="none" stroke="#4a7c59" stroke-width="4"
+                stroke-linecap="round"
+                stroke-dasharray="125.6"
+                stroke-dashoffset="90.4"
+                transform="rotate(-90 26 26)"/>
+              <text x="26" y="31" text-anchor="middle" fill="#2e3230" font-size="12" font-weight="700" font-family="sans-serif">28%</text>
+            </svg>
+            <div class="progress-text-stack">
+              <div class="frac">2 <span>/ 7</span></div>
+              <div class="label">chapters done</div>
+            </div>
+          </div>
+          <div class="progress-bar-row">
+            <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
+            <div class="progress-bar-label">~32 min left</div>
+          </div>
+        </div>
+
+        <!-- After this module -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">After this module</div>
+          <div class="next-module-card">
+            <div class="next-module-color" style="background:#1a2a3a"></div>
+            <div style="flex:1;min-width:0">
+              <div class="next-module-name">User Models</div>
+              <div class="next-module-meta">7 chapters · Beginner</div>
+            </div>
+            <span class="material-symbols-outlined mat-icon-sm">arrow_forward</span>
+          </div>
+          <div class="next-module-card">
+            <div class="next-module-color" style="background:#3a1a2a"></div>
+            <div style="flex:1;min-width:0">
+              <div class="next-module-name">Root Cause</div>
+              <div class="next-module-meta">7 chapters · Intermediate</div>
+            </div>
+            <span class="material-symbols-outlined mat-icon-sm">arrow_forward</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     STATE B: No chapter selected (initial state)
+═══════════════════════════════════════════════ -->
+<h1 class="page-label" style="font-size:11px;color:#aaa;margin-top:24px">State B — Initial state (no chapter selected yet)</h1>
+
+<div class="app-shell">
+  <nav class="nav-rail">
+    <div class="nav-item">
+      <span class="material-symbols-outlined mat-icon">home</span>
+      <span class="label">Home</span>
+    </div>
+    <div class="nav-item active">
+      <span class="material-symbols-outlined mat-icon">auto_stories</span>
+      <span class="label">Learn</span>
+    </div>
+    <div class="nav-item">
+      <span class="material-symbols-outlined mat-icon">fitness_center</span>
+      <span class="label">Practice</span>
+    </div>
+    <div class="nav-item">
+      <span class="material-symbols-outlined mat-icon">bar_chart</span>
+      <span class="label">Progress</span>
+    </div>
+  </nav>
+
+  <div class="main-area">
+    <div class="top-bar">
+      <div class="back-btn">
+        <span class="material-symbols-outlined mat-icon">arrow_back</span>
+        All modules
+      </div>
+      <div class="breadcrumb">
+        <span class="sep">/</span>
+        <span>Learn</span>
+        <span class="sep">/</span>
+        <span class="current">FLOW Framework</span>
+      </div>
+    </div>
+
+    <div class="module-layout">
+      <!-- LEFT: Chapter list -->
+      <div class="chapter-list-col">
+        <div class="module-mini-header">
+          <div class="module-color-bar"></div>
+          <div class="module-name">FLOW Framework</div>
+          <div class="module-meta">
+            <span class="difficulty-badge">Foundation</span>
+            <span>7 chapters · 45 min</span>
+          </div>
+        </div>
+        <div class="chapter-rows">
+          <div class="chapter-row completed">
+            <div class="ch-num"><span class="material-symbols-outlined" style="font-size:13px;font-variation-settings:'FILL' 1">check</span></div>
+            <div class="ch-text"><div class="ch-title">Why engineers think backwards</div><div class="ch-sub">How before why</div></div>
+            <span class="material-symbols-outlined ch-done-icon">check_circle</span>
+          </div>
+          <div class="chapter-row" style="background:var(--surface-container-high)">
+            <div class="ch-num" style="background:var(--primary-fixed);color:var(--primary)">2</div>
+            <div class="ch-text"><div class="ch-title" style="color:var(--primary)">F — Frame</div><div class="ch-sub">Start here →</div></div>
+          </div>
+          <div class="chapter-row locked">
+            <div class="ch-num">3</div>
+            <div class="ch-text"><div class="ch-title">L — List</div><div class="ch-sub">Enumerate before you pick</div></div>
+            <span class="material-symbols-outlined ch-lock-icon">lock</span>
+          </div>
+          <div class="chapter-row locked">
+            <div class="ch-num">4</div>
+            <div class="ch-text"><div class="ch-title">O — Optimize</div><div class="ch-sub">Trade-offs and constraints</div></div>
+            <span class="material-symbols-outlined ch-lock-icon">lock</span>
+          </div>
+          <div class="chapter-row locked">
+            <div class="ch-num">5</div>
+            <div class="ch-text"><div class="ch-title">W — Win</div><div class="ch-sub">Close with confidence</div></div>
+            <span class="material-symbols-outlined ch-lock-icon">lock</span>
+          </div>
+          <div class="chapter-row locked">
+            <div class="ch-num">6</div>
+            <div class="ch-text"><div class="ch-title">Putting it together</div><div class="ch-sub">Full FLOW in practice</div></div>
+            <span class="material-symbols-outlined ch-lock-icon">lock</span>
+          </div>
+          <div class="chapter-row locked">
+            <div class="ch-num">7</div>
+            <div class="ch-text"><div class="ch-title">When FLOW breaks down</div><div class="ch-sub">Edge cases and recovery</div></div>
+            <span class="material-symbols-outlined ch-lock-icon">lock</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MIDDLE: Empty state prompting chapter selection -->
+      <div class="chapter-content-col">
+        <div class="chapter-content-empty">
+          <span class="material-symbols-outlined mat-icon" style="font-size:48px;opacity:0.2">auto_stories</span>
+          <p style="font-size:14px;font-weight:700;color:var(--on-surface);opacity:0.5">Select a chapter to start reading</p>
+          <p style="font-size:12px">Click any chapter from the list on the left</p>
+        </div>
+      </div>
+
+      <!-- RIGHT: Sidebar unchanged -->
+      <div class="sidebar-col">
+        <div class="luma-tip">
+          <div class="luma-glyph">
+            <span class="material-symbols-outlined mat-icon">school</span>
+          </div>
+          <p><strong>Ready to start?</strong> Chapter 2 — F · Frame — is unlocked. Begin there to build your framing muscle.</p>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Your Progress</div>
+          <div class="progress-ring-row">
+            <svg width="52" height="52" viewBox="0 0 52 52">
+              <circle cx="26" cy="26" r="20" fill="none" stroke="#e4e0d8" stroke-width="4"/>
+              <circle cx="26" cy="26" r="20" fill="none" stroke="#4a7c59" stroke-width="4"
+                stroke-linecap="round"
+                stroke-dasharray="125.6"
+                stroke-dashoffset="90.4"
+                transform="rotate(-90 26 26)"/>
+              <text x="26" y="31" text-anchor="middle" fill="#2e3230" font-size="12" font-weight="700" font-family="sans-serif">28%</text>
+            </svg>
+            <div class="progress-text-stack">
+              <div class="frac">2 <span>/ 7</span></div>
+              <div class="label">chapters done</div>
+            </div>
+          </div>
+          <div class="progress-bar-row">
+            <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
+            <div class="progress-bar-label">~32 min left</div>
+          </div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">After this module</div>
+          <div class="next-module-card">
+            <div class="next-module-color" style="background:#1a2a3a"></div>
+            <div style="flex:1;min-width:0"><div class="next-module-name">User Models</div><div class="next-module-meta">7 chapters · Beginner</div></div>
+            <span class="material-symbols-outlined mat-icon-sm">arrow_forward</span>
+          </div>
+          <div class="next-module-card">
+            <div class="next-module-color" style="background:#3a1a2a"></div>
+            <div style="flex:1;min-width:0"><div class="next-module-name">Root Cause</div><div class="next-module-meta">7 chapters · Intermediate</div></div>
+            <span class="material-symbols-outlined mat-icon-sm">arrow_forward</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p style="font-size:11px;color:#aaa;margin-top:8px;text-align:center">
+  Open at <strong>http://localhost:3000/module-redesign-mockup.html</strong> · Three columns: chapter list (220px) | content (flex) | progress+next (240px)
+</p>
+
+</body>
+</html>

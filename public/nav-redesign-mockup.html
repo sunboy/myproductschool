@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nav Redesign Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Literata:wght@400;600;700&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #4a7c59;
+    --on-primary: #ffffff;
+    --primary-container: #78a886;
+    --primary-fixed: #c8e8d0;
+    --background: #faf6f0;
+    --surface: #faf6f0;
+    --surface-container-low: #f5f1ea;
+    --surface-container: #f0ece4;
+    --surface-container-high: #eae6de;
+    --surface-container-highest: #e4e0d8;
+    --on-surface: #2e3230;
+    --on-surface-variant: #4a4e4a;
+    --outline-variant: #c4c8bc;
+    --secondary-container: #f0e8db;
+    --on-secondary-container: #5e5548;
+    --tertiary: #705c30;
+    --tertiary-container: #c4a66a;
+    --tertiary-fixed: #f5e6c8;
+    --inverse-surface: #2e3230;
+    --inverse-on-surface: #f5f0e8;
+  }
+
+  body {
+    font-family: 'Nunito Sans', sans-serif;
+    background: #e8e4dc;
+    color: var(--on-surface);
+    display: flex;
+    gap: 24px;
+    padding: 24px;
+    min-height: 100vh;
+    align-items: flex-start;
+  }
+
+  .tab-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Nunito Sans', sans-serif;
+    cursor: pointer;
+    border: 1.5px solid var(--outline-variant);
+    background: var(--surface-container);
+    color: var(--on-surface-variant);
+    transition: all 0.15s;
+  }
+  .tab.active {
+    background: var(--primary);
+    color: var(--on-primary);
+    border-color: var(--primary);
+  }
+
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+  .col-label {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--on-surface-variant);
+    opacity: 0.6;
+    margin-bottom: 2px;
+  }
+
+  /* Shell */
+  .shell {
+    display: flex;
+    width: 100%;
+    max-width: 1100px;
+    height: 820px;
+    background: var(--background);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+  }
+
+  /* Nav Rail */
+  .nav-rail {
+    width: 200px;
+    background: var(--surface-container-low);
+    border-right: 1px solid var(--outline-variant);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--outline-variant);
+  }
+  .nav-brand-icon {
+    width: 26px;
+    height: 26px;
+    background: var(--primary);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nav-brand-icon span {
+    color: white;
+    font-size: 14px;
+  }
+  .nav-brand-text {
+    font-family: 'Literata', serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--primary);
+  }
+  .nav-items {
+    flex: 1;
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    color: var(--on-surface-variant);
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .nav-item:hover { background: var(--surface-container-high); color: var(--on-surface); }
+  .nav-item.active {
+    background: var(--primary);
+    color: white;
+    font-weight: 700;
+  }
+  .nav-item .material-symbols-outlined { font-size: 20px; }
+  .nav-item.active .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.6); margin-left: auto; }
+
+  .nav-bottom {
+    padding: 10px 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .daily-goal {
+    background: var(--surface-container);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+  .daily-goal-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .daily-goal-header span:first-child { color: var(--on-surface-variant); }
+  .daily-goal-header span:last-child { color: var(--primary); }
+  .progress-track {
+    height: 5px;
+    background: var(--surface-container-highest);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 99px;
+    width: 60%;
+  }
+  .daily-goal-sub {
+    font-size: 9px;
+    color: var(--on-surface-variant);
+    margin-top: 4px;
+  }
+
+  /* Main content */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Page */
+  .page {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+  }
+  .page.visible { display: flex; }
+
+  /* Page header */
+  .page-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--outline-variant);
+    flex-shrink: 0;
+  }
+  .page-title {
+    font-family: 'Literata', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--on-surface);
+    margin-bottom: 2px;
+  }
+  .page-subtitle {
+    font-size: 12px;
+    color: var(--on-surface-variant);
+  }
+
+  .page-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .page-body > * {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  /* Let scroll rows bleed to the right edge */
+  .page-body .scroll-row-wrap {
+    padding-right: 0;
+  }
+  .scroll-row {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-bottom: 6px;
+    scrollbar-width: none;
+  }
+
+  /* Section */
+  .section-label {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--on-surface-variant);
+    margin-bottom: 10px;
+  }
+
+  /* Chips row */
+  .chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .chip {
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--surface-container);
+    color: var(--on-surface-variant);
+    border: 1px solid var(--outline-variant);
+    cursor: pointer;
+  }
+  .chip.active {
+    background: var(--primary-fixed);
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+
+  /* Grid */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  /* Card */
+  .card {
+    background: var(--surface-container);
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .card-title {
+    font-family: 'Literata', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--on-surface);
+  }
+  .card-body {
+    font-size: 11px;
+    color: var(--on-surface-variant);
+    line-height: 1.5;
+  }
+  .card-footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--secondary-container);
+    color: var(--on-secondary-container);
+  }
+  .badge.green {
+    background: var(--primary-fixed);
+    color: var(--primary);
+  }
+  .badge.amber {
+    background: var(--tertiary-fixed);
+    color: var(--tertiary);
+  }
+
+  .card-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--primary-fixed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+    flex-shrink: 0;
+  }
+  .card-icon .material-symbols-outlined {
+    font-size: 18px;
+    color: var(--primary);
+  }
+
+  /* Progress bar mini */
+  .mini-progress {
+    height: 4px;
+    background: var(--surface-container-highest);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .mini-progress-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 99px;
+  }
+
+  /* Paradigm card */
+  .paradigm-card {
+    background: var(--surface-container);
+    border-radius: 14px;
+    padding: 14px;
+    border-left: 3px solid var(--primary);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .paradigm-card.ai { border-left-color: #5b8fbe; }
+  .paradigm-card.agentic { border-left-color: #7c6f9e; }
+  .paradigm-card.native { border-left-color: #b87c4a; }
+
+  /* Luma tip */
+  .luma-tip {
+    background: var(--primary-fixed);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .luma-avatar {
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .luma-avatar span { color: white; font-size: 16px; }
+  .luma-tip-text { font-size: 11px; color: var(--on-surface); line-height: 1.5; }
+  .luma-tip-label { font-size: 10px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+
+  /* Challenge row */
+  .challenge-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--surface-container);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .challenge-row:hover { background: var(--surface-container-high); }
+  .challenge-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: var(--surface-container-highest);
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--on-surface-variant);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .challenge-title { font-size: 12px; font-weight: 600; color: var(--on-surface); flex: 1; }
+  .challenge-meta { display: flex; gap: 5px; align-items: center; }
+
+  /* Company pill */
+  .company-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--surface-container);
+    border: 1.5px solid var(--outline-variant);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--on-surface-variant);
+    cursor: pointer;
+  }
+  .company-pill.active {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-fixed);
+  }
+  .company-initial {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    background: var(--primary);
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Mode tabs */
+  .mode-tabs {
+    display: flex;
+    gap: 0;
+    background: var(--surface-container);
+    border-radius: 10px;
+    padding: 3px;
+    width: fit-content;
+    margin-bottom: 16px;
+  }
+  .mode-tab {
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--on-surface-variant);
+    transition: all 0.15s;
+  }
+  .mode-tab.active {
+    background: white;
+    color: var(--on-surface);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  /* Filter row */
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .filter-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--on-surface-variant);
+    margin-right: 4px;
+  }
+
+  /* Stats strip */
+  .stats-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .stat-card {
+    background: var(--surface-container);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Literata', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .stat-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 2px;
+  }
+</style>
+</head>
+<body>
+
+<div style="display:flex; flex-direction:column; gap:12px; width:100%; max-width:1100px;">
+
+  <!-- Tab switcher -->
+  <div class="tab-bar">
+    <button class="tab active" onclick="showPage('learn')">Learn hub</button>
+    <button class="tab" onclick="showPage('modules')">↳ All Modules</button>
+    <button class="tab" onclick="showPage('domains')">↳ All Domains</button>
+    <button class="tab" onclick="showPage('plans')">↳ All Study Plans</button>
+    <button class="tab" onclick="showPage('practice-free')">Practice — Free</button>
+    <button class="tab" onclick="showPage('practice-guided')">Practice — Guided</button>
+    <button class="tab" onclick="showPage('progress')">Progress</button>
+    <button class="tab" onclick="showPage('nav')">Nav before/after</button>
+  </div>
+
+  <div class="shell">
+
+    <!-- Nav Rail -->
+    <nav class="nav-rail">
+      <div class="nav-brand">
+        <div class="nav-brand-icon"><span class="material-symbols-outlined" style="font-size:15px">school</span></div>
+        <span class="nav-brand-text">HackProduct</span>
+      </div>
+      <div class="nav-items">
+        <div class="nav-item" onclick="showPage('home')">
+          <span class="material-symbols-outlined">home</span> Home
+        </div>
+        <div class="nav-item active" id="nav-learn" onclick="showPage('learn')">
+          <span class="material-symbols-outlined">auto_stories</span> Learn
+          <span class="nav-dot"></span>
+        </div>
+        <div class="nav-item" id="nav-practice" onclick="showPage('practice-free')">
+          <span class="material-symbols-outlined">fitness_center</span> Practice
+        </div>
+        <div class="nav-item" id="nav-progress" onclick="showPage('progress')">
+          <span class="material-symbols-outlined">bar_chart</span> Progress
+        </div>
+      </div>
+      <div class="nav-bottom">
+        <div class="daily-goal">
+          <div class="daily-goal-header">
+            <span>Daily Goal</span><span>3/5</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill"></div></div>
+          <div class="daily-goal-sub">3 of 5 challenges done</div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <div class="main">
+
+      <!-- ── LEARN PAGE ── -->
+      <div class="page visible" id="page-learn">
+        <div class="page-header">
+          <div class="page-title">Learn</div>
+          <div class="page-subtitle">Orient yourself, build theory, follow a structured path</div>
+        </div>
+        <div class="page-body">
+
+          <!-- Paradigms — orientation layer (grid, always 4) -->
+          <div>
+            <div class="section-label">Paradigms — pick your lens</div>
+            <div class="grid-2" style="gap:8px;">
+
+              <div style="background:var(--surface-container); border-radius:14px; padding:14px; border-left:3px solid var(--primary); display:flex; flex-direction:column; gap:5px; cursor:pointer;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
+                  <span class="material-symbols-outlined" style="font-size:18px; color:var(--primary)">architecture</span>
+                  <span style="font-size:13px; font-weight:800; color:var(--on-surface);">Traditional</span>
+                  <span class="badge green" style="margin-left:auto;">Core</span>
+                </div>
+                <div style="font-size:11px; color:var(--on-surface-variant); line-height:1.5;">Metrics, trade-offs, prioritization — the foundation every engineer needs.</div>
+                <div style="font-size:10px; color:var(--on-surface-variant); font-style:italic; margin-top:2px; opacity:0.8;">"DAU/MAU looks great but revenue is flat. What's going on?"</div>
+                <div style="font-size:10px; font-weight:700; color:var(--primary); margin-top:4px;">24 challenges →</div>
+              </div>
+
+              <div style="background:var(--surface-container); border-radius:14px; padding:14px; border-left:3px solid #5b8fbe; display:flex; flex-direction:column; gap:5px; cursor:pointer;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
+                  <span class="material-symbols-outlined" style="font-size:18px; color:#5b8fbe">smart_toy</span>
+                  <span style="font-size:13px; font-weight:800; color:var(--on-surface);">AI-Assisted</span>
+                  <span class="badge" style="margin-left:auto; background:#ddeaf7; color:#3a6f9e;">Growing</span>
+                </div>
+                <div style="font-size:11px; color:var(--on-surface-variant); line-height:1.5;">When to trust AI output, how to validate, keeping human judgment sharp.</div>
+                <div style="font-size:10px; color:var(--on-surface-variant); font-style:italic; margin-top:2px; opacity:0.8;">"Copilot code passes tests but has a subtle security flaw."</div>
+                <div style="font-size:10px; font-weight:700; color:#5b8fbe; margin-top:4px;">11 challenges →</div>
+              </div>
+
+              <div style="background:var(--surface-container); border-radius:14px; padding:14px; border-left:3px solid #7c6f9e; display:flex; flex-direction:column; gap:5px; cursor:pointer;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
+                  <span class="material-symbols-outlined" style="font-size:18px; color:#7c6f9e">hub</span>
+                  <span style="font-size:13px; font-weight:800; color:var(--on-surface);">Agentic</span>
+                  <span class="badge" style="margin-left:auto; background:#ece8f5; color:#5a4f8a;">Growing</span>
+                </div>
+                <div style="font-size:11px; color:var(--on-surface-variant); line-height:1.5;">Multi-step AI systems — agents, evals, failure modes, trust boundaries.</div>
+                <div style="font-size:10px; color:var(--on-surface-variant); font-style:italic; margin-top:2px; opacity:0.8;">"Your agent auto-approved 40 refunds overnight. 3 were fraudulent."</div>
+                <div style="font-size:10px; font-weight:700; color:#7c6f9e; margin-top:4px;">8 challenges →</div>
+              </div>
+
+              <div style="background:var(--surface-container); border-radius:14px; padding:14px; border-left:3px solid #b87c4a; display:flex; flex-direction:column; gap:5px; cursor:pointer;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
+                  <span class="material-symbols-outlined" style="font-size:18px; color:#b87c4a">neurology</span>
+                  <span style="font-size:13px; font-weight:800; color:var(--on-surface);">AI-Native</span>
+                  <span class="badge" style="margin-left:auto; background:#f5ece0; color:#8a5a28;">Growing</span>
+                </div>
+                <div style="font-size:11px; color:var(--on-surface-variant); line-height:1.5;">Products that couldn't exist without AI — new interaction models and risks.</div>
+                <div style="font-size:10px; color:var(--on-surface-variant); font-style:italic; margin-top:2px; opacity:0.8;">"Your AI tutor hallucinates history. Ship or hold?"</div>
+                <div style="font-size:10px; font-weight:700; color:#b87c4a; margin-top:4px;">6 challenges →</div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Luma nudge -->
+          <div class="luma-tip" style="padding:10px 14px;">
+            <div class="luma-avatar" style="width:26px;height:26px;"><span class="material-symbols-outlined" style="font-size:14px;">smart_toy</span></div>
+            <div style="font-size:11px; color:var(--on-surface); line-height:1.5;">For your role (SWE), Luma recommends starting with <strong>Traditional</strong> — it builds the framing muscle everything else depends on.</div>
+          </div>
+
+          <!-- Course Modules -->
+          <div class="scroll-row-wrap">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding:0 24px;">
+              <div class="section-label" style="margin:0;">Course Modules</div>
+              <a href="#" onclick="event.preventDefault();showPage('modules')" style="font-size:11px; font-weight:700; color:var(--primary); text-decoration:none;">View all →</a>
+            </div>
+            <div class="scroll-row">
+              <div class="card" style="min-width:180px; flex-shrink:0;">
+                <div class="card-icon"><span class="material-symbols-outlined">foundation</span></div>
+                <div class="card-title">Product Foundations</div>
+                <div class="card-body">Metrics, trade-offs, user needs.</div>
+                <div class="mini-progress"><div class="mini-progress-fill" style="width:70%"></div></div>
+                <div class="card-footer">
+                  <span class="badge green">7/10 done</span>
+                  <span class="badge">~45 min</span>
+                </div>
+              </div>
+              <div class="card" style="min-width:180px; flex-shrink:0;">
+                <div class="card-icon"><span class="material-symbols-outlined">smart_toy</span></div>
+                <div class="card-title">AI-Assisted Thinking</div>
+                <div class="card-body">Trust, validate, keep judgment sharp.</div>
+                <div class="mini-progress"><div class="mini-progress-fill" style="width:20%"></div></div>
+                <div class="card-footer">
+                  <span class="badge">2/8 done</span>
+                  <span class="badge">~60 min</span>
+                </div>
+              </div>
+              <div class="card" style="min-width:180px; flex-shrink:0;">
+                <div class="card-icon"><span class="material-symbols-outlined">hub</span></div>
+                <div class="card-title">Agentic Systems</div>
+                <div class="card-body">Agents, evals, failure modes.</div>
+                <div class="mini-progress"><div class="mini-progress-fill" style="width:0%"></div></div>
+                <div class="card-footer">
+                  <span class="badge">Not started</span>
+                  <span class="badge">~90 min</span>
+                </div>
+              </div>
+              <div class="card" style="min-width:180px; flex-shrink:0;">
+                <div class="card-icon"><span class="material-symbols-outlined">neurology</span></div>
+                <div class="card-title">AI-Native Products</div>
+                <div class="card-body">New interaction models and risks.</div>
+                <div class="mini-progress"><div class="mini-progress-fill" style="width:0%"></div></div>
+                <div class="card-footer">
+                  <span class="badge">Not started</span>
+                  <span class="badge">~75 min</span>
+                </div>
+              </div>
+              <div class="card" style="min-width:180px; flex-shrink:0;">
+                <div class="card-icon"><span class="material-symbols-outlined">bar_chart</span></div>
+                <div class="card-title">Metrics Mastery</div>
+                <div class="card-body">Read numbers, spot traps, act on signal.</div>
+                <div class="mini-progress"><div class="mini-progress-fill" style="width:0%"></div></div>
+                <div class="card-footer">
+                  <span class="badge">Not started</span>
+                  <span class="badge">~50 min</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Domains -->
+          <div class="scroll-row-wrap">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding:0 24px;">
+              <div class="section-label" style="margin:0;">Domains</div>
+              <a href="#" onclick="event.preventDefault();showPage('domains')" style="font-size:11px; font-weight:700; color:var(--primary); text-decoration:none;">View all →</a>
+            </div>
+            <div class="scroll-row" style="gap:8px;">
+              <div style="display:flex; flex-direction:column; align-items:center; gap:6px; min-width:80px; flex-shrink:0; cursor:pointer;">
+                <div class="card-icon" style="width:48px; height:48px; border-radius:14px; margin:0;"><span class="material-symbols-outlined" style="font-size:22px;">notifications</span></div>
+                <span style="font-size:11px; font-weight:700; color:var(--on-surface); text-align:center;">Notifications</span>
+                <span style="font-size:10px; color:var(--on-surface-variant);">12 challenges</span>
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:6px; min-width:80px; flex-shrink:0; cursor:pointer;">
+                <div class="card-icon" style="width:48px; height:48px; border-radius:14px; margin:0;"><span class="material-symbols-outlined" style="font-size:22px;">search</span></div>
+                <span style="font-size:11px; font-weight:700; color:var(--on-surface); text-align:center;">Search</span>
+                <span style="font-size:10px; color:var(--on-surface-variant);">8 challenges</span>
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:6px; min-width:80px; flex-shrink:0; cursor:pointer;">
+                <div class="card-icon" style="width:48px; height:48px; border-radius:14px; margin:0;"><span class="material-symbols-outlined" style="font-size:22px;">trending_up</span></div>
+                <span style="font-size:11px; font-weight:700; color:var(--on-surface); text-align:center;">Growth</span>
+                <span style="font-size:10px; color:var(--on-surface-variant);">15 challenges</span>
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:6px; min-width:80px; flex-shrink:0; cursor:pointer;">
+                <div class="card-icon" style="width:48px; height:48px; border-radius:14px; margin:0;"><span class="material-symbols-outlined" style="font-size:22px;">payments</span></div>
+                <span style="font-size:11px; font-weight:700; color:var(--on-surface); text-align:center;">Monetisation</span>
+                <span style="font-size:10px; color:var(--on-surface-variant);">9 challenges</span>
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:6px; min-width:80px; flex-shrink:0; cursor:pointer;">
+                <div class="card-icon" style="width:48px; height:48px; border-radius:14px; margin:0;"><span class="material-symbols-outlined" style="font-size:22px;">people</span></div>
+                <span style="font-size:11px; font-weight:700; color:var(--on-surface); text-align:center;">Retention</span>
+                <span style="font-size:10px; color:var(--on-surface-variant);">11 challenges</span>
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:6px; min-width:80px; flex-shrink:0; cursor:pointer;">
+                <div class="card-icon" style="width:48px; height:48px; border-radius:14px; margin:0;"><span class="material-symbols-outlined" style="font-size:22px;">speed</span></div>
+                <span style="font-size:11px; font-weight:700; color:var(--on-surface); text-align:center;">Performance</span>
+                <span style="font-size:10px; color:var(--on-surface-variant);">7 challenges</span>
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:6px; min-width:80px; flex-shrink:0; cursor:pointer;">
+                <div class="card-icon" style="width:48px; height:48px; border-radius:14px; margin:0;"><span class="material-symbols-outlined" style="font-size:22px;">security</span></div>
+                <span style="font-size:11px; font-weight:700; color:var(--on-surface); text-align:center;">Trust & Safety</span>
+                <span style="font-size:10px; color:var(--on-surface-variant);">6 challenges</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Study Plans -->
+          <div class="scroll-row-wrap">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding:0 24px;">
+              <div class="section-label" style="margin:0;">Study Plans</div>
+              <a href="#" onclick="event.preventDefault();showPage('plans')" style="font-size:11px; font-weight:700; color:var(--primary); text-decoration:none;">View all →</a>
+            </div>
+            <div class="scroll-row">
+              <div class="card" style="min-width:200px; flex-shrink:0;">
+                <div class="card-footer" style="margin:0 0 6px">
+                  <span class="badge green">Frame</span>
+                  <span class="badge">SWE</span>
+                  <span class="badge amber">Intermediate</span>
+                </div>
+                <div class="card-title">Staff Engineer Path</div>
+                <div class="card-body">Strategic leadership and high-stakes decisions.</div>
+                <div class="mini-progress"><div class="mini-progress-fill" style="width:35%"></div></div>
+                <div class="card-footer"><span class="badge">7 challenges · ~6 hrs</span></div>
+              </div>
+              <div class="card" style="min-width:200px; flex-shrink:0;">
+                <div class="card-footer" style="margin:0 0 6px">
+                  <span class="badge green">Win</span>
+                  <span class="badge">All roles</span>
+                  <span class="badge">Beginner</span>
+                </div>
+                <div class="card-title">7-Day Prep</div>
+                <div class="card-body">Build product instincts fast before an interview.</div>
+                <div class="mini-progress"><div class="mini-progress-fill" style="width:0%"></div></div>
+                <div class="card-footer"><span class="badge">7 challenges · ~5 hrs</span></div>
+              </div>
+              <div class="card" style="min-width:200px; flex-shrink:0;">
+                <div class="card-footer" style="margin:0 0 6px">
+                  <span class="badge green">List</span>
+                  <span class="badge">ML Eng</span>
+                  <span class="badge">Advanced</span>
+                </div>
+                <div class="card-title">ML Product Thinking</div>
+                <div class="card-body">Evals, tradeoffs, and trust for ML systems.</div>
+                <div class="mini-progress"><div class="mini-progress-fill" style="width:0%"></div></div>
+                <div class="card-footer"><span class="badge">6 challenges · ~4 hrs</span></div>
+              </div>
+              <div class="card" style="min-width:200px; flex-shrink:0;">
+                <div class="card-footer" style="margin:0 0 6px">
+                  <span class="badge green">Optimize</span>
+                  <span class="badge">EM</span>
+                  <span class="badge">Intermediate</span>
+                </div>
+                <div class="card-title">Engineering Manager Track</div>
+                <div class="card-body">People, roadmaps, cross-functional trade-offs.</div>
+                <div class="mini-progress"><div class="mini-progress-fill" style="width:0%"></div></div>
+                <div class="card-footer"><span class="badge">8 challenges · ~7 hrs</span></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── PRACTICE — FREE ── -->
+      <div class="page" id="page-practice-free">
+        <div class="page-header">
+          <div class="page-title">Practice</div>
+          <div class="page-subtitle">The full challenge library — filter by anything</div>
+        </div>
+        <div class="page-body">
+
+          <!-- Mode toggle -->
+          <div class="mode-tabs">
+            <div class="mode-tab active">Free Practice</div>
+            <div class="mode-tab" onclick="showPage('practice-guided')">Guided (Prep)</div>
+          </div>
+
+          <!-- Filters -->
+          <div>
+            <div class="filter-row">
+              <span class="filter-label">Role</span>
+              <span class="chip active">All</span>
+              <span class="chip">SWE</span>
+              <span class="chip">Data Eng</span>
+              <span class="chip">ML Eng</span>
+              <span class="chip">EM</span>
+            </div>
+            <div class="filter-row">
+              <span class="filter-label">Paradigm</span>
+              <span class="chip active">All</span>
+              <span class="chip">Traditional</span>
+              <span class="chip">AI-Assisted</span>
+              <span class="chip">Agentic</span>
+              <span class="chip">AI-Native</span>
+            </div>
+            <div class="filter-row">
+              <span class="filter-label">Difficulty</span>
+              <span class="chip active">All</span>
+              <span class="chip">Standard</span>
+              <span class="chip">Advanced</span>
+            </div>
+          </div>
+
+          <!-- Challenge list -->
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div class="challenge-row">
+              <div class="challenge-num">1</div>
+              <div class="challenge-title">Notification Fatigue: Fixing a B2B SaaS Drop-off</div>
+              <div class="challenge-meta">
+                <span class="badge green">95</span>
+                <span class="badge">Traditional</span>
+                <span class="badge">Standard</span>
+              </div>
+            </div>
+            <div class="challenge-row">
+              <div class="challenge-num">2</div>
+              <div class="challenge-title">AI Search Quality: When Relevance Drops After a Model Upgrade</div>
+              <div class="challenge-meta">
+                <span class="badge amber">72</span>
+                <span class="badge">AI-Assisted</span>
+                <span class="badge">Standard</span>
+              </div>
+            </div>
+            <div class="challenge-row">
+              <div class="challenge-num">3</div>
+              <div class="challenge-title">Agentic Refund System: Designing Trust Boundaries</div>
+              <div class="challenge-meta">
+                <span class="badge">—</span>
+                <span class="badge">Agentic</span>
+                <span class="badge">Advanced</span>
+              </div>
+            </div>
+            <div class="challenge-row">
+              <div class="challenge-num">4</div>
+              <div class="challenge-title">DAU/MAU Looks Great But Revenue Is Flat</div>
+              <div class="challenge-meta">
+                <span class="badge">—</span>
+                <span class="badge">Traditional</span>
+                <span class="badge">Standard</span>
+              </div>
+            </div>
+            <div class="challenge-row">
+              <div class="challenge-num">5</div>
+              <div class="challenge-title">Copilot Code Passes Tests But Has a Security Flaw</div>
+              <div class="challenge-meta">
+                <span class="badge">—</span>
+                <span class="badge">AI-Assisted</span>
+                <span class="badge">Advanced</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── PRACTICE — GUIDED (PREP) ── -->
+      <div class="page" id="page-practice-guided">
+        <div class="page-header">
+          <div class="page-title">Practice</div>
+          <div class="page-subtitle">Guided paths and company-targeted prep</div>
+        </div>
+        <div class="page-body">
+
+          <!-- Mode toggle -->
+          <div class="mode-tabs">
+            <div class="mode-tab" onclick="showPage('practice-free')">Free Practice</div>
+            <div class="mode-tab active">Guided (Prep)</div>
+          </div>
+
+          <!-- Company selector -->
+          <div>
+            <div class="section-label">Prep by company</div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <div class="company-pill active">
+                <div class="company-initial">G</div> Google
+              </div>
+              <div class="company-pill">
+                <div class="company-initial" style="background:#1877f2">M</div> Meta
+              </div>
+              <div class="company-pill">
+                <div class="company-initial" style="background:#6772e5">S</div> Stripe
+              </div>
+              <div class="company-pill">
+                <div class="company-initial" style="background:#ff9900">A</div> Amazon
+              </div>
+              <div class="company-pill">
+                <div class="company-initial" style="background:#555">Ap</div> Apple
+              </div>
+            </div>
+          </div>
+
+          <!-- Google study plan -->
+          <div>
+            <div class="section-label">Google Study Plan</div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div class="card" style="gap:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="material-symbols-outlined" style="font-size:16px; color:var(--primary)">crop_free</span>
+                    <span style="font-size:13px; font-weight:700;">Chapter 1 — Frame</span>
+                  </div>
+                  <span class="badge green">3/4 done</span>
+                </div>
+                <div class="mini-progress"><div class="mini-progress-fill" style="width:75%"></div></div>
+              </div>
+              <div class="card" style="gap:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="material-symbols-outlined" style="font-size:16px; color:var(--on-surface-variant)">list</span>
+                    <span style="font-size:13px; font-weight:700;">Chapter 2 — List</span>
+                  </div>
+                  <span class="badge">0/3 done</span>
+                </div>
+                <div class="mini-progress"><div class="mini-progress-fill" style="width:0%"></div></div>
+              </div>
+              <div class="card" style="gap:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="material-symbols-outlined" style="font-size:16px; color:var(--on-surface-variant)">tune</span>
+                    <span style="font-size:13px; font-weight:700;">Chapter 3 — Optimize</span>
+                  </div>
+                  <span class="badge">0/4 done</span>
+                </div>
+                <div class="mini-progress"><div class="mini-progress-fill" style="width:0%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interview countdown -->
+          <div class="luma-tip">
+            <div class="luma-avatar"><span class="material-symbols-outlined">smart_toy</span></div>
+            <div style="flex:1">
+              <div class="luma-tip-label">Interview countdown</div>
+              <div class="luma-tip-text">You have <strong>18 days</strong> until your Google interview. At your current pace you'll complete ~60% of this plan. Luma recommends 2 challenges/day.</div>
+            </div>
+            <span class="badge green" style="align-self:flex-start; white-space:nowrap;">18 days left</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── PROGRESS ── -->
+      <div class="page" id="page-progress">
+        <div class="page-header">
+          <div class="page-title">Progress</div>
+          <div class="page-subtitle">Your growth across the four FLOW moves</div>
+        </div>
+        <div class="page-body">
+
+          <div class="stats-strip">
+            <div class="stat-card">
+              <div class="stat-num">847</div>
+              <div class="stat-label">Total XP</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num">12</div>
+              <div class="stat-label">Challenges</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num">7 🔥</div>
+              <div class="stat-label">Day Streak</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="section-label">FLOW Mastery</div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <div class="card" style="flex-direction:row; align-items:center; gap:12px;">
+                <span class="material-symbols-outlined" style="color:var(--primary)">crop_free</span>
+                <div style="flex:1">
+                  <div style="font-size:12px; font-weight:700; margin-bottom:4px;">Frame</div>
+                  <div class="mini-progress"><div class="mini-progress-fill" style="width:78%"></div></div>
+                </div>
+                <span class="badge green">78%</span>
+              </div>
+              <div class="card" style="flex-direction:row; align-items:center; gap:12px;">
+                <span class="material-symbols-outlined" style="color:var(--primary)">list</span>
+                <div style="flex:1">
+                  <div style="font-size:12px; font-weight:700; margin-bottom:4px;">List</div>
+                  <div class="mini-progress"><div class="mini-progress-fill" style="width:55%"></div></div>
+                </div>
+                <span class="badge amber">55%</span>
+              </div>
+              <div class="card" style="flex-direction:row; align-items:center; gap:12px;">
+                <span class="material-symbols-outlined" style="color:var(--primary)">tune</span>
+                <div style="flex:1">
+                  <div style="font-size:12px; font-weight:700; margin-bottom:4px;">Optimize</div>
+                  <div class="mini-progress"><div class="mini-progress-fill" style="width:40%"></div></div>
+                </div>
+                <span class="badge">40%</span>
+              </div>
+              <div class="card" style="flex-direction:row; align-items:center; gap:12px;">
+                <span class="material-symbols-outlined" style="color:var(--primary)">emoji_events</span>
+                <div style="flex:1">
+                  <div style="font-size:12px; font-weight:700; margin-bottom:4px;">Win</div>
+                  <div class="mini-progress"><div class="mini-progress-fill" style="width:25%"></div></div>
+                </div>
+                <span class="badge">25%</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── NAV COMPARISON ── -->
+      <div class="page" id="page-nav">
+        <div class="page-header">
+          <div class="page-title">Nav: Before vs After</div>
+          <div class="page-subtitle">Reducing from 6 items to 4</div>
+        </div>
+        <div class="page-body" style="flex-direction:row; gap:40px; align-items:flex-start;">
+
+          <div class="col">
+            <div class="col-label">Before (6 items)</div>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div class="nav-item" style="background:var(--surface-container); border-radius:12px;">
+                <span class="material-symbols-outlined">home</span> Home
+              </div>
+              <div class="nav-item" style="background:var(--surface-container); border-radius:12px;">
+                <span class="material-symbols-outlined">explore</span> Explore
+              </div>
+              <div class="nav-item" style="background:var(--surface-container); border-radius:12px;">
+                <span class="material-symbols-outlined">auto_stories</span> Learn
+              </div>
+              <div class="nav-item" style="background:var(--surface-container); border-radius:12px;">
+                <span class="material-symbols-outlined">fitness_center</span> Practice
+              </div>
+              <div class="nav-item" style="background:var(--surface-container); border-radius:12px;">
+                <span class="material-symbols-outlined">workspace_premium</span> Prep
+              </div>
+              <div class="nav-item" style="background:var(--surface-container); border-radius:12px;">
+                <span class="material-symbols-outlined">bar_chart</span> Progress
+              </div>
+            </div>
+            <div style="font-size:11px; color:var(--on-surface-variant); line-height:1.6; margin-top:8px;">
+              Problems: Explore + Learn overlap. Practice + Prep overlap. Users don't know where to start.
+            </div>
+          </div>
+
+          <div style="font-size:28px; color:var(--outline-variant); align-self:center;">→</div>
+
+          <div class="col">
+            <div class="col-label">After (4 items)</div>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div class="nav-item" style="background:var(--surface-container); border-radius:12px;">
+                <span class="material-symbols-outlined">home</span> Home
+              </div>
+              <div class="nav-item" style="background:var(--primary); color:white; border-radius:12px;">
+                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">auto_stories</span> Learn
+              </div>
+              <div class="nav-item" style="background:var(--surface-container); border-radius:12px;">
+                <span class="material-symbols-outlined">fitness_center</span> Practice
+              </div>
+              <div class="nav-item" style="background:var(--surface-container); border-radius:12px;">
+                <span class="material-symbols-outlined">bar_chart</span> Progress
+              </div>
+            </div>
+            <div style="font-size:11px; color:var(--on-surface-variant); line-height:1.6; margin-top:8px;">
+              <strong>Learn</strong> = modules + domains + study plans<br>
+              <strong>Practice</strong> = free challenges + guided prep (tabs)<br>
+              <strong>Progress</strong> = stats + cohort leaderboard
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── ALL MODULES ── -->
+      <div class="page" id="page-modules">
+        <div class="page-header">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <button onclick="showPage('learn')" style="font-size:11px; font-weight:700; color:var(--on-surface-variant); background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:4px;">
+              <span class="material-symbols-outlined" style="font-size:13px;">arrow_back</span> Learn
+            </button>
+            <span style="font-size:11px; color:var(--outline-variant);">/</span>
+            <span style="font-size:11px; font-weight:700; color:var(--on-surface);">Modules</span>
+          </div>
+          <div class="page-title">Course Modules</div>
+          <div class="page-subtitle">Self-paced theory, from foundations to the new era of AI</div>
+        </div>
+        <div class="page-body">
+          <!-- Difficulty filter -->
+          <div class="chips">
+            <span class="chip active">All</span>
+            <span class="chip">Foundation</span>
+            <span class="chip">Beginner</span>
+            <span class="chip">Intermediate</span>
+            <span class="chip">Advanced</span>
+            <span class="chip">New Era</span>
+          </div>
+          <!-- Grid -->
+          <div class="grid-3" style="row-gap:12px;">
+            <div class="card" style="gap:8px;">
+              <div style="height:56px; background:#4a7c59; border-radius:10px; display:flex; align-items:flex-end; padding:8px;">
+                <span style="font-family:'Literata',serif; font-size:12px; font-weight:700; color:white;">Product Foundations</span>
+              </div>
+              <div style="display:flex; gap:5px;"><span class="badge green">Foundation</span><span class="badge">10 chapters</span></div>
+              <div class="card-body">Metrics, trade-offs, user needs — the core mental models.</div>
+              <div class="mini-progress"><div class="mini-progress-fill" style="width:70%"></div></div>
+              <div style="font-size:11px; font-weight:700; color:var(--primary);">Continue → 7/10 done</div>
+            </div>
+            <div class="card" style="gap:8px;">
+              <div style="height:56px; background:#5b8fbe; border-radius:10px; display:flex; align-items:flex-end; padding:8px;">
+                <span style="font-family:'Literata',serif; font-size:12px; font-weight:700; color:white;">AI-Assisted Thinking</span>
+              </div>
+              <div style="display:flex; gap:5px;"><span class="badge" style="background:#ddeaf7;color:#3a6f9e;">Intermediate</span><span class="badge">8 chapters</span></div>
+              <div class="card-body">Trust, validate, keep human judgment sharp.</div>
+              <div class="mini-progress"><div class="mini-progress-fill" style="width:20%"></div></div>
+              <div style="font-size:11px; font-weight:700; color:#5b8fbe;">Continue → 2/8 done</div>
+            </div>
+            <div class="card" style="gap:8px;">
+              <div style="height:56px; background:#7c6f9e; border-radius:10px; display:flex; align-items:flex-end; padding:8px;">
+                <span style="font-family:'Literata',serif; font-size:12px; font-weight:700; color:white;">Agentic Systems</span>
+              </div>
+              <div style="display:flex; gap:5px;"><span class="badge" style="background:#ece8f5;color:#5a4f8a;">Advanced</span><span class="badge">12 chapters</span></div>
+              <div class="card-body">Agents, evals, failure modes, trust boundaries.</div>
+              <div class="mini-progress"><div class="mini-progress-fill" style="width:0%"></div></div>
+              <div style="font-size:11px; font-weight:700; color:var(--on-surface-variant);">Start →</div>
+            </div>
+            <div class="card" style="gap:8px;">
+              <div style="height:56px; background:#b87c4a; border-radius:10px; display:flex; align-items:flex-end; padding:8px;">
+                <span style="font-family:'Literata',serif; font-size:12px; font-weight:700; color:white;">AI-Native Products</span>
+              </div>
+              <div style="display:flex; gap:5px;"><span class="badge" style="background:#f5ece0;color:#8a5a28;">New Era</span><span class="badge">9 chapters</span></div>
+              <div class="card-body">New interaction models and entirely new risks.</div>
+              <div class="mini-progress"><div class="mini-progress-fill" style="width:0%"></div></div>
+              <div style="font-size:11px; font-weight:700; color:var(--on-surface-variant);">Start →</div>
+            </div>
+            <div class="card" style="gap:8px;">
+              <div style="height:56px; background:#6b6358; border-radius:10px; display:flex; align-items:flex-end; padding:8px;">
+                <span style="font-family:'Literata',serif; font-size:12px; font-weight:700; color:white;">Metrics Mastery</span>
+              </div>
+              <div style="display:flex; gap:5px;"><span class="badge">Beginner</span><span class="badge">6 chapters</span></div>
+              <div class="card-body">Read numbers, spot traps, act on signal.</div>
+              <div class="mini-progress"><div class="mini-progress-fill" style="width:0%"></div></div>
+              <div style="font-size:11px; font-weight:700; color:var(--on-surface-variant);">Start →</div>
+            </div>
+            <div class="card" style="gap:8px; border:1.5px dashed var(--outline-variant); background:transparent; justify-content:center; align-items:center; min-height:130px;">
+              <span class="material-symbols-outlined" style="color:var(--outline-variant); font-size:24px;">add_circle</span>
+              <div style="font-size:11px; color:var(--on-surface-variant); font-weight:700;">More coming soon</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ALL DOMAINS ── -->
+      <div class="page" id="page-domains">
+        <div class="page-header">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <button onclick="showPage('learn')" style="font-size:11px; font-weight:700; color:var(--on-surface-variant); background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:4px;">
+              <span class="material-symbols-outlined" style="font-size:13px;">arrow_back</span> Learn
+            </button>
+            <span style="font-size:11px; color:var(--outline-variant);">/</span>
+            <span style="font-size:11px; font-weight:700; color:var(--on-surface);">Domains</span>
+          </div>
+          <div class="page-title">Domains</div>
+          <div class="page-subtitle">Topic areas — each groups related challenges together</div>
+        </div>
+        <div class="page-body">
+          <div class="grid-3" style="row-gap:10px;">
+            <div class="card" style="flex-direction:row; align-items:center; gap:12px; cursor:pointer;">
+              <div class="card-icon" style="margin:0; width:40px; height:40px; flex-shrink:0;"><span class="material-symbols-outlined">notifications</span></div>
+              <div style="flex:1;">
+                <div class="card-title">Notifications</div>
+                <div class="card-body">12 challenges</div>
+                <div class="mini-progress" style="margin-top:5px;"><div class="mini-progress-fill" style="width:40%;"></div></div>
+              </div>
+              <span class="material-symbols-outlined" style="font-size:16px; color:var(--outline-variant);">chevron_right</span>
+            </div>
+            <div class="card" style="flex-direction:row; align-items:center; gap:12px; cursor:pointer;">
+              <div class="card-icon" style="margin:0; width:40px; height:40px; flex-shrink:0;"><span class="material-symbols-outlined">search</span></div>
+              <div style="flex:1;">
+                <div class="card-title">Search & Discovery</div>
+                <div class="card-body">8 challenges</div>
+                <div class="mini-progress" style="margin-top:5px;"><div class="mini-progress-fill" style="width:0%;"></div></div>
+              </div>
+              <span class="material-symbols-outlined" style="font-size:16px; color:var(--outline-variant);">chevron_right</span>
+            </div>
+            <div class="card" style="flex-direction:row; align-items:center; gap:12px; cursor:pointer;">
+              <div class="card-icon" style="margin:0; width:40px; height:40px; flex-shrink:0;"><span class="material-symbols-outlined">trending_up</span></div>
+              <div style="flex:1;">
+                <div class="card-title">Growth</div>
+                <div class="card-body">15 challenges</div>
+                <div class="mini-progress" style="margin-top:5px;"><div class="mini-progress-fill" style="width:15%;"></div></div>
+              </div>
+              <span class="material-symbols-outlined" style="font-size:16px; color:var(--outline-variant);">chevron_right</span>
+            </div>
+            <div class="card" style="flex-direction:row; align-items:center; gap:12px; cursor:pointer;">
+              <div class="card-icon" style="margin:0; width:40px; height:40px; flex-shrink:0;"><span class="material-symbols-outlined">payments</span></div>
+              <div style="flex:1;">
+                <div class="card-title">Monetisation</div>
+                <div class="card-body">9 challenges</div>
+                <div class="mini-progress" style="margin-top:5px;"><div class="mini-progress-fill" style="width:0%;"></div></div>
+              </div>
+              <span class="material-symbols-outlined" style="font-size:16px; color:var(--outline-variant);">chevron_right</span>
+            </div>
+            <div class="card" style="flex-direction:row; align-items:center; gap:12px; cursor:pointer;">
+              <div class="card-icon" style="margin:0; width:40px; height:40px; flex-shrink:0;"><span class="material-symbols-outlined">people</span></div>
+              <div style="flex:1;">
+                <div class="card-title">Retention</div>
+                <div class="card-body">11 challenges</div>
+                <div class="mini-progress" style="margin-top:5px;"><div class="mini-progress-fill" style="width:60%;"></div></div>
+              </div>
+              <span class="material-symbols-outlined" style="font-size:16px; color:var(--outline-variant);">chevron_right</span>
+            </div>
+            <div class="card" style="flex-direction:row; align-items:center; gap:12px; cursor:pointer;">
+              <div class="card-icon" style="margin:0; width:40px; height:40px; flex-shrink:0;"><span class="material-symbols-outlined">speed</span></div>
+              <div style="flex:1;">
+                <div class="card-title">Performance</div>
+                <div class="card-body">7 challenges</div>
+                <div class="mini-progress" style="margin-top:5px;"><div class="mini-progress-fill" style="width:0%;"></div></div>
+              </div>
+              <span class="material-symbols-outlined" style="font-size:16px; color:var(--outline-variant);">chevron_right</span>
+            </div>
+            <div class="card" style="flex-direction:row; align-items:center; gap:12px; cursor:pointer;">
+              <div class="card-icon" style="margin:0; width:40px; height:40px; flex-shrink:0;"><span class="material-symbols-outlined">security</span></div>
+              <div style="flex:1;">
+                <div class="card-title">Trust & Safety</div>
+                <div class="card-body">6 challenges</div>
+                <div class="mini-progress" style="margin-top:5px;"><div class="mini-progress-fill" style="width:0%;"></div></div>
+              </div>
+              <span class="material-symbols-outlined" style="font-size:16px; color:var(--outline-variant);">chevron_right</span>
+            </div>
+            <div class="card" style="flex-direction:row; align-items:center; gap:12px; cursor:pointer;">
+              <div class="card-icon" style="margin:0; width:40px; height:40px; flex-shrink:0;"><span class="material-symbols-outlined">psychology</span></div>
+              <div style="flex:1;">
+                <div class="card-title">AI Judgment</div>
+                <div class="card-body">5 challenges</div>
+                <div class="mini-progress" style="margin-top:5px;"><div class="mini-progress-fill" style="width:0%;"></div></div>
+              </div>
+              <span class="material-symbols-outlined" style="font-size:16px; color:var(--outline-variant);">chevron_right</span>
+            </div>
+            <div class="card" style="flex-direction:row; align-items:center; gap:12px; cursor:pointer;">
+              <div class="card-icon" style="margin:0; width:40px; height:40px; flex-shrink:0;"><span class="material-symbols-outlined">dashboard</span></div>
+              <div style="flex:1;">
+                <div class="card-title">Dashboards & Reporting</div>
+                <div class="card-body">8 challenges</div>
+                <div class="mini-progress" style="margin-top:5px;"><div class="mini-progress-fill" style="width:25%;"></div></div>
+              </div>
+              <span class="material-symbols-outlined" style="font-size:16px; color:var(--outline-variant);">chevron_right</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ALL STUDY PLANS ── -->
+      <div class="page" id="page-plans">
+        <div class="page-header">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <button onclick="showPage('learn')" style="font-size:11px; font-weight:700; color:var(--on-surface-variant); background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:4px;">
+              <span class="material-symbols-outlined" style="font-size:13px;">arrow_back</span> Learn
+            </button>
+            <span style="font-size:11px; color:var(--outline-variant);">/</span>
+            <span style="font-size:11px; font-weight:700; color:var(--on-surface);">Study Plans</span>
+          </div>
+          <div class="page-title">Study Plans</div>
+          <div class="page-subtitle">Curated challenge paths — by FLOW move, role, or level</div>
+        </div>
+        <div class="page-body">
+          <!-- FLOW filter -->
+          <div class="chips">
+            <span class="chip active">All</span>
+            <span class="chip">◇ Frame</span>
+            <span class="chip">◈ List</span>
+            <span class="chip">◆ Optimize</span>
+            <span class="chip">◎ Win</span>
+          </div>
+          <!-- Plans grid -->
+          <div class="grid-3" style="row-gap:12px;">
+            <div class="card" style="gap:8px; border-top:3px solid var(--primary);">
+              <div style="display:flex; gap:5px; flex-wrap:wrap;"><span class="badge green">Frame</span><span class="badge">SWE</span><span class="badge amber">Intermediate</span></div>
+              <div class="card-title">Staff Engineer Path</div>
+              <div class="card-body">Strategic leadership and high-stakes decisions.</div>
+              <div class="mini-progress"><div class="mini-progress-fill" style="width:35%"></div></div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="badge">7 challenges · ~6 hrs</span>
+                <span style="font-size:11px; font-weight:700; color:var(--primary);">Continue →</span>
+              </div>
+            </div>
+            <div class="card" style="gap:8px; border-top:3px solid #705c30;">
+              <div style="display:flex; gap:5px; flex-wrap:wrap;"><span class="badge amber">Win</span><span class="badge">All roles</span><span class="badge">Beginner</span></div>
+              <div class="card-title">7-Day Prep Sprint</div>
+              <div class="card-body">Build product instincts fast before an interview.</div>
+              <div class="mini-progress"><div class="mini-progress-fill" style="width:0%"></div></div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="badge">7 challenges · ~5 hrs</span>
+                <span style="font-size:11px; font-weight:700; color:var(--primary);">Start →</span>
+              </div>
+            </div>
+            <div class="card" style="gap:8px; border-top:3px solid #5b8fbe;">
+              <div style="display:flex; gap:5px; flex-wrap:wrap;"><span class="badge" style="background:#ddeaf7;color:#3a6f9e;">List</span><span class="badge">ML Eng</span><span class="badge">Advanced</span></div>
+              <div class="card-title">ML Product Thinking</div>
+              <div class="card-body">Evals, tradeoffs, and trust for ML systems.</div>
+              <div class="mini-progress"><div class="mini-progress-fill" style="width:0%"></div></div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="badge">6 challenges · ~4 hrs</span>
+                <span style="font-size:11px; font-weight:700; color:var(--primary);">Start →</span>
+              </div>
+            </div>
+            <div class="card" style="gap:8px; border-top:3px solid #7c6f9e;">
+              <div style="display:flex; gap:5px; flex-wrap:wrap;"><span class="badge" style="background:#ece8f5;color:#5a4f8a;">Optimize</span><span class="badge">EM</span><span class="badge">Intermediate</span></div>
+              <div class="card-title">Engineering Manager Track</div>
+              <div class="card-body">People, roadmaps, cross-functional trade-offs.</div>
+              <div class="mini-progress"><div class="mini-progress-fill" style="width:0%"></div></div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="badge">8 challenges · ~7 hrs</span>
+                <span style="font-size:11px; font-weight:700; color:var(--primary);">Start →</span>
+              </div>
+            </div>
+            <div class="card" style="gap:8px; border-top:3px solid var(--primary);">
+              <div style="display:flex; gap:5px; flex-wrap:wrap;"><span class="badge green">Frame</span><span class="badge">Data Eng</span><span class="badge">Beginner</span></div>
+              <div class="card-title">Data-Driven PM Thinking</div>
+              <div class="card-body">From raw metrics to clear product decisions.</div>
+              <div class="mini-progress"><div class="mini-progress-fill" style="width:0%"></div></div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="badge">5 challenges · ~3 hrs</span>
+                <span style="font-size:11px; font-weight:700; color:var(--primary);">Start →</span>
+              </div>
+            </div>
+            <div class="card" style="gap:8px; border-top:3px solid #b87c4a;">
+              <div style="display:flex; gap:5px; flex-wrap:wrap;"><span class="badge" style="background:#f5ece0;color:#8a5a28;">Win</span><span class="badge">Founding Eng</span><span class="badge amber">Expert</span></div>
+              <div class="card-title">Founding Engineer Playbook</div>
+              <div class="card-body">Pitching, prioritising, and shipping in chaos.</div>
+              <div class="mini-progress"><div class="mini-progress-fill" style="width:0%"></div></div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="badge">10 challenges · ~9 hrs</span>
+                <span style="font-size:11px; font-weight:700; color:var(--primary);">Start →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /shell -->
+</div>
+
+<script>
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('visible'))
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.remove('active')
+    const dot = n.querySelector('.nav-dot')
+    if (dot) dot.remove()
+  })
+
+  const page = document.getElementById('page-' + id)
+  if (page) page.classList.add('visible')
+
+  // Highlight matching tab
+  document.querySelectorAll('.tab').forEach(t => {
+    const tabId = t.getAttribute('onclick').replace("showPage('","").replace("')","")
+    if (tabId === id) t.classList.add('active')
+  })
+
+  // Highlight nav item
+  const navMap = {
+    'learn': 'nav-learn', 'modules': 'nav-learn', 'domains': 'nav-learn', 'plans': 'nav-learn',
+    'practice-free': 'nav-practice', 'practice-guided': 'nav-practice',
+    'progress': 'nav-progress'
+  }
+  const navId = navMap[id]
+  if (navId) {
+    const navEl = document.getElementById(navId)
+    if (navEl) {
+      navEl.classList.add('active')
+      const dot = document.createElement('span')
+      dot.className = 'nav-dot'
+      navEl.appendChild(dot)
+    }
+  }
+}
+</script>
+</body>
+</html>
