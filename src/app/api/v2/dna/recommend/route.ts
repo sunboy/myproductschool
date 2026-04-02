@@ -71,7 +71,7 @@ export async function GET() {
 
   // Fetch completed challenge IDs for this user
   const { data: completedAttempts } = await admin
-    .from('challenge_attempts_v2')
+    .from('challenge_attempts')
     .select('challenge_id')
     .eq('user_id', user.id)
     .eq('status', 'completed')

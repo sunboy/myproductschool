@@ -68,7 +68,7 @@ export async function POST(
     attempt = mockAttempt
   } else {
     const { data: attemptData, error: attemptError } = await adminClient
-      .from('challenge_attempts_v2')
+      .from('challenge_attempts')
       .select('id, user_id, status, current_step, current_question_sequence')
       .eq('id', attempt_id)
       .eq('user_id', userId)
@@ -212,7 +212,7 @@ export async function POST(
 
   if (!isMock) {
     await adminClient
-      .from('challenge_attempts_v2')
+      .from('challenge_attempts')
       .update({ current_question_sequence: (attempt.current_question_sequence ?? 0) + 1 })
       .eq('id', attempt_id)
   }
@@ -291,7 +291,7 @@ export async function POST(
     // Advance to next step
     const next = nextStep(step)
     await adminClient
-      .from('challenge_attempts_v2')
+      .from('challenge_attempts')
       .update({
         current_step: next,
         ...(next === 'done' ? { status: 'completed', completed_at: new Date().toISOString() } : {}),

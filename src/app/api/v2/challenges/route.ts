@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
   // Fetch attempt stats for this user
   const challengeIds = (challenges as Challenge[]).map(c => c.id)
   const { data: attempts } = await supabase
-    .from('challenge_attempts_v2')
+    .from('challenge_attempts')
     .select('challenge_id, total_score, status')
     .eq('user_id', user.id)
     .in('challenge_id', challengeIds)

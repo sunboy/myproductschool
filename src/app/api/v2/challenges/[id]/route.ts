@@ -109,7 +109,7 @@ export async function GET(
 
   // Fetch in-progress attempt for this user
   const { data: currentAttempt } = await supabase
-    .from('challenge_attempts_v2')
+    .from('challenge_attempts')
     .select('*')
     .eq('user_id', userId)
     .eq('challenge_id', id)

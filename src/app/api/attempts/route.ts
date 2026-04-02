@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 
   const admin = createAdminClient()
   const { data } = await admin
-    .from('challenge_attempts_v2')
+    .from('challenge_attempts')
     .select('id, challenge_id, grade_label, total_score, completed_at, challenges(title)')
     .eq('user_id', user.id)
     .eq('status', 'completed')

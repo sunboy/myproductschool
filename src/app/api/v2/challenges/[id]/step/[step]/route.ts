@@ -179,7 +179,7 @@ export async function GET(
     attempt = { id: attempt_id, role_id: 'swe', user_id: userId }
   } else {
     const { data: attemptData, error: attemptError } = await adminClient
-      .from('challenge_attempts_v2')
+      .from('challenge_attempts')
       .select('id, role_id, user_id')
       .eq('id', attempt_id)
       .eq('user_id', userId)

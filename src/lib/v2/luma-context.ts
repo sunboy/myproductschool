@@ -9,7 +9,7 @@ export async function getLumaContext(
   try {
     const admin = createAdminClient()
     const [{ data: insights }, { data: competencies }] = await Promise.all([
-      admin.from('luma_context_v2')
+      admin.from('luma_context')
         .select('content')
         .eq('user_id', userId)
         .eq('is_active', true)
