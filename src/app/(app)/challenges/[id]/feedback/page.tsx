@@ -353,22 +353,6 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             </div>
           </div>
 
-          {/* Related concepts to review */}
-          <div className="space-y-2">
-            <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider font-label">Related concepts to review</p>
-            <div className="flex flex-wrap gap-2">
-              <Link href="/explore" className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 text-xs font-label font-semibold hover:opacity-80 transition-opacity">
-                Metric Fluency
-              </Link>
-              <Link href="/explore" className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 text-xs font-label font-semibold hover:opacity-80 transition-opacity">
-                Root Cause Analysis
-              </Link>
-              <Link href="/explore" className="bg-secondary-container text-on-secondary-container rounded-full px-3 py-1 text-xs font-label font-semibold hover:opacity-80 transition-opacity">
-                Problem Framing
-              </Link>
-            </div>
-          </div>
-
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 pt-2">
             <Link
