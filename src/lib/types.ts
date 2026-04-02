@@ -453,6 +453,7 @@ export interface ShareCardData {
 export interface CareerBenchmark {
   levels: { title: string; percentile: number }[]
   user_level: string
+  luma_message?: string
 }
 
 /* ── v2 Challenge Steps ───────────────────────────────────── */

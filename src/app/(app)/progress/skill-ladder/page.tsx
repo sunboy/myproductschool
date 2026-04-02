@@ -292,7 +292,9 @@ function SkillLadderContent() {
                   <div className="absolute -bottom-6 right-0 text-[9px] font-bold text-outline whitespace-nowrap">Principal</div>
                 </div>
               </div>
-              <p className="text-[11px] text-on-surface-variant italic leading-relaxed pt-2">Your current &lsquo;{moveLabel} Move&rsquo; skill score puts you in the top 15% of Mid-Level PMs in the tech industry.</p>
+              {benchmark?.luma_message ? (
+                <p className="text-[11px] text-on-surface-variant italic leading-relaxed pt-2">{benchmark.luma_message}</p>
+              ) : null}
             </div>
           </div>
 
