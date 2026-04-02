@@ -112,7 +112,7 @@ export default function RoleSelectionPage() {
       // Non-fatal — proceed regardless
     } finally {
       setIsLoading(false)
-      router.push('/onboarding/calibration/frame')
+      router.push('/calibration')
     }
   }
 
