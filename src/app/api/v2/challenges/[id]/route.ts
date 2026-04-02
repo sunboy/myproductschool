@@ -28,6 +28,41 @@ export async function GET(
   if (!user && !isMock) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const userId = user?.id ?? 'mock-user-00000000-0000-0000-0000-000000000000'
 
+  // ── Mock mode short-circuit ───────────────────────────────────
+  if (isMock) {
+    const mockChallenge: Challenge = {
+      id,
+      title: 'Improve Spotify\'s Podcast Discovery',
+      scenario_role: 'Product Manager, Podcasts',
+      scenario_context: 'Spotify has 5M+ podcast titles but only 8% of users who open the Podcasts tab ever save or follow a podcast. The team suspects a discovery problem but hasn\'t yet investigated root causes.',
+      scenario_trigger: 'The VP of Content asks you to diagnose the low follow rate and propose a fix before next quarter\'s planning cycle.',
+      scenario_question: 'How would you approach this problem?',
+      engineer_standout: 'Frame the problem before proposing features — define what "discovery failure" means with data before jumping to solutions.',
+      paradigm: 'traditional',
+      industry: 'consumer-tech',
+      sub_vertical: 'audio',
+      difficulty: 'standard',
+      estimated_minutes: 15,
+      primary_competencies: ['diagnostic_accuracy', 'framing_precision'],
+      secondary_competencies: ['metric_fluency'],
+      frameworks: ['MECE', 'North Star Metric'],
+      relevant_roles: ['swe', 'pm', 'data_scientist'],
+      company_tags: ['spotify'],
+      tags: ['discovery', 'engagement', 'metrics'],
+      is_published: true,
+      is_calibration: false,
+      is_premium: false,
+      created_at: '2024-01-01T00:00:00Z',
+    }
+    const mockSteps: StepSummary[] = [
+      { step: 'frame',    step_order: 0, question_count: 2 },
+      { step: 'list',     step_order: 1, question_count: 2 },
+      { step: 'optimize', step_order: 2, question_count: 2 },
+      { step: 'win',      step_order: 3, question_count: 1 },
+    ]
+    return NextResponse.json({ challenge: mockChallenge, steps: mockSteps, current_attempt: null })
+  }
+
   // Fetch challenge
   const { data: challenge, error: challengeError } = await supabase
     .from('challenges')

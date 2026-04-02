@@ -64,6 +64,98 @@ export async function GET(
     return NextResponse.json({ error: 'attempt_id is required' }, { status: 400 })
   }
 
+  // ── Mock mode short-circuit ───────────────────────────────────
+  if (isMock) {
+    const MOCK_STEPS: Record<string, { nudge: string; questions: Array<{ id: string; question_text: string; question_nudge: string | null; response_type: string; sequence: number; grading_weight_within_step: number; options: Array<{ id: string; option_label: string; option_text: string }>; already_answered: boolean }> }> = {
+      frame: {
+        nudge: 'Define the problem before proposing solutions. What does "8% follow rate" actually mean — is that low?',
+        questions: [
+          {
+            id: 'mock-q-frame-1', question_text: 'What is the core problem you\'re being asked to solve?', question_nudge: 'Separate the symptom (low follow rate) from the actual problem.', response_type: 'pure_mcq', sequence: 1, grading_weight_within_step: 0.5, already_answered: false,
+            options: [
+              { id: 'mock-q-frame-1-A', option_label: 'A', option_text: 'Users don\'t know podcasts exist on Spotify' },
+              { id: 'mock-q-frame-1-B', option_label: 'B', option_text: 'Users discover podcasts but don\'t find them worth following' },
+              { id: 'mock-q-frame-1-C', option_label: 'C', option_text: 'The follow rate benchmark of 8% might already be industry-standard — first check if this is actually low' },
+              { id: 'mock-q-frame-1-D', option_label: 'D', option_text: 'The Podcasts tab UI makes it hard to follow content' },
+            ],
+          },
+          {
+            id: 'mock-q-frame-2', question_text: 'A stakeholder says "users just don\'t like podcasts." How do you respond?', question_nudge: 'How do you handle a narrative being presented as a finding?', response_type: 'pure_mcq', sequence: 2, grading_weight_within_step: 0.5, already_answered: false,
+            options: [
+              { id: 'mock-q-frame-2-A', option_label: 'A', option_text: '"That\'s a hypothesis — what data supports it? Spotify\'s own podcast listening hours have grown YoY."' },
+              { id: 'mock-q-frame-2-B', option_label: 'B', option_text: 'Agree to run a user survey to test the hypothesis' },
+              { id: 'mock-q-frame-2-C', option_label: 'C', option_text: 'Check if competitors like Apple Podcasts or Pocket Casts have higher follow rates' },
+              { id: 'mock-q-frame-2-D', option_label: 'D', option_text: 'Accept the framing and pivot to improving music discovery instead' },
+            ],
+          },
+        ],
+      },
+      list: {
+        nudge: 'Break the user population into non-overlapping segments before diagnosing. Who are the different types of users hitting this funnel?',
+        questions: [
+          {
+            id: 'mock-q-list-1', question_text: 'Which user segments would you investigate first to understand the low follow rate?', question_nudge: 'Think about behaviour, not just demographics.', response_type: 'pure_mcq', sequence: 1, grading_weight_within_step: 0.5, already_answered: false,
+            options: [
+              { id: 'mock-q-list-1-A', option_label: 'A', option_text: 'Users who opened the Podcasts tab vs. those who never have — understand who is even in the funnel' },
+              { id: 'mock-q-list-1-B', option_label: 'B', option_text: 'New users vs. returning users — acquisition might be driving the low rate' },
+              { id: 'mock-q-list-1-C', option_label: 'C', option_text: 'Users by country — podcast culture varies significantly by market' },
+              { id: 'mock-q-list-1-D', option_label: 'D', option_text: 'Users who played a podcast episode vs. those who only browsed without playing' },
+            ],
+          },
+          {
+            id: 'mock-q-list-2', question_text: 'What is the first metric you pull to diagnose where users drop off in the podcast discovery funnel?', question_nudge: 'Pick the signal that tells you WHERE the problem is, not just that it exists.', response_type: 'pure_mcq', sequence: 2, grading_weight_within_step: 0.5, already_answered: false,
+            options: [
+              { id: 'mock-q-list-2-A', option_label: 'A', option_text: 'Step-by-step funnel: Tab open → Episode played → Follow action seen → Follow clicked' },
+              { id: 'mock-q-list-2-B', option_label: 'B', option_text: 'Average session length on the Podcasts tab' },
+              { id: 'mock-q-list-2-C', option_label: 'C', option_text: 'NPS from users who opened the Podcasts tab in the last 30 days' },
+              { id: 'mock-q-list-2-D', option_label: 'D', option_text: 'Monthly active podcast listeners as a % of total MAU' },
+            ],
+          },
+        ],
+      },
+      optimize: {
+        nudge: 'You\'ve identified the problem. Now sharpen from many options to the best bet given real constraints.',
+        questions: [
+          {
+            id: 'mock-q-optimize-1', question_text: 'Data shows 60% of users who play a podcast episode never see the follow button. What do you do?', question_nudge: 'Scope your solution to the specific problem you\'ve diagnosed.', response_type: 'pure_mcq', sequence: 1, grading_weight_within_step: 0.5, already_answered: false,
+            options: [
+              { id: 'mock-q-optimize-1-A', option_label: 'A', option_text: 'Ship a persistent follow CTA on the episode player — one change, high-impact placement' },
+              { id: 'mock-q-optimize-1-B', option_label: 'B', option_text: 'Redesign the entire Podcasts tab to prioritise following' },
+              { id: 'mock-q-optimize-1-C', option_label: 'C', option_text: 'Add a post-episode prompt: "Enjoyed this? Follow for more episodes"' },
+              { id: 'mock-q-optimize-1-D', option_label: 'D', option_text: 'Launch a "Top Podcasts for You" personalised shelf on the home tab' },
+            ],
+          },
+          {
+            id: 'mock-q-optimize-2', question_text: 'You have engineering bandwidth for one change. Which bet do you prioritise?', question_nudge: 'Think about evidence, impact, and reversibility.', response_type: 'pure_mcq', sequence: 2, grading_weight_within_step: 0.5, already_answered: false,
+            options: [
+              { id: 'mock-q-optimize-2-A', option_label: 'A', option_text: 'Persistent follow CTA in the player — directly addresses the diagnosed gap, fast to ship, easy to measure' },
+              { id: 'mock-q-optimize-2-B', option_label: 'B', option_text: 'Personalised podcast shelf on home — broader reach but doesn\'t fix the funnel drop-off' },
+              { id: 'mock-q-optimize-2-C', option_label: 'C', option_text: 'Push notification after first episode: "Follow this podcast?"' },
+              { id: 'mock-q-optimize-2-D', option_label: 'D', option_text: 'Email campaign to users who played but didn\'t follow' },
+            ],
+          },
+        ],
+      },
+      win: {
+        nudge: 'Land your recommendation clearly. State it first, then back it with evidence.',
+        questions: [
+          {
+            id: 'mock-q-win-1', question_text: 'You\'re presenting your recommendation to the VP of Content. What\'s your opening line?', question_nudge: 'Lead with the answer, not the process.', response_type: 'pure_mcq', sequence: 1, grading_weight_within_step: 1.0, already_answered: false,
+            options: [
+              { id: 'mock-q-win-1-A', option_label: 'A', option_text: '"60% of listeners never see the follow button — one player UI change could 2x our follow rate."' },
+              { id: 'mock-q-win-1-B', option_label: 'B', option_text: '"I looked at the data, ran some analysis, and here\'s what I found across three segments..."' },
+              { id: 'mock-q-win-1-C', option_label: 'C', option_text: '"Apple Podcasts has a 15% follow rate — here\'s how we can close the gap."' },
+              { id: 'mock-q-win-1-D', option_label: 'D', option_text: '"There are several things we could do to improve podcast discovery. Let me walk through the options."' },
+            ],
+          },
+        ],
+      },
+    }
+    const mockStep = MOCK_STEPS[step]
+    if (!mockStep) return NextResponse.json({ error: 'Invalid step' }, { status: 400 })
+    return NextResponse.json({ step, nudge: mockStep.nudge, questions: mockStep.questions })
+  }
+
   const adminClient = createAdminClient()
 
   // Fetch the flow_step for this challenge+step
