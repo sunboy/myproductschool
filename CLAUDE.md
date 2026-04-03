@@ -250,3 +250,4 @@ Set `NEXT_PUBLIC_MOCK_MODE=true` to bypass auth and DB on onboarding routes. Res
 - Use Tailwind token classes — never raw hex values in JSX className
 - Stitch v2 project ID: `12072135267645366200` (canonical design reference)
 - See "Canonical Stitch Screens" table above for all 24 screen IDs and their file paths
+- **Reuse core components** — always import and use existing components (`FlowStepper`, `OptionCard`, `LumaInsightBlock`, `LumaGlyph`, etc.) rather than rebuilding them inline. Only create new components when explicitly asked or when no suitable component exists.

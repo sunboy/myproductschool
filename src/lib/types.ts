@@ -739,3 +739,10 @@ export interface AutopsyChallenge {
 export interface AutopsyProductDetail extends AutopsyProduct {
   decisions: Array<AutopsyDecision & { challenge: AutopsyChallenge }>
 }
+
+export interface ShowcaseAttempt {
+  points: number
+  grade_label: string
+  decision_index: number
+  selected_option_label: string
+}
