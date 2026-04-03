@@ -231,6 +231,102 @@ Use this pattern for any significant build task (3+ files, multiple concerns):
 ### Example spawn message to a dev agent
 > "You are devN on the [team] team. You have ONE task: [Task #N — Title]. Working dir: [...]. Read [...] first. Implement [...]. After implementing: run tsc, send full output to opus saying 'Task N proof: [output]'. Wait for APPROVED from opus before marking task completed."
 
+## Mental Models Framework — Luma's Grading Intelligence
+
+This is the conceptual foundation for everything Luma does: grading, per-MCQ feedback, in-context nudges, step coaching, post-challenge breakdowns, analytics, and competency routing. All Luma output should be rooted in these mental models.
+
+Full document: `../myproductschool-content/content/MENTAL_MODELS_FRAMEWORK.md`
+
+### The Six Competency Dimensions
+
+These map to the `learner_competencies` table. They are never self-reported — always inferred from FLOW step performance.
+
+| Competency key | What it measures | Primary thinker absorbed |
+|---|---|---|
+| `motivation_theory` | What drives users: motivation → friction → satisfaction → nudge | Rahul Pandey |
+| `cognitive_empathy` | Simulating other people's goals, constraints, success metrics | Rahul Pandey, Ben Erez |
+| `taste` | Feeling the difference between a real tradeoff and a preference | Rahul Pandey, Gergely Orosz |
+| `strategic_thinking` | Positioning decisions in competitive, long-term context | Gibson Biddle, Shreyas Doshi |
+| `creative_execution` | Generating structurally distinct options, not variations | Rahul Pandey, April Dunford |
+| `domain_expertise` | Applying specific knowledge to name real metrics, thresholds, timelines | Marty Cagan, Shreyas Doshi |
+
+### Competency × FLOW Step — The 10 Active Mappings
+
+Every piece of Luma feedback connects to one of these mappings. When writing grading output, coaching copy, or nudge text, ground it in the reasoning move being built.
+
+| FLOW Step | Competency | The reasoning move being built |
+|---|---|---|
+| FRAME | `motivation_theory` | Identify friction before designing the fix |
+| FRAME | `cognitive_empathy` | Ask whose goal is served by solving this |
+| LIST | `cognitive_empathy` | Simulate every stakeholder's success metric |
+| LIST | `creative_execution` | Generate structurally distinct options, not variations |
+| OPTIMIZE | `taste` | Feel the difference between a tradeoff and a preference |
+| OPTIMIZE | `strategic_thinking` | Name the criterion — what are we actually optimizing for? |
+| WIN | `strategic_thinking` | Strategy is a hypothesis — what's the because-Z? |
+| WIN | `domain_expertise` | A real metric requires domain knowledge to name |
+| WIN | `motivation_theory` | Satisfaction: what does success look like after the fix? |
+| WIN | `cognitive_empathy` | Phrase it so the decision-maker feels heard, not blocked |
+
+### Where Mental Models Appear in the Product
+
+**1. Per-MCQ option explanation** (`flow_options.explanation`)
+Every option has two layers:
+- Rubric layer: what this answer does right or wrong in this specific scenario
+- Framework layer: which mental model it demonstrates or violates, with a one-line `framework_hint`
+
+Example framework_hint for a correct Frame answer:
+> 🧠 Motivation Theory → Friction: The job isn't "reduce complaints." It's "remove what's blocking drivers from trusting their earnings data."
+
+Example framework_hint for a wrong Optimize answer:
+> 🧠 Taste failure: This is a preference ("cleaner feels better"), not a tradeoff. Taste is knowing which quality signal actually predicts user behavior.
+
+**2. Per-step grading output** (Luma API response)
+Alongside `detected` / `missed` / `coaching`, include a `competency_signal` block:
+```json
+{
+  "competency_signal": {
+    "primary": "motivation_theory",
+    "signal": "You're identifying friction well. The next level: what does Satisfaction look like after the friction is removed?",
+    "framework_hint": "Motivation Theory: Motivation → Friction → Satisfaction → Nudge. You're at Friction."
+  }
+}
+```
+
+**3. Post-challenge Mental Models breakdown** (feedback page)
+After all 4 FLOW steps, show a table mapping each step to the competency being built and what the user demonstrated vs. missed. End with:
+- Weakest competency this challenge (by criteria scores)
+- Next challenge recommendation based on that competency gap
+
+**4. Analytics / Skill Ladder**
+The `learner_competencies` table tracks score (0-100), trend, and total_attempts per competency. Surface this as a radar/hexagon chart. Label axes with competency names, not rubric criterion codes.
+
+**5. Luma nudges (in-challenge)**
+Step nudges (`flow_steps.step_nudge`) and question nudges (`step_questions.question_nudge`) should reference the reasoning move being practiced, not just the question topic. E.g. for a Frame step nudge: "You're about to practice the upstream move — finding the problem behind the problem."
+
+### Design Principle: No Author Attribution in the Product
+
+Never name Rahul Pandey, Shreyas Doshi, Marty Cagan, etc. in user-facing copy. Present mental models as reasoning patterns, not as frameworks with authors. This is intentional:
+- Attribution creates authority bias — users should accept a reasoning move because it produces better decisions, not because someone famous said it
+- The goal is internalization, not citation
+- The frameworks are in tension with each other; presenting them as named competing schools would confuse
+
+### Grading Rubric Files
+
+Located in `../myproductschool-content/content/grading_rubrics/`:
+- `frame_rubric.json` — F1 (symptom→root cause, 0.35), F2 (why-before-how, 0.30), F3 (problem statement, 0.20), F4 (scope boundary, 0.15)
+- `list_rubric.json` — L1 (stakeholder completeness, 0.30), L2 (solution space width, 0.30), L3 (second-order effects, 0.25), L4 (workarounds, 0.15)
+- `optimize_rubric.json` — O1 (named criterion, 0.30), O2 (the sacrifice, 0.30), O3 (metric + guardrail, 0.20), O4 (options vs criterion, 0.20)
+- `win_rubric.json` — W1 (specificity, 0.30), W2 (defensibility, 0.25), W3 (falsifiability, 0.30), W4 (ownership, 0.15)
+
+Scoring: strong (≥0.75), partial (≥0.45), needs_work (<0.45). Each criterion scores 1.0 / 0.5 / 0.0.
+
+Canonical reasoning structures Luma grades against:
+- **Frame/F3**: "[Person] is trying to [accomplish X]. [Blocker] is preventing them. If unresolved, [business consequence]."
+- **Optimize/O2**: "We get [gain]. We give up [sacrifice]. [Sacrifice] is acceptable because [reason]."
+- **Win/W3**: "We will know this worked if [metric] reaches [threshold] by [timeline]. We will know it failed if [counter-signal]."
+
+---
+
 ## Key Conventions
 
 - `@/*` path alias maps to `./src/*`
