@@ -1,25 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { QUALITY_TO_POINTS, GRADE_LABELS } from '@/lib/showcase/adapters/autopsyAdapter'
 import type { AutopsyChallengeOption } from '@/lib/types'
-
-// ── Quality → points mapping ─────────────────────────────────
-
-const QUALITY_POINTS: Record<string, number> = {
-  best: 3,
-  good_but_incomplete: 2,
-  surface: 1,
-  plausible_wrong: 0,
-}
-
-function qualityToGradeLabel(points: number): string {
-  if (points === 3) return 'Sharp'
-  if (points === 2) return 'Solid'
-  if (points === 1) return 'Surface'
-  return 'Missed'
-}
-
-// ── POST handler ─────────────────────────────────────────────
 
 export async function POST(
   req: NextRequest,
@@ -33,23 +16,18 @@ export async function POST(
   }
 
   const body = await req.json()
-  const { selected_option_label, elaboration } = body as {
-    selected_option_label: string
-    elaboration: string
-  }
+  const { selected_option_label } = body as { selected_option_label: string }
 
   if (!selected_option_label) {
     return NextResponse.json({ error: 'Missing selected_option_label' }, { status: 400 })
   }
 
-  // Auth
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const adminClient = createAdminClient()
 
-  // Look up the product by slug
   const { data: product, error: productError } = await adminClient
     .from('autopsy_products')
     .select('id')
@@ -61,24 +39,20 @@ export async function POST(
     return NextResponse.json({ error: 'Product not found' }, { status: 404 })
   }
 
-  // Look up the Nth decision (0-based index → sort by sort_order, pick offset N)
+  // Fetch only the Nth decision row directly
   const { data: decisions, error: decisionsError } = await adminClient
     .from('autopsy_decisions')
     .select('id')
     .eq('product_id', product.id)
     .order('sort_order', { ascending: true })
+    .range(decisionIndex, decisionIndex)
 
   if (decisionsError || !decisions || decisions.length === 0) {
-    return NextResponse.json({ error: 'No decisions found for product' }, { status: 404 })
+    return NextResponse.json({ error: 'Decision not found' }, { status: 404 })
   }
 
-  if (decisionIndex >= decisions.length) {
-    return NextResponse.json({ error: 'decisionIndex out of range' }, { status: 400 })
-  }
+  const decision = decisions[0]
 
-  const decision = decisions[decisionIndex]
-
-  // Look up the challenge for this decision
   const { data: challenge, error: challengeError } = await adminClient
     .from('autopsy_challenges')
     .select('id, options, insight')
@@ -91,17 +65,14 @@ export async function POST(
 
   const options = challenge.options as AutopsyChallengeOption[]
 
-  // Find the selected option by label
   const selectedOption = options.find(o => o.label === selected_option_label)
   if (!selectedOption) {
     return NextResponse.json({ error: 'Invalid selected_option_label' }, { status: 400 })
   }
 
-  // Map quality → points and grade_label
-  const points = QUALITY_POINTS[selectedOption.quality] ?? 0
-  const grade_label = qualityToGradeLabel(points)
+  const points = QUALITY_TO_POINTS[selectedOption.quality] ?? 0
+  const grade_label = GRADE_LABELS[points] ?? 'Missed'
 
-  // Upsert into autopsy_attempts
   const { error: upsertError } = await adminClient
     .from('autopsy_attempts')
     .upsert(
@@ -121,12 +92,11 @@ export async function POST(
     return NextResponse.json({ error: 'Failed to save attempt' }, { status: 500 })
   }
 
-  // Build revealed_options
   const revealed_options = options.map(o => ({
     label: o.label,
     text: o.text,
     quality: o.quality,
-    points: QUALITY_POINTS[o.quality] ?? 0,
+    points: QUALITY_TO_POINTS[o.quality] ?? 0,
     explanation: o.explanation,
   }))
 

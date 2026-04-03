@@ -12,10 +12,10 @@ interface ChallengeViewerProps {
 }
 
 const FLOW_STEPS = [
-  { key: 'frame',    label: 'Frame',    subtitle: 'What did they actually do?',        color: 'text-blue-500'   },
-  { key: 'list',     label: 'List',     subtitle: 'Who and what was affected?',         color: 'text-green-500'  },
-  { key: 'optimize', label: 'Optimize', subtitle: 'What was the real reasoning?',       color: 'text-amber-500'  },
-  { key: 'win',      label: 'Win',      subtitle: 'Which explanation is most correct?', color: 'text-purple-500' },
+  { key: 'frame',    label: 'Frame',    subtitle: 'What did they actually do?'        },
+  { key: 'list',     label: 'List',     subtitle: 'Who and what was affected?'         },
+  { key: 'optimize', label: 'Optimize', subtitle: 'What was the real reasoning?'       },
+  { key: 'win',      label: 'Win',      subtitle: 'Which explanation is most correct?' },
 ]
 
 const STEP_COACHING = [

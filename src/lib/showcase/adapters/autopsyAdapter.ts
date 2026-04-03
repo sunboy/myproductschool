@@ -82,14 +82,14 @@ const STEP_NUDGES: Record<FlowStep, string> = {
   win: "Pick the explanation that generalizes — the one that would help you make a better decision in a different product context.",
 }
 
-const QUALITY_TO_POINTS: Record<string, number> = {
+export const QUALITY_TO_POINTS: Record<string, number> = {
   best: 3,
   good_but_incomplete: 2,
   surface: 1,
   plausible_wrong: 0,
 }
 
-const GRADE_LABELS: Record<number, string> = {
+export const GRADE_LABELS: Record<number, string> = {
   3: 'Sharp',
   2: 'Solid',
   1: 'Surface',
