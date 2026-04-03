@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
-import type { StudyPlan } from '@/lib/types'
+import type { StudyPlan, AutopsyProduct } from '@/lib/types'
+import { getShowcaseProducts } from '@/lib/data/showcase'
 
 const ROLES = ['All', 'SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng'] as const
 
@@ -105,7 +106,10 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const activeRole = role || 'All'
   const activeParadigm = paradigm || null
 
-  const studyPlans = await fetchStudyPlans()
+  const [studyPlans, showcaseProducts] = await Promise.all([
+    fetchStudyPlans().catch(() => [] as Awaited<ReturnType<typeof fetchStudyPlans>>),
+    getShowcaseProducts().catch(() => [] as AutopsyProduct[]),
+  ])
 
   const buildHref = (r: string) => {
     const params = new URLSearchParams()
@@ -187,6 +191,51 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
         })}
       </div>
 
+
+      {/* ── Product Autopsies teaser ── */}
+      {showcaseProducts.length > 0 && (
+        <section className="mt-8">
+          {/* Header row */}
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="font-headline text-xl text-on-surface">Product Autopsies</h2>
+              <p className="text-xs text-on-surface-variant mt-0.5">
+                Trace the real decisions behind products you use every day.
+              </p>
+            </div>
+            <Link
+              href="/explore/showcase"
+              className="text-xs text-primary font-label font-semibold flex items-center gap-1 hover:underline"
+            >
+              View all
+              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>
+                arrow_forward
+              </span>
+            </Link>
+          </div>
+
+          {/* Mini product cards — horizontal scroll on mobile, 3-col on desktop */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {showcaseProducts.slice(0, 3).map(product => (
+              <Link
+                key={product.id}
+                href={`/explore/showcase/${product.slug}`}
+                className="flex items-center gap-3 bg-surface-container rounded-xl p-3 border-l-4 hover:bg-surface-container-high transition-colors"
+                style={{ borderLeftColor: product.cover_color ?? '#4a7c59' }}
+              >
+                <span className="text-2xl shrink-0">{product.logo_emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-label text-sm font-bold text-on-surface truncate">{product.name}</p>
+                  <p className="text-xs text-on-surface-variant truncate">{product.tagline}</p>
+                </div>
+                <span className="shrink-0 bg-secondary-container text-on-secondary-container rounded-full px-2 py-0.5 text-[10px] font-bold">
+                  {product.decision_count} decisions
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Study Plans Section */}
       <section className="space-y-4 pt-2">
