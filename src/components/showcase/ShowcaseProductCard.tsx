@@ -31,14 +31,14 @@ export function ShowcaseProductCard({ product, completedCount = 0 }: ShowcasePro
       {/* Industry badge — top left glassmorphism pill */}
       {product.industry && (
         <div className="absolute top-4 left-4">
-          <span className="glass-card px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider text-on-background uppercase">
+          <span className="bg-white/70 backdrop-blur-xl border border-white/30 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider text-on-background uppercase">
             {product.industry}
           </span>
         </div>
       )}
 
       {/* Bottom info panel — glassmorphism */}
-      <div className="absolute inset-x-4 bottom-4 p-5 rounded-xl glass-card border border-white/20">
+      <div className="absolute inset-x-4 bottom-4 p-5 rounded-xl bg-white/70 backdrop-blur-xl border border-white/30">
         <h3 className="text-xl font-headline text-on-background mb-1 leading-tight">{product.name}</h3>
         <p className="text-xs text-on-surface-variant line-clamp-2 mb-3">{product.tagline}</p>
         <div className="flex items-center gap-3">

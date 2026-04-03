@@ -5,9 +5,7 @@ export default async function ShowcasePage() {
   const products = await getShowcaseProducts()
 
   return (
-    <>
-      <style>{`.glass-card { background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }`}</style>
-      <div className="max-w-7xl mx-auto px-8 py-12">
+    <div className="max-w-7xl mx-auto px-8 py-12">
 
         {/* Editorial header */}
         <div className="mb-12 space-y-2">
@@ -25,7 +23,7 @@ export default async function ShowcasePage() {
         )}
 
         {/* Editorial footer */}
-        <footer className="max-w-7xl mx-auto px-8 py-16 border-t border-outline-variant/20 mt-4">
+        <footer className="py-16 border-t border-outline-variant/20 mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-end">
             <div className="max-w-md">
               <h4 className="font-headline italic text-3xl text-on-background mb-4">
@@ -44,7 +42,6 @@ export default async function ShowcasePage() {
           </div>
         </footer>
 
-      </div>
-    </>
+    </div>
   )
 }
