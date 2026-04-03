@@ -10,13 +10,6 @@ interface ChallengeViewerProps {
   productName: string
 }
 
-const QUALITY_POINTS: Record<string, number> = {
-  best: 3,
-  good_but_incomplete: 2,
-  surface: 1,
-  plausible_wrong: 0,
-}
-
 export function ChallengeViewer({ decision, challenge, productName }: ChallengeViewerProps) {
   return (
     <div className="p-6 space-y-5">
