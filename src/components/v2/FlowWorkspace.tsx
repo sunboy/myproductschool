@@ -8,6 +8,7 @@ import { FlowStepper } from './FlowStepper'
 import { StepQuestion } from './StepQuestion'
 import { ChallengeComplete } from './ChallengeComplete'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import type { ChallengeAdapter } from '@/lib/showcase/adapters/autopsyAdapter'
 
 const FLOW_STEPS: FlowStep[] = ['frame', 'list', 'optimize', 'win']
 
@@ -27,13 +28,15 @@ interface CompletionData {
 }
 
 interface FlowWorkspaceProps {
-  challengeId: string
-  initialRoleId: UserRoleV2
+  challengeId?: string
+  initialRoleId?: UserRoleV2
+  adapter?: ChallengeAdapter
   onExit?: () => void
 }
 
-export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorkspaceProps) {
-  const { detail, loading: challengeLoading, error: challengeError, startAttempt, reload } = useChallenge(challengeId)
+export function FlowWorkspace({ challengeId, initialRoleId, adapter, onExit }: FlowWorkspaceProps) {
+  // Hooks are always called (rules of hooks). When adapter is present, their outputs are ignored.
+  const { detail, loading: challengeLoading, error: challengeError, startAttempt, reload } = useChallenge(challengeId ?? '')
 
   const [attemptId, setAttemptId] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState<FlowStep>('frame')
@@ -58,40 +61,66 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
 
   const startTimeRef = useRef<number>(Date.now())
 
-  const { stepData, loading: stepLoading, submitting, error: stepError, submitAnswer, fetchCoaching, loadStep } = useFlowStep(challengeId, currentStep)
+  // Adapter step data (used when adapter prop is present)
+  const [adapterStepData, setAdapterStepData] = useState<{ step: FlowStep; nudge: string | null; questions: Array<{ id: string; question_text: string; question_nudge: string | null; sequence: number; grading_weight_within_step: number; response_type: ResponseType; options: Array<{ id: string; option_label: string; option_text: string }> }> } | null>(null)
+  const [adapterStepLoading, setAdapterStepLoading] = useState(false)
+  const [adapterSubmitting, setAdapterSubmitting] = useState(false)
 
-  // Bootstrap: load challenge
-  useEffect(() => {
-    reload()
-  }, [reload])
+  const { stepData: coreStepData, loading: coreStepLoading, submitting: coreSubmitting, error: stepError, submitAnswer, fetchCoaching, loadStep } = useFlowStep(challengeId ?? '', currentStep)
 
-  // Resume in-progress attempt; otherwise stay on intro
+  // Unified step data + loading state
+  const stepData = adapter ? adapterStepData : coreStepData
+  const stepLoading = adapter ? adapterStepLoading : coreStepLoading
+  const submitting = adapter ? adapterSubmitting : coreSubmitting
+
+  // Bootstrap: load challenge (core only)
   useEffect(() => {
+    if (!adapter) reload()
+  }, [reload, adapter])
+
+  // Adapter: start in question phase immediately
+  useEffect(() => {
+    if (adapter) {
+      setPhase('question')
+      setAttemptId('adapter') // sentinel
+    }
+  }, [adapter])
+
+  // Resume in-progress attempt (core only)
+  useEffect(() => {
+    if (adapter) return
     if (detail && !attemptId) {
       if (detail.current_attempt?.status === 'in_progress') {
         setAttemptId(detail.current_attempt.id)
         setCurrentStep(detail.current_attempt.current_step === 'done' ? 'frame' : detail.current_attempt.current_step as FlowStep)
         setPhase('question')
       }
-      // otherwise stay on 'intro' — user clicks Start
     }
-  }, [detail, attemptId])
+  }, [detail, attemptId, adapter])
 
-  // Load step data when step + attemptId are ready; reset discuss state on step change
+  // Load step data when step + phase are ready
   useEffect(() => {
-    if (attemptId && phase === 'question') {
-      setQuestionIdx(0)
-      setSelectedOptionId(null)
-      setElaboration('')
-      setRevealedOptions([])
-      setShowDiscuss(false)
-      setDiscussions([])
-      startTimeRef.current = Date.now()
+    if (phase !== 'question') return
+
+    setQuestionIdx(0)
+    setSelectedOptionId(null)
+    setElaboration('')
+    setRevealedOptions([])
+    setShowDiscuss(false)
+    setDiscussions([])
+    startTimeRef.current = Date.now()
+
+    if (adapter) {
+      setAdapterStepLoading(true)
+      adapter.loadStep(currentStep).then((data) => {
+        setAdapterStepData(data)
+        setAdapterStepLoading(false)
+      }).catch(() => setAdapterStepLoading(false))
+    } else if (attemptId && attemptId !== 'adapter') {
       void loadStep(attemptId)
     }
-    // loadStep is derived from currentStep via useCallback; including it causes double-fetch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentStep, attemptId, phase])
+  }, [currentStep, phase, adapter])
 
   const currentQuestion = stepData?.questions[questionIdx] ?? null
 
@@ -108,6 +137,17 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
   }, [showDiscuss, discussions, challengeId])
 
   const callComplete = useCallback(async () => {
+    if (adapter) {
+      const data = await adapter.complete()
+      if (data) {
+        setCompletionData(data)
+        setPhase('complete')
+      } else {
+        // Adapter handles completion externally (e.g. parent auto-advances)
+        onExit?.()
+      }
+      return
+    }
     try {
       const res = await fetch(`/api/challenges/${challengeId}/complete`, {
         method: 'POST',
@@ -127,11 +167,41 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
         setPhase('complete')
       }
     } catch { /* ignore */ }
-  }, [challengeId, attemptId])
+  }, [challengeId, attemptId, adapter, onExit])
 
   const handleSubmit = useCallback(async () => {
-    if (!attemptId || !currentQuestion) return
+    if (!currentQuestion) return
 
+    if (adapter) {
+      setAdapterSubmitting(true)
+      try {
+        const result = await adapter.submitAnswer({
+          step: currentStep,
+          questionId: currentQuestion.id,
+          selectedOptionId,
+          userText: elaboration || null,
+        })
+        if (!result) return
+        setRevealedOptions(result.revealed_options ?? [])
+        setRevealed(true)
+        setLastResult({ step_complete: result.step_complete })
+
+        const coaching = await adapter.fetchCoaching({
+          step: currentStep,
+          optionId: selectedOptionId,
+          userText: elaboration || null,
+        })
+        if (coaching) {
+          setRoleContext(coaching.role_context)
+          setCareerSignal(coaching.career_signal)
+        }
+      } finally {
+        setAdapterSubmitting(false)
+      }
+      return
+    }
+
+    if (!attemptId) return
     const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000)
     const result = await submitAnswer({
       attemptId,
@@ -153,14 +223,14 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
       attemptId,
       questionId: currentQuestion.id,
       optionId: selectedOptionId,
-      roleId: initialRoleId,
+      roleId: initialRoleId ?? 'swe',
       userText: elaboration || null,
     })
     if (coaching) {
       setRoleContext(coaching.role_context)
       setCareerSignal(coaching.career_signal)
     }
-  }, [attemptId, currentQuestion, selectedOptionId, elaboration, submitAnswer, fetchCoaching, initialRoleId])
+  }, [adapter, currentStep, currentQuestion, selectedOptionId, elaboration, attemptId, submitAnswer, fetchCoaching, initialRoleId])
 
   const handleNext = useCallback(() => {
     setRevealed(false)
@@ -200,18 +270,19 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
   }, [completedSteps])
 
   const handleStartChallenge = useCallback(async () => {
+    if (adapter) return // adapter starts in question phase immediately
     setPhase('loading')
-    const attempt = await startAttempt(initialRoleId)
+    const attempt = await startAttempt(initialRoleId ?? 'swe')
     if (attempt) {
       setAttemptId(attempt.id)
       setCurrentStep('frame')
       setPhase('question')
     }
-  }, [startAttempt, initialRoleId])
+  }, [adapter, startAttempt, initialRoleId])
 
-  // ── Error state ────────────────────────────────────────────────
+  // ── Error state (core only) ────────────────────────────────────
 
-  if (challengeError) {
+  if (!adapter && challengeError) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3">
         <p className="font-body text-error text-sm">{challengeError}</p>
@@ -220,9 +291,9 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
     )
   }
 
-  // ── Complete — full-width results ──────────────────────────────
+  // ── Complete — full-width results (core only) ──────────────────
 
-  if (phase === 'complete' && completionData && detail) {
+  if (!adapter && phase === 'complete' && completionData && detail) {
     return (
       <ChallengeComplete
         challenge={detail.challenge}
@@ -250,7 +321,8 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
     )
   }
 
-  const ch = detail?.challenge
+  // Unified challenge object for left pane
+  const ch = adapter ? adapter.getChallenge() : detail?.challenge
 
   // ── Two-column workspace ───────────────────────────────────────
 
@@ -263,12 +335,12 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
       <section className="w-2/5 bg-surface-container-low border-r border-outline-variant flex flex-col overflow-y-auto p-6 gap-5">
 
         {/* Title + badges */}
-        {challengeLoading || !ch ? (
+        {!adapter && (challengeLoading || !ch) ? (
           <div className="space-y-3 animate-pulse">
             <div className="h-5 bg-surface-container rounded w-3/4" />
             <div className="h-4 bg-surface-container rounded w-1/2" />
           </div>
-        ) : (
+        ) : ch ? (
           <>
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -279,7 +351,7 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
                   <span className="material-symbols-outlined text-[14px]">arrow_back</span>
                   Back
                 </button>
-                {phase === 'question' && currentQuestion && (
+                {!adapter && phase === 'question' && currentQuestion && (
                   <button
                     onClick={handleToggleDiscuss}
                     className={[
@@ -439,7 +511,7 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
 
                     {/* Post input */}
                     <DiscussionInputInline
-                      challengeId={challengeId}
+                      challengeId={challengeId ?? ''}
                       onPosted={() => {
                         setDiscussions([])
                         fetch(`/api/challenges/${challengeId}/discussions`)
@@ -451,22 +523,22 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
               </div>
             )}
           </>
-        )}
+        ) : null}
       </section>
 
       {/* RIGHT PANE — guided questions */}
       <section className="flex-1 flex flex-col overflow-hidden bg-surface">
 
         {/* Loading spinner */}
-        {(challengeLoading || phase === 'loading') && (
+        {!adapter && (challengeLoading || phase === 'loading') && (
           <div className="flex flex-col items-center justify-center flex-1 gap-4">
             <LumaGlyph size={56} state="reviewing" className="text-primary" />
             <p className="font-body text-on-surface-variant text-sm">Loading challenge…</p>
           </div>
         )}
 
-        {/* Intro — shown before attempt starts */}
-        {phase === 'intro' && !challengeLoading && (
+        {/* Intro — shown before attempt starts (core only) */}
+        {!adapter && phase === 'intro' && !challengeLoading && (
           <div className="flex flex-col items-center justify-center flex-1 px-8 gap-6">
             <div className="w-full max-w-md space-y-4">
               <LumaGlyph size={48} state="idle" className="text-primary mx-auto block" />

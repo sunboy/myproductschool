@@ -287,8 +287,9 @@ export default function ProgressPage() {
           ) : (
             <div className="flex flex-col items-center justify-center py-6 gap-3 text-center">
               <LumaGlyph size={40} state="idle" className="text-primary" />
-              <p className="text-sm font-medium text-on-surface-variant">No challenges completed yet</p>
-              <Link href="/challenges" className="text-xs font-bold text-primary hover:underline">Start your first challenge →</Link>
+              <p className="text-sm font-medium text-on-surface-variant">Your practice history will appear here</p>
+              <p className="text-xs text-on-surface-variant/70">Calibration challenges don&apos;t count — start a practice challenge to build your record.</p>
+              <Link href="/challenges" className="text-xs font-bold text-primary hover:underline">Browse challenges →</Link>
             </div>
           )}
           {recentAttempts.length > 0 && (

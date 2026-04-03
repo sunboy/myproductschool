@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Product Autopsies — Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Literata:wght@400;700;900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+<style>
+  :root {
+    --primary: #4a7c59;
+    --on-primary: #ffffff;
+    --primary-container: #78a886;
+    --on-primary-container: #d8f0de;
+    --primary-fixed: #c8e8d0;
+    --secondary-container: #f0e8db;
+    --on-secondary-container: #5e5548;
+    --background: #faf6f0;
+    --surface: #faf6f0;
+    --surface-container-low: #f5f1ea;
+    --surface-container: #f0ece4;
+    --surface-container-high: #eae6de;
+    --surface-container-highest: #e4e0d8;
+    --on-surface: #2e3230;
+    --on-surface-variant: #4a4e4a;
+    --outline-variant: #c4c8bc;
+    --inverse-surface: #2e3230;
+    --inverse-on-surface: #f5f0e8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito Sans', sans-serif; background: var(--background); color: var(--on-surface); overflow: hidden; height: 100vh; display: flex; }
+
+  /* ── Nav Rail ── */
+  .nav-rail {
+    width: 220px; flex-shrink: 0;
+    background: var(--surface-container-low);
+    border-right: 1px solid var(--outline-variant);
+    display: flex; flex-direction: column; height: 100vh;
+  }
+  .nav-brand { display: flex; align-items: center; gap: 8px; padding: 16px; border-bottom: 1px solid rgba(196,200,188,0.3); }
+  .nav-brand-name { font-family: 'Literata', serif; font-weight: 700; font-size: 15px; color: var(--primary); }
+  .nav-items { flex: 1; padding: 12px 8px; display: flex; flex-direction: column; gap: 2px; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 12px; font-size: 14px; font-weight: 600; color: var(--on-surface-variant); cursor: pointer; }
+  .nav-item.active { background: var(--primary); color: white; }
+  .nav-item .material-symbols-outlined { font-size: 20px; }
+  .nav-bottom { padding: 12px; }
+  .daily-goal { background: var(--surface-container); border-radius: 12px; padding: 10px 12px; }
+  .daily-goal-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--on-surface-variant); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .daily-goal-bar { height: 6px; border-radius: 99px; background: var(--surface-container-highest); overflow: hidden; }
+  .daily-goal-fill { height: 100%; background: var(--primary); width: 60%; border-radius: 99px; }
+  .daily-goal-sub { font-size: 10px; color: var(--on-surface-variant); margin-top: 4px; }
+
+  /* ── Main ── */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { height: 52px; background: var(--background); border-bottom: 1px solid var(--outline-variant); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; }
+  .topbar-search { display: flex; align-items: center; gap: 8px; background: var(--surface-container); border-radius: 99px; padding: 8px 16px; font-size: 13px; color: var(--on-surface-variant); width: 340px; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .avatar { width: 32px; height: 32px; border-radius: 99px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+  .content { flex: 1; display: flex; overflow: hidden; }
+
+  /* ── LEFT PANE ── */
+  .left-pane { width: 380px; flex-shrink: 0; background: var(--surface-container-low); border-right: 1px solid var(--outline-variant); display: flex; flex-direction: column; overflow: hidden; }
+  .left-header { padding: 14px 16px; border-bottom: 1px solid rgba(196,200,188,0.4); flex-shrink: 0; }
+  .back-link { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--on-surface-variant); margin-bottom: 12px; cursor: pointer; }
+  .back-link .material-symbols-outlined { font-size: 15px; }
+  .product-header { display: flex; align-items: center; gap: 10px; }
+  .product-logo { width: 40px; height: 40px; border-radius: 10px; background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.12); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+  .product-logo img { width: 32px; height: 32px; object-fit: contain; }
+  .product-name { font-family: 'Literata', serif; font-size: 18px; font-weight: 700; }
+  .product-tagline { font-size: 12px; color: var(--on-surface-variant); margin-top: 2px; }
+  .decision-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .decision-card { background: var(--surface-container); border: 2px solid transparent; border-radius: 14px; overflow: hidden; cursor: pointer; }
+  .decision-card.active { border-color: var(--primary); background: white; box-shadow: 0 2px 8px rgba(74,124,89,0.15); }
+  .decision-card-screenshot { width: 100%; height: 100px; object-fit: cover; object-position: top; display: block; }
+  .decision-card-screenshot-placeholder { width: 100%; height: 100px; display: flex; align-items: center; justify-content: center; }
+  .decision-card-img { height: 72px; display: flex; align-items: center; justify-content: center; position: relative; }
+  .decision-card-img .material-symbols-outlined { font-size: 28px; }
+  .area-label { position: absolute; top: 8px; right: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(0,0,0,0.4); }
+  .decision-card-body { padding: 10px 12px; }
+  .badges { display: flex; gap: 6px; margin-bottom: 6px; }
+  .badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--secondary-container); color: var(--on-secondary-container); }
+  .badge.dim { background: var(--surface-container-highest); color: var(--on-surface-variant); }
+  .decision-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; line-height: 1.3; }
+  .decision-q { font-size: 11px; color: var(--on-surface-variant); font-style: italic; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* ── RIGHT PANE ── */
+  .right-pane { flex: 1; background: var(--surface); display: flex; flex-direction: column; overflow: hidden; }
+
+  /* FlowStepper */
+  .stepper-bar { border-bottom: 1px solid var(--outline-variant); padding: 10px 20px 0; flex-shrink: 0; }
+  .stepper-tabs { display: flex; align-items: center; gap: 4px; margin-bottom: 10px; }
+  .step-pill { display: flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 99px; font-size: 12px; font-weight: 700; color: var(--on-surface-variant); opacity: 0.4; cursor: pointer; }
+  .step-pill.active { background: var(--primary-container); color: var(--on-surface); opacity: 1; }
+  .step-pill.done { color: var(--primary); opacity: 1; }
+  .step-pill .material-symbols-outlined { font-size: 14px; }
+  .step-sep { height: 14px; border-right: 1px solid var(--outline-variant); margin: 0 2px; opacity: 0.5; }
+  .step-q-indicator { font-size: 10px; opacity: 0.6; margin-left: 2px; }
+  .nudge-banner { margin: 0 0 12px; background: var(--secondary-container); border-radius: 12px; padding: 10px 14px; display: flex; align-items: flex-start; gap: 8px; }
+  .nudge-banner .material-symbols-outlined { font-size: 16px; color: var(--on-secondary-container); flex-shrink: 0; margin-top: 1px; }
+  .nudge-text { font-size: 13px; color: var(--on-secondary-container); line-height: 1.4; }
+
+  /* Question area */
+  .question-scroll { flex: 1; overflow-y: auto; padding: 20px 24px; }
+  .question-text { font-family: 'Literata', serif; font-size: 17px; font-weight: 700; color: var(--on-surface); margin-bottom: 16px; line-height: 1.45; }
+
+  /* MCQ options */
+  .options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .option { border: 2px solid var(--outline-variant); background: var(--surface-container); border-radius: 14px; padding: 12px 16px; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+  .option.selected { border-color: var(--primary); background: var(--primary-fixed); }
+  .option-dot { width: 22px; height: 22px; border-radius: 99px; border: 2px solid var(--outline-variant); flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; }
+  .option.selected .option-dot { border-color: var(--primary); background: var(--primary); }
+  .option-label { font-size: 11px; font-weight: 700; color: var(--on-surface-variant); }
+  .option.selected .option-label { color: white; }
+  .option-text { font-size: 13px; color: var(--on-surface-variant); line-height: 1.5; }
+  .option.selected .option-text { color: var(--on-surface); }
+
+  /* Elaboration */
+  .elab-label { font-size: 13px; color: var(--on-surface-variant); display: block; margin-bottom: 6px; }
+  .elab-textarea { width: 100%; border: 1px solid var(--outline-variant); background: var(--surface-container); border-radius: 12px; padding: 12px 14px; font-size: 13px; color: var(--on-surface); font-family: 'Nunito Sans', sans-serif; resize: none; min-height: 88px; outline: none; line-height: 1.5; }
+
+  /* Footer */
+  .right-footer { border-top: 1px solid var(--outline-variant); padding: 14px 24px; display: flex; justify-content: flex-end; flex-shrink: 0; }
+  .submit-btn { background: var(--primary); color: white; padding: 10px 24px; border-radius: 99px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .submit-btn .material-symbols-outlined { font-size: 16px; }
+
+  /* Screen label */
+  .screen-label { position: fixed; top: 8px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.75); color: white; font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 99px; z-index: 100; letter-spacing: 0.05em; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="screen-label">SCREEN 2 — Notion: "Block-based editor" (Challenge Workspace — Frame step, Q1 of 2)</div>
+
+<!-- Nav Rail -->
+<nav class="nav-rail">
+  <div class="nav-brand">
+    <svg width="26" height="26" viewBox="0 0 32 32" fill="none" style="color:#4a7c59">
+      <rect x="5" y="10" width="22" height="15" rx="4" fill="currentColor" opacity="0.15"/>
+      <rect x="5" y="10" width="22" height="15" rx="4" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="11" cy="17.5" r="2" fill="currentColor"/>
+      <circle cx="21" cy="17.5" r="2" fill="currentColor"/>
+      <path d="M13 11V8M19 11V8M13 8h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M26 7l3-2M26 7l1 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <span class="nav-brand-name">HackProduct</span>
+  </div>
+  <div class="nav-items">
+    <div class="nav-item"><span class="material-symbols-outlined">home</span> Home</div>
+    <div class="nav-item"><span class="material-symbols-outlined">auto_stories</span> Learn</div>
+    <div class="nav-item active"><span class="material-symbols-outlined">explore</span> Explore</div>
+    <div class="nav-item"><span class="material-symbols-outlined">fitness_center</span> Practice</div>
+    <div class="nav-item"><span class="material-symbols-outlined">bar_chart</span> Progress</div>
+  </div>
+  <div class="nav-bottom">
+    <div class="daily-goal">
+      <div class="daily-goal-label">Daily Goal <span style="color:var(--primary)">3/5</span></div>
+      <div class="daily-goal-bar"><div class="daily-goal-fill"></div></div>
+      <div class="daily-goal-sub">3 of 5 challenges done</div>
+    </div>
+  </div>
+</nav>
+
+<!-- Main -->
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-search">
+      <span class="material-symbols-outlined" style="font-size:16px;color:var(--on-surface-variant)">search</span>
+      Search challenges, concepts...
+    </div>
+    <div class="topbar-right">
+      <span style="font-size:12px;font-weight:700;color:var(--on-surface-variant)">0 XP</span>
+      <div class="avatar">S</div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- LEFT PANE -->
+    <aside class="left-pane">
+      <div class="left-header">
+        <div class="back-link">
+          <span class="material-symbols-outlined">arrow_back</span>
+          Product Autopsies
+        </div>
+        <div class="product-header">
+          <div class="product-logo">
+            <span style="font-size:22px">📝</span>
+          </div>
+          <div>
+            <div class="product-name">Notion</div>
+            <div class="product-tagline">The all-in-one workspace that bet on blocks</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Challenge picker label -->
+      <div style="padding:8px 16px 4px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between">
+        <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--on-surface-variant)">3 Challenges</p>
+        <span style="font-size:11px;color:var(--on-surface-variant)">Pick one to start →</span>
+      </div>
+
+      <div class="decision-list">
+
+        <!-- Challenge 1 — ACTIVE / IN PROGRESS — with screenshot -->
+        <div class="decision-card active">
+          <!-- Screenshot from notion.com homepage (block editor hero) -->
+          <img class="decision-card-screenshot" src="/images/notion-homepage.png" alt="Notion block editor" onerror="this.style.display='none'" />
+          <div class="decision-card-body" style="padding:12px">
+            <div class="badges" style="margin-bottom:8px">
+              <span class="badge">Core UX</span>
+              <span class="badge dim">standard</span>
+              <span style="background:#c8e8d0;color:#4a7c59;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;display:flex;align-items:center;gap:4px;margin-left:auto">
+                <span style="width:5px;height:5px;border-radius:99px;background:#4a7c59;display:inline-block"></span>
+                In progress
+              </span>
+            </div>
+            <div class="decision-title" style="font-size:14px;margin-bottom:5px">Block-based editor over rich text</div>
+            <p style="font-size:12px;color:var(--on-surface-variant);line-height:1.5;margin-bottom:8px">A team is building a note-taking app. What should determine whether they adopt a block-based or rich-text editor?</p>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="flex:1;height:4px;background:var(--surface-container-highest);border-radius:99px;overflow:hidden">
+                <div style="width:25%;height:100%;background:var(--primary);border-radius:99px"></div>
+              </div>
+              <span style="font-size:10px;font-weight:700;color:var(--primary)">Frame 1/2</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Challenge 2 — not started — with screenshot -->
+        <div class="decision-card">
+          <div class="decision-card-screenshot-placeholder" style="background:rgba(0,0,0,0.04)">
+            <span class="material-symbols-outlined" style="font-size:32px;color:var(--outline-variant)">payments</span>
+          </div>
+          <div class="decision-card-body" style="padding:12px">
+            <div class="badges" style="margin-bottom:8px">
+              <span class="badge">Monetization</span>
+              <span class="badge dim">warmup</span>
+            </div>
+            <div class="decision-title" style="font-size:14px;margin-bottom:5px">Free personal tier with no time limit</div>
+            <p style="font-size:12px;color:var(--on-surface-variant);line-height:1.5;margin-bottom:8px">When should a B2B SaaS company offer a free individual tier versus going straight to team or company pricing?</p>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span class="material-symbols-outlined" style="font-size:14px;color:var(--primary)">play_circle</span>
+              <span style="font-size:11px;font-weight:700;color:var(--primary)">Start challenge</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Challenge 3 — not started — placeholder -->
+        <div class="decision-card">
+          <div class="decision-card-screenshot-placeholder" style="background:rgba(112,92,48,0.06)">
+            <span class="material-symbols-outlined" style="font-size:32px;color:var(--outline-variant)">table_chart</span>
+          </div>
+          <div class="decision-card-body" style="padding:12px">
+            <div class="badges" style="margin-bottom:8px">
+              <span class="badge">Product Strategy</span>
+              <span class="badge dim">advanced</span>
+            </div>
+            <div class="decision-title" style="font-size:14px;margin-bottom:5px">Databases as a first-class citizen</div>
+            <p style="font-size:12px;color:var(--on-surface-variant);line-height:1.5;margin-bottom:8px">At what point should a product expand its core metaphor versus keeping it focused on the original use case?</p>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span class="material-symbols-outlined" style="font-size:14px;color:var(--primary)">play_circle</span>
+              <span style="font-size:11px;font-weight:700;color:var(--primary)">Start challenge</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- RIGHT PANE — exact FlowWorkspace guided mode -->
+    <section class="right-pane">
+
+      <!-- FlowStepper -->
+      <div class="stepper-bar">
+        <div class="stepper-tabs">
+          <div class="step-pill active">
+            <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">article</span>
+            Frame
+            <span class="step-q-indicator">1/2</span>
+          </div>
+          <div class="step-sep"></div>
+          <div class="step-pill">
+            <span class="material-symbols-outlined">article</span>
+            List
+          </div>
+          <div class="step-sep"></div>
+          <div class="step-pill">
+            <span class="material-symbols-outlined">article</span>
+            Optimize
+          </div>
+          <div class="step-sep"></div>
+          <div class="step-pill">
+            <span class="material-symbols-outlined">article</span>
+            Win
+          </div>
+        </div>
+        <!-- Nudge banner -->
+        <div class="nudge-banner">
+          <span class="material-symbols-outlined">lightbulb</span>
+          <p class="nudge-text">Frame the decision space before proposing solutions — what exactly did Notion change, and for whom?</p>
+        </div>
+      </div>
+
+      <!-- Scrollable question area -->
+      <div class="question-scroll">
+
+        <!-- Question text -->
+        <p class="question-text">
+          What was the core problem Notion was solving when it chose a block-based architecture over a rich-text editor?
+        </p>
+
+        <!-- MCQ options -->
+        <div class="options">
+          <div class="option selected">
+            <div class="option-dot"><span class="option-label">A</span></div>
+            <p class="option-text">Users needed a single tool to replace multiple apps — docs, wikis, databases, and spreadsheets — so content had to be structurally composable, not just styled text.</p>
+          </div>
+          <div class="option">
+            <div class="option-dot"><span class="option-label">B</span></div>
+            <p class="option-text">Blocks made it easier to implement drag-and-drop reordering, which users had been requesting since early beta.</p>
+          </div>
+          <div class="option">
+            <div class="option-dot"><span class="option-label">C</span></div>
+            <p class="option-text">A block model was technically simpler to build and maintain than a full WYSIWYG rich-text engine.</p>
+          </div>
+          <div class="option">
+            <div class="option-dot"><span class="option-label">D</span></div>
+            <p class="option-text">Notion copied Coda's block model because it had proven market traction in the B2B collaboration space.</p>
+          </div>
+        </div>
+
+        <!-- Elaboration textarea -->
+        <label class="elab-label">Explain your reasoning (optional)</label>
+        <textarea class="elab-textarea" placeholder="Add your reasoning…">The block model isn't just a UX choice — it's an architectural bet that content should be typed, not styled. This is what lets Notion embed databases inside docs and link across pages without rebuilding the editor…</textarea>
+
+      </div>
+
+      <!-- Pinned footer -->
+      <div class="right-footer">
+        <div class="submit-btn">
+          Submit answer
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </div>
+      </div>
+
+    </section>
+  </div>
+</div>
+
+</body>
+</html>

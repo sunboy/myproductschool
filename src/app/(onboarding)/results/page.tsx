@@ -19,11 +19,19 @@ export default function ResultsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isCompleting, setIsCompleting] = useState(false)
   const [radarVisible, setRadarVisible] = useState(false)
+  const [firstName, setFirstName] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/api/onboarding/results')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data) setResults(data) })
+    Promise.all([
+      fetch('/api/onboarding/results').then(r => r.ok ? r.json() : null),
+      fetch('/api/profile').then(r => r.ok ? r.json() : null),
+    ])
+      .then(([resultsData, profileData]) => {
+        if (resultsData) setResults(resultsData)
+        if (profileData?.display_name) {
+          setFirstName(profileData.display_name.trim().split(/\s+/)[0])
+        }
+      })
       .catch(() => {})
       .finally(() => setIsLoading(false))
   }, [])
@@ -86,7 +94,7 @@ export default function ResultsPage() {
           </div>
           <div className="relative bg-white p-3 rounded-lg rounded-tl-none border border-outline-variant shadow-sm text-sm">
             <p className="text-on-surface-variant leading-relaxed">
-              Based on your answer, I&apos;ve mapped your starting point across all 4 FLOW moves. Here&apos;s where you stand.
+              {firstName ? `${firstName}, based` : 'Based'} on your calibration challenge, here&apos;s your starting baseline...
             </p>
             <div className="absolute -left-2 top-0 w-0 h-0 border-t-[8px] border-t-white border-l-[8px] border-l-transparent" />
           </div>
