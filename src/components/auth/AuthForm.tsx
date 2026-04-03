@@ -33,9 +33,19 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         // Check if user completed onboarding
         const { data: profile } = await supabase
           .from('profiles')
-          .select('onboarding_completed_at')
+          .select('onboarding_completed_at, display_name')
           .eq('id', data.user.id)
           .single()
+        // Backfill display_name for existing users whose profile.display_name is null
+        const meta = data.user.user_metadata
+        const metaName = meta?.display_name ?? meta?.full_name ?? meta?.name ?? null
+        if (!profile?.display_name && metaName) {
+          await fetch('/api/profile', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ display_name: metaName }),
+          })
+        }
         const dest = profile?.onboarding_completed_at ? '/dashboard' : '/onboarding/welcome'
         router.push(dest)
         router.refresh()

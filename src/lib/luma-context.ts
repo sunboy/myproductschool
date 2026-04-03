@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 // ── Public interface ─────────────────────────────────────────
 
 export interface LumaUserContext {
+  displayName: string | null
   preferredRole: string | null
   overallLevel: 'Beginner' | 'Developing' | 'Advanced' | 'Expert'
   competencies: Array<{ competency: string; score: number; trend: string }>
@@ -32,6 +33,7 @@ function deriveWeakestCompetency(competencies: LumaUserContext['competencies']):
 }
 
 const EMPTY_CONTEXT: LumaUserContext = {
+  displayName: null,
   preferredRole: null,
   overallLevel: 'Beginner',
   competencies: [],
@@ -63,7 +65,7 @@ export async function getLumaContext(userId: string): Promise<LumaUserContext> {
         try {
           const { data } = await admin
             .from('profiles')
-            .select('preferred_role')
+            .select('preferred_role, display_name')
             .eq('id', userId)
             .single()
           return data
@@ -188,7 +190,8 @@ export async function getLumaContext(userId: string): Promise<LumaUserContext> {
     const competencies = (competenciesResult as Array<{ competency: string; score: number; trend: string }>) ?? []
 
     return {
-      preferredRole: (profileResult as { preferred_role: string | null } | null)?.preferred_role ?? null,
+      displayName: (profileResult as { preferred_role: string | null; display_name: string | null } | null)?.display_name ?? null,
+      preferredRole: (profileResult as { preferred_role: string | null; display_name: string | null } | null)?.preferred_role ?? null,
       overallLevel: deriveOverallLevel(competencies),
       competencies,
       weakestCompetency: deriveWeakestCompetency(competencies),
@@ -233,13 +236,16 @@ export function buildLumaContextString(
       const completionsStr = ctx.recentCompletions.length
         ? ctx.recentCompletions.map((c) => `${c.gradeLabel} (${c.totalScore}/100)`).join(', ')
         : 'no completions yet'
-      return [
+      const lines: string[] = []
+      if (ctx.displayName) lines.push(`Learner name: ${ctx.displayName}`)
+      lines.push(
         `User role: ${ctx.preferredRole ?? 'not specified'}`,
         `Skill level: ${ctx.overallLevel}`,
         `Weakest competency: ${ctx.weakestCompetency ?? 'unknown'}`,
         `Recurring failure patterns: ${patternsStr}`,
         `Recent performance: ${completionsStr}`,
-      ].join('\n')
+      )
+      return lines.join('\n')
     }
 
     case 'chat': {
@@ -253,17 +259,23 @@ export function buildLumaContextString(
       const stepsStr = last5Steps.length
         ? last5Steps.map((s) => `${s.step}(${s.score ?? '?'})`).join(' → ')
         : 'no attempts yet'
-      return [
+      const lines: string[] = []
+      if (ctx.displayName) lines.push(`Learner name: ${ctx.displayName}`)
+      lines.push(
         `User role: ${ctx.preferredRole ?? 'not specified'}`,
         `Skill level: ${ctx.overallLevel}`,
         `FLOW move levels: ${moveLevelsStr}`,
         `Recurring patterns to watch: ${patternsStr}`,
         `Recent step quality: ${stepsStr}`,
-      ].join('\n')
+      )
+      return lines.join('\n')
     }
 
     case 'nudge': {
-      return `Weakest area: ${ctx.weakestCompetency ?? 'unknown'}`
+      const lines: string[] = []
+      if (ctx.displayName) lines.push(`Learner name: ${ctx.displayName}`)
+      lines.push(`Weakest area: ${ctx.weakestCompetency ?? 'unknown'}`)
+      return lines.join('\n')
     }
 
     case 'coaching': {
@@ -275,13 +287,16 @@ export function buildLumaContextString(
       const stepsStr = last5Steps.length
         ? last5Steps.map((s) => `${s.step}(${s.score ?? '?'})`).join(' → ')
         : 'no attempts yet'
-      return [
+      const lines: string[] = []
+      if (ctx.displayName) lines.push(`Learner name: ${ctx.displayName}`)
+      lines.push(
         `User role: ${ctx.preferredRole ?? 'not specified'}`,
         `Skill level: ${ctx.overallLevel}`,
         `Competency scores: ${competenciesStr}`,
         `Top recurring pattern: ${topPattern}`,
         `Recent step attempts: ${stepsStr}`,
-      ].join('\n')
+      )
+      return lines.join('\n')
     }
   }
 }

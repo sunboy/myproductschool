@@ -55,40 +55,38 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Redirect authenticated users away from auth pages
-  if (user && AUTH_ROUTES.some(r => pathname.startsWith(r))) {
-    // Check if onboarding is done — if not, send to onboarding
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('onboarding_completed_at')
-      .eq('id', user.id)
-      .single()
-    const dest = profile?.onboarding_completed_at ? '/dashboard' : '/onboarding/welcome'
-    return NextResponse.redirect(new URL(dest, request.url))
-  }
-
   // Protect app routes — allow onboarding, API, and public routes without profile check
   const isPublic = PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/')) || pathname.startsWith('/api/')
-  if (!user && !isPublic) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
 
-  // For authenticated users on app routes (not onboarding), check onboarding status
-  const isOnboarding = pathname.startsWith('/onboarding')
-  const isAppRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/explore')
-    || pathname.startsWith('/challenges') || pathname.startsWith('/progress')
-    || pathname.startsWith('/cohort') || pathname.startsWith('/prep')
-    || pathname.startsWith('/settings') || pathname.startsWith('/learn')
-
-  if (user && isAppRoute && !isOnboarding) {
+  if (user) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('onboarding_completed_at')
       .eq('id', user.id)
       .single()
-    if (profile && !profile.onboarding_completed_at) {
+    const onboardingDone = !!profile?.onboarding_completed_at
+
+    if (AUTH_ROUTES.some(r => pathname.startsWith(r))) {
+      return NextResponse.redirect(new URL(
+        onboardingDone ? '/dashboard' : '/onboarding/welcome',
+        request.url
+      ))
+    }
+
+    const isOnboarding = pathname.startsWith('/onboarding')
+    const isAppRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/explore')
+      || pathname.startsWith('/challenges') || pathname.startsWith('/progress')
+      || pathname.startsWith('/cohort') || pathname.startsWith('/prep')
+      || pathname.startsWith('/settings') || pathname.startsWith('/learn')
+
+    if (isAppRoute && !isOnboarding && !onboardingDone) {
       return NextResponse.redirect(new URL('/onboarding/welcome', request.url))
     }
+  }
+
+  // Protect app routes for unauthenticated users
+  if (!user && !isPublic) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   // Admin route protection (role check done in page/layout)
