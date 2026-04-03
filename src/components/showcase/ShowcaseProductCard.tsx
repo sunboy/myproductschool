@@ -6,58 +6,56 @@ interface ShowcaseProductCardProps {
   completedCount?: number
 }
 
-export function ShowcaseProductCard({ product, completedCount }: ShowcaseProductCardProps) {
+export function ShowcaseProductCard({ product, completedCount = 0 }: ShowcaseProductCardProps) {
   return (
     <Link
       href={`/explore/showcase/${product.slug}`}
-      className="group bg-surface-container rounded-2xl p-5 border-l-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 block"
-      style={{ borderLeftColor: product.cover_color ?? '#4a7c59' }}
+      className="group relative aspect-[4/5] rounded-xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-500 scale-100 hover:scale-[1.02] block"
     >
-      {/* Logo row */}
-      <div className="mb-4 flex items-center gap-3">
+      {/* Cover: logo image OR solid color fill */}
+      <div
+        className="absolute inset-0 w-full h-full flex items-center justify-center transition-transform duration-700 group-hover:scale-110"
+        style={{ backgroundColor: product.cover_color ?? '#4a7c59' }}
+      >
         {product.logo_url ? (
           <img
             src={product.logo_url}
             alt={product.name}
-            className="w-11 h-11 rounded-xl bg-white shadow-sm object-contain p-1 shrink-0"
+            className="w-24 h-24 object-contain drop-shadow-lg"
           />
         ) : (
-          <span className="w-11 h-11 rounded-xl bg-surface-container-high flex items-center justify-center text-2xl shrink-0">
-            {product.logo_emoji ?? '📦'}
-          </span>
+          <span className="text-6xl">{product.logo_emoji ?? '📦'}</span>
         )}
-        <div className="min-w-0">
-          <h3 className="font-headline text-base font-bold text-on-surface leading-tight">{product.name}</h3>
-          {product.industry && (
-            <span className="bg-secondary-container text-on-secondary-container rounded-full px-2 py-0.5 text-[10px] font-label inline-block mt-0.5">
-              {product.industry}
-            </span>
-          )}
-        </div>
       </div>
 
-      {/* Tagline */}
-      <p className="text-xs text-on-surface-variant line-clamp-2 mb-4 leading-relaxed">{product.tagline}</p>
+      {/* Industry badge — top left glassmorphism pill */}
+      {product.industry && (
+        <div className="absolute top-4 left-4">
+          <span className="glass-card px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider text-on-background uppercase">
+            {product.industry}
+          </span>
+        </div>
+      )}
 
-      {/* Footer row */}
-      <div className="flex items-center justify-between gap-2 pt-3 border-t border-outline-variant/20">
-        <div className="flex items-center gap-1.5">
-          {completedCount !== undefined && completedCount > 0 ? (
-            <span className="text-[10px] font-bold text-primary bg-primary-fixed/60 px-2 py-0.5 rounded-full">
-              ● {completedCount}/{product.decision_count} done
-            </span>
+      {/* Bottom info panel — glassmorphism */}
+      <div className="absolute inset-x-4 bottom-4 p-5 rounded-xl glass-card border border-white/20">
+        <h3 className="text-xl font-headline text-on-background mb-1 leading-tight">{product.name}</h3>
+        <p className="text-xs text-on-surface-variant line-clamp-2 mb-3">{product.tagline}</p>
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-bold text-on-surface-variant/80 uppercase tracking-tighter">
+            {completedCount > 0
+              ? `${completedCount}/${product.decision_count} done`
+              : `${product.decision_count} challenges`}
+          </span>
+          <div className="h-1 w-1 rounded-full bg-primary/30" />
+          {completedCount > 0 ? (
+            <span className="text-[10px] font-bold text-primary uppercase tracking-tighter">In Progress</span>
           ) : (
-            <span className="text-[10px] text-on-surface-variant font-label">
-              {product.decision_count} challenges
+            <span className="text-[10px] font-bold text-primary uppercase tracking-tighter">
+              {product.industry ?? 'Autopsy'}
             </span>
           )}
         </div>
-        <span
-          className="material-symbols-outlined text-base text-primary opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-        >
-          arrow_forward
-        </span>
       </div>
     </Link>
   )
