@@ -80,13 +80,13 @@ export async function GET() {
   const [{ data: profile }, { data: levels }, { data: completedAttempts }, lumaCtx] = await Promise.all([
     adminClient.from('profiles').select('preferred_role').eq('id', user.id).single(),
     adminClient.from('move_levels').select('move, xp').eq('user_id', user.id).order('xp', { ascending: true }).limit(1),
-    adminClient.from('challenge_attempts').select('prompt_id').eq('user_id', user.id).not('submitted_at', 'is', null),
+    adminClient.from('challenge_attempts').select('challenge_id').eq('user_id', user.id).not('submitted_at', 'is', null),
     getLumaContext(user.id),
   ])
 
   const isCalibrated = (levels ?? []).length > 0 && (completedAttempts ?? []).length > 0
   const weakestMove: FlowMove = (levels?.[0]?.move as FlowMove) ?? 'frame'
-  const completedIds = (completedAttempts ?? []).map((a: { prompt_id: string }) => a.prompt_id)
+  const completedIds = (completedAttempts ?? []).map((a: { challenge_id: string }) => a.challenge_id)
 
   // Derive weakest FLOW move from Luma context move levels
   const lumaMoveLevels = lumaCtx.moveLevels
@@ -146,8 +146,8 @@ export async function GET() {
 
   // Fallback: weakest-move SQL filter (no embeddings yet)
   let query = adminClient
-    .from('challenge_prompts')
-    .select('id, title, prompt_text, difficulty, domain_id, move_tags, role_tags, paradigm')
+    .from('challenges')
+    .select('id, slug, title, difficulty, tags, move_tags, relevant_roles')
     .eq('is_published', true)
     .contains('move_tags', [weakestMove])
 
@@ -156,15 +156,15 @@ export async function GET() {
   }
 
   if (profile?.preferred_role) {
-    query = query.or(`role_tags.cs.{"${profile.preferred_role}"},role_tags.eq.{}`)
+    query = query.or(`relevant_roles.cs.{"${profile.preferred_role}"},relevant_roles.eq.{}`)
   }
 
   const { data: challenge } = await query.limit(1).maybeSingle()
 
   if (!challenge) {
     const fallbackQuery = adminClient
-      .from('challenge_prompts')
-      .select('id, title, prompt_text, difficulty, domain_id, move_tags, role_tags')
+      .from('challenges')
+      .select('id, slug, title, difficulty, tags, move_tags, relevant_roles')
       .eq('is_published', true)
 
     const { data: fallback } = completedIds.length > 0
@@ -173,8 +173,9 @@ export async function GET() {
 
     if (!fallback) return NextResponse.json({ error: 'No challenges available' }, { status: 404 })
 
+    const fallbackSlug = fallback.slug ?? fallback.id.replace(/^c\d+-/, '')
     return NextResponse.json({
-      challenge: fallback,
+      challenge: { ...fallback, slug: fallbackSlug },
       reason: 'A good place to start',
       tip: topicTip(fallback),
       targets_move: weakestMove,
@@ -184,8 +185,9 @@ export async function GET() {
     })
   }
 
+  const challengeSlug = challenge.slug ?? challenge.id.replace(/^c\d+-/, '')
   return NextResponse.json({
-    challenge,
+    challenge: { ...challenge, slug: challengeSlug },
     reason: isCalibrated
       ? `Targets your weakest move: ${weakestMove.charAt(0).toUpperCase() + weakestMove.slice(1)}`
       : 'A good place to start',

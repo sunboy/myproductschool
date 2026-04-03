@@ -8,10 +8,10 @@ export async function GET() {
 
   const adminClient = createAdminClient()
 
-  // Fetch published challenges ordered by difficulty then created_at
+  // Fetch published v2 challenges ordered by difficulty then created_at
   const { data: challenges } = await adminClient
-    .from('challenge_prompts')
-    .select('id, title, difficulty, move_tags, role_tags, domain_id, domains(slug, title)')
+    .from('challenges')
+    .select('id, slug, title, difficulty, tags, relevant_roles, created_at')
     .eq('is_published', true)
     .order('difficulty', { ascending: true })
     .order('created_at', { ascending: true })
@@ -19,58 +19,71 @@ export async function GET() {
 
   if (!challenges) return NextResponse.json({ chapters: [] })
 
-  // Fetch user's best scores for these challenges if logged in
+  // Fetch user's best scores from v2 challenge_attempts
   let scoreMap: Record<string, number> = {}
   if (user) {
     const ids = challenges.map(c => c.id)
     const { data: attempts } = await adminClient
       .from('challenge_attempts')
-      .select('prompt_id, total_score')
+      .select('challenge_id, total_score')
       .eq('user_id', user.id)
-      .in('prompt_id', ids)
-      .not('submitted_at', 'is', null)
+      .eq('status', 'completed')
+      .in('challenge_id', ids)
       .order('total_score', { ascending: false })
 
-    for (const a of attempts ?? []) {
-      if (!scoreMap[a.prompt_id] || a.total_score > scoreMap[a.prompt_id]) {
-        scoreMap[a.prompt_id] = a.total_score
+    for (const a of (attempts ?? []) as { challenge_id: string; total_score: number }[]) {
+      if (!scoreMap[a.challenge_id] || a.total_score > scoreMap[a.challenge_id]) {
+        scoreMap[a.challenge_id] = a.total_score
       }
     }
   }
 
-  // Group into chapters by difficulty
-  const beginner = challenges.filter(c => c.difficulty === 'beginner')
-  const intermediate = challenges.filter(c => c.difficulty === 'intermediate')
-  const advanced = challenges.filter(c => c.difficulty === 'advanced')
+  // Map v2 difficulty to chapter groupings
+  // v2 uses: 'entry', 'junior', 'mid', 'senior', 'staff'
+  const beginner = challenges.filter(c => ['entry', 'junior'].includes(c.difficulty))
+  const intermediate = challenges.filter(c => c.difficulty === 'mid')
+  const advanced = challenges.filter(c => ['senior', 'staff'].includes(c.difficulty))
+  // Fall back: if all challenges have same difficulty, put them all in one chapter
+  const hasGroups = beginner.length || intermediate.length || advanced.length
 
-  const toItem = (c: { id: string; title: string; difficulty: string }) => ({
+  const toItem = (c: { id: string; slug: string | null; title: string; difficulty: string }) => ({
     id: c.id,
+    slug: c.slug ?? c.id.replace(/^c\d+-/, ''),
     title: c.title,
     difficulty: c.difficulty,
-    best_score: scoreMap[c.id] ?? null,
+    best_score: scoreMap[c.id] != null ? Math.round(scoreMap[c.id] * 100 / 3) : null,
     is_completed: scoreMap[c.id] != null,
   })
 
-  const chapters = [
-    {
-      key: 'beginner',
-      title: 'Chapter 1: Product Sense & Foundations',
-      icon: 'psychology',
-      items: beginner.map(toItem),
-    },
-    {
-      key: 'intermediate',
-      title: 'Chapter 2: Execution & Metrics',
-      icon: 'monitoring',
-      items: intermediate.map(toItem),
-    },
-    {
-      key: 'advanced',
-      title: 'Chapter 3: Strategy & Leadership',
-      icon: 'diversity_3',
-      items: advanced.map(toItem),
-    },
-  ].filter(ch => ch.items.length > 0)
+  const chapters = hasGroups
+    ? [
+        {
+          key: 'beginner',
+          title: 'Chapter 1: Product Sense & Foundations',
+          icon: 'psychology',
+          items: beginner.map(toItem),
+        },
+        {
+          key: 'intermediate',
+          title: 'Chapter 2: Execution & Metrics',
+          icon: 'monitoring',
+          items: intermediate.map(toItem),
+        },
+        {
+          key: 'advanced',
+          title: 'Chapter 3: Strategy & Leadership',
+          icon: 'diversity_3',
+          items: advanced.map(toItem),
+        },
+      ].filter(ch => ch.items.length > 0)
+    : [
+        {
+          key: 'all',
+          title: 'Chapter 1: FLOW Challenges',
+          icon: 'psychology',
+          items: challenges.map(toItem),
+        },
+      ]
 
   return NextResponse.json({ chapters })
 }

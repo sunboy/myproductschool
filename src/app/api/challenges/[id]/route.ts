@@ -64,12 +64,22 @@ export async function GET(
     return NextResponse.json({ challenge: mockChallenge, steps: mockSteps, current_attempt: null })
   }
 
-  // Fetch challenge
-  const { data: challenge, error: challengeError } = await supabase
+  // Fetch challenge — try by id first, then by slug as fallback
+  let { data: challenge, error: challengeError } = await supabase
     .from('challenges')
     .select('*')
     .eq('id', id)
-    .single()
+    .maybeSingle()
+
+  if (!challenge) {
+    const { data: bySlug, error: slugError } = await supabase
+      .from('challenges')
+      .select('*')
+      .eq('slug', id)
+      .maybeSingle()
+    challenge = bySlug
+    challengeError = slugError
+  }
 
   if (challengeError || !challenge) {
     return NextResponse.json({ error: 'Challenge not found' }, { status: 404 })

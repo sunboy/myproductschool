@@ -21,7 +21,7 @@ const MOCK_PRESCRIPTION: Prescription = {
   },
   prescription: {
     mode: 'live',
-    challenge_slug: 'c1000000-0000-0000-0000-000000000001',
+    challenge_slug: 'improve-retention-b2c',
     challenge_title: 'Improve Retention for a B2C App',
     reason: 'Your last 4 submissions listed investigations without ordering them. Live mode forces you to prioritize in real time.',
   },
@@ -104,20 +104,21 @@ export async function GET(req: NextRequest) {
     // Get next uncompleted challenge
     const { data: completedAttempts } = await supabaseAdmin
       .from('challenge_attempts')
-      .select('prompt_id')
+      .select('challenge_id')
       .eq('user_id', userId)
       .not('submitted_at', 'is', null)
 
-    const completedIds = (completedAttempts ?? []).map((a: { prompt_id: string }) => a.prompt_id)
+    const completedIds = (completedAttempts ?? []).map((a: { challenge_id: string }) => a.challenge_id)
 
     const { data: nextChallenge } = await supabaseAdmin
-      .from('challenge_prompts')
-      .select('id, title, tags')
+      .from('challenges')
+      .select('id, slug, title, tags')
       .eq('is_published', true)
-      .not('id', 'in', completedIds.length > 0 ? `(${completedIds.join(',')})` : '(00000000-0000-0000-0000-000000000000)')
+      .not('id', 'in', completedIds.length > 0 ? `(${completedIds.join(',')})` : '(c0-placeholder)')
       .limit(1)
       .single()
 
+    const nextSlug = nextChallenge ? (nextChallenge.slug ?? nextChallenge.id.replace(/^c\d+-/, '')) : ''
     return NextResponse.json({
       type: 'prescription',
       primary_pattern: {
@@ -128,7 +129,7 @@ export async function GET(req: NextRequest) {
       },
       prescription: {
         mode: prescribedMode,
-        challenge_slug: nextChallenge?.id ?? '',
+        challenge_slug: nextSlug,
         challenge_title: nextChallenge?.title ?? 'Next challenge',
         reason: `Your last ${topPattern.occurrence_count} submissions show "${topPattern.pattern_name}". ${prescribedMode === 'live' ? 'Live mode forces real-time prioritization with Luma coaching.' : 'Solo mode gives you space to practice without pressure.'}`,
       },

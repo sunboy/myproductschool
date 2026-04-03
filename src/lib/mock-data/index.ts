@@ -295,6 +295,7 @@ export const MOCK_FLASHCARDS: Flashcard[] = [
 export const MOCK_CHALLENGES: ChallengePrompt[] = [
   {
     id: 'ch100000-0000-0000-0000-000000000001',
+    slug: 'improve-spotify-podcast-discovery',
     domain_id: 'd1000000-0000-0000-0000-000000000001',
     title: 'Improve Spotify\'s podcast discovery',
     prompt_text: `You are a PM at Spotify. The podcasts team has noticed that despite having 5M+ podcast titles, only 8% of users who open the Podcasts tab ever save or follow a podcast.
@@ -320,6 +321,7 @@ Your task:
   },
   {
     id: 'ch100000-0000-0000-0000-000000000002',
+    slug: 'b2b-fintech-payments-strategy',
     domain_id: 'd1000000-0000-0000-0000-000000000001',
     title: 'Build a product strategy for a B2B fintech entering payments',
     prompt_text: `You're joining a Series B fintech that has built a successful invoicing tool for SMBs (10k customers, $5M ARR). The CEO wants to expand into payments — letting customers accept card payments through the same platform.
@@ -342,6 +344,7 @@ Your task:
   },
   {
     id: 'ch100000-0000-0000-0000-000000000003',
+    slug: 'user-research-plan-new-feature',
     domain_id: 'd1000000-0000-0000-0000-000000000002',
     title: 'Design a user research plan for a new feature',
     prompt_text: `Your team is considering adding an AI-generated summary feature to a project management tool. Before building, you want to run user research.
@@ -366,6 +369,7 @@ Your task:
   },
   {
     id: 'ch100000-0000-0000-0000-000000000004',
+    slug: 'investigate-activation-rate-drop',
     domain_id: 'd1000000-0000-0000-0000-000000000003',
     title: 'Investigate a sudden drop in activation rate',
     prompt_text: `You're a PM at a SaaS tool. Your weekly metrics report shows activation rate (users who complete 3 key actions within 7 days of signup) dropped from 42% to 31% over the last 2 weeks. No features were shipped.
