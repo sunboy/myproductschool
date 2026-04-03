@@ -687,3 +687,55 @@ export interface LearnChapterWithProgress extends LearnChapter {
   is_completed: boolean
   is_unlocked: boolean  // true if previous chapter is done or sort_order === 1
 }
+
+// ── Autopsy Showcase ──────────────────────────────────────────────────────
+
+export interface AutopsyProduct {
+  id: string
+  slug: string
+  name: string
+  tagline: string
+  logo_emoji: string | null
+  logo_url: string | null
+  cover_color: string | null
+  industry: string | null
+  paradigm: string | null
+  decision_count: number
+  is_published: boolean
+  sort_order: number
+}
+
+export interface AutopsyDecision {
+  id: string
+  product_id: string
+  sort_order: number
+  title: string
+  area: string
+  difficulty: 'warmup' | 'standard' | 'advanced'
+  icon: string | null
+  screenshot_url: string | null
+  what_they_did: string
+  real_reasoning: string
+  principle: string
+  challenge_question: string
+}
+
+export interface AutopsyChallengeOption {
+  label: string
+  text: string
+  quality: OptionQuality
+  explanation: string
+}
+
+export interface AutopsyChallenge {
+  id: string
+  decision_id: string
+  context: string
+  options: AutopsyChallengeOption[]
+  insight: string
+  principle: string
+}
+
+export interface AutopsyProductDetail extends AutopsyProduct {
+  decisions: Array<AutopsyDecision & { challenge: AutopsyChallenge }>
+}
