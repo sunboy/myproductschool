@@ -83,7 +83,10 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     <div className="min-h-screen flex">
       {/* Left panel */}
       <div className="w-2/5 bg-surface-container-low flex flex-col justify-center px-12 py-16">
-        <LumaGlyph size={48} state="idle" className="text-primary mb-6" />
+        <div className="flex items-center gap-2 mb-8">
+          <LumaGlyph size={36} state="idle" className="text-primary" />
+          <span className="font-headline text-2xl font-bold text-primary">HackProduct</span>
+        </div>
         <h2 className="font-headline text-3xl text-on-surface mb-3 leading-snug">
           Tell me where you are. I&apos;ll tell you where to go.
         </h2>
@@ -96,7 +99,10 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
             'Daily product thinking drills',
           ].map(bullet => (
             <li key={bullet} className="flex items-center gap-3">
-              <span className="material-symbols-filled text-primary text-xl">check_circle</span>
+              <span
+                className="material-symbols-outlined text-primary text-xl"
+                style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
+              >check_circle</span>
               <span className="text-sm text-on-surface font-body">{bullet}</span>
             </li>
           ))}
@@ -178,7 +184,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                 onChange={e => setEmail(e.target.value)}
                 required
                 className="w-full px-4 py-2.5 bg-surface-container border border-outline-variant rounded-xl text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary transition-colors text-sm"
-                placeholder="you@company.com"
+                placeholder="you@example.com"
               />
             </div>
 
@@ -191,7 +197,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                 required
                 minLength={8}
                 className="w-full px-4 py-2.5 bg-surface-container border border-outline-variant rounded-xl text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary transition-colors text-sm"
-                placeholder="8+ characters"
+                placeholder="Password"
               />
               {activeMode === 'login' && (
                 <div className="mt-1.5 text-right">

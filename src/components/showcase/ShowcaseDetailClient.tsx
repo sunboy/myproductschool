@@ -25,7 +25,7 @@ export function ShowcaseDetailClient({ product }: ShowcaseDetailClientProps) {
   }
 
   return (
-    <div className="h-[calc(100vh-56px)] flex overflow-hidden">
+    <div className="h-[calc(100vh-56px)] md:h-[calc(100vh-56px)] flex overflow-hidden pb-16 md:pb-0">
 
       {/* LEFT PANE */}
       <aside className="w-[380px] shrink-0 flex flex-col border-r border-outline-variant/40">

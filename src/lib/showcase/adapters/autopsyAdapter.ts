@@ -114,7 +114,7 @@ export function createAutopsyAdapter(
 
   // Per-step question text
   const stepQuestionText: Record<FlowStep, string> = {
-    frame: decision.what_they_did,
+    frame: 'In your own words, describe the decision above in one sentence — as if explaining it to a teammate who has never used this product.',
     list: challenge.context,
     optimize: decision.real_reasoning,
     win: decision.challenge_question,
