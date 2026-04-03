@@ -23,7 +23,7 @@ export function NavRail() {
 
       {/* ── Brand ── */}
       <div className="flex items-center gap-2.5 px-4 py-4 border-b border-outline-variant/30">
-        <LumaGlyph size={26} className="text-primary shrink-0 animate-luma-glow" animated />
+        <LumaGlyph size={26} state="idle" className="text-primary shrink-0" />
         <span className="font-headline text-base font-bold text-primary tracking-tight">HackProduct</span>
       </div>
 
