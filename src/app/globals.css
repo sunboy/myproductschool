@@ -234,6 +234,12 @@ body {
   .animate-luma-card { animation: none; transform: none; }
 }
 
+/* ── Spin (used by flywheel illustration inline style) ────────── */
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ── Page Entry Animations ────────────────────────────────────── */
 
 @keyframes fade-in-up {

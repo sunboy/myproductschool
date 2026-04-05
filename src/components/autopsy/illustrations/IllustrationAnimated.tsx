@@ -2,11 +2,13 @@
 
 import * as React from 'react'
 import type { IllustrationConfig } from '@/lib/types'
+import { cn } from '@/lib/utils'
 import type {
   ComparisonBarsData,
   FlywheelData,
   ToolStackData,
   BlockAnatomyData,
+  PricingTiersData,
 } from './illustrations.types'
 
 interface Props {
@@ -40,7 +42,7 @@ function ComparisonBars({ data, isVisible }: { data: ComparisonBarsData; isVisib
     if (!isVisible) return
     const duration = 700
     const start = performance.now()
-    const targets = data.bars.map(b => b.value)
+    const targets = bars.map(b => b.value)
     let rafId: number
     const animate = (now: number) => {
       const elapsed = now - start
@@ -52,7 +54,7 @@ function ComparisonBars({ data, isVisible }: { data: ComparisonBarsData; isVisib
     }
     rafId = requestAnimationFrame(animate)
     return () => cancelAnimationFrame(rafId)
-  }, [isVisible, data.bars])
+  }, [isVisible, bars])
 
   return (
     <svg
@@ -652,6 +654,40 @@ export function IllustrationAnimated({ config, isVisible, className = '' }: Prop
       return (
         <div className={base}>
           <BlockAnatomy data={data} isVisible={isVisible} />
+        </div>
+      )
+    }
+
+    case 'pricing_tiers': {
+      const d = config.data as unknown as PricingTiersData
+      const tiers = d?.tiers ?? []
+      return (
+        <div className={cn('w-full flex items-center justify-center gap-3 p-4', className)}>
+          {tiers.map((tier, i) => (
+            <div
+              key={tier.name}
+              style={{
+                transition: `opacity 0.5s ease ${i * 0.15}s, transform 0.5s ease ${i * 0.15}s`,
+                opacity: isVisible ? 1 : 0,
+                transform: isVisible ? 'translateY(0)' : 'translateY(12px)',
+              }}
+              className={cn(
+                'flex-1 rounded-xl p-3 border bg-surface-container',
+                tier.highlighted ? 'ring-2 ring-primary scale-[1.02] bg-primary-container/20' : 'border-outline-variant/40'
+              )}
+            >
+              <div className="text-[10px] font-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">{tier.name}</div>
+              <div className="text-lg font-bold text-primary font-headline">{tier.price}</div>
+              <ul className="mt-2 space-y-1">
+                {tier.features.slice(0, 3).map(f => (
+                  <li key={f} className="text-[9px] text-on-surface-variant flex items-center gap-1">
+                    <span className="material-symbols-outlined text-primary" style={{ fontSize: 10 }}>check_small</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       )
     }
