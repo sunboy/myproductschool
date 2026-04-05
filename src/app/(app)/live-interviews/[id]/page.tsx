@@ -58,6 +58,8 @@ export default function SessionPage({
   const [isEnding, setIsEnding] = useState(false)
 
   const eventSourceRef = useRef<EventSource | null>(null)
+  const audioCtxRef = useRef<AudioContext | null>(null)
+  const analyserRef = useRef<AnalyserNode | null>(null)
 
   // Start session (non-mock)
   useEffect(() => {
@@ -139,8 +141,33 @@ export default function SessionPage({
     setLumaState('speaking')
   }, [])
 
-  const handleAudioChunk = useCallback(() => {
-    // noop — TalkingHead.js not available
+  const handleAudioChunk = useCallback((buffer: ArrayBuffer) => {
+    if (IS_MOCK) return
+
+    // Lazy-create AudioContext + AnalyserNode on first audio chunk (after user gesture)
+    if (!audioCtxRef.current) {
+      const ctx = new AudioContext()
+      const analyser = ctx.createAnalyser()
+      analyser.fftSize = 256
+      analyser.smoothingTimeConstant = 0.8
+      audioCtxRef.current = ctx
+      analyserRef.current = analyser
+    }
+
+    const ctx = audioCtxRef.current
+    const analyser = analyserRef.current
+    if (!analyser) return
+
+    // Decode raw PCM as AudioBuffer and route through analyser for amplitude data
+    ctx.decodeAudioData(buffer.slice(0)).then((decoded) => {
+      const source = ctx.createBufferSource()
+      source.buffer = decoded
+      source.connect(analyser)
+      analyser.connect(ctx.destination)
+      source.start()
+    }).catch(() => {
+      // Ignore decode errors — some chunks may be partial
+    })
   }, [])
 
   const handleConnected = useCallback(() => {
@@ -198,8 +225,9 @@ export default function SessionPage({
     if (isEnding) return
     setIsEnding(true)
 
-    // Close SSE
+    // Close SSE and audio context
     eventSourceRef.current?.close()
+    audioCtxRef.current?.close().catch(() => {})
 
     if (IS_MOCK) {
       router.push(`/live-interviews/${sessionId}/debrief`)
@@ -275,6 +303,7 @@ export default function SessionPage({
           <div className="md:w-2/3">
             <LumaAvatar
               state={lumaState}
+              audioAnalyser={analyserRef.current}
               className="h-full min-h-[200px] bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl"
             />
           </div>
