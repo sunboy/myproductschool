@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { createCachedMessage } from '@/lib/anthropic/cached-client'
 
 export interface DebriefResult {
   overallScore: number
@@ -12,6 +12,7 @@ export interface DebriefResult {
 }
 
 export interface DebriefParams {
+  /** Session ID — available for future logging/tracing */
   sessionId: string
   turns: Array<{ role: 'luma' | 'user'; content: string; turnIndex: number }>
   calibrationSnapshot: { archetype: string; moveLevels: Record<string, number> }
@@ -70,13 +71,9 @@ Move levels: Frame L${calibrationSnapshot.moveLevels.frame ?? '?'}, List L${cali
 Interview transcript:
 ${transcript}`
 
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
-  const response = await client.messages.create({
+  const response = await createCachedMessage(SYSTEM_PROMPT, userMessage, {
     model: 'claude-opus-4-6',
     max_tokens: 1500,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: 'user', content: userMessage }],
   })
 
   const rawText = response.content
@@ -84,7 +81,12 @@ ${transcript}`
     .map((block) => (block as { type: 'text'; text: string }).text)
     .join('')
 
-  const parsed = JSON.parse(rawText) as Omit<DebriefResult, 'grade'>
+  let parsed: Omit<DebriefResult, 'grade'>
+  try {
+    parsed = JSON.parse(rawText) as Omit<DebriefResult, 'grade'>
+  } catch {
+    throw new Error(`Debrief parse failed. Raw response: ${rawText.slice(0, 200)}`)
+  }
 
   return {
     ...parsed,
