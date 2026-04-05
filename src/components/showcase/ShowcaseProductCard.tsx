@@ -55,6 +55,14 @@ export function ShowcaseProductCard({ product, completedCount = 0 }: ShowcasePro
               {product.industry ?? 'Autopsy'}
             </span>
           )}
+          {(product.story_count ?? 0) > 0 && (
+            <>
+              <div className="h-1 w-1 rounded-full bg-primary/30" />
+              <span className="text-[10px] font-bold text-on-surface-variant/80 uppercase tracking-tighter">
+                {product.story_count} {product.story_count === 1 ? 'story' : 'stories'}
+              </span>
+            </>
+          )}
         </div>
       </div>
     </Link>

@@ -65,7 +65,7 @@ export async function POST(
 
   const options = challenge.options as AutopsyChallengeOption[]
 
-  const selectedOption = options.find(o => o.label === selected_option_label)
+  const selectedOption = options.find(o => o.id === selected_option_label)
   if (!selectedOption) {
     return NextResponse.json({ error: 'Invalid selected_option_label' }, { status: 400 })
   }
@@ -93,7 +93,7 @@ export async function POST(
   }
 
   const revealed_options = options.map(o => ({
-    label: o.label,
+    id: o.id,
     text: o.text,
     quality: o.quality,
     points: QUALITY_TO_POINTS[o.quality] ?? 0,

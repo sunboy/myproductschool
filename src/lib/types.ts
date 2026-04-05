@@ -706,6 +706,7 @@ export interface AutopsyProduct {
   decision_count: number
   is_published: boolean
   sort_order: number
+  story_count?: number
 }
 
 export interface AutopsyDecision {
@@ -724,7 +725,7 @@ export interface AutopsyDecision {
 }
 
 export interface AutopsyChallengeOption {
-  label: string
+  id: string
   text: string
   quality: OptionQuality
   explanation: string
@@ -741,6 +742,7 @@ export interface AutopsyChallenge {
 
 export interface AutopsyProductDetail extends AutopsyProduct {
   decisions: Array<AutopsyDecision & { challenge: AutopsyChallenge }>
+  stories: AutopsyStory[]
 }
 
 export interface ShowcaseAttempt {
@@ -748,4 +750,40 @@ export interface ShowcaseAttempt {
   grade_label: string
   decision_index: number
   selected_option_label: string
+}
+
+// ── Autopsy Stories ─────────────────────────────────────────────────────────
+
+export type IllustrationVariant =
+  | 'comparison_bars' | 'flywheel' | 'tool_stack' | 'block_anatomy'
+  | 'pricing_tiers' | 'lock_gate' | 'funnel' | 'competitive_matrix'
+  | 'network_effect' | 'metrics_dashboard' | 'stacked_layers'
+  | 'timeline_diagram' | 'placeholder'
+
+export interface IllustrationConfig {
+  type: IllustrationVariant
+  data: Record<string, unknown>
+  animationTrigger: 'onVisible' | 'loop'
+}
+
+export type StorySection =
+  | { id: string; layout: 'fullbleed_cover'; content: { label: string; headline: string; subline: string; meta: string } }
+  | { id: string; layout: 'split_panel'; content: { label: string; title: string; paragraphs: string[]; textSide: 'left' | 'right' }; illustration: IllustrationConfig }
+  | { id: string; layout: 'fullbleed_stat'; content: { stat: string; context: string; source?: string } }
+  | { id: string; layout: 'before_after'; content: { title: string; before: { label: string; items: string[]; summary?: string }; after: { label: string; items: string[]; summary?: string } } }
+  | { id: string; layout: 'fullbleed_principle'; content: { principle: string; attribution: string } }
+  | { id: string; layout: 'fullbleed_cta'; content: { headline: string; subline?: string; buttonText: string; targetPath: string } }
+  | { id: string; layout: 'quote'; content: { quote: string; attribution: string; context?: string } }
+  | { id: string; layout: 'timeline'; content: { title: string; events: Array<{ date: string; label: string; description: string; type: string }> } }
+
+export interface AutopsyStory {
+  id: string
+  product_id: string
+  slug: string
+  title: string
+  read_time: string
+  sections: StorySection[]
+  related_challenge_ids: string[]
+  sort_order: number
+  created_at: string
 }

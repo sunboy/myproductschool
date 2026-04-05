@@ -3,13 +3,11 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ShowcaseChallengeCard } from './ShowcaseChallengeCard'
-// TODO: FlowWorkspace was rewritten to use challengeId/initialRoleId props.
-// The adapter-based showcase integration needs a dedicated ShowcaseWorkspace component.
-// For now, casting to suppress the build error until the showcase rewrite lands.
 import { FlowWorkspace } from '@/components/v2/FlowWorkspace'
 import { createAutopsyAdapter } from '@/lib/showcase/adapters/autopsyAdapter'
 import { useShowcaseProgress } from '@/lib/showcase/useShowcaseProgress'
 import type { AutopsyProductDetail, ShowcaseAttempt } from '@/lib/types'
+import { StoryCard } from '@/components/autopsy/StoryCard'
 
 interface ShowcaseDetailClientProps {
   product: AutopsyProductDetail
@@ -75,6 +73,18 @@ export function ShowcaseDetailClient({ product }: ShowcaseDetailClientProps) {
           </p>
         </div>
 
+        {/* Hack Stories section */}
+        {product.stories && product.stories.length > 0 && (
+          <div className="flex-shrink-0 px-3 pt-3 space-y-2 border-b border-outline-variant/20 pb-3">
+            <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label px-1">
+              Hack Stories ({product.stories.length})
+            </p>
+            {product.stories.map(story => (
+              <StoryCard key={story.id} story={story} productSlug={product.slug} coverColor={product.cover_color} />
+            ))}
+          </div>
+        )}
+
         {/* Scrollable list */}
         <div className="flex-1 overflow-y-auto p-3 space-y-3">
           {product.decisions.map((decision, i) => (
@@ -98,18 +108,16 @@ export function ShowcaseDetailClient({ product }: ShowcaseDetailClientProps) {
 
       {/* RIGHT PANE */}
       <div className="flex-1 overflow-hidden">
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <FlowWorkspace
           key={selectedIndex}
-          {...({
-            adapter: createAutopsyAdapter(
-              product.decisions[selectedIndex],
-              product.decisions[selectedIndex].challenge,
-              product.slug,
-              selectedIndex,
-              handleChallengeComplete,
-            ),
-          } as any)}
+          mode="adapter"
+          adapter={createAutopsyAdapter(
+            product.decisions[selectedIndex],
+            product.decisions[selectedIndex].challenge,
+            product.slug,
+            selectedIndex,
+            handleChallengeComplete,
+          )}
         />
       </div>
 
