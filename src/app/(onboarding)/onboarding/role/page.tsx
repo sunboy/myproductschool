@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 const ROLES = [
   {
@@ -50,6 +51,16 @@ const STEPS = [
 
 export default function RoleSelectionPage() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
+  const router = useRouter()
+
+  async function handleSkip() {
+    await fetch('/api/onboarding/complete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role_context: 'engineer', experience_level: 'intermediate' }),
+    })
+    router.push('/dashboard')
+  }
 
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto">
@@ -143,12 +154,13 @@ export default function RoleSelectionPage() {
           <span className="material-symbols-outlined text-base">arrow_back</span>
           Back
         </Link>
-        <Link
-          href="/onboarding/calibration/frame"
+        <button
+          type="button"
+          onClick={handleSkip}
           className="text-sm text-primary font-label font-semibold hover:underline"
         >
           Skip assessment
-        </Link>
+        </button>
         <Link
           href={selectedRole ? '/onboarding/calibration/frame' : '#'}
           className={`inline-flex items-center gap-1 rounded-full px-6 py-2.5 font-label font-semibold text-sm transition-colors ${
