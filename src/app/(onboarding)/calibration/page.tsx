@@ -206,7 +206,16 @@ export default function CalibrationPage() {
     }
   }, [])
 
-  // ── Skip calibration → go to dashboard ─────
+  // ── Save & exit — preserves progress for resume ─────
+  function handleSaveAndExit() {
+    // Save current progress before leaving (only if we're mid-questions)
+    if (screen >= 1 && screen <= 8) {
+      try { localStorage.setItem(CAL_STORAGE_KEY, JSON.stringify({ screen, answers })) } catch { /* ignore */ }
+    }
+    router.push('/dashboard')
+  }
+
+  // ── Skip calibration → go to dashboard (no progress saved) ─────
   async function handleSkip() {
     try { localStorage.removeItem(CAL_STORAGE_KEY) } catch { /* ignore */ }
     router.push('/dashboard')
@@ -358,7 +367,7 @@ export default function CalibrationPage() {
         )}
         {screen <= 14 && screen !== 9 && screen !== 10 && (
           <button
-            onClick={handleSkip}
+            onClick={handleSaveAndExit}
             className="text-xs text-on-surface-variant font-label font-semibold hover:text-on-surface transition-colors"
           >
             Save &amp; exit

@@ -19,51 +19,13 @@ const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-passw
 // Routes that require a user but NOT a completed profile/onboarding
 const APP_PUBLIC_ROUTES = ['/onboarding', '/welcome', '/role', '/calibration']
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   // ── Post-launch: normal auth flow ──────────────────────
   // Bypass auth in mock/testing mode
   if (IS_MOCK) {
     return NextResponse.next()
-  }
-
-  // ── A/B split for root → waitlist variants ──────────────
-  // Authenticated users visiting / go straight to dashboard.
-  // Unauthenticated visitors get a stable 50/50 split between waitlist variants.
-  if (pathname === '/') {
-    // Quick auth check — don't block on Supabase for the common unauthenticated case
-    // but do redirect logged-in users away from the marketing page.
-    const supabaseForRoot = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() { return request.cookies.getAll() },
-          setAll() {},
-        },
-      }
-    )
-    const { data: { user: rootUser } } = await supabaseForRoot.auth.getUser()
-    if (rootUser) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
-
-    const existing = request.cookies.get('ab_waitlist')?.value
-    const variant = existing === 'a' || existing === 'b'
-      ? existing
-      : Math.random() < 0.5 ? 'a' : 'b'
-
-    const response = NextResponse.next({ request })
-    response.headers.set('x-ab-waitlist', variant)
-    if (!existing) {
-      response.cookies.set('ab_waitlist', variant, {
-        maxAge: 60 * 60 * 24 * 30, // 30 days
-        path: '/',
-        sameSite: 'lax',
-      })
-    }
-    return response
   }
 
   // ── Pre-launch: only waitlist + its API are accessible ──
@@ -76,36 +38,24 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // ── Marketing & auth pages: always public, skip Supabase ──
+  // ── Marketing & auth pages classification ──
   const WAITLIST_ROUTES = ['/waitlist', '/waitlist-b', '/waitlist-flow']
+  const isRoot      = pathname === '/'
   const isMarketing = MARKETING_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isWaitlist  = WAITLIST_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isAuthRoute = AUTH_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isApi       = pathname.startsWith('/api/')
 
-  // For waitlist routes, check if user is already logged in — send them to dashboard
-  if (isWaitlist) {
-    const supabaseForWaitlist = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() { return request.cookies.getAll() },
-          setAll() {},
-        },
-      }
-    )
-    const { data: { user: waitlistUser } } = await supabaseForWaitlist.auth.getUser()
-    if (waitlistUser) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
+  // Pure marketing routes that never need auth (not / or waitlist which need redirect logic)
+  const isPureMarketing = isMarketing && !isRoot && !isWaitlist
+  if (isPureMarketing || isApi) {
     return NextResponse.next()
   }
 
-  if (isMarketing || isApi) {
-    return NextResponse.next()
-  }
-
+  // ── Single unified Supabase client for all routes that need auth awareness ──
+  // This MUST use the full supabaseResponse + setAll pattern so that token
+  // refresh works correctly. A lightweight client with setAll(){} no-op causes
+  // getUser() / getSession() to return null when the access token needs refreshing.
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -129,6 +79,37 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
+  // ── A/B split for root → waitlist variants ──────────────
+  // Authenticated users visiting / go straight to dashboard.
+  // Unauthenticated visitors get a stable 50/50 split between waitlist variants.
+  if (isRoot) {
+    if (user) {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+    const existing = request.cookies.get('ab_waitlist')?.value
+    const variant = existing === 'a' || existing === 'b'
+      ? existing
+      : Math.random() < 0.5 ? 'a' : 'b'
+
+    supabaseResponse.headers.set('x-ab-waitlist', variant)
+    if (!existing) {
+      supabaseResponse.cookies.set('ab_waitlist', variant, {
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+        path: '/',
+        sameSite: 'lax',
+      })
+    }
+    return supabaseResponse
+  }
+
+  // ── Waitlist routes: redirect logged-in users to dashboard ──
+  if (isWaitlist) {
+    if (user) {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+    return supabaseResponse
+  }
+
   // Routes that don't require a completed profile
   const isAppPublic = APP_PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
 
@@ -149,12 +130,10 @@ export async function middleware(request: NextRequest) {
     }
 
     const isOnboarding = pathname.startsWith('/onboarding')
-    const isAppRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/explore')
-      || pathname.startsWith('/challenges') || pathname.startsWith('/progress')
-      || pathname.startsWith('/cohort') || pathname.startsWith('/prep')
-      || pathname.startsWith('/settings') || pathname.startsWith('/learn')
 
-    if (isAppRoute && !isOnboarding && !onboardingDone) {
+    // Any authenticated route that isn't onboarding requires completed onboarding.
+    // This is a deny-by-default pattern — new routes are automatically covered.
+    if (!isOnboarding && !isAppPublic && !onboardingDone) {
       return NextResponse.redirect(new URL('/onboarding/welcome', request.url))
     }
 
