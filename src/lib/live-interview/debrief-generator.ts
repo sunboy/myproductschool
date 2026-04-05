@@ -81,9 +81,12 @@ ${transcript}`
     .map((block) => (block as { type: 'text'; text: string }).text)
     .join('')
 
+  // Strip markdown code fences if Claude wrapped the JSON despite instructions
+  const cleanText = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
+
   let parsed: Omit<DebriefResult, 'grade'>
   try {
-    parsed = JSON.parse(rawText) as Omit<DebriefResult, 'grade'>
+    parsed = JSON.parse(cleanText) as Omit<DebriefResult, 'grade'>
   } catch {
     throw new Error(`Debrief parse failed. Raw response: ${rawText.slice(0, 200)}`)
   }

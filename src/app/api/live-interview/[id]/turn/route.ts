@@ -69,9 +69,9 @@ export async function POST(
 
   const rawContent = response.content[0].type === 'text' ? response.content[0].text : ''
 
-  // Strip grading signal JSON block (single-line JSON appended by Luma after each response)
-  const signalMatch = rawContent.match(/\{"flow_move":[^}]*\}/)
-  const cleanContent = rawContent.replace(/\{"flow_move":[^}]*\}/, '').trim()
+  // Strip grading signal JSON block (appended by Luma after each response)
+  const signalMatch = rawContent.match(/\{["']?flow_move["']?:[\s\S]*$/)
+  const cleanContent = rawContent.replace(/\n?\{["']?flow_move["']?:[\s\S]*$/, '').trim()
 
   let signal: { flow_move: string; competency: string; signal: string } | null = null
   if (signalMatch) {

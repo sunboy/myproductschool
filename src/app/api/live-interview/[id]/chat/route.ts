@@ -66,7 +66,9 @@ export async function POST(
 
   const rawContent = response.content[0].type === 'text' ? response.content[0].text : ''
   // Strip grading signal JSON block appended by Claude
-  const cleanContent = rawContent.replace(/\{"flow_move":[^}]*\}/, '').trim()
+  // Only strip if there's visible text before the signal block
+  const stripped = rawContent.replace(/\n?\{["']?flow_move["']?:[\s\S]*$/, '').trim()
+  const cleanContent = stripped.length > 0 ? stripped : rawContent.replace(/^\{["']?flow_move["']?:[\s\S]*\}\s*$/, '').trim()
 
   // Save both turns to DB
   const { error: insertError } = await adminClient.from('live_interview_turns').insert([

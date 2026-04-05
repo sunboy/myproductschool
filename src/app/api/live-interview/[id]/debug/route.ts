@@ -25,7 +25,7 @@ export async function GET(
       .single(),
     adminClient
       .from('live_interview_turns')
-      .select('turn_index, role, content, flow_move_detected, competency_signals, created_at')
+      .select('turn_index, role, content, created_at')
       .eq('session_id', id)
       .order('turn_index', { ascending: true }),
   ])
@@ -50,13 +50,11 @@ export async function GET(
     systemPromptLength: (session.system_prompt ?? '').length,
     calibrationSnapshot: snapshot,
     flowCoverage: session.flow_coverage,
-    totalTurns: session.total_turns ?? 0,
+    totalTurns: turns.length,
     turns: turns.map((t) => ({
       turnIndex: t.turn_index,
       role: t.role,
       content: t.content,
-      flowMoveDetected: t.flow_move_detected,
-      competencySignals: t.competency_signals,
       createdAt: t.created_at,
     })),
     lumaContextPreview: (session.system_prompt ?? '').slice(0, 500),
