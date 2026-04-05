@@ -210,8 +210,8 @@ export function ChallengeViewer({ decision, challenge, productName }: ChallengeV
                   <OptionCard
                     key={i}
                     option={{
-                      id: `opt-${i}`,
-                      option_label: opt.label,
+                      id: opt.id,
+                      option_label: opt.id.toUpperCase(),
                       option_text: opt.text,
                     }}
                     selected={false}

@@ -13,6 +13,7 @@ export function FlowWorkspaceShell({ challengeId, initialRoleId }: FlowWorkspace
   const router = useRouter()
   return (
     <FlowWorkspace
+      mode="api"
       challengeId={challengeId}
       initialRoleId={initialRoleId}
       onExit={() => router.push('/challenges')}

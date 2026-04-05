@@ -725,7 +725,7 @@ export interface AutopsyDecision {
 }
 
 export interface AutopsyChallengeOption {
-  label: string
+  id: string
   text: string
   quality: OptionQuality
   explanation: string

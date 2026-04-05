@@ -3,9 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ShowcaseChallengeCard } from './ShowcaseChallengeCard'
-// TODO: FlowWorkspace was rewritten to use challengeId/initialRoleId props.
-// The adapter-based showcase integration needs a dedicated ShowcaseWorkspace component.
-// For now, casting to suppress the build error until the showcase rewrite lands.
 import { FlowWorkspace } from '@/components/v2/FlowWorkspace'
 import { createAutopsyAdapter } from '@/lib/showcase/adapters/autopsyAdapter'
 import { useShowcaseProgress } from '@/lib/showcase/useShowcaseProgress'
@@ -111,18 +108,16 @@ export function ShowcaseDetailClient({ product }: ShowcaseDetailClientProps) {
 
       {/* RIGHT PANE */}
       <div className="flex-1 overflow-hidden">
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <FlowWorkspace
           key={selectedIndex}
-          {...({
-            adapter: createAutopsyAdapter(
-              product.decisions[selectedIndex],
-              product.decisions[selectedIndex].challenge,
-              product.slug,
-              selectedIndex,
-              handleChallengeComplete,
-            ),
-          } as any)}
+          mode="adapter"
+          adapter={createAutopsyAdapter(
+            product.decisions[selectedIndex],
+            product.decisions[selectedIndex].challenge,
+            product.slug,
+            selectedIndex,
+            handleChallengeComplete,
+          )}
         />
       </div>
 

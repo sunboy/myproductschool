@@ -360,6 +360,31 @@ All Luma AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropic
 
 ---
 
+## Autopsy Challenge Option Schema
+
+`autopsy_challenges.options` is a JSONB array. Each option uses this shape:
+
+```typescript
+{
+  id: string          // 'a' | 'b' | 'c' | 'd' — lowercase
+  text: string        // Option display text
+  quality: OptionQuality  // 'best' | 'good_but_incomplete' | 'surface' | 'plausible_wrong'
+  explanation: string // Revealed after submission
+}
+```
+
+**Do NOT use `is_correct: boolean`** — the system is multi-tier, not binary.
+
+`quality` maps to points via `QUALITY_TO_POINTS` in `src/lib/showcase/adapters/autopsyAdapter.ts`:
+- `best` → 3 pts → grade "Sharp"
+- `good_but_incomplete` → 2 pts → grade "Solid"
+- `surface` → 1 pt → grade "Surface"
+- `plausible_wrong` → 0 pts → grade "Missed"
+
+This is pre-existing design (introduced in commit `47872c1`). Always use `quality` for scoring, never derive points from a boolean.
+
+---
+
 ## Key Conventions
 
 - `@/*` path alias maps to `./src/*`

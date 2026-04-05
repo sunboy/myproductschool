@@ -74,28 +74,28 @@ const MOCK_NOTION_DETAIL: AutopsyProductDetail = {
           'You are the PM for a new note-taking product targeting knowledge workers. Your eng lead says blocks are 3x harder to build than a standard rich-text editor. Your designer says users expect familiar word-processor UX. You need to choose an editing paradigm before the team starts building.',
         options: [
           {
-            label: 'A',
+            id: 'a',
             text: 'Build blocks -- composability is a long-term moat even if harder upfront',
             quality: 'best',
             explanation:
               'Correct tradeoff. The short-term cost is real but blocks unlock embedding, linking, and database views that rich-text cannot replicate structurally. This is exactly the bet Notion made.',
           },
           {
-            label: 'B',
+            id: 'b',
             text: 'Build rich-text first, migrate to blocks later once you have users',
             quality: 'plausible_wrong',
             explanation:
               'Migration from rich-text to blocks is extremely costly -- it requires re-parsing all existing content and retraining user muscle memory. This "build it later" approach rarely works for foundational architectural choices.',
           },
           {
-            label: 'C',
+            id: 'c',
             text: 'Use rich-text and differentiate on collaboration features instead',
             quality: 'surface',
             explanation:
               'Collaboration is table stakes in 2024. Choosing rich-text to save eng time while planning to win on collaboration is a weak competitive position -- you trade a structural moat for a feature race.',
           },
           {
-            label: 'D',
+            id: 'd',
             text: 'Survey users and let their preference decide the architecture',
             quality: 'plausible_wrong',
             explanation:
@@ -130,28 +130,28 @@ const MOCK_NOTION_DETAIL: AutopsyProductDetail = {
           'You are the growth PM at a project management SaaS targeting software teams. The CEO wants to go "enterprise-first" with no free tier to avoid support costs. Your data shows 70% of paid conversions come from users who discovered the product personally before pitching it to their manager.',
         options: [
           {
-            label: 'A',
+            id: 'a',
             text: 'Offer a free individual tier -- personal champions drive team adoption',
             quality: 'best',
             explanation:
               'Your own data validates this. When individuals discover value before organizational purchasing, a free personal tier is a growth mechanism, not just a cost center. This is the classic PLG (product-led growth) motion.',
           },
           {
-            label: 'B',
+            id: 'b',
             text: 'Go enterprise-first -- free tiers attract non-buyers and inflate support costs',
             quality: 'surface',
             explanation:
               'This ignores the 70% conversion signal in your own data. Enterprise-first works when buyers are centralized procurement teams, but for tools developers choose, the bottom-up motion is more efficient.',
           },
           {
-            label: 'C',
+            id: 'c',
             text: 'Offer a time-limited free trial instead -- captures urgency and limits freeloaders',
             quality: 'good_but_incomplete',
             explanation:
               'Time limits create urgency but also create friction for slow-evaluating users and destroy the "always available" positioning that makes champions reliable advocates. Works for high-ACV products, less so for bottom-up PLG.',
           },
           {
-            label: 'D',
+            id: 'd',
             text: 'Remove the free tier and reinvest budget in outbound sales',
             quality: 'plausible_wrong',
             explanation:
@@ -186,28 +186,28 @@ const MOCK_NOTION_DETAIL: AutopsyProductDetail = {
           'Your note-taking app has strong retention among individual writers. Users frequently request spreadsheet-like features. Your team is split: half want to stay focused on writing, half want to expand into structured data to compete with Airtable. You have 6 months of runway for a major feature investment.',
         options: [
           {
-            label: 'A',
+            id: 'a',
             text: 'Add databases only if they can share the same block system -- interoperability is the differentiator',
             quality: 'best',
             explanation:
               'This is exactly the Notion insight. The value is not "we also have a database" -- it is "your document and your database live in the same block, so you can embed a filtered view inside a meeting note." Interoperability is the moat; a bolted-on database is just feature parity.',
           },
           {
-            label: 'B',
+            id: 'b',
             text: 'Stay focused on writing -- expanding to databases dilutes the brand',
             quality: 'good_but_incomplete',
             explanation:
               'Focus is valuable, but if users are already context-switching to Airtable from your product, you are not actually retaining their workflow -- just part of it. The "stay focused" instinct is right if the expansion is bolt-on; wrong if it deepens the core use case.',
           },
           {
-            label: 'C',
+            id: 'c',
             text: 'Build a separate database product and integrate via API',
             quality: 'surface',
             explanation:
               'Separate products mean separate adoption curves and separate context-switching -- exactly the problem you are trying to solve. API integration rarely achieves the seamlessness that makes the combined workflow valuable.',
           },
           {
-            label: 'D',
+            id: 'd',
             text: 'Partner with Airtable instead of building databases yourself',
             quality: 'plausible_wrong',
             explanation:

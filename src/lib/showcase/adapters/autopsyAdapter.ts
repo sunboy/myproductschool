@@ -107,8 +107,8 @@ export function createAutopsyAdapter(
 ): ChallengeAdapter {
   // Options shape reused across all steps
   const sharedOptions: StepOption[] = challenge.options.map((opt) => ({
-    id: opt.label,
-    option_label: opt.label,
+    id: opt.id,
+    option_label: opt.id.toUpperCase(),
     option_text: opt.text,
   }))
 
@@ -178,15 +178,14 @@ export function createAutopsyAdapter(
       if (!res.ok) throw new Error('Submission failed')
       const data = await res.json()
 
-      const revealedOptions: AdapterRevealedOption[] = (data.revealed_options as Array<{
-        label: string; points: number; explanation: string
-      }>).map((opt) => ({
-        id: opt.label,
-        points: opt.points,
+      // Build revealed options from the local challenge data (don't rely on API shape)
+      const revealedOptions: AdapterRevealedOption[] = challenge.options.map((opt) => ({
+        id: opt.id,
+        points: QUALITY_TO_POINTS[opt.quality] ?? 0,
         explanation: opt.explanation,
       }))
 
-      const selectedOption = challenge.options.find((o) => o.label === params.selectedOptionId)
+      const selectedOption = challenge.options.find((o) => o.id === params.selectedOptionId)
       const points = selectedOption ? (QUALITY_TO_POINTS[selectedOption.quality] ?? 0) : data.points
       const gradeLabel = GRADE_LABELS[points] ?? data.grade_label
 
