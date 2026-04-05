@@ -734,6 +734,7 @@ export interface AutopsyChallengeOption {
 export interface AutopsyChallenge {
   id: string
   decision_id: string
+  challenge_id: string | null
   context: string
   options: AutopsyChallengeOption[]
   insight: string
