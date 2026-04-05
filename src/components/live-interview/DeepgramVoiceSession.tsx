@@ -37,6 +37,10 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
     if (disabled) return
 
     const apiKey = process.env.NEXT_PUBLIC_DEEPGRAM_API_KEY ?? ''
+    if (!apiKey) {
+      // No Deepgram key — voice is unavailable, but the page still works via chat
+      return
+    }
     const ws = new WebSocket('wss://agent.deepgram.com/agent', ['token', apiKey])
     wsRef.current = ws
     ws.binaryType = 'arraybuffer'

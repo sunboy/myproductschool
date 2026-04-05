@@ -1,7 +1,5 @@
 'use client'
 
-import { motion, AnimatePresence, type Variants } from 'framer-motion'
-
 interface InterviewControlsProps {
   isMuted: boolean
   isVoiceActive: boolean
@@ -10,14 +8,6 @@ interface InterviewControlsProps {
   onToggleVoice: () => void
   onToggleChat: () => void
   onEndInterview: () => void
-}
-
-const BAR_VARIANTS: Variants = {
-  initial: { height: 8 },
-  animate: {
-    height: [8, 16, 8],
-    transition: { duration: 0.8, repeat: Infinity, ease: 'easeInOut' as const },
-  },
 }
 
 export default function InterviewControls({
@@ -71,38 +61,23 @@ export default function InterviewControls({
         }`}
         aria-label={isVoiceActive ? 'Disable voice' : 'Enable voice'}
       >
-        <AnimatePresence mode="wait">
-          {isVoiceActive ? (
-            <motion.div
-              key="bars"
-              className="flex items-end gap-0.5 h-5"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              {[0, 1, 2].map((i) => (
-                <motion.div
-                  key={i}
-                  className="w-1 rounded-sm bg-primary"
-                  variants={BAR_VARIANTS}
-                  initial="initial"
-                  animate="animate"
-                  transition={{ delay: i * 0.15 }}
-                />
-              ))}
-            </motion.div>
-          ) : (
-            <motion.span
-              key="icon"
-              className="material-symbols-outlined text-[18px]"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              volume_off
-            </motion.span>
-          )}
-        </AnimatePresence>
+        {isVoiceActive ? (
+          <div className="flex items-end gap-0.5 h-5">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="w-1 rounded-sm bg-primary animate-pulse"
+                style={{
+                  height: 8,
+                  animation: `voice-bar 0.8s ease-in-out ${i * 0.15}s infinite`,
+                }}
+              />
+            ))}
+            <style>{`@keyframes voice-bar { 0%,100% { height: 8px } 50% { height: 16px } }`}</style>
+          </div>
+        ) : (
+          <span className="material-symbols-outlined text-[18px]">volume_off</span>
+        )}
         <span>{isVoiceActive ? 'Voice Active' : 'Voice Off'}</span>
       </button>
 
