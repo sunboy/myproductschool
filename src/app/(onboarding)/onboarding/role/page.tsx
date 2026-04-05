@@ -162,7 +162,7 @@ export default function RoleSelectionPage() {
           Skip assessment
         </button>
         <Link
-          href={selectedRole ? '/onboarding/calibration/frame' : '#'}
+          href={selectedRole ? '/calibration' : '#'}
           className={`inline-flex items-center gap-1 rounded-full px-6 py-2.5 font-label font-semibold text-sm transition-colors ${
             selectedRole
               ? 'bg-primary text-on-primary hover:bg-primary/90'
