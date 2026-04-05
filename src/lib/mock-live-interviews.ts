@@ -1,3 +1,5 @@
+import type { FlowStep } from '@/lib/types'
+
 export interface LiveInterviewPersona {
   companyId: string
   companyName: string
@@ -17,7 +19,7 @@ export interface LiveInterviewSession {
   companyName?: string
   role?: string
   status: 'pending' | 'active' | 'completed' | 'abandoned'
-  flowCoverage: { frame: number; list: number; optimize: number; win: number }
+  flowCoverage: Record<FlowStep, number>
   totalTurns: number
   startedAt: string
   endedAt?: string
@@ -29,14 +31,14 @@ export interface LiveInterviewTurn {
   turnIndex: number
   role: 'luma' | 'user'
   content: string
-  flowMoveDetected?: 'frame' | 'list' | 'optimize' | 'win'
+  flowMoveDetected?: FlowStep
   createdAt: string
 }
 
 export interface LiveInterviewDebrief {
   overallScore: number
   grade: string
-  flowScores: { frame: number; list: number; optimize: number; win: number }
+  flowScores: Record<FlowStep, number>
   competencySignals: Array<{ competency: string; signal: string; stepDetected: string }>
   failurePatternsDetected: Array<{ patternId: string; patternName: string; evidence: string }>
   strengths: string[]
@@ -54,6 +56,8 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     interviewStyle: 'Data-driven, user-first, and deeply tied to search/ads business model',
     difficulty: 'advanced',
     estimatedMins: 45,
+    personaPrompt:
+      "You are a senior PM interviewer at Google. You care deeply about data-driven decision making, user empathy at scale, and how product decisions connect to Google's core business model. Push candidates to quantify impact, name specific metrics, and think about ecosystem-level effects. You value structured thinking but reward candidates who can reason from first principles. Be rigorous but not hostile.",
   },
   {
     companyId: 'google',
@@ -94,6 +98,8 @@ export const MOCK_LIVE_INTERVIEW_PERSONAS: LiveInterviewPersona[] = [
     interviewStyle: 'Social graph dynamics, engagement loops, and cross-platform thinking',
     difficulty: 'advanced',
     estimatedMins: 45,
+    personaPrompt:
+      "You are a staff PM interviewer at Meta. You think in terms of social graphs, network effects, and engagement loops. You want candidates to reason about two-sided dynamics (creator vs. consumer), how features affect the broader social ecosystem, and what guardrails prevent harm at scale. You push hard on tradeoffs between growth and wellbeing. Ask follow-up questions that expose whether the candidate is thinking about the user or the metric.",
   },
   {
     companyId: 'meta',
@@ -215,8 +221,8 @@ export const MOCK_LIVE_SESSION: LiveInterviewSession = {
   role: 'PM',
   status: 'active',
   flowCoverage: { frame: 0.6, list: 0.2, optimize: 0, win: 0 },
-  totalTurns: 4,
-  startedAt: new Date().toISOString(),
+  totalTurns: 8,
+  startedAt: '2026-04-05T06:00:00.000Z',
 }
 
 export const MOCK_LIVE_TURNS: LiveInterviewTurn[] = [
