@@ -10,8 +10,14 @@ const PRE_LAUNCH = false
 const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist', '/luma-preview']
 
 // ── Post-launch route config ─────────────────────────────────
-const PUBLIC_ROUTES = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/waitlist', '/waitlist-b', '/pricing', '/onboarding', '/dashboard', '/explore', '/challenges', '/progress', '/cohort', '/settings', '/prep', '/welcome', '/role', '/calibration', '/interview-prep', '/workspace', '/learn/modules', '/learn/domains', '/learn/plans']
-const AUTH_ROUTES = ['/login', '/signup', '/forgot-password', '/reset-password']
+// Marketing / auth pages — accessible without any session.
+// These short-circuit BEFORE we talk to Supabase so they can
+// never be blocked by an auth-service hiccup.
+const MARKETING_ROUTES = ['/', '/waitlist', '/waitlist-b', '/pricing', '/luma-preview']
+const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-password']
+
+// Routes that require a user but NOT a completed profile/onboarding
+const APP_PUBLIC_ROUTES = ['/onboarding', '/welcome', '/role', '/calibration']
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
@@ -29,6 +35,15 @@ export async function middleware(request: NextRequest) {
     if (!isAllowed) {
       return NextResponse.redirect(new URL('/waitlist', request.url))
     }
+    return NextResponse.next()
+  }
+
+  // ── Marketing & auth pages: always public, skip Supabase ──
+  const isMarketing = MARKETING_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
+  const isAuthRoute = AUTH_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
+  const isApi       = pathname.startsWith('/api/')
+
+  if (isMarketing || isApi) {
     return NextResponse.next()
   }
 
@@ -55,8 +70,8 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Protect app routes — allow onboarding, API, and public routes without profile check
-  const isPublic = PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/')) || pathname.startsWith('/api/')
+  // Routes that don't require a completed profile
+  const isAppPublic = APP_PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
 
   if (user) {
     const { data: profile } = await supabase
@@ -66,7 +81,8 @@ export async function middleware(request: NextRequest) {
       .single()
     const onboardingDone = !!profile?.onboarding_completed_at
 
-    if (AUTH_ROUTES.some(r => pathname.startsWith(r))) {
+    // Logged-in users hitting auth pages → redirect to app
+    if (isAuthRoute) {
       return NextResponse.redirect(new URL(
         onboardingDone ? '/dashboard' : '/onboarding/welcome',
         request.url
@@ -84,13 +100,18 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Protect app routes for unauthenticated users
-  if (!user && !isPublic) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  // Unauthenticated users on auth pages (login, signup, etc.) → allow through
+  if (!user && isAuthRoute) {
+    return supabaseResponse
   }
 
-  // Admin route protection (role check done in page/layout)
-  if (pathname.startsWith('/admin') && !user) {
+  // Unauthenticated users on app-public routes (onboarding) → allow through
+  if (!user && isAppPublic) {
+    return supabaseResponse
+  }
+
+  // Unauthenticated users on any other route → redirect to login
+  if (!user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
