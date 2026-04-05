@@ -3,8 +3,6 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
 import Anthropic from '@anthropic-ai/sdk'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -25,6 +23,11 @@ export async function POST(
 
   const { message } = await request.json()
   if (!message?.trim()) return new Response('Bad Request', { status: 400 })
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return Response.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 503 })
+  }
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
   const adminClient = createAdminClient()
 
