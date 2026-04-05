@@ -152,6 +152,39 @@ export default function SessionPage({
     setError(err)
   }, [])
 
+  // Chat text message
+  const handleSendChatMessage = useCallback(async (text: string) => {
+    // Optimistically add user turn
+    const userTurn: TranscriptTurn = { id: crypto.randomUUID(), role: 'user', content: text }
+    setTurns((prev) => [...prev, userTurn])
+    setTotalTurns((prev) => prev + 1)
+
+    if (IS_MOCK) {
+      setTimeout(() => {
+        const lumaReply: TranscriptTurn = {
+          id: crypto.randomUUID(),
+          role: 'luma',
+          content: "That's interesting — can you say more about that?",
+        }
+        setTurns((prev) => [...prev, lumaReply])
+        setTotalTurns((prev) => prev + 1)
+      }, 800)
+      return
+    }
+
+    const res = await fetch(`/api/live-interview/${sessionId}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text }),
+    })
+    if (res.ok) {
+      const { reply } = await res.json()
+      const lumaTurn: TranscriptTurn = { id: crypto.randomUUID(), role: 'luma', content: reply }
+      setTurns((prev) => [...prev, lumaTurn])
+      setTotalTurns((prev) => prev + 1)
+    }
+  }, [sessionId])
+
   // End interview
   const handleEndInterview = useCallback(async () => {
     if (isEnding) return
@@ -277,6 +310,8 @@ export default function SessionPage({
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
         turns={turns}
+        sessionId={sessionId ?? ''}
+        onSendMessage={handleSendChatMessage}
       />
 
       {/* Deepgram Voice Session (invisible — renders null) */}

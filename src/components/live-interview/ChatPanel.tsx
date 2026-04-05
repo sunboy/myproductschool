@@ -1,16 +1,21 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 
 interface ChatPanelProps {
   isOpen: boolean
   onClose: () => void
   turns: Array<{ role: 'luma' | 'user'; content: string; id: string }>
+  sessionId?: string
+  onSendMessage?: (text: string) => Promise<void>
 }
 
-export default function ChatPanel({ isOpen, onClose, turns }: ChatPanelProps) {
+export default function ChatPanel({ isOpen, onClose, turns, onSendMessage }: ChatPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [inputText, setInputText] = useState('')
+  const [isSending, setIsSending] = useState(false)
   const lastTurnId = turns[turns.length - 1]?.id
 
   useEffect(() => {
@@ -29,6 +34,27 @@ export default function ChatPanel({ isOpen, onClose, turns }: ChatPanelProps) {
       }
     }
   }, [isOpen])
+
+  // Focus input when panel opens
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [isOpen])
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    const text = inputText.trim()
+    if (!text || isSending || !onSendMessage) return
+    setIsSending(true)
+    setInputText('')
+    try {
+      await onSendMessage(text)
+    } finally {
+      setIsSending(false)
+      inputRef.current?.focus()
+    }
+  }
 
   return (
     <div
@@ -79,6 +105,29 @@ export default function ChatPanel({ isOpen, onClose, turns }: ChatPanelProps) {
           )}
         </div>
       </div>
+
+      {/* Text input */}
+      {onSendMessage && (
+        <form onSubmit={handleSubmit} className="p-3 border-t border-outline-variant flex gap-2 shrink-0">
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            disabled={isSending}
+            placeholder="Type a message..."
+            className="flex-1 bg-surface-container border border-outline-variant rounded-full px-4 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/40 font-body focus:outline-none focus:border-primary disabled:opacity-50"
+          />
+          <button
+            type="submit"
+            disabled={isSending || !inputText.trim()}
+            className="h-9 w-9 rounded-full bg-primary flex items-center justify-center disabled:opacity-40"
+            aria-label="Send message"
+          >
+            <span className="material-symbols-outlined text-on-primary text-[18px]">send</span>
+          </button>
+        </form>
+      )}
     </div>
   )
 }
