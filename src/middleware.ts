@@ -13,7 +13,7 @@ const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist', '/luma-preview']
 // Marketing / auth pages — accessible without any session.
 // These short-circuit BEFORE we talk to Supabase so they can
 // never be blocked by an auth-service hiccup.
-const MARKETING_ROUTES = ['/', '/waitlist', '/waitlist-b', '/pricing', '/luma-preview']
+const MARKETING_ROUTES = ['/', '/waitlist', '/waitlist-b', '/waitlist-flow', '/pricing', '/flow', '/luma-preview']
 const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-password']
 
 // Routes that require a user but NOT a completed profile/onboarding
@@ -26,6 +26,27 @@ export async function middleware(request: NextRequest) {
   // Bypass auth in mock/testing mode
   if (IS_MOCK) {
     return NextResponse.next()
+  }
+
+  // ── A/B split for root → waitlist variants ──────────────
+  // Assign a stable variant via cookie so the same visitor always
+  // sees the same page. 50/50 split between /waitlist and /waitlist-b.
+  if (pathname === '/') {
+    const existing = request.cookies.get('ab_waitlist')?.value
+    const variant = existing === 'a' || existing === 'b'
+      ? existing
+      : Math.random() < 0.5 ? 'a' : 'b'
+
+    const response = NextResponse.next({ request })
+    response.headers.set('x-ab-waitlist', variant)
+    if (!existing) {
+      response.cookies.set('ab_waitlist', variant, {
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+        path: '/',
+        sameSite: 'lax',
+      })
+    }
+    return response
   }
 
   // ── Pre-launch: only waitlist + its API are accessible ──
@@ -112,6 +133,11 @@ export async function middleware(request: NextRequest) {
 
   // Unauthenticated users on any other route → redirect to login
   if (!user) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  // Admin route protection (role check done in page/layout)
+  if (pathname.startsWith('/admin') && !user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 

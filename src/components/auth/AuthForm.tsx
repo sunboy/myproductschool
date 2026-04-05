@@ -46,8 +46,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
             body: JSON.stringify({ display_name: metaName }),
           })
         }
-        const dest = profile?.onboarding_completed_at ? '/dashboard' : '/onboarding/welcome'
-        router.push(dest)
+        router.push('/dashboard')
         router.refresh()
       }
     } else {
@@ -63,7 +62,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         setError(error.message)
       } else if (data.session) {
         // Auto-confirmed (no email verification required in dev)
-        router.push('/onboarding/welcome')
+        router.push('/dashboard')
         router.refresh()
       } else {
         setSuccess('Check your email to confirm your account. You\'ll start with Luma next.')
