@@ -87,7 +87,6 @@ export default function InterviewControls({
                   variants={BAR_VARIANTS}
                   initial="initial"
                   animate="animate"
-                  style={{ animationDelay: `${i * 0.15}s` }}
                   transition={{ delay: i * 0.15 }}
                 />
               ))}

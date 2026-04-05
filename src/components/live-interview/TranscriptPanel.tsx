@@ -15,12 +15,13 @@ interface TranscriptPanelProps {
 
 export default function TranscriptPanel({ turns, className }: TranscriptPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const lastTurnId = turns[turns.length - 1]?.id
 
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight
     }
-  }, [turns])
+  }, [lastTurnId])
 
   return (
     <div

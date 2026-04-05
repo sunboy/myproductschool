@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
+
 interface ChatPanelProps {
   isOpen: boolean
   onClose: () => void
@@ -7,8 +9,30 @@ interface ChatPanelProps {
 }
 
 export default function ChatPanel({ isOpen, onClose, turns }: ChatPanelProps) {
+  const panelRef = useRef<HTMLDivElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+  const lastTurnId = turns[turns.length - 1]?.id
+
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.scrollTop = listRef.current.scrollHeight
+    }
+  }, [lastTurnId])
+
+  // Set inert via DOM ref to avoid React type conflicts (inert is boolean in React but '' in HTML spec)
+  useEffect(() => {
+    if (panelRef.current) {
+      if (!isOpen) {
+        panelRef.current.setAttribute('inert', '')
+      } else {
+        panelRef.current.removeAttribute('inert')
+      }
+    }
+  }, [isOpen])
+
   return (
     <div
+      ref={panelRef}
       className="fixed right-0 top-0 h-full w-80 bg-surface-container-low border-l border-outline-variant z-50 flex flex-col transition-transform duration-300"
       style={{ transform: isOpen ? 'translateX(0)' : 'translateX(100%)' }}
       aria-hidden={!isOpen}
@@ -26,7 +50,7 @@ export default function ChatPanel({ isOpen, onClose, turns }: ChatPanelProps) {
       </div>
 
       {/* Message list */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div ref={listRef} className="flex-1 overflow-y-auto p-4">
         <div className="flex flex-col gap-3">
           {turns.length === 0 ? (
             <p className="text-center text-on-surface-variant font-body text-sm mt-8">

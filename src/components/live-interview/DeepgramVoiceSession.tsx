@@ -42,36 +42,38 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
     ws.binaryType = 'arraybuffer'
 
     ws.addEventListener('open', async () => {
-      // Send settings message
-      const settings = {
-        type: 'Settings',
-        audio: {
-          input: { encoding: 'linear16', sample_rate: 16000 },
-          output: { encoding: 'linear16', sample_rate: 16000, container: 'none' },
-        },
-        agent: {
-          listen: { model: 'nova-2' },
-          speak: { model: 'aura-asteria-en' },
-          think: {
-            provider: {
-              type: 'custom',
-              url: `/api/live-interview/${sessionId}/turn`,
-            },
-            model: 'claude-sonnet-4-6',
-            instructions: systemPrompt,
-          },
-        },
-      }
-      ws.send(JSON.stringify(settings))
-      onConnected()
-
-      // Request mic access and pipe audio
+      // Request mic access and pipe audio — do this first so we know the actual sample rate
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
         streamRef.current = stream
 
         const audioCtx = new AudioContext({ sampleRate: 16000 })
         audioCtxRef.current = audioCtx
+
+        // Read back the actual sample rate (browsers may not honour the requested value)
+        const actualSampleRate = audioCtx.sampleRate
+
+        // Send settings message using the actual sample rate
+        const settings = {
+          type: 'Settings',
+          audio: {
+            input: { encoding: 'linear16', sample_rate: actualSampleRate },
+            output: { encoding: 'linear16', sample_rate: actualSampleRate, container: 'none' },
+          },
+          agent: {
+            listen: { model: 'nova-2' },
+            speak: { model: 'aura-asteria-en' },
+            think: {
+              provider: {
+                type: 'custom',
+                url: `/api/live-interview/${sessionId}/turn`,
+              },
+              model: 'claude-sonnet-4-6',
+              instructions: systemPrompt,
+            },
+          },
+        }
+        ws.send(JSON.stringify(settings))
 
         const source = audioCtx.createMediaStreamSource(stream)
         // ScriptProcessorNode is deprecated but widely supported; replace with AudioWorklet in production
@@ -91,6 +93,9 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
 
         source.connect(processor)
         processor.connect(audioCtx.destination)
+
+        // Signal connected only after mic + audio graph are fully wired
+        onConnected()
       } catch (err) {
         onError(err instanceof Error ? err.message : 'Microphone access denied')
       }
@@ -132,7 +137,7 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
       streamRef.current?.getTracks().forEach((t) => t.stop())
       streamRef.current = null
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps — systemPrompt is intentionally captured at mount only; changing it would require a new session
   }, [disabled, sessionId])
 
   return null
