@@ -12,12 +12,12 @@ export interface TranscriptTurn {
   id: string
   role: 'luma' | 'user'
   content: string
+  source?: 'voice' | 'chat'
   coachingSignal?: CoachingSignal
 }
 
 interface TranscriptPanelProps {
   turns: TranscriptTurn[]
-  isThinking?: boolean
   className?: string
 }
 
@@ -67,7 +67,7 @@ function CoachingChip({ signal }: { signal: CoachingSignal }) {
   )
 }
 
-export default function TranscriptPanel({ turns, isThinking, className }: TranscriptPanelProps) {
+export default function TranscriptPanel({ turns, className }: TranscriptPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const lastTurnId = turns[turns.length - 1]?.id
 
@@ -75,7 +75,7 @@ export default function TranscriptPanel({ turns, isThinking, className }: Transc
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight
     }
-  }, [lastTurnId, isThinking])
+  }, [lastTurnId])
 
   return (
     <div
@@ -106,19 +106,6 @@ export default function TranscriptPanel({ turns, isThinking, className }: Transc
           </div>
         ))}
 
-        {/* Thinking indicator */}
-        {isThinking && (
-          <div className="flex flex-col items-start">
-            <span className="text-xs text-on-surface-variant mb-1 font-label">Luma</span>
-            <div className="bg-primary-container text-on-primary-container rounded-xl rounded-tl-sm p-3 font-body text-sm">
-              <span className="inline-flex gap-1">
-                <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-              </span>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )

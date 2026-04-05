@@ -8,6 +8,7 @@ import { useEffect, useRef } from 'react'
 interface DeepgramVoiceSessionProps {
   sessionId: string
   systemPrompt: string
+  isMuted?: boolean
   onTranscript: (text: string, role: 'luma' | 'user') => void
   onAudioChunk: (buffer: ArrayBuffer) => void
   onAgentSpeaking?: () => void
@@ -20,6 +21,7 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
   const {
     sessionId,
     systemPrompt,
+    isMuted,
     onTranscript,
     onAudioChunk,
     onAgentSpeaking,
@@ -31,6 +33,7 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
   const wsRef = useRef<WebSocket | null>(null)
   const audioCtxRef = useRef<AudioContext | null>(null)
   const processorRef = useRef<ScriptProcessorNode | null>(null)
+  const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
 
   useEffect(() => {
@@ -80,6 +83,7 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
         ws.send(JSON.stringify(settings))
 
         const source = audioCtx.createMediaStreamSource(stream)
+        sourceNodeRef.current = source
         // ScriptProcessorNode is deprecated but widely supported; replace with AudioWorklet in production
         const processor = audioCtx.createScriptProcessor(4096, 1, 1)
         processorRef.current = processor
@@ -143,6 +147,19 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps — systemPrompt is intentionally captured at mount only; changing it would require a new session
   }, [disabled, sessionId])
+
+  // Mute/unmute by disconnecting/reconnecting the source→processor chain
+  useEffect(() => {
+    const source = sourceNodeRef.current
+    const processor = processorRef.current
+    if (!source || !processor) return
+
+    if (isMuted) {
+      try { source.disconnect(processor) } catch { /* already disconnected */ }
+    } else {
+      try { source.connect(processor) } catch { /* already connected */ }
+    }
+  }, [isMuted])
 
   return null
 }

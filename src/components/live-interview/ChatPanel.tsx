@@ -5,11 +5,12 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 interface ChatPanelProps {
   isOpen: boolean
   onClose: () => void
-  turns: Array<{ role: 'luma' | 'user'; content: string; id: string }>
+  turns: Array<{ role: 'luma' | 'user'; content: string; id: string; source?: 'voice' | 'chat' }>
+  isThinking?: boolean
   onSendMessage?: (text: string) => Promise<void>
 }
 
-export default function ChatPanel({ isOpen, onClose, turns, onSendMessage }: ChatPanelProps) {
+export default function ChatPanel({ isOpen, onClose, turns, isThinking, onSendMessage }: ChatPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -21,7 +22,7 @@ export default function ChatPanel({ isOpen, onClose, turns, onSendMessage }: Cha
     if (listRef.current) {
       listRef.current.scrollTop = listRef.current.scrollHeight
     }
-  }, [lastTurnId])
+  }, [lastTurnId, isThinking])
 
   // Set inert via DOM ref to avoid React type conflicts (inert is boolean in React but '' in HTML spec)
   useEffect(() => {
@@ -77,9 +78,9 @@ export default function ChatPanel({ isOpen, onClose, turns, onSendMessage }: Cha
       {/* Message list */}
       <div ref={listRef} className="flex-1 overflow-y-auto p-4">
         <div className="flex flex-col gap-3">
-          {turns.length === 0 ? (
+          {turns.length === 0 && !isThinking ? (
             <p className="text-center text-on-surface-variant font-body text-sm mt-8">
-              The conversation will appear here.
+              Type a message to chat with Luma.
             </p>
           ) : (
             turns.map((turn) => (
@@ -101,6 +102,20 @@ export default function ChatPanel({ isOpen, onClose, turns, onSendMessage }: Cha
                 </div>
               </div>
             ))
+          )}
+
+          {/* Thinking indicator */}
+          {isThinking && (
+            <div className="flex flex-col items-start">
+              <span className="text-xs text-on-surface-variant mb-1 font-label">Luma</span>
+              <div className="bg-primary-container text-on-primary-container rounded-xl rounded-tl-sm p-3 font-body text-sm">
+                <span className="inline-flex gap-1">
+                  <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </span>
+              </div>
+            </div>
           )}
         </div>
       </div>
