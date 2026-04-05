@@ -6,7 +6,6 @@ interface ChatPanelProps {
   isOpen: boolean
   onClose: () => void
   turns: Array<{ role: 'luma' | 'user'; content: string; id: string }>
-  sessionId?: string
   onSendMessage?: (text: string) => Promise<void>
 }
 

@@ -172,16 +172,24 @@ export default function SessionPage({
       return
     }
 
-    const res = await fetch(`/api/live-interview/${sessionId}/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text }),
-    })
-    if (res.ok) {
-      const { reply } = await res.json()
-      const lumaTurn: TranscriptTurn = { id: crypto.randomUUID(), role: 'luma', content: reply }
-      setTurns((prev) => [...prev, lumaTurn])
-      setTotalTurns((prev) => prev + 1)
+    try {
+      const res = await fetch(`/api/live-interview/${sessionId}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text }),
+      })
+      if (res.ok) {
+        const { reply } = await res.json()
+        const lumaTurn: TranscriptTurn = { id: crypto.randomUUID(), role: 'luma', content: reply }
+        setTurns((prev) => [...prev, lumaTurn])
+        setTotalTurns((prev) => prev + 1)
+      } else if (res.status === 410) {
+        setError('This session has ended.')
+      } else {
+        setError('Failed to send message. Please try again.')
+      }
+    } catch {
+      setError('Network error — check your connection.')
     }
   }, [sessionId])
 
@@ -310,7 +318,6 @@ export default function SessionPage({
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
         turns={turns}
-        sessionId={sessionId ?? ''}
         onSendMessage={handleSendChatMessage}
       />
 

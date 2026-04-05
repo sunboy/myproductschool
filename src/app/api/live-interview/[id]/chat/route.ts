@@ -38,17 +38,18 @@ export async function POST(
   if (session.status === 'completed') return new Response('Session ended', { status: 410 })
 
   // Load existing turns for conversation history
-  const { data: turns, count } = await adminClient
+  const { data: turnsData, count, error: turnsError } = await adminClient
     .from('live_interview_turns')
     .select('role, content, turn_index', { count: 'exact' })
     .eq('session_id', id)
     .order('turn_index', { ascending: true })
 
+  if (turnsError) return new Response('Internal Server Error', { status: 500 })
   const nextIndex = count ?? 0
 
   // Build conversation messages
   const conversationMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [
-    ...(turns ?? []).map((t) => ({
+    ...(turnsData ?? []).map((t) => ({
       role: (t.role === 'luma' ? 'assistant' : 'user') as 'user' | 'assistant',
       content: t.content,
     })),
@@ -68,7 +69,7 @@ export async function POST(
   const cleanContent = rawContent.replace(/\{"flow_move":[^}]*\}/, '').trim()
 
   // Save both turns to DB
-  await adminClient.from('live_interview_turns').insert([
+  const { error: insertError } = await adminClient.from('live_interview_turns').insert([
     {
       session_id: id,
       turn_index: nextIndex,
@@ -83,11 +84,10 @@ export async function POST(
     },
   ])
 
-  // Update session turn count
-  await adminClient
-    .from('live_interview_sessions')
-    .update({ total_turns: nextIndex + 2 })
-    .eq('id', id)
+  if (insertError) {
+    console.error('Failed to save turns:', insertError)
+    return new Response('Failed to save turn', { status: 500 })
+  }
 
   return Response.json({ reply: cleanContent })
 }
