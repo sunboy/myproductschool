@@ -49,6 +49,7 @@ const MOCK_NOTION_DETAIL: AutopsyProductDetail = {
   decision_count: 3,
   is_published: true,
   sort_order: 1,
+  story_count: 1,
   decisions: [
     {
       id: 'dec-notion-001',
@@ -241,14 +242,16 @@ export async function getShowcaseProducts(): Promise<AutopsyProduct[]> {
   if (error) throw error
 
   // Compute story count per product
-  const { data: storyCounts } = await supabase
-    .from('autopsy_stories')
-    .select('product_id')
-    .in('product_id', (data ?? []).map((p: { id: string }) => p.id))
-
+  const productIds = (data ?? []).map((p: { id: string }) => p.id)
   const countMap: Record<string, number> = {}
-  for (const row of (storyCounts ?? []) as { product_id: string }[]) {
-    countMap[row.product_id] = (countMap[row.product_id] ?? 0) + 1
+  if (productIds.length > 0) {
+    const { data: storyCounts } = await supabase
+      .from('autopsy_stories')
+      .select('product_id')
+      .in('product_id', productIds)
+    for (const row of (storyCounts ?? []) as { product_id: string }[]) {
+      countMap[row.product_id] = (countMap[row.product_id] ?? 0) + 1
+    }
   }
 
   return (data ?? []).map((p: AutopsyProduct) => ({
