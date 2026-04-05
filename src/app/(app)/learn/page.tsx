@@ -120,6 +120,38 @@ export default function LearnPage() {
         <p className="font-body text-sm text-on-surface-variant">Orient yourself, build theory, follow a structured path.</p>
       </div>
 
+      {/* FLOW Framework hero */}
+      <section>
+        <Link
+          href="/learn/flow"
+          className="flex flex-col gap-3 bg-primary-fixed rounded-2xl p-5 hover:brightness-95 transition-all group"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <LumaGlyph size={28} state="speaking" className="text-primary shrink-0" />
+              <div>
+                <div className="font-headline font-bold text-base text-on-surface">The FLOW Framework</div>
+                <div className="font-label text-xs text-on-surface-variant">How HackProduct challenges are structured</div>
+              </div>
+            </div>
+            <span className="material-symbols-outlined text-base text-primary opacity-0 group-hover:opacity-100 transition-opacity" style={{ fontVariationSettings: "'FILL' 0" }}>arrow_forward</span>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {[
+              { symbol: '◇', label: 'Frame', color: '#2e7d32', bg: '#e8f5e9' },
+              { symbol: '◈', label: 'List', color: '#1565c0', bg: '#e3f2fd' },
+              { symbol: '◆', label: 'Optimize', color: '#ad1457', bg: '#fce4ec' },
+              { symbol: '◎', label: 'Win', color: '#f57f17', bg: '#fff8e1' },
+            ].map(m => (
+              <span key={m.label} className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-label font-bold" style={{ background: m.bg, color: m.color }}>
+                {m.symbol} {m.label}
+              </span>
+            ))}
+          </div>
+          <p className="font-label text-xs font-bold text-primary">Learn how FLOW works →</p>
+        </Link>
+      </section>
+
       {/* Paradigms — 2×2 grid, always 4 */}
       <section>
         <SectionHeader title="Paradigms" />

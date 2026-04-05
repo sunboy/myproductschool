@@ -10,7 +10,7 @@ const PRE_LAUNCH = false
 const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist', '/luma-preview']
 
 // ── Post-launch route config ─────────────────────────────────
-const PUBLIC_ROUTES = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/waitlist', '/waitlist-b', '/pricing', '/onboarding', '/dashboard', '/explore', '/challenges', '/progress', '/cohort', '/settings', '/prep', '/welcome', '/role', '/calibration', '/interview-prep', '/workspace', '/learn/modules', '/learn/domains', '/learn/plans']
+const PUBLIC_ROUTES = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/waitlist', '/waitlist-b', '/waitlist-flow', '/pricing', '/flow', '/onboarding', '/dashboard', '/explore', '/challenges', '/progress', '/cohort', '/settings', '/prep', '/welcome', '/role', '/calibration', '/interview-prep', '/workspace', '/learn/modules', '/learn/domains', '/learn/plans']
 const AUTH_ROUTES = ['/login', '/signup', '/forgot-password', '/reset-password']
 
 export async function middleware(request: NextRequest) {
@@ -20,6 +20,27 @@ export async function middleware(request: NextRequest) {
   // Bypass auth in mock/testing mode
   if (IS_MOCK) {
     return NextResponse.next()
+  }
+
+  // ── A/B split for root → waitlist variants ──────────────
+  // Assign a stable variant via cookie so the same visitor always
+  // sees the same page. 50/50 split between /waitlist and /waitlist-b.
+  if (pathname === '/') {
+    const existing = request.cookies.get('ab_waitlist')?.value
+    const variant = existing === 'a' || existing === 'b'
+      ? existing
+      : Math.random() < 0.5 ? 'a' : 'b'
+
+    const response = NextResponse.next({ request })
+    response.headers.set('x-ab-waitlist', variant)
+    if (!existing) {
+      response.cookies.set('ab_waitlist', variant, {
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+        path: '/',
+        sameSite: 'lax',
+      })
+    }
+    return response
   }
 
   // ── Pre-launch: only waitlist + its API are accessible ──
@@ -59,28 +80,9 @@ export async function middleware(request: NextRequest) {
   const isPublic = PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/')) || pathname.startsWith('/api/')
 
   if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('onboarding_completed_at')
-      .eq('id', user.id)
-      .single()
-    const onboardingDone = !!profile?.onboarding_completed_at
-
+    // Authenticated users on auth routes → always go to dashboard
     if (AUTH_ROUTES.some(r => pathname.startsWith(r))) {
-      return NextResponse.redirect(new URL(
-        onboardingDone ? '/dashboard' : '/onboarding/welcome',
-        request.url
-      ))
-    }
-
-    const isOnboarding = pathname.startsWith('/onboarding')
-    const isAppRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/explore')
-      || pathname.startsWith('/challenges') || pathname.startsWith('/progress')
-      || pathname.startsWith('/cohort') || pathname.startsWith('/prep')
-      || pathname.startsWith('/settings') || pathname.startsWith('/learn')
-
-    if (isAppRoute && !isOnboarding && !onboardingDone) {
-      return NextResponse.redirect(new URL('/onboarding/welcome', request.url))
+      return NextResponse.redirect(new URL('/dashboard', request.url))
     }
   }
 

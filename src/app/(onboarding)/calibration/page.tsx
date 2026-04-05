@@ -167,6 +167,7 @@ function RadarChart({ scores, visible }: { scores: CalibrationResults['scores'];
 export default function CalibrationPage() {
   const router = useRouter()
 
+  const [expandedMove, setExpandedMove] = useState<string | null>(null)
   const [screen, setScreen] = useState<Screen>(0)
   const [exiting, setExiting] = useState(false)
   const [direction, setDirection] = useState<'forward' | 'back'>('forward')
@@ -373,14 +374,38 @@ export default function CalibrationPage() {
                 </p>
               </div>
 
+              <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label -mb-2">
+                Tap any move to learn more
+              </p>
+
               <div className="grid grid-cols-2 gap-2.5 w-full max-w-xs">
-                {FLOW_MOVES.map(m => (
-                  <div key={m.key} className="rounded-xl p-3.5 flex flex-col gap-1 text-left" style={{ background: m.color }}>
-                    <span className="text-lg font-bold" style={{ color: m.textColor }}>{m.symbol}</span>
-                    <span className="font-bold text-sm text-on-surface">{m.label}</span>
-                    <span className="text-[11px] text-on-surface-variant leading-snug">{m.desc}</span>
-                  </div>
-                ))}
+                {FLOW_MOVES.map(m => {
+                  const isExpanded = expandedMove === m.key
+                  const debrief = DEBRIEF[m.key as keyof typeof DEBRIEF]
+                  return (
+                    <button
+                      key={m.key}
+                      onClick={() => setExpandedMove(isExpanded ? null : m.key)}
+                      className={`rounded-xl p-3.5 flex flex-col gap-1 text-left transition-all duration-200 ${isExpanded ? 'col-span-2' : 'hover:brightness-95 active:scale-[0.98]'}`}
+                      style={{ background: m.color, outline: isExpanded ? `2px solid ${m.textColor}` : 'none' }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold" style={{ color: m.textColor }}>{m.symbol}</span>
+                        <span className="material-symbols-outlined text-sm transition-transform duration-200" style={{ color: m.textColor, transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', fontVariationSettings: "'FILL' 0" }}>
+                          expand_more
+                        </span>
+                      </div>
+                      <span className="font-bold text-sm text-on-surface">{m.label}</span>
+                      <span className="text-[11px] text-on-surface-variant leading-snug">{m.desc}</span>
+                      {isExpanded && (
+                        <div className="mt-2 pt-2 border-t border-black/10 text-left space-y-1">
+                          <p className="text-[12px] text-on-surface leading-snug">{debrief.what}</p>
+                          <p className="text-[11px] text-on-surface-variant leading-snug italic">{debrief.why}</p>
+                        </div>
+                      )}
+                    </button>
+                  )
+                })}
               </div>
 
               <button

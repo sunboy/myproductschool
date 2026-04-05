@@ -23,26 +23,66 @@ function getGreeting(): string {
   return 'Good evening'
 }
 
+function getPersonalizedGreeting(displayName: string, streakDays: number, lastAttemptDate: string | null, isCalibrated: boolean): string {
+  const base = getGreeting()
+  if (!isCalibrated) return `Welcome, ${displayName}!`
+  const today = new Date().toISOString().split('T')[0]
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+  if (streakDays >= 7) return `${base}, ${displayName} — ${streakDays} days strong.`
+  if (lastAttemptDate === today) return `${base}, ${displayName}! You're already on a roll today.`
+  if (lastAttemptDate === yesterday && streakDays > 1) return `${base}, ${displayName} — don't break your ${streakDays}-day streak.`
+  if (!lastAttemptDate || streakDays === 0) return `Welcome back, ${displayName}! Ready to get back into it?`
+  return `${base}, ${displayName}!`
+}
+
+function getDailyGoalMessage(dailyDone: number): string {
+  if (dailyDone === 0) return 'Try a challenge — hit your daily goal of 5.'
+  if (dailyDone >= 5) return 'Daily goal hit! You\'re ahead of most learners today.'
+  return `${dailyDone} done today, ${5 - dailyDone} to go for your daily goal.`
+}
+
 function CalibrationHero() {
   return (
-    <div className="bg-primary rounded-2xl p-8 flex flex-col items-center text-center gap-4">
-      <LumaGlyph size={72} state="celebrating" className="text-on-primary" />
-      <div>
-        <h2 className="font-headline text-2xl font-bold text-on-primary mb-2">Find your starting point</h2>
-        <p className="text-on-primary/75 text-sm max-w-sm mx-auto leading-relaxed">
-          A quick 5-minute calibration challenge shows Luma where your product thinking stands — so it can guide you to the right challenges.
-        </p>
+    <div className="bg-surface-container rounded-2xl overflow-hidden">
+      {/* Top accent strip */}
+      <div className="h-1 bg-gradient-to-r from-primary via-tertiary to-primary opacity-60" />
+      <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+        <LumaGlyph size={72} state="celebrating" className="text-primary flex-shrink-0 self-center sm:self-auto" />
+        <div className="flex-1 min-w-0">
+          <h2 className="font-headline text-xl font-bold text-on-surface mb-1">Unlock your skill radar</h2>
+          <p className="text-on-surface-variant text-sm leading-relaxed mb-3">
+            8 questions. ~5 minutes. No typing — just choices. Luma will set your baseline and route you to the right challenges.
+          </p>
+          {/* Stats row */}
+          <div className="flex flex-wrap gap-3 mb-4">
+            {[
+              { icon: 'quiz', label: '8 questions' },
+              { icon: 'timer', label: '~5 minutes' },
+              { icon: 'radar', label: 'Your FLOW baseline' },
+            ].map(s => (
+              <span key={s.label} className="inline-flex items-center gap-1.5 bg-primary-fixed rounded-full px-3 py-1 text-xs font-label font-bold text-on-surface">
+                <span className="material-symbols-outlined text-sm text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
+                {s.label}
+              </span>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/calibration"
+              className="inline-flex items-center gap-2 bg-primary text-on-primary rounded-full px-5 py-2.5 font-label font-bold text-sm hover:opacity-90 transition-opacity"
+            >
+              <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
+              Start calibration
+            </Link>
+            <Link href="/learn/flow" className="text-primary text-xs font-label font-bold hover:underline underline-offset-2">
+              What is FLOW? →
+            </Link>
+            <Link href="/challenges" className="text-on-surface-variant text-xs hover:text-on-surface transition-colors">
+              Browse challenges first →
+            </Link>
+          </div>
+        </div>
       </div>
-      <Link
-        href="/calibration"
-        className="inline-flex items-center gap-2 bg-on-primary text-primary rounded-full px-6 py-2.5 font-label font-bold text-sm hover:opacity-90 transition-opacity"
-      >
-        <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
-        Start calibration
-      </Link>
-      <Link href="/challenges" className="text-on-primary/60 text-xs hover:text-on-primary/80 transition-colors underline underline-offset-2">
-        Browse challenges first →
-      </Link>
     </div>
   )
 }
@@ -82,19 +122,39 @@ export default async function DashboardPage() {
   let xpTotal = 0
   let interviewDate: string | null = null
   let isCalibrated = false
+  let lastAttemptDate: string | null = null
+  let dailyDone = 0
 
   if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('display_name, onboarding_completed_at, streak_days, xp_total, interview_date')
-      .eq('id', user.id)
-      .single()
+    const today = new Date().toISOString().split('T')[0]
+    const [{ data: profile }, { data: lastAttempt }, { count: dailyCount }] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('display_name, onboarding_completed_at, streak_days, xp_total, interview_date')
+        .eq('id', user.id)
+        .single(),
+      supabase
+        .from('challenge_attempts')
+        .select('created_at')
+        .eq('user_id', user.id)
+        .eq('status', 'completed')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from('challenge_attempts')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', today),
+    ])
 
     displayName = profile?.display_name ?? 'there'
     streakDays = profile?.streak_days ?? 0
     xpTotal = profile?.xp_total ?? 0
     interviewDate = profile?.interview_date ?? null
     isCalibrated = !!profile?.onboarding_completed_at
+    lastAttemptDate = lastAttempt?.created_at ? lastAttempt.created_at.split('T')[0] : null
+    dailyDone = dailyCount ?? 0
   }
 
   const userId = user?.id ?? ''
@@ -109,11 +169,11 @@ export default async function DashboardPage() {
   const adminClient = createAdminClient()
 
   // Quick Take: use quick_take_prompts (not the legacy challenge_prompts table)
-  const today = new Date().toISOString().split('T')[0]
+  const todayStr = new Date().toISOString().split('T')[0]
   const { data: todayQuickTake } = await adminClient
     .from('quick_take_prompts')
     .select('id, prompt_text, move')
-    .gte('created_at', today)
+    .gte('created_at', todayStr)
     .eq('is_published', true)
     .limit(1)
     .maybeSingle()
@@ -178,30 +238,8 @@ export default async function DashboardPage() {
     nextChallenge = fallbackChallenge ?? null
   }
 
-  const coachingMessage = streakDays > 0
-    ? `You're on a ${streakDays}-day streak — keep the momentum going.`
-    : 'Build your product instincts one challenge at a time.'
-
-  // Personalised Luma greeting using weakest competency context
-  let lumaGreeting = coachingMessage  // fallback to streak message
-
   if (userId && isCalibrated) {
     const lumaCtx = await getLumaContext(userId)
-
-    if (lumaCtx.weakestCompetency) {
-      const competencyLabels: Record<string, string> = {
-        motivation_theory: 'motivation & user psychology',
-        cognitive_empathy: 'user empathy',
-        taste: 'product taste',
-        strategic_thinking: 'strategic thinking',
-        creative_execution: 'creative execution',
-        domain_expertise: 'domain expertise',
-      }
-      const label = competencyLabels[lumaCtx.weakestCompetency] ?? lumaCtx.weakestCompetency
-      lumaGreeting = streakDays > 0
-        ? `${streakDays}-day streak going strong. Your next unlock: ${label}.`
-        : `Your next growth area: ${label}. Try a challenge targeting it today.`
-    }
 
     // Attach luma_insight to nextChallenge from weakest FLOW move
     if (nextChallenge && lumaCtx.moveLevels.length > 0) {
@@ -232,10 +270,10 @@ export default async function DashboardPage() {
         <LumaGlyph size={52} state={isCalibrated ? 'idle' : 'celebrating'} className="flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="font-headline font-bold text-lg text-on-surface">
-            {isCalibrated ? `${getGreeting()}, ${displayName}!` : `Welcome, ${displayName}!`}
+            {getPersonalizedGreeting(displayName, streakDays, lastAttemptDate, isCalibrated)}
           </p>
           <p className="text-sm text-on-surface-variant">
-            {isCalibrated ? lumaGreeting : "I'm Luma, your product thinking coach. Let's find your starting point."}
+            {isCalibrated ? getDailyGoalMessage(dailyDone) : "I'm Luma, your product thinking coach. Let's find your starting point."}
           </p>
         </div>
         {isCalibrated && (
@@ -292,6 +330,7 @@ export default async function DashboardPage() {
         <>
           <CalibrationHero />
           <LockedMoveLevels />
+          <HotChallengesCard challenges={hotChallenges} />
         </>
       )}
     </div>
