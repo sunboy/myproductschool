@@ -1,10 +1,9 @@
 import { notFound } from 'next/navigation'
-import { getShowcaseProduct, getShowcaseProducts } from '@/lib/data/showcase'
+import { getShowcaseProduct } from '@/lib/data/showcase'
 import { ShowcaseDetailClient } from '@/components/showcase/ShowcaseDetailClient'
 
 export async function generateStaticParams() {
-  const products = await getShowcaseProducts()
-  return products.map(p => ({ slug: p.slug }))
+  return []
 }
 
 interface Props {
