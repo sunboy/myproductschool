@@ -115,6 +115,7 @@ export async function middleware(request: NextRequest) {
       || pathname.startsWith('/challenges') || pathname.startsWith('/progress')
       || pathname.startsWith('/cohort') || pathname.startsWith('/prep')
       || pathname.startsWith('/settings') || pathname.startsWith('/learn')
+      || pathname.startsWith('/live-interviews')
 
     if (isAppRoute && !isOnboarding && !onboardingDone) {
       return NextResponse.redirect(new URL('/onboarding/welcome', request.url))

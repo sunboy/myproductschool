@@ -124,6 +124,23 @@ export default function PrepHubPage() {
         </div>
       </section>
 
+      {/* Live Interview CTA */}
+      {selectedCompany && (
+        <div className="bg-surface-container-high rounded-xl p-4 flex items-center gap-4">
+          <LumaGlyph size={48} state="idle" className="text-primary shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="font-label font-semibold text-on-surface text-sm">Practice with an on-demand interviewer</p>
+            <p className="text-xs text-on-surface-variant mt-0.5">{selectedCompany.name} · ~35 min live session</p>
+          </div>
+          <button
+            onClick={() => router.push(`/live-interviews?company=${selectedCompany.slug}&role=PM`)}
+            className="bg-primary text-on-primary rounded-full px-4 py-2 font-label font-semibold text-sm shrink-0"
+          >
+            Start Interview
+          </button>
+        </div>
+      )}
+
       {/* Section 2: Selected Company Detail */}
       <div className="grid grid-cols-12 gap-6">
         {/* Left Column: Study Plan */}
