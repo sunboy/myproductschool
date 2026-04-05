@@ -29,9 +29,26 @@ export async function middleware(request: NextRequest) {
   }
 
   // ── A/B split for root → waitlist variants ──────────────
-  // Assign a stable variant via cookie so the same visitor always
-  // sees the same page. 50/50 split between /waitlist and /waitlist-b.
+  // Authenticated users visiting / go straight to dashboard.
+  // Unauthenticated visitors get a stable 50/50 split between waitlist variants.
   if (pathname === '/') {
+    // Quick auth check — don't block on Supabase for the common unauthenticated case
+    // but do redirect logged-in users away from the marketing page.
+    const supabaseForRoot = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return request.cookies.getAll() },
+          setAll() {},
+        },
+      }
+    )
+    const { data: { user: rootUser } } = await supabaseForRoot.auth.getUser()
+    if (rootUser) {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+
     const existing = request.cookies.get('ab_waitlist')?.value
     const variant = existing === 'a' || existing === 'b'
       ? existing
@@ -60,9 +77,30 @@ export async function middleware(request: NextRequest) {
   }
 
   // ── Marketing & auth pages: always public, skip Supabase ──
+  const WAITLIST_ROUTES = ['/waitlist', '/waitlist-b', '/waitlist-flow']
   const isMarketing = MARKETING_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
+  const isWaitlist  = WAITLIST_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isAuthRoute = AUTH_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isApi       = pathname.startsWith('/api/')
+
+  // For waitlist routes, check if user is already logged in — send them to dashboard
+  if (isWaitlist) {
+    const supabaseForWaitlist = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return request.cookies.getAll() },
+          setAll() {},
+        },
+      }
+    )
+    const { data: { user: waitlistUser } } = await supabaseForWaitlist.auth.getUser()
+    if (waitlistUser) {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+    return NextResponse.next()
+  }
 
   if (isMarketing || isApi) {
     return NextResponse.next()
