@@ -1,4 +1,4 @@
-import { AutopsyProduct, AutopsyChallenge, AutopsyProductDetail } from '@/lib/types'
+import { AutopsyProduct, AutopsyChallenge, AutopsyProductDetail, AutopsyStory } from '@/lib/types'
 import { IS_MOCK } from '@/lib/mock'
 
 // ── Mock data ──────────────────────────────────────────────────────────────
@@ -15,6 +15,7 @@ const MOCK_PRODUCTS: AutopsyProduct[] = [
     industry: 'Productivity',
     paradigm: 'Bottom-up SaaS',
     decision_count: 3,
+    story_count: 1,
     is_published: true,
     sort_order: 1,
   },
@@ -29,6 +30,7 @@ const MOCK_PRODUCTS: AutopsyProduct[] = [
     industry: 'Developer Tools',
     paradigm: 'Opinionated SaaS',
     decision_count: 3,
+    story_count: 0,
     is_published: true,
     sort_order: 2,
   },
@@ -237,7 +239,22 @@ export async function getShowcaseProducts(): Promise<AutopsyProduct[]> {
     .order('sort_order', { ascending: true })
 
   if (error) throw error
-  return data as AutopsyProduct[]
+
+  // Compute story count per product
+  const { data: storyCounts } = await supabase
+    .from('autopsy_stories')
+    .select('product_id')
+    .in('product_id', (data ?? []).map((p: { id: string }) => p.id))
+
+  const countMap: Record<string, number> = {}
+  for (const row of (storyCounts ?? []) as { product_id: string }[]) {
+    countMap[row.product_id] = (countMap[row.product_id] ?? 0) + 1
+  }
+
+  return (data ?? []).map((p: AutopsyProduct) => ({
+    ...p,
+    story_count: countMap[p.id] ?? 0,
+  })) as AutopsyProduct[]
 }
 
 export async function getShowcaseProduct(slug: string): Promise<AutopsyProductDetail | null> {
@@ -265,7 +282,7 @@ export async function getShowcaseProduct(slug: string): Promise<AutopsyProductDe
     .order('sort_order', { ascending: true })
 
   if (!decisions || decisions.length === 0) {
-    return { ...product, decisions: [] } as AutopsyProductDetail
+    return { ...product, decisions: [], stories: [] } as AutopsyProductDetail
   }
 
   const decisionIds = decisions.map((d: { id: string }) => d.id)
@@ -280,11 +297,19 @@ export async function getShowcaseProduct(slug: string): Promise<AutopsyProductDe
     challengeMap[c.decision_id] = c
   }
 
+  // Fetch stories for this product
+  const { data: stories } = await supabase
+    .from('autopsy_stories')
+    .select('*')
+    .eq('product_id', product.id)
+    .order('sort_order', { ascending: true })
+
   return {
     ...product,
     decisions: decisions.map((d: { id: string }) => ({
       ...d,
       challenge: challengeMap[d.id],
     })),
+    stories: (stories ?? []) as AutopsyStory[],
   } as AutopsyProductDetail
 }
