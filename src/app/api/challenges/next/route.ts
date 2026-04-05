@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getLumaContext } from '@/lib/luma-context'
 import type { FlowMove } from '@/lib/types'
+import { IS_MOCK } from '@/lib/mock'
 
 const MOCK_NEXT = {
   challenge: {
@@ -15,6 +17,7 @@ const MOCK_NEXT = {
   reason: 'Targets your weakest move: Frame',
   targets_move: 'frame' as FlowMove,
   recommendation_type: 'weakest_move',
+  luma_insight: 'Your list move is at Level 1 — this challenge drills exactly that.',
 }
 
 // Generate a topic-based tip from challenge data (used when user is uncalibrated)
@@ -42,8 +45,28 @@ function moveTip(move: string, challengeTitle: string): string {
   return tips[move] ?? `This challenge targets your weakest move. Give it a shot.`
 }
 
+// Derive a 1-sentence Luma insight based on the user's weakest FLOW move
+function deriveLumaInsight(
+  moveLevels: Array<{ move: string; level: number; progress_pct: number }>,
+  weakestFlowMove: string | null
+): string {
+  if (!weakestFlowMove || !moveLevels.length) {
+    return 'This challenge matches your current skill level.'
+  }
+  const moveEntry = moveLevels.find(m => m.move === weakestFlowMove)
+  const level = moveEntry?.level ?? 1
+  const moveLabels: Record<string, string> = {
+    frame: 'frame',
+    list: 'list',
+    weigh: 'weigh',
+    sell: 'sell',
+  }
+  const label = moveLabels[weakestFlowMove] ?? weakestFlowMove
+  return `Your ${label} move is at Level ${level} — this challenge drills exactly that.`
+}
+
 export async function GET() {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json(MOCK_NEXT)
   }
 
@@ -53,16 +76,32 @@ export async function GET() {
 
   const adminClient = createAdminClient()
 
-  // Fetch profile, weakest move, and completed IDs in parallel
-  const [{ data: profile }, { data: levels }, { data: completedAttempts }] = await Promise.all([
+  // Fetch Luma context alongside profile/levels/completions
+  const [{ data: profile }, { data: levels }, { data: completedAttempts }, lumaCtx] = await Promise.all([
     adminClient.from('profiles').select('preferred_role').eq('id', user.id).single(),
     adminClient.from('move_levels').select('move, xp').eq('user_id', user.id).order('xp', { ascending: true }).limit(1),
     adminClient.from('challenge_attempts').select('prompt_id').eq('user_id', user.id).not('submitted_at', 'is', null),
+    getLumaContext(user.id),
   ])
 
   const isCalibrated = (levels ?? []).length > 0 && (completedAttempts ?? []).length > 0
   const weakestMove: FlowMove = (levels?.[0]?.move as FlowMove) ?? 'frame'
   const completedIds = (completedAttempts ?? []).map((a: { prompt_id: string }) => a.prompt_id)
+
+  // Derive weakest FLOW move from Luma context move levels
+  const lumaMoveLevels = lumaCtx.moveLevels
+  const weakestFlowMove = lumaMoveLevels.length > 0
+    ? [...lumaMoveLevels].sort((a, b) => a.level - b.level)[0].move
+    : null
+  const luma_insight = deriveLumaInsight(lumaMoveLevels, weakestFlowMove)
+
+  // Fire-and-forget: persist the insight as a role_observation row
+  adminClient.from('luma_context').insert({
+    user_id: user.id,
+    context_type: 'role_observation',
+    content: luma_insight,
+    is_active: true,
+  }).then(() => {}, () => {})
 
   // Try semantic novelty path: get user's last 5 response embeddings and compute centroid
   const { data: recentEmbeddings } = await adminClient
@@ -100,6 +139,7 @@ export async function GET() {
         targets_move: weakestMove,
         recommendation_type: 'semantic_novelty',
         is_calibrated: isCalibrated,
+        luma_insight,
       })
     }
   }
@@ -140,6 +180,7 @@ export async function GET() {
       targets_move: weakestMove,
       recommendation_type: 'fallback',
       is_calibrated: isCalibrated,
+      luma_insight,
     })
   }
 
@@ -154,5 +195,6 @@ export async function GET() {
     targets_move: weakestMove,
     recommendation_type: 'weakest_move',
     is_calibrated: isCalibrated,
+    luma_insight,
   })
 }

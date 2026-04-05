@@ -37,7 +37,7 @@ export default function ChallengeDiscussionPage() {
   useEffect(() => {
     fetch(`/api/challenges/${id}`)
       .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data?.title) setChallengeTitle(data.title) })
+      .then(data => { if (data?.challenge?.title) setChallengeTitle(data.challenge.title) })
       .catch(() => {})
   }, [id])
 

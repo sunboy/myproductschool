@@ -215,6 +215,25 @@ body {
   .animate-luma-glow { animation: none; }
 }
 
+/* ── Luma Card Pulse ──────────────────────────────────────────── */
+
+@keyframes luma-card-pulse {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(74,124,89,0.08), 0 0 0 0 rgba(74,124,89,0);
+    transform: translateY(0);
+  }
+  50% {
+    box-shadow: 0 6px 20px rgba(74,124,89,0.22), 0 0 0 4px rgba(74,124,89,0.12);
+    transform: translateY(-2px);
+  }
+}
+.animate-luma-card {
+  animation: luma-card-pulse 3s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-luma-card { animation: none; transform: none; }
+}
+
 /* ── Page Entry Animations ────────────────────────────────────── */
 
 @keyframes fade-in-up {

@@ -4,26 +4,28 @@ import { usePathname } from 'next/navigation'
 import { LumaGlyph } from './LumaGlyph'
 
 const navItems = [
-  { href: '/dashboard', icon: 'home',              label: 'Home' },
-  { href: '/explore',   icon: 'explore',           label: 'Explore' },
-  { href: '/challenges',icon: 'fitness_center',    label: 'Practice' },
-  { href: '/prep',      icon: 'workspace_premium', label: 'Prep' },
-  { href: '/progress',  icon: 'bar_chart',         label: 'Progress' },
+  { href: '/dashboard',   icon: 'home',           label: 'Home'     },
+  { href: '/learn',       icon: 'auto_stories',   label: 'Learn'    },
+  { href: '/explore',     icon: 'explore',        label: 'Explore'  },
+  { href: '/challenges',  icon: 'fitness_center', label: 'Practice' },
+  { href: '/progress',    icon: 'bar_chart',      label: 'Progress' },
 ]
 
-const DAILY_GOAL_DONE  = 3
-const DAILY_GOAL_TOTAL = 5
-const pct = Math.round((DAILY_GOAL_DONE / DAILY_GOAL_TOTAL) * 100)
+interface NavRailProps {
+  dailyDone?: number
+  dailyTotal?: number
+}
 
-export function NavRail() {
+export function NavRail({ dailyDone = 0, dailyTotal = 5 }: NavRailProps) {
   const pathname = usePathname()
+  const pct = dailyTotal > 0 ? Math.round((dailyDone / dailyTotal) * 100) : 0
 
   return (
     <nav className="hidden md:flex flex-col h-screen sticky top-0 w-56 bg-surface-container-low border-r border-outline-variant/60 shrink-0">
 
       {/* ── Brand ── */}
       <div className="flex items-center gap-2.5 px-4 py-4 border-b border-outline-variant/30">
-        <LumaGlyph size={26} className="text-primary shrink-0 animate-luma-glow" animated />
+        <LumaGlyph size={26} state="idle" className="text-primary shrink-0" />
         <span className="font-headline text-base font-bold text-primary tracking-tight">HackProduct</span>
       </div>
 
@@ -65,7 +67,7 @@ export function NavRail() {
         <div className="bg-surface-container rounded-xl px-3 py-2.5">
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant font-label">Daily Goal</span>
-            <span className="text-[11px] font-bold text-primary font-label">{DAILY_GOAL_DONE}/{DAILY_GOAL_TOTAL}</span>
+            <span className="text-[11px] font-bold text-primary font-label">{dailyDone}/{dailyTotal}</span>
           </div>
           <div className="h-1.5 w-full rounded-full bg-surface-container-highest overflow-hidden">
             <div
@@ -73,7 +75,7 @@ export function NavRail() {
               style={{ width: `${pct}%` }}
             />
           </div>
-          <p className="text-[10px] text-on-surface-variant mt-1 font-label">{DAILY_GOAL_DONE} of {DAILY_GOAL_TOTAL} challenges done</p>
+          <p className="text-[10px] text-on-surface-variant mt-1 font-label">{dailyDone} of {dailyTotal} challenges done</p>
         </div>
 
         {/* Pro upgrade */}

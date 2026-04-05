@@ -1,8 +1,9 @@
 import { Topic, TopicWithProgress } from '@/lib/types'
 import { MOCK_TOPICS, MOCK_CHALLENGE_TOPICS, MOCK_CONCEPT_TOPICS, MOCK_DOMAINS } from '@/lib/mock-data'
+import { IS_MOCK } from '@/lib/mock'
 
 export async function getTopics(domainId?: string): Promise<TopicWithProgress[]> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     let topics = MOCK_TOPICS
     if (domainId) topics = topics.filter(t => t.domain_id === domainId)
 
@@ -47,7 +48,7 @@ export async function getTopics(domainId?: string): Promise<TopicWithProgress[]>
 }
 
 export async function getTopicBySlug(slug: string): Promise<TopicWithProgress | null> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     const topic = MOCK_TOPICS.find(t => t.slug === slug) ?? null
     if (!topic) return null
 
@@ -90,7 +91,7 @@ export async function getTopicBySlug(slug: string): Promise<TopicWithProgress | 
 }
 
 export async function getTopicsByChallenge(challengeId: string): Promise<Pick<Topic, 'slug' | 'title'>[]> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     const topicIds = MOCK_CHALLENGE_TOPICS
       .filter(ct => ct.challenge_id === challengeId)
       .map(ct => ct.topic_id)
@@ -111,7 +112,7 @@ export async function getTopicsByChallenge(challengeId: string): Promise<Pick<To
 }
 
 export async function getTopicsByConcept(conceptId: string): Promise<Pick<Topic, 'slug' | 'title'>[]> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     const topicIds = MOCK_CONCEPT_TOPICS
       .filter(ct => ct.concept_id === conceptId)
       .map(ct => ct.topic_id)

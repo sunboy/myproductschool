@@ -15,7 +15,9 @@ export function useMoveLevels() {
       const res = await fetch('/api/move-levels')
       if (!res.ok) throw new Error('Failed to fetch move levels')
       const data = await res.json()
-      setMoves(Array.isArray(data) ? data : [])
+      // API returns { moves: [...] }
+      const movesArray = Array.isArray(data) ? data : Array.isArray(data?.moves) ? data.moves : []
+      setMoves(movesArray)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error')
     } finally {

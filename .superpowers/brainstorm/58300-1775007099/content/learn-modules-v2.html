@@ -1,0 +1,347 @@
+<h2>HackProduct Learn — Revised Module Set</h2>
+<p class="subtitle">Audited for engineer relevance. Changes highlighted in orange. Click modules you want to keep vs. change.</p>
+
+<style>
+.legend {
+  display: flex;
+  gap: 20px;
+  margin: 12px 0 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.legend-dot {
+  width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: middle;
+}
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+.module-card {
+  border-radius: 14px;
+  overflow: hidden;
+  background: white;
+  border: 1.5px solid #e4e0d8;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.module-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+.module-card.changed { border-color: #f59e0b; border-width: 2px; }
+.module-card.new-card { border-color: #10b981; border-width: 2px; }
+.module-card.removed { opacity: 0.45; border-style: dashed; }
+.module-header {
+  padding: 14px 16px 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.module-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.module-meta { flex: 1; }
+.module-title {
+  font-size: 14px; font-weight: 800; color: #2e3230;
+  margin: 0 0 2px; line-height: 1.3;
+}
+.module-subtitle { font-size: 11px; color: #74796e; margin: 0; }
+.badge-row { display: flex; gap: 5px; margin-top: 5px; flex-wrap: wrap; }
+.badge {
+  display: inline-block; font-size: 9px; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 20px;
+}
+.chapter-list {
+  padding: 0 16px 12px; border-top: 1px solid #f0ece4;
+  margin: 0; list-style: none;
+}
+.chapter-list li {
+  padding: 6px 0; font-size: 11.5px; color: #4a4e4a;
+  border-bottom: 1px solid #f5f1ea;
+  display: flex; align-items: center; gap: 8px;
+}
+.chapter-list li:last-child { border-bottom: none; }
+.ch-num { font-size: 10px; font-weight: 700; color: #c4c8bc; width: 16px; flex-shrink: 0; }
+.chapter-list li strong { color: #2e3230; font-weight: 600; }
+.meta-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 16px; background: #faf6f0;
+  border-top: 1px solid #f0ece4;
+  font-size: 10px; color: #74796e; font-weight: 600;
+}
+.change-label {
+  font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+  padding: 2px 8px; border-radius: 4px;
+}
+</style>
+
+<div class="legend">
+  <span><span class="legend-dot" style="background:#4a7c59"></span> Kept (engineer-relevant)</span>
+  <span><span class="legend-dot" style="background:#f59e0b"></span> Reframed</span>
+  <span><span class="legend-dot" style="background:#10b981"></span> New module added</span>
+  <span><span class="legend-dot" style="background:#9ca3af"></span> Removed / merged</span>
+</div>
+
+<div class="module-grid">
+
+  <!-- 1. FLOW — kept -->
+  <div class="module-card">
+    <div class="module-header">
+      <div class="module-icon" style="background:#c8e8d0">🌊</div>
+      <div class="module-meta">
+        <p class="module-title">The FLOW System</p>
+        <p class="module-subtitle">The thinking framework behind every challenge</p>
+        <div class="badge-row">
+          <span class="badge" style="background:#c8e8d0;color:#2e5e3a">FOUNDATION</span>
+          <span class="badge" style="background:#d1fae5;color:#065f46">✓ KEPT</span>
+        </div>
+      </div>
+    </div>
+    <ul class="chapter-list">
+      <li><span class="ch-num">1</span>Why engineers think backwards (how before why)</li>
+      <li><span class="ch-num">2</span><strong>F — Frame:</strong> Define the real problem</li>
+      <li><span class="ch-num">3</span><strong>L — List:</strong> Map the full solution space</li>
+      <li><span class="ch-num">4</span><strong>O — Optimize:</strong> Weigh, don't guess</li>
+      <li><span class="ch-num">5</span><strong>W — Win:</strong> Make a specific, defensible call</li>
+      <li><span class="ch-num">6</span>Anti-patterns: what FLOW corrects</li>
+      <li><span class="ch-num">7</span>FLOW in a real interview (full walkthrough)</li>
+    </ul>
+    <div class="meta-row"><span>📖 7 chapters · ~45 min</span></div>
+  </div>
+
+  <!-- 2. Understanding Users — reframed -->
+  <div class="module-card changed">
+    <div class="module-header">
+      <div class="module-icon" style="background:#fef3c7">👁️</div>
+      <div class="module-meta">
+        <p class="module-title">Thinking Like a User (When You're Not One)</p>
+        <p class="module-subtitle">Empathy, segmentation, and JTBD for engineers</p>
+        <div class="badge-row">
+          <span class="badge" style="background:#fef3c7;color:#92400e">REFRAMED</span>
+          <span class="badge" style="background:#fef3c7;color:#92400e">was: Understanding Users</span>
+        </div>
+      </div>
+    </div>
+    <ul class="chapter-list">
+      <li><span class="ch-num">1</span>Why engineers design for themselves (and why it fails)</li>
+      <li><span class="ch-num">2</span>Segment by behavior, not demographics</li>
+      <li><span class="ch-num">3</span>Jobs to Be Done: functional, emotional, social</li>
+      <li><span class="ch-num">4</span>Multi-sided markets: the chicken-and-egg problem</li>
+      <li><span class="ch-num">5</span>The Reach × Underservedness matrix</li>
+      <li><span class="ch-num">6</span>Accessibility as product signal (constraints surface better solutions)</li>
+      <li><span class="ch-num">7</span>Case: Spotify Wrapped — the social job nobody spec'd</li>
+    </ul>
+    <div class="meta-row"><span>📖 7 chapters · ~40 min</span></div>
+  </div>
+
+  <!-- 3. Problem Identification — kept -->
+  <div class="module-card">
+    <div class="module-header">
+      <div class="module-icon" style="background:#fee2e2">🔍</div>
+      <div class="module-meta">
+        <p class="module-title">Problem Identification</p>
+        <p class="module-subtitle">Root cause thinking — debugging, but for products</p>
+        <div class="badge-row">
+          <span class="badge" style="background:#d1fae5;color:#065f46">✓ KEPT</span>
+          <span class="badge" style="background:#fee2e2;color:#991b1b">INTERMEDIATE</span>
+        </div>
+      </div>
+    </div>
+    <ul class="chapter-list">
+      <li><span class="ch-num">1</span>The engineer's superpower: you already know how to debug</li>
+      <li><span class="ch-num">2</span>Symptoms vs. root causes (5 Whys, applied to products)</li>
+      <li><span class="ch-num">3</span>Frequency × Severity × Underservedness</li>
+      <li><span class="ch-num">4</span>Connecting problems to mission fit</li>
+      <li><span class="ch-num">5</span>The problems users stop complaining about (Gmail story)</li>
+      <li><span class="ch-num">6</span>Writing a crisp problem statement</li>
+      <li><span class="ch-num">7</span>Case: When the bug you fixed wasn't the real problem</li>
+    </ul>
+    <div class="meta-row"><span>📖 7 chapters · ~40 min</span></div>
+  </div>
+
+  <!-- 4. NEW: Diagnosing Metric Drops -->
+  <div class="module-card new-card">
+    <div class="module-header">
+      <div class="module-icon" style="background:#dbeafe">📉</div>
+      <div class="module-meta">
+        <p class="module-title">Diagnosing Metric Drops</p>
+        <p class="module-subtitle">Product debugging — your most engineer-native skill</p>
+        <div class="badge-row">
+          <span class="badge" style="background:#dbeafe;color:#1e40af">NEW</span>
+          <span class="badge" style="background:#dbeafe;color:#1e40af">ENGINEER-NATIVE</span>
+        </div>
+      </div>
+    </div>
+    <ul class="chapter-list">
+      <li><span class="ch-num">1</span>DAU dropped 15%. Now what? (the diagnostic loop)</li>
+      <li><span class="ch-num">2</span>External vs. internal causes: seasonality, bugs, competitors</li>
+      <li><span class="ch-num">3</span>Funnel decomposition: where did users drop off?</li>
+      <li><span class="ch-num">4</span>Cohort analysis: is this new users or existing users?</li>
+      <li><span class="ch-num">5</span>Instrumentation gaps: the metric you can't see</li>
+      <li><span class="ch-num">6</span>Communicating findings without overclaiming</li>
+      <li><span class="ch-num">7</span>Case: Instagram feed change that tanked creator reach</li>
+    </ul>
+    <div class="meta-row"><span>📖 7 chapters · ~45 min</span></div>
+  </div>
+
+  <!-- 5. Defining Success Metrics — kept -->
+  <div class="module-card">
+    <div class="module-header">
+      <div class="module-icon" style="background:#c8e8d0">📊</div>
+      <div class="module-meta">
+        <p class="module-title">Defining Success Metrics</p>
+        <p class="module-subtitle">North Star, guardrails, and outcome thinking</p>
+        <div class="badge-row">
+          <span class="badge" style="background:#d1fae5;color:#065f46">✓ KEPT</span>
+          <span class="badge" style="background:#c8e8d0;color:#2e5e3a">INTERMEDIATE</span>
+        </div>
+      </div>
+    </div>
+    <ul class="chapter-list">
+      <li><span class="ch-num">1</span>Output metrics vs. outcome metrics (latency ≠ user value)</li>
+      <li><span class="ch-num">2</span>The North Star Metric framework</li>
+      <li><span class="ch-num">3</span>AARRR: Pirate metrics for the real world</li>
+      <li><span class="ch-num">4</span>Guardrail metrics — preventing dark patterns</li>
+      <li><span class="ch-num">5</span>When metrics lie (Goodhart's Law)</li>
+      <li><span class="ch-num">6</span>Case: Netflix — $1B saved with one metric change</li>
+      <li><span class="ch-num">7</span>Picking metrics in a PM interview (what they score)</li>
+    </ul>
+    <div class="meta-row"><span>📖 7 chapters · ~45 min</span></div>
+  </div>
+
+  <!-- 6. Trade-off Thinking — kept, slightly reframed -->
+  <div class="module-card changed">
+    <div class="module-header">
+      <div class="module-icon" style="background:#fde8d0">⚖️</div>
+      <div class="module-meta">
+        <p class="module-title">Making Calls Under Constraints</p>
+        <p class="module-subtitle">Trade-off thinking — the engineer's daily reality</p>
+        <div class="badge-row">
+          <span class="badge" style="background:#fef3c7;color:#92400e">REFRAMED</span>
+          <span class="badge" style="background:#fef3c7;color:#92400e">was: Trade-off Thinking</span>
+        </div>
+      </div>
+    </div>
+    <ul class="chapter-list">
+      <li><span class="ch-num">1</span>"It depends" is not an answer — name what you're optimizing for</li>
+      <li><span class="ch-num">2</span>RICE scoring: Reach × Impact × Confidence ÷ Effort</li>
+      <li><span class="ch-num">3</span>The 2×2 impact-effort matrix</li>
+      <li><span class="ch-num">4</span>The Naming Move: "We get X, we sacrifice Y, because Z"</li>
+      <li><span class="ch-num">5</span>Tech debt as a product decision (not just an eng one)</li>
+      <li><span class="ch-num">6</span>Brand, trust, and regulatory constraints engineers miss</li>
+      <li><span class="ch-num">7</span>Case: Spotify Wrapped — zero revenue, 100M shares, right call</li>
+    </ul>
+    <div class="meta-row"><span>📖 7 chapters · ~50 min</span></div>
+  </div>
+
+  <!-- 7. NEW: How Products Grow -->
+  <div class="module-card new-card">
+    <div class="module-header">
+      <div class="module-icon" style="background:#d1fae5">🔁</div>
+      <div class="module-meta">
+        <p class="module-title">How Products Grow</p>
+        <p class="module-subtitle">Loops vs. funnels — a systems thinker's model of growth</p>
+        <div class="badge-row">
+          <span class="badge" style="background:#d1fae5;color:#065f46">NEW</span>
+          <span class="badge" style="background:#d1fae5;color:#065f46">ENGINEER-NATIVE</span>
+        </div>
+      </div>
+    </div>
+    <ul class="chapter-list">
+      <li><span class="ch-num">1</span>Funnels vs. loops: why engineers get this intuitively</li>
+      <li><span class="ch-num">2</span>Acquisition loops, engagement loops, monetization loops</li>
+      <li><span class="ch-num">3</span>Viral coefficient: what makes a loop compound</li>
+      <li><span class="ch-num">4</span>Retention curves: the "smile" vs. the flatline</li>
+      <li><span class="ch-num">5</span>Network effects as compounding loops</li>
+      <li><span class="ch-num">6</span>When growth hacks kill the product (dark patterns)</li>
+      <li><span class="ch-num">7</span>Case: TikTok's algorithm as a growth loop</li>
+    </ul>
+    <div class="meta-row"><span>📖 7 chapters · ~45 min</span></div>
+  </div>
+
+  <!-- 8. Agentic Product Patterns — kept -->
+  <div class="module-card">
+    <div class="module-header">
+      <div class="module-icon" style="background:#fce8ff">🤖</div>
+      <div class="module-meta">
+        <p class="module-title">Agentic Product Patterns</p>
+        <p class="module-subtitle">PM decisions in the AI-native era</p>
+        <div class="badge-row">
+          <span class="badge" style="background:#d1fae5;color:#065f46">✓ KEPT</span>
+          <span class="badge" style="background:#fce8ff;color:#7c21a8">NEW ERA</span>
+        </div>
+      </div>
+    </div>
+    <ul class="chapter-list">
+      <li><span class="ch-num">1</span>The spectrum: AI-assisted → AI-native</li>
+      <li><span class="ch-num">2</span>When execution is cheap, judgment is expensive</li>
+      <li><span class="ch-num">3</span>Designing for agents: new UX primitives</li>
+      <li><span class="ch-num">4</span>Trust, safety, and the agentic loop</li>
+      <li><span class="ch-num">5</span>Accuracy vs. latency: the MLE trade-off as product decision</li>
+      <li><span class="ch-num">6</span>What makes an AI feature defensible?</li>
+      <li><span class="ch-num">7</span>Shadow mode, A/B, and eval design for AI features</li>
+      <li><span class="ch-num">8</span>Case: when agentic went wrong</li>
+    </ul>
+    <div class="meta-row"><span>📖 8 chapters · ~55 min</span></div>
+  </div>
+
+  <!-- 9. Engineer → PM Mindset — kept -->
+  <div class="module-card">
+    <div class="module-header">
+      <div class="module-icon" style="background:#e8f5e9">🔧</div>
+      <div class="module-meta">
+        <p class="module-title">The Engineer → PM Mindset</p>
+        <p class="module-subtitle">You have the skills. Here's the vocabulary.</p>
+        <div class="badge-row">
+          <span class="badge" style="background:#d1fae5;color:#065f46">✓ KEPT</span>
+          <span class="badge" style="background:#e8f5e9;color:#2e5e3a">ENTRY POINT</span>
+        </div>
+      </div>
+    </div>
+    <ul class="chapter-list">
+      <li><span class="ch-num">1</span>Engineers don't lack intuition — they lack vocabulary</li>
+      <li><span class="ch-num">2</span>The "how" vs. "why" mindset shift</li>
+      <li><span class="ch-num">3</span>The 9 traits of a product-minded engineer (Gergely Orosz)</li>
+      <li><span class="ch-num">4</span>Why-First Check: user impact, business viability, eng sense</li>
+      <li><span class="ch-num">5</span>The 4 common failure modes in PM interviews</li>
+      <li><span class="ch-num">6</span>Framework recitation vs. actual thinking</li>
+      <li><span class="ch-num">7</span>How to build product reps without switching roles</li>
+    </ul>
+    <div class="meta-row"><span>📖 7 chapters · ~40 min</span></div>
+  </div>
+
+  <!-- 10. REMOVED: Product Strategy & Moats -->
+  <div class="module-card removed">
+    <div class="module-header">
+      <div class="module-icon" style="background:#f3f4f6">🏰</div>
+      <div class="module-meta">
+        <p class="module-title">Product Strategy & Moats</p>
+        <p class="module-subtitle">Removed — too PM/MBA, not engineer-relevant at this stage</p>
+        <div class="badge-row">
+          <span class="badge" style="background:#e5e7eb;color:#6b7280">REMOVED</span>
+          <span class="badge" style="background:#e5e7eb;color:#6b7280">moats merged into How Products Grow</span>
+        </div>
+      </div>
+    </div>
+    <ul class="chapter-list">
+      <li><span class="ch-num">–</span>Network effects → moved to "How Products Grow"</li>
+      <li><span class="ch-num">–</span>Aggregation theory → too abstract for eng audience</li>
+      <li><span class="ch-num">–</span>Figma/Slack moat cases → referenced in other modules</li>
+    </ul>
+    <div class="meta-row"><span>Content redistributed across other modules</span></div>
+  </div>
+
+</div>
+
+<div style="margin-top:24px;padding:16px;background:#faf6f0;border-radius:12px;border:1px solid #e4e0d8;">
+  <p style="font-size:13px;font-weight:700;color:#2e3230;margin:0 0 8px">Summary of changes</p>
+  <ul style="font-size:12px;color:#4a4e4a;margin:0;padding-left:18px;line-height:1.8">
+    <li><strong>Added:</strong> "Diagnosing Metric Drops" — the INT-DIAG question type, framed as product debugging</li>
+    <li><strong>Added:</strong> "How Products Grow" — loops vs. funnels, a systems thinker's model. Network effects folded in here.</li>
+    <li><strong>Removed:</strong> "Product Strategy & Moats" — MBA framing, not where engineers start</li>
+    <li><strong>Reframed:</strong> "Understanding Users" → "Thinking Like a User (When You're Not One)" — explicit engineer framing</li>
+    <li><strong>Reframed:</strong> "Trade-off Thinking" → "Making Calls Under Constraints" — same content, engineering context added</li>
+  </ul>
+</div>

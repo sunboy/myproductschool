@@ -2,6 +2,7 @@ import { getChallengeById } from '@/lib/data/challenges'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ModelAnswer } from '@/components/challenge/ModelAnswer'
+import { IS_MOCK } from '@/lib/mock'
 
 export default async function ModelAnswerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -9,7 +10,7 @@ export default async function ModelAnswerPage({ params }: { params: Promise<{ id
   if (!challenge) notFound()
 
   // In mock mode, always show as pro for dev purposes
-  const isPro = process.env.USE_MOCK_DATA === 'true' ? true : false
+  const isPro = IS_MOCK ? true : false
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">

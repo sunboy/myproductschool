@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FLOW Stepper Mockup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito Sans', system-ui, sans-serif; background: #faf6f0; color: #2e3230; padding: 24px; }
+  h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #74796e; margin-bottom: 12px; margin-top: 28px; }
+  h2:first-child { margin-top: 0; }
+  .card { background: #fff; border: 1px solid #c4c8bc; border-radius: 16px; padding: 20px; margin-bottom: 8px; }
+  .label { font-size: 11px; font-weight: 600; color: #74796e; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+
+  /* ── Stepper ── */
+  .stepper { display: flex; align-items: flex-start; gap: 4px; width: 100%; }
+  .step-item { display: flex; align-items: flex-start; flex: 1; }
+  .step-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    flex: 1; padding: 6px 4px 8px;
+    border-radius: 12px; border: none; background: transparent;
+    cursor: pointer; transition: background 0.15s; font-family: inherit;
+  }
+  .step-btn.active   { background: #4a7c59; cursor: default; }
+  .step-btn.done     { background: #c8e8d0; cursor: pointer; }
+  .step-btn.pending  { background: #f0ece4; cursor: not-allowed; opacity: 0.7; }
+  .step-btn.done:hover { background: #b8ddc6; }
+
+  .step-pill { display: flex; align-items: center; gap: 5px; }
+  .step-icon { font-size: 16px; font-variation-settings: 'FILL' 1, 'wght' 400; }
+  .step-btn.active   .step-icon { color: #fff; }
+  .step-btn.done     .step-icon { color: #2e3230; }
+  .step-btn.pending  .step-icon { color: #74796e; }
+
+  .step-label { font-size: 12px; font-weight: 600; font-family: inherit; }
+  .step-btn.active  .step-label { color: #fff; }
+  .step-btn.done    .step-label { color: #2e3230; }
+  .step-btn.pending .step-label { color: #74796e; }
+
+  /* Question pip indicators */
+  .step-pips { display: flex; gap: 3px; justify-content: center; align-items: center; height: 8px; margin-top: 2px; }
+  .pip {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: #c4c8bc; transition: all 0.2s;
+  }
+  .pip.done-all  { background: #4a7c59; }
+  .pip.current   { background: #fff; width: 14px; border-radius: 3px; }
+  .pip.done-past { background: rgba(255,255,255,0.55); }
+  .step-btn.done .pip  { background: #4a7c59; opacity: 0.5; }
+  .step-btn.done .pip.done-all { opacity: 1; }
+  .step-btn.pending .pip { background: #c4c8bc; }
+
+  /* single-question: just show "1/1" text instead of pips */
+  .step-count { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.75); letter-spacing: 0.04em; }
+
+  /* connector */
+  .connector { width: 12px; height: 2px; background: #c4c8bc; flex-shrink: 0; margin-top: 14px; }
+  .connector.done { background: #4a7c59; }
+
+  /* ── Text areas / options ── */
+  .question-section { margin-top: 20px; }
+  .question-text { font-size: 14px; color: #2e3230; font-weight: 600; margin-bottom: 12px; line-height: 1.5; }
+  .option {
+    border: 1.5px solid #c4c8bc; border-radius: 12px; padding: 10px 14px;
+    font-size: 13px; color: #2e3230; margin-bottom: 7px; cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    background: #fff; transition: border-color 0.15s;
+  }
+  .option.selected { border-color: #4a7c59; background: #f0f8f3; }
+  .option-label { width: 22px; height: 22px; border-radius: 50%; background: #f0ece4; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #74796e; flex-shrink: 0; }
+  .option.selected .option-label { background: #4a7c59; color: #fff; }
+
+  .textarea-wrapper { margin-top: 14px; }
+  .textarea-label { font-size: 12px; font-weight: 600; color: #74796e; margin-bottom: 6px; }
+  .textarea-label.optional::after { content: ' (optional)'; font-weight: 400; }
+  textarea {
+    width: 100%; border: 1.5px solid #c4c8bc; border-radius: 12px;
+    background: #f0ece4; padding: 10px 12px; font-size: 13px; color: #2e3230;
+    font-family: inherit; resize: none; min-height: 80px; outline: none;
+  }
+  textarea:focus { border-color: #4a7c59; }
+  textarea::placeholder { color: #a0a49a; }
+
+  /* ── Layout frames ── */
+  .frame { border: 2px dashed #c4c8bc; border-radius: 16px; padding: 16px; margin-bottom: 20px; }
+  .frame-title { font-size: 11px; font-weight: 700; color: #74796e; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+  .badge { display: inline-block; background: #f0e8db; color: #5e5548; font-size: 10px; font-weight: 700; border-radius: 20px; padding: 2px 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .note { font-size: 12px; color: #74796e; font-style: italic; margin-top: 8px; }
+
+  .row { display: flex; gap: 20px; }
+  .col { flex: 1; }
+
+  .divider { height: 1px; background: #e4e0d8; margin: 24px 0; }
+
+  /* submit btn */
+  .submit-btn { background: #4a7c59; color: #fff; border: none; border-radius: 999px; padding: 10px 24px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; }
+  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; line-height: 1; letter-spacing: normal; text-transform: none; display: inline-block; white-space: nowrap; word-wrap: normal; direction: ltr; -webkit-font-smoothing: antialiased; }
+</style>
+</head>
+<body>
+
+<h2>FLOW Stepper — Proposed Changes</h2>
+<p style="font-size:13px;color:#4a4e4a;margin-bottom:20px;line-height:1.6;">Three changes: <strong>(1)</strong> completed steps become clickable buttons to jump back, <strong>(2)</strong> question position pips appear under the active step, <strong>(3)</strong> textarea always shows (visibility controlled by response_type).</p>
+
+<!-- ── STATE 1: Frame active, Q2 of 4 ── -->
+<div class="frame">
+  <div class="frame-title">State A — Frame active, question 2 of 4 &nbsp;<span class="badge">Active step has pips</span></div>
+  <div class="stepper">
+    <!-- Frame: active, Q2 of 4 -->
+    <div class="step-item">
+      <button class="step-btn active">
+        <div class="step-pill">
+          <span class="material-symbols-outlined step-icon">crop_free</span>
+          <span class="step-label">Frame</span>
+        </div>
+        <!-- pips: q1 done (past), q2 current, q3 upcoming, q4 upcoming -->
+        <div class="step-pips">
+          <div class="pip done-past"></div>
+          <div class="pip current"></div>
+          <div class="pip"></div>
+          <div class="pip"></div>
+        </div>
+      </button>
+    </div>
+    <div class="connector"></div>
+    <!-- List: pending -->
+    <div class="step-item">
+      <button class="step-btn pending" disabled>
+        <div class="step-pill">
+          <span class="material-symbols-outlined step-icon">list</span>
+          <span class="step-label">List</span>
+        </div>
+      </button>
+    </div>
+    <div class="connector"></div>
+    <!-- Optimize: pending -->
+    <div class="step-item">
+      <button class="step-btn pending" disabled>
+        <div class="step-pill">
+          <span class="material-symbols-outlined step-icon">tune</span>
+          <span class="step-label">Optimize</span>
+        </div>
+      </button>
+    </div>
+    <div class="connector"></div>
+    <!-- Win: pending -->
+    <div class="step-item">
+      <button class="step-btn pending" disabled>
+        <div class="step-pill">
+          <span class="material-symbols-outlined step-icon">emoji_events</span>
+          <span class="step-label">Win</span>
+        </div>
+      </button>
+    </div>
+  </div>
+  <p class="note">Pips under active step: filled dot = answered, elongated pill = current, hollow dot = upcoming</p>
+</div>
+
+<!-- ── STATE 2: List active, Frame clickable ── -->
+<div class="frame">
+  <div class="frame-title">State B — List active (Q1 of 2), Frame completed &amp; clickable &nbsp;<span class="badge">Click to go back</span></div>
+  <div class="stepper">
+    <!-- Frame: done, clickable -->
+    <div class="step-item">
+      <button class="step-btn done" title="Click to revisit Frame">
+        <div class="step-pill">
+          <span class="material-symbols-outlined step-icon">check_circle</span>
+          <span class="step-label">Frame</span>
+        </div>
+      </button>
+    </div>
+    <div class="connector done"></div>
+    <!-- List: active, Q1 of 2 -->
+    <div class="step-item">
+      <button class="step-btn active">
+        <div class="step-pill">
+          <span class="material-symbols-outlined step-icon">list</span>
+          <span class="step-label">List</span>
+        </div>
+        <div class="step-pips">
+          <div class="pip current"></div>
+          <div class="pip"></div>
+        </div>
+      </button>
+    </div>
+    <div class="connector"></div>
+    <!-- Optimize: pending -->
+    <div class="step-item">
+      <button class="step-btn pending" disabled>
+        <div class="step-pill">
+          <span class="material-symbols-outlined step-icon">tune</span>
+          <span class="step-label">Optimize</span>
+        </div>
+      </button>
+    </div>
+    <div class="connector"></div>
+    <!-- Win: pending -->
+    <div class="step-item">
+      <button class="step-btn pending" disabled>
+        <div class="step-pill">
+          <span class="material-symbols-outlined step-icon">emoji_events</span>
+          <span class="step-label">Win</span>
+        </div>
+      </button>
+    </div>
+  </div>
+  <p class="note">Frame has ✓ check icon + green tint. Hover makes it slightly darker — signals it's a button. Pending steps are dimmed + not clickable.</p>
+</div>
+
+<!-- ── STATE 3: Optimize active, Frame+List clickable ── -->
+<div class="frame">
+  <div class="frame-title">State C — Optimize active (Q3 of 3, almost done), 2 steps completed &nbsp;<span class="badge">Both back-steps clickable</span></div>
+  <div class="stepper">
+    <div class="step-item">
+      <button class="step-btn done">
+        <div class="step-pill">
+          <span class="material-symbols-outlined step-icon">check_circle</span>
+          <span class="step-label">Frame</span>
+        </div>
+      </button>
+    </div>
+    <div class="connector done"></div>
+    <div class="step-item">
+      <button class="step-btn done">
+        <div class="step-pill">
+          <span class="material-symbols-outlined step-icon">check_circle</span>
+          <span class="step-label">List</span>
+        </div>
+      </button>
+    </div>
+    <div class="connector done"></div>
+    <div class="step-item">
+      <button class="step-btn active">
+        <div class="step-pill">
+          <span class="material-symbols-outlined step-icon">tune</span>
+          <span class="step-label">Optimize</span>
+        </div>
+        <div class="step-pips">
+          <div class="pip done-past"></div>
+          <div class="pip done-past"></div>
+          <div class="pip current"></div>
+        </div>
+      </button>
+    </div>
+    <div class="connector"></div>
+    <div class="step-item">
+      <button class="step-btn pending" disabled>
+        <div class="step-pill">
+          <span class="material-symbols-outlined step-icon">emoji_events</span>
+          <span class="step-label">Win</span>
+        </div>
+      </button>
+    </div>
+  </div>
+  <p class="note">Connector lines between completed steps also turn primary green to show progress chain.</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ── TEXTAREA VISIBILITY ── -->
+<h2>Response Type — Textarea Visibility</h2>
+<p style="font-size:13px;color:#4a4e4a;margin-bottom:16px;line-height:1.6;">Textarea already shows for 3 of 4 response types. Issue is it's missing only for <code>pure_mcq</code>. All other types show it. Here's a side-by-side of the 4 cases:</p>
+
+<div class="row">
+  <div class="col">
+    <div class="card">
+      <div class="label">pure_mcq — no textarea</div>
+      <div class="question-text">Which metric best captures notification fatigue?</div>
+      <div class="option selected"><div class="option-label">A</div>Open rate decline</div>
+      <div class="option"><div class="option-label">B</div>DAU/MAU ratio</div>
+      <div class="option"><div class="option-label">C</div>Session length</div>
+      <div style="height:6px"></div>
+      <div style="background:#f0ece4;border-radius:8px;padding:8px 10px;font-size:11px;color:#74796e;font-style:italic;">No text field — selection only</div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card">
+      <div class="label">mcq_plus_elaboration — optional text</div>
+      <div class="question-text">Which metric best captures notification fatigue?</div>
+      <div class="option selected"><div class="option-label">A</div>Open rate decline</div>
+      <div class="option"><div class="option-label">B</div>DAU/MAU ratio</div>
+      <div class="textarea-wrapper">
+        <div class="textarea-label optional">Explain your reasoning</div>
+        <textarea placeholder="Add your reasoning…" rows="2"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row" style="margin-top:12px;">
+  <div class="col">
+    <div class="card">
+      <div class="label">modified_option — required extension</div>
+      <div class="question-text">Which approach would you take?</div>
+      <div class="option selected"><div class="option-label">B</div>A/B test notification copy</div>
+      <div class="option"><div class="option-label">C</div>Reduce frequency globally</div>
+      <div class="textarea-wrapper">
+        <div class="textarea-label">Modify or extend this answer <span style="color:#b83230;font-size:11px;">*required</span></div>
+        <textarea placeholder="Describe how you'd change or extend this option…" rows="2"></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card">
+      <div class="label">freeform — text only, no options</div>
+      <div class="question-text">How would you define success for this feature?</div>
+      <div class="textarea-wrapper">
+        <div class="textarea-label">Your answer <span style="color:#b83230;font-size:11px;">*required</span></div>
+        <textarea placeholder="Write your full answer here…" rows="3"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ── COMBINED: What it looks like in practice ── -->
+<h2>In-context preview — stepper + question + footer</h2>
+
+<div style="background:#faf6f0;border:2px dashed #c4c8bc;border-radius:16px;overflow:hidden;max-width:520px;">
+  <!-- stepper header -->
+  <div style="border-bottom:1px solid #c4c8bc;padding:12px 16px;background:#fff;space-y:8px;">
+    <div class="stepper" style="margin-bottom:10px;">
+      <div class="step-item">
+        <button class="step-btn done">
+          <div class="step-pill"><span class="material-symbols-outlined step-icon">check_circle</span><span class="step-label">Frame</span></div>
+        </button>
+      </div>
+      <div class="connector done"></div>
+      <div class="step-item">
+        <button class="step-btn active">
+          <div class="step-pill"><span class="material-symbols-outlined step-icon">list</span><span class="step-label">List</span></div>
+          <div class="step-pips">
+            <div class="pip done-past"></div>
+            <div class="pip current"></div>
+            <div class="pip"></div>
+          </div>
+        </button>
+      </div>
+      <div class="connector"></div>
+      <div class="step-item">
+        <button class="step-btn pending" disabled>
+          <div class="step-pill"><span class="material-symbols-outlined step-icon">tune</span><span class="step-label">Optimize</span></div>
+        </button>
+      </div>
+      <div class="connector"></div>
+      <div class="step-item">
+        <button class="step-btn pending" disabled>
+          <div class="step-pill"><span class="material-symbols-outlined step-icon">emoji_events</span><span class="step-label">Win</span></div>
+        </button>
+      </div>
+    </div>
+    <!-- nudge -->
+    <div style="background:#f0e8db;border-radius:10px;padding:8px 12px;display:flex;align-items:flex-start;gap:8px;">
+      <span class="material-symbols-outlined" style="font-size:15px;color:#5e5548;margin-top:1px;">lightbulb</span>
+      <span style="font-size:12px;color:#5e5548;">Think about which segments are sending too many vs. too few signals.</span>
+    </div>
+  </div>
+  <!-- question body -->
+  <div style="padding:16px;background:#faf6f0;">
+    <div class="question-text">What's the most important user segment to analyse first?</div>
+    <div class="option selected"><div class="option-label">A</div>Power users who receive 20+ notifications/day</div>
+    <div class="option"><div class="option-label">B</div>New users in first 7 days</div>
+    <div class="option"><div class="option-label">C</div>Users who disabled push but still use app</div>
+    <div class="textarea-wrapper">
+      <div class="textarea-label optional">Explain your reasoning</div>
+      <textarea placeholder="Add your reasoning…" rows="2"></textarea>
+    </div>
+  </div>
+  <!-- footer -->
+  <div style="border-top:1px solid #c4c8bc;padding:12px 16px;display:flex;justify-content:flex-end;background:#fff;">
+    <button class="submit-btn">Submit</button>
+  </div>
+</div>
+
+</body>
+</html>

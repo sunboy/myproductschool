@@ -1,0 +1,707 @@
+[
+  {
+    "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001",
+    "title": "The Dashboard Rebuild Question",
+    "scenario_context": "Amara is a tech lead at a ride-sharing company with an aging driver earnings dashboard that generates frequent support complaints. Her PM has proposed a 6-month full rebuild with a new stack and cleaner architecture, backed by mockups that look polished.",
+    "scenario_trigger": "Amara analyzed the complaint data and found 80% of tickets trace to a single screen\u2014the weekly earnings breakdown\u2014which confuses drivers about how numbers are calculated. She identified a targeted 3-week fix to that screen as a potential solution, but her PM insists a complete rebuild is the right approach.",
+    "scenario_question": "Should Amara recommend the targeted 3-week fix to the earnings breakdown screen, or advocate for the PM's 6-month full rebuild?",
+    "engineer_standout": "The real tension here isn't scope vs. speed. It's diagnosis vs. gut. Amara has data suggesting the one-screen fix works. But she also knows that data can be selective. Before you recommend a path, ask yourself: what evidence would actually change my mind? If you can't name it, you're rationalizing, not deciding.",
+    "paradigm": "traditional",
+    "industry": "tech",
+    "sub_vertical": null,
+    "difficulty": "standard",
+    "estimated_minutes": 15,
+    "primary_competencies": [
+      "cognitive_empathy",
+      "strategic_thinking"
+    ],
+    "secondary_competencies": [
+      "strategic_thinking",
+      "domain_expertise"
+    ],
+    "frameworks": [],
+    "relevant_roles": [
+      "tech_lead"
+    ],
+    "company_tags": [
+      "INTERNAL"
+    ],
+    "tags": [
+      "HP-DEBATE",
+      "mod-5"
+    ],
+    "is_published": true,
+    "is_calibration": false,
+    "is_premium": false,
+    "flow": {
+      "frame": {
+        "step_nudge": "Is the problem really scope or is it the diagnostic? Amara thinks the issue is buried in one screen. Her PM thinks the issue is systemic.",
+        "step_order": 0,
+        "grading_weight": 0.25,
+        "questions": [
+          {
+            "question_text": "Why does Amara believe one screen causes 80% of the complaints, and how strong is that evidence?",
+            "response_type": "mcq_plus_elaboration",
+            "sequence": 1,
+            "grading_weight_within_step": 0.33,
+            "target_competencies": [
+              "cognitive_empathy",
+              "strategic_thinking"
+            ],
+            "options": [
+              {
+                "option_label": "A",
+                "option_text": "Amara traced support tickets to their root cause\u2014the weekly earnings breakdown screen\u2014by analyzing the complaint text itself, not just counting total volume. She found that 80% explicitly describe confusion about how earnings are calculated or displayed. This is strong evidence because it separates the symptom (unhappy drivers) from the actual problem (a specific screen's information architecture). The evidence is quantifiable and directly links user frustration to a concrete interaction failure, not to a vague feeling that the dashboard feels old.",
+                "quality": "best",
+                "points": 3,
+                "competencies": [
+                  "strategic_thinking",
+                  "domain_expertise"
+                ],
+                "explanation": "This answer demonstrates the core frame move: symptom vs. root cause. Amara didn't assume the problem was 'dashboard is old'\u2014she dug into the data to isolate which specific screen actually breaks the mental model. The evidence is strong because it's specific to user behavior (what they complained about), not just aggregate metrics. This is exactly the diagnostic work that supports a targeted fix over a wholesale rebuild.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-frame-Q1-A"
+              },
+              {
+                "option_label": "B",
+                "option_text": "Amara looked at support ticket volume and noticed a spike in complaints about earnings calculations. She then cross-referenced those tickets with user session logs to see which screen they were viewing when they opened support chats. The data shows drivers go to the weekly earnings breakdown right before filing tickets. This suggests the screen is involved, but the evidence is somewhat indirect\u2014correlation rather than explicit cause\u2014because drivers might have been confused before arriving at that screen, or might be seeking help about something they saw elsewhere.",
+                "quality": "good_but_incomplete",
+                "points": 2,
+                "competencies": [
+                  "strategic_thinking"
+                ],
+                "explanation": "Amara is using real data to isolate a problem\u2014better than guessing. But she's relying on behavioral correlation (drivers visit the screen before complaining) rather than explicit evidence of what confuses them. The approach is right (dig into data, isolate one point of failure), but the evidence chain has a gap. She hasn't closed the loop: confirmed that the screen's design is actually what breaks their mental model, or ruled out upstream confusion.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-frame-Q1-B"
+              },
+              {
+                "option_label": "C",
+                "option_text": "Amara noticed that drivers complain a lot, and the weekly earnings breakdown is an important screen, so it's likely a major source of frustration. The PM's mockups show a much cleaner design, which would probably make drivers feel better about using the dashboard. The fact that a targeted fix is faster and cheaper suggests it's probably the right move, since smaller scopes are generally safer than big rewrites.",
+                "quality": "surface",
+                "points": 1,
+                "competencies": [],
+                "explanation": "This answer treats the symptom (complaints exist) as equivalent to root cause (this screen breaks earnings logic). It relies on intuition and gut feel rather than diagnostic work. It also confuses 'faster ship' with 'solves the right problem'\u2014speed is a benefit only if you're solving the real issue. This approach would miss the possibility that the actual problem is elsewhere, or that the redesign wouldn't address the core confusion.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-frame-Q1-C"
+              },
+              {
+                "option_label": "D",
+                "option_text": "Amara believes the weekly earnings breakdown is the problem because it's the oldest part of the dashboard and hasn't been refreshed in 4 years. Drivers naturally complain about things that feel outdated, even if they work correctly. A full rebuild will replace that old feeling with modern design, which will address the aesthetic concerns driving the tickets. The 80% figure comes from counting all complaints mentioning 'earnings' and 'breakdown,' which is strong evidence that drivers care about this feature.",
+                "quality": "plausible_wrong",
+                "points": 0,
+                "competencies": [],
+                "explanation": "This answer confuses age with causation, and aesthetics with functionality. It assumes complaints are about feeling old, not about the screen being confusing. Grouping all 'earnings breakdown' mentions treats symptom volume as proof of root cause, without examining *why* drivers are frustrated. The recommendation (rebuild for aesthetics) would likely fail if the real problem is information architecture or calculation logic. This is a plausible sounding answer that optimizes for the wrong thing.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-frame-Q1-D"
+              }
+            ]
+          },
+          {
+            "question_text": "What is Amara actually trying to fix\u2014driver confusion, driver distrust, or driver switching to a competitor app?",
+            "response_type": "mcq_plus_elaboration",
+            "sequence": 2,
+            "grading_weight_within_step": 0.33,
+            "target_competencies": [
+              "cognitive_empathy",
+              "strategic_thinking"
+            ],
+            "options": [
+              {
+                "option_label": "A",
+                "option_text": "Driver confusion about how earnings are calculated. The 80% complaint concentration on one screen shows the problem is epistemic\u2014drivers don't understand the mapping between work done and money earned. Fix the mental model first (the frame), then measure whether clarity alone restores confidence.",
+                "quality": "best",
+                "points": 3,
+                "competencies": [
+                  "strategic_thinking",
+                  "cognitive_empathy"
+                ],
+                "explanation": "This correctly identifies the root cause from the data: 80% of complaints point to one screen, which is a symptom signature. The real issue is not the UI aesthetic or the tech stack, but drivers' ability to predict and understand their own earnings. This frames the problem as a comprehension gap, not a feature gap or architecture gap. It also models the causal chain: confusion \u2192 distrust \u2192 switching. The recommendation to 'fix the mental model first' reflects the frame step's core move: distinguish symptom from root cause before choosing solutions.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-frame-Q2-A"
+              },
+              {
+                "option_label": "B",
+                "option_text": "Driver distrust of the earnings calculation itself. The weekly breakdown screen being confusing suggests drivers suspect the system is calculating incorrectly or hiding something. A targeted redesign of that screen to show clearer breakdowns and explanations could rebuild trust without a full rebuild.",
+                "quality": "good_but_incomplete",
+                "points": 2,
+                "competencies": [
+                  "cognitive_empathy"
+                ],
+                "explanation": "This correctly identifies distrust as the likely downstream effect and recognizes that the weekly breakdown is the locus of the problem. However, it doesn't fully distinguish between confusion (not understanding how the system works) and distrust (believing the system is working against them). The answer is partly right\u2014clarity does rebuild trust\u2014but misses the diagnostic step: is this a UI problem, a transparency problem, or a calculation legitimacy problem? It proposes a solution (redesign the screen) before fully framing what's broken.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-frame-Q2-B"
+              },
+              {
+                "option_label": "C",
+                "option_text": "The dashboard looks outdated and feels slow. Drivers are filing support tickets because the UI is 4 years old and doesn't match the polish of modern apps. A full rebuild will modernize the experience and reduce complaints across the board.",
+                "quality": "surface",
+                "points": 1,
+                "competencies": [],
+                "explanation": "This addresses the most visible symptom (old interface) but ignores the data Amara actually collected. The 80% concentration of complaints on one specific screen is not a general 'this feels old' signal\u2014it's a strong indicator of a functional or comprehension problem, not an aesthetic one. This answer mistakes the age of the platform for the cause of the complaints. It's the reasoning that leads to gold-plating and scope creep: 'it's old, so rebuild it all' instead of 'drivers are confused about earnings, so clarify earnings.'",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-frame-Q2-C"
+              },
+              {
+                "option_label": "D",
+                "option_text": "Drivers are switching to competitor apps because the dashboard is slow and the architecture is brittle. The only real solution is a full 6-month rebuild with a modern stack, which will improve performance and reliability systemwide and demonstrate product leadership to the market.",
+                "quality": "plausible_wrong",
+                "points": 0,
+                "competencies": [],
+                "explanation": "This sounds strategically serious (full rebuild, modern stack, competitive advantage) but contradicts the evidence Amara has. It assumes the cause is technical/architectural when the data points to a single screen's clarity problem. It also reverses the logic of the frame step: instead of distinguishing root cause from symptom, it uses the PM's preferred solution (rebuild) to retroactively justify a narrative about why the problem exists. This is high-risk reasoning in product: you start with the solution you want and argue backward. If the real problem is driver confusion, a new stack won't fix it\u2014and a 6-month project has high sunk-cost risk if it doesn't address the actual complaint.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-frame-Q2-D"
+              }
+            ]
+          },
+          {
+            "question_text": "If Amara is right about the root cause, does fixing one screen still leave room for the rebuild to happen later if needed?",
+            "response_type": "mcq_plus_elaboration",
+            "sequence": 3,
+            "grading_weight_within_step": 0.33,
+            "target_competencies": [
+              "cognitive_empathy",
+              "strategic_thinking"
+            ],
+            "options": [
+              {
+                "option_label": "A",
+                "option_text": "Yes. A targeted fix proves the hypothesis and creates a forcing function for the rebuild decision. If the one-screen redesign solves 80% of complaints in 3 weeks, the rebuild case weakens\u2014you've validated that the problem was specific, not systemic. If it doesn't, you've learned something crucial before committing 6 months. Either way, you have real data to decide whether a rebuild is actually necessary. The rebuild doesn't become impossible; it becomes optional, based on evidence.",
+                "quality": "best",
+                "points": 3,
+                "competencies": [
+                  "strategic_thinking",
+                  "domain_expertise"
+                ],
+                "explanation": "This demonstrates the core framing move: distinguish root cause from symptom, and use targeted validation as a learning gate before large investment. It shows that a 3-week experiment and a 6-month rebuild are not mutually exclusive\u2014they're sequential, with the experiment determining whether the rebuild is justified. This is sophisticated because it reframes the choice as 'prove vs. disprove the hypothesis' rather than 'do one or the other.' It also implicitly identifies that 'everything needs rebuilding' is often a rationalization, not a diagnosis.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-frame-Q3-A"
+              },
+              {
+                "option_label": "B",
+                "option_text": "Mostly yes, but there's a risk. If you fix the one screen and it works, the PM might lose momentum on the rebuild vision. Even if the rebuild would improve code quality or scalability downstream, you won't do it because stakeholders see the problem as solved. You could end up with a better user experience but a messier codebase long-term.",
+                "quality": "good_but_incomplete",
+                "points": 2,
+                "competencies": [
+                  "strategic_thinking"
+                ],
+                "explanation": "This correctly identifies a real constraint\u2014organizational momentum and the PM's political buy-in\u2014but it frames it as a permanent trade-off rather than a decision point. The answer acknowledges that fixing the symptom doesn't prevent the rebuild, but it treats the rebuild as a 'nice to have' that might get forgotten. This is partially right: yes, the rebuild becomes lower priority if the problem is solved. But the question is whether it's *still possible*, not whether it will *definitely happen*. A stronger answer would distinguish between 'possible later' and 'likely to get funded later,' and would ask: if the rebuild was really about user experience, why wasn't fixing the weekly breakdown the first move?",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-frame-Q3-B"
+              },
+              {
+                "option_label": "C",
+                "option_text": "It depends on whether the one-screen fix is done cleanly enough that it doesn't create technical debt. If the redesign is done well and integrates properly, you leave the door open for a rebuild. If it's a quick patch job, you might make the codebase messier and make a rebuild harder later.",
+                "quality": "surface",
+                "points": 1,
+                "competencies": [],
+                "explanation": "This focuses on implementation quality and code cleanliness, which is a legitimate engineering concern but it misses the strategic framing move entirely. The real question isn't about technical execution quality\u2014it's about whether solving the diagnosed problem (driver confusion on one screen) leaves room for a later architectural decision (rebuild). This answer treats 'doing it well' as the key variable, when the actual key variable is: did you solve the root cause? If you did, the rebuild case must be re-justified on new grounds. If you didn't, you've learned something. The answer is too focused on how to do one thing well, not on what to learn from doing it.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-frame-Q3-C"
+              },
+              {
+                "option_label": "D",
+                "option_text": "No, not really. If you ship a redesigned weekly earnings screen in 3 weeks, you've committed the team to incremental improvements. The rebuild becomes politically impossible because you'll have momentum behind 'just fix the next thing.' By the time you might want to rebuild, the codebase will have too many patch-on-patch layers. Better to do the full rebuild now while you still have the appetite and budget for it.",
+                "quality": "plausible_wrong",
+                "points": 0,
+                "competencies": [],
+                "explanation": "This sounds sophisticated\u2014it names a real risk called 'the slippery slope to legacy code'\u2014but it inverts the actual reasoning. It assumes that shipping a 3-week fix *commits you to incrementalism forever*, when in fact it does the opposite: it creates a data point that either validates or invalidates the rebuild hypothesis. The answer also conflates 'shipping one fix' with 'becoming a firefighting organization,' which is not the same thing. Most critically, it optimizes for 'how do we protect the rebuild plan' rather than 'how do we solve the driver problem and make a good decision.' It treats the PM's vision as sacred and the data as an obstacle, which is exactly the opposite of the framing move Amara should make.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-frame-Q3-D"
+              }
+            ]
+          }
+        ]
+      },
+      "list": {
+        "step_nudge": "Other people have a stake in this choice: drivers, the PM, the design team, the next tech lead who will inherit the code.",
+        "step_order": 1,
+        "grading_weight": 0.25,
+        "questions": [
+          {
+            "question_text": "Who benefits from a quick 3-week fix, and who benefits from a 6-month rebuild?",
+            "response_type": "mcq_plus_elaboration",
+            "sequence": 1,
+            "grading_weight_within_step": 0.33,
+            "target_competencies": [
+              "cognitive_empathy",
+              "creative_execution"
+            ],
+            "options": [
+              {
+                "option_label": "A",
+                "option_text": "The 3-week fix benefits drivers (solves their immediate pain point), support team (fewer tickets), and Amara (validates her hypothesis with data). The 6-month rebuild benefits the PM (executes their vision), engineering (cleaner codebase), and leadership (appears to show ambition). But the rebuild assumes the problems are systemic when 80% of complaints point to one screen\u2014it over-solves and delays relief.",
+                "quality": "best",
+                "points": 3,
+                "competencies": [
+                  "strategic_thinking",
+                  "cognitive_empathy"
+                ],
+                "explanation": "This maps stakeholders precisely to outcomes and reveals the mismatch: the data says the real beneficiary should be drivers, but the rebuild benefits organizational stakeholders instead. It shows why the PM's 'no half measures' logic is actually solving the wrong problem. It also flags the political cost (PM vs Amara) and suggests that proving the hypothesis first (3 weeks) builds credibility for future work.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-list-Q1-A"
+              },
+              {
+                "option_label": "B",
+                "option_text": "The 3-week fix benefits drivers immediately by fixing what's broken. The 6-month rebuild benefits the company long-term with better architecture and fewer future bugs. The question is whether you optimize for fast relief or prevent problems down the road.",
+                "quality": "good_but_incomplete",
+                "points": 2,
+                "competencies": [
+                  "strategic_thinking"
+                ],
+                "explanation": "Correctly identifies the core trade-off (speed vs. scope), but misses the political and epistemic layers. It doesn't mention that the rebuild is based on a hunch, not data\u2014or that proving the hypothesis first would actually *de-risk* future work. It also doesn't name who loses in each scenario (PM credibility, driver frustration, support burden).",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-list-Q1-B"
+              },
+              {
+                "option_label": "C",
+                "option_text": "Drivers benefit from both options because both make the dashboard better. The 3-week fix gets them help faster, but the rebuild makes it actually good. The team should just do the rebuild because it's the right thing to do.",
+                "quality": "surface",
+                "points": 1,
+                "competencies": [],
+                "explanation": "Focuses only on the visible outcome (dashboard improves) without examining what each stakeholder actually needs or what the constraints are. Ignores the data (80% of complaints are about one screen), the risk (scope creep in 6-month projects), and the political reality (this is Amara's decision to defend). It's a surface agreement without strategic reasoning.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-list-Q1-C"
+              },
+              {
+                "option_label": "D",
+                "option_text": "The 3-week fix only benefits impatient drivers who want a quick band-aid. The 6-month rebuild benefits everyone\u2014drivers get a modern experience, engineers get clean code, and the company avoids technical debt. A partial fix is worse than doing nothing because it teaches drivers to expect quick fixes instead of real solutions.",
+                "quality": "plausible_wrong",
+                "points": 0,
+                "competencies": [],
+                "explanation": "This sounds principled (no half measures, avoid technical debt) but contradicts the data and the actual problem. It frames the fix as a band-aid when the data says it solves 80% of the complaint surface. It also assumes the rebuild is lower-risk (it isn't\u2014long projects slip), and it inverts the real cost: *delaying* help teaches drivers that the company doesn't listen to them. This logic prioritizes organizational aesthetics over user pain.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-list-Q1-D"
+              }
+            ]
+          },
+          {
+            "question_text": "What other options exist between a full rebuild and a one-screen patch?",
+            "response_type": "mcq_plus_elaboration",
+            "sequence": 2,
+            "grading_weight_within_step": 0.33,
+            "target_competencies": [
+              "cognitive_empathy",
+              "creative_execution"
+            ],
+            "options": [
+              {
+                "option_label": "A",
+                "option_text": "Fix the weekly earnings breakdown screen (3 weeks), then run a structured post-launch survey with drivers to identify which of the remaining 20% of complaints are systemic architecture issues vs. edge cases. Use those findings to scope a Phase 2 rebuild of only the modules that genuinely need it.",
+                "quality": "best",
+                "points": 3,
+                "competencies": [
+                  "strategic_thinking",
+                  "domain_expertise"
+                ],
+                "explanation": "This option applies the core reasoning move: diagnose before prescribing. It solves the root cause (the one screen causing 80% of complaints) while creating a feedback loop to validate whether a full rebuild is actually necessary. It reduces political risk by proving the problem is solved, and it converts the remaining complaints into data rather than speculation. This is classic scope-constraint thinking\u2014solve the known problem, measure the result, then decide on Phase 2 based on evidence.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-list-Q2-A"
+              },
+              {
+                "option_label": "B",
+                "option_text": "Propose a two-phase approach: redesign the weekly earnings breakdown and 2\u20133 other high-traffic screens over 6 weeks (addressing the visible pain points), ship those wins, then reassess whether a full rebuild is still needed.",
+                "quality": "good_but_incomplete",
+                "points": 2,
+                "competencies": [
+                  "strategic_thinking",
+                  "creative_execution"
+                ],
+                "explanation": "This option correctly identifies the middle ground\u2014it's not all-or-nothing\u2014and it sequences wins. However, it's missing the measurement piece. It assumes that fixing 3\u20134 screens will solve enough to validate the approach, but it doesn't explicitly propose how to measure success or set a threshold for Phase 2. It's a better framing than a full rebuild, but it still relies on intuition rather than evidence to justify stopping.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-list-Q2-B"
+              },
+              {
+                "option_label": "C",
+                "option_text": "Redesign the weekly earnings breakdown screen to match the mockups the PM showed, make sure it looks as polished as the rebuild would have, and ship it in 3 weeks. That will definitely reduce complaints.",
+                "quality": "surface",
+                "points": 1,
+                "competencies": [],
+                "explanation": "This option addresses the symptom (complaints exist) and the visible solution (fix the screen), but it doesn't engage with the strategic question at all. It doesn't explore what lies between a patch and a rebuild, doesn't propose how to validate whether the fix actually solves the problem, and doesn't set up a decision framework for Phase 2. It's a tactical move, not a strategic option.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-list-Q2-C"
+              },
+              {
+                "option_label": "D",
+                "option_text": "Agree to the full 6-month rebuild but negotiate to ship the weekly earnings screen redesign as an early release (week 2) so drivers get quick relief while the rest of the product is being rebuilt in parallel.",
+                "quality": "plausible_wrong",
+                "points": 0,
+                "competencies": [],
+                "explanation": "This sounds like a compromise, but it actually preserves all the risk of a full rebuild\u20146-month timelines, scope creep, hidden launch-date slips\u2014while adding the complexity of a mid-project release. It optimizes for appeasing the PM's vision rather than solving Amara's actual problem: shipping a targeted fix that can be measured and defended. It's a negotiation tactic disguised as a strategic option.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-list-Q2-D"
+              }
+            ]
+          },
+          {
+            "question_text": "If Amara blocks the rebuild, what does the PM do next\u2014and will that outcome be better or worse?",
+            "response_type": "mcq_plus_elaboration",
+            "sequence": 3,
+            "grading_weight_within_step": 0.33,
+            "target_competencies": [
+              "cognitive_empathy",
+              "creative_execution"
+            ],
+            "options": [
+              {
+                "option_label": "A",
+                "option_text": "The PM will reframe the rebuild as urgent, escalate to leadership citing technical debt and user experience holistically, and either secure approval to proceed in parallel with the targeted fix or position the rebuild as the 'real solution' to force Amara's hand. The outcome will likely be worse: Amara gets pulled into a longer, more complex project anyway, the 3-week targeted fix gets deprioritized, and the political cost of blocking becomes a sunk cost that shifts to justifying why the rebuild should have been done.",
+                "quality": "best",
+                "points": 3,
+                "competencies": [
+                  "strategic_thinking",
+                  "cognitive_empathy"
+                ],
+                "explanation": "This answer demonstrates the core 'list' reasoning move: mapping second-order stakeholder behavior. It shows that blocking a PM's vision doesn't eliminate the problem\u2014it shifts the game. The PM has both intrinsic (belief in rebuild) and extrinsic (ego, vision ownership) motivation to push back. The answer recognizes that the *outcome* of blocking depends on whether the PM pivots (reframe + escalate) or capitulates, and anticipates that escalation creates a new political dynamic where Amara's 'no' becomes leverage for a larger ask. This is the structural insight required for the 'list' step: expanding the stakeholder map to include the PM's next move and its ripple effects.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-list-Q3-A"
+              },
+              {
+                "option_label": "B",
+                "option_text": "The PM will feel dismissed and may either propose a hybrid approach (rebuild the weekly screen plus modernize the underlying architecture over time) or push back harder by gathering more support from other teams. The outcome will be mixed: if the PM accepts hybrid, Amara solves the immediate problem but still incurs some rebuild scope; if the PM escalates, she's forced into a negotiation where her leverage weakens.",
+                "quality": "good_but_incomplete",
+                "points": 2,
+                "competencies": [
+                  "cognitive_empathy",
+                  "strategic_thinking"
+                ],
+                "explanation": "This answer correctly identifies that the PM will respond\u2014not accept the block passively\u2014and sketches two plausible paths (hybrid or escalation). It also recognizes that outcomes are contingent on the PM's next move, which is the right mental model for 'list.' However, it misses the deeper structural insight: *why* the PM is motivated to push back (vision ownership, credibility stake, existing mockups), and it underestimates the escalation path by treating it as equal in likelihood to compromise. The answer shows partial application of stakeholder mapping but lacks the specificity about political capital flow and PM psychology that a strong 'list' answer requires.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-list-Q3-B"
+              },
+              {
+                "option_label": "C",
+                "option_text": "The PM will accept the decision to do the targeted fix first and commit to delivering the rebuild afterward once the weekly screen is fixed and validated. Amara will have proven her approach works, and the rebuild will be better scoped.",
+                "quality": "surface",
+                "points": 1,
+                "competencies": [],
+                "explanation": "This answer addresses the visible surface: a PM who accepts feedback and adjusts the plan. But it misses the underlying dynamics entirely. It assumes the PM is purely rational and outcome-focused, ignoring ego, vision ownership, and political incentives. The scenario explicitly signals that the PM 'showed mockups'\u2014a sunk-cost signal\u2014and has already publicly committed to the rebuild framing. A PM in that position rarely capitulates cleanly to a block. This answer optimizes for the most cooperative stakeholder behavior, not the most likely one, and therefore fails to prepare Amara for what will actually happen next.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-list-Q3-C"
+              },
+              {
+                "option_label": "D",
+                "option_text": "The PM will focus entirely on the targeted fix, deprioritize the rebuild, and use the 3-week timeline and quick win as proof that incremental improvements are always better than holistic redesigns. The rebuild will be permanently shelved, and the codebase will remain fragmented and harder to maintain long-term.",
+                "quality": "plausible_wrong",
+                "points": 0,
+                "competencies": [],
+                "explanation": "This answer inverts the power dynamics and PM psychology. It assumes that blocking the PM's vision will cause the PM to abandon the rebuild entirely and adopt Amara's incremental philosophy\u2014a complete reversal of the scenario setup. In reality, a PM who has invested in mockups, framing, and narrative around a rebuild doesn't typically flip to the opposing philosophy just because the tech lead pushed back. This answer is plausible on the surface (incremental fixes *can* work) but contradicts the actual stakeholder incentives and leadership dynamics at play. It optimizes for Amara's preferred outcome rather than the likely consequence, making it a trap answer that sounds right but sets up Amara to be surprised.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-list-Q3-D"
+              }
+            ]
+          }
+        ]
+      },
+      "optimize": {
+        "step_nudge": "Amara has to choose what she's optimizing for: shipping speed, code quality, risk, or team morale. You can't have all four.",
+        "step_order": 2,
+        "grading_weight": 0.25,
+        "questions": [
+          {
+            "question_text": "What is the cost of being wrong about the one-screen fix\u2014how bad would it be if drivers still complained after 3 weeks?",
+            "response_type": "mcq_plus_elaboration",
+            "sequence": 1,
+            "grading_weight_within_step": 0.33,
+            "target_competencies": [
+              "strategic_thinking",
+              "taste"
+            ],
+            "options": [
+              {
+                "option_label": "A",
+                "option_text": "We'd lose 3 weeks and the political credibility to propose targeted fixes in the future. But worse: we'd have data proving the real problem isn't the UI\u2014it's how drivers mentally model earnings. That means the rebuild won't fix it either, and we've just delayed discovering that by 6 months and $500k. The 3-week cost is small compared to the cost of being confidently wrong on the big bet.",
+                "quality": "best",
+                "points": 3,
+                "competencies": [
+                  "strategic_thinking",
+                  "domain_expertise"
+                ],
+                "explanation": "This answer identifies the *second-order consequence* of being wrong\u2014it's not just a setback, it's information asymmetry. The optimize step requires naming what you're sacrificing and why the small bet's failure actually has a lower downside than the big bet's failure. It reframes 'cost of being wrong' as a comparison problem, not an absolute one.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-optimize-Q1-A"
+              },
+              {
+                "option_label": "B",
+                "option_text": "Drivers still complain after 3 weeks, so we pivot to the full rebuild anyway. We've lost 3 weeks of calendar time and team momentum. But we've also validated that the problem runs deeper than the UI, which actually makes the rebuild more focused and less likely to scope-creep.",
+                "quality": "good_but_incomplete",
+                "points": 2,
+                "competencies": [
+                  "strategic_thinking"
+                ],
+                "explanation": "This captures the time cost and acknowledges the learning value, but it stops short of naming the *political cost* or the bigger asymmetry: a 6-month rebuild could *also* fail for the same reason. It doesn't articulate the sacrifice\u2014what you're gambling that you won't find out until later.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-optimize-Q1-B"
+              },
+              {
+                "option_label": "C",
+                "option_text": "We wasted 3 weeks and have to start the rebuild from scratch anyway. That's 3 weeks of delay, unhappy drivers, and team morale hits because the quick fix didn't work. We should have just done the rebuild from the start.",
+                "quality": "surface",
+                "points": 1,
+                "competencies": [],
+                "explanation": "This only counts the visible cost (time lost, complaints persist). It doesn't engage with the *optimization criterion*\u2014what matters more, speed or learning? It doesn't question whether the rebuild actually solves the root problem either.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-optimize-Q1-C"
+              },
+              {
+                "option_label": "D",
+                "option_text": "The cost is actually low. A failed 3-week fix teaches us nothing we don't already know\u201480% of tickets point to that screen, so if the redesign doesn't work, we simply move on to the next improvement. No harm, no foul. We'll learn more by trying and failing fast.",
+                "quality": "plausible_wrong",
+                "points": 0,
+                "competencies": [],
+                "explanation": "This sounds lean and experimental, but it misses the core issue: *the real problem may not be the UI at all*. A failed screen redesign in this context wouldn't be 'learning'\u2014it would be confirming you're solving the wrong problem. Meanwhile, the rebuild proceeds on the same false assumption. It optimizes for speed over diagnosis, which contradicts the optimize step's job (narrow scope, name the criterion).",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-optimize-Q1-D"
+              }
+            ]
+          },
+          {
+            "question_text": "What does Amara give up if she says yes to the rebuild\u2014engineering velocity, team focus, her credibility on the next hard call?",
+            "response_type": "mcq_plus_elaboration",
+            "sequence": 2,
+            "grading_weight_within_step": 0.33,
+            "target_competencies": [
+              "strategic_thinking",
+              "taste"
+            ],
+            "options": [
+              {
+                "option_label": "A",
+                "option_text": "She trades focused execution\u2014proving a targeted fix works and building credibility for pushing back on scope\u2014for diffuse risk. A 6-month rebuild stretches across multiple quarters, dispersing team attention across foundation work where progress is invisible to drivers. If the rebuild ships late or the root problem persists (because it was never the architecture), she's spent velocity, burned goodwill on a moonshot, and weakened her voice on the next call when data mattered.",
+                "quality": "best",
+                "points": 3,
+                "competencies": [
+                  "strategic_thinking",
+                  "domain_expertise"
+                ],
+                "explanation": "This captures the core optimize move: naming the specific sacrifice (focused execution + credibility building + velocity) and the second-order cost (when the real problem wasn't architecture, she's spent political capital on a misdirected bet). It shows why the criterion matters: speed-to-validation and maintaining credibility for evidence-based pushback, not just the rebuild itself.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-optimize-Q2-A"
+              },
+              {
+                "option_label": "B",
+                "option_text": "She gives up the chance to validate her hypothesis quickly. A 3-week targeted fix lets her measure whether drivers are actually satisfied after the redesign ships. A 6-month rebuild delays that feedback loop so far out that even if satisfaction improves, she can't isolate whether it was the one-screen fix or the full system change\u2014and she's already spent half a year.",
+                "quality": "good_but_incomplete",
+                "points": 2,
+                "competencies": [
+                  "strategic_thinking"
+                ],
+                "explanation": "Right direction\u2014identifies the loss of fast feedback and the measurement ambiguity. But stops short of the harder second-order consequence: what Amara loses in organizational standing if the rebuild is delayed or misses the root cause. Doesn't fully articulate the political cost of betting credibility on a moonshot that wasn't justified by the data.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-optimize-Q2-B"
+              },
+              {
+                "option_label": "C",
+                "option_text": "She gives up the opportunity to rebuild the system on a modern stack with better architecture, which will make future feature work faster and reduce technical debt.",
+                "quality": "surface",
+                "points": 1,
+                "competencies": [],
+                "explanation": "This is the PM's pitch, not the optimize reasoning. It looks at the visible rebuild benefit without examining whether that benefit is worth the cost or whether it actually solves the stated problem (driver satisfaction). Ignores the data and the second-order effects on velocity, focus, and credibility.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-optimize-Q2-C"
+              },
+              {
+                "option_label": "D",
+                "option_text": "She gives up nothing of real value. A 6-month rebuild is a standard best practice for solving accumulated UX problems, and drivers will appreciate the polish even if only one screen changes. Her credibility stays intact because leadership will respect the comprehensive approach, and the team will be happier working on new code instead of patching old systems.",
+                "quality": "plausible_wrong",
+                "points": 0,
+                "competencies": [],
+                "explanation": "Sounds reasonable but contradicts the core data and reasoning. The 80% complaint concentration is *not* a signal for a full rebuild\u2014it's a signal for targeted focus. Assumes credibility is built by doing comprehensive work (standard best practice), not by making evidence-based calls and delivering measurable results. Ignores the risk that a 6-month project slips and the real problem remains unfixed.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-optimize-Q2-D"
+              }
+            ]
+          },
+          {
+            "question_text": "Is there a way to run the one-screen fix as a proof-of-concept that informs the rebuild decision?",
+            "response_type": "mcq_plus_elaboration",
+            "sequence": 3,
+            "grading_weight_within_step": 0.33,
+            "target_competencies": [
+              "strategic_thinking",
+              "taste"
+            ],
+            "options": [
+              {
+                "option_label": "A",
+                "option_text": "Ship the one-screen fix in 3 weeks with a specific success metric: driver support tickets about earnings clarity drop by at least 60%. If they do, the root cause was the confusing breakdown\u2014proceed with targeted fixes to similar high-friction screens instead of a full rebuild. If they don't, the problem is systemic (trust, missing features, platform architecture), and the rebuild becomes justified. Either way, you have data to make the rebuild decision, not a hunch.",
+                "quality": "best",
+                "points": 3,
+                "competencies": [
+                  "strategic_thinking",
+                  "domain_expertise"
+                ],
+                "explanation": "This demonstrates the core optimize move: naming the optimization criterion (ticket reduction as proof of root cause), articulating the sacrifice (3 weeks vs. 6 months), and setting a falsifiable threshold that determines next steps. It treats the fix as evidence-gathering, not as a final answer. It also reframes the rebuild decision from 'yes/no' to 'what problem are we actually solving,' which is the strategic win.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-optimize-Q3-A"
+              },
+              {
+                "option_label": "B",
+                "option_text": "Run the one-screen fix as a pilot with a subset of drivers (10% random sample) and measure satisfaction improvement. Use the results to decide whether to expand the targeted fix approach or greenlight the rebuild. If satisfaction improves meaningfully in the pilot, you have proof the problem is scoped; if not, the rebuild becomes the safer bet.",
+                "quality": "good_but_incomplete",
+                "points": 2,
+                "competencies": [
+                  "strategic_thinking"
+                ],
+                "explanation": "This correctly identifies the optimization move (use the fix as a test to inform the bigger decision) and shows good instinct for controlled rollout. However, it's missing the critical element: *what specific metric and threshold will actually resolve the rebuild decision?* 'Meaningful improvement' is vague. It also doesn't articulate what happens if the pilot succeeds\u2014do you expand, or does that become the new strategy? The answer needs to name both the criterion and the sacrifice trade-off.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-optimize-Q3-B"
+              },
+              {
+                "option_label": "C",
+                "option_text": "Launch the one-screen fix first, get user feedback, then use that feedback to improve the rebuild plans. This way the PM's rebuild vision is still intact, but it's informed by real data instead of mockups. Everyone wins\u2014you fix the immediate problem and you build a better long-term solution.",
+                "quality": "surface",
+                "points": 1,
+                "competencies": [],
+                "explanation": "This addresses the visible symptom (gather feedback before rebuilding) but misses the actual strategic dilemma. It assumes both the fix *and* the rebuild happen, which sidesteps Amara's core problem: deciding between a 3-week targeted fix and a 6-month rebuild. It's also politically naive\u2014it doesn't acknowledge that 'both' usually means the rebuild scope grows and timelines slip. It doesn't articulate what metric or threshold would *change the rebuild decision itself*.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-optimize-Q3-C"
+              },
+              {
+                "option_label": "D",
+                "option_text": "Propose a compromise: do the one-screen fix immediately, then start the rebuild planning in parallel. Once the fix ships and you see results, you can decide whether to accelerate or cancel the rebuild. This keeps the PM happy (rebuild still planned) while proving Amara's thesis (the fix works).",
+                "quality": "plausible_wrong",
+                "points": 0,
+                "competencies": [],
+                "explanation": "This sounds pragmatic on the surface but actually contradicts the optimize reasoning move. Parallel planning commits the rebuild *before* the one-screen fix proves its impact. The PM's political investment in the rebuild plan grows while waiting for results, making it harder to cancel\u2014even if the data shows the targeted approach works. It optimizes for short-term political comfort, not for the actual decision criterion. It also introduces exactly the scope creep and timeline slip Amara is worried about.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-optimize-Q3-D"
+              }
+            ]
+          }
+        ]
+      },
+      "win": {
+        "step_nudge": "Amara's recommendation should be a specific, falsifiable bet. Not a compromise. Not a both-sides hedge.",
+        "step_order": 3,
+        "grading_weight": 0.25,
+        "questions": [
+          {
+            "question_text": "What single metric would Amara measure to know if the one-screen fix actually solved the problem?",
+            "response_type": "mcq_plus_elaboration",
+            "sequence": 1,
+            "grading_weight_within_step": 0.33,
+            "target_competencies": [
+              "strategic_thinking",
+              "domain_expertise"
+            ],
+            "options": [
+              {
+                "option_label": "A",
+                "option_text": "Support ticket volume for the weekly earnings breakdown screen specifically, tracked weekly for 4 weeks post-launch, with a target of 70%+ reduction. If tickets don't drop by at least that threshold, the fix didn't address the real confusion.",
+                "quality": "best",
+                "points": 3,
+                "competencies": [
+                  "strategic_thinking",
+                  "domain_expertise"
+                ],
+                "explanation": "This directly measures whether the identified root cause (confusing breakdown screen) was actually solved. It's specific (one screen, not overall dashboard), has a falsifiable threshold (70%), includes a timeline (4 weeks\u2014enough to measure impact but short enough to course-correct), and uses the same signal (support tickets) that diagnosed the problem in the first place. It proves or disproves the hypothesis: 'The problem is screen design, not architecture.'",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-win-Q1-A"
+              },
+              {
+                "option_label": "B",
+                "option_text": "Overall driver satisfaction with the dashboard measured via a post-update survey, comparing satisfaction scores before and after the fix, with a target of 20%+ improvement in the earnings section specifically.",
+                "quality": "good_but_incomplete",
+                "points": 2,
+                "competencies": [
+                  "cognitive_empathy",
+                  "strategic_thinking"
+                ],
+                "explanation": "This correctly identifies that satisfaction matters and attempts to isolate the earnings section, showing good thinking about stakeholder experience. However, surveys are slower to respond than behavioral metrics (tickets), and a 20% improvement threshold is arbitrary without knowing baseline satisfaction. It also doesn't address whether the metric actually proves the *design* fixed the *confusion*\u2014satisfaction could improve for other reasons (novelty, effort to look at a new screen, etc.).",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-win-Q1-B"
+              },
+              {
+                "option_label": "C",
+                "option_text": "Overall dashboard usage metrics\u2014whether drivers spend less time on the dashboard after the redesign, indicating the UI is now more efficient.",
+                "quality": "surface",
+                "points": 1,
+                "competencies": [],
+                "explanation": "This measures a visible symptom (time spent) but misses the actual problem. Drivers might spend less time because they gave up trying to understand the numbers, or because they're frustrated. Lower time-on-page doesn't prove confusion was resolved\u2014it could actually indicate worse comprehension. It optimizes for efficiency rather than clarity, which are different goals.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-win-Q1-C"
+              },
+              {
+                "option_label": "D",
+                "option_text": "The percentage of drivers who attempt to compare their weekly earnings across multiple weeks, since the new screen design will make that comparison easier and more intuitive.",
+                "quality": "plausible_wrong",
+                "points": 0,
+                "competencies": [],
+                "explanation": "This sounds reasonable on the surface\u2014it assumes the new design enables behavior\u2014but it's backwards reasoning. The problem statement is that drivers are *confused by the existing breakdown*, not that they lack a feature. Measuring a new behavior doesn't prove the confusion was resolved; it measures feature adoption instead. It also introduces a new optimization criterion (enabling comparisons) that wasn't part of the original diagnosis (numbers don't line up the way drivers expect them).",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-win-Q1-D"
+              }
+            ]
+          },
+          {
+            "question_text": "If Amara recommends the targeted fix, what happens to the 20% of complaints she didn't address\u2014and is that acceptable?",
+            "response_type": "mcq_plus_elaboration",
+            "sequence": 2,
+            "grading_weight_within_step": 0.33,
+            "target_competencies": [
+              "strategic_thinking",
+              "domain_expertise"
+            ],
+            "options": [
+              {
+                "option_label": "A",
+                "option_text": "The 20% are likely secondary friction points that emerge *after* drivers understand the primary earnings logic. Fixing the weekly breakdown first establishes trust in the baseline numbers. Those complaints will probably drop further once the root cause is addressed, and if they don't, she'll have 3 weeks of usage data to distinguish real problems from noise. This is acceptable because it trades perfect comprehensiveness now for speed + evidence.",
+                "quality": "best",
+                "points": 3,
+                "competencies": [
+                  "strategic_thinking",
+                  "domain_expertise"
+                ],
+                "explanation": "This demonstrates the win-phase reasoning: make a falsifiable call with a clear test. Amara is explicitly naming what she's betting on (secondary issues will decline), when she'll know if she's wrong (after 3 weeks of data), and why the trade-off is defensible (speed + evidence beats perfection + political risk). She's not dismissing the 20%\u2014she's prioritizing by consequence and creating a feedback loop to validate.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-win-Q2-A"
+              },
+              {
+                "option_label": "B",
+                "option_text": "The 20% of complaints might represent genuinely separate problems, but without knowing their specifics, she can't decide if they're critical or cosmetic. She should map that 20% more carefully before committing to the targeted fix\u2014interview drivers about those complaints, then decide if the 3-week scope still makes sense.",
+                "quality": "good_but_incomplete",
+                "points": 2,
+                "competencies": [
+                  "cognitive_empathy",
+                  "strategic_thinking"
+                ],
+                "explanation": "This shows smart caution and stakeholder thinking\u2014she's right that the 20% deserves investigation. But it stops short of the win move: making a *specific call* with a *test and threshold*. She's still in the optimize phase (gathering more info, refining scope). A true win answer would name what finding in that 20% would change her recommendation, and by when.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-win-Q2-B"
+              },
+              {
+                "option_label": "C",
+                "option_text": "Those 20% of complaints are frustrating, but they're minority problems. The 80% priority is clear, so she should fix that and deal with the rest later. Drivers will be happier overall once the main issue is solved.",
+                "quality": "surface",
+                "points": 1,
+                "competencies": [],
+                "explanation": "This acknowledges the numbers but doesn't grapple with the real tension: *what if that 20% compounds into bigger problems, or represents a different subset of drivers?* It treats the complaint distribution as a final answer rather than a starting hypothesis. There's no mention of how to test whether 'later' ever comes, or whether ignoring 20% of drivers' pain is politically sustainable.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-win-Q2-C"
+              },
+              {
+                "option_label": "D",
+                "option_text": "The 20% of unaddressed complaints prove that a targeted fix is incomplete. Drivers need a holistic solution to feel heard. She should argue for the full rebuild because addressing root causes properly means handling all complaints at once, and half-measures will only erode trust further.",
+                "quality": "plausible_wrong",
+                "points": 0,
+                "competencies": [],
+                "explanation": "This inverts the reasoning. It assumes that *scope = trust* and *wholeness = credibility*. But the scenario explicitly shows Amara's data: 80% of complaints point to one screen. A rebuild handles everything by brute force, not by addressing root causes. This reasoning also ignores the risk Amara flagged\u2014scope creep and missed launch dates, which *also* erode trust. It optimizes for optics (appearing thorough) over outcomes (actually solving the problem).",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-win-Q2-D"
+              }
+            ]
+          },
+          {
+            "question_text": "How would Amara phrase her recommendation so the PM feels heard, not blocked?",
+            "response_type": "mcq_plus_elaboration",
+            "sequence": 3,
+            "grading_weight_within_step": 0.33,
+            "target_competencies": [
+              "strategic_thinking",
+              "domain_expertise"
+            ],
+            "options": [
+              {
+                "option_label": "A",
+                "option_text": "\"I'm aligned on the vision\u2014a modern stack will pay dividends long-term. But here's what the data shows: 80% of complaints come from one screen. Let's ship a surgical fix there in 3 weeks, measure if satisfaction actually moves, then decide if a full rebuild is still needed. If it solves the problem, we've unlocked 6 months for other priorities. If it doesn't, we have proof that we need to go deeper\u2014and we rebuild from a place of certainty, not assumption.\"",
+                "quality": "best",
+                "points": 3,
+                "competencies": [
+                  "strategic_thinking",
+                  "cognitive_empathy"
+                ],
+                "explanation": "This frames the targeted fix as a test, not a rejection. It honors the PM's vision (acknowledges long-term value of rebuild), treats the proposal as a falsifiable hypothesis, and proposes a specific measurable gate (satisfaction metric + 3-week timeline). It resets the framing from 'half measures vs. full vision' to 'de-risk the rebuild with data.' This is the win move: a defensible call with a clear test.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-win-Q3-A"
+              },
+              {
+                "option_label": "B",
+                "option_text": "\"The rebuild is the right long-term move. But we should start by fixing the earnings screen since that's where most complaints are coming from. Once we ship that and see how drivers respond, we'll have better clarity on what else needs fixing in the rebuild.\"",
+                "quality": "good_but_incomplete",
+                "points": 2,
+                "competencies": [
+                  "strategic_thinking"
+                ],
+                "explanation": "This acknowledges the PM's vision and proposes the right sequence (targeted fix first, then rebuild). But it doesn't articulate a success metric or decision criterion\u2014it just says 'we'll have clarity.' Without naming what 'satisfied drivers' looks like or when you'd decide the rebuild is unnecessary, it still leaves room for the PM to see this as a delay tactic rather than a test.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-win-Q3-B"
+              },
+              {
+                "option_label": "C",
+                "option_text": "\"Support tickets are spiking because the earnings screen is broken. We need to fix it now. A 6-month rebuild is too slow\u2014drivers need answers this quarter. Let's patch it in 3 weeks and move on.\"",
+                "quality": "surface",
+                "points": 1,
+                "competencies": [],
+                "explanation": "This addresses the urgent symptom (tickets, broken screen) but doesn't engage with the PM's underlying concern (architecture, long-term sustainability). It also doesn't propose a test or decision framework\u2014just a patch. It sounds like Amara is dismissing the PM's vision without understanding it, which burns political capital and misses the opportunity to reframe this as a learning moment.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-win-Q3-C"
+              },
+              {
+                "option_label": "D",
+                "option_text": "\"I appreciate the vision, but a rebuild is risky. Let's do a full audit of the dashboard first, identify all the issues, then build a comprehensive plan. That way we know exactly what we're fixing and can do it right the first time.\"",
+                "quality": "plausible_wrong",
+                "points": 0,
+                "competencies": [],
+                "explanation": "This sounds cautious and thorough, but it actually delays any action and opens a new process (audit \u2192 plan \u2192 build). It doesn't use the data Amara already has, doesn't propose a test, and doesn't make a defensible call. It trades certainty for more analysis paralysis\u2014the opposite of the win move, which is to test the highest-confidence hypothesis quickly.",
+                "id": "HP-DEBATE-INTERNAL-TRAD-MOD5-TL-001-win-Q3-D"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+]

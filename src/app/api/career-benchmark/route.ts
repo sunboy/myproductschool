@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
+import { IS_MOCK } from '@/lib/mock'
+import { getLumaContext } from '@/lib/luma-context'
 
 const BENCHMARK_LEVELS = [
   { title: 'Junior Engineer', percentile: 25 },
@@ -10,11 +12,30 @@ const BENCHMARK_LEVELS = [
   { title: 'Principal / Lead', percentile: 95 },
 ]
 
+function buildLumaMessage(
+  userPercentile: number,
+  strongestCompetency: string | null,
+  weakestCompetency: string | null,
+): string {
+  if (userPercentile === 0) {
+    return 'Keep practising to build your benchmark.'
+  }
+  const topPct = 100 - userPercentile
+  if (topPct <= 20 && strongestCompetency) {
+    return `You're in the top ${topPct}% of product thinkers — your ${strongestCompetency} is your standout strength.`
+  }
+  if (weakestCompetency) {
+    return `Solid foundation — you're ahead of ${userPercentile}% of learners. Push your ${weakestCompetency} to break into the top tier.`
+  }
+  return `You're ahead of ${userPercentile}% of learners — keep going to climb further.`
+}
+
 export async function GET() {
-  if (process.env.NEXT_PUBLIC_MOCK_MODE === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json({
       levels: BENCHMARK_LEVELS,
       user_level: 'Senior Engineer',
+      luma_message: "You're in the top 20% of product thinkers — strong work so far.",
     })
   }
 
@@ -41,8 +62,22 @@ export async function GET() {
   const userLevel = [...BENCHMARK_LEVELS].reverse().find(l => userPercentile >= l.percentile)?.title
     ?? BENCHMARK_LEVELS[0].title
 
+  // Fetch luma context to derive strongest/weakest competency for message
+  let lumaCtx: Awaited<ReturnType<typeof getLumaContext>> | null = null
+  try {
+    lumaCtx = await getLumaContext(user.id)
+  } catch {
+    // non-fatal — fall back to no-competency message
+  }
+  const competencies = lumaCtx?.competencies ?? []
+  const strongestCompetency = competencies.length > 0
+    ? [...competencies].sort((a, b) => b.score - a.score)[0].competency
+    : null
+  const lumaMessage = buildLumaMessage(userPercentile, strongestCompetency, lumaCtx?.weakestCompetency ?? null)
+
   return NextResponse.json({
     levels: BENCHMARK_LEVELS,
     user_level: userLevel,
+    luma_message: lumaMessage,
   })
 }

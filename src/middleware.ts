@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { IS_MOCK } from '@/lib/mock'
 
 // ── Pre-launch gate ──────────────────────────────────────────
 // Set to true to restrict all routes to the waitlist page.
@@ -9,11 +10,17 @@ const PRE_LAUNCH = false
 const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist', '/luma-preview']
 
 // ── Post-launch route config ─────────────────────────────────
-const PUBLIC_ROUTES = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/waitlist', '/waitlist-b', '/pricing', '/onboarding', '/dashboard', '/explore', '/challenges', '/progress', '/cohort', '/settings', '/prep', '/welcome', '/role', '/calibration', '/interview-prep']
+const PUBLIC_ROUTES = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/waitlist', '/waitlist-b', '/pricing', '/onboarding', '/dashboard', '/explore', '/challenges', '/progress', '/cohort', '/settings', '/prep', '/welcome', '/role', '/calibration', '/interview-prep', '/workspace', '/learn/modules', '/learn/domains', '/learn/plans']
 const AUTH_ROUTES = ['/login', '/signup', '/forgot-password', '/reset-password']
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+
+  // ── Post-launch: normal auth flow ──────────────────────
+  // Bypass auth in mock/testing mode
+  if (IS_MOCK) {
+    return NextResponse.next()
+  }
 
   // ── Pre-launch: only waitlist + its API are accessible ──
   if (PRE_LAUNCH) {
@@ -22,12 +29,6 @@ export async function middleware(request: NextRequest) {
     if (!isAllowed) {
       return NextResponse.redirect(new URL('/waitlist', request.url))
     }
-    return NextResponse.next()
-  }
-
-  // ── Post-launch: normal auth flow ──────────────────────
-  // Bypass auth in mock/testing mode
-  if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || process.env.USE_MOCK_DATA === 'true') {
     return NextResponse.next()
   }
 
@@ -54,40 +55,38 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Redirect authenticated users away from auth pages
-  if (user && AUTH_ROUTES.some(r => pathname.startsWith(r))) {
-    // Check if onboarding is done — if not, send to onboarding
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('onboarding_completed_at')
-      .eq('id', user.id)
-      .single()
-    const dest = profile?.onboarding_completed_at ? '/dashboard' : '/onboarding/welcome'
-    return NextResponse.redirect(new URL(dest, request.url))
-  }
-
   // Protect app routes — allow onboarding, API, and public routes without profile check
   const isPublic = PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/')) || pathname.startsWith('/api/')
-  if (!user && !isPublic) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
 
-  // For authenticated users on app routes (not onboarding), check onboarding status
-  const isOnboarding = pathname.startsWith('/onboarding')
-  const isAppRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/explore')
-    || pathname.startsWith('/challenges') || pathname.startsWith('/progress')
-    || pathname.startsWith('/cohort') || pathname.startsWith('/prep')
-    || pathname.startsWith('/settings')
-
-  if (user && isAppRoute && !isOnboarding) {
+  if (user) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('onboarding_completed_at')
       .eq('id', user.id)
       .single()
-    if (profile && !profile.onboarding_completed_at) {
+    const onboardingDone = !!profile?.onboarding_completed_at
+
+    if (AUTH_ROUTES.some(r => pathname.startsWith(r))) {
+      return NextResponse.redirect(new URL(
+        onboardingDone ? '/dashboard' : '/onboarding/welcome',
+        request.url
+      ))
+    }
+
+    const isOnboarding = pathname.startsWith('/onboarding')
+    const isAppRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/explore')
+      || pathname.startsWith('/challenges') || pathname.startsWith('/progress')
+      || pathname.startsWith('/cohort') || pathname.startsWith('/prep')
+      || pathname.startsWith('/settings') || pathname.startsWith('/learn')
+
+    if (isAppRoute && !isOnboarding && !onboardingDone) {
       return NextResponse.redirect(new URL('/onboarding/welcome', request.url))
     }
+  }
+
+  // Protect app routes for unauthenticated users
+  if (!user && !isPublic) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   // Admin route protection (role check done in page/layout)

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { FlowMove } from '@/lib/types'
+import { IS_MOCK } from '@/lib/mock'
 
 const XP_PER_LEVEL = 500
 
@@ -10,7 +11,7 @@ interface UpdateBody {
 }
 
 export async function POST(req: NextRequest) {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json({ updated: true, level_ups: [] })
   }
 

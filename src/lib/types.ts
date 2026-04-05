@@ -14,13 +14,13 @@ export const DIMENSION_LABELS: Record<FeedbackDimension, string> = {
 export const FLOW_MOVE_LABELS: Record<FlowMove, string> = {
   frame: 'Frame',
   list: 'List',
-  optimize: 'Optimize',
-  win: 'Win',
+  weigh: 'Weigh',
+  sell: 'Sell',
 }
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing'
 
 export type UserRole = 'SWE' | 'Data Eng' | 'ML Eng' | 'DevOps' | 'EM' | 'Founding Eng'
-export type FlowMove = 'frame' | 'list' | 'optimize' | 'win'
+export type FlowMove = 'frame' | 'list' | 'weigh' | 'sell'
 export type Paradigm = 'traditional' | 'ai-assisted' | 'agentic' | 'ai-native'
 
 export interface Profile {
@@ -74,6 +74,7 @@ export interface Flashcard {
 
 export interface ChallengePrompt {
   id: string
+  slug?: string
   domain_id: string
   title: string
   prompt_text: string
@@ -340,6 +341,7 @@ export interface StudyPlan {
 
 export interface StudyPlanChapterChallenge {
   id: string
+  slug?: string
   title: string
   difficulty: string
   paradigm?: string | null
@@ -453,6 +455,7 @@ export interface ShareCardData {
 export interface CareerBenchmark {
   levels: { title: string; percentile: number }[]
   user_level: string
+  luma_message?: string
 }
 
 /* ── v2 Challenge Steps ───────────────────────────────────── */
@@ -510,7 +513,7 @@ export type Competency = 'motivation_theory' | 'cognitive_empathy' | 'taste' | '
 export type UserRoleV2 = 'swe' | 'data_eng' | 'ml_eng' | 'devops' | 'founding_eng' | 'em' | 'tech_lead' | 'pm' | 'designer' | 'data_scientist'
 
 export interface Challenge {
-  id: string; title: string
+  id: string; slug: string; title: string
   scenario_role: string | null; scenario_context: string; scenario_trigger: string; scenario_question: string
   engineer_standout: string | null
   paradigm: Paradigm | null; industry: string | null; sub_vertical: string | null
@@ -637,4 +640,112 @@ export interface StudyPlanWithItems extends StudyPlan {
   chapter_count: number
   completed_count: number
   progress_percentage: number
+}
+
+// ── Learn Section ─────────────────────────────────────────────
+
+export type LearnDifficulty = 'foundation' | 'beginner' | 'intermediate' | 'advanced' | 'new-era' | 'entry-point'
+
+export interface LearnModule {
+  id: string
+  slug: string
+  name: string
+  tagline: string
+  difficulty: LearnDifficulty
+  chapter_count: number
+  est_minutes: number
+  cover_color: string    // dark hex e.g. '#1a3a2a'
+  accent_color: string   // primary accent hex e.g. '#4a7c59'
+  sort_order: number
+  created_at: string
+}
+
+export interface LearnChapter {
+  id: string
+  module_id: string
+  slug: string
+  title: string
+  subtitle: string
+  sort_order: number
+  hook_text: string
+  body_mdx: string
+  created_at: string
+}
+
+export interface UserLearnProgress {
+  id: string
+  user_id: string
+  module_id: string
+  chapter_id: string
+  completed_at: string | null
+}
+
+// Enriched for UI
+export interface LearnModuleWithProgress extends LearnModule {
+  completed_chapters: number
+  progress_percentage: number
+}
+
+export interface LearnChapterWithProgress extends LearnChapter {
+  is_completed: boolean
+  is_unlocked: boolean  // true if previous chapter is done or sort_order === 1
+}
+
+// ── Autopsy Showcase ──────────────────────────────────────────────────────
+
+export interface AutopsyProduct {
+  id: string
+  slug: string
+  name: string
+  tagline: string
+  logo_emoji: string | null
+  logo_url: string | null
+  cover_color: string | null
+  industry: string | null
+  paradigm: string | null
+  decision_count: number
+  is_published: boolean
+  sort_order: number
+}
+
+export interface AutopsyDecision {
+  id: string
+  product_id: string
+  sort_order: number
+  title: string
+  area: string
+  difficulty: 'warmup' | 'standard' | 'advanced'
+  icon: string | null
+  screenshot_url: string | null
+  what_they_did: string
+  real_reasoning: string
+  principle: string
+  challenge_question: string
+}
+
+export interface AutopsyChallengeOption {
+  label: string
+  text: string
+  quality: OptionQuality
+  explanation: string
+}
+
+export interface AutopsyChallenge {
+  id: string
+  decision_id: string
+  context: string
+  options: AutopsyChallengeOption[]
+  insight: string
+  principle: string
+}
+
+export interface AutopsyProductDetail extends AutopsyProduct {
+  decisions: Array<AutopsyDecision & { challenge: AutopsyChallenge }>
+}
+
+export interface ShowcaseAttempt {
+  points: number
+  grade_label: string
+  decision_index: number
+  selected_option_label: string
 }

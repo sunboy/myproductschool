@@ -77,7 +77,7 @@ export function useFlowStep(challengeId: string, step: FlowStep): UseFlowStepRet
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/v2/challenges/${challengeId}/step/${step}?attempt_id=${attemptId}`)
+      const res = await fetch(`/api/challenges/${challengeId}/step/${step}?attempt_id=${attemptId}`)
       if (!res.ok) throw new Error(`Failed to load step: ${res.status}`)
       const data = await res.json()
       setStepData(data)
@@ -99,7 +99,7 @@ export function useFlowStep(challengeId: string, step: FlowStep): UseFlowStepRet
     setSubmitting(true)
     setError(null)
     try {
-      const res = await fetch(`/api/v2/challenges/${challengeId}/step/${step}/submit`, {
+      const res = await fetch(`/api/challenges/${challengeId}/step/${step}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -134,7 +134,7 @@ export function useFlowStep(challengeId: string, step: FlowStep): UseFlowStepRet
     userText?: string | null
   }): Promise<{ role_context: string; career_signal: string } | null> => {
     try {
-      const res = await fetch(`/api/v2/challenges/${challengeId}/coaching`, {
+      const res = await fetch(`/api/challenges/${challengeId}/coaching`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

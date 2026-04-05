@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learn Card Options</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito Sans', system-ui, sans-serif; background: #faf6f0; color: #2e3230; padding: 32px 24px; }
+  h2 { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #74796e; margin-bottom: 28px; }
+
+  .section { margin-bottom: 40px; }
+  .section-label {
+    font-size: 11px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.08em; color: #74796e; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: #e4e0d8; }
+
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+
+  /* ─── Option A: Colored cover band (fits current card style) ─── */
+  .card-a {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e4e0d8;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    cursor: pointer;
+  }
+  .card-a-cover {
+    height: 100px;
+    position: relative;
+    overflow: hidden;
+    display: flex; align-items: flex-end;
+    padding: 12px 16px;
+  }
+  .card-a-cover svg {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+  }
+  .card-a-cover-name {
+    position: relative; z-index: 2;
+    font-size: 22px; font-weight: 900; letter-spacing: -0.02em;
+    color: white; line-height: 1;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.3);
+  }
+  .card-a-body { padding: 12px 16px 16px; }
+  .card-a-tagline { font-size: 11px; color: #74796e; line-height: 1.5; margin-bottom: 10px; }
+  .chip-row { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .chip {
+    font-size: 9px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.05em; padding: 2px 8px; border-radius: 20px;
+  }
+  .card-a-stats {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 10px; color: #74796e; font-weight: 600;
+  }
+  .stat-pair { display: flex; gap: 12px; }
+
+  /* ─── Option B: Current style + just add SVG as top border area ─── */
+  .card-b {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e4e0d8;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    cursor: pointer;
+    position: relative;
+  }
+  .card-b-top {
+    height: 6px;
+    width: 100%;
+  }
+  .card-b-pattern {
+    padding: 14px 16px 10px;
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .card-b-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; overflow: hidden;
+    position: relative;
+  }
+  .card-b-icon svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .card-b-name { font-size: 17px; font-weight: 900; letter-spacing: -0.01em; margin-bottom: 3px; }
+  .card-b-tagline { font-size: 11px; color: #74796e; line-height: 1.5; }
+  .card-b-body { padding: 0 16px 16px; }
+  .card-b-divider { height: 1px; background: #f5f1ea; margin-bottom: 12px; }
+  .card-b-bottom {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 10px; color: #74796e; font-weight: 600;
+  }
+
+  /* progress bar */
+  .prog-bar-bg { height: 3px; background: #f0ece4; border-radius: 2px; overflow: hidden; margin: 8px 0 10px; }
+  .prog-bar-fill { height: 100%; border-radius: 2px; }
+
+  .cta { font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 3px; }
+</style>
+</head>
+<body>
+
+<h2>Module Card Design Options</h2>
+<p class="subtitle">Fitting into the existing HackProduct design system. Which approach feels right?</p>
+
+<!-- OPTION A -->
+<div class="section">
+  <div class="section-label">Option A — Colored cover with geometric art (LeetCode-style)</div>
+  <div class="grid-3">
+
+    <div class="card-a">
+      <div class="card-a-cover" style="background:#1a3a2a">
+        <svg viewBox="0 0 260 100" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="32" fill="none" stroke="#4a7c59" stroke-width="1.5" opacity="0.6"/>
+          <circle cx="130" cy="50" r="32" fill="none" stroke="#4a7c59" stroke-width="1.5" opacity="0.6"/>
+          <circle cx="210" cy="50" r="32" fill="none" stroke="#4a7c59" stroke-width="1.5" opacity="0.6"/>
+          <line x1="82" y1="50" x2="98" y2="50" stroke="#78a886" stroke-width="1.5" opacity="0.7"/>
+          <line x1="162" y1="50" x2="178" y2="50" stroke="#78a886" stroke-width="1.5" opacity="0.7"/>
+          <polygon points="95,46 102,50 95,54" fill="#78a886" opacity="0.7"/>
+          <polygon points="175,46 182,50 175,54" fill="#78a886" opacity="0.7"/>
+          <text x="50" y="55" text-anchor="middle" fill="#8ecf9e" font-size="12" font-weight="800" opacity="0.9">F·L</text>
+          <text x="130" y="55" text-anchor="middle" fill="#8ecf9e" font-size="12" font-weight="800" opacity="0.9">O</text>
+          <text x="210" y="55" text-anchor="middle" fill="#8ecf9e" font-size="12" font-weight="800" opacity="0.9">W</text>
+        </svg>
+        <div class="card-a-cover-name">FLOW</div>
+      </div>
+      <div class="card-a-body">
+        <div class="chip-row">
+          <span class="chip" style="background:#c8e8d0;color:#2e5e3a">Foundation</span>
+          <span class="chip" style="background:#f0ece4;color:#74796e">7 chapters</span>
+        </div>
+        <div class="card-a-tagline">The 4-step framework behind every challenge on this platform</div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:29%;background:#4a7c59"></div></div>
+        <div class="card-a-stats">
+          <div class="stat-pair"><span>2/7 done</span><span>~45 min</span></div>
+          <span class="cta" style="color:#4a7c59">Continue →</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-a">
+      <div class="card-a-cover" style="background:#0f1a2e">
+        <svg viewBox="0 0 260 100" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="10" width="240" height="80" rx="4" fill="none" stroke="#3b82f6" stroke-width="0.8" opacity="0.3"/>
+          <line x1="10" y1="26" x2="250" y2="26" stroke="#3b82f6" stroke-width="0.6" opacity="0.3"/>
+          <rect x="18" y="14" width="5" height="5" rx="1" fill="#ef4444" opacity="0.7"/>
+          <rect x="27" y="14" width="5" height="5" rx="1" fill="#f59e0b" opacity="0.7"/>
+          <rect x="36" y="14" width="5" height="5" rx="1" fill="#10b981" opacity="0.7"/>
+          <rect x="40" y="35" width="15" height="45" rx="2" fill="#3b82f6" opacity="0.7"/>
+          <rect x="65" y="40" width="15" height="40" rx="2" fill="#3b82f6" opacity="0.6"/>
+          <rect x="90" y="48" width="15" height="32" rx="2" fill="#ef4444" opacity="0.8"/>
+          <rect x="115" y="58" width="15" height="22" rx="2" fill="#ef4444" opacity="0.7"/>
+          <rect x="140" y="52" width="15" height="28" rx="2" fill="#ef4444" opacity="0.6"/>
+          <rect x="165" y="42" width="15" height="38" rx="2" fill="#3b82f6" opacity="0.5"/>
+          <rect x="190" y="35" width="15" height="45" rx="2" fill="#3b82f6" opacity="0.5"/>
+          <line x1="89" y1="33" x2="89" y2="78" stroke="#ef4444" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.9"/>
+          <text x="89" y="31" text-anchor="middle" fill="#ef4444" font-size="8" font-weight="800">↓</text>
+        </svg>
+        <div class="card-a-cover-name">Product Debug</div>
+      </div>
+      <div class="card-a-body">
+        <div class="chip-row">
+          <span class="chip" style="background:#dbeafe;color:#1e40af">Intermediate</span>
+          <span class="chip" style="background:#f0ece4;color:#74796e">7 chapters</span>
+        </div>
+        <div class="card-a-tagline">DAU dropped 15%. Walk me through your diagnosis.</div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:0%;background:#3b82f6"></div></div>
+        <div class="card-a-stats">
+          <div class="stat-pair"><span>0/7 done</span><span>~45 min</span></div>
+          <span class="cta" style="color:#3b5bdb">Start →</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-a">
+      <div class="card-a-cover" style="background:#0e1a12">
+        <svg viewBox="0 0 260 100" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="130" cy="50" rx="70" ry="38" fill="none" stroke="#10b981" stroke-width="1.5" opacity="0.5"/>
+          <ellipse cx="130" cy="50" rx="44" ry="24" fill="none" stroke="#34d399" stroke-width="1" opacity="0.4"/>
+          <polygon points="198,44 204,50 196,53" fill="#10b981" opacity="0.6"/>
+          <circle cx="130" cy="12" r="6" fill="#10b981" opacity="0.7"/>
+          <circle cx="198" cy="50" r="6" fill="#10b981" opacity="0.7"/>
+          <circle cx="130" cy="88" r="6" fill="#10b981" opacity="0.7"/>
+          <circle cx="62" cy="50" r="6" fill="#10b981" opacity="0.7"/>
+          <line x1="136" y1="15" x2="191" y2="44" stroke="#10b981" stroke-width="0.8" opacity="0.3" stroke-dasharray="3,3"/>
+          <line x1="192" y1="56" x2="136" y2="85" stroke="#10b981" stroke-width="0.8" opacity="0.3" stroke-dasharray="3,3"/>
+          <line x1="124" y1="85" x2="68" y2="56" stroke="#10b981" stroke-width="0.8" opacity="0.3" stroke-dasharray="3,3"/>
+          <line x1="68" y1="44" x2="124" y2="15" stroke="#10b981" stroke-width="0.8" opacity="0.3" stroke-dasharray="3,3"/>
+        </svg>
+        <div class="card-a-cover-name">Growth Loops</div>
+      </div>
+      <div class="card-a-body">
+        <div class="chip-row">
+          <span class="chip" style="background:#d1fae5;color:#065f46">Intermediate</span>
+          <span class="chip" style="background:#f0ece4;color:#74796e">7 chapters</span>
+        </div>
+        <div class="card-a-tagline">Systems that compound. Engineers already think this way.</div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:0%;background:#10b981"></div></div>
+        <div class="card-a-stats">
+          <div class="stat-pair"><span>0/7 done</span><span>~45 min</span></div>
+          <span class="cta" style="color:#10b981">Start →</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- OPTION B -->
+<div class="section">
+  <div class="section-label">Option B — Keep existing card shape, add icon + accent color (minimal change)</div>
+  <div class="grid-3">
+
+    <div class="card-b">
+      <div class="card-b-top" style="background:#4a7c59"></div>
+      <div class="card-b-pattern">
+        <div class="card-b-icon" style="background:#1a3a2a">
+          <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="14" cy="24" r="10" fill="none" stroke="#4a7c59" stroke-width="1.5" opacity="0.7"/>
+            <circle cx="34" cy="24" r="10" fill="none" stroke="#4a7c59" stroke-width="1.5" opacity="0.7"/>
+            <line x1="24" y1="24" x2="24" y2="24" stroke="#78a886" stroke-width="1.5" opacity="0.7"/>
+            <text x="14" y="28" text-anchor="middle" fill="#8ecf9e" font-size="7" font-weight="900">F·L</text>
+            <text x="34" y="28" text-anchor="middle" fill="#8ecf9e" font-size="7" font-weight="900">O·W</text>
+          </svg>
+        </div>
+        <div>
+          <div class="card-b-name">FLOW</div>
+          <div class="card-b-tagline">The 4-step framework behind every challenge on this platform</div>
+        </div>
+      </div>
+      <div class="card-b-body">
+        <div class="card-b-divider"></div>
+        <div class="chip-row">
+          <span class="chip" style="background:#c8e8d0;color:#2e5e3a">Foundation</span>
+          <span class="chip" style="background:#f0ece4;color:#74796e">7 chapters · 45 min</span>
+        </div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:29%;background:#4a7c59"></div></div>
+        <div class="card-b-bottom">
+          <span>2 / 7 chapters done</span>
+          <span class="cta" style="color:#4a7c59">Continue →</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-b">
+      <div class="card-b-top" style="background:#3b82f6"></div>
+      <div class="card-b-pattern">
+        <div class="card-b-icon" style="background:#0f1a2e">
+          <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="8" width="36" height="32" rx="3" fill="none" stroke="#3b82f6" stroke-width="1" opacity="0.4"/>
+            <line x1="6" y1="16" x2="42" y2="16" stroke="#3b82f6" stroke-width="0.8" opacity="0.4"/>
+            <rect x="10" y="20" width="5" height="16" rx="1" fill="#3b82f6" opacity="0.7"/>
+            <rect x="18" y="24" width="5" height="12" rx="1" fill="#ef4444" opacity="0.8"/>
+            <rect x="26" y="26" width="5" height="10" rx="1" fill="#ef4444" opacity="0.7"/>
+            <rect x="34" y="22" width="5" height="14" rx="1" fill="#3b82f6" opacity="0.6"/>
+            <line x1="17" y1="18" x2="17" y2="36" stroke="#ef4444" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.9"/>
+          </svg>
+        </div>
+        <div>
+          <div class="card-b-name">Product Debug</div>
+          <div class="card-b-tagline">DAU dropped 15%. Walk me through your diagnosis.</div>
+        </div>
+      </div>
+      <div class="card-b-body">
+        <div class="card-b-divider"></div>
+        <div class="chip-row">
+          <span class="chip" style="background:#dbeafe;color:#1e40af">Intermediate</span>
+          <span class="chip" style="background:#f0ece4;color:#74796e">7 chapters · 45 min</span>
+        </div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:0%;background:#3b82f6"></div></div>
+        <div class="card-b-bottom">
+          <span>Not started</span>
+          <span class="cta" style="color:#3b5bdb">Start →</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-b">
+      <div class="card-b-top" style="background:#10b981"></div>
+      <div class="card-b-pattern">
+        <div class="card-b-icon" style="background:#0e1a12">
+          <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="24" cy="24" rx="16" ry="14" fill="none" stroke="#10b981" stroke-width="1.5" opacity="0.6"/>
+            <ellipse cx="24" cy="24" rx="9" ry="8" fill="none" stroke="#34d399" stroke-width="1" opacity="0.5"/>
+            <polygon points="38,20 42,24 37,26" fill="#10b981" opacity="0.7"/>
+            <circle cx="24" cy="10" r="3" fill="#10b981" opacity="0.7"/>
+            <circle cx="38" cy="24" r="3" fill="#10b981" opacity="0.7"/>
+            <circle cx="24" cy="38" r="3" fill="#10b981" opacity="0.7"/>
+            <circle cx="10" cy="24" r="3" fill="#10b981" opacity="0.7"/>
+          </svg>
+        </div>
+        <div>
+          <div class="card-b-name">Growth Loops</div>
+          <div class="card-b-tagline">Systems that compound. Engineers already think this way.</div>
+        </div>
+      </div>
+      <div class="card-b-body">
+        <div class="card-b-divider"></div>
+        <div class="chip-row">
+          <span class="chip" style="background:#d1fae5;color:#065f46">Intermediate</span>
+          <span class="chip" style="background:#f0ece4;color:#74796e">7 chapters · 45 min</span>
+        </div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:0%;background:#10b981"></div></div>
+        <div class="card-b-bottom">
+          <span>Not started</span>
+          <span class="cta" style="color:#10b981">Start →</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DETAIL PAGE COMPARISON -->
+<div class="section">
+  <div class="section-label">Detail page — how the header changes (current vs proposed)</div>
+  <div class="grid-2">
+
+    <!-- Current -->
+    <div style="background:white;border-radius:16px;border:1px solid #e4e0d8;overflow:hidden;">
+      <div style="padding:16px 20px;border-bottom:1px solid #f0ece4;">
+        <div style="font-size:10px;font-weight:700;color:#74796e;margin-bottom:8px">CURRENT</div>
+        <div style="font-size:10px;color:#74796e;margin-bottom:12px">Explore › Study Plans › PM Interview Bootcamp</div>
+        <div style="font-size:22px;font-weight:900;margin-bottom:8px">PM Interview Foundations</div>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <span style="background:#c8e8d0;color:#2e5e3a;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">SWE</span>
+          <span style="background:#c8e8d0;color:#2e5e3a;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">EM</span>
+        </div>
+        <div style="font-size:12px;color:#74796e">6h · 2 chapters · 12 challenges</div>
+      </div>
+      <div style="padding:12px 20px;font-size:11px;color:#74796e">White header, no visual identity. Could be any plan.</div>
+    </div>
+
+    <!-- Proposed A -->
+    <div style="border-radius:16px;overflow:hidden;border:1px solid #e4e0d8;">
+      <div style="height:110px;background:#1a3a2a;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:16px 20px;">
+        <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 500 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+          <circle cx="100" cy="55" r="55" fill="none" stroke="#4a7c59" stroke-width="1.5" opacity="0.4"/>
+          <circle cx="250" cy="55" r="55" fill="none" stroke="#4a7c59" stroke-width="1.5" opacity="0.4"/>
+          <circle cx="400" cy="55" r="55" fill="none" stroke="#4a7c59" stroke-width="1.5" opacity="0.4"/>
+          <line x1="155" y1="55" x2="195" y2="55" stroke="#78a886" stroke-width="2" opacity="0.5"/>
+          <line x1="305" y1="55" x2="345" y2="55" stroke="#78a886" stroke-width="2" opacity="0.5"/>
+          <polygon points="192,50 200,55 192,60" fill="#78a886" opacity="0.6"/>
+          <polygon points="342,50 350,55 342,60" fill="#78a886" opacity="0.6"/>
+        </svg>
+        <div style="position:relative;z-index:2">
+          <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.6);margin-bottom:4px">Foundation · 7 chapters</div>
+          <div style="font-size:28px;font-weight:900;letter-spacing:-0.02em;color:white">FLOW</div>
+        </div>
+      </div>
+      <div style="background:white;padding:14px 20px;border-top:none">
+        <div style="font-size:12px;color:#74796e;margin-bottom:8px">The 4-step framework behind every challenge on this platform</div>
+        <div style="display:flex;gap:6px;">
+          <span style="background:#c8e8d0;color:#2e5e3a;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">SWE</span>
+          <span style="background:#c8e8d0;color:#2e5e3a;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">EM</span>
+          <span style="background:#f0ece4;color:#74796e;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">45 min</span>
+        </div>
+      </div>
+      <div style="padding:0 20px 12px;font-size:11px;color:#74796e">Option A: geometric hero banner. Immediately recognizable.</div>
+    </div>
+
+  </div>
+</div>
+
+<p style="font-size:12px;color:#74796e;margin-top:8px">Option A has bigger cover art — more LeetCode-like. Option B stays closer to existing card style, just adds a dark icon square. Which direction do you want?</p>
+</body>
+</html>

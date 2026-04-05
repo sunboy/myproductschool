@@ -1,4 +1,5 @@
 import { UserSettings } from '@/lib/types'
+import { IS_MOCK } from '@/lib/mock'
 
 const MOCK_SETTINGS: UserSettings = {
   id: 'mock-us-1',
@@ -16,7 +17,7 @@ const MOCK_SETTINGS: UserSettings = {
 }
 
 export async function getUserSettings(userId: string): Promise<UserSettings | null> {
-  if (process.env.USE_MOCK_DATA === 'true') return MOCK_SETTINGS
+  if (IS_MOCK) return MOCK_SETTINGS
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
@@ -28,7 +29,7 @@ export async function updateUserSettings(
   userId: string,
   updates: Partial<Omit<UserSettings, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
 ): Promise<void> {
-  if (process.env.USE_MOCK_DATA === 'true') return
+  if (IS_MOCK) return
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()

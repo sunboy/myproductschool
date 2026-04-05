@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard Redesign Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,600;0,700;1,400&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #4a7c59;
+    --on-primary: #ffffff;
+    --primary-container: #78a886;
+    --primary-fixed: #c8e8d0;
+    --on-primary-fixed: #002112;
+    --background: #faf6f0;
+    --surface: #faf6f0;
+    --surface-dim: #dbd7cf;
+    --surface-container-low: #f5f1ea;
+    --surface-container: #f0ece4;
+    --surface-container-high: #eae6de;
+    --surface-container-highest: #e4e0d8;
+    --on-surface: #2e3230;
+    --on-surface-variant: #4a4e4a;
+    --outline: #74796e;
+    --outline-variant: #c4c8bc;
+    --secondary: #6b6358;
+    --secondary-container: #f0e8db;
+    --on-secondary-container: #5e5548;
+    --tertiary: #705c30;
+    --tertiary-container: #c4a66a;
+    --on-tertiary-container: #261900;
+    --error: #b83230;
+    --inverse-surface: #2e3230;
+    --inverse-on-surface: #f5f0e8;
+  }
+
+  body {
+    font-family: 'Nunito Sans', sans-serif;
+    background: #e0dcd4;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 24px;
+    gap: 48px;
+  }
+
+  h1.page-label {
+    font-family: 'Literata', serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #888;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    align-self: flex-start;
+    margin-bottom: 8px;
+  }
+
+  .screen-wrapper {
+    width: 100%;
+    max-width: 1100px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  /* App shell mockup */
+  .app-shell {
+    display: flex;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+    background: var(--background);
+    min-height: 700px;
+  }
+
+  /* Nav rail */
+  .nav-rail {
+    width: 72px;
+    background: var(--surface-container-low);
+    border-right: 1px solid var(--outline-variant);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .nav-logo {
+    width: 36px;
+    height: 36px;
+    background: var(--primary);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .nav-logo span {
+    color: white;
+    font-size: 18px;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    width: 56px;
+    padding: 8px 4px;
+    border-radius: 28px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .nav-item.active {
+    background: var(--primary-fixed);
+  }
+
+  .nav-item span.material-symbols-outlined {
+    font-size: 22px;
+    color: var(--on-surface-variant);
+  }
+
+  .nav-item.active span.material-symbols-outlined {
+    color: var(--primary);
+    font-variation-settings: 'FILL' 1;
+  }
+
+  .nav-item .nav-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--on-surface-variant);
+    text-align: center;
+    line-height: 1.1;
+  }
+
+  .nav-item.active .nav-label {
+    color: var(--primary);
+  }
+
+  /* Main content area */
+  .main-content {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Top bar */
+  .top-bar {
+    height: 52px;
+    border-bottom: 1px solid var(--outline-variant);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 10px;
+    flex-shrink: 0;
+    background: var(--background);
+  }
+
+  .top-bar-logo {
+    font-family: 'Literata', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: -0.02em;
+  }
+
+  .top-bar-tagline {
+    font-size: 11px;
+    color: var(--on-surface-variant);
+    margin-left: 4px;
+  }
+
+  .top-bar-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--primary-fixed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  /* Page content */
+  .page-content {
+    padding: 20px 24px;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* =========================================
+     LUMA GREETING BAR
+     ========================================= */
+  .greeting-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--primary-fixed);
+    border-radius: 16px;
+    padding: 14px 18px;
+  }
+
+  .luma-mascot {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .greeting-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .greeting-text h2 {
+    font-family: 'Literata', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--on-surface);
+    margin-bottom: 2px;
+  }
+
+  .greeting-text p {
+    font-size: 12px;
+    color: var(--on-surface-variant);
+    line-height: 1.4;
+  }
+
+  .greeting-stats {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .stat-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.6);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--on-surface);
+  }
+
+  .stat-chip span.material-symbols-outlined {
+    font-size: 14px;
+  }
+
+  .stat-chip.fire span { color: #c94b1b; }
+  .stat-chip.xp span { color: var(--primary); }
+  .stat-chip.cal span { color: var(--tertiary); }
+
+  /* =========================================
+     HERO ROW — 2-col
+     ========================================= */
+  .hero-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .card {
+    background: var(--surface-container);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  /* Quick Take card */
+  .quick-take-card {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .qt-header {
+    background: var(--primary);
+    padding: 14px 16px 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .qt-header-text {
+    flex: 1;
+  }
+
+  .qt-eyebrow {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 3px;
+  }
+
+  .qt-title {
+    font-family: 'Literata', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+    line-height: 1.3;
+  }
+
+  .qt-body {
+    padding: 12px 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .qt-prompt-box {
+    background: var(--surface-container-high);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 11px;
+    color: var(--on-surface);
+    line-height: 1.45;
+    font-style: italic;
+  }
+
+  .qt-start-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    width: fit-content;
+    font-family: 'Nunito Sans', sans-serif;
+  }
+
+  .qt-start-btn span.material-symbols-outlined { font-size: 14px; }
+
+  .qt-meta {
+    font-size: 10px;
+    color: var(--on-surface-variant);
+  }
+
+  /* Next Challenge card */
+  .next-challenge-card {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .nc-eyebrow {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--on-surface-variant);
+  }
+
+  .nc-title {
+    font-family: 'Literata', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--on-surface);
+    line-height: 1.3;
+  }
+
+  .nc-meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+  }
+
+  .badge-domain {
+    background: var(--secondary-container);
+    color: var(--on-secondary-container);
+  }
+
+  .badge-difficulty-medium {
+    background: #fff8e1;
+    color: #8a6000;
+  }
+
+  .badge-difficulty-hard {
+    background: #fce8e8;
+    color: #9c2424;
+  }
+
+  .nc-luma-insight {
+    background: var(--surface-container-high);
+    border-left: 2px solid var(--primary);
+    border-radius: 0 8px 8px 0;
+    padding: 8px 10px;
+    font-size: 10.5px;
+    color: var(--on-surface-variant);
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  .nc-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+  }
+
+  .btn-primary-sm {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Nunito Sans', sans-serif;
+  }
+
+  .btn-primary-sm span.material-symbols-outlined { font-size: 14px; }
+
+  .btn-ghost-sm {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--surface-container-high);
+    color: var(--on-surface);
+    border: none;
+    border-radius: 20px;
+    padding: 7px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Nunito Sans', sans-serif;
+  }
+
+  /* =========================================
+     MOVE LEVELS — full width
+     ========================================= */
+  .move-levels-card {
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--on-surface-variant);
+  }
+
+  .section-link {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--primary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .section-link span { font-size: 12px; }
+
+  .flow-moves-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .flow-move-item {
+    background: var(--surface-container-high);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .flow-move-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .flow-move-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Literata', serif;
+  }
+
+  .flow-frame { background: #e8f5e9; color: #2e7d32; }
+  .flow-list  { background: #e3f2fd; color: #1565c0; }
+  .flow-opt   { background: #fce4ec; color: #ad1457; }
+  .flow-win   { background: #fff8e1; color: #f57f17; }
+
+  .flow-move-level {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--on-surface-variant);
+  }
+
+  .flow-move-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--on-surface);
+    margin-bottom: 2px;
+  }
+
+  .flow-move-desc {
+    font-size: 10px;
+    color: var(--on-surface-variant);
+    line-height: 1.35;
+  }
+
+  .flow-progress-bar {
+    height: 4px;
+    background: var(--surface-container-highest);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .flow-progress-fill {
+    height: 100%;
+    border-radius: 2px;
+  }
+
+  /* =========================================
+     SECONDARY ROW — Hot Challenges + Leaderboard
+     ========================================= */
+  .secondary-row {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 12px;
+  }
+
+  /* Hot Challenges */
+  .hot-challenges-card {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .challenge-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .challenge-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--surface-container-high);
+    border-radius: 10px;
+  }
+
+  .challenge-rank {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--on-surface-variant);
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .challenge-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .challenge-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--on-surface);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .challenge-domain {
+    font-size: 10px;
+    color: var(--on-surface-variant);
+  }
+
+  .challenge-attempts {
+    font-size: 10px;
+    color: var(--on-surface-variant);
+    flex-shrink: 0;
+  }
+
+  /* Leaderboard */
+  .leaderboard-card {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .leaderboard-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px;
+    border-radius: 8px;
+  }
+
+  .leaderboard-row.you {
+    background: var(--primary-fixed);
+  }
+
+  .lb-rank {
+    font-size: 11px;
+    font-weight: 800;
+    width: 18px;
+    text-align: center;
+    color: var(--on-surface-variant);
+    flex-shrink: 0;
+  }
+
+  .lb-rank.gold { color: #b8860b; }
+  .lb-rank.silver { color: #6b6358; }
+  .lb-rank.bronze { color: #8a5c2e; }
+
+  .lb-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--surface-container-highest);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--on-surface-variant);
+    flex-shrink: 0;
+  }
+
+  .leaderboard-row.you .lb-avatar {
+    background: var(--primary);
+    color: white;
+  }
+
+  .lb-name {
+    flex: 1;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--on-surface);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .lb-xp {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--on-surface-variant);
+    flex-shrink: 0;
+  }
+
+  /* Interview countdown (conditional) */
+  .interview-bar {
+    background: var(--tertiary-container);
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .interview-bar span.material-symbols-outlined {
+    color: var(--tertiary);
+    font-size: 20px;
+  }
+
+  .interview-bar-text {
+    flex: 1;
+  }
+
+  .interview-bar-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--on-surface);
+  }
+
+  .interview-bar-sub {
+    font-size: 10px;
+    color: var(--on-surface-variant);
+  }
+
+  .interview-bar-count {
+    font-family: 'Literata', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--tertiary);
+  }
+
+  .interview-bar-unit {
+    font-size: 10px;
+    color: var(--on-surface-variant);
+  }
+
+  /* =========================================
+     UNCALIBRATED STATE
+     ========================================= */
+  .calibration-hero {
+    background: var(--primary);
+    border-radius: 20px;
+    padding: 36px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .calibration-hero h2 {
+    font-family: 'Literata', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+  }
+
+  .calibration-hero p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    max-width: 380px;
+    line-height: 1.5;
+  }
+
+  .calibration-cta {
+    background: white;
+    color: var(--primary);
+    border: none;
+    border-radius: 24px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    font-family: 'Nunito Sans', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .calibration-cta span { font-size: 16px; }
+
+  .calibration-skip {
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .locked-moves {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    opacity: 0.45;
+    filter: blur(1px);
+    pointer-events: none;
+  }
+
+  .locked-move-item {
+    background: var(--surface-container-high);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .locked-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--surface-container-highest);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .locked-icon span { font-size: 16px; color: var(--on-surface-variant); }
+
+  .locked-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--on-surface);
+  }
+
+  .locked-bar {
+    height: 4px;
+    background: var(--surface-container-highest);
+    border-radius: 2px;
+  }
+
+  .lock-overlay-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--on-surface-variant);
+  }
+
+  .lock-overlay-row span { font-size: 14px; }
+
+  /* =========================================
+     Luma SVG (inline robot mascot)
+     ========================================= */
+  .luma-svg {
+    width: 52px;
+    height: 52px;
+  }
+
+  /* Utility */
+  .divider-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #999;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 16px 0 4px;
+    border-top: 1px dashed #ccc;
+    margin-top: 32px;
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  .state-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--primary);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    align-self: flex-start;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- =============================================
+     STATE A: Returning / Calibrated User
+     ============================================= -->
+<div class="screen-wrapper">
+  <div class="state-tag">State A — Returning User (Calibrated)</div>
+  <div class="app-shell">
+
+    <!-- Nav Rail -->
+    <nav class="nav-rail">
+      <div class="nav-logo">
+        <span class="material-symbols-outlined" style="color:white;font-size:18px">bolt</span>
+      </div>
+      <div class="nav-item active">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">home</span>
+        <span class="nav-label">Home</span>
+      </div>
+      <div class="nav-item">
+        <span class="material-symbols-outlined">explore</span>
+        <span class="nav-label">Explore</span>
+      </div>
+      <div class="nav-item">
+        <span class="material-symbols-outlined">fitness_center</span>
+        <span class="nav-label">Practice</span>
+      </div>
+      <div class="nav-item">
+        <span class="material-symbols-outlined">school</span>
+        <span class="nav-label">Learn</span>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <div class="main-content">
+      <!-- Top bar -->
+      <div class="top-bar">
+        <span class="top-bar-logo">HackProduct</span>
+        <span class="top-bar-tagline">— practice gym for product thinking</span>
+        <div class="top-bar-right">
+          <span class="material-symbols-outlined" style="color:var(--on-surface-variant);font-size:20px">notifications</span>
+          <div class="avatar">S</div>
+        </div>
+      </div>
+
+      <!-- Page content -->
+      <div class="page-content">
+
+        <!-- Luma Greeting Bar -->
+        <div class="greeting-bar">
+          <!-- Luma SVG robot mascot (simplified inline) -->
+          <svg class="luma-svg" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Body -->
+            <rect x="12" y="24" width="28" height="20" rx="6" fill="#4a7c59"/>
+            <!-- Head -->
+            <rect x="14" y="10" width="24" height="18" rx="6" fill="#4a7c59"/>
+            <!-- Eyes -->
+            <circle cx="21" cy="19" r="3" fill="white"/>
+            <circle cx="31" cy="19" r="3" fill="white"/>
+            <circle cx="22" cy="19.5" r="1.5" fill="#1a3a2a"/>
+            <circle cx="32" cy="19.5" r="1.5" fill="#1a3a2a"/>
+            <!-- Smile -->
+            <path d="M21 24.5 Q26 27.5 31 24.5" stroke="white" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+            <!-- Arms -->
+            <rect x="4" y="26" width="8" height="4" rx="2" fill="#4a7c59"/>
+            <rect x="40" y="26" width="8" height="4" rx="2" fill="#4a7c59"/>
+            <!-- Legs -->
+            <rect x="16" y="42" width="6" height="6" rx="3" fill="#4a7c59"/>
+            <rect x="30" y="42" width="6" height="6" rx="3" fill="#4a7c59"/>
+            <!-- Graduation cap -->
+            <rect x="11" y="8" width="30" height="3" rx="1.5" fill="#1a3a2a"/>
+            <rect x="23" y="5" width="6" height="5" rx="1" fill="#1a3a2a"/>
+            <line x1="41" y1="9" x2="44" y2="13" stroke="#1a3a2a" stroke-width="1.5" stroke-linecap="round"/>
+            <!-- Growth arrow -->
+            <path d="M38 4 L44 4 L44 10" stroke="#4a7c59" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <line x1="44" y1="4" x2="38" y2="10" stroke="#4a7c59" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+
+          <div class="greeting-text">
+            <h2>Good morning, Sandeep!</h2>
+            <p>You're on a 7-day streak — keep the momentum going.</p>
+          </div>
+          <div class="greeting-stats">
+            <div class="stat-chip fire">
+              <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;color:#c94b1b">local_fire_department</span>
+              7 days
+            </div>
+            <div class="stat-chip xp">
+              <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;color:#4a7c59">bolt</span>
+              1,240 XP
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero Row: Quick Take + Next Challenge -->
+        <div class="hero-row">
+
+          <!-- Quick Take Card -->
+          <div class="card quick-take-card">
+            <div class="qt-header">
+              <div class="qt-header-text">
+                <div class="qt-eyebrow">⚡ Quick Take · 5 min</div>
+                <div class="qt-title">The Marketplace Retention Loop</div>
+              </div>
+              <!-- Small Luma icon -->
+              <svg width="28" height="28" viewBox="0 0 52 52" fill="none">
+                <rect x="12" y="24" width="28" height="20" rx="6" fill="rgba(255,255,255,0.3)"/>
+                <rect x="14" y="10" width="24" height="18" rx="6" fill="rgba(255,255,255,0.3)"/>
+                <circle cx="21" cy="19" r="3" fill="white"/>
+                <circle cx="31" cy="19" r="3" fill="white"/>
+                <circle cx="22" cy="19.5" r="1.5" fill="rgba(0,0,0,0.4)"/>
+                <circle cx="32" cy="19.5" r="1.5" fill="rgba(0,0,0,0.4)"/>
+              </svg>
+            </div>
+            <div class="qt-body">
+              <div class="qt-prompt-box">
+                "Uber Eats sees 60% of new users order once and never return. Your PM interview starts now — how do you diagnose and fix this?"
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <button class="qt-start-btn">
+                  <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">play_circle</span>
+                  Start challenge
+                </button>
+                <span class="qt-meta">Product Strategy · Medium</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Next Challenge Card -->
+          <div class="card next-challenge-card">
+            <div class="nc-eyebrow">Next challenge for you</div>
+            <div class="nc-title">Designing a Metric Dashboard for a B2B SaaS Tool</div>
+            <div class="nc-meta">
+              <span class="badge badge-domain">Metric Design</span>
+              <span class="badge badge-difficulty-hard">Hard</span>
+              <span class="badge" style="background:var(--primary-fixed);color:var(--primary)">Agentic</span>
+            </div>
+            <div class="nc-luma-insight">
+              "You scored 74% on Metric Fluency — this challenge will stretch that skill. It's right at the edge of your current level."
+            </div>
+            <div class="nc-actions">
+              <button class="btn-primary-sm">
+                <span class="material-symbols-outlined">arrow_forward</span>
+                Go
+              </button>
+              <button class="btn-ghost-sm">
+                <span class="material-symbols-outlined">shuffle</span>
+                Shuffle
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- FLOW Move Levels — full width -->
+        <div class="card move-levels-card">
+          <div class="section-header">
+            <span class="section-title">FLOW move levels</span>
+            <a href="#" class="section-link">
+              Skill ladder
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </a>
+          </div>
+          <div class="flow-moves-grid">
+            <!-- Frame -->
+            <div class="flow-move-item">
+              <div class="flow-move-top">
+                <div class="flow-move-icon flow-frame">◇</div>
+                <span class="flow-move-level">Lvl 3</span>
+              </div>
+              <div class="flow-move-label">Frame</div>
+              <div class="flow-move-desc">Defining the problem space</div>
+              <div class="flow-progress-bar">
+                <div class="flow-progress-fill" style="width:72%;background:#4caf50"></div>
+              </div>
+            </div>
+            <!-- List -->
+            <div class="flow-move-item">
+              <div class="flow-move-top">
+                <div class="flow-move-icon flow-list">◈</div>
+                <span class="flow-move-level">Lvl 2</span>
+              </div>
+              <div class="flow-move-label">List</div>
+              <div class="flow-move-desc">Surfacing options & trade-offs</div>
+              <div class="flow-progress-bar">
+                <div class="flow-progress-fill" style="width:45%;background:#2196f3"></div>
+              </div>
+            </div>
+            <!-- Optimize -->
+            <div class="flow-move-item">
+              <div class="flow-move-top">
+                <div class="flow-move-icon flow-opt">◆</div>
+                <span class="flow-move-level">Lvl 2</span>
+              </div>
+              <div class="flow-move-label">Optimize</div>
+              <div class="flow-move-desc">Sharpening the recommendation</div>
+              <div class="flow-progress-bar">
+                <div class="flow-progress-fill" style="width:38%;background:#e91e63"></div>
+              </div>
+            </div>
+            <!-- Win -->
+            <div class="flow-move-item">
+              <div class="flow-move-top">
+                <div class="flow-move-icon flow-win">◎</div>
+                <span class="flow-move-level">Lvl 1</span>
+              </div>
+              <div class="flow-move-label">Win</div>
+              <div class="flow-move-desc">Delivering the answer clearly</div>
+              <div class="flow-progress-bar">
+                <div class="flow-progress-fill" style="width:20%;background:#ff9800"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Secondary Row: Hot Challenges + Leaderboard -->
+        <div class="secondary-row">
+
+          <!-- Hot Challenges -->
+          <div class="card hot-challenges-card">
+            <div class="section-header">
+              <span class="section-title">🔥 Trending this week</span>
+              <a href="#" class="section-link">All challenges <span class="material-symbols-outlined">arrow_forward</span></a>
+            </div>
+            <div class="challenge-list">
+              <div class="challenge-row">
+                <span class="challenge-rank">#1</span>
+                <div class="challenge-info">
+                  <div class="challenge-name">The Marketplace Retention Loop</div>
+                  <div class="challenge-domain">Product Strategy</div>
+                </div>
+                <div class="challenge-attempts">214 attempts</div>
+              </div>
+              <div class="challenge-row">
+                <span class="challenge-rank">#2</span>
+                <div class="challenge-info">
+                  <div class="challenge-name">Choosing a North Star Metric for Slack</div>
+                  <div class="challenge-domain">Metrics & Analytics</div>
+                </div>
+                <div class="challenge-attempts">189 attempts</div>
+              </div>
+              <div class="challenge-row">
+                <span class="challenge-rank">#3</span>
+                <div class="challenge-info">
+                  <div class="challenge-name">Fixing Drop-off at Payment Step</div>
+                  <div class="challenge-domain">Growth</div>
+                </div>
+                <div class="challenge-attempts">156 attempts</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Leaderboard Peek -->
+          <div class="card leaderboard-card">
+            <div class="section-header">
+              <span class="section-title">Weekly cohort</span>
+              <a href="#" class="section-link">Full board <span class="material-symbols-outlined">arrow_forward</span></a>
+            </div>
+            <div class="leaderboard-list">
+              <div class="leaderboard-row">
+                <span class="lb-rank gold">1</span>
+                <div class="lb-avatar">A</div>
+                <span class="lb-name">alex_pm</span>
+                <span class="lb-xp">3,240 XP</span>
+              </div>
+              <div class="leaderboard-row">
+                <span class="lb-rank silver">2</span>
+                <div class="lb-avatar">M</div>
+                <span class="lb-name">mira_k</span>
+                <span class="lb-xp">2,870 XP</span>
+              </div>
+              <div class="leaderboard-row">
+                <span class="lb-rank bronze">3</span>
+                <div class="lb-avatar">J</div>
+                <span class="lb-name">j_chen</span>
+                <span class="lb-xp">2,610 XP</span>
+              </div>
+              <div class="leaderboard-row you">
+                <span class="lb-rank" style="color:var(--primary)">#7</span>
+                <div class="lb-avatar">S</div>
+                <span class="lb-name" style="color:var(--primary)">you</span>
+                <span class="lb-xp" style="color:var(--primary);font-weight:800">1,240 XP</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Interview Countdown (conditional) -->
+        <div class="interview-bar">
+          <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">event</span>
+          <div class="interview-bar-text">
+            <div class="interview-bar-title">Google PM Interview</div>
+            <div class="interview-bar-sub">Keep your streak strong — you're building momentum</div>
+          </div>
+          <div style="text-align:right">
+            <div class="interview-bar-count">14</div>
+            <div class="interview-bar-unit">days left</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- =============================================
+     STATE B: Uncalibrated / New User
+     ============================================= -->
+<div class="divider-label">↓ New user / Uncalibrated state ↓</div>
+
+<div class="screen-wrapper">
+  <div class="state-tag">State B — New User (Uncalibrated)</div>
+  <div class="app-shell">
+
+    <!-- Nav Rail -->
+    <nav class="nav-rail">
+      <div class="nav-logo">
+        <span class="material-symbols-outlined" style="color:white;font-size:18px">bolt</span>
+      </div>
+      <div class="nav-item active">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">home</span>
+        <span class="nav-label">Home</span>
+      </div>
+      <div class="nav-item">
+        <span class="material-symbols-outlined">explore</span>
+        <span class="nav-label">Explore</span>
+      </div>
+      <div class="nav-item">
+        <span class="material-symbols-outlined">fitness_center</span>
+        <span class="nav-label">Practice</span>
+      </div>
+      <div class="nav-item">
+        <span class="material-symbols-outlined">school</span>
+        <span class="nav-label">Learn</span>
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <div class="top-bar">
+        <span class="top-bar-logo">HackProduct</span>
+        <span class="top-bar-tagline">— practice gym for product thinking</span>
+        <div class="top-bar-right">
+          <div class="avatar">S</div>
+        </div>
+      </div>
+
+      <div class="page-content">
+
+        <!-- Greeting bar (uncalibrated) -->
+        <div class="greeting-bar">
+          <svg class="luma-svg" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Body -->
+            <rect x="12" y="24" width="28" height="20" rx="6" fill="#4a7c59"/>
+            <!-- Head -->
+            <rect x="14" y="10" width="24" height="18" rx="6" fill="#4a7c59"/>
+            <!-- Eyes — wide/excited -->
+            <circle cx="21" cy="19" r="3.5" fill="white"/>
+            <circle cx="31" cy="19" r="3.5" fill="white"/>
+            <circle cx="22" cy="19" r="2" fill="#1a3a2a"/>
+            <circle cx="32" cy="19" r="2" fill="#1a3a2a"/>
+            <!-- Big smile -->
+            <path d="M20 24 Q26 28 32 24" stroke="white" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+            <!-- Arms raised -->
+            <path d="M12 24 L6 18" stroke="#4a7c59" stroke-width="4" stroke-linecap="round"/>
+            <path d="M40 24 L46 18" stroke="#4a7c59" stroke-width="4" stroke-linecap="round"/>
+            <!-- Legs -->
+            <rect x="16" y="42" width="6" height="6" rx="3" fill="#4a7c59"/>
+            <rect x="30" y="42" width="6" height="6" rx="3" fill="#4a7c59"/>
+            <!-- Grad cap -->
+            <rect x="11" y="8" width="30" height="3" rx="1.5" fill="#1a3a2a"/>
+            <rect x="23" y="5" width="6" height="5" rx="1" fill="#1a3a2a"/>
+            <!-- Sparkles -->
+            <text x="4" y="14" font-size="8" fill="#f9c74f">✦</text>
+            <text x="43" y="12" font-size="6" fill="#f9c74f">✦</text>
+            <text x="46" y="20" font-size="5" fill="#f9c74f">✦</text>
+          </svg>
+
+          <div class="greeting-text">
+            <h2>Welcome, Sandeep!</h2>
+            <p>I'm Luma, your product thinking coach. Let's figure out where you're starting from.</p>
+          </div>
+        </div>
+
+        <!-- Calibration hero -->
+        <div class="calibration-hero">
+          <!-- Luma celebrating (larger) -->
+          <svg width="72" height="72" viewBox="0 0 52 52" fill="none">
+            <rect x="12" y="24" width="28" height="20" rx="6" fill="rgba(255,255,255,0.25)"/>
+            <rect x="14" y="10" width="24" height="18" rx="6" fill="rgba(255,255,255,0.25)"/>
+            <circle cx="21" cy="19" r="3.5" fill="white"/>
+            <circle cx="31" cy="19" r="3.5" fill="white"/>
+            <circle cx="22" cy="19" r="2" fill="#1a3a2a"/>
+            <circle cx="32" cy="19" r="2" fill="#1a3a2a"/>
+            <path d="M20 24 Q26 28 32 24" stroke="white" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+            <path d="M12 24 L5 17" stroke="rgba(255,255,255,0.4)" stroke-width="4" stroke-linecap="round"/>
+            <path d="M40 24 L47 17" stroke="rgba(255,255,255,0.4)" stroke-width="4" stroke-linecap="round"/>
+            <rect x="16" y="42" width="6" height="6" rx="3" fill="rgba(255,255,255,0.25)"/>
+            <rect x="30" y="42" width="6" height="6" rx="3" fill="rgba(255,255,255,0.25)"/>
+            <rect x="11" y="8" width="30" height="3" rx="1.5" fill="rgba(0,0,0,0.3)"/>
+            <rect x="23" y="5" width="6" height="5" rx="1" fill="rgba(0,0,0,0.3)"/>
+            <text x="2" y="10" font-size="10" fill="#ffd60a">✦</text>
+            <text x="42" y="8" font-size="8" fill="#ffd60a">✦</text>
+            <text x="46" y="18" font-size="7" fill="#ffd60a">✦</text>
+            <text x="0" y="24" font-size="7" fill="#ffd60a">✦</text>
+          </svg>
+          <h2>Find your starting point</h2>
+          <p>A quick 5-minute calibration challenge shows Luma where your product thinking stands — so it can guide you to the right challenges.</p>
+          <button class="calibration-cta">
+            <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">play_arrow</span>
+            Start calibration
+          </button>
+          <span class="calibration-skip">Browse challenges first →</span>
+        </div>
+
+        <!-- FLOW levels (locked/blurred) -->
+        <div class="card" style="padding:14px 18px">
+          <div class="section-header" style="margin-bottom:10px">
+            <span class="section-title">FLOW move levels</span>
+            <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--on-surface-variant)">
+              <span class="material-symbols-outlined" style="font-size:14px">lock</span>
+              Unlocks after calibration
+            </div>
+          </div>
+          <div class="locked-moves">
+            <div class="locked-move-item">
+              <div class="locked-icon"><span class="material-symbols-outlined">lock</span></div>
+              <div class="locked-label">Frame</div>
+              <div class="locked-bar"></div>
+            </div>
+            <div class="locked-move-item">
+              <div class="locked-icon"><span class="material-symbols-outlined">lock</span></div>
+              <div class="locked-label">List</div>
+              <div class="locked-bar"></div>
+            </div>
+            <div class="locked-move-item">
+              <div class="locked-icon"><span class="material-symbols-outlined">lock</span></div>
+              <div class="locked-label">Optimize</div>
+              <div class="locked-bar"></div>
+            </div>
+            <div class="locked-move-item">
+              <div class="locked-icon"><span class="material-symbols-outlined">lock</span></div>
+              <div class="locked-label">Win</div>
+              <div class="locked-bar"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

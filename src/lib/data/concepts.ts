@@ -1,8 +1,9 @@
 import { Concept, Flashcard } from '@/lib/types'
 import { MOCK_CONCEPTS, MOCK_FLASHCARDS } from '@/lib/mock-data'
+import { IS_MOCK } from '@/lib/mock'
 
 export async function getConcepts(domainId: string): Promise<Concept[]> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return MOCK_CONCEPTS.filter(c => c.domain_id === domainId)
   }
 
@@ -13,7 +14,7 @@ export async function getConcepts(domainId: string): Promise<Concept[]> {
 }
 
 export async function getConceptById(id: string): Promise<Concept | null> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return MOCK_CONCEPTS.find(c => c.id === id) ?? null
   }
 
@@ -24,7 +25,7 @@ export async function getConceptById(id: string): Promise<Concept | null> {
 }
 
 export async function getAllConcepts(): Promise<Concept[]> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return MOCK_CONCEPTS
   }
 
@@ -35,7 +36,7 @@ export async function getAllConcepts(): Promise<Concept[]> {
 }
 
 export async function getFlashcards(conceptId: string): Promise<Flashcard[]> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return MOCK_FLASHCARDS.filter(f => f.concept_id === conceptId)
   }
 
@@ -46,7 +47,7 @@ export async function getFlashcards(conceptId: string): Promise<Flashcard[]> {
 }
 
 export async function getFlashcardsForDomain(domainId: string): Promise<Flashcard[]> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     const conceptIds = MOCK_CONCEPTS.filter(c => c.domain_id === domainId).map(c => c.id)
     return MOCK_FLASHCARDS.filter(f => conceptIds.includes(f.concept_id))
   }

@@ -22,10 +22,10 @@ interface OptionCardProps {
 }
 
 const TIER_STYLES: Record<number, { badge: string; label: string }> = {
-  3: { badge: 'bg-primary text-on-primary', label: 'Outstanding' },
-  2: { badge: 'bg-tertiary-container text-on-surface', label: 'Strong' },
-  1: { badge: 'bg-secondary-container text-on-secondary-container', label: 'Developing' },
-  0: { badge: 'bg-surface-container-high text-on-surface-variant', label: 'Needs Work' },
+  3: { badge: 'bg-primary text-on-primary', label: 'Best' },
+  2: { badge: 'bg-tertiary-container text-on-surface', label: 'Good, but incomplete' },
+  1: { badge: 'bg-secondary-container text-on-secondary-container', label: 'Surface' },
+  0: { badge: 'bg-error/10 text-error', label: 'Plausible but wrong' },
 }
 
 export function OptionCard({ option, selected, revealed, revealData, disabled, onSelect }: OptionCardProps) {
@@ -41,7 +41,7 @@ export function OptionCard({ option, selected, revealed, revealData, disabled, o
         revealed && selected
           ? 'ring-2 ring-primary border-primary bg-surface-container-low'
           : revealed
-          ? 'border-outline-variant bg-surface-container'
+          ? 'border-outline-variant bg-surface-container opacity-60'
           : selected
           ? 'border-primary bg-surface-container-low'
           : 'border-outline-variant bg-surface-container hover:bg-surface-container-high',

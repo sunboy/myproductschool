@@ -8,6 +8,35 @@ import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
 import { LearnerDNASection } from './LearnerDNASection'
 
+function LumaReflectionCard() {
+  const [reflection, setReflection] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/luma/growth-reflection', { method: 'POST' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.reflection) setReflection(data.reflection)
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  return (
+    <div className="bg-surface-container rounded-xl p-5 flex gap-4 items-start mb-6 animate-luma-card">
+      <LumaGlyph size={40} state="speaking" className="text-primary shrink-0 mt-1" />
+      <div>
+        <p className="font-label text-sm text-primary font-semibold mb-1">Luma&rsquo;s reflection</p>
+        {loading ? (
+          <p className="font-body text-sm text-on-surface-variant">Loading reflection...</p>
+        ) : reflection ? (
+          <p className="font-body text-sm text-on-surface">{reflection}</p>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 interface RecentAttempt {
   challenge_id: string
   challenge_title: string
@@ -19,6 +48,17 @@ interface MasteryEntry {
   challenge_id: string
   score: number | null
   is_completed: boolean
+}
+
+interface GrowthSnapshotEntry {
+  excerpt: string
+  grade_label: string
+  total_score: number
+}
+
+interface GrowthSnapshot {
+  first: GrowthSnapshotEntry | null
+  latest: GrowthSnapshotEntry | null
 }
 
 /* ---------- mock data ---------- */
@@ -53,6 +93,7 @@ export default function ProgressPage() {
   const { profile } = useProfile()
   const [recentAttempts, setRecentAttempts] = useState<RecentAttempt[]>([])
   const [masteryEntries, setMasteryEntries] = useState<MasteryEntry[]>([])
+  const [growthSnapshot, setGrowthSnapshot] = useState<GrowthSnapshot | null>(null)
 
   useEffect(() => {
     // Fetch recent attempts for pattern display
@@ -64,6 +105,11 @@ export default function ProgressPage() {
     fetch('/api/challenges/mastery')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (Array.isArray(data)) setMasteryEntries(data) })
+      .catch(() => {})
+    // Fetch growth snapshot (first vs latest response comparison)
+    fetch('/api/challenges/growth-snapshot')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setGrowthSnapshot(data) })
       .catch(() => {})
   }, [])
 
@@ -241,8 +287,9 @@ export default function ProgressPage() {
           ) : (
             <div className="flex flex-col items-center justify-center py-6 gap-3 text-center">
               <LumaGlyph size={40} state="idle" className="text-primary" />
-              <p className="text-sm font-medium text-on-surface-variant">No challenges completed yet</p>
-              <Link href="/challenges" className="text-xs font-bold text-primary hover:underline">Start your first challenge →</Link>
+              <p className="text-sm font-medium text-on-surface-variant">Your practice history will appear here</p>
+              <p className="text-xs text-on-surface-variant/70">Calibration challenges don&apos;t count — start a practice challenge to build your record.</p>
+              <Link href="/challenges" className="text-xs font-bold text-primary hover:underline">Browse challenges →</Link>
             </div>
           )}
           {recentAttempts.length > 0 && (
@@ -253,6 +300,11 @@ export default function ProgressPage() {
               Practice more challenges
             </Link>
           )}
+        </section>
+
+        {/* Luma Growth Reflection */}
+        <section className="col-span-12">
+          <LumaReflectionCard />
         </section>
 
         {/* Your Growth — Frame Move */}
@@ -267,25 +319,60 @@ export default function ProgressPage() {
             </div>
             <span className="material-symbols-outlined">expand_more</span>
           </button>
-          <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-5 border-t border-outline-variant/20 bg-white/40">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">Day 1 Response</span>
-                <span className="bg-surface-container-highest text-on-surface px-2 py-0.5 rounded text-[10px] font-bold">Score 2.5</span>
+          <div className="p-5 border-t border-outline-variant/20 bg-white/40">
+            {growthSnapshot === null ? (
+              /* Loading state */
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="flex flex-col gap-2">
+                  <div className="h-4 bg-surface-container-highest rounded animate-pulse w-24" />
+                  <div className="h-20 bg-surface-container-low rounded-lg animate-pulse" />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div className="h-4 bg-surface-container-highest rounded animate-pulse w-24" />
+                  <div className="h-20 bg-surface-container-low rounded-lg animate-pulse" />
+                </div>
               </div>
-              <p className="text-xs italic text-on-surface-variant bg-surface-container-low p-3 rounded-lg border border-outline-variant/10 leading-relaxed">
-                &ldquo;The main goal is to increase revenue by 10%. We should look at user acquisition and retention metrics to see where we can improve the funnel.&rdquo;
-              </p>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wide text-primary">Today&apos;s Response</span>
-                <span className="bg-primary-fixed text-primary px-2 py-0.5 rounded text-[10px] font-bold">Score 4.2</span>
+            ) : growthSnapshot.first === null ? (
+              /* No attempts yet */
+              <div className="flex flex-col items-center justify-center py-6 gap-2 text-center">
+                <span className="material-symbols-outlined text-2xl text-on-surface-variant">trending_up</span>
+                <p className="text-sm text-on-surface-variant">Complete your first challenge to see your growth</p>
               </div>
-              <p className="text-xs text-on-surface bg-primary/5 p-3 rounded-lg border border-primary/20 leading-relaxed">
-                &ldquo;To frame this problem, we must first isolate the strategic intent: is this a defensibility play or pure growth? By splitting the ecosystem into supply-side liquidity and demand-side friction, we can identify that revenue is a trailing indicator of trust...&rdquo;
-              </p>
-            </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* First response */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">Day 1 Response</span>
+                    <span className="bg-surface-container-highest text-on-surface px-2 py-0.5 rounded text-[10px] font-bold">
+                      {growthSnapshot.first.grade_label} · {growthSnapshot.first.total_score}%
+                    </span>
+                  </div>
+                  <p className="text-xs italic text-on-surface-variant bg-surface-container-low p-3 rounded-lg border border-outline-variant/10 leading-relaxed">
+                    &ldquo;{growthSnapshot.first.excerpt}&rdquo;
+                  </p>
+                </div>
+                {/* Latest response — or prompt if only one */}
+                {growthSnapshot.latest === null ? (
+                  <div className="flex flex-col items-center justify-center gap-2 text-center bg-surface-container-low p-3 rounded-lg border border-outline-variant/10">
+                    <span className="material-symbols-outlined text-lg text-on-surface-variant">add_circle</span>
+                    <p className="text-xs text-on-surface-variant">Complete more challenges to see your growth</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-primary">Latest Response</span>
+                      <span className="bg-primary-fixed text-primary px-2 py-0.5 rounded text-[10px] font-bold">
+                        {growthSnapshot.latest.grade_label} · {growthSnapshot.latest.total_score}%
+                      </span>
+                    </div>
+                    <p className="text-xs text-on-surface bg-primary/5 p-3 rounded-lg border border-primary/20 leading-relaxed">
+                      &ldquo;{growthSnapshot.latest.excerpt}&rdquo;
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </section>
 

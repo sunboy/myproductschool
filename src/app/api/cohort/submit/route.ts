@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
+import { IS_MOCK } from '@/lib/mock'
 
 export async function POST(request: Request) {
-  if (process.env.NEXT_PUBLIC_MOCK_MODE === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json({ submission_id: 'mock-sub-1', score: 78 })
   }
 

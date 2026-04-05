@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
+import { IS_MOCK } from '@/lib/mock'
 
 export async function GET() {
-  if (process.env.NEXT_PUBLIC_MOCK_MODE === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json({
       rankings: [
         { rank: 1, user_id: 'u1', display_name: 'Alex K.', score: 94, xp_earned: 320 },

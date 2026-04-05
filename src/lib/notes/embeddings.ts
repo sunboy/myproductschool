@@ -76,8 +76,10 @@ export async function embedAndStoreContext(
 /**
  * Composes a human-readable Luma context string from stored context entries.
  * Example: "You're preparing for Final round at Google in 12 days. You noted you need to work on metric framing."
+ * Internal helper — not exported. Use getLumaContextFromNotes() from this module,
+ * or use getLumaContext from @/lib/luma-context for rich user context.
  */
-export async function getLumaContext(userId: string): Promise<string | null> {
+async function getStructuredLumaContext(userId: string): Promise<string | null> {
   const { data, error } = await supabaseAdmin
     .from('luma_context')
     .select('context_type, content, metadata')
@@ -114,14 +116,15 @@ export async function getLumaContext(userId: string): Promise<string | null> {
 
 /**
  * Legacy wrapper — searches notes by semantic similarity for a given topic.
- * Kept for backwards compatibility; new code should prefer getLumaContext().
+ * Kept for backwards compatibility; new code should use `getLumaContext` from
+ * `@/lib/luma-context` for rich user context.
  */
 export async function getLumaContextFromNotes(
   userId: string,
   topic: string
 ): Promise<string | null> {
   // First try the structured context layer
-  const structured = await getLumaContext(userId)
+  const structured = await getStructuredLumaContext(userId)
   if (structured) return structured
 
   // Fall back to semantic note search

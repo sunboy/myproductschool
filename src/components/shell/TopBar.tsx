@@ -6,6 +6,16 @@ import { LumaGlyph } from './LumaGlyph'
 interface ProfileBadge {
   streak_days: number
   xp_total: number
+  display_name: string | null
+  avatar_url: string | null
+}
+
+function getInitials(name: string | null | undefined): string {
+  if (!name?.trim()) return '?'
+  const parts = name.trim().split(/\s+/)
+  return parts.length === 1
+    ? parts[0][0].toUpperCase()
+    : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
 export function TopBar() {
@@ -13,8 +23,11 @@ export function TopBar() {
 
   useEffect(() => {
     fetch('/api/profile')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data) setProfile({ streak_days: data.streak_days ?? 0, xp_total: data.xp_total ?? 0 }) })
+      .then(r => {
+        if (r.status === 401) { window.location.href = '/login'; return null }
+        return r.ok ? r.json() : null
+      })
+      .then(data => { if (data) setProfile({ streak_days: data.streak_days ?? 0, xp_total: data.xp_total ?? 0, display_name: data.display_name ?? null, avatar_url: data.avatar_url ?? null }) })
       .catch(() => {})
   }, [])
 
@@ -66,9 +79,12 @@ export function TopBar() {
           {/* Avatar */}
           <Link
             href="/settings"
-            className="w-8 h-8 rounded-full bg-primary flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm"
+            className="w-8 h-8 rounded-full overflow-hidden bg-primary flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm"
           >
-            <span className="text-xs font-bold text-on-primary font-label">S</span>
+            {profile?.avatar_url
+              ? <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+              : <span className="text-xs font-bold text-on-primary font-label">{getInitials(profile?.display_name)}</span>
+            }
           </Link>
         </div>
       </div>

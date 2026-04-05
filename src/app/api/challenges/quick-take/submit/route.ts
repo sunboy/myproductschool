@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { IS_MOCK } from '@/lib/mock'
 
 const MOCK_RESPONSE = {
   score: 7.5,
@@ -10,7 +11,7 @@ const MOCK_RESPONSE = {
 }
 
 export async function POST(req: NextRequest) {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return NextResponse.json(MOCK_RESPONSE)
   }
 

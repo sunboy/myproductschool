@@ -29,7 +29,7 @@ export function V2ChallengesSection() {
     if (selectedParadigm) params.set('paradigm', selectedParadigm)
     if (selectedDifficulty) params.set('difficulty', selectedDifficulty)
     setLoading(true)
-    fetch(`/api/v2/challenges?${params.toString()}`)
+    fetch(`/api/challenges?${params.toString()}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data?.challenges) setChallenges(data.challenges)
@@ -88,7 +88,7 @@ export function V2ChallengesSection() {
             <ChallengeCardV2
               key={c.id}
               challenge={c}
-              onStart={(id) => router.push(`/workspace/challenges/${id}`)}
+              onStart={() => router.push(`/workspace/challenges/${c.slug ?? c.id}`)}
             />
           ))}
         </div>

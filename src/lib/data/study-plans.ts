@@ -1,8 +1,9 @@
 import { StudyPlanWithItems } from '@/lib/types'
 import { MOCK_STUDY_PLANS, MOCK_STUDY_PLAN_ITEMS, MOCK_CHALLENGES, MOCK_DOMAINS } from '@/lib/mock-data'
+import { IS_MOCK } from '@/lib/mock'
 
 export async function getStudyPlans(): Promise<StudyPlanWithItems[]> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     return MOCK_STUDY_PLANS.map(plan => {
       const items = MOCK_STUDY_PLAN_ITEMS.filter(i => i.plan_id === plan.id)
       const chapters = new Set(items.map(i => i.chapter_title).filter(Boolean))
@@ -49,7 +50,7 @@ export async function getStudyPlans(): Promise<StudyPlanWithItems[]> {
 }
 
 export async function getStudyPlanBySlug(slug: string): Promise<StudyPlanWithItems | null> {
-  if (process.env.USE_MOCK_DATA === 'true') {
+  if (IS_MOCK) {
     const plan = MOCK_STUDY_PLANS.find(p => p.slug === slug) ?? null
     if (!plan) return null
 
