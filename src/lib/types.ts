@@ -534,6 +534,7 @@ export interface FlowOption {
   id: string; question_id: string; option_label: 'A' | 'B' | 'C' | 'D'
   option_text: string; quality: OptionQuality; points: number
   competencies: string[]; explanation: string
+  framework_hint?: string
 }
 
 export interface ChallengeAttemptV2 {
@@ -543,6 +544,7 @@ export interface ChallengeAttemptV2 {
   current_step: FlowStep | 'done'; current_question_sequence: number
   time_spent_seconds: number; is_replay: boolean
   started_at: string; completed_at: string | null
+  mental_models_breakdown?: Array<{ step: string; competency: string; reasoning_move: string; demonstrated: string; missed: string }> | null
 }
 
 export interface StepAttemptRecord {
@@ -554,6 +556,7 @@ export interface StepAttemptRecord {
   grading_confidence: number | null
   role_context: string | null; career_signal: string | null
   time_spent_seconds: number
+  competency_signal?: { primary: string; signal: string; framework_hint: string } | null
 }
 
 export interface LearnerCompetency {

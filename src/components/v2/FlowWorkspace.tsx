@@ -50,6 +50,7 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
   const [stepGrade, setStepGrade] = useState('')
   const [roleContext, setRoleContext] = useState('')
   const [careerSignal, setCareerSignal] = useState('')
+  const [competencySignal, setCompetencySignal] = useState<{ primary: string; signal: string; framework_hint: string } | null>(null)
   const [completionData, setCompletionData] = useState<CompletionData | null>(null)
 
   const startTimeRef = useRef<number>(Date.now())
@@ -112,6 +113,7 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
     setRevealedOptions(result.revealed_options ?? [])
     setStepScore(result.score)
     setStepGrade(result.grade_label)
+    setCompetencySignal(result.competency_signal ?? null)
 
     // Fetch coaching
     const coaching = await fetchCoaching({
@@ -231,6 +233,7 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
           gradeLabel={stepGrade}
           roleContext={roleContext}
           careerSignal={careerSignal}
+          competencySignal={competencySignal}
           onNext={handleNextStep}
           isLastStep={stepIdx === FLOW_STEPS.length - 1}
         />

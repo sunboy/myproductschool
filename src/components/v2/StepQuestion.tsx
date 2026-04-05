@@ -13,6 +13,7 @@ interface RevealedOption {
   id: string
   points: number
   explanation: string
+  framework_hint?: string
 }
 
 interface StepQuestionProps {

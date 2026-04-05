@@ -29,6 +29,7 @@ interface RevealedOption {
   id: string
   points: number
   explanation: string
+  framework_hint?: string
 }
 
 interface SubmitResult {
@@ -38,6 +39,7 @@ interface SubmitResult {
   revealed_options: RevealedOption[]
   role_context?: string
   career_signal?: string
+  competency_signal?: { primary: string; signal: string; framework_hint: string } | null
 }
 
 interface UseFlowStepReturn {

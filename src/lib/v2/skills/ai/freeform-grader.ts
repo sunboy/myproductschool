@@ -1,9 +1,9 @@
-import Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
 import type { FlowOption, FlowStep } from '@/lib/types'
 import { getLumaContext } from '@/lib/v2/luma-context'
-
-const client = new Anthropic()
+import { loadRubric, getReasoningMove } from '@/lib/v2/skills/rubric-loader'
+import { MENTAL_MODELS_CONTEXT, STEP_PRIMARY_COMPETENCIES } from '@/lib/luma/system-prompt'
+import { createCachedMessage } from '@/lib/anthropic/cached-client'
 
 // ── Zod schemas ──────────────────────────────────────────────
 
@@ -13,6 +13,12 @@ const GradingResponseSchema = z.object({
   competencies_demonstrated: z.array(z.string()),
   grading_explanation: z.string().max(500),
   confidence: z.number().min(0).max(1),
+  criteria_scores: z.record(z.string(), z.enum(['strong', 'partial', 'needs_work'])).optional(),
+  competency_signal: z.object({
+    primary: z.string(),
+    signal: z.string(),
+    framework_hint: z.string(),
+  }).optional(),
 })
 
 const ElaborationSchema = z.object({
@@ -66,6 +72,8 @@ export interface GradingResult {
   explanation: string
   competencies_demonstrated: string[]
   confidence: number
+  criteria_scores?: Record<string, 'strong' | 'partial' | 'needs_work'>
+  competency_signal?: { primary: string; signal: string; framework_hint: string }
 }
 
 export async function gradeFreeform(
@@ -84,13 +92,32 @@ export async function gradeFreeform(
   // Inject Luma context for personalization (fail open)
   const lumaContext = userId ? await getLumaContext(userId, '', step) : ''
 
-  const prompt = `You are a product sense grading agent. Grade this response against 4 rubric exemplars.${lumaContext ? `\n\nLEARNER CONTEXT:\n${lumaContext}` : ''}
+  // Load rubric criteria for this step
+  let rubricSection = ''
+  let criterionIds: string[] = []
+  try {
+    const rubric = loadRubric(step)
+    criterionIds = rubric.criteria.map(c => c.id)
+    rubricSection = `\n\nRUBRIC CRITERIA (score each as strong/partial/needs_work):
+${rubric.criteria.map(c => `${c.id} — ${c.name}: ${c.description}
+  Strong signals: ${c.strong_signals.join('; ')}
+  Partial signals: ${c.partial_signals.join('; ')}
+  Failure signals: ${c.failure_signals.join('; ')}`).join('\n\n')}
 
-SCENARIO: ${scenario.scenario_context} ${scenario.scenario_trigger}
+REASONING MOVE for this step: ${rubric.reasoning_move}`
+  } catch {
+    // Rubric load failed — proceed without criteria
+  }
+
+  // Static system prompt (cacheable)
+  const systemPrompt = `You are a product sense grading agent. Grade responses against rubric exemplars and criteria.
+${MENTAL_MODELS_CONTEXT}`
+
+  const prompt = `${lumaContext ? `LEARNER CONTEXT:\n${lumaContext}\n\n` : ''}SCENARIO: ${scenario.scenario_context} ${scenario.scenario_trigger}
 FLOW STEP: ${step} — ${STEP_PURPOSE[step]}
 TARGET COMPETENCIES: ${targetCompetencies.join(', ')}
 
-RUBRIC:
+EXEMPLAR RUBRIC:
 
 SCORE 3 — BEST:
 "${best?.option_text ?? ''}"
@@ -109,6 +136,7 @@ Why surface: ${surface?.explanation ?? ''}
 SCORE 0 — PLAUSIBLE WRONG:
 "${wrong?.option_text ?? ''}"
 Why wrong: ${wrong?.explanation ?? ''}
+${rubricSection}
 
 LEARNER'S RESPONSE:
 "${userText}"
@@ -123,9 +151,11 @@ GRADING INSTRUCTIONS:
 3. Identify competencies demonstrated from: ${targetCompetencies.join(', ')}
 4. Rate confidence 0.0–1.0
 5. Can exceed 2.8 if response covers BEST AND adds genuine insight. Rare.
+6. Score each rubric criterion (${criterionIds.join(', ') || 'if available'}) as "strong", "partial", or "needs_work".
+7. Generate a competency_signal: identify the primary competency being tested (from: ${(STEP_PRIMARY_COMPETENCIES[step] ?? []).join(', ')}), write a 1-sentence coaching signal, and a framework_hint connecting to the reasoning move.
 
 Return ONLY valid JSON:
-{"score":<float>,"quality_label":"<best|good_but_incomplete|surface|plausible_wrong|between_levels>","competencies_demonstrated":[<strings>],"grading_explanation":"<2 sentences>","confidence":<float>}`
+{"score":<float>,"quality_label":"<best|good_but_incomplete|surface|plausible_wrong|between_levels>","competencies_demonstrated":[<strings>],"grading_explanation":"<2 sentences>","confidence":<float>,"criteria_scores":{${criterionIds.map(id => `"${id}":"<strong|partial|needs_work>"`).join(',')}},"competency_signal":{"primary":"<competency_key>","signal":"<1 sentence coaching>","framework_hint":"<reasoning move connection>"}}`
 
   // Fallback result used on error
   const fallback: GradingResult = {
@@ -137,11 +167,10 @@ Return ONLY valid JSON:
   }
 
   try {
-    const response = await client.messages.create({
+    const response = await createCachedMessage(systemPrompt, prompt, {
       model: 'claude-opus-4-6',
-      max_tokens: 500,
+      max_tokens: 800,
       thinking: { type: 'adaptive' },
-      messages: [{ role: 'user', content: prompt }],
     })
 
     const textBlock = response.content.find(b => b.type === 'text')
@@ -168,16 +197,11 @@ Return ONLY valid JSON:
     // Retry on parse failure
     if (!parsed) {
       try {
-        const retryResponse = await client.messages.create({
-          model: 'claude-opus-4-6',
-          max_tokens: 500,
-          thinking: { type: 'adaptive' },
-          messages: [
-            { role: 'user', content: prompt },
-            { role: 'assistant', content: rawText },
-            { role: 'user', content: 'Invalid JSON. Return ONLY the raw JSON object. No markdown backticks.' },
-          ],
-        })
+        const retryResponse = await createCachedMessage(
+          systemPrompt,
+          `${prompt}\n\nPREVIOUS ATTEMPT (invalid JSON):\n${rawText}\n\nInvalid JSON. Return ONLY the raw JSON object. No markdown backticks.`,
+          { model: 'claude-opus-4-6', max_tokens: 800, thinking: { type: 'adaptive' } }
+        )
         const retryText = retryResponse.content.find(b => b.type === 'text')
         const retryRaw = retryText?.type === 'text' ? retryText.text : ''
         const retryJson = JSON.parse(retryRaw)
@@ -212,6 +236,8 @@ Return ONLY valid JSON:
       explanation: gated.grading_explanation,
       competencies_demonstrated: gated.competencies_demonstrated,
       confidence: gated.confidence,
+      criteria_scores: gated.criteria_scores,
+      competency_signal: gated.competency_signal,
     }
   } catch {
     return fallback
@@ -264,12 +290,11 @@ Return ONLY JSON:
   }
 
   try {
-    const response = await client.messages.create({
-      model: 'claude-opus-4-6',
-      max_tokens: 300,
-      thinking: { type: 'adaptive' },
-      messages: [{ role: 'user', content: prompt }],
-    })
+    const response = await createCachedMessage(
+      'You are a product sense elaboration grading agent. Evaluate whether a learner\'s elaboration adds depth to their selected MCQ option.',
+      prompt,
+      { model: 'claude-sonnet-4-6', max_tokens: 300, thinking: { type: 'adaptive' } }
+    )
 
     const textBlock = response.content.find(b => b.type === 'text')
     const rawText = textBlock?.type === 'text' ? textBlock.text : ''

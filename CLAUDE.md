@@ -327,6 +327,39 @@ Canonical reasoning structures Luma grades against:
 
 ---
 
+## Token Optimization & Caching
+
+All Luma AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropic prompt caching (`cache_control: { type: 'ephemeral' }`). System prompts are cached, reducing input token costs by ~90% on cache hits.
+
+### Model Selection
+| Endpoint | Model | Rationale |
+|---|---|---|
+| Freeform grading | claude-opus-4-6 | Highest stakes — score accuracy |
+| Elaboration grading | claude-sonnet-4-6 | ±0.5 adjustment, lower stakes |
+| Coaching (all paths) | claude-sonnet-4-6 | Template-like output |
+| Feedback | claude-sonnet-4-6 | Structured output |
+| Nudge | claude-haiku-4-5-20251001 | 1-2 sentences, highly constrained |
+| Chat / Simulation | claude-sonnet-4-6 | Conversational quality |
+
+### Caching Layers
+- **Prompt caching**: System prompts cached via `createCachedMessage` (all AI endpoints)
+- **Coaching cache**: `coaching_cache` table — keyed by user:challenge:step:question:option:role
+- **Deterministic MCQ**: Pure MCQ grading + competency signals require zero AI calls
+- **Rubric loader**: In-memory cache — rubric JSON loaded once per process
+
+## Claude Code Skills for AI Interactions
+
+4 skills define deterministic behavior for all Luma AI interactions:
+
+| Skill | Path | Trigger |
+|---|---|---|
+| `hackproduct-grader` | `~/.claude/skills/hackproduct-grader/SKILL.md` | Grading freeform/elaboration responses |
+| `hackproduct-enricher` | `~/.claude/skills/hackproduct-enricher/SKILL.md` | Generating MCQ options + framework hints |
+| `hackproduct-coaching` | `~/.claude/skills/hackproduct-coaching/SKILL.md` | Role-specific coaching output |
+| `hackproduct-nudger` | `~/.claude/skills/hackproduct-nudger/SKILL.md` | Step-aware in-context nudges |
+
+---
+
 ## Key Conventions
 
 - `@/*` path alias maps to `./src/*`

@@ -5,6 +5,8 @@ import type { FlowOption, FlowStep, ResponseType } from '@/lib/types'
 import { routeResponse, gradePureMCQ } from '@/lib/v2/skills/grading-router'
 import { scoreOption } from '@/lib/v2/skills/option-scorer'
 import { calculateStepScore } from '@/lib/v2/skills/step-score-calculator'
+import { STEP_PRIMARY_COMPETENCIES } from '@/lib/luma/system-prompt'
+import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
 
 // ── Request body ─────────────────────────────────────────────
 
@@ -76,7 +78,7 @@ export async function POST(
   // Load full rubric options for this question (all 4)
   const { data: optionsRaw, error: optionsError } = await adminClient
     .from('flow_options')
-    .select('id, question_id, option_label, option_text, quality, points, competencies, explanation')
+    .select('id, question_id, option_label, option_text, quality, points, competencies, explanation, framework_hint')
     .eq('question_id', question_id)
 
   if (optionsError || !optionsRaw || optionsRaw.length === 0) {
@@ -115,6 +117,7 @@ export async function POST(
   let competencies_demonstrated: string[]
   let grading_explanation: string
   let grading_confidence: number
+  let competency_signal: { primary: string; signal: string; framework_hint: string } | null = null
 
   if (path === 'deterministic') {
     // pure_mcq — NO freeform-grader import or call
@@ -127,6 +130,14 @@ export async function POST(
     competencies_demonstrated = result.competencies_demonstrated
     grading_explanation = result.grading_explanation
     grading_confidence = result.confidence
+
+    // Generate competency_signal from option metadata
+    const selectedOption = options.find(o => o.id === selected_option_id)
+    competency_signal = {
+      primary: STEP_PRIMARY_COMPETENCIES[step]?.[0] ?? 'strategic_thinking',
+      signal: `Selected ${selectedOption?.quality ?? 'unknown'} option demonstrating ${(selectedOption?.competencies ?? []).join(', ') || 'general product thinking'}`,
+      framework_hint: selectedOption?.framework_hint ?? '',
+    }
 
   } else if (path === 'hybrid') {
     // mcq_plus_elaboration — base score + AI elaboration adjustment
@@ -157,6 +168,13 @@ export async function POST(
       grading_confidence = 1.0
     }
 
+    // Generate competency_signal from selected option metadata
+    competency_signal = {
+      primary: STEP_PRIMARY_COMPETENCIES[step]?.[0] ?? 'strategic_thinking',
+      signal: `Selected ${baseOption.quality} option demonstrating ${(baseOption.competencies ?? []).join(', ') || 'general product thinking'}`,
+      framework_hint: baseOption.framework_hint ?? '',
+    }
+
   } else {
     // modified_option or freeform — full AI evaluation
     const textToGrade = response_type === 'modified_option' ? (user_text ?? '') : (user_text ?? '')
@@ -170,6 +188,7 @@ export async function POST(
     competencies_demonstrated = aiResult.competencies_demonstrated
     grading_explanation = aiResult.explanation
     grading_confidence = aiResult.confidence
+    competency_signal = aiResult.competency_signal ?? null
   }
 
   // ── Persist step_attempt ──────────────────────────────────
@@ -189,6 +208,7 @@ export async function POST(
       grading_explanation,
       grading_confidence,
       time_spent_seconds,
+      competency_signal,
     })
 
   if (insertError) {
@@ -263,13 +283,46 @@ export async function POST(
 
     // Advance to next step
     const next = nextStep(step)
-    await adminClient
-      .from('challenge_attempts_v2')
-      .update({
-        current_step: next,
-        ...(next === 'done' ? { status: 'completed', completed_at: new Date().toISOString() } : {}),
+
+    if (next === 'done') {
+      // Build mental_models_breakdown from all step_attempts
+      const { data: allAttempts } = await adminClient
+        .from('step_attempts')
+        .select('step, competency_signal')
+        .eq('attempt_id', attempt_id)
+
+      const breakdown = FLOW_STEP_ORDER.map(s => {
+        const stepAttempts = (allAttempts ?? []).filter((a: { step: string }) => a.step === s)
+        const signals = stepAttempts
+          .map((a: { competency_signal?: { primary: string; signal: string } | null }) => a.competency_signal)
+          .filter(Boolean) as { primary: string; signal: string }[]
+        const primary = signals[0]?.primary ?? STEP_PRIMARY_COMPETENCIES[s]?.[0] ?? 'strategic_thinking'
+        let reasoningMove = ''
+        try { reasoningMove = getReasoningMove(s as FlowStep) } catch { /* rubric unavailable */ }
+        return {
+          step: s,
+          competency: primary,
+          reasoning_move: reasoningMove,
+          demonstrated: signals.map(sig => sig.signal).join('; ') || 'No signal recorded',
+          missed: '',
+        }
       })
-      .eq('id', attempt_id)
+
+      await adminClient
+        .from('challenge_attempts_v2')
+        .update({
+          current_step: 'done',
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+          mental_models_breakdown: breakdown,
+        })
+        .eq('id', attempt_id)
+    } else {
+      await adminClient
+        .from('challenge_attempts_v2')
+        .update({ current_step: next })
+        .eq('id', attempt_id)
+    }
   }
 
   // ── Build revealed options ────────────────────────────────
@@ -281,6 +334,7 @@ export async function POST(
     quality: o.quality,
     points: o.points,
     explanation: o.explanation,
+    framework_hint: o.framework_hint ?? '',
   }))
 
   // ── Return response ───────────────────────────────────────
@@ -291,6 +345,7 @@ export async function POST(
     grade_label: quality_label,
     explanation: grading_explanation,
     competencies_demonstrated,
+    competency_signal,
     step_complete: stepComplete,
     ...(stepScore !== undefined ? { step_score: stepScore } : {}),
     revealed_options: revealedOptions,

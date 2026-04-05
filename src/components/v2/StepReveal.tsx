@@ -3,6 +3,12 @@
 import type { FlowStep } from '@/lib/types'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
+interface CompetencySignal {
+  primary: string
+  signal: string
+  framework_hint: string
+}
+
 interface StepRevealProps {
   step: FlowStep
   stepScore: number
@@ -10,6 +16,7 @@ interface StepRevealProps {
   gradeLabel: string
   roleContext: string
   careerSignal: string
+  competencySignal?: CompetencySignal | null
   onNext: () => void
   isLastStep: boolean
 }
@@ -42,6 +49,7 @@ export function StepReveal({
   gradeLabel,
   roleContext,
   careerSignal,
+  competencySignal,
   onNext,
   isLastStep,
 }: StepRevealProps) {
@@ -73,6 +81,22 @@ export function StepReveal({
               <p className="font-body text-xs text-on-surface-variant italic">{careerSignal}</p>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Reasoning Move */}
+      {competencySignal && (
+        <div className="rounded-lg bg-surface-container p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="material-symbols-outlined text-tertiary text-lg">neurology</span>
+            <span className="text-xs font-label font-semibold text-on-surface-variant uppercase tracking-wide">
+              Reasoning Move
+            </span>
+          </div>
+          <p className="text-sm font-body text-on-surface">{competencySignal.signal}</p>
+          {competencySignal.framework_hint && (
+            <p className="text-xs text-on-surface-variant mt-1 italic">{competencySignal.framework_hint}</p>
+          )}
         </div>
       )}
 

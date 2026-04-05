@@ -2,6 +2,15 @@
 
 import { useState } from 'react'
 
+const inputClass =
+  'w-full rounded-xl border border-outline-variant bg-surface px-4 py-3 text-on-surface text-sm font-medium placeholder:text-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
+
+const submitButtonClass =
+  'relative w-full bg-primary text-on-primary text-3xl font-black px-12 py-6 rounded-full uppercase tracking-tighter transition-all hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed disabled:opacity-90 shadow-[0_4px_0_0_var(--color-primary)] active:translate-y-1 active:shadow-none'
+
+const successPanelClass =
+  'relative w-full rounded-full bg-primary px-12 py-6 text-center text-xl font-black text-on-primary sm:text-2xl shadow-[0_4px_0_0_var(--color-primary)]'
+
 export function WaitlistForm() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -18,7 +27,9 @@ export function WaitlistForm() {
 
     try {
       const fullName = `${firstName.trim()} ${lastName.trim()}`.trim()
-      const body: { name?: string; email: string; company?: string } = { email }
+      const body: { name?: string; email: string; company?: string } = {
+        email: email.trim(),
+      }
       if (fullName) body.name = fullName
       if (company.trim()) body.company = company.trim()
 
@@ -41,25 +52,17 @@ export function WaitlistForm() {
 
   if (submitted) {
     return (
-      <div className="flex items-center gap-2 py-3">
-        <span
-          className="material-symbols-outlined text-primary text-xl"
-          style={{ fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20" }}
-        >
-          check_circle
-        </span>
-        <span className="font-label font-semibold text-sm text-primary">
-          You&apos;re on the list! We&apos;ll be in touch soon.
-        </span>
+      <div className="w-full max-w-md">
+        <p className={successPanelClass} role="status">
+          You&apos;re in. We&apos;ll be live soon!
+        </p>
       </div>
     )
   }
 
-  const inputClass = "px-4 py-3 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface placeholder-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-body text-sm"
-
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2.5 max-w-lg">
-      <div className="flex flex-col sm:flex-row gap-2.5">
+    <form onSubmit={handleSubmit} className="flex w-full max-w-md flex-col gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:gap-4">
         <input
           type="text"
           value={firstName}
@@ -85,34 +88,29 @@ export function WaitlistForm() {
         type="email"
         value={email}
         onChange={e => setEmail(e.target.value)}
-        placeholder="you@email.com"
+        placeholder="Email address"
         required
         aria-label="Email address"
         autoComplete="email"
-        className={`w-full ${inputClass}`}
+        className={inputClass}
       />
-      <div className="flex flex-col sm:flex-row gap-2.5">
-        <input
-          type="text"
-          value={company}
-          onChange={e => setCompany(e.target.value)}
-          placeholder="Company (optional)"
-          aria-label="Company name (optional)"
-          autoComplete="organization"
-          className={`sm:flex-1 ${inputClass}`}
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="sm:flex-1 bg-primary text-on-primary font-label font-bold text-sm px-6 py-3 rounded-full hover:bg-primary/90 hover:shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5 whitespace-nowrap disabled:opacity-50"
-        >
-          {loading ? 'Joining...' : 'Join Waitlist'}
-          {!loading && (
-            <span className="material-symbols-outlined text-base">arrow_forward</span>
-          )}
-        </button>
-      </div>
-      {error && <p className="text-xs font-label text-error">{error}</p>}
+      <input
+        type="text"
+        value={company}
+        onChange={e => setCompany(e.target.value)}
+        placeholder="Current company"
+        aria-label="Current company"
+        autoComplete="organization"
+        className={inputClass}
+      />
+      {error && (
+        <p className="text-sm font-medium text-error" role="alert">
+          {error}
+        </p>
+      )}
+      <button type="submit" disabled={loading} className={submitButtonClass}>
+        {loading ? 'Joining...' : 'Join the Waitlist'}
+      </button>
     </form>
   )
 }

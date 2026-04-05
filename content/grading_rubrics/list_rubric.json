@@ -1,0 +1,183 @@
+{
+  "step": "list",
+  "version": "1.0",
+  "description": "The List step trains one reasoning move: mapping the full space before committing to a path. A strong List answer does not jump to the obvious stakeholders and the obvious options. It surfaces non-obvious groups, second-order effects, and alternative approaches that the first pass would miss. Width here is a skill, not a sign of indecision.",
+  "reasoning_move": "Expand the solution space before narrowing — include non-obvious stakeholders, second-order effects, and approaches beyond the default",
+
+  "criteria": [
+    {
+      "id": "L1",
+      "name": "Stakeholder completeness",
+      "description": "Strong List answers name stakeholders across at least three categories: direct users (who interact with the product), indirect stakeholders (who are affected but don't use it directly), and business stakeholders (whose goals are served or threatened). Missing any category creates blind spots that produce solutions that work for one group and break for another.",
+      "categories": [
+        "direct users: the people who interact with the product to accomplish something",
+        "indirect stakeholders: people affected by the product or its outcomes without direct interaction",
+        "business stakeholders: people whose goals — revenue, trust, operations — are served or threatened by the decision",
+        "non-obvious groups: people the scenario doesn't name but who have a stake (regulators, competitors, adjacent teams)"
+      ],
+      "strong_signals": [
+        "Names stakeholders from at least three categories",
+        "Names at least one non-obvious or non-named stakeholder from the scenario",
+        "Distinguishes between people who benefit and people who bear cost",
+        "In two-sided markets: names both sides and names the dependency between them"
+      ],
+      "partial_signals": [
+        "Names stakeholders from two categories clearly, misses one",
+        "Names the right groups but doesn't distinguish their different interests",
+        "Lists indirect stakeholders without explaining how they're affected"
+      ],
+      "failure_signals": [
+        "Names only the most obvious user group",
+        "Treats all stakeholders as having the same interest in the outcome",
+        "In two-sided markets: names only one side",
+        "Lists stakeholders without explaining what each one wants or loses"
+      ],
+      "luma_coaching_weak": "You've named the obvious groups. Now go one level further: who else has a stake in this outcome who isn't directly using the product? Think about who bears the cost if this goes wrong, not just who benefits if it goes right.",
+      "luma_coaching_failure": "You've identified the main user. Now ask: who else is affected by whatever decision gets made here? Think about the people who don't touch the product directly but whose situation changes depending on the outcome."
+    },
+    {
+      "id": "L2",
+      "name": "Solution space width",
+      "description": "Strong List answers generate at least three structurally different approaches — not three variations of the same approach. The test: if you removed one option, would the others still make sense? If yes, they're variations. If removing one changes the entire solution space, they're structurally distinct.",
+      "strong_signals": [
+        "Names at least three options that are structurally different from each other",
+        "At least one option challenges the assumption embedded in the problem statement",
+        "Includes a 'do nothing' or 'descope' option as a legitimate candidate",
+        "Options span different levels of intervention: quick fix vs. systemic change"
+      ],
+      "partial_signals": [
+        "Names three options but two are variations of the same approach",
+        "Good width but all options accept the stated problem definition without question",
+        "Names approaches without explaining what makes each one distinct"
+      ],
+      "failure_signals": [
+        "Names one approach and defends it",
+        "Options are the same idea at different levels of effort",
+        "No option challenges the premise of the problem",
+        "Skips directly from problem to preferred solution"
+      ],
+      "luma_coaching_weak": "You have options, but some of them are the same idea at different scales. Try to find one option that rejects the premise entirely — what would you do if you couldn't solve the stated problem directly?",
+      "luma_coaching_failure": "You've named one approach and moved on. The List step requires generating the space of options before choosing. What are two other fundamentally different ways this could be handled — including one that challenges the assumption that this needs solving at all?"
+    },
+    {
+      "id": "L3",
+      "name": "Second-order effects",
+      "description": "Strong List answers name at least one non-obvious consequence of solving the problem — something that happens downstream of the fix, not the fix itself. Second-order effects are what strong product thinkers see that others miss. They can be positive (solving this unlocks X) or negative (solving this breaks Y).",
+      "strong_signals": [
+        "Names at least one consequence that happens after the solution is implemented, not during",
+        "Identifies who benefits from the second-order effect vs. who bears its cost",
+        "Names a second-order effect that changes which option is best",
+        "Identifies a feedback loop: how the solution changes user behavior in ways that affect the product"
+      ],
+      "partial_signals": [
+        "Names a downstream effect but doesn't connect it to the decision",
+        "Identifies a risk without naming who bears it or when it materializes",
+        "Mentions 'there could be unintended consequences' without naming one"
+      ],
+      "failure_signals": [
+        "No second-order effects named — analysis stops at the immediate outcome",
+        "Only names effects that are already in the scenario",
+        "Treats all consequences as equally likely without prioritizing"
+      ],
+      "luma_coaching_weak": "You've named the direct consequences. Now go one step further: once this is solved, what changes? How does user behavior shift? What does that create or break downstream?",
+      "luma_coaching_failure": "Your analysis stops at the immediate outcome. The question isn't just 'does this fix the problem' — it's 'what happens next, after the fix?' Name one thing that changes in the world because of this decision, beyond the stated problem going away."
+    },
+    {
+      "id": "L4",
+      "name": "Workarounds and existing behavior",
+      "description": "What users do today to cope with the problem tells you what they actually need — often more honestly than what they say they want. Strong List answers name at least one existing workaround and use it as evidence about the real need.",
+      "strong_signals": [
+        "Names how users are currently working around the problem",
+        "Uses the workaround as evidence about what users actually value",
+        "Identifies competing solutions already in the ecosystem and explains why they haven't resolved the problem",
+        "Names what the workaround costs users (time, effort, trust)"
+      ],
+      "partial_signals": [
+        "Mentions that workarounds exist without naming them specifically",
+        "Names a workaround without using it as evidence about user needs",
+        "Notes competing solutions without explaining their limitations"
+      ],
+      "failure_signals": [
+        "No workarounds named — treats the problem as if users are doing nothing",
+        "Names what users should do rather than what they currently do",
+        "Ignores the existence of competing solutions entirely"
+      ],
+      "luma_coaching_weak": "You've named the problem. Now look at what users are doing right now to cope with it. That behavior is data — it tells you what they actually value, not what they say they want.",
+      "luma_coaching_failure": "Before proposing a solution, it helps to know what people are doing instead. What is the current workaround? That tells you more about the real need than the problem description does."
+    }
+  ],
+
+  "scoring": {
+    "method": "criteria-weighted",
+    "description": "L1 and L2 are primary — they represent the core reasoning move of the List step. L3 and L4 add depth and signal product maturity. A strong List answer must score at least partial on both L1 and L2.",
+    "weights": {
+      "L1": 0.30,
+      "L2": 0.30,
+      "L3": 0.25,
+      "L4": 0.15
+    },
+    "thresholds": {
+      "strong": 0.75,
+      "partial": 0.45,
+      "needs_work": 0.0
+    }
+  },
+
+  "output_format": {
+    "fields": {
+      "score": "strong | partial | needs_work",
+      "criteria_scores": {
+        "L1": "strong | partial | needs_work",
+        "L2": "strong | partial | needs_work",
+        "L3": "strong | partial | needs_work",
+        "L4": "strong | partial | needs_work"
+      },
+      "detected": "What Luma found in the answer — named specifically",
+      "missed": "What was expected but not present — named specifically",
+      "coaching": "One to three sentences. References the specific criterion missed. No praise for weak answers."
+    },
+    "example_strong": {
+      "score": "strong",
+      "criteria_scores": {
+        "L1": "strong",
+        "L2": "strong",
+        "L3": "strong",
+        "L4": "partial"
+      },
+      "detected": "You named stakeholders across three categories — drivers (direct users), the PM and support team (business stakeholders), and future engineers who inherit the code (indirect). You generated three structurally distinct approaches: targeted one-screen fix, full rebuild, and a hybrid phased approach. You identified that a targeted fix could undermine the PM's credibility for the next rebuild ask — a second-order effect.",
+      "missed": "You didn't name what workaround drivers are using today when the earnings breakdown confuses them — they're probably calling support, which is why tickets are high. That data strengthens the case for the targeted fix.",
+      "coaching": "Solid width. Add one thing: what are drivers doing right now when the breakdown confuses them? If they're calling support every week, that behavior is your strongest evidence for what the fix needs to do."
+    },
+    "example_needs_work": {
+      "score": "needs_work",
+      "criteria_scores": {
+        "L1": "needs_work",
+        "L2": "needs_work",
+        "L3": "needs_work",
+        "L4": "needs_work"
+      },
+      "detected": "You named the drivers as the affected group and suggested rebuilding the dashboard.",
+      "missed": "No other stakeholder groups named. One option proposed, not a space of options. No second-order effects. No existing workarounds considered.",
+      "coaching": "The List step is about width before depth. Before committing to rebuilding, name: who else is affected beyond drivers? What are two other ways this could be handled? And what are drivers doing right now to cope with the confusing breakdown?"
+    }
+  },
+
+  "anti_patterns_this_step_catches": [
+    "Naming only the primary user and ignoring everyone else with a stake",
+    "Generating variations of one idea instead of structurally distinct options",
+    "Skipping directly to the preferred solution without mapping alternatives",
+    "Missing second-order effects — analysis that stops at the immediate outcome",
+    "Ignoring what users are already doing to cope (workarounds = real needs data)"
+  ],
+
+  "module_notes": {
+    "MOD1_user_segmentation": "List here is about mapping all segments — including non-obvious ones like early adopters, churned users, and users who tried and left. The move: which segments are you missing by focusing on the obvious one?",
+    "MOD2_problem_identification": "List is about the full problem space: all stages of the user journey where pain occurs, not just the most visible stage. Second-order effects here are other problems that get worse or better if this one is solved.",
+    "MOD3_success_metrics": "List is about all the things a metric could measure — including what it could be gamed for. The non-obvious stakeholder is the team that will be evaluated against this metric and may optimize for the number rather than the outcome.",
+    "MOD4_product_improvement": "List is about all the ways the product could improve — including doing nothing, investing in distribution instead of features, or copying a competitor. The move: don't limit to 'new features.'",
+    "MOD5_tradeoffs": "List is about all the options on the table, including the ones that feel politically impossible. The move: put the 'do nothing' and 'descope entirely' options on the table before ruling them out.",
+    "MOD6_jobs_to_be_done": "List is about all three job types — functional, emotional, social — and all the groups who might be hiring the product for different jobs. The move: don't assume everyone hires it for the same reason.",
+    "MOD7_strategy": "List is about all moat types — network effects, switching costs, data, distribution, ecosystem — not just the one the scenario makes obvious. The move: which moat does this product actually have vs. which one it thinks it has?",
+    "MOD8_mindset": "List is about the full range of engineering decisions that have product implications — not just feature work. The move: what other choices made in the last sprint had product consequences that weren't tracked?"
+  }
+}

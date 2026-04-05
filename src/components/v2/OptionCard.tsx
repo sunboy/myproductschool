@@ -9,6 +9,7 @@ interface OptionData {
 interface RevealData {
   points: number
   explanation: string
+  framework_hint?: string
 }
 
 interface OptionCardProps {
@@ -59,6 +60,12 @@ export function OptionCard({ option, selected, revealed, revealData, disabled, o
                 {tier.label}
               </span>
               <p className="text-on-surface-variant text-xs">{revealData.explanation}</p>
+              {revealData.framework_hint && (
+                <div className="mt-2 flex items-start gap-2 rounded-lg bg-primary-fixed/50 p-3">
+                  <span className="material-symbols-outlined text-primary text-lg mt-0.5">psychology</span>
+                  <p className="text-xs text-on-surface-variant leading-relaxed">{revealData.framework_hint}</p>
+                </div>
+              )}
             </div>
           )}
         </div>

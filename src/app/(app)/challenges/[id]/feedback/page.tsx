@@ -2,6 +2,7 @@ import { getChallengeById } from '@/lib/data/challenges'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { FeedbackAccordion } from '@/components/challenge/FeedbackAccordion'
+import { MentalModelsBreakdown } from '@/components/challenge/MentalModelsBreakdown'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { createClient } from '@/lib/supabase/server'
@@ -38,6 +39,8 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
   let rawOverallScore: number | null = null
   let submissionDate: string | null = null
   let responseText: string | null = null
+  type MentalModelStep = { step: string; competency: string; reasoning_move: string; demonstrated: string; missed: string }
+  let mentalModelsBreakdown: MentalModelStep[] | null = null
 
   if (!isMock && attempt) {
     try {
@@ -110,6 +113,18 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
               })),
             }
           }
+        }
+
+        // Also check for v2 attempt with mental_models_breakdown
+        const { data: v2Attempt } = await adminClient
+          .from('challenge_attempts_v2')
+          .select('mental_models_breakdown')
+          .eq('id', attempt)
+          .eq('user_id', user.id)
+          .single()
+
+        if (v2Attempt?.mental_models_breakdown) {
+          mentalModelsBreakdown = v2Attempt.mental_models_breakdown as MentalModelStep[]
         }
       }
     } catch {
@@ -342,6 +357,11 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             dimensions={dimensionPanels}
             detectedPatterns={detectedPatterns.length > 0 ? detectedPatterns : undefined}
           />
+
+          {/* Mental Models Breakdown (v2 challenges) */}
+          {mentalModelsBreakdown && mentalModelsBreakdown.length > 0 && (
+            <MentalModelsBreakdown breakdown={mentalModelsBreakdown} />
+          )}
 
           {/* Key Insight */}
           <div className="bg-tertiary-fixed rounded-xl p-5 flex items-start gap-3">

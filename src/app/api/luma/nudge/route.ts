@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
-import { LUMA_NUDGE_SYSTEM_PROMPT, buildNudgeUserPrompt } from '@/lib/luma/system-prompt'
+import { LUMA_NUDGE_SYSTEM_PROMPT, MENTAL_MODELS_CONTEXT, buildNudgeUserPrompt } from '@/lib/luma/system-prompt'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
+import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
+import type { FlowStep } from '@/lib/types'
 
 const MOCK_NUDGES = [
   "You've identified the problem well. What data would tell you *why* users aren't taking this action?",
@@ -16,7 +14,7 @@ const MOCK_NUDGES = [
 ]
 
 export async function POST(req: NextRequest) {
-  const { challengeId: _challengeId, challengePrompt, draft, attemptId } = await req.json()
+  const { challengeId: _challengeId, challengePrompt, draft, attemptId, step } = await req.json()
 
   if (!draft?.trim()) {
     return NextResponse.json({ nudge: null })
@@ -59,16 +57,20 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
+    const validSteps = ['frame', 'list', 'optimize', 'win']
+    const flowStep = validSteps.includes(step) ? (step as FlowStep) : undefined
+
+    let userPrompt = buildNudgeUserPrompt(challengePrompt ?? '', draft)
+    if (flowStep) {
+      const reasoningMove = getReasoningMove(flowStep)
+      userPrompt += `\n\nThe user is currently on the ${flowStep} step, practicing: ${reasoningMove}. Reference this reasoning move in your nudge.`
+    }
+
+    const systemPrompt = LUMA_NUDGE_SYSTEM_PROMPT + '\n\n' + MENTAL_MODELS_CONTEXT
+
+    const message = await createCachedMessage(systemPrompt, userPrompt, {
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 150,
-      system: LUMA_NUDGE_SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: buildNudgeUserPrompt(challengePrompt ?? '', draft),
-        },
-      ],
     })
 
     const content = message.content[0]

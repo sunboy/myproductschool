@@ -1,0 +1,193 @@
+{
+  "step": "frame",
+  "version": "1.0",
+  "description": "The Frame step trains one reasoning move: noticing that the obvious problem is not necessarily the real problem. A strong Frame answer does not jump to solutions. It defines the root cause, names what the stated problem is a symptom of, and draws a boundary around what is and is not being solved.",
+  "reasoning_move": "Distinguish symptom from root cause before engaging with solutions",
+
+  "criteria": [
+    {
+      "id": "F1",
+      "name": "Symptom vs. root cause",
+      "description": "The user names what the stated problem is a symptom of, not just that the stated problem exists. A symptom is observable. A root cause explains why the symptom is occurring. Weak answers describe the symptom with more detail. Strong answers name the structural cause behind it.",
+      "strong_signals": [
+        "Explicitly names what the stated problem is a symptom of",
+        "Questions whether the stated problem is the real problem",
+        "Uses evidence from the scenario to distinguish surface from cause (e.g. timeline gaps, contradictory data points)",
+        "Names the category of problem: behavioral, structural, motivational, technical"
+      ],
+      "partial_signals": [
+        "Acknowledges there might be more to the problem without naming it",
+        "Asks good clarifying questions but doesn't commit to a diagnosis",
+        "Names the symptom more precisely without surfacing the cause"
+      ],
+      "failure_signals": [
+        "Accepts the stated problem as the real problem and moves to solutions",
+        "Describes the symptom in more detail without questioning it",
+        "Conflates the most visible problem with the most important one"
+      ],
+      "luma_coaching_weak": "You spotted that something is off, but you stopped at the observable behavior. The next move is to ask: what would have to be true for this symptom to exist? Name the structural condition underneath it.",
+      "luma_coaching_failure": "You've accepted the problem as stated and moved toward solutions. Before doing that, ask: is this the real problem, or is it a sign of something deeper? In the scenario, what doesn't add up if you take the surface description at face value?"
+    },
+    {
+      "id": "F2",
+      "name": "Why-before-how check",
+      "description": "The user questions the premise of the problem before engaging with how to solve it. This does not mean they refuse to engage — it means they check whether the problem is worth solving, and for whom, before designing anything.",
+      "strong_signals": [
+        "Questions why this problem matters before asking how to fix it",
+        "Asks whose goal is served by solving this problem",
+        "Challenges an assumption embedded in the problem statement",
+        "Names what solving this problem unlocks or enables"
+      ],
+      "partial_signals": [
+        "Asks clarifying questions about scope without challenging the premise",
+        "Briefly mentions 'we should understand why' but doesn't follow through",
+        "Accepts the premise but notes it might need validation"
+      ],
+      "failure_signals": [
+        "Goes directly to solution design without questioning the why",
+        "Treats the problem as a given constraint rather than something to interrogate",
+        "Asks only how to solve it, never why solving it matters"
+      ],
+      "luma_coaching_weak": "You're asking good scoping questions, but you haven't challenged the premise itself. Ask: why does this problem need to be solved at all? Who decided this was the priority, and what would happen if we didn't solve it?",
+      "luma_coaching_failure": "You've jumped straight to solving. Before designing anything, ask why this problem is worth solving at all — whose goal it serves, what it unlocks, and whether fixing it moves the product forward or just reduces noise."
+    },
+    {
+      "id": "F3",
+      "name": "Problem statement completeness",
+      "description": "A complete problem statement has four components: who is affected, what they are trying to do, what is blocking them, and why it matters to the business or product mission. Answers that address only one or two components produce solutions that are well-intentioned but misaimed.",
+      "components": [
+        "who: the specific person or group experiencing the problem",
+        "what: what they are trying to accomplish",
+        "blocker: what is preventing them from accomplishing it",
+        "why it matters: the business or product consequence of this remaining unsolved"
+      ],
+      "strong_signals": [
+        "Names all four components explicitly or implicitly",
+        "Connects the user's blocked goal to a product-level consequence",
+        "Defines the problem narrowly enough to be actionable",
+        "Names what is NOT included in scope and why"
+      ],
+      "partial_signals": [
+        "Names 2-3 components clearly, leaves one implicit",
+        "Strong on user definition and blocker but vague on business consequence",
+        "Strong on business consequence but vague on who specifically is affected"
+      ],
+      "failure_signals": [
+        "Problem statement is at the feature level, not the user need level",
+        "Names the affected group as 'users' or 'customers' without further specificity",
+        "No business consequence named — problem is defined as an inconvenience, not a mission-level issue",
+        "Scope is unbounded — the problem could mean anything"
+      ],
+      "luma_coaching_weak": "Your problem statement covers most of the ground. The part that's missing: why does this matter at the product or business level? A user being frustrated is a symptom. What does it cost the product if this remains unsolved?",
+      "luma_coaching_failure": "Your problem statement is too broad to act on. Try this: name one specific person, what they're trying to do, what's stopping them, and what happens to the product if it stays that way. All four in two sentences."
+    },
+    {
+      "id": "F4",
+      "name": "Scope boundary",
+      "description": "Strong Frame answers name what is NOT being solved, and why. This is not hedging — it is a sign of precision. Naming exclusions shows the user understands that every problem definition makes choices about what to deprioritize.",
+      "strong_signals": [
+        "Explicitly names at least one thing that is out of scope and why",
+        "Distinguishes between the problem they are solving and a related but different problem",
+        "Shows awareness that scoping out something has a cost"
+      ],
+      "partial_signals": [
+        "Implies a scope boundary without stating it directly",
+        "Narrows the problem without acknowledging what gets deprioritized"
+      ],
+      "failure_signals": [
+        "No scope boundary named — problem definition could accommodate any solution",
+        "Treats the scope as given by the question rather than as a choice",
+        "Scopes out important things without acknowledging the tradeoff"
+      ],
+      "luma_coaching_weak": "You've scoped the problem, but you haven't said what you're deliberately leaving out. Naming what you're not solving is as important as naming what you are — it shows the choice was intentional.",
+      "luma_coaching_failure": "The problem as you've defined it could justify almost any solution. Try adding: 'We are not solving X, because Y.' That constraint is what makes a frame actionable."
+    }
+  ],
+
+  "scoring": {
+    "method": "criteria-weighted",
+    "description": "F1 and F2 are primary criteria — they represent the core reasoning move of the Frame step. F3 and F4 are secondary — they add precision and completeness. A strong Frame answer must score at least partial on F1 and F2. Scoring strong on F3/F4 alone does not make a strong Frame.",
+    "weights": {
+      "F1": 0.35,
+      "F2": 0.30,
+      "F3": 0.20,
+      "F4": 0.15
+    },
+    "thresholds": {
+      "strong": 0.75,
+      "partial": 0.45,
+      "needs_work": 0.0
+    }
+  },
+
+  "output_format": {
+    "description": "Luma's grading output for a Frame answer. The detected field names what Luma found in the answer. The missed field names what was expected but absent. The coaching field is one to three sentences — direct, specific, no flattery.",
+    "fields": {
+      "score": "strong | partial | needs_work",
+      "criteria_scores": {
+        "F1": "strong | partial | needs_work",
+        "F2": "strong | partial | needs_work",
+        "F3": "strong | partial | needs_work",
+        "F4": "strong | partial | needs_work"
+      },
+      "detected": "What Luma found in the answer — named specifically, not generically",
+      "missed": "What was expected but not present — named specifically",
+      "coaching": "One to three sentences. References the specific criterion missed. No praise for weak answers. No hedging."
+    },
+    "example_strong": {
+      "score": "strong",
+      "criteria_scores": {
+        "F1": "strong",
+        "F2": "strong",
+        "F3": "partial",
+        "F4": "partial"
+      },
+      "detected": "You identified that the timeline makes the bug an insufficient explanation for the drop — the drop predates the bug by four weeks. You questioned the premise of the reported issue before engaging with the fix.",
+      "missed": "Your problem statement names who is affected and what the blocker is, but doesn't name the business consequence of leaving the real cause unresolved. You also didn't explicitly scope out what you're not investigating.",
+      "coaching": "Strong root-cause reasoning. The one thing missing: connect the 40% drop to a business consequence beyond the metric. Is this a retention problem, a feature abandonment signal, or a trust issue? That distinction changes what you investigate next."
+    },
+    "example_partial": {
+      "score": "partial",
+      "criteria_scores": {
+        "F1": "partial",
+        "F2": "needs_work",
+        "F3": "partial",
+        "F4": "needs_work"
+      },
+      "detected": "You noticed the bug might not be the full story. You named the user (Priya) and the blocker (the race condition). That's a reasonable start.",
+      "missed": "You accepted the reported bug as the problem worth investigating without questioning whether solving it would recover story shares. The timeline evidence in the scenario — that the drop predates the bug — wasn't used.",
+      "coaching": "You've described the symptom more precisely, but you haven't named the root cause. Use the timeline: the drop started at week 1, the bug appeared at week 3. That gap is the evidence. What does it tell you about the real problem?"
+    },
+    "example_needs_work": {
+      "score": "needs_work",
+      "criteria_scores": {
+        "F1": "needs_work",
+        "F2": "needs_work",
+        "F3": "needs_work",
+        "F4": "needs_work"
+      },
+      "detected": "You identified that the share button bug is a problem and proposed fixing it.",
+      "missed": "The timeline evidence was not used. The root cause was not named. The premise of the problem was not questioned. No scope boundary was set.",
+      "coaching": "Before designing a fix, look at the data in the scenario: the drop started seven weeks ago, but the bug appeared three weeks ago. A cause can't postdate its effect. What does that tell you about whether the bug is the real problem?"
+    }
+  },
+
+  "anti_patterns_this_step_catches": [
+    "Jumping to solutions before the problem is defined",
+    "Treating the most visible problem as the most important one",
+    "Defining the problem at the feature level instead of the user need level",
+    "Accepting a symptom as a root cause because it's measurable",
+    "Scoping too broadly — a problem that could justify any solution is not a problem statement"
+  ],
+
+  "module_notes": {
+    "MOD1_user_segmentation": "In segmentation challenges, Frame is about naming which user group has the real problem — not all users equally. The root-cause move here is: why does this group have this problem when others don't?",
+    "MOD2_problem_identification": "This is where Frame is most directly tested. The scenario will almost always present a symptom as the problem. The Frame move is catching that before engaging with solutions.",
+    "MOD3_success_metrics": "Frame here is about questioning whether the proposed metric measures the right thing. The root-cause move: what user behavior does this metric actually track, and is that the behavior that matters?",
+    "MOD4_product_improvement": "Frame is about questioning whether the requested improvement addresses the real friction. The root-cause move: is distribution or novelty the actual barrier to adoption?",
+    "MOD5_tradeoffs": "Frame is about naming what is actually being traded off — not just listing options. The root-cause move: what is the decision really optimizing for, underneath the stated constraint?",
+    "MOD6_jobs_to_be_done": "Frame is about naming the job, not the feature. The root-cause move: what is the user actually trying to accomplish, and is it functional, emotional, or social?",
+    "MOD7_strategy": "Frame is about naming the real competitive threat or opportunity. The root-cause move: is this a product problem, a distribution problem, or a moat problem?",
+    "MOD8_mindset": "Frame is meta — it's about questioning why the engineer is being asked to solve this at all, and what the product consequence of solving or not solving it is."
+  }
+}

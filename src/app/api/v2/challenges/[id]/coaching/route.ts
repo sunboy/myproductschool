@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getLumaContext } from '@/lib/v2/luma-context'
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
+import { createCachedMessage } from '@/lib/anthropic/cached-client'
 
 export async function POST(
   req: NextRequest,
@@ -101,12 +97,10 @@ Generate two short paragraphs:
 Tone: Direct, warm. Senior ${roleLabel} mentoring a junior. No filler.
 Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
 
-    const message = await anthropic.messages.create({
-      model: 'claude-opus-4-6',
+    const message = await createCachedMessage(systemPrompt, userPrompt, {
+      model: 'claude-sonnet-4-6',
       max_tokens: 800,
       thinking: { type: 'adaptive' },
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
     })
 
     let rawText = ''
@@ -177,7 +171,7 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
       .eq('id', question_id)
       .single(),
     admin.from('flow_options')
-      .select('option_text, quality, explanation')
+      .select('option_text, quality, explanation, framework_hint')
       .eq('id', option_id)
       .single(),
     admin.from('challenges')
@@ -203,6 +197,7 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
   const selectedText = option?.option_text ?? ''
   const qualityLabel = option?.quality ?? ''
   const staticExplanation = option?.explanation ?? ''
+  const frameworkHint = (option as Record<string, unknown>)?.framework_hint as string | null ?? null
   const bestText = bestOption?.option_text ?? ''
   const scenarioContext = challenge?.scenario_context ?? ''
   const scenarioTrigger = challenge?.scenario_trigger ?? ''
@@ -234,12 +229,10 @@ Generate two short paragraphs:
 Tone: Direct, warm. Senior ${roleLabel} mentoring a junior. No filler.
 Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
 
-  const message = await anthropic.messages.create({
-    model: 'claude-opus-4-6',
+  const message = await createCachedMessage(systemPrompt, userPrompt, {
+    model: 'claude-sonnet-4-6',
     max_tokens: 800,
     thinking: { type: 'adaptive' },
-    system: systemPrompt,
-    messages: [{ role: 'user', content: userPrompt }],
   })
 
   // Extract text content from response
@@ -283,5 +276,5 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
     .eq('attempt_id', attempt_id)
     .eq('question_id', question_id)
 
-  return NextResponse.json({ role_context, career_signal, cached: false })
+  return NextResponse.json({ role_context, career_signal, framework_hint: frameworkHint, cached: false })
 }
