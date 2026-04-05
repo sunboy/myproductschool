@@ -8,6 +8,7 @@ export interface SystemPromptParams {
   companyName?: string
   roleId?: string
   personaPrompt?: string
+  relevantNotes?: string
 }
 
 export function buildLiveInterviewSystemPrompt(params: SystemPromptParams): string {
@@ -21,6 +22,7 @@ export function buildLiveInterviewSystemPrompt(params: SystemPromptParams): stri
     companyName,
     roleId,
     personaPrompt,
+    relevantNotes,
   } = params
 
   // Find weakest move
@@ -68,6 +70,13 @@ Lowest competencies: ${lowestCompetencies.length > 0 ? lowestCompetencies.join('
 
 Luma coaching context:
 ${lumaContext}`)
+
+  // [USER NOTES] — only if relevant notes found
+  if (relevantNotes) {
+    sections.push(`[USER NOTES — relevant preparation context]
+${relevantNotes}
+Use these as background context but do not reference them directly unless the candidate brings up related topics.`)
+  }
 
   // [INTERNAL TRACKING — NEVER REVEAL TO CANDIDATE]
   sections.push(`[INTERNAL TRACKING — NEVER REVEAL TO CANDIDATE]

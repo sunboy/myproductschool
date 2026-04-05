@@ -51,6 +51,21 @@ export async function POST(request: Request) {
     win: moveLevels.find((m) => m.move === 'win')?.level ?? 1,
   }
 
+  // Search for relevant notes (graceful fallback if notes system unavailable)
+  let relevantNotes = ''
+  try {
+    const { searchSimilarNotes } = await import('@/lib/notes/embeddings')
+    const notesQuery = companyRow
+      ? `${companyRow.name} ${roleId ?? 'PM'} product interview`
+      : 'product interview preparation'
+    const notes = await searchSimilarNotes(user.id, notesQuery, 3)
+    if (notes && notes.length > 0) {
+      relevantNotes = notes.map((n: { content: string }) => `- ${n.content}`).join('\n')
+    }
+  } catch {
+    // Notes system unavailable — continue without notes
+  }
+
   const systemPrompt = buildLiveInterviewSystemPrompt({
     archetype: profile?.archetype ?? 'Analyst',
     archetypeDescription: profile?.archetype_description ?? '',
@@ -61,6 +76,7 @@ export async function POST(request: Request) {
     companyName: companyRow?.name,
     roleId: roleId ?? 'PM',
     personaPrompt: companyRow?.interview_persona_prompt ?? undefined,
+    relevantNotes: relevantNotes || undefined,
   })
 
   const { data: session } = await adminClient
