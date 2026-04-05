@@ -8,7 +8,7 @@ interface Props {
   hasBeenVisible: boolean
 }
 
-export function BeforeAfterSection({ section, isVisible, hasBeenVisible }: Props) {
+export function BeforeAfterSection({ section, isVisible: _isVisible, hasBeenVisible }: Props) {
   const { title, before, after } = section.content
   return (
     <div className={cn(

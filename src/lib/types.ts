@@ -772,7 +772,7 @@ export type StorySection =
   | { id: string; layout: 'fullbleed_stat'; content: { stat: string; context: string; source?: string } }
   | { id: string; layout: 'before_after'; content: { title: string; before: { label: string; items: string[]; summary?: string }; after: { label: string; items: string[]; summary?: string } } }
   | { id: string; layout: 'fullbleed_principle'; content: { principle: string; attribution: string } }
-  | { id: string; layout: 'fullbleed_cta'; content: { headline: string; subline: string; buttonText: string; targetPath: string } }
+  | { id: string; layout: 'fullbleed_cta'; content: { headline: string; subline?: string; buttonText: string; targetPath: string } }
   | { id: string; layout: 'quote'; content: { quote: string; attribution: string; context?: string } }
   | { id: string; layout: 'timeline'; content: { title: string; events: Array<{ date: string; label: string; description: string; type: string }> } }
 

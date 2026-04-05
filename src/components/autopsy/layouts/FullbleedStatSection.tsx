@@ -8,7 +8,7 @@ interface Props {
   hasBeenVisible: boolean
 }
 
-export function FullbleedStatSection({ section, isVisible, hasBeenVisible }: Props) {
+export function FullbleedStatSection({ section, isVisible: _isVisible, hasBeenVisible }: Props) {
   const { stat, context, source } = section.content
   return (
     <div className={cn(

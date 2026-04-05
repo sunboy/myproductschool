@@ -9,7 +9,7 @@ interface Props {
   hasBeenVisible: boolean
 }
 
-export function FullbleedPrincipleSection({ section, isVisible, hasBeenVisible }: Props) {
+export function FullbleedPrincipleSection({ section, isVisible: _isVisible, hasBeenVisible }: Props) {
   const { principle, attribution } = section.content
   return (
     <div className={cn(

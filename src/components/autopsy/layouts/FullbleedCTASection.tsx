@@ -10,7 +10,7 @@ interface Props {
   hasBeenVisible: boolean
 }
 
-export function FullbleedCTASection({ section, isVisible, hasBeenVisible }: Props) {
+export function FullbleedCTASection({ section, isVisible: _isVisible, hasBeenVisible }: Props) {
   const { headline, subline, buttonText, targetPath } = section.content
   return (
     <div className={cn(

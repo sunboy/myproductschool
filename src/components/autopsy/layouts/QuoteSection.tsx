@@ -8,7 +8,7 @@ interface Props {
   hasBeenVisible: boolean
 }
 
-export function QuoteSection({ section, isVisible, hasBeenVisible }: Props) {
+export function QuoteSection({ section, isVisible: _isVisible, hasBeenVisible }: Props) {
   const { quote, attribution, context } = section.content
   return (
     <div className={cn(

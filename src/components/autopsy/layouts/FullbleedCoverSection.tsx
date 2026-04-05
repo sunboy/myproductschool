@@ -9,7 +9,7 @@ interface Props {
   hasBeenVisible: boolean
 }
 
-export function FullbleedCoverSection({ section, isVisible, hasBeenVisible }: Props) {
+export function FullbleedCoverSection({ section, isVisible: _isVisible, hasBeenVisible }: Props) {
   const { label, headline, subline, meta } = section.content
   return (
     <div className="relative min-h-[calc(100dvh-52px)] bg-primary flex flex-col items-center justify-center px-6 text-center overflow-hidden">

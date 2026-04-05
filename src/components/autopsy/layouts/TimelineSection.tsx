@@ -31,19 +31,20 @@ export function TimelineSection({ section, isVisible, hasBeenVisible }: Props) {
         {events.map((event, i) => (
           <div
             key={i}
-            className="relative flex flex-row md:flex-col items-start md:items-center gap-4 md:gap-2 pl-8 md:pl-0 md:flex-1 pb-8 md:pb-0"
+            className="relative flex flex-row md:flex-col items-start md:items-center gap-4 md:gap-0 pl-8 md:pl-0 md:flex-1 pb-8 md:pb-0"
             style={{
               transition: `opacity 0.4s ease ${i * 0.1}s, transform 0.4s ease ${i * 0.1}s`,
               opacity: hasBeenVisible ? 1 : 0,
               transform: hasBeenVisible ? 'none' : 'translateY(12px)',
             }}
           >
-            {/* Dot */}
+            {/* Dot — absolute on mobile, static in flex column on desktop */}
             <div className={cn(
-              'absolute left-0 md:static shrink-0 w-[22px] h-[22px] rounded-full border-2 border-background',
-              eventDotClass[event.type] ?? 'bg-on-surface-variant'
+              'absolute left-0 top-0 md:static shrink-0 w-[22px] h-[22px] rounded-full border-2 border-background z-10',
+              eventDotClass[event.type] ?? 'bg-outline-variant'
             )} />
-            <div className="md:text-center pt-0 md:pt-3">
+            {/* Text */}
+            <div className="md:text-center md:pt-3 md:px-2">
               <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-wide">{event.date}</p>
               <p className="font-label font-bold text-on-surface text-sm mt-0.5">{event.label}</p>
               <p className="font-body text-xs text-on-surface-variant mt-1 leading-relaxed md:max-w-[120px]">{event.description}</p>
