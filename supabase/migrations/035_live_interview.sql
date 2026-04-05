@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS live_interview_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id),
   company_id UUID REFERENCES company_profiles(id),
-  role_id TEXT DEFAULT 'swe',
+  role_id TEXT NOT NULL DEFAULT 'swe' CHECK (role_id IN ('PM', 'SWE', 'Data Engineer', 'ML Engineer')),
   status TEXT CHECK (status IN ('pending','active','completed','abandoned')) DEFAULT 'pending',
   system_prompt TEXT,
   calibration_snapshot JSONB,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS live_interview_sessions (
   debrief_json JSONB,
   total_turns INTEGER DEFAULT 0,
   duration_seconds INTEGER,
-  started_at TIMESTAMPTZ DEFAULT now(),
+  started_at TIMESTAMPTZ,
   ended_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT now()
 );
@@ -36,3 +36,18 @@ CREATE TABLE IF NOT EXISTS live_interview_turns (
 
 CREATE INDEX IF NOT EXISTS idx_live_interview_sessions_user ON live_interview_sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_live_interview_turns_session ON live_interview_turns(session_id, turn_index);
+
+-- Row Level Security
+ALTER TABLE live_interview_sessions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "sessions_own" ON live_interview_sessions
+  FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "sessions_service" ON live_interview_sessions
+  FOR ALL USING (auth.role() = 'service_role');
+
+ALTER TABLE live_interview_turns ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "turns_own" ON live_interview_turns
+  FOR ALL USING (
+    session_id IN (SELECT id FROM live_interview_sessions WHERE user_id = auth.uid())
+  );
+CREATE POLICY "turns_service" ON live_interview_turns
+  FOR ALL USING (auth.role() = 'service_role');
