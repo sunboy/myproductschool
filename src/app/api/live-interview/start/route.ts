@@ -81,5 +81,5 @@ export async function POST(request: Request) {
     .select('id')
     .single()
 
-  return Response.json({ sessionId: session?.id, companyName: companyRow?.name, role: roleId ?? 'PM' })
+  return Response.json({ sessionId: session?.id, systemPrompt, companyName: companyRow?.name, role: roleId ?? 'PM' })
 }

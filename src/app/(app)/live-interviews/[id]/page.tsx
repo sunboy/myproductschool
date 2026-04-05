@@ -105,8 +105,8 @@ export default function SessionPage({
     es.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data)
-        if (data.flow_coverage) setFlowCoverage(data.flow_coverage)
-        if (data.turn_count != null) setTotalTurns(data.turn_count)
+        if (data.flowCoverage) setFlowCoverage(data.flowCoverage)
+        if (data.totalTurns != null) setTotalTurns(data.totalTurns)
       } catch {
         // ignore malformed SSE data
       }
@@ -131,11 +131,12 @@ export default function SessionPage({
     }
     setTurns((prev) => [...prev, turn])
     setTotalTurns((prev) => prev + 1)
-    setLumaState(role === 'luma' ? 'speaking' : 'listening')
+    // ConversationText with role='luma' means agent finished speaking — go idle
+    if (role === 'luma') setLumaState('idle')
   }, [])
 
-  const handleTurnEnd = useCallback(() => {
-    setLumaState('idle')
+  const handleAgentSpeaking = useCallback(() => {
+    setLumaState('speaking')
   }, [])
 
   const handleAudioChunk = useCallback(() => {
@@ -176,7 +177,7 @@ export default function SessionPage({
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a1028] to-[#0f1a14] flex items-center justify-center">
+      <div className="min-h-screen bg-inverse-surface flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
           <p className="text-white/60 font-body text-sm">Starting interview session...</p>
@@ -186,7 +187,7 @@ export default function SessionPage({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1028] to-[#0f1a14] flex flex-col">
+    <div className="min-h-screen bg-inverse-surface flex flex-col">
       {/* Mock mode banner */}
       {IS_MOCK && (
         <div className="bg-tertiary/20 border-b border-tertiary/30 px-4 py-1.5 text-center">
@@ -284,7 +285,7 @@ export default function SessionPage({
         systemPrompt={systemPrompt}
         onTranscript={handleTranscript}
         onAudioChunk={handleAudioChunk}
-        onTurnEnd={handleTurnEnd}
+        onAgentSpeaking={handleAgentSpeaking}
         onConnected={handleConnected}
         onError={handleError}
         disabled={IS_MOCK}

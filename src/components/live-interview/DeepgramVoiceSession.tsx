@@ -10,7 +10,7 @@ interface DeepgramVoiceSessionProps {
   systemPrompt: string
   onTranscript: (text: string, role: 'luma' | 'user') => void
   onAudioChunk: (buffer: ArrayBuffer) => void
-  onTurnEnd: () => void
+  onAgentSpeaking?: () => void
   onConnected: () => void
   onError: (err: string) => void
   disabled?: boolean // mock mode — renders nothing, calls no APIs
@@ -22,7 +22,7 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
     systemPrompt,
     onTranscript,
     onAudioChunk,
-    onTurnEnd,
+    onAgentSpeaking,
     onConnected,
     onError,
     disabled,
@@ -111,7 +111,7 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
         if (payload.type === 'ConversationText') {
           onTranscript(payload.content, payload.role === 'agent' ? 'luma' : 'user')
         } else if (payload.type === 'AgentStartedSpeaking') {
-          onTurnEnd()
+          onAgentSpeaking?.()
         } else if (payload.type === 'Error') {
           onError(payload.description ?? 'Deepgram error')
         }
