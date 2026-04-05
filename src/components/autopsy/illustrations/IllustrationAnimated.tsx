@@ -1,5 +1,6 @@
 'use client'
 
+import * as React from 'react'
 import type { IllustrationConfig } from '@/lib/types'
 import type {
   ComparisonBarsData,
@@ -32,6 +33,26 @@ function ComparisonBars({ data, isVisible }: { data: ComparisonBarsData; isVisib
   const rowHeight = 36
   const svgHeight = bars.length * rowHeight + 16
   const svgWidth = 280
+
+  const [displayedValues, setDisplayedValues] = React.useState<number[]>(() => data.bars.map(() => 0))
+
+  React.useEffect(() => {
+    if (!isVisible) return
+    const duration = 700
+    const start = performance.now()
+    const targets = data.bars.map(b => b.value)
+    let rafId: number
+    const animate = (now: number) => {
+      const elapsed = now - start
+      const progress = Math.min(elapsed / duration, 1)
+      setDisplayedValues(targets.map(t => Math.round(t * progress)))
+      if (progress < 1) {
+        rafId = requestAnimationFrame(animate)
+      }
+    }
+    rafId = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(rafId)
+  }, [isVisible, data.bars])
 
   return (
     <svg
@@ -97,7 +118,7 @@ function ComparisonBars({ data, isVisible }: { data: ComparisonBarsData; isVisib
               dominantBaseline="middle"
               fontFamily="inherit"
             >
-              {bar.value}%
+              {displayedValues[i]}%
             </text>
           </g>
         )
@@ -456,7 +477,7 @@ function BlockAnatomy({ data, isVisible }: { data: BlockAnatomyData; isVisible: 
 
       {/* Three dots */}
       {[12, 24, 36].map((dotX, di) => {
-        const dotColors = ['#ef4444', '#f59e0b', '#22c55e']
+        const dotColors = ['var(--color-error)', 'var(--color-tertiary)', 'var(--color-primary)']
         return (
           <circle
             key={di}
