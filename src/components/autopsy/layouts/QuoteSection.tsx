@@ -16,7 +16,7 @@ export function QuoteSection({ section, isVisible, hasBeenVisible }: Props) {
       hasBeenVisible ? 'section-visible' : 'section-hidden'
     )}>
       <span className="font-headline text-8xl text-primary/30 leading-none select-none">&ldquo;</span>
-      <blockquote className="font-headline italic text-on-surface text-2xl text-center leading-relaxed -mt-8">
+      <blockquote className="font-headline italic text-on-surface text-2xl max-w-2xl text-center leading-relaxed -mt-8">
         {quote}
       </blockquote>
       <div className="flex flex-col items-center gap-1 mt-2">

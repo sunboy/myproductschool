@@ -13,7 +13,7 @@ export function SplitPanelSection({ section, isVisible, hasBeenVisible }: Props)
   const { label, title, paragraphs, textSide } = section.content
   const textCol = (
     <div className="flex flex-col justify-center gap-4 px-6 py-8 md:px-10">
-      <p className="font-label text-primary uppercase tracking-[0.15em] text-xs font-bold">{label}</p>
+      <p className="font-label text-primary uppercase tracking-widest text-xs font-bold">{label}</p>
       <h2 className="font-headline italic text-on-surface text-2xl md:text-3xl leading-tight">{title}</h2>
       {paragraphs.map((p, i) => (
         <p key={i} className="font-body text-on-surface-variant text-base leading-relaxed">{p}</p>
