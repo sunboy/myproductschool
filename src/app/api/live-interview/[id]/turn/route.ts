@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { detectFlowMove } from '@/lib/live-interview/flow-detector'
+import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
 import Anthropic from '@anthropic-ai/sdk'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -39,8 +39,6 @@ export async function POST(
 
   const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user')?.content ?? ''
 
-  const flowMove = detectFlowMove(lastUserMsg)
-
   // Get existing turns
   const { data: turns, count } = await adminClient
     .from('live_interview_turns')
@@ -68,25 +66,13 @@ export async function POST(
   })
 
   const rawContent = response.content[0].type === 'text' ? response.content[0].text : ''
+  const { cleanContent, signal } = parseGradingSignal(rawContent)
 
-  // Strip grading signal JSON block (appended by Luma after each response)
-  const signalMatch = rawContent.match(/\{["']?flow_move["']?:[\s\S]*$/)
-  const cleanContent = rawContent.replace(/\n?\{["']?flow_move["']?:[\s\S]*$/, '').trim()
-
-  let signal: { flow_move: string; competency: string; signal: string } | null = null
-  if (signalMatch) {
-    try {
-      signal = JSON.parse(signalMatch[0])
-    } catch {
-      // ignore parse errors
-    }
-  }
-
-  // Update flow_coverage
-  const currentCoverage = (session.flow_coverage ?? {}) as Record<string, number>
-  if (flowMove) {
-    const current = currentCoverage[flowMove] ?? 0
-    currentCoverage[flowMove] = Math.min(1.0, current + 0.2)
+  // Update flow_coverage from LLM signal
+  const currentCoverage = (session.flow_coverage ?? { frame: 0, list: 0, optimize: 0, win: 0 }) as Record<string, number>
+  if (signal?.flowMove) {
+    const current = currentCoverage[signal.flowMove] ?? 0
+    currentCoverage[signal.flowMove] = Math.min(1.0, current + 0.15)
   }
 
   // Save turns and update session in parallel
@@ -98,14 +84,14 @@ export async function POST(
         turn_index: nextIndex,
         role: 'user',
         content: lastUserMsg,
-        flow_move_detected: flowMove,
       },
       {
         session_id: id,
         turn_index: nextIndex + 1,
         role: 'luma',
         content: cleanContent,
-        competency_signals: signal,
+        flow_move_detected: signal?.flowMove || null,
+        competency_signals: signal ? { competency: signal.competency, signal: signal.signal } : null,
       },
     ]),
     adminClient

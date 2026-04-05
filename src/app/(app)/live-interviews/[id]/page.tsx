@@ -12,10 +12,17 @@ import { MOCK_LIVE_SESSION, MOCK_LIVE_TURNS } from '@/lib/mock-live-interviews'
 
 const IS_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
 
+interface CoachingSignal {
+  flowMove: string
+  competency: string
+  signal: string
+}
+
 interface TranscriptTurn {
   id: string
   role: 'luma' | 'user'
   content: string
+  coachingSignal?: CoachingSignal
 }
 
 export default function SessionPage({
@@ -51,7 +58,8 @@ export default function SessionPage({
   )
 
   // UI state
-  const [lumaState, setLumaState] = useState<'idle' | 'listening' | 'speaking'>('idle')
+  const [lumaState, setLumaState] = useState<'idle' | 'listening' | 'speaking' | 'thinking'>('idle')
+  const [isThinking, setIsThinking] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [isVoiceActive, setIsVoiceActive] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
@@ -60,6 +68,7 @@ export default function SessionPage({
   const eventSourceRef = useRef<EventSource | null>(null)
   const audioCtxRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
+  const lastSignalTurnIndexRef = useRef<number>(-1)
 
   // Start session (non-mock)
   useEffect(() => {
@@ -109,6 +118,26 @@ export default function SessionPage({
         const data = JSON.parse(e.data)
         if (data.flowCoverage) setFlowCoverage(data.flowCoverage)
         if (data.totalTurns != null) setTotalTurns(data.totalTurns)
+        // Attach latestSignal to the most recent luma turn (voice mode)
+        if (data.latestSignal?.flowMove && data.latestSignal.turnIndex != null) {
+          const signalTurnIndex = data.latestSignal.turnIndex as number
+          if (signalTurnIndex > lastSignalTurnIndexRef.current) {
+            lastSignalTurnIndexRef.current = signalTurnIndex
+            const { turnIndex: _, ...signalData } = data.latestSignal
+            setTurns((prev) => {
+              const lastLumaIdx = prev.findLastIndex((t) => t.role === 'luma')
+              if (lastLumaIdx === -1) return prev
+              const turn = prev[lastLumaIdx]
+              if (turn.coachingSignal) return prev
+              const updated = [...prev]
+              updated[lastLumaIdx] = { ...turn, coachingSignal: signalData }
+              return updated
+            })
+          }
+        }
+        if (data.done) {
+          es.close()
+        }
       } catch {
         // ignore malformed SSE data
       }
@@ -185,6 +214,8 @@ export default function SessionPage({
     const userTurn: TranscriptTurn = { id: crypto.randomUUID(), role: 'user', content: text }
     setTurns((prev) => [...prev, userTurn])
     setTotalTurns((prev) => prev + 1)
+    setLumaState('thinking')
+    setIsThinking(true)
 
     if (IS_MOCK) {
       setTimeout(() => {
@@ -192,9 +223,12 @@ export default function SessionPage({
           id: crypto.randomUUID(),
           role: 'luma',
           content: "That's interesting — can you say more about that?",
+          coachingSignal: { flowMove: 'frame', competency: 'cognitive_empathy', signal: 'Good instinct to explore the problem space.' },
         }
         setTurns((prev) => [...prev, lumaReply])
         setTotalTurns((prev) => prev + 1)
+        setLumaState('idle')
+        setIsThinking(false)
       }, 800)
       return
     }
@@ -206,8 +240,13 @@ export default function SessionPage({
         body: JSON.stringify({ message: text }),
       })
       if (res.ok) {
-        const { reply } = await res.json()
-        const lumaTurn: TranscriptTurn = { id: crypto.randomUUID(), role: 'luma', content: reply }
+        const { reply, signal } = await res.json()
+        const lumaTurn: TranscriptTurn = {
+          id: crypto.randomUUID(),
+          role: 'luma',
+          content: reply,
+          coachingSignal: signal ?? undefined,
+        }
         setTurns((prev) => [...prev, lumaTurn])
         setTotalTurns((prev) => prev + 1)
       } else if (res.status === 410) {
@@ -217,6 +256,9 @@ export default function SessionPage({
       }
     } catch {
       setError('Network error — check your connection.')
+    } finally {
+      setLumaState('idle')
+      setIsThinking(false)
     }
   }, [sessionId])
 
@@ -324,6 +366,7 @@ export default function SessionPage({
         <div className="flex-1 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 p-4">
           <TranscriptPanel
             turns={turns}
+            isThinking={isThinking}
             className="[&_span]:text-white/50 [&_.text-on-surface-variant]:text-white/50 [&_.bg-primary-container]:bg-primary/30 [&_.text-on-primary-container]:text-white/90 [&_.bg-surface-container-high]:bg-white/10 [&_.text-on-surface]:text-white/80"
           />
         </div>

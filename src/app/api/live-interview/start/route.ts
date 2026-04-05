@@ -18,7 +18,7 @@ export async function POST(request: Request) {
 
   // Fetch user data in parallel
   const [profileResult, moveLevelsResult, competenciesResult, failurePatternsResult] = await Promise.all([
-    adminClient.from('profiles').select('archetype, archetype_description, active_role').eq('id', user.id).single(),
+    adminClient.from('profiles').select('archetype, archetype_description, active_role, display_name').eq('id', user.id).single(),
     adminClient.from('move_levels').select('*').eq('user_id', user.id),
     adminClient.from('learner_competencies').select('*').eq('user_id', user.id),
     adminClient.from('user_failure_patterns').select('*').eq('user_id', user.id).order('detected_at', { ascending: false }).limit(5),
@@ -77,6 +77,7 @@ export async function POST(request: Request) {
     roleId: roleId ?? 'PM',
     personaPrompt: companyRow?.interview_persona_prompt ?? undefined,
     relevantNotes: relevantNotes || undefined,
+    learnerName: profile?.display_name ?? undefined,
   })
 
   const { data: session } = await adminClient

@@ -1,19 +1,73 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-interface TranscriptTurn {
+export interface CoachingSignal {
+  flowMove: string
+  competency: string
+  signal: string
+}
+
+export interface TranscriptTurn {
   id: string
   role: 'luma' | 'user'
   content: string
+  coachingSignal?: CoachingSignal
 }
 
 interface TranscriptPanelProps {
   turns: TranscriptTurn[]
+  isThinking?: boolean
   className?: string
 }
 
-export default function TranscriptPanel({ turns, className }: TranscriptPanelProps) {
+const FLOW_LABELS: Record<string, string> = {
+  frame: 'Frame',
+  list: 'List',
+  optimize: 'Optimize',
+  win: 'Win',
+}
+
+const COMPETENCY_LABELS: Record<string, string> = {
+  motivation_theory: 'Motivation Theory',
+  cognitive_empathy: 'Cognitive Empathy',
+  taste: 'Taste',
+  strategic_thinking: 'Strategic Thinking',
+  creative_execution: 'Creative Execution',
+  domain_expertise: 'Domain Expertise',
+}
+
+function CoachingChip({ signal }: { signal: CoachingSignal }) {
+  const [expanded, setExpanded] = useState(false)
+
+  if (!signal.flowMove && !signal.signal) return null
+
+  return (
+    <div className="mt-1.5" data-coaching-chip>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="rounded-full text-xs px-2 py-0.5 font-label font-semibold hover:opacity-80 transition-opacity"
+        style={{ backgroundColor: 'var(--color-primary-fixed, #c8e8d0)', color: 'var(--color-primary, #4a7c59)' }}
+      >
+        {FLOW_LABELS[signal.flowMove] ?? signal.flowMove}
+        {expanded ? ' \u25BE' : ' \u25B8'}
+      </button>
+      {expanded && (
+        <div className="rounded-lg p-2 mt-1 text-xs max-w-[85%]" style={{ backgroundColor: 'var(--color-surface-container-low, #f5f1ea)', color: 'var(--color-on-surface-variant, #4a4e4a)' }}>
+          {signal.competency && (
+            <span className="font-label font-semibold" style={{ color: 'var(--color-on-surface-variant, #4a4e4a)' }}>
+              {COMPETENCY_LABELS[signal.competency] ?? signal.competency}
+              {signal.signal ? ' — ' : ''}
+            </span>
+          )}
+          {signal.signal}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function TranscriptPanel({ turns, isThinking, className }: TranscriptPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const lastTurnId = turns[turns.length - 1]?.id
 
@@ -21,7 +75,7 @@ export default function TranscriptPanel({ turns, className }: TranscriptPanelPro
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight
     }
-  }, [lastTurnId])
+  }, [lastTurnId, isThinking])
 
   return (
     <div
@@ -46,8 +100,25 @@ export default function TranscriptPanel({ turns, className }: TranscriptPanelPro
             >
               {turn.content}
             </div>
+            {turn.role === 'luma' && turn.coachingSignal && (
+              <CoachingChip signal={turn.coachingSignal} />
+            )}
           </div>
         ))}
+
+        {/* Thinking indicator */}
+        {isThinking && (
+          <div className="flex flex-col items-start">
+            <span className="text-xs text-on-surface-variant mb-1 font-label">Luma</span>
+            <div className="bg-primary-container text-on-primary-container rounded-xl rounded-tl-sm p-3 font-body text-sm">
+              <span className="inline-flex gap-1">
+                <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

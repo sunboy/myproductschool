@@ -11,7 +11,7 @@ const AVATAR_URL =
   process.env.NEXT_PUBLIC_RPM_AVATAR_URL ?? 'https://readyplayerme.github.io/visage/male.glb'
 
 interface LumaAvatarProps {
-  state: 'idle' | 'listening' | 'speaking'
+  state: 'idle' | 'listening' | 'speaking' | 'thinking'
   audioAnalyser?: AnalyserNode | null
   className?: string
 }
@@ -19,6 +19,7 @@ interface LumaAvatarProps {
 export default function LumaAvatar({ state, audioAnalyser, className }: LumaAvatarProps) {
   const lumaState: LumaState = state === 'speaking' ? 'speaking'
     : state === 'listening' ? 'listening'
+    : state === 'thinking' ? 'reviewing'
     : 'idle'
 
   return (

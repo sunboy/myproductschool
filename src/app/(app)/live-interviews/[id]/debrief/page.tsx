@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import CompetencyRadar from '@/components/live-interview/CompetencyRadar'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { IS_MOCK } from '@/lib/mock'
@@ -318,38 +319,108 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
           </div>
         )}
 
-        {/* Transcript (collapsible) */}
+        {/* Per-Turn Timeline */}
         {turns.length > 0 && (
-          <details className="bg-surface-container rounded-xl overflow-hidden">
-            <summary className="p-5 cursor-pointer font-headline font-bold text-on-surface flex items-center gap-2 select-none">
+          <div className="bg-surface-container rounded-xl p-6">
+            <h2 className="font-headline text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-on-surface-variant">chat</span>
-              Full Transcript ({turns.length} turns)
-            </summary>
-            <div className="px-5 pb-5 space-y-3 max-h-[600px] overflow-y-auto">
-              {turns.map(turn => (
-                <div
-                  key={turn.id}
-                  className={`rounded-lg p-3 ${
-                    turn.role === 'luma'
-                      ? 'bg-primary-fixed/50 border border-primary/10'
-                      : 'bg-surface-container-high'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-label font-bold text-on-surface-variant uppercase">
-                      {turn.role === 'luma' ? 'Luma' : 'You'}
-                    </span>
-                    {turn.flowMoveDetected && (
-                      <span className="bg-primary-container text-on-primary-container rounded-full px-2 py-0.5 text-[10px] font-label font-bold uppercase">
-                        {turn.flowMoveDetected}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-on-surface-variant leading-relaxed">{turn.content}</p>
-                </div>
-              ))}
+              Turn-by-Turn Timeline
+            </h2>
+            <div className="space-y-0">
+              {(() => {
+                // Group turns into pairs (user + luma)
+                const pairs: Array<{ user?: typeof turns[0]; luma?: typeof turns[0]; index: number }> = []
+                let pairIndex = 0
+                for (let i = 0; i < turns.length; i++) {
+                  pairIndex++
+                  const turn = turns[i]
+                  if (turn.role === 'user') {
+                    const next = turns[i + 1]
+                    if (next?.role === 'luma') {
+                      pairs.push({ user: turn, luma: next, index: pairIndex })
+                      i++ // skip the luma turn
+                    } else {
+                      pairs.push({ user: turn, index: pairIndex })
+                    }
+                  } else {
+                    // Luma turn without user (opening message)
+                    pairs.push({ luma: turn, index: pairIndex })
+                  }
+                }
+
+                const flowBorderColors: Record<string, string> = {
+                  frame: 'var(--color-primary, #4a7c59)',
+                  list: 'var(--color-tertiary, #705c30)',
+                  optimize: '#4a6fa5',
+                  win: '#6b4a7c',
+                }
+                const defaultBorderColor = 'var(--color-outline-variant, #c4c8bc)'
+
+                const startTime = turns[0]?.createdAt ? new Date(turns[0].createdAt).getTime() : 0
+
+                return pairs.map((pair) => {
+                  const flowMove = pair.luma?.flowMoveDetected
+                  const borderColorValue = flowMove ? flowBorderColors[flowMove] ?? defaultBorderColor : defaultBorderColor
+                  const relTime = pair.user?.createdAt && startTime
+                    ? Math.round((new Date(pair.user.createdAt).getTime() - startTime) / 1000)
+                    : null
+                  const timeStr = relTime != null ? `${Math.floor(relTime / 60)}:${String(relTime % 60).padStart(2, '0')}` : ''
+
+                  return (
+                    <details key={pair.index} className="border-l-4 pl-4 py-3" style={{ borderLeftColor: borderColorValue }}>
+                      <summary className="cursor-pointer select-none flex items-center gap-3">
+                        <span className="font-label text-xs font-bold text-on-surface-variant w-6 shrink-0">
+                          #{pair.index}
+                        </span>
+                        {timeStr && (
+                          <span className="font-label text-[10px] text-on-surface-variant/60 w-10 shrink-0">
+                            {timeStr}
+                          </span>
+                        )}
+                        <span className="flex-1 text-sm text-on-surface-variant truncate font-body">
+                          {pair.user ? pair.user.content.slice(0, 100) : pair.luma?.content.slice(0, 100)}
+                          {((pair.user?.content ?? pair.luma?.content) ?? '').length > 100 ? '...' : ''}
+                        </span>
+                        <span className="flex items-center gap-1.5 shrink-0">
+                          {flowMove && (
+                            <span className="bg-primary-fixed text-primary rounded-full px-2 py-0.5 text-[10px] font-label font-bold uppercase">
+                              {FLOW_LABELS[flowMove as FlowStep] ?? flowMove}
+                            </span>
+                          )}
+                        </span>
+                      </summary>
+                      <div className="mt-2 space-y-2 ml-9">
+                        {pair.user && (
+                          <div className="bg-surface-container-high rounded-lg p-3">
+                            <span className="text-[10px] font-label font-bold text-on-surface-variant uppercase">You</span>
+                            <p className="text-sm text-on-surface-variant leading-relaxed mt-0.5">{pair.user.content}</p>
+                          </div>
+                        )}
+                        {pair.luma && (
+                          <div className="bg-primary-fixed/50 border border-primary/10 rounded-lg p-3">
+                            <span className="text-[10px] font-label font-bold text-on-surface-variant uppercase">Luma</span>
+                            <p className="text-sm text-on-surface-variant leading-relaxed mt-0.5">{pair.luma.content}</p>
+                          </div>
+                        )}
+                      </div>
+                    </details>
+                  )
+                })
+              })()}
             </div>
-          </details>
+          </div>
+        )}
+
+        {/* Competency Radar */}
+        {debrief.competencySignals.length > 0 && (
+          <div className="bg-surface-container rounded-xl p-6">
+            <h2 className="font-headline text-lg font-bold text-on-surface mb-4">
+              Competency Radar
+            </h2>
+            <div className="flex justify-center">
+              <CompetencyRadar signals={debrief.competencySignals} />
+            </div>
+          </div>
         )}
 
         {/* Action buttons */}

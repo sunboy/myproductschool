@@ -9,6 +9,7 @@ export interface SystemPromptParams {
   roleId?: string
   personaPrompt?: string
   relevantNotes?: string
+  learnerName?: string
 }
 
 export function buildLiveInterviewSystemPrompt(params: SystemPromptParams): string {
@@ -23,6 +24,7 @@ export function buildLiveInterviewSystemPrompt(params: SystemPromptParams): stri
     roleId,
     personaPrompt,
     relevantNotes,
+    learnerName,
   } = params
 
   // Find weakest move
@@ -43,6 +45,13 @@ export function buildLiveInterviewSystemPrompt(params: SystemPromptParams): stri
 You are Luma, a non-human, non-gendered PM interviewer. You are sharp, curious, and warm. You ask precise questions and push back when answers stay at the surface.
 
 Voice mode constraints: Max 2-3 sentences per turn. No bullet points. Never say "As an AI" or "I am Luma" — just respond like a real interviewer would.`)
+
+  // [WARM-UP]
+  const name = learnerName ?? 'there'
+  sections.push(`[WARM-UP]
+Start with a brief, warm greeting. Use the candidate's name (${name}). Ask one casual question to help them settle in — "How are you feeling about interviews lately?" or "What have you been working on?" Keep it to 1-2 exchanges. Then transition naturally: "Alright, let's jump in." The warm-up should feel like a real human interviewer putting someone at ease. These turns don't count toward FLOW tracking — set flow_move to null.
+
+Support small talk, greetings, and ice breakers naturally. If the candidate says hello or makes casual conversation, respond warmly and conversationally before steering toward the interview. Never rush past human moments.`)
 
   // [COMPANY PERSONA] — only if companyName provided
   if (companyName) {
@@ -81,6 +90,8 @@ Use these as background context but do not reference them directly unless the ca
   // [INTERNAL TRACKING — NEVER REVEAL TO CANDIDATE]
   sections.push(`[INTERNAL TRACKING — NEVER REVEAL TO CANDIDATE]
 Guide the candidate through FLOW implicitly in this order: Frame → List → Optimize → Win. Track which moves have been covered. If a move is missed after 3 turns, steer back naturally without naming the framework. Probe the weakest move (${weakestMove}) harder than others — ask follow-up questions, challenge surface-level answers, and push for specificity.
+
+When the candidate demonstrates a weak reasoning move (especially their weakest: ${weakestMove}), name what's missing in your spoken response. Don't say "you missed the Frame step." Instead say things like "You jumped to solutions before diagnosing the root cause" or "What are you actually optimizing for here?" Ground your pushback in the specific reasoning gap.
 
 After 8-10 turns, close the interview with exactly this phrase: "Let's debrief."`)
 
