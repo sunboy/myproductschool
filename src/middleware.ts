@@ -157,6 +157,11 @@ export async function middleware(request: NextRequest) {
     if (isAppRoute && !isOnboarding && !onboardingDone) {
       return NextResponse.redirect(new URL('/onboarding/welcome', request.url))
     }
+
+    // Fully onboarded user hitting /onboarding/* → send to dashboard
+    if (isOnboarding && onboardingDone) {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
   }
 
   // Unauthenticated users on auth pages (login, signup, etc.) → allow through
