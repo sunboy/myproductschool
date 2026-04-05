@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { IS_MOCK } from '@/lib/mock'
 import { MOCK_LIVE_DEBRIEF, MOCK_LIVE_TURNS } from '@/lib/mock-live-interviews'
@@ -65,11 +66,16 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
     durationMins = 23
     turns = MOCK_LIVE_TURNS
   } else {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) redirect('/login')
+
     const adminClient = createAdminClient()
     const { data: session } = await adminClient
       .from('live_interview_sessions')
       .select('debrief_json, company_id, role_id, flow_coverage, total_turns, started_at, ended_at')
       .eq('id', id)
+      .eq('user_id', user.id)
       .single()
 
     if (!session?.debrief_json) {

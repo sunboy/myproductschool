@@ -60,7 +60,6 @@ export default function PrepHubPage() {
 
   useEffect(() => {
     const saved = localStorage.getItem('hackproduct_interview_date')
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (saved) setInterviewDate(saved)
   }, [])
 
@@ -192,7 +191,7 @@ export default function PrepHubPage() {
                             </div>
                             <div className="flex items-center gap-3">
                               {item.best_score != null ? (
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${item.best_score >= 70 ? 'text-primary bg-primary-fixed' : 'text-amber-700 bg-tertiary-container'}`}>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${item.best_score >= 70 ? 'text-primary bg-primary-fixed' : 'text-on-tertiary-container bg-tertiary-container'}`}>
                                   {item.best_score}/100
                                 </span>
                               ) : (
@@ -235,7 +234,7 @@ export default function PrepHubPage() {
               </div>
               <div className="flex-1 space-y-1">
                 {daysLeft !== null ? (
-                  <div className="text-xs font-bold text-orange-700">{daysLeft} days until interview</div>
+                  <div className="text-xs font-bold text-tertiary">{daysLeft} days until interview</div>
                 ) : (
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs text-on-surface-variant">Interview date:</span>
@@ -281,7 +280,7 @@ export default function PrepHubPage() {
               </div>
               <button
                 onClick={() => router.push('/simulation')}
-                className="w-full bg-primary text-on-primary py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#3d6549] transition-colors shadow-md"
+                className="w-full bg-primary text-on-primary py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-colors shadow-md"
               >
                 Start Simulation
                 <span className="material-symbols-outlined text-sm">arrow_forward</span>
