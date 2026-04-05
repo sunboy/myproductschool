@@ -70,6 +70,7 @@ const MOCK_NOTION_DETAIL: AutopsyProductDetail = {
       challenge: {
         id: 'chal-notion-001',
         decision_id: 'dec-notion-001',
+        challenge_id: null,
         context:
           'You are the PM for a new note-taking product targeting knowledge workers. Your eng lead says blocks are 3x harder to build than a standard rich-text editor. Your designer says users expect familiar word-processor UX. You need to choose an editing paradigm before the team starts building.',
         options: [
@@ -126,6 +127,7 @@ const MOCK_NOTION_DETAIL: AutopsyProductDetail = {
       challenge: {
         id: 'chal-notion-002',
         decision_id: 'dec-notion-002',
+        challenge_id: null,
         context:
           'You are the growth PM at a project management SaaS targeting software teams. The CEO wants to go "enterprise-first" with no free tier to avoid support costs. Your data shows 70% of paid conversions come from users who discovered the product personally before pitching it to their manager.',
         options: [
@@ -182,6 +184,7 @@ const MOCK_NOTION_DETAIL: AutopsyProductDetail = {
       challenge: {
         id: 'chal-notion-003',
         decision_id: 'dec-notion-003',
+        challenge_id: null,
         context:
           'Your note-taking app has strong retention among individual writers. Users frequently request spreadsheet-like features. Your team is split: half want to stay focused on writing, half want to expand into structured data to compete with Airtable. You have 6 months of runway for a major feature investment.',
         options: [

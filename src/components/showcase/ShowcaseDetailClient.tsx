@@ -4,9 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { ShowcaseChallengeCard } from './ShowcaseChallengeCard'
 import { FlowWorkspace } from '@/components/v2/FlowWorkspace'
-import { createAutopsyAdapter } from '@/lib/showcase/adapters/autopsyAdapter'
 import { useShowcaseProgress } from '@/lib/showcase/useShowcaseProgress'
-import type { AutopsyProductDetail, ShowcaseAttempt } from '@/lib/types'
+import type { AutopsyProductDetail } from '@/lib/types'
 import { StoryCard } from '@/components/autopsy/StoryCard'
 
 interface ShowcaseDetailClientProps {
@@ -16,14 +15,7 @@ interface ShowcaseDetailClientProps {
 export function ShowcaseDetailClient({ product }: ShowcaseDetailClientProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
-  const { getAttempt, saveAttempt } = useShowcaseProgress(product.slug, product.decisions.length)
-
-  const handleChallengeComplete = (attempt: ShowcaseAttempt) => {
-    saveAttempt(selectedIndex, attempt)
-    if (selectedIndex < product.decisions.length - 1) {
-      setTimeout(() => setSelectedIndex(prev => prev + 1), 1500)
-    }
-  }
+  const { getAttempt } = useShowcaseProgress(product.slug, product.decisions.length)
 
   return (
     <div className="h-[calc(100vh-56px)] md:h-[calc(100vh-56px)] flex overflow-hidden pb-16 md:pb-0">
@@ -107,18 +99,24 @@ export function ShowcaseDetailClient({ product }: ShowcaseDetailClientProps) {
       </aside>
 
       {/* RIGHT PANE */}
-      <div className="flex-1 overflow-hidden">
-        <FlowWorkspace
-          key={selectedIndex}
-          mode="adapter"
-          adapter={createAutopsyAdapter(
-            product.decisions[selectedIndex],
-            product.decisions[selectedIndex].challenge,
-            product.slug,
-            selectedIndex,
-            handleChallengeComplete,
-          )}
-        />
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        {product.decisions[selectedIndex]?.challenge?.challenge_id ? (
+          <FlowWorkspace
+            key={selectedIndex}
+            mode="api"
+            challengeId={product.decisions[selectedIndex].challenge.challenge_id!}
+            initialRoleId="swe"
+            onExit={() => {
+              if (selectedIndex < product.decisions.length - 1) {
+                setSelectedIndex(prev => prev + 1)
+              }
+            }}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-on-surface-variant text-sm font-body">
+            Challenge not available
+          </div>
+        )}
       </div>
 
     </div>

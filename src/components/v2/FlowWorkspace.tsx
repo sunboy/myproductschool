@@ -204,7 +204,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (isLast) {
       if (isApiMode) {
         try {
-          const res = await fetch(`/api/v2/challenges/${challengeId}/complete`, {
+          const res = await fetch(`/api/challenges/${challengeId}/complete`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ attempt_id: attemptId }),
@@ -289,11 +289,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           setCompletedSteps([])
           setCurrentStep('frame')
           setAdapterStepData(null)
-          setPhase(isApiMode ? 'loading' : 'question')
-          if (isApiMode) reload()
-          else {
-            const adapter = (props as Extract<FlowWorkspaceProps, { mode: 'adapter' }>).adapter
-            adapter.loadStep('frame').then(setAdapterStepData)
+          setRoleContext('')
+          setCareerSignal('')
+          setCompetencySignal(null)
+          if (isApiMode) {
+            setPhase('loading')
+            reload()
+          } else {
+            setPhase('question')
+            // step-load effect will fire because currentStep='frame' + phase='question'
           }
         }}
         onNextChallenge={props.onExit ?? (() => window.history.back())}
