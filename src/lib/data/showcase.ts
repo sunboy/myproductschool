@@ -217,6 +217,7 @@ const MOCK_NOTION_DETAIL: AutopsyProductDetail = {
       },
     },
   ],
+  stories: [],
 }
 
 // ── Public API ─────────────────────────────────────────────────────────────
