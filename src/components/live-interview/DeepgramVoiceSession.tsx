@@ -71,9 +71,11 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
             },
           },
           think: {
-            provider: { type: 'anthropic' },
-            model: 'claude-sonnet-4-6',
-            instructions: systemPrompt,
+            provider: {
+              type: 'open_ai',
+              model: 'gpt-4o-mini',
+            },
+            prompt: systemPrompt,
           },
         },
       }
@@ -134,11 +136,14 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
       }
     })
 
+    let intentionallyClosed = false
+
     ws.addEventListener('error', () => {
-      onError('WebSocket connection error')
+      if (!intentionallyClosed) onError('WebSocket connection error')
     })
 
     return () => {
+      intentionallyClosed = true
       ws.close()
       wsRef.current = null
 
