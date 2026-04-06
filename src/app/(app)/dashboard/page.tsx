@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { CalibrationHero } from './CalibrationHero'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -41,51 +42,6 @@ function getDailyGoalMessage(dailyDone: number): string {
   return `${dailyDone} done today, ${5 - dailyDone} to go for your daily goal.`
 }
 
-function CalibrationHero() {
-  return (
-    <div className="bg-surface-container rounded-2xl overflow-hidden">
-      {/* Top accent strip */}
-      <div className="h-1 bg-gradient-to-r from-primary via-tertiary to-primary opacity-60" />
-      <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5">
-        <LumaGlyph size={72} state="celebrating" className="text-primary flex-shrink-0 self-center sm:self-auto" />
-        <div className="flex-1 min-w-0">
-          <h2 className="font-headline text-xl font-bold text-on-surface mb-1">Unlock your skill radar</h2>
-          <p className="text-on-surface-variant text-sm leading-relaxed mb-3">
-            8 questions. ~5 minutes. No typing — just choices. Luma will set your baseline and route you to the right challenges.
-          </p>
-          {/* Stats row */}
-          <div className="flex flex-wrap gap-3 mb-4">
-            {[
-              { icon: 'quiz', label: '8 questions' },
-              { icon: 'timer', label: '~5 minutes' },
-              { icon: 'radar', label: 'Your FLOW baseline' },
-            ].map(s => (
-              <span key={s.label} className="inline-flex items-center gap-1.5 bg-primary-fixed rounded-full px-3 py-1 text-xs font-label font-bold text-on-surface">
-                <span className="material-symbols-outlined text-sm text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
-                {s.label}
-              </span>
-            ))}
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/calibration"
-              className="inline-flex items-center gap-2 bg-primary text-on-primary rounded-full px-5 py-2.5 font-label font-bold text-sm hover:opacity-90 transition-opacity"
-            >
-              <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
-              Start calibration
-            </Link>
-            <Link href="/learn/flow" className="text-primary text-xs font-label font-bold hover:underline underline-offset-2">
-              What is FLOW? →
-            </Link>
-            <Link href="/challenges" className="text-on-surface-variant text-xs hover:text-on-surface transition-colors">
-              Browse challenges first →
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function LockedMoveLevels() {
   const moves = ['Frame', 'List', 'Optimize', 'Win']

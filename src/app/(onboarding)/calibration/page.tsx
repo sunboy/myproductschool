@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import type { CalibrationResults } from '@/lib/types'
@@ -164,8 +164,11 @@ function RadarChart({ scores, visible }: { scores: CalibrationResults['scores'];
 // ─────────────────────────────────────────────
 // Main page
 // ─────────────────────────────────────────────
+const CAL_STORAGE_KEY = 'hp_cal_progress'
+
 export default function CalibrationPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const [expandedMove, setExpandedMove] = useState<string | null>(null)
   const [screen, setScreen] = useState<Screen>(0)
@@ -182,18 +185,55 @@ export default function CalibrationPage() {
   const [radarVisible, setRadarVisible] = useState(false)
   const [isCompleting, setIsCompleting] = useState(false)
 
+  // ── Restore saved progress on mount ────────
+  useEffect(() => {
+    if (searchParams.get('resume') !== '1') return
+    try {
+      const saved = localStorage.getItem(CAL_STORAGE_KEY)
+      if (!saved) return
+      const { screen: savedScreen, answers: savedAnswers } = JSON.parse(saved)
+      if (savedScreen && savedScreen >= 1 && savedScreen <= 8) {
+        setAnswers(savedAnswers ?? {})
+        setScreen(savedScreen as Screen)
+      }
+    } catch { /* ignore */ }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Persist progress to localStorage ───────
+  const saveProgress = useCallback((s: Screen, a: Record<number, string>) => {
+    if (s >= 1 && s <= 8) {
+      try { localStorage.setItem(CAL_STORAGE_KEY, JSON.stringify({ screen: s, answers: a })) } catch { /* ignore */ }
+    }
+  }, [])
+
+  // ── Save & exit — preserves progress for resume ─────
+  function handleSaveAndExit() {
+    // Save current progress before leaving (only if we're mid-questions)
+    if (screen >= 1 && screen <= 8) {
+      try { localStorage.setItem(CAL_STORAGE_KEY, JSON.stringify({ screen, answers })) } catch { /* ignore */ }
+    }
+    router.push('/dashboard')
+  }
+
+  // ── Skip calibration → go to dashboard (no progress saved) ─────
+  async function handleSkip() {
+    try { localStorage.removeItem(CAL_STORAGE_KEY) } catch { /* ignore */ }
+    router.push('/dashboard')
+  }
+
   // Road progress driven by question progress (screens 1-8), maxes out at 8
   const roadProgress = screen >= 1 && screen <= 8 ? screen : screen > 8 ? 8 : 0
   const roadOffset = 1200 * (1 - roadProgress / 8)
 
   // ── Screen transitions ──────────────────────
-  function goTo(s: Screen, dir: 'forward' | 'back' = 'forward') {
+  function goTo(s: Screen, dir: 'forward' | 'back' = 'forward', currentAnswers?: Record<number, string>) {
     setDirection(dir)
     setExiting(true)
     setTimeout(() => {
       setScreen(s)
       setExiting(false)
       setJustSelected(null)
+      saveProgress(s, currentAnswers ?? answers)
     }, 360)
   }
 
@@ -223,22 +263,23 @@ export default function CalibrationPage() {
   function handleSelect(questionIdx: number, optionId: string) {
     if (justSelected) return // debounce double-tap
     setJustSelected(optionId)
-    setAnswers(prev => ({ ...prev, [questionIdx]: optionId }))
+    const newAnswers = { ...answers, [questionIdx]: optionId }
+    setAnswers(newAnswers)
 
     // Auto-advance after selection lands
     setTimeout(() => {
       if (screen === 2) {
-        goTo(11) // Frame debrief
+        goTo(11, 'forward', newAnswers) // Frame debrief
       } else if (screen === 4) {
-        goTo(12) // List debrief
+        goTo(12, 'forward', newAnswers) // List debrief
       } else if (screen === 6) {
-        goTo(13) // Optimize debrief
+        goTo(13, 'forward', newAnswers) // Optimize debrief
       } else if (screen === 8) {
         // Win debrief — also submit answers
-        submitAnswers({ ...answers, [questionIdx]: optionId })
-        goTo(14)
+        submitAnswers(newAnswers)
+        goTo(14, 'forward', newAnswers)
       } else {
-        goTo((screen + 1) as Screen)
+        goTo((screen + 1) as Screen, 'forward', newAnswers)
       }
     }, 680)
   }
@@ -259,6 +300,7 @@ export default function CalibrationPage() {
 
   async function handleComplete(dest: '/dashboard' | '/prep') {
     setIsCompleting(true)
+    try { localStorage.removeItem(CAL_STORAGE_KEY) } catch { /* ignore */ }
     try { await fetch('/api/onboarding/complete', { method: 'POST' }) } catch { /* ok */ }
     router.push(dest)
   }
@@ -323,7 +365,15 @@ export default function CalibrationPage() {
             {screen} of 8
           </span>
         )}
-        <div className="w-20" />
+        {screen <= 14 && screen !== 9 && screen !== 10 && (
+          <button
+            onClick={handleSaveAndExit}
+            className="text-xs text-on-surface-variant font-label font-semibold hover:text-on-surface transition-colors"
+          >
+            Save &amp; exit
+          </button>
+        )}
+        {(screen === 9 || screen === 10 || screen > 14) && <div className="w-20" />}
       </header>
 
       {/* ── Step pills (question screens + debrief + grading + results) ── */}

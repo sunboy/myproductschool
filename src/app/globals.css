@@ -234,6 +234,12 @@ body {
   .animate-luma-card { animation: none; transform: none; }
 }
 
+/* ── Spin (used by flywheel illustration inline style) ────────── */
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ── Page Entry Animations ────────────────────────────────────── */
 
 @keyframes fade-in-up {
@@ -333,4 +339,29 @@ body {
   outline: 2px solid #4a7c59;
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* ── Story Reader ─────────────────────────────────────────────────────────── */
+
+@keyframes bounce-gentle {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%       { transform: translateX(-50%) translateY(6px); }
+}
+.animate-bounce-gentle {
+  animation: bounce-gentle 2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-bounce-gentle { animation: none; }
+}
+
+/* Toggled by JS IntersectionObserver — animate once on first entry */
+.section-hidden {
+  opacity: 0;
+  transform: translateY(24px);
+}
+.section-visible {
+  animation: fade-in-up 0.6s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .section-visible { animation: none; opacity: 1; transform: none; }
 }

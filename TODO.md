@@ -16,3 +16,19 @@
 4. **Context assembly:** Ranked, token-budgeted context from competency profile + past insights + notes + career signals.
 5. **Staleness / expiry:** `luma_context_v2.expires_at` exists but nothing sets it.
 6. **Cross-surface injection:** Dashboard, coaching, grading, nudge resolver — all should pull from the same function.
+
+## Deferred: Go Deeper Conversation Mode (Autopsy)
+
+**Status:** Not started
+**Why deferred:** Deprioritized in autopsy v1 to focus on Hack Stories.
+
+After answering an autopsy challenge, offer a 3-turn Luma coaching exchange via Claude API.
+
+### What to build
+- Edge function `autopsy-deeper` (POST): takes challengeId, userAnswer, gradingResult, conversationHistory
+- System prompt per challenge seeded alongside challenge content
+- Conversation state machine: COMPLETE → CONVERSATION (max 3 turns) → SYNTHESIS
+- UI: Luma insight card expands with a chat input below
+- Model: claude-sonnet-4-6 (same as coaching endpoints)
+
+See original spec section 10 for full system prompt template and API response schema.

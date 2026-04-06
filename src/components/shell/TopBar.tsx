@@ -1,6 +1,8 @@
 'use client'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { LumaGlyph } from './LumaGlyph'
 
 interface ProfileBadge {
@@ -20,6 +22,9 @@ function getInitials(name: string | null | undefined): string {
 
 export function TopBar() {
   const [profile, setProfile] = useState<ProfileBadge | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
 
   useEffect(() => {
     fetch('/api/profile')
@@ -30,6 +35,24 @@ export function TopBar() {
       .then(data => { if (data) setProfile({ streak_days: data.streak_days ?? 0, xp_total: data.xp_total ?? 0, display_name: data.display_name ?? null, avatar_url: data.avatar_url ?? null }) })
       .catch(() => {})
   }, [])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    if (menuOpen) document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [menuOpen])
+
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
+  }
 
   const streakDays = profile?.streak_days ?? 0
   const xpTotal = profile?.xp_total ?? 0
@@ -76,16 +99,44 @@ export function TopBar() {
             <span className="text-xs font-bold text-primary font-label">{xpTotal.toLocaleString()} XP</span>
           </div>
 
-          {/* Avatar */}
-          <Link
-            href="/settings"
-            className="w-8 h-8 rounded-full overflow-hidden bg-primary flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm"
-          >
-            {profile?.avatar_url
-              ? <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
-              : <span className="text-xs font-bold text-on-primary font-label">{getInitials(profile?.display_name)}</span>
-            }
-          </Link>
+          {/* Avatar + dropdown */}
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setMenuOpen(o => !o)}
+              className="w-8 h-8 rounded-full overflow-hidden bg-primary flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              aria-label="Profile menu"
+            >
+              {profile?.avatar_url
+                ? <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+                : <span className="text-xs font-bold text-on-primary font-label">{getInitials(profile?.display_name)}</span>
+              }
+            </button>
+
+            {menuOpen && (
+              <div className="absolute right-0 top-10 w-48 bg-background border border-outline-variant rounded-xl shadow-lg py-1 z-50">
+                {profile?.display_name && (
+                  <div className="px-4 py-2 border-b border-outline-variant/40">
+                    <p className="text-xs font-bold text-on-surface truncate">{profile.display_name}</p>
+                  </div>
+                )}
+                <Link
+                  href="/settings"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors"
+                >
+                  <span className="material-symbols-outlined text-base text-on-surface-variant">settings</span>
+                  Settings
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-error hover:bg-surface-container transition-colors"
+                >
+                  <span className="material-symbols-outlined text-base">logout</span>
+                  Log out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>

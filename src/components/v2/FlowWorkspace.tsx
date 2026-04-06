@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import type { FlowStep, ResponseType, UserRoleV2 } from '@/lib/types'
+import type { ChallengeAdapter, AdapterCompletionData, AdapterStepData, SyntheticChallenge } from '@/lib/showcase/adapters/autopsyAdapter'
 import { useChallengeV2 } from '@/lib/v2/hooks/useChallengeV2'
 import { useFlowStep } from '@/lib/v2/hooks/useFlowStep'
 import { FlowStepper } from './FlowStepper'
@@ -27,17 +28,23 @@ interface CompletionData {
   competency_deltas: Array<{ competency: string; before: number; after: number }>
 }
 
-interface FlowWorkspaceProps {
-  challengeId: string
-  initialRoleId: UserRoleV2
-  onExit?: () => void
-}
+type FlowWorkspaceProps =
+  | { mode: 'api'; challengeId: string; initialRoleId: UserRoleV2; onExit?: () => void }
+  | { mode: 'adapter'; adapter: ChallengeAdapter; onComplete?: (data: AdapterCompletionData | null) => void; onExit?: () => void }
 
-export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorkspaceProps) {
+export function FlowWorkspace(props: FlowWorkspaceProps) {
+  const isApiMode = props.mode === 'api'
+  const challengeId = isApiMode ? props.challengeId : ''
+  const initialRoleId = isApiMode ? props.initialRoleId : 'engineer' as UserRoleV2
+
+  // Declare step state first so it's available for the hook call below
+  const [currentStep, setCurrentStep] = useState<FlowStep>('frame')
+
+  // Always call hooks unconditionally (React rules of hooks)
   const { detail, loading: challengeLoading, error: challengeError, startAttempt, reload } = useChallengeV2(challengeId)
+  const { stepData, loading: stepLoading, submitting, error: stepError, loadStep, submitAnswer, fetchCoaching } = useFlowStep(challengeId, currentStep)
 
   const [attemptId, setAttemptId] = useState<string | null>(null)
-  const [currentStep, setCurrentStep] = useState<FlowStep>('frame')
   const [completedSteps, setCompletedSteps] = useState<FlowStep[]>([])
   const [phase, setPhase] = useState<'loading' | 'question' | 'reveal' | 'complete'>('loading')
 
@@ -53,16 +60,28 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
   const [competencySignal, setCompetencySignal] = useState<{ primary: string; signal: string; framework_hint: string } | null>(null)
   const [completionData, setCompletionData] = useState<CompletionData | null>(null)
 
+  // Adapter-mode state
+  const [adapterChallenge, setAdapterChallenge] = useState<SyntheticChallenge | null>(null)
+  const [adapterStepData, setAdapterStepData] = useState<AdapterStepData | null>(null)
+  const [adapterSubmitting, setAdapterSubmitting] = useState(false)
+
   const startTimeRef = useRef<number>(Date.now())
 
-  const { stepData, loading: stepLoading, submitting, error: stepError, submitResult, loadStep, submitAnswer, fetchCoaching } = useFlowStep(challengeId, currentStep)
-
-  // Bootstrap: load challenge + start attempt
+  // Bootstrap
   useEffect(() => {
-    reload()
-  }, [reload])
+    if (isApiMode) {
+      reload()
+    } else {
+      const ch = (props as Extract<FlowWorkspaceProps, { mode: 'adapter' }>).adapter.getChallenge()
+      setAdapterChallenge(ch)
+      setPhase('question')
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
+  // API mode: start attempt once detail loads
   useEffect(() => {
+    if (!isApiMode) return
     if (detail && !attemptId) {
       if (detail.current_attempt?.status === 'in_progress') {
         setAttemptId(detail.current_attempt.id)
@@ -78,94 +97,145 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
         })
       }
     }
-  }, [detail, attemptId, initialRoleId, startAttempt])
+  }, [detail, attemptId, isApiMode, initialRoleId, startAttempt])
 
-  // Load step data when step + attemptId are ready
+  // Load step data when step changes
   useEffect(() => {
-    if (attemptId && phase === 'question') {
-      setQuestionIdx(0)
-      setSelectedOptionId(null)
-      setElaboration('')
-      setRevealedOptions([])
-      startTimeRef.current = Date.now()
-      void loadStep(attemptId)
+    if (phase !== 'question') return
+    setQuestionIdx(0)
+    setSelectedOptionId(null)
+    setElaboration('')
+    setRevealedOptions([])
+    startTimeRef.current = Date.now()
+    if (isApiMode) {
+      if (attemptId) void loadStep(attemptId)
+    } else {
+      const adapter = (props as Extract<FlowWorkspaceProps, { mode: 'adapter' }>).adapter
+      adapter.loadStep(currentStep).then(setAdapterStepData)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentStep, attemptId, phase])
+  }, [currentStep, attemptId, phase, isApiMode])
 
-  const currentQuestion = stepData?.questions[questionIdx] ?? null
+  // Unified step data
+  const activeStepData = isApiMode ? stepData : adapterStepData
+  const currentQuestion = activeStepData?.questions[questionIdx] ?? null
+  const activeSubmitting = isApiMode ? submitting : adapterSubmitting
 
   const handleSubmit = useCallback(async () => {
-    if (!attemptId || !currentQuestion) return
+    if (!currentQuestion) return
 
-    const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000)
-    const result = await submitAnswer({
-      attemptId,
-      questionId: currentQuestion.id,
-      selectedOptionId,
-      userText: elaboration || null,
-      responseType: currentQuestion.response_type,
-      timespentSeconds: elapsed,
-    })
-
-    if (!result) return
-
-    setRevealedOptions(result.revealed_options ?? [])
-    setStepScore(result.score)
-    setStepGrade(result.grade_label)
-    setCompetencySignal(result.competency_signal ?? null)
-
-    // Fetch coaching
-    const coaching = await fetchCoaching({
-      attemptId,
-      questionId: currentQuestion.id,
-      optionId: selectedOptionId,
-      roleId: initialRoleId,
-      userText: elaboration || null,
-    })
-    if (coaching) {
-      setRoleContext(coaching.role_context)
-      setCareerSignal(coaching.career_signal)
-    }
-
-    if (result.step_complete) {
-      setPhase('reveal')
+    if (isApiMode) {
+      if (!attemptId) return
+      const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000)
+      const result = await submitAnswer({
+        attemptId,
+        questionId: currentQuestion.id,
+        selectedOptionId,
+        userText: elaboration || null,
+        responseType: currentQuestion.response_type,
+        timespentSeconds: elapsed,
+      })
+      if (!result) return
+      setRevealedOptions(result.revealed_options ?? [])
+      setStepScore(result.score)
+      setStepGrade(result.grade_label)
+      setCompetencySignal(result.competency_signal ?? null)
+      const coaching = await fetchCoaching({
+        attemptId,
+        questionId: currentQuestion.id,
+        optionId: selectedOptionId,
+        roleId: initialRoleId,
+        userText: elaboration || null,
+      })
+      if (coaching) {
+        setRoleContext(coaching.role_context)
+        setCareerSignal(coaching.career_signal)
+      }
+      if (result.step_complete) {
+        setPhase('reveal')
+      } else {
+        setQuestionIdx((i) => i + 1)
+        setSelectedOptionId(null)
+        setElaboration('')
+        setRevealedOptions([])
+        startTimeRef.current = Date.now()
+      }
     } else {
-      // Advance to next question
-      setQuestionIdx((i) => i + 1)
-      setSelectedOptionId(null)
-      setElaboration('')
-      setRevealedOptions([])
-      startTimeRef.current = Date.now()
+      const adapter = (props as Extract<FlowWorkspaceProps, { mode: 'adapter' }>).adapter
+      setAdapterSubmitting(true)
+      try {
+        const result = await adapter.submitAnswer({
+          step: currentStep,
+          questionId: currentQuestion.id,
+          selectedOptionId,
+          userText: elaboration || null,
+        })
+        setRevealedOptions(result.revealed_options ?? [])
+        setStepScore(result.score)
+        setStepGrade(result.grade_label)
+        const coaching = await adapter.fetchCoaching({
+          step: currentStep,
+          optionId: selectedOptionId,
+          userText: elaboration || null,
+        })
+        if (coaching) {
+          setRoleContext(coaching.role_context)
+          setCareerSignal(coaching.career_signal)
+        }
+        if (result.step_complete) {
+          setPhase('reveal')
+        } else {
+          setQuestionIdx((i) => i + 1)
+          setSelectedOptionId(null)
+          setElaboration('')
+          setRevealedOptions([])
+          startTimeRef.current = Date.now()
+        }
+      } finally {
+        setAdapterSubmitting(false)
+      }
     }
-  }, [attemptId, currentQuestion, selectedOptionId, elaboration, submitAnswer, fetchCoaching, initialRoleId])
+  }, [isApiMode, currentQuestion, attemptId, selectedOptionId, elaboration, submitAnswer, fetchCoaching, initialRoleId, currentStep, props])
 
   const handleNextStep = useCallback(async () => {
     const stepIdx = FLOW_STEPS.indexOf(currentStep)
     const isLast = stepIdx === FLOW_STEPS.length - 1
 
     if (isLast) {
-      // Call complete endpoint
-      try {
-        const res = await fetch(`/api/v2/challenges/${challengeId}/complete`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ attempt_id: attemptId }),
-        })
-        if (res.ok) {
-          const data = await res.json()
-          setCompletionData({
-            total_score: data.total_score,
-            max_score: data.max_score,
-            grade_label: data.grade_label,
-            xp_awarded: data.xp_awarded,
-            step_breakdown: data.step_breakdown ?? [],
-            competency_deltas: data.competency_deltas ?? [],
+      if (isApiMode) {
+        try {
+          const res = await fetch(`/api/challenges/${challengeId}/complete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ attempt_id: attemptId }),
           })
+          if (res.ok) {
+            const data = await res.json()
+            setCompletionData({
+              total_score: data.total_score,
+              max_score: data.max_score,
+              grade_label: data.grade_label,
+              xp_awarded: data.xp_awarded,
+              step_breakdown: data.step_breakdown ?? [],
+              competency_deltas: data.competency_deltas ?? [],
+            })
+            setPhase('complete')
+          }
+        } catch {
           setPhase('complete')
         }
-      } catch {
-        // fail silently — show complete anyway
+      } else {
+        const adapterProps = props as Extract<FlowWorkspaceProps, { mode: 'adapter' }>
+        const data = await adapterProps.adapter.complete()
+        adapterProps.onComplete?.(data)
+        setCompletionData(data ? {
+          total_score: data.total_score,
+          max_score: data.max_score,
+          grade_label: data.grade_label,
+          xp_awarded: data.xp_awarded,
+          step_breakdown: data.step_breakdown ?? [],
+          competency_deltas: data.competency_deltas ?? [],
+        } : null)
         setPhase('complete')
       }
     } else {
@@ -173,11 +243,11 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
       setCurrentStep(FLOW_STEPS[stepIdx + 1])
       setPhase('question')
     }
-  }, [challengeId, currentStep, attemptId])
+  }, [isApiMode, challengeId, currentStep, attemptId, props])
 
   // ── Render states ──────────────────────────────────────────────
 
-  if (challengeLoading || phase === 'loading') {
+  if ((isApiMode && challengeLoading) || phase === 'loading') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <LumaGlyph size={56} state="reviewing" className="text-primary" />
@@ -186,7 +256,7 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
     )
   }
 
-  if (challengeError) {
+  if (isApiMode && challengeError) {
     return (
       <div className="text-center py-12 space-y-2">
         <p className="font-body text-error text-sm">{challengeError}</p>
@@ -195,28 +265,42 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
     )
   }
 
-  if (phase === 'complete' && completionData && detail) {
+  // Resolve challenge display data across both modes
+  const challengeTitle = isApiMode ? detail?.challenge.title : adapterChallenge?.title
+  const challengeScenarioQ = isApiMode ? detail?.challenge.scenario_question : adapterChallenge?.scenario_question
+
+  if (phase === 'complete') {
     return (
       <ChallengeComplete
-        challenge={detail.challenge}
-        totalScore={completionData.total_score}
-        maxScore={completionData.max_score}
-        gradeLabel={completionData.grade_label}
-        xpAwarded={completionData.xp_awarded}
-        stepBreakdown={completionData.step_breakdown.map((s) => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        challenge={{ title: challengeTitle ?? '', scenario_question: challengeScenarioQ ?? null } as any}
+        totalScore={completionData?.total_score ?? 0}
+        maxScore={completionData?.max_score ?? 12}
+        gradeLabel={completionData?.grade_label ?? ''}
+        xpAwarded={completionData?.xp_awarded ?? 0}
+        stepBreakdown={(completionData?.step_breakdown ?? []).map((s) => ({
           step: s.step,
           score: s.score,
           maxScore: s.max_score,
         }))}
-        competencyDeltas={completionData.competency_deltas}
+        competencyDeltas={completionData?.competency_deltas ?? []}
         onRetry={() => {
           setAttemptId(null)
           setCompletedSteps([])
           setCurrentStep('frame')
-          setPhase('loading')
-          reload()
+          setAdapterStepData(null)
+          setRoleContext('')
+          setCareerSignal('')
+          setCompetencySignal(null)
+          if (isApiMode) {
+            setPhase('loading')
+            reload()
+          } else {
+            setPhase('question')
+            // step-load effect will fire because currentStep='frame' + phase='question'
+          }
         }}
-        onNextChallenge={onExit ?? (() => window.history.back())}
+        onNextChallenge={props.onExit ?? (() => window.history.back())}
       />
     )
   }
@@ -253,17 +337,19 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
       <FlowStepper currentStep={currentStep} completedSteps={completedSteps} />
 
       {/* Challenge context */}
-      {detail && (
+      {(challengeTitle || challengeScenarioQ) && (
         <div className="bg-surface-container-low rounded-xl p-4 space-y-1">
-          <h1 className="font-headline text-lg text-on-surface">{detail.challenge.title}</h1>
-          {detail.challenge.scenario_question && (
-            <p className="font-body text-sm text-on-surface-variant">{detail.challenge.scenario_question}</p>
+          {challengeTitle && (
+            <h1 className="font-headline text-lg text-on-surface">{challengeTitle}</h1>
+          )}
+          {challengeScenarioQ && (
+            <p className="font-body text-sm text-on-surface-variant">{challengeScenarioQ}</p>
           )}
         </div>
       )}
 
       {/* Nudge */}
-      {stepData?.nudge && (
+      {activeStepData?.nudge && (
         <div className="flex items-start gap-2 bg-secondary-container rounded-xl px-4 py-3">
           <span
             className="material-symbols-outlined text-on-secondary-container text-[18px] shrink-0 mt-0.5"
@@ -271,16 +357,16 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
           >
             lightbulb
           </span>
-          <p className="font-body text-sm text-on-secondary-container">{stepData.nudge}</p>
+          <p className="font-body text-sm text-on-secondary-container">{activeStepData.nudge}</p>
         </div>
       )}
 
       {/* Question */}
-      {stepLoading ? (
+      {(isApiMode ? stepLoading : false) ? (
         <div className="flex justify-center py-8">
           <LumaGlyph size={40} state="reviewing" className="text-primary" />
         </div>
-      ) : stepError ? (
+      ) : (isApiMode && stepError) ? (
         <p className="font-body text-error text-sm text-center">{stepError}</p>
       ) : currentQuestion ? (
         <StepQuestion
@@ -291,7 +377,7 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
           revealed={false}
           onOptionSelect={setSelectedOptionId}
           onElaborationChange={setElaboration}
-          disabled={submitting}
+          disabled={activeSubmitting}
         />
       ) : null}
 
@@ -300,10 +386,10 @@ export function FlowWorkspace({ challengeId, initialRoleId, onExit }: FlowWorksp
         <div className="flex justify-end">
           <button
             onClick={handleSubmit}
-            disabled={!canSubmit || submitting}
+            disabled={!canSubmit || activeSubmitting}
             className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {submitting ? 'Grading…' : 'Submit'}
+            {activeSubmitting ? 'Grading…' : 'Submit'}
           </button>
         </div>
       )}

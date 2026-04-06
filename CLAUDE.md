@@ -360,6 +360,40 @@ All Luma AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropic
 
 ---
 
+## Auth & Route Protection
+
+- **Proxy file**: `src/proxy.ts` (Next.js 16 convention, replaces `middleware.ts`). The exported function must be named `proxy`.
+- **Deny-by-default**: All routes require authentication unless explicitly listed as public. New routes are automatically protected — no configuration needed.
+- **Public routes** are allowlisted in `MARKETING_ROUTES`, `AUTH_ROUTES`, and `APP_PUBLIC_ROUTES` at the top of `src/proxy.ts`. To make a new route public, add it there.
+- **API routes** (`/api/*`) skip the proxy — they must check auth internally via `createClient()` + `supabase.auth.getUser()`.
+- **Onboarding enforcement** is also deny-by-default: any authenticated route that isn't in `APP_PUBLIC_ROUTES` or `/onboarding/*` requires `profiles.onboarding_completed_at` to be set.
+- **Mock mode** (`IS_MOCK` from `src/lib/mock.ts`) bypasses all auth checks in the proxy. Keep `USE_MOCK_DATA`, `NEXT_PUBLIC_USE_MOCK_DATA`, and `NEXT_PUBLIC_MOCK_MODE` set to `false` in `.env.local` unless intentionally testing without auth.
+
+---
+
+## Autopsy Challenge Option Schema
+
+`autopsy_challenges.options` is a JSONB array. Each option uses this shape:
+
+```typescript
+{
+  id: string          // 'a' | 'b' | 'c' | 'd' — lowercase
+  text: string        // Option display text
+  quality: OptionQuality  // 'best' | 'good_but_incomplete' | 'surface' | 'plausible_wrong'
+  explanation: string // Revealed after submission
+}
+```
+
+**Do NOT use `is_correct: boolean`** — the system is multi-tier, not binary.
+
+`quality` maps to points via `QUALITY_TO_POINTS` in `src/lib/showcase/adapters/autopsyAdapter.ts`:
+- `best` → 3 pts → grade "Sharp"
+- `good_but_incomplete` → 2 pts → grade "Solid"
+- `surface` → 1 pt → grade "Surface"
+- `plausible_wrong` → 0 pts → grade "Missed"
+
+This is pre-existing design (introduced in commit `47872c1`). Always use `quality` for scoring, never derive points from a boolean.
+
 ## Key Conventions
 
 - `@/*` path alias maps to `./src/*`

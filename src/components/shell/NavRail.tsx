@@ -8,6 +8,7 @@ const navItems = [
   { href: '/learn',       icon: 'auto_stories',   label: 'Learn'    },
   { href: '/explore',     icon: 'explore',        label: 'Explore'  },
   { href: '/challenges',  icon: 'fitness_center', label: 'Practice' },
+  { href: '/live-interviews', icon: 'mic',        label: 'Interviews' },
   { href: '/progress',    icon: 'bar_chart',      label: 'Progress' },
 ]
 
@@ -101,7 +102,7 @@ export function NavRail({ dailyDone = 0, dailyTotal = 5 }: NavRailProps) {
           title="Coming soon"
           className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/8 text-primary w-full opacity-50 cursor-not-allowed"
         >
-          <LumaGlyph size={16} className="shrink-0" />
+          <LumaGlyph size={16} state="none" className="shrink-0" />
           <span className="text-xs font-semibold font-label">Ask Luma</span>
           <span className="ml-auto text-[9px] font-bold text-primary/60 font-label uppercase tracking-wider">Soon</span>
         </button>
