@@ -7,13 +7,13 @@ import { IS_MOCK } from '@/lib/mock'
 // Flip to false (or remove the block) when ready to launch.
 const PRE_LAUNCH = true
 
-const LAUNCH_ALLOWED = ['/waitlist', '/waitlist-b', '/waitlist-flow', '/api/waitlist', '/luma-preview']
+const LAUNCH_ALLOWED = ['/waitlist', '/waitlist-quick', '/waitlist-flow', '/api/waitlist', '/luma-preview']
 
 // ── Post-launch route config ─────────────────────────────────
 // Marketing / auth pages — accessible without any session.
 // These short-circuit BEFORE we talk to Supabase so they can
 // never be blocked by an auth-service hiccup.
-const MARKETING_ROUTES = ['/', '/waitlist', '/waitlist-b', '/waitlist-flow', '/pricing', '/flow', '/luma-preview']
+const MARKETING_ROUTES = ['/', '/waitlist', '/waitlist-quick', '/waitlist-flow', '/pricing', '/flow', '/luma-preview']
 const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-password']
 
 // Routes that require a user but NOT a completed profile/onboarding
@@ -33,13 +33,13 @@ export async function proxy(request: NextRequest) {
     const isAllowed = LAUNCH_ALLOWED.some(r => pathname === r || pathname.startsWith(r + '/'))
       || pathname.startsWith('/api/waitlist')
     if (!isAllowed) {
-      return NextResponse.redirect(new URL('/waitlist-b', request.url))
+      return NextResponse.redirect(new URL('/waitlist', request.url))
     }
     return NextResponse.next()
   }
 
   // ── Marketing & auth pages classification ──
-  const WAITLIST_ROUTES = ['/waitlist', '/waitlist-b', '/waitlist-flow']
+  const WAITLIST_ROUTES = ['/waitlist', '/waitlist-quick', '/waitlist-flow']
   const isRoot      = pathname === '/'
   const isMarketing = MARKETING_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isWaitlist  = WAITLIST_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))

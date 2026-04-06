@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { WaitlistForm } from '@/components/marketing/WaitlistForm'
-import { WaitlistCountdown } from '@/components/marketing/WaitlistCountdown'
-import { CyclingText } from '@/components/marketing/CyclingText'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 async function getWaitlistCount(): Promise<number> {
@@ -45,7 +44,6 @@ export const metadata: Metadata = {
   },
 }
 
-// JSON-LD structured data for rich search results
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -132,13 +130,16 @@ const jsonLd = {
   ],
 }
 
-export default async function WaitlistPage() {
+const PATH_D =
+  'M200 0 C200 200 350 250 350 450 S100 650 100 850 S300 1050 300 1250 S50 1450 50 1650 C50 1850 200 1900 200 2000'
+
+export default async function WaitlistBPage() {
   const waitlistCount = await getWaitlistCount()
   const showSocial = waitlistCount > 1000
   const roundedCount = Math.floor(waitlistCount / 100) * 100
 
   return (
-    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-background text-on-background font-body selection:bg-secondary-container selection:text-on-secondary-container flex flex-col">
+    <div className="min-h-screen bg-background text-on-background font-body scroll-smooth">
       {/* JSON-LD Structured Data */}
       <script
         type="application/ld+json"
@@ -146,119 +147,233 @@ export default async function WaitlistPage() {
       />
 
       {/* Nav */}
-      <nav className="bg-background/80 backdrop-blur-lg border-b border-on-background/5 z-50 relative" aria-label="Main navigation">
-        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+      <nav
+        className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-on-background/10"
+        aria-label="Main navigation"
+      >
+        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between w-full">
           <span className="flex items-center gap-2 text-xl font-headline font-bold text-on-background tracking-tight">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/hackylogo.png" alt="HackProduct logo" className="w-8 h-8 object-contain" width={32} height={32} />
+            <img
+              src="/images/hackylogo.png"
+              alt="HackProduct logo"
+              className="w-8 h-8 object-contain"
+              width={32}
+              height={32}
+            />
             HackProduct
           </span>
-          {/* <WaitlistCountdown /> */}
+          <a
+            href="#waitlist-form"
+            className="bg-primary text-on-primary px-6 py-2 rounded-full font-label font-bold shadow-[0_4px_0_0_#2d5c3a] hover:translate-y-[2px] hover:shadow-none transition-all inline-flex items-center justify-center"
+          >
+            Join Waitlist
+          </a>
         </div>
       </nav>
 
-      {/* Hero */}
-      <main className="flex-1 flex items-center">
-        <article className="max-w-7xl w-full mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 py-8 lg:py-0 items-center">
-
-            {/* Left: Copy + Form */}
-            <div className="order-2 lg:order-1 flex flex-col justify-center">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 bg-primary-fixed px-3 py-1.5 rounded-full mb-5 self-start flex-wrap">
-                <span
-                  className="material-symbols-outlined text-primary text-base"
-                  style={{ fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20" }}
-                >
-                  bolt
-                </span>
-                <span className="text-xs font-label font-bold tracking-wider uppercase text-on-background">
-                  Beta — Limited Spots
-                </span>
-                {showSocial && (
-                  <>
-                    <span className="text-outline-variant text-xs">|</span>
-                    <span className="inline-flex items-center gap-1 text-xs font-label font-semibold text-on-surface-variant">
-                      <span
-                        className="material-symbols-outlined text-tertiary text-sm"
-                        style={{ fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20" }}
-                      >
-                        group
-                      </span>
-                      Join {roundedCount.toLocaleString()}+ others
-                    </span>
-                  </>
-                )}
-              </div>
-
-              {/* Headline */}
-              <h1 className="font-headline font-bold text-3xl sm:text-4xl lg:text-[44px] leading-[1.15] text-on-background mb-4">
-                Built for <CyclingText /><br />
-                Who Think in Products.
-              </h1>
-
-              {/* Subhead */}
-              <h2 className="text-base lg:text-lg text-on-surface-variant leading-relaxed mb-5 max-w-md font-normal">
-                Master product sense for interviews and on the job. Practice real decisions, get feedback from Luma, your personal product coach, and build the intuition that gets you hired and promoted.
-              </h2>
-
-              {/* Value Props */}
-              <ul className="flex flex-col gap-1.5 mb-6 text-sm list-none" role="list">
-                <li className="flex items-center gap-2">
-                  <span
-                    className="material-symbols-outlined text-primary text-lg"
-                    style={{ fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20" }}
-                  >
-                    check_circle
-                  </span>
-                  <span className="text-on-surface">
-                    <strong>Ace product sense interviews</strong> with Luma-graded practice rounds
-                  </span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span
-                    className="material-symbols-outlined text-primary text-lg"
-                    style={{ fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20" }}
-                  >
-                    check_circle
-                  </span>
-                  <span className="text-on-surface">
-                    <strong>Ship better on the job</strong> with real cases from startups and Big Tech
-                  </span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span
-                    className="material-symbols-outlined text-primary text-lg"
-                    style={{ fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20" }}
-                  >
-                    check_circle
-                  </span>
-                  <span className="text-on-surface">
-                    <strong>Track your growth</strong> as your Product IQ rises with every rep
-                  </span>
-                </li>
-              </ul>
-
-              {/* Form */}
-              <WaitlistForm />
-              <p className="text-xs font-label text-on-surface-variant/60 mt-2">
-                Early access members lock in founding member pricing.
-              </p>
+      <main>
+        {/* Hero */}
+        <section className="max-w-7xl mx-auto px-6 pt-20 pb-10 flex flex-col items-center text-center relative z-10">
+          {/* Mascot with speech bubble */}
+          <div className="mb-8 relative">
+            <div className="absolute -top-12 -left-20 bg-surface p-4 rounded-xl shadow-md font-label font-bold text-sm text-primary max-w-[150px] -rotate-12 border border-outline-variant z-10">
+              &ldquo;Psst! The path to your dream role starts here!&rdquo;
+              <div className="absolute -bottom-2 right-4 w-4 h-4 bg-surface rotate-45 border-r border-b border-outline-variant" />
             </div>
+            <Image
+              src="/images/hacky.png"
+              alt="Hacky the HackProduct mascot robot, your product sense guide"
+              width={192}
+              height={192}
+              className="w-48 h-48 drop-shadow-xl"
+            />
+          </div>
 
-            {/* Right: Illustration */}
-            <div className="order-1 lg:order-2 flex items-center justify-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/hacky.png"
-                alt="Hacky, the HackProduct mascot robot, studying product roadmaps and frameworks for product sense interview preparation"
-                className="w-64 sm:w-72 lg:w-full lg:max-w-md h-auto"
-                width={512}
-                height={512}
+          {/* Headline */}
+          <h1 className="font-headline font-black text-5xl md:text-7xl tracking-tighter text-on-surface mb-6 max-w-3xl leading-none">
+            Master Product Sense.<br />
+            Stay Relevant with AI.
+          </h1>
+
+          {/* Subhead */}
+          <p className="text-xl md:text-2xl text-on-surface-variant font-medium max-w-2xl mb-12">
+            Coding skills are now a commodity. Develop your product sense, boost creativity, and
+            elevate your critical thinking.
+          </p>
+
+          {/* Scroll arrow */}
+          <div className="animate-bounce">
+            <span
+              className="material-symbols-outlined text-4xl text-primary"
+              style={{ fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 40" }}
+            >
+              keyboard_double_arrow_down
+            </span>
+          </div>
+        </section>
+
+        {/* Kinetic Learning Path */}
+        <section
+          className="relative max-w-4xl mx-auto px-6 pb-40 min-h-[2000px]"
+          aria-label="Learning journey"
+        >
+          {/* SVG curved path background */}
+          <div className="absolute inset-0 z-0 flex justify-center pointer-events-none" aria-hidden="true">
+            <svg
+              className="w-full h-full max-w-[600px]"
+              fill="none"
+              preserveAspectRatio="none"
+              viewBox="0 0 400 2000"
+            >
+              <path
+                d={PATH_D}
+                stroke="var(--color-primary-container, #c8e8d0)"
+                strokeLinecap="round"
+                strokeWidth="24"
               />
+              <path
+                d={PATH_D}
+                stroke="var(--color-primary, #4a7c59)"
+                strokeLinecap="round"
+                strokeWidth="8"
+                strokeDasharray="10"
+                opacity="0.2"
+              />
+            </svg>
+          </div>
+
+          {/* Stop 1: Learn the Frameworks */}
+          <div className="relative z-10 pt-40 flex justify-end pr-[5%] group">
+            <div className="flex flex-col items-center">
+              <div className="bg-surface p-6 rounded-2xl shadow-md border border-outline-variant max-w-xs transition-all duration-500 opacity-80 group-hover:opacity-100 group-hover:shadow-xl">
+                <span className="text-xs font-label font-black text-tertiary uppercase tracking-widest mb-2 block">
+                  Module 01
+                </span>
+                <h3 className="text-xl font-headline font-bold mb-2">Learn the Frameworks</h3>
+                <p className="text-on-surface-variant text-sm">
+                  FLOW, our framework is a derived mental model based on experts from the industry
+                </p>
+              </div>
+              <div className="mt-4">
+                <Image
+                  src="/images/hacky_reading.png"
+                  alt="Mascot reading a book"
+                  width={64}
+                  height={64}
+                  className="w-16 h-16"
+                />
+              </div>
             </div>
           </div>
-        </article>
+
+          {/* Luma interjection 1 */}
+          <div className="relative z-10 pt-40 flex justify-start pl-[15%]">
+            <div className="bg-secondary-container p-4 rounded-t-2xl rounded-br-2xl border-l-4 border-outline text-on-secondary-container font-label font-bold text-sm max-w-[200px]">
+              &ldquo;Most engineers struggle in the Product Sense round. Luma helps you win&rdquo;
+            </div>
+          </div>
+
+          {/* Stop 2: Daily Practice Arena */}
+          <div className="relative z-10 pt-40 flex justify-end pr-[10%] group">
+            <div className="flex flex-col items-center">
+              <div className="bg-surface p-6 rounded-2xl shadow-md border border-outline-variant max-w-xs transition-all duration-500 opacity-80 group-hover:opacity-100 group-hover:shadow-xl">
+                <span className="text-xs font-label font-black text-tertiary uppercase tracking-widest mb-2 block">
+                  Module 02
+                </span>
+                <h3 className="text-xl font-headline font-bold mb-2">Daily Practice Arena</h3>
+                <p className="text-on-surface-variant text-sm">
+                  Real-time challenges with an AI coach. Practice builds thinking muscle.
+                </p>
+              </div>
+              <div className="mt-4">
+                <Image
+                  src="/images/hacky_dueling.png"
+                  alt="Mascot dueling"
+                  width={96}
+                  height={96}
+                  className="w-24 h-24"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Stop 3: Build Your Streak */}
+          <div className="relative z-10 pt-40 flex justify-start pl-[5%] group">
+            <div className="flex flex-col items-center">
+              <div className="bg-surface p-6 rounded-2xl shadow-md border border-outline-variant max-w-xs transition-all duration-500 opacity-80 group-hover:opacity-100 group-hover:shadow-xl">
+                <span className="text-xs font-label font-black text-tertiary uppercase tracking-widest mb-2 block">
+                  Module 03
+                </span>
+                <h3 className="text-xl font-headline font-bold mb-2">Build Your Streak</h3>
+                <p className="text-on-surface-variant text-sm">
+                  Consistency is the secret sauce. Unlock badges and climb the global leaderboard.
+                </p>
+              </div>
+              <div className="mt-4">
+                <Image
+                  src="/images/hacky_practice.png"
+                  alt="Mascot practicing"
+                  width={96}
+                  height={96}
+                  className="w-24 h-24"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Luma interjection 2 */}
+          <div className="relative z-10 pt-20 flex justify-center">
+            <div className="bg-primary-container p-4 rounded-2xl border-b-4 border-primary text-on-primary-container font-label font-bold text-base text-center max-w-[250px]">
+              &ldquo;Look at that momentum! You&apos;re already in the top 10% of learners today!&rdquo;
+            </div>
+          </div>
+
+          {/* Stop 4: Live AI-assisted Interviews */}
+          <div className="relative z-10 pt-40 flex justify-start pl-[5%] group">
+            <div className="flex flex-col items-center">
+              <div className="bg-surface p-6 rounded-2xl shadow-md border border-outline-variant max-w-xs transition-all duration-500 opacity-80 group-hover:opacity-100 group-hover:shadow-xl">
+                <span className="text-xs font-label font-black text-tertiary uppercase tracking-widest mb-2 block">
+                  Module 04
+                </span>
+                <h3 className="text-xl font-headline font-bold mb-2">Live AI-assisted Interviews</h3>
+                <p className="text-on-surface-variant text-sm">
+                  Practice your product sense with Luma, our custom trained AI agent.
+                </p>
+              </div>
+              <div className="mt-4">
+                <Image
+                  src="/images/hacky_hiring.png"
+                  alt="Mascot looking professional"
+                  width={80}
+                  height={80}
+                  className="w-20 h-20"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Waitlist Form */}
+        <section
+          id="waitlist-form"
+          className="relative z-10 flex flex-col items-center px-6 pb-40 scroll-mt-28"
+        >
+          {showSocial && (
+            <p className="text-center text-on-surface-variant font-label text-sm mb-6">
+              Join {roundedCount.toLocaleString()}+ others already on the waitlist
+            </p>
+          )}
+          <div className="relative w-full max-w-md mx-auto">
+            <div className="absolute inset-0 bg-primary blur-3xl opacity-20 rounded-full animate-pulse pointer-events-none" />
+            <div className="relative">
+              <WaitlistForm />
+            </div>
+          </div>
+          <p className="text-xs font-label text-on-surface-variant/60 mt-4">
+            Early access members lock in founding member pricing.
+          </p>
+        </section>
       </main>
 
       {/* SEO-rich content below the fold, visible to crawlers */}
@@ -274,12 +389,6 @@ export default async function WaitlistPage() {
 
         <h3>How HackProduct Works</h3>
         <p>Choose from real product case studies inspired by decisions at top tech companies. Analyze the problem, form your recommendation, and submit your answer. Luma, your AI product coach, grades your response across multiple dimensions including product strategy, user empathy, metrics definition, and execution planning. Track your Product IQ score as it grows with every practice session.</p>
-
-        <h3>Product Sense Skills You Will Build</h3>
-        <p>Product strategy and vision. User research and empathy. Metrics definition and analytics. Feature prioritization frameworks. Product roadmap planning. Go-to-market strategy. A/B testing and experimentation. Competitive analysis. Revenue model design. Technical feasibility assessment.</p>
-
-        <h3>Companies That Ask Product Sense Questions</h3>
-        <p>Google, Meta, Amazon, Apple, Netflix, Microsoft, Uber, Lyft, Airbnb, Spotify, Stripe, Square, Shopify, Salesforce, Adobe, Twitter, LinkedIn, Pinterest, Snap, DoorDash, Instacart, Robinhood, Coinbase, and hundreds of startups include product sense rounds in their interview process for both PM and engineering roles.</p>
       </section>
     </div>
   )
