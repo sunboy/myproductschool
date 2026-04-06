@@ -57,7 +57,7 @@ export function StepReveal({
   const nextStep = NEXT_STEP[step]
 
   return (
-    <div className="bg-surface-container rounded-xl p-6 space-y-5">
+    <div className="bg-surface-container-low rounded-xl p-6 space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

@@ -91,7 +91,7 @@ export function StepQuestion({
             onChange={(e) => onElaborationChange(e.target.value)}
             disabled={disabled}
             placeholder={elaborationPlaceholder}
-            className="w-full rounded-xl border border-outline-variant bg-surface-container p-3 text-on-surface font-body text-sm resize-none min-h-[100px] focus:outline-none focus:border-primary disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full rounded-xl border border-outline-variant/60 bg-white p-3 text-on-surface font-body text-sm resize-none min-h-[100px] focus:outline-none focus:border-primary disabled:opacity-60 disabled:cursor-not-allowed"
           />
         </div>
       )}
