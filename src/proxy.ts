@@ -13,7 +13,7 @@ const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist', '/luma-preview']
 // Marketing / auth pages — accessible without any session.
 // These short-circuit BEFORE we talk to Supabase so they can
 // never be blocked by an auth-service hiccup.
-const MARKETING_ROUTES = ['/', '/waitlist', '/waitlist-b', '/waitlist-flow', '/pricing', '/flow', '/luma-preview']
+const MARKETING_ROUTES = ['/', '/waitlist', '/waitlist-quick', '/waitlist-flow', '/pricing', '/flow', '/luma-preview']
 const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-password']
 
 // Routes that require a user but NOT a completed profile/onboarding
@@ -39,7 +39,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // ── Marketing & auth pages classification ──
-  const WAITLIST_ROUTES = ['/waitlist', '/waitlist-b', '/waitlist-flow']
+  const WAITLIST_ROUTES = ['/waitlist', '/waitlist-quick', '/waitlist-flow']
   const isRoot      = pathname === '/'
   const isMarketing = MARKETING_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isWaitlist  = WAITLIST_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
