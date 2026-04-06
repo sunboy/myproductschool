@@ -152,7 +152,7 @@ export async function middleware(request: NextRequest) {
     const isAppRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/explore')
       || pathname.startsWith('/challenges') || pathname.startsWith('/progress')
       || pathname.startsWith('/cohort') || pathname.startsWith('/prep')
-      || pathname.startsWith('/settings') || pathname.startsWith('/learn')
+      || pathname.startsWith('/settings')
 
     if (isAppRoute && !isOnboarding && !onboardingDone) {
       return NextResponse.redirect(new URL('/onboarding/welcome', request.url))

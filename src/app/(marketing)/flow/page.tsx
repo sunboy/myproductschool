@@ -441,7 +441,7 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
         setError(error.message)
         setLoading(false)
       } else {
-        router.push('/learn/flow')
+        router.push('/explore/flow')
       }
     } else {
       const { data, error } = await supabase.auth.signUp({
@@ -456,7 +456,7 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
         setError(error.message)
         setLoading(false)
       } else if (data.session) {
-        router.push('/learn/flow')
+        router.push('/explore/flow')
       } else {
         setSuccess("Check your email to confirm your account.")
         setLoading(false)
