@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
@@ -166,7 +166,15 @@ function RadarChart({ scores, visible }: { scores: CalibrationResults['scores'];
 // ─────────────────────────────────────────────
 const CAL_STORAGE_KEY = 'hp_cal_progress'
 
-export default function CalibrationPage() {
+export default function CalibrationPageWrapper() {
+  return (
+    <Suspense>
+      <CalibrationPage />
+    </Suspense>
+  )
+}
+
+function CalibrationPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
