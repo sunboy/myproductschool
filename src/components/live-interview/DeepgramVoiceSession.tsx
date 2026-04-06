@@ -44,7 +44,7 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
       // No Deepgram key — voice is unavailable, but the page still works via chat
       return
     }
-    const ws = new WebSocket('wss://agent.deepgram.com/agent', ['token', apiKey])
+    const ws = new WebSocket('wss://agent.deepgram.com/v1/agent/converse', ['token', apiKey])
     wsRef.current = ws
     ws.binaryType = 'arraybuffer'
 
@@ -65,16 +65,19 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
           type: 'Settings',
           audio: {
             input: { encoding: 'linear16', sample_rate: actualSampleRate },
-            output: { encoding: 'linear16', sample_rate: actualSampleRate, container: 'none' },
+            output: { encoding: 'linear16', sample_rate: actualSampleRate },
           },
           agent: {
-            listen: { model: 'nova-2' },
-            speak: { model: 'aura-asteria-en' },
+            listen: {
+              provider: { type: 'deepgram' },
+              model: 'nova-3',
+            },
+            speak: {
+              provider: { type: 'deepgram' },
+              model: 'aura-2-asteria-en',
+            },
             think: {
-              provider: {
-                type: 'custom',
-                url: `/api/live-interview/${sessionId}/turn`,
-              },
+              provider: { type: 'anthropic' },
               model: 'claude-sonnet-4-6',
               instructions: systemPrompt,
             },
