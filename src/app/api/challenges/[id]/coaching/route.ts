@@ -31,7 +31,7 @@ export async function POST(
 
   // Fetch attempt to get role_id
   const { data: attempt, error: attemptError } = await admin
-    .from('challenge_attempts_v2')
+    .from('challenge_attempts')
     .select('role_id, user_id')
     .eq('id', attempt_id)
     .eq('user_id', user.id)

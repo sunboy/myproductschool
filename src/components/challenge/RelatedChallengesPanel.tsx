@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 
 interface RelatedChallenge {
   id: string
+  slug: string | null
   title: string
   difficulty: string
 }
@@ -46,7 +47,7 @@ export function RelatedChallengesPanel({ currentChallengeId }: Props) {
         {challenges.map(c => (
           <Link
             key={c.id}
-            href={`/challenges/${c.id}`}
+            href={`/workspace/challenges/${c.slug ?? c.id}`}
             className="flex items-center justify-between p-2 rounded-lg hover:bg-surface-container-low transition-colors group"
           >
             <span className="text-xs font-medium text-on-surface group-hover:text-primary transition-colors line-clamp-2">{c.title}</span>

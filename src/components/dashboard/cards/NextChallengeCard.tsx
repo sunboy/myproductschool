@@ -37,7 +37,7 @@ export function NextChallengeCard({ title, domain, difficulty, challengeId, luma
       )}
 
       <Link
-        href={`/challenges/${challengeId}`}
+        href={`/workspace/challenges/${challengeId}`}
         className="bg-primary text-on-primary rounded-full px-5 py-2 text-sm font-label font-semibold text-center hover:opacity-90 transition-opacity"
       >
         Start Challenge

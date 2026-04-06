@@ -176,7 +176,7 @@ function SkillLadderContent() {
                         </div>
                       </div>
                     </div>
-                    <Link href={`/challenges/${recommendation.challenge_id.replace(/^c\d+-/, '')}`} className="bg-primary text-white px-5 py-2 rounded-full text-sm font-bold hover:shadow-md transition-all active:scale-95">Start →</Link>
+                    <Link href={`/workspace/challenges/${recommendation.challenge_id}`} className="bg-primary text-white px-5 py-2 rounded-full text-sm font-bold hover:shadow-md transition-all active:scale-95">Start →</Link>
                   </div>
                 ) : (
                   <div className="flex items-center justify-between">

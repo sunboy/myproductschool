@@ -48,14 +48,14 @@ export async function GET() {
 
   const [domainsResult, challengesResult, attemptsResult] = await Promise.all([
     adminClient.from('domains').select('*').eq('is_published', true).order('order_index'),
-    adminClient.from('challenge_prompts').select('id, domain_id').eq('is_published', true),
-    adminClient.from('challenge_attempts').select('prompt_id').eq('user_id', user.id).not('submitted_at', 'is', null),
+    adminClient.from('challenges').select('id, domain_id').eq('is_published', true),
+    adminClient.from('challenge_attempts').select('challenge_id').eq('user_id', user.id).not('submitted_at', 'is', null),
   ])
 
   if (domainsResult.error) return NextResponse.json({ error: domainsResult.error.message }, { status: 500 })
 
   const challenges = challengesResult.data ?? []
-  const completedPromptIds = new Set((attemptsResult.data ?? []).map((a: { prompt_id: string }) => a.prompt_id))
+  const completedPromptIds = new Set((attemptsResult.data ?? []).map((a: { challenge_id: string }) => a.challenge_id))
 
   const domains: DomainWithProgress[] = (domainsResult.data ?? []).map((d: { id: string; slug: string; title: string; description: string | null; icon: string | null; order_index: number; is_published: boolean; created_at: string }) => {
     const domainChallenges = challenges.filter((c: { domain_id: string }) => c.domain_id === d.id)

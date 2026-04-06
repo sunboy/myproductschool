@@ -77,7 +77,7 @@ export function ShowcaseProductCard({ product, completedCount = 0 }: ShowcasePro
         </Link>
         {hasStories && (
           <Link
-            href={`/explore/showcase/${product.slug}/stories`}
+            href={`/explore/showcase/${product.slug}#stories`}
             className="w-[80%] text-center bg-white/90 text-on-background rounded-full px-4 py-2.5 font-label font-semibold text-sm hover:bg-white transition-colors"
             onClick={e => e.stopPropagation()}
           >

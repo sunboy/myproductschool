@@ -57,7 +57,7 @@ export async function getHotChallenges(): Promise<HotChallenge[]> {
   const supabase = await createClient()
 
   const { data } = await supabase
-    .from('challenge_prompts')
+    .from('challenges')
     .select('title, domain_id, domains(title)')
     .eq('is_published', true)
     .order('created_at', { ascending: false })

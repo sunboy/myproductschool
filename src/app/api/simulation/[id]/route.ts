@@ -16,7 +16,7 @@ export async function GET(
   const [sessionResult, turnsResult] = await Promise.all([
     adminClient
       .from('simulation_sessions')
-      .select('*, company_profiles(name, industry, interview_style), challenge_prompts(title, prompt_text)')
+      .select('*, company_profiles(name, industry, interview_style), challenges(title, prompt_text)')
       .eq('id', id)
       .eq('user_id', user.id)
       .single(),

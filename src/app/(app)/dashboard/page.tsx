@@ -124,11 +124,12 @@ export default async function DashboardPage() {
   // (mirrors the logic in /api/challenges/quick-take and /api/challenges/next)
   const adminClient = createAdminClient()
 
-  // Quick Take: use quick_take_prompts (not the legacy challenge_prompts table)
+  // Quick Take: query challenges table with challenge_type = 'quick_take'
   const todayStr = new Date().toISOString().split('T')[0]
   const { data: todayQuickTake } = await adminClient
-    .from('quick_take_prompts')
-    .select('id, prompt_text, move')
+    .from('challenges')
+    .select('id, slug, prompt_text, move_tags')
+    .eq('challenge_type', 'quick_take')
     .gte('created_at', todayStr)
     .eq('is_published', true)
     .limit(1)
@@ -139,8 +140,9 @@ export default async function DashboardPage() {
   if (!quickTakePrompt) {
     // Fall back to any published quick take
     const { data: anyQuickTake } = await adminClient
-      .from('quick_take_prompts')
-      .select('id, prompt_text, move')
+      .from('challenges')
+      .select('id, slug, prompt_text, move_tags')
+      .eq('challenge_type', 'quick_take')
       .eq('is_published', true)
       .limit(1)
       .maybeSingle()
@@ -149,7 +151,7 @@ export default async function DashboardPage() {
 
   // Next Challenge: use /api/challenges/next logic — weakest move targeting
   // Get user's weakest move, completed challenge IDs, and pick a personalized challenge
-  let nextChallenge: { id: string; title: string; difficulty: string; domain_id?: string | null; luma_insight?: string | null } | null = null
+  let nextChallenge: { id: string; slug?: string | null; title: string; difficulty: string; domain_id?: string | null; luma_insight?: string | null } | null = null
 
   if (userId) {
     const [{ data: moveLevelsForNext }, { data: completedAttempts }] = await Promise.all([
@@ -161,17 +163,17 @@ export default async function DashboardPage() {
         .limit(1),
       adminClient
         .from('challenge_attempts')
-        .select('prompt_id')
+        .select('challenge_id')
         .eq('user_id', userId)
         .eq('status', 'completed'),
     ])
 
     const weakestMove = (moveLevelsForNext?.[0]?.move as string) ?? 'frame'
-    const completedIds = (completedAttempts ?? []).map((a: { prompt_id: string }) => a.prompt_id)
+    const completedIds = (completedAttempts ?? []).map((a: { challenge_id: string }) => a.challenge_id)
 
     let nextQuery = adminClient
-      .from('challenge_prompts')
-      .select('id, title, difficulty, domain_id')
+      .from('challenges')
+      .select('id, slug, title, difficulty, domain_id')
       .eq('is_published', true)
       .contains('move_tags', [weakestMove])
 
@@ -186,8 +188,8 @@ export default async function DashboardPage() {
   if (!nextChallenge) {
     // Final fallback: any published challenge
     const { data: fallbackChallenge } = await adminClient
-      .from('challenge_prompts')
-      .select('id, title, difficulty, domain_id')
+      .from('challenges')
+      .select('id, slug, title, difficulty, domain_id')
       .eq('is_published', true)
       .limit(1)
       .maybeSingle()
@@ -253,14 +255,14 @@ export default async function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <QuickTakeCard
               prompt={quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
-              challengeId={quickTakePrompt?.id ?? 'orientation'}
+              challengeId={quickTakePrompt?.slug ?? quickTakePrompt?.id ?? 'orientation'}
               lumaContext={null}
             />
             <NextChallengeCard
               title={nextChallenge?.title ?? 'Designing a Metric Dashboard for a B2B SaaS Tool'}
               domain="Product Strategy"
               difficulty={nextChallenge?.difficulty ?? 'Medium'}
-              challengeId={nextChallenge?.id ?? 'orientation'}
+              challengeId={nextChallenge?.slug ?? nextChallenge?.id ?? 'orientation'}
               lumaInsight={nextChallenge?.luma_insight ?? null}
             />
           </div>

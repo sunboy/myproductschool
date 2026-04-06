@@ -72,6 +72,7 @@ export interface Flashcard {
   created_at: string
 }
 
+/** @deprecated Use Challenge with challenge_type='freeform' instead */
 export interface ChallengePrompt {
   id: string
   slug?: string
@@ -89,10 +90,11 @@ export interface ChallengePrompt {
   image_url?: string | null
 }
 
+/** @deprecated Use ChallengeAttemptV2 instead. prompt_id column was removed in migration 037. */
 export interface ChallengeAttempt {
   id: string
   user_id: string
-  prompt_id: string
+  challenge_id: string
   mode: ChallengeMode
   response_text: string | null
   started_at: string
@@ -111,7 +113,7 @@ export interface LumaFeedbackItem {
 
 export interface ModelAnswer {
   id: string
-  prompt_id: string
+  challenge_id: string
   answer_text: string
   key_points: string[]
   created_by: string | null
@@ -167,6 +169,7 @@ export interface ConceptWithProgress extends Concept {
 }
 
 export interface ChallengeWithDomain extends ChallengePrompt {
+  challenge_type?: ChallengeType
   domain: Pick<Domain, 'slug' | 'title' | 'icon'>
   attempt_count: number
   best_score: number | null
@@ -512,8 +515,11 @@ export type ResponseType = 'pure_mcq' | 'mcq_plus_elaboration' | 'modified_optio
 export type Competency = 'motivation_theory' | 'cognitive_empathy' | 'taste' | 'strategic_thinking' | 'creative_execution' | 'domain_expertise'
 export type UserRoleV2 = 'swe' | 'data_eng' | 'ml_eng' | 'devops' | 'founding_eng' | 'em' | 'tech_lead' | 'pm' | 'designer' | 'data_scientist'
 
+export type ChallengeType = 'flow' | 'freeform' | 'quick_take'
+
 export interface Challenge {
-  id: string; slug: string; title: string
+  id: string; slug: string | null; title: string
+  challenge_type: ChallengeType
   scenario_role: string | null; scenario_context: string; scenario_trigger: string; scenario_question: string
   engineer_standout: string | null
   paradigm: Paradigm | null; industry: string | null; sub_vertical: string | null
@@ -521,6 +527,11 @@ export interface Challenge {
   primary_competencies: string[]; secondary_competencies: string[]
   frameworks: string[]; relevant_roles: string[]; company_tags: string[]; tags: string[]
   is_published: boolean; is_calibration: boolean; is_premium: boolean; created_at: string
+  // Consolidated columns (from challenge_prompts / autopsy_challenges)
+  prompt_text: string | null
+  domain_id: string | null
+  move_tags: string[]
+  decision_id: string | null
 }
 
 export interface FlowStepRecord {

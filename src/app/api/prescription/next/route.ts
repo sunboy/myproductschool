@@ -104,14 +104,14 @@ export async function GET(req: NextRequest) {
     // Get next uncompleted challenge
     const { data: completedAttempts } = await supabaseAdmin
       .from('challenge_attempts')
-      .select('prompt_id')
+      .select('challenge_id')
       .eq('user_id', userId)
       .not('submitted_at', 'is', null)
 
-    const completedIds = (completedAttempts ?? []).map((a: { prompt_id: string }) => a.prompt_id)
+    const completedIds = (completedAttempts ?? []).map((a: { challenge_id: string }) => a.challenge_id)
 
     const { data: nextChallenge } = await supabaseAdmin
-      .from('challenge_prompts')
+      .from('challenges')
       .select('id, title, tags')
       .eq('is_published', true)
       .not('id', 'in', completedIds.length > 0 ? `(${completedIds.join(',')})` : '(00000000-0000-0000-0000-000000000000)')

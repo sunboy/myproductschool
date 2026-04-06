@@ -67,7 +67,7 @@ export async function GET(
   let challengeMap: Record<string, { id: string; title: string; difficulty: string; paradigm?: string | null }> = {}
   if (allChallengeIds.length > 0) {
     const { data: challengeRows } = await adminClient
-      .from('challenge_prompts')
+      .from('challenges')
       .select('id, title, difficulty, paradigm')
       .in('id', allChallengeIds)
     for (const row of challengeRows ?? []) {

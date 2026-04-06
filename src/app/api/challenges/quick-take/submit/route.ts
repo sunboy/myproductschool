@@ -15,10 +15,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(MOCK_RESPONSE)
   }
 
-  const { prompt_id, response_text } = await req.json()
+  const { challenge_id, response_text } = await req.json()
 
-  if (!prompt_id || !response_text?.trim()) {
-    return NextResponse.json({ error: 'Missing prompt_id or response_text' }, { status: 400 })
+  if (!challenge_id || !response_text?.trim()) {
+    return NextResponse.json({ error: 'Missing challenge_id or response_text' }, { status: 400 })
   }
 
   const supabase = await createClient()
@@ -27,11 +27,12 @@ export async function POST(req: NextRequest) {
 
   const adminClient = createAdminClient()
 
-  // Get prompt to know which move to score
+  // Get challenge to know which move to score
   const { data: prompt } = await adminClient
-    .from('quick_take_prompts')
-    .select('move')
-    .eq('id', prompt_id)
+    .from('challenges')
+    .select('move_tags')
+    .eq('id', challenge_id)
+    .eq('challenge_type', 'quick_take')
     .single()
 
   if (!prompt) return NextResponse.json({ error: 'Prompt not found' }, { status: 404 })
@@ -43,18 +44,20 @@ export async function POST(req: NextRequest) {
   const xp_earned = Math.round(score * 3)
   const move_delta = Math.round(score * 2)
 
+  const primaryMove = prompt.move_tags?.[0] ?? 'frame'
+
   // Log session event (fire and forget)
   adminClient.from('session_events').insert({
     user_id: user.id,
     event_type: 'quick_take_submit',
-    event_data: { prompt_id, move: prompt.move, score, xp_earned },
+    event_data: { challenge_id, move: primaryMove, score, xp_earned },
   }).then(() => {}, () => {})
 
   // Update move level XP (fire and forget)
   fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/move-levels/update`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId: user.id, scores: { [prompt.move]: score } }),
+    body: JSON.stringify({ userId: user.id, scores: { [primaryMove]: score } }),
   }).catch(() => {})
 
   // Update streak (fire and forget)
@@ -64,6 +67,6 @@ export async function POST(req: NextRequest) {
     score,
     move_delta,
     xp_earned,
-    feedback_summary: `Score: ${score}/10 — Keep refining your ${prompt.move} skills.`,
+    feedback_summary: `Score: ${score}/10 — Keep refining your ${primaryMove} skills.`,
   })
 }

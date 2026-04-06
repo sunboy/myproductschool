@@ -1,0 +1,55 @@
+<h2>Implementation Approaches — Product Autopsy</h2>
+<p class="subtitle">Three ways to structure the build. All share the same routing decision (keep /explore/showcase, use app shell).</p>
+
+<div class="options">
+
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Full rebuild — new content schema + new components</h3>
+      <p>Introduce the spec's <strong>StorySection</strong> JSON schema and story data model alongside the existing decision/challenge schema. Build all section layout components (cover, split_panel, stat, before_after, principle, CTA). Build 4-5 animated illustration components. Existing showcase grid/cards stay largely intact — we add the story reader as a new route <code>/explore/showcase/[slug]/stories/[storySlug]</code>. Challenges link out to <code>/workspace/challenges/[id]</code>.</p>
+      <ul>
+        <li>✅ Matches spec exactly, very extensible</li>
+        <li>✅ Clean separation: stories vs challenges vs grid</li>
+        <li>✅ Illustrations are fully data-driven and reusable</li>
+        <li>⚠️ Most code to write — 15-20 new files</li>
+        <li>⚠️ Need to seed story content JSON for Notion</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Recommended — Evolve existing + add story reader</h3>
+      <p>Keep the existing grid + detail + challenge card components. Add the story reader as a new route. Extend the <code>autopsy_decisions</code> table with a <code>story_sections JSONB</code> column so each decision can optionally have a narrative. The story reader is a new scroll-based page component. Challenge links from the story CTA go to the existing showcase detail page (not external workspace). Illustrations are a separate feature-flagged layer.</p>
+      <ul>
+        <li>✅ Least disruption to working code</li>
+        <li>✅ Story content lives in the same DB row as the decision</li>
+        <li>✅ Feature flag <code>NEXT_PUBLIC_ILLUSTRATION_MODE=animated|static</code> controls fidelity</li>
+        <li>✅ ~10-12 new files, most existing files untouched</li>
+        <li>⚠️ Decision-level story (1 story per decision) vs product-level story (1 story per product)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Thin slice — story reader only, no illustrations yet</h3>
+      <p>Build the story reader with all layout section components but use a static <code>IllustrationPlaceholder</code> for all illustrations. Add illustrations in a follow-up sprint. This gets the editorial experience shipped fast and validates the layout system before investing in animation.</p>
+      <ul>
+        <li>✅ Fastest to ship</li>
+        <li>✅ Can validate story UX without animation complexity</li>
+        <li>⚠️ Placeholder illustrations feel unfinished</li>
+        <li>⚠️ Doesn't deliver on the "killer" goal yet</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<div class="section" style="margin-top:24px;padding:16px;background:rgba(74,124,89,0.08);border-radius:8px;border-left:3px solid #4a7c59;">
+  <p class="label">My recommendation</p>
+  <p>Option B — evolve existing infrastructure, add product-level stories (not decision-level), and build illustrations with the feature flag. Stories live at <code>/explore/showcase/[slug]/stories/[storySlug]</code>, seeded for Notion first.</p>
+</div>

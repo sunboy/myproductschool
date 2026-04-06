@@ -67,7 +67,7 @@ export default function ChallengeDiscussionPage() {
     <div className="max-w-7xl mx-auto px-6 py-6 pb-24">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs text-on-surface-variant mb-6">
-        <Link href={`/challenges/${id}`} className="hover:text-primary transition-colors">
+        <Link href={`/workspace/challenges/${id}`} className="hover:text-primary transition-colors">
           {challengeTitle ?? 'Challenge'}
         </Link>
         <span className="material-symbols-outlined text-[10px]">chevron_right</span>

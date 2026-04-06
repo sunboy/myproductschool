@@ -134,7 +134,7 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
                         item.challenge?.title ?? item.concept?.title ?? 'Untitled'
                       const href =
                         item.item_type === 'challenge' && item.challenge_id
-                          ? `/challenges/${item.challenge_id}`
+                          ? `/workspace/challenges/${item.challenge_id}`
                           : item.item_type === 'concept' && item.concept_id
                           ? `/vocabulary/${item.concept_id}`
                           : '#'

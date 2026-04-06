@@ -102,16 +102,16 @@ export async function getStudyPlanBySlug(slug: string): Promise<StudyPlanWithIte
 
   const { data: items } = await supabase
     .from('study_plan_items')
-    .select('*, challenge_prompts(*, domains(slug, title, icon))')
+    .select('*, challenges(*, domains(slug, title, icon))')
     .eq('plan_id', plan.id)
     .order('order_index')
 
   const enrichedItems = (items ?? []).map(item => ({
     ...item,
-    challenge: item.challenge_prompts
+    challenge: item.challenges
       ? {
-          ...item.challenge_prompts,
-          domain: item.challenge_prompts.domains ?? { slug: '', title: '', icon: null },
+          ...item.challenges,
+          domain: item.challenges.domains ?? { slug: '', title: '', icon: null },
           attempt_count: 0,
           best_score: null,
           is_completed: false,
