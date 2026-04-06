@@ -5,9 +5,9 @@ import { IS_MOCK } from '@/lib/mock'
 // ── Pre-launch gate ──────────────────────────────────────────
 // Set to true to restrict all routes to the waitlist page.
 // Flip to false (or remove the block) when ready to launch.
-const PRE_LAUNCH = false
+const PRE_LAUNCH = true
 
-const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist', '/luma-preview']
+const LAUNCH_ALLOWED = ['/waitlist', '/waitlist-b', '/waitlist-flow', '/api/waitlist', '/luma-preview']
 
 // ── Post-launch route config ─────────────────────────────────
 // Marketing / auth pages — accessible without any session.
@@ -33,7 +33,7 @@ export async function proxy(request: NextRequest) {
     const isAllowed = LAUNCH_ALLOWED.some(r => pathname === r || pathname.startsWith(r + '/'))
       || pathname.startsWith('/api/waitlist')
     if (!isAllowed) {
-      return NextResponse.redirect(new URL('/waitlist', request.url))
+      return NextResponse.redirect(new URL('/waitlist-b', request.url))
     }
     return NextResponse.next()
   }
