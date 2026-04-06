@@ -77,6 +77,7 @@ export default function SessionPage({
   const eventSourceRef = useRef<EventSource | null>(null)
   const audioCtxRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
+  const nextPlayTimeRef = useRef<number>(0)
   const lastSignalTurnIndexRef = useRef<number>(-1)
 
   // Timer
@@ -176,21 +177,21 @@ export default function SessionPage({
 
   // Deepgram callbacks
   const handleTranscript = useCallback((text: string, role: 'luma' | 'user') => {
-    // Strip grading signal JSON from Luma's voice responses
-    let content = text
+    // Strip grading signal JSON from voice responses (can appear on any role)
+    const { cleanContent, signal } = parseGradingSignal(text)
+
+    // Drop turns that are nothing but a signal block (no spoken content)
+    if (!cleanContent) return
+
     let coachingSignal: CoachingSignal | undefined
-    if (role === 'luma') {
-      const { cleanContent, signal } = parseGradingSignal(text)
-      content = cleanContent
-      if (signal && signal.flowMove) {
-        coachingSignal = signal
-      }
+    if (signal && signal.flowMove) {
+      coachingSignal = signal
     }
 
     const turn: TranscriptTurn = {
       id: crypto.randomUUID(),
       role,
-      content,
+      content: cleanContent,
       source: 'voice',
       coachingSignal,
     }
@@ -201,6 +202,8 @@ export default function SessionPage({
 
   const handleAgentSpeaking = useCallback(() => {
     setLumaState('speaking')
+    // Reset audio queue for new utterance
+    nextPlayTimeRef.current = 0
   }, [])
 
   const handleAudioChunk = useCallback((buffer: ArrayBuffer) => {
@@ -228,14 +231,21 @@ export default function SessionPage({
       float32[i] = int16[i] / 0x8000
     }
 
-    // Create buffer at 16kHz source rate — browser will resample to output rate
+    // Create buffer at 16kHz source rate — browser resamples to output rate
     const audioBuffer = ctx.createBuffer(1, float32.length, 16000)
     audioBuffer.getChannelData(0).set(float32)
+
+    // Schedule chunks sequentially to avoid overlap/gaps
+    const now = ctx.currentTime
+    const startTime = Math.max(now, nextPlayTimeRef.current)
+    const duration = float32.length / 16000
 
     const source = ctx.createBufferSource()
     source.buffer = audioBuffer
     source.connect(analyser)
-    source.start()
+    source.start(startTime)
+
+    nextPlayTimeRef.current = startTime + duration
   }, [])
 
   const handleConnected = useCallback(() => {
