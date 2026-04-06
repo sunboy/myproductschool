@@ -80,7 +80,7 @@ export default function ChatPanel({ isOpen, onClose, turns, isThinking, onSendMe
         <div className="flex flex-col gap-3">
           {turns.length === 0 && !isThinking ? (
             <p className="text-center text-on-surface-variant font-body text-sm mt-8">
-              Type a message to chat with Luma.
+              The conversation will appear here. You can type to respond instead of speaking.
             </p>
           ) : (
             turns.map((turn) => (

@@ -337,9 +337,8 @@ export default function SessionPage({
     }
   }, [sessionId, isEnding, router])
 
-  // Filter turns by source for each panel
-  const voiceTurns = turns.filter((t) => t.source === 'voice')
-  const chatTurns = turns.filter((t) => t.source === 'chat')
+  // Both panels show the full conversation — voice and chat are interleaved
+  // The `source` tag is kept for potential styling differences
 
   // ── Loading state ──
   if (interviewPhase === 'loading') {
@@ -490,7 +489,7 @@ export default function SessionPage({
         {/* Transcript — voice turns only */}
         <div className="flex-1 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 p-4">
           <TranscriptPanel
-            turns={voiceTurns}
+            turns={turns}
             className="[&_span]:text-white/50 [&_.text-on-surface-variant]:text-white/50 [&_.bg-primary-container]:bg-primary/30 [&_.text-on-primary-container]:text-white/90 [&_.bg-surface-container-high]:bg-white/10 [&_.text-on-surface]:text-white/80"
           />
         </div>
@@ -514,7 +513,7 @@ export default function SessionPage({
       <ChatPanel
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
-        turns={chatTurns}
+        turns={turns}
         isThinking={isThinking}
         onSendMessage={handleSendChatMessage}
       />
