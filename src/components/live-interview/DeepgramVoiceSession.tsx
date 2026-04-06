@@ -58,12 +58,17 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
         },
         agent: {
           listen: {
-            provider: { type: 'deepgram' },
-            model: 'nova-3',
+            provider: {
+              type: 'deepgram',
+              model: 'nova-3',
+              language: 'en-US',
+            },
           },
           speak: {
-            provider: { type: 'deepgram' },
-            model: 'aura-2-asteria-en',
+            provider: {
+              type: 'deepgram',
+              model: 'aura-2-asteria-en',
+            },
           },
           think: {
             provider: { type: 'anthropic' },
