@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
-import type { StudyPlan, AutopsyProduct } from '@/lib/types'
+import type { StudyPlan, AutopsyProduct, DomainWithProgress } from '@/lib/types'
 import { getShowcaseProducts } from '@/lib/data/showcase'
 
 const ROLES = ['All', 'SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng'] as const
@@ -101,14 +101,50 @@ async function fetchStudyPlans(): Promise<typeof STUDY_PLANS_MOCK> {
   }
 }
 
+interface ModuleSummary {
+  id: string
+  slug: string
+  name: string
+  tagline: string
+  cover_color: string | null
+  chapter_count: number
+  est_minutes: number
+}
+
+async function fetchModules(): Promise<ModuleSummary[]> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+    const res = await fetch(`${baseUrl}/api/learn?limit=8`, { next: { revalidate: 300 } })
+    if (!res.ok) return []
+    const data = await res.json()
+    return Array.isArray(data) ? data : (data.modules ?? [])
+  } catch {
+    return []
+  }
+}
+
+async function fetchDomains(): Promise<DomainWithProgress[]> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+    const res = await fetch(`${baseUrl}/api/domains`, { next: { revalidate: 300 } })
+    if (!res.ok) return []
+    const data = await res.json()
+    return Array.isArray(data) ? data : (data.domains ?? [])
+  } catch {
+    return []
+  }
+}
+
 export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const { role, paradigm } = await searchParams
   const activeRole = role || 'All'
   const activeParadigm = paradigm || null
 
-  const [studyPlans, showcaseProducts] = await Promise.all([
+  const [studyPlans, showcaseProducts, modules, domains] = await Promise.all([
     fetchStudyPlans().catch(() => [] as Awaited<ReturnType<typeof fetchStudyPlans>>),
     getShowcaseProducts().catch(() => [] as AutopsyProduct[]),
+    fetchModules().catch(() => [] as ModuleSummary[]),
+    fetchDomains().catch(() => [] as DomainWithProgress[]),
   ])
 
   const buildHref = (r: string) => {
@@ -191,6 +227,78 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
         })}
       </div>
 
+      {/* ── FLOW Framework ── */}
+      <Link
+        href="/explore/flow"
+        className="flex flex-col gap-3 bg-primary-fixed rounded-2xl p-5 hover:brightness-95 transition-all group"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <LumaGlyph size={28} state="speaking" className="text-primary shrink-0" />
+            <div>
+              <div className="font-headline font-bold text-base text-on-surface">The FLOW Framework</div>
+              <div className="font-label text-xs text-on-surface-variant">How HackProduct challenges are structured</div>
+            </div>
+          </div>
+          <span className="material-symbols-outlined text-base text-primary opacity-0 group-hover:opacity-100 transition-opacity" style={{ fontVariationSettings: "'FILL' 0" }}>arrow_forward</span>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          {[
+            { symbol: '◇', label: 'Frame', color: '#2e7d32', bg: '#e8f5e9' },
+            { symbol: '◈', label: 'List', color: '#1565c0', bg: '#e3f2fd' },
+            { symbol: '◆', label: 'Optimize', color: '#ad1457', bg: '#fce4ec' },
+            { symbol: '◎', label: 'Win', color: '#f57f17', bg: '#fff8e1' },
+          ].map(m => (
+            <span key={m.label} className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-label font-bold" style={{ background: m.bg, color: m.color }}>
+              {m.symbol} {m.label}
+            </span>
+          ))}
+        </div>
+        <p className="font-label text-xs font-bold text-primary">Learn how FLOW works →</p>
+      </Link>
+
+      {/* ── Course Modules ── */}
+      {modules.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant">Course Modules</h2>
+            <Link href="/explore/modules" className="font-label text-xs font-bold text-primary hover:underline">View all →</Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {modules.map(m => (
+              <Link key={m.id} href={`/explore/modules/${m.slug}`} className="flex flex-col gap-2 bg-surface-container rounded-xl p-4 shrink-0 w-44 hover:bg-surface-container-high transition-colors">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: (m.cover_color ?? '#4a7c59') + '33' }}>
+                  <span className="material-symbols-outlined text-base" style={{ color: m.cover_color ?? '#4a7c59', fontVariationSettings: "'FILL' 0" }}>auto_stories</span>
+                </div>
+                <div className="font-label text-sm font-bold text-on-surface leading-snug line-clamp-2">{m.name}</div>
+                <div className="font-body text-xs text-on-surface-variant line-clamp-1">{m.tagline}</div>
+                <div className="font-label text-[10px] text-on-surface-variant mt-auto">~{m.est_minutes} min</div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Domains ── */}
+      {domains.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant">Domains</h2>
+            <Link href="/explore/domains" className="font-label text-xs font-bold text-primary hover:underline">View all →</Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {domains.slice(0, 10).map(d => (
+              <Link key={d.id} href={`/domains/${d.slug}`} className="flex flex-col items-center gap-1.5 shrink-0 w-20 py-3 px-2 rounded-xl hover:bg-surface-container transition-colors text-center">
+                <div className="w-11 h-11 rounded-2xl bg-primary-fixed flex items-center justify-center">
+                  <span className="material-symbols-outlined text-xl text-primary" style={{ fontVariationSettings: "'FILL' 0" }}>{d.icon ?? 'category'}</span>
+                </div>
+                <span className="font-label text-xs font-bold text-on-surface leading-tight">{d.title}</span>
+                <span className="font-label text-[10px] text-on-surface-variant">{d.challenge_count} challenges</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ── Product Autopsies teaser ── */}
       {showcaseProducts.length > 0 && (
