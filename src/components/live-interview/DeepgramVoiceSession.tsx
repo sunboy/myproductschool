@@ -1,7 +1,8 @@
 'use client'
 
-// SECURITY: NEXT_PUBLIC_DEEPGRAM_API_KEY exposes the key client-side. For production,
-// proxy through a server-side WebSocket relay that injects the key server-side.
+// Mic capture + TTS playback for Deepgram Voice Agent API.
+// Architecture follows deepgram/browser-agent: two separate AudioContexts
+// (micCtx for capture, ttsCtx for playback) to avoid hardware contention.
 
 import { useEffect, useRef } from 'react'
 
@@ -10,11 +11,22 @@ interface DeepgramVoiceSessionProps {
   systemPrompt: string
   isMuted?: boolean
   onTranscript: (text: string, role: 'luma' | 'user') => void
-  onAudioChunk: (buffer: ArrayBuffer) => void
+  onAudioChunk?: (buffer: ArrayBuffer) => void
   onAgentSpeaking?: () => void
+  onAgentDoneSpeaking?: () => void
   onConnected: () => void
   onError: (err: string) => void
-  disabled?: boolean // mock mode — renders nothing, calls no APIs
+  disabled?: boolean
+}
+
+function firstChannelToInt16(inputBuffer: AudioBuffer): Int16Array {
+  const float32 = inputBuffer.getChannelData(0)
+  const int16 = new Int16Array(float32.length)
+  for (let i = 0; i < float32.length; i++) {
+    const clamped = Math.max(-1, Math.min(1, float32[i]))
+    int16[i] = clamped < 0 ? clamped * 0x8000 : clamped * 0x7fff
+  }
+  return int16
 }
 
 export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): null {
@@ -23,33 +35,40 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
     systemPrompt,
     isMuted,
     onTranscript,
-    onAudioChunk,
     onAgentSpeaking,
+    onAgentDoneSpeaking,
     onConnected,
     onError,
     disabled,
   } = props
 
   const wsRef = useRef<WebSocket | null>(null)
-  const audioCtxRef = useRef<AudioContext | null>(null)
-  const processorRef = useRef<ScriptProcessorNode | null>(null)
+  // Mic capture context — separate from TTS to avoid crackling
+  const micCtxRef = useRef<AudioContext | null>(null)
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null)
+  const processorRef = useRef<ScriptProcessorNode | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
+  // TTS playback context
+  const ttsCtxRef = useRef<AudioContext | null>(null)
+  const ttsStartTimeRef = useRef<number>(0)
+  const scheduledSourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set())
 
   useEffect(() => {
     if (disabled) return
 
     const apiKey = process.env.NEXT_PUBLIC_DEEPGRAM_API_KEY ?? ''
-    if (!apiKey) {
-      // No Deepgram key — voice is unavailable, but the page still works via chat
-      return
-    }
+    if (!apiKey) return
+
     const ws = new WebSocket('wss://agent.deepgram.com/v1/agent/converse', ['token', apiKey])
     wsRef.current = ws
     ws.binaryType = 'arraybuffer'
 
+    // Create TTS playback context (system default rate for smooth output)
+    const ttsCtx = new AudioContext()
+    ttsCtxRef.current = ttsCtx
+
     ws.addEventListener('open', () => {
-      // Send Settings immediately — Deepgram times out if this is delayed
+      // Send Settings immediately — Deepgram times out if delayed
       const settings = {
         type: 'Settings',
         audio: {
@@ -58,63 +77,48 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
         },
         agent: {
           listen: {
-            provider: {
-              type: 'deepgram',
-              model: 'nova-3',
-              language: 'en-US',
-            },
+            provider: { type: 'deepgram', model: 'nova-3', language: 'en-US' },
           },
           speak: {
-            provider: {
-              type: 'deepgram',
-              model: 'aura-2-asteria-en',
-            },
+            provider: { type: 'deepgram', model: 'aura-2-asteria-en' },
           },
           think: {
-            provider: {
-              type: 'open_ai',
-              model: 'gpt-4o-mini',
-            },
+            provider: { type: 'open_ai', model: 'gpt-4o-mini' },
             prompt: systemPrompt,
           },
         },
       }
       ws.send(JSON.stringify(settings))
 
-      // Request mic access after Settings is sent (permission prompt can block)
-      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+      // Request mic after Settings sent (permission prompt can block)
+      navigator.mediaDevices.getUserMedia({
+        audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true, noiseSuppression: true },
+      }).then((stream) => {
         if (ws.readyState !== WebSocket.OPEN) {
           stream.getTracks().forEach((t) => t.stop())
           return
         }
         streamRef.current = stream
 
-        const audioCtx = new AudioContext({ sampleRate: 16000 })
-        audioCtxRef.current = audioCtx
+        // Mic context — separate from TTS context
+        const micCtx = new AudioContext({ sampleRate: 16000 })
+        micCtxRef.current = micCtx
 
-        const source = audioCtx.createMediaStreamSource(stream)
+        const source = micCtx.createMediaStreamSource(stream)
         sourceNodeRef.current = source
-        const processor = audioCtx.createScriptProcessor(4096, 1, 1)
+        const processor = micCtx.createScriptProcessor(4096, 1, 1)
         processorRef.current = processor
 
         processor.onaudioprocess = (e) => {
           if (ws.readyState !== WebSocket.OPEN) return
-          const float32 = e.inputBuffer.getChannelData(0)
-          const int16 = new Int16Array(float32.length)
-          for (let i = 0; i < float32.length; i++) {
-            const clamped = Math.max(-1, Math.min(1, float32[i]))
-            int16[i] = clamped < 0 ? clamped * 0x8000 : clamped * 0x7fff
-          }
+          const int16 = firstChannelToInt16(e.inputBuffer)
           ws.send(int16.buffer)
         }
 
         source.connect(processor)
-        // Connect to a silent GainNode instead of destination — prevents mic
-        // audio from playing through speakers (which causes crackling/feedback)
-        const silentDest = audioCtx.createGain()
-        silentDest.gain.value = 0
-        silentDest.connect(audioCtx.destination)
-        processor.connect(silentDest)
+        // Must connect to destination for onaudioprocess to fire.
+        // micCtx.destination is separate from ttsCtx — no speaker interference.
+        processor.connect(micCtx.destination)
 
         onConnected()
       }).catch((err) => {
@@ -124,7 +128,8 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
 
     ws.addEventListener('message', (event) => {
       if (event.data instanceof ArrayBuffer) {
-        onAudioChunk(event.data)
+        // TTS audio — play through ttsCtx
+        playAudio(event.data)
         return
       }
       try {
@@ -132,6 +137,7 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
         if (payload.type === 'ConversationText') {
           onTranscript(payload.content, payload.role === 'agent' ? 'luma' : 'user')
         } else if (payload.type === 'AgentStartedSpeaking') {
+          ttsStartTimeRef.current = 0 // reset schedule for new utterance
           onAgentSpeaking?.()
         } else if (payload.type === 'Error') {
           onError(payload.description ?? 'Deepgram error')
@@ -147,6 +153,40 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
       if (!intentionallyClosed) onError('WebSocket connection error')
     })
 
+    function playAudio(data: ArrayBuffer) {
+      const ctx = ttsCtxRef.current
+      if (!ctx) return
+
+      const int16 = new Int16Array(data)
+      if (int16.length === 0) return
+
+      const buffer = ctx.createBuffer(1, int16.length, 16000)
+      const channelData = buffer.getChannelData(0)
+      for (let i = 0; i < int16.length; i++) {
+        channelData[i] = int16[i] / 32768
+      }
+
+      const source = ctx.createBufferSource()
+      source.buffer = buffer
+      source.connect(ctx.destination)
+
+      const now = ctx.currentTime
+      if (ttsStartTimeRef.current < now) {
+        ttsStartTimeRef.current = now
+      }
+
+      source.addEventListener('ended', () => {
+        scheduledSourcesRef.current.delete(source)
+        if (scheduledSourcesRef.current.size === 0) {
+          onAgentDoneSpeaking?.()
+        }
+      })
+
+      source.start(ttsStartTimeRef.current)
+      ttsStartTimeRef.current += buffer.duration
+      scheduledSourcesRef.current.add(source)
+    }
+
     return () => {
       intentionallyClosed = true
       ws.close()
@@ -154,17 +194,21 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
 
       processorRef.current?.disconnect()
       processorRef.current = null
+      sourceNodeRef.current = null
 
-      audioCtxRef.current?.close()
-      audioCtxRef.current = null
+      micCtxRef.current?.close()
+      micCtxRef.current = null
+
+      ttsCtxRef.current?.close()
+      ttsCtxRef.current = null
 
       streamRef.current?.getTracks().forEach((t) => t.stop())
       streamRef.current = null
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps — systemPrompt is intentionally captured at mount only; changing it would require a new session
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabled, sessionId])
 
-  // Mute/unmute by disconnecting/reconnecting the source→processor chain
+  // Mute/unmute by disconnecting/reconnecting source→processor
   useEffect(() => {
     const source = sourceNodeRef.current
     const processor = processorRef.current

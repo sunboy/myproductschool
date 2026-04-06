@@ -75,9 +75,6 @@ export default function SessionPage({
   const [isEnding, setIsEnding] = useState(false)
 
   const eventSourceRef = useRef<EventSource | null>(null)
-  const audioCtxRef = useRef<AudioContext | null>(null)
-  const analyserRef = useRef<AnalyserNode | null>(null)
-  const nextPlayTimeRef = useRef<number>(0)
   const lastSignalTurnIndexRef = useRef<number>(-1)
 
   // Timer
@@ -202,50 +199,10 @@ export default function SessionPage({
 
   const handleAgentSpeaking = useCallback(() => {
     setLumaState('speaking')
-    // Reset audio queue for new utterance
-    nextPlayTimeRef.current = 0
   }, [])
 
-  const handleAudioChunk = useCallback((buffer: ArrayBuffer) => {
-    if (IS_MOCK) return
-
-    if (!audioCtxRef.current) {
-      // Use browser's default sample rate for smooth playback
-      const ctx = new AudioContext()
-      const analyser = ctx.createAnalyser()
-      analyser.fftSize = 256
-      analyser.smoothingTimeConstant = 0.8
-      analyser.connect(ctx.destination)
-      audioCtxRef.current = ctx
-      analyserRef.current = analyser
-    }
-
-    const ctx = audioCtxRef.current
-    const analyser = analyserRef.current
-    if (!analyser) return
-
-    // Deepgram sends raw linear16 PCM at 16kHz — convert to float32
-    const int16 = new Int16Array(buffer)
-    const float32 = new Float32Array(int16.length)
-    for (let i = 0; i < int16.length; i++) {
-      float32[i] = int16[i] / 0x8000
-    }
-
-    // Create buffer at 16kHz source rate — browser resamples to output rate
-    const audioBuffer = ctx.createBuffer(1, float32.length, 16000)
-    audioBuffer.getChannelData(0).set(float32)
-
-    // Schedule chunks sequentially to avoid overlap/gaps
-    const now = ctx.currentTime
-    const startTime = Math.max(now, nextPlayTimeRef.current)
-    const duration = float32.length / 16000
-
-    const source = ctx.createBufferSource()
-    source.buffer = audioBuffer
-    source.connect(analyser)
-    source.start(startTime)
-
-    nextPlayTimeRef.current = startTime + duration
+  const handleAgentDoneSpeaking = useCallback(() => {
+    setLumaState('listening')
   }, [])
 
   const handleConnected = useCallback(() => {
@@ -320,7 +277,6 @@ export default function SessionPage({
     setInterviewPhase('ended')
 
     eventSourceRef.current?.close()
-    audioCtxRef.current?.close().catch(() => {})
 
     if (IS_MOCK) {
       router.push(`/live-interviews/${sessionId}/debrief`)
@@ -470,7 +426,6 @@ export default function SessionPage({
           <div className="md:w-2/3">
             <LumaAvatar
               state={lumaState}
-              audioAnalyser={analyserRef.current}
               className="h-full min-h-[200px] bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl"
             />
           </div>
@@ -524,8 +479,8 @@ export default function SessionPage({
         systemPrompt={systemPrompt}
         isMuted={isMuted}
         onTranscript={handleTranscript}
-        onAudioChunk={handleAudioChunk}
         onAgentSpeaking={handleAgentSpeaking}
+        onAgentDoneSpeaking={handleAgentDoneSpeaking}
         onConnected={handleConnected}
         onError={handleVoiceError}
         disabled={IS_MOCK || interviewPhase !== 'active'}
