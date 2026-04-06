@@ -10,8 +10,8 @@ export async function GET() {
 
   // Fetch published challenges ordered by difficulty then created_at
   const { data: challenges } = await adminClient
-    .from('challenge_prompts')
-    .select('id, title, difficulty, move_tags, role_tags, domain_id, domains(slug, title)')
+    .from('challenges')
+    .select('id, title, difficulty, move_tags, relevant_roles, domain_id, domains(slug, title)')
     .eq('is_published', true)
     .order('difficulty', { ascending: true })
     .order('created_at', { ascending: true })
@@ -25,15 +25,15 @@ export async function GET() {
     const ids = challenges.map(c => c.id)
     const { data: attempts } = await adminClient
       .from('challenge_attempts')
-      .select('prompt_id, total_score')
+      .select('challenge_id, total_score')
       .eq('user_id', user.id)
-      .in('prompt_id', ids)
+      .in('challenge_id', ids)
       .not('submitted_at', 'is', null)
       .order('total_score', { ascending: false })
 
     for (const a of attempts ?? []) {
-      if (!scoreMap[a.prompt_id] || a.total_score > scoreMap[a.prompt_id]) {
-        scoreMap[a.prompt_id] = a.total_score
+      if (!scoreMap[a.challenge_id] || a.total_score > scoreMap[a.challenge_id]) {
+        scoreMap[a.challenge_id] = a.total_score
       }
     }
   }

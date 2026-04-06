@@ -61,28 +61,39 @@ export async function POST(
     })
   }
 
-  // Free tier daily limit — count today's attempts for this user
-  const today = new Date().toISOString().split('T')[0]
-  const [{ data: subscription }, { count: todayCount }] = await Promise.all([
+  // Daily limit — skip for admins, configurable per user via profile.daily_challenge_limit
+  const [{ data: profile }, { data: subscription }] = await Promise.all([
+    adminClient
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single(),
     adminClient
       .from('subscriptions')
       .select('plan')
       .eq('user_id', userId)
       .eq('status', 'active')
       .maybeSingle(),
-    adminClient
+  ])
+
+  const isAdmin = profile?.role === 'admin'
+  const isFreeTier = !subscription || subscription.plan === 'free'
+
+  if (!isAdmin && isFreeTier) {
+    const dailyLimit = (profile?.daily_challenge_limit as number | undefined) ?? 3
+    const today = new Date().toISOString().split('T')[0]
+    const { count: todayCount } = await adminClient
       .from('challenge_attempts')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
-      .gte('started_at', today),
-  ])
+      .gte('started_at', today)
 
-  const isFreeTier = !subscription || subscription.plan === 'free'
-  if (isFreeTier && (todayCount ?? 0) >= 3) {
-    return NextResponse.json(
-      { error: 'Daily limit reached', limit: 3 },
-      { status: 403 }
-    )
+    if ((todayCount ?? 0) >= dailyLimit) {
+      return NextResponse.json(
+        { error: 'Daily limit reached', limit: dailyLimit },
+        { status: 403 }
+      )
+    }
   }
 
   // Create new attempt

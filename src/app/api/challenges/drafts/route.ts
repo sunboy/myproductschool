@@ -26,10 +26,10 @@ export async function GET(req: NextRequest) {
     .from('challenge_attempts')
     .select(`
       id,
-      prompt_id,
+      challenge_id,
       steps_completed,
       created_at,
-      challenge_prompts!inner(
+      challenges!inner(
         id,
         title
       )
@@ -50,16 +50,16 @@ export async function GET(req: NextRequest) {
 
   const result = drafts.map((d: {
     id: string
-    prompt_id: string
+    challenge_id: string
     steps_completed: number | null
     created_at: string
-    challenge_prompts: { id: string; title: string } | { id: string; title: string }[]
+    challenges: { id: string; title: string } | { id: string; title: string }[]
   }) => {
     // Supabase inner join can return object or array depending on client version
-    const cp = Array.isArray(d.challenge_prompts) ? d.challenge_prompts[0] : d.challenge_prompts
+    const cp = Array.isArray(d.challenges) ? d.challenges[0] : d.challenges
     return {
       id: d.id,
-      challenge_id: d.prompt_id,
+      challenge_id: d.challenge_id,
       challenge_title: cp?.title ?? 'Untitled Challenge',
       steps_completed: d.steps_completed ?? 1,
       created_at: d.created_at,

@@ -16,7 +16,7 @@ const DIFFICULTIES: Array<{ id: LearnDifficulty | 'all'; label: string }> = [
 
 function ModuleCard({ module }: { module: LearnModuleWithProgress }) {
   return (
-    <Link href={`/learn/${module.slug}`} className="flex flex-col gap-3 bg-surface-container rounded-xl p-5 hover:bg-surface-container-high transition-colors">
+    <Link href={`/explore/modules/${module.slug}`} className="flex flex-col gap-3 bg-surface-container rounded-xl p-5 hover:bg-surface-container-high transition-colors">
       <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: (module.cover_color ?? '#4a7c59') + '33' }}>
         <span className="material-symbols-outlined text-xl" style={{ color: module.cover_color ?? '#4a7c59', fontVariationSettings: "'FILL' 0" }}>auto_stories</span>
       </div>
@@ -47,7 +47,7 @@ export default function ModulesPage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-6">
       <div className="flex items-center gap-2 mb-5 font-label text-xs text-on-surface-variant">
-        <Link href="/learn" className="hover:text-primary transition-colors">Learn</Link>
+        <Link href="/explore" className="hover:text-primary transition-colors">Explore</Link>
         <span>/</span>
         <span className="text-on-surface font-bold">Modules</span>
       </div>

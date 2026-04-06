@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
 
   const adminClient = createAdminClient()
   let query = adminClient
-    .from('challenge_prompts')
+    .from('challenges')
     .select('id', { count: 'exact', head: true })
     .eq('is_published', true)
 

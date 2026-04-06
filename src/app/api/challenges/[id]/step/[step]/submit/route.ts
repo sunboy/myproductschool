@@ -61,7 +61,7 @@ export async function POST(
 
   // Verify attempt ownership
   const { data: attempt, error: attemptError } = await adminClient
-    .from('challenge_attempts_v2')
+    .from('challenge_attempts')
     .select('id, user_id, status, current_step, current_question_sequence')
     .eq('id', attempt_id)
     .eq('user_id', user.id)
@@ -219,7 +219,7 @@ export async function POST(
   // ── Update current_question_sequence ─────────────────────
 
   await adminClient
-    .from('challenge_attempts_v2')
+    .from('challenge_attempts')
     .update({ current_question_sequence: (attempt.current_question_sequence ?? 0) + 1 })
     .eq('id', attempt_id)
 
@@ -309,7 +309,7 @@ export async function POST(
       })
 
       await adminClient
-        .from('challenge_attempts_v2')
+        .from('challenge_attempts')
         .update({
           current_step: 'done',
           status: 'completed',
@@ -319,7 +319,7 @@ export async function POST(
         .eq('id', attempt_id)
     } else {
       await adminClient
-        .from('challenge_attempts_v2')
+        .from('challenge_attempts')
         .update({ current_step: next })
         .eq('id', attempt_id)
     }

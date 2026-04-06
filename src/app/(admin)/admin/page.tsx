@@ -16,13 +16,13 @@ async function getAdminStats() {
     admin.from('challenge_attempts').select('*', { count: 'exact', head: true }),
     admin.from('challenge_attempts').select('score').not('score', 'is', null),
     admin
-      .from('challenge_prompts')
+      .from('challenges')
       .select('id, title, paradigm, difficulty, is_published')
       .order('created_at', { ascending: false })
       .limit(50),
     admin
       .from('challenge_attempts')
-      .select('id, user_id, prompt_id, score, submitted_at, challenge_prompts(title)')
+      .select('id, user_id, challenge_id, score, submitted_at, challenges(title)')
       .not('submitted_at', 'is', null)
       .order('submitted_at', { ascending: false })
       .limit(20),
@@ -47,11 +47,11 @@ async function getAdminStats() {
   // Attempt counts per challenge
   const { data: attemptCounts } = await admin
     .from('challenge_attempts')
-    .select('prompt_id')
+    .select('challenge_id')
 
   const countMap: Record<string, number> = {}
   for (const a of (attemptCounts ?? [])) {
-    countMap[a.prompt_id] = (countMap[a.prompt_id] ?? 0) + 1
+    countMap[a.challenge_id] = (countMap[a.challenge_id] ?? 0) + 1
   }
 
   return {
@@ -160,12 +160,12 @@ export default async function AdminPage() {
                 user_id: string
                 score: number | null
                 submitted_at: string | null
-                challenge_prompts: { title: string }[] | null
+                challenges: { title: string }[] | null
               }) => (
                 <tr key={a.id} className="hover:bg-surface-container-high transition-colors">
                   <td className="px-4 py-3 text-on-surface-variant font-mono text-xs">{a.user_id.slice(0, 8)}…</td>
                   <td className="px-4 py-3 text-on-surface max-w-xs truncate">
-                    {Array.isArray(a.challenge_prompts) ? a.challenge_prompts[0]?.title : (a.challenge_prompts as { title: string } | null)?.title ?? '—'}
+                    {Array.isArray(a.challenges) ? a.challenges[0]?.title : (a.challenges as { title: string } | null)?.title ?? '—'}
                   </td>
                   <td className="px-4 py-3">
                     {a.score != null ? (

@@ -30,7 +30,7 @@ export function QuickTakeCard({ prompt, challengeId, lumaContext }: QuickTakeCar
       )}
 
       <Link
-        href={`/challenges/${challengeId}?mode=quick`}
+        href={`/workspace/challenges/${challengeId}?mode=quick`}
         className="self-start bg-on-primary text-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity"
       >
         Start Quick Take

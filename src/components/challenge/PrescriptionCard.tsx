@@ -16,7 +16,7 @@ const MODE_CONFIG: Record<string, { label: string; icon: string; badgeClass: str
 
 export function PrescriptionCard({ mode, challengeTitle, challengeSlug, reason }: PrescriptionCardProps) {
   const config = MODE_CONFIG[mode] ?? MODE_CONFIG.live
-  const href = challengeSlug ? `/challenges/${challengeSlug}?mode=${mode}` : '/challenges'
+  const href = challengeSlug ? `/workspace/challenges/${challengeSlug}?mode=${mode}` : '/challenges'
 
   return (
     <>

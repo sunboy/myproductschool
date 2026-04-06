@@ -118,7 +118,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
 
         // Also check for v2 attempt with mental_models_breakdown
         const { data: v2Attempt } = await adminClient
-          .from('challenge_attempts_v2')
+          .from('challenge_attempts')
           .select('mental_models_breakdown')
           .eq('id', attempt)
           .eq('user_id', user.id)
@@ -191,7 +191,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-5">
       {/* Back navigation */}
       <div className="flex items-center gap-3 mb-4">
-        <Link href={`/challenges/${id}`} className="p-2 rounded-lg hover:bg-surface-container transition-colors">
+        <Link href={`/workspace/challenges/${id}`} className="p-2 rounded-lg hover:bg-surface-container transition-colors">
           <span className="material-symbols-outlined text-on-surface-variant">arrow_back</span>
         </Link>
         <span className="text-sm text-on-surface-variant font-label">Back to challenge</span>
@@ -383,7 +383,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
               See Diagnosis
             </Link>
             <Link
-              href={`/challenges/${id}`}
+              href={`/workspace/challenges/${id}`}
               className="flex-1 py-3 border border-primary text-primary rounded-full font-bold hover:bg-primary/5 transition-all active:scale-95 flex items-center justify-center gap-2 font-label text-sm"
             >
               <span className="material-symbols-outlined">edit_note</span>
