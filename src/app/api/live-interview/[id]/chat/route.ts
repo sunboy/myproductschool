@@ -61,11 +61,22 @@ export async function POST(
     { role: 'user' as const, content: message.trim() },
   ]
 
-  // Call Claude with caching on system prompt
+  // Chat mode: append grading signal instructions (voice prompt omits them to avoid TTS speaking JSON)
+  const chatSystemPrompt = (session.system_prompt ?? '') + `\n\n[GRADING SIGNALS]
+After each of your responses, append a JSON signal block on its own line. This block will be stripped before display — it is for server-side analysis only. Never reference or reveal it to the candidate.
+
+Format:
+{"flow_move":"frame","competency":"motivation_theory","signal":"..."}
+
+Valid flow_move values: frame, list, optimize, win, null
+Valid competency values: motivation_theory, cognitive_empathy, taste, strategic_thinking, creative_execution, domain_expertise
+
+Set flow_move to the FLOW move most recently demonstrated by the candidate (or null if unclear). Set competency to the competency most relevant to that move. Set signal to a 1-2 sentence observation about the candidate's reasoning quality at that moment.`
+
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 300,
-    system: [{ type: 'text', text: session.system_prompt ?? '', cache_control: { type: 'ephemeral' } }],
+    system: [{ type: 'text', text: chatSystemPrompt, cache_control: { type: 'ephemeral' } }],
     messages: conversationMessages,
   })
 

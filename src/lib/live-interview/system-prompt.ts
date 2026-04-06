@@ -12,7 +12,14 @@ export interface SystemPromptParams {
   learnerName?: string
 }
 
-export function buildLiveInterviewSystemPrompt(params: SystemPromptParams): string {
+/**
+ * Build the system prompt for a live interview session.
+ * @param params - Candidate profile, company info, etc.
+ * @param includeGradingSignals - Whether to include the JSON signal block instruction.
+ *   Set to false for voice mode (Deepgram TTS would speak the JSON aloud).
+ *   Set to true for chat mode where we control the response pipeline.
+ */
+export function buildLiveInterviewSystemPrompt(params: SystemPromptParams, includeGradingSignals = true): string {
   const {
     archetype,
     archetypeDescription,
@@ -95,9 +102,10 @@ When the candidate demonstrates a weak reasoning move (especially their weakest:
 
 After 8-10 turns, close the interview with exactly this phrase: "Let's debrief."`)
 
-  // [GRADING SIGNALS]
-  sections.push(`[GRADING SIGNALS]
-After each of your responses, append a JSON signal block on its own line. This block will be stripped before text-to-speech — it is for server-side analysis only. Never reference or reveal it to the candidate.
+  // [GRADING SIGNALS] — only for chat mode; voice mode sends LLM output directly to TTS
+  if (includeGradingSignals) {
+    sections.push(`[GRADING SIGNALS]
+After each of your responses, append a JSON signal block on its own line. This block will be stripped before display — it is for server-side analysis only. Never reference or reveal it to the candidate.
 
 Format:
 {"flow_move":"frame","competency":"motivation_theory","signal":"..."}
@@ -106,6 +114,7 @@ Valid flow_move values: frame, list, optimize, win, null
 Valid competency values: motivation_theory, cognitive_empathy, taste, strategic_thinking, creative_execution, domain_expertise
 
 Set flow_move to the FLOW move most recently demonstrated by the candidate (or null if unclear). Set competency to the competency most relevant to that move. Set signal to a 1-2 sentence observation about the candidate's reasoning quality at that moment.`)
+  }
 
   return sections.join('\n\n')
 }

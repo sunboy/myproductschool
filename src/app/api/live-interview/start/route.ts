@@ -66,6 +66,7 @@ export async function POST(request: Request) {
     // Notes system unavailable — continue without notes
   }
 
+  // Voice mode: exclude grading signals from prompt — Deepgram TTS would speak the JSON aloud
   const systemPrompt = buildLiveInterviewSystemPrompt({
     archetype: profile?.archetype ?? 'Analyst',
     archetypeDescription: profile?.archetype_description ?? '',
@@ -78,7 +79,7 @@ export async function POST(request: Request) {
     personaPrompt: companyRow?.interview_persona_prompt ?? undefined,
     relevantNotes: relevantNotes || undefined,
     learnerName: profile?.display_name ?? undefined,
-  })
+  }, false)
 
   const { data: session } = await adminClient
     .from('live_interview_sessions')
