@@ -194,7 +194,7 @@ export default function SessionPage({
     if (IS_MOCK) return
 
     if (!audioCtxRef.current) {
-      const ctx = new AudioContext()
+      const ctx = new AudioContext({ sampleRate: 16000 })
       const analyser = ctx.createAnalyser()
       analyser.fftSize = 256
       analyser.smoothingTimeConstant = 0.8
@@ -206,15 +206,21 @@ export default function SessionPage({
     const analyser = analyserRef.current
     if (!analyser) return
 
-    ctx.decodeAudioData(buffer.slice(0)).then((decoded) => {
-      const source = ctx.createBufferSource()
-      source.buffer = decoded
-      source.connect(analyser)
-      analyser.connect(ctx.destination)
-      source.start()
-    }).catch(() => {
-      // Ignore decode errors — some chunks may be partial
-    })
+    // Deepgram sends raw linear16 PCM — convert to float32 for Web Audio
+    const int16 = new Int16Array(buffer)
+    const float32 = new Float32Array(int16.length)
+    for (let i = 0; i < int16.length; i++) {
+      float32[i] = int16[i] / 0x8000
+    }
+
+    const audioBuffer = ctx.createBuffer(1, float32.length, 16000)
+    audioBuffer.getChannelData(0).set(float32)
+
+    const source = ctx.createBufferSource()
+    source.buffer = audioBuffer
+    source.connect(analyser)
+    analyser.connect(ctx.destination)
+    source.start()
   }, [])
 
   const handleConnected = useCallback(() => {
