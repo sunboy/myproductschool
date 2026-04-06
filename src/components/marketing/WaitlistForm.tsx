@@ -52,10 +52,20 @@ export function WaitlistForm() {
 
   if (submitted) {
     return (
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md text-center space-y-4">
         <p className={successPanelClass} role="status">
-          You&apos;re in. We&apos;ll be live soon!
+          You&apos;re in!
         </p>
+        <p className="text-sm text-on-surface-variant">
+          While we work hard to make the app live, learn about our groundbreaking framework.
+        </p>
+        <a
+          href="/waitlist-flow"
+          className="inline-flex items-center gap-2 bg-primary text-on-primary rounded-full px-8 py-3 font-label font-semibold hover:bg-primary/90 transition-colors"
+        >
+          Discover FLOW
+          <span className="material-symbols-outlined text-lg">arrow_forward</span>
+        </a>
       </div>
     )
   }
