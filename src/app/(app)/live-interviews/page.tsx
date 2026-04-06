@@ -1,5 +1,6 @@
 import { MOCK_LIVE_INTERVIEW_PERSONAS } from '@/lib/mock-live-interviews'
 import FilteredPersonaGrid from './FilteredPersonaGrid'
+import PastInterviews from './PastInterviews'
 
 async function getPersonas() {
   if (process.env.USE_MOCK_DATA === 'true') {
@@ -51,6 +52,9 @@ export default async function LiveInterviewsPage() {
 
       {/* Filtered grid — client component handles chips + cards */}
       <FilteredPersonaGrid personas={personas} />
+
+      {/* Past completed/abandoned interviews */}
+      <PastInterviews />
     </div>
   )
 }

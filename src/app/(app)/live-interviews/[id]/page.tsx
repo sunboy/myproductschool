@@ -172,6 +172,22 @@ export default function SessionPage({
     }
   }, [sessionId, interviewPhase])
 
+  // Warn before leaving during active interview + beacon to mark abandoned
+  useEffect(() => {
+    if (interviewPhase !== 'active') return
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      navigator.sendBeacon(
+        `/api/live-interview/${sessionId}/end`,
+        new Blob([JSON.stringify({ abandoned: true })], { type: 'application/json' })
+      )
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [interviewPhase, sessionId])
+
   // Deepgram callbacks
   const handleTranscript = useCallback((text: string, role: 'luma' | 'user') => {
     // Strip grading signal JSON from voice responses (can appear on any role)
@@ -195,6 +211,18 @@ export default function SessionPage({
     setTurns((prev) => [...prev, turn])
     setTotalTurns((prev) => prev + 1)
     if (role === 'luma') setLumaState('idle')
+
+    // Detect Luma's closing phrase — auto-end interview after short delay
+    if (role === 'luma' && cleanContent.toLowerCase().includes("let's debrief")) {
+      setTimeout(() => {
+        setIsEnding(true)
+        setInterviewPhase('ended')
+        eventSourceRef.current?.close()
+        fetch(`/api/live-interview/${sessionId}/end`, { method: 'POST' })
+          .then(() => router.push(`/live-interviews/${sessionId}/debrief`))
+          .catch(() => setError('Failed to generate debrief'))
+      }, 2000)
+    }
 
     // Analyze user voice turns for FLOW move — update coverage locally on response
     if (role === 'user' && cleanContent) {
@@ -289,6 +317,7 @@ export default function SessionPage({
   // End interview
   const handleEndInterview = useCallback(async () => {
     if (isEnding) return
+    if (!IS_MOCK && !confirm('End this interview? Luma will generate your debrief.')) return
     setIsEnding(true)
     setInterviewPhase('ended')
 
@@ -308,6 +337,15 @@ export default function SessionPage({
       setInterviewPhase('active')
     }
   }, [sessionId, isEnding, router])
+
+  // Auto-end at turn limit
+  useEffect(() => {
+    if (totalTurns >= 10 && interviewPhase === 'active' && !isEnding) {
+      setError('Turn limit reached — wrapping up the interview.')
+      const timer = setTimeout(() => handleEndInterview(), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [totalTurns, interviewPhase, isEnding, handleEndInterview])
 
   // Both panels show the full conversation — voice and chat are interleaved
   // The `source` tag is kept for potential styling differences

@@ -92,6 +92,7 @@ export default function ProgressPage() {
   const { moves } = useMoveLevels()
   const { profile } = useProfile()
   const [recentAttempts, setRecentAttempts] = useState<RecentAttempt[]>([])
+  const [recentInterviews, setRecentInterviews] = useState<Array<{ id: string; companyName: string; roleId: string; status: string; overallScore: number | null; grade: string | null; durationSeconds: number | null; endedAt: string | null }>>([])
   const [masteryEntries, setMasteryEntries] = useState<MasteryEntry[]>([])
   const [growthSnapshot, setGrowthSnapshot] = useState<GrowthSnapshot | null>(null)
 
@@ -105,6 +106,11 @@ export default function ProgressPage() {
     fetch('/api/challenges/mastery')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (Array.isArray(data)) setMasteryEntries(data) })
+      .catch(() => {})
+    // Fetch recent interview sessions
+    fetch('/api/live-interview/history?limit=3')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.sessions) setRecentInterviews(data.sessions) })
       .catch(() => {})
     // Fetch growth snapshot (first vs latest response comparison)
     fetch('/api/challenges/growth-snapshot')
@@ -299,6 +305,56 @@ export default function ProgressPage() {
             >
               Practice more challenges
             </Link>
+          )}
+        </section>
+
+        {/* Recent Interviews */}
+        <section className="col-span-12 lg:col-span-6 bg-surface-container rounded-xl p-5 border border-outline-variant/30">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-lg">mic</span>
+              <h3 className="text-sm font-bold">Recent Interviews</h3>
+            </div>
+            <Link href="/live-interviews" className="text-xs text-primary hover:underline">View all</Link>
+          </div>
+          {recentInterviews.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              {recentInterviews.map((s) => {
+                const mins = s.durationSeconds ? Math.floor(s.durationSeconds / 60) : 0
+                const secs = s.durationSeconds ? s.durationSeconds % 60 : 0
+                const duration = s.durationSeconds ? `${mins}:${String(secs).padStart(2, '0')}` : '—'
+                const date = s.endedAt ? new Date(s.endedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''
+                return (
+                  <Link
+                    key={s.id}
+                    href={s.status === 'completed' ? `/live-interviews/${s.id}/debrief` : '#'}
+                    className="flex items-center justify-between p-3 rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-on-surface">{s.companyName}</p>
+                        <p className="text-[11px] text-on-surface-variant">{s.roleId} · {duration} · {date}</p>
+                      </div>
+                    </div>
+                    {s.status === 'completed' && s.overallScore != null ? (
+                      <span className="text-xs font-bold text-primary bg-primary-fixed rounded-full px-2 py-0.5">
+                        {s.overallScore}
+                      </span>
+                    ) : s.status === 'abandoned' ? (
+                      <span className="text-[10px] font-semibold text-on-surface-variant bg-surface-container-highest rounded-full px-2 py-0.5">
+                        Incomplete
+                      </span>
+                    ) : null}
+                  </Link>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-6 gap-2 text-center">
+              <span className="material-symbols-outlined text-2xl text-on-surface-variant">mic</span>
+              <p className="text-sm text-on-surface-variant">No interviews yet</p>
+              <Link href="/live-interviews" className="text-xs text-primary hover:underline">Start your first live interview →</Link>
+            </div>
           )}
         </section>
 

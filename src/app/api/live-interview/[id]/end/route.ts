@@ -13,11 +13,28 @@ export async function POST(
     return Response.json({ debriefJson: MOCK_LIVE_DEBRIEF, sessionId: id })
   }
 
+  // Handle abandoned sessions (sent via sendBeacon on tab close)
+  let abandoned = false
+  try {
+    const body = await request.json()
+    abandoned = body?.abandoned === true
+  } catch {
+    // No body or invalid JSON — normal end
+  }
+
+  const adminClient = createAdminClient()
+
+  if (abandoned) {
+    await adminClient
+      .from('live_interview_sessions')
+      .update({ status: 'abandoned', ended_at: new Date().toISOString() })
+      .eq('id', id)
+    return Response.json({ ok: true, abandoned: true })
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return new Response('Unauthorized', { status: 401 })
-
-  const adminClient = createAdminClient()
 
   // Load session + turns in parallel
   const [sessionResult, turnsResult] = await Promise.all([
