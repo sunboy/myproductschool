@@ -46,7 +46,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
             body: JSON.stringify({ display_name: metaName }),
           })
         }
-        router.push('/dashboard')
+        router.push(profile?.onboarding_completed_at ? '/dashboard' : '/onboarding/welcome')
         router.refresh()
       }
     } else {
@@ -61,8 +61,8 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       if (error) {
         setError(error.message)
       } else if (data.session) {
-        // Auto-confirmed (no email verification required in dev)
-        router.push('/dashboard')
+        // Auto-confirmed — new users always start with onboarding
+        router.push('/onboarding/welcome')
         router.refresh()
       } else {
         setSuccess('Check your email to confirm your account. You\'ll start with Luma next.')

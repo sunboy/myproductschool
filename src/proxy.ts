@@ -110,60 +110,29 @@ export async function proxy(request: NextRequest) {
     return supabaseResponse
   }
 
-  // Routes that don't require a completed profile
-  const isAppPublic = APP_PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
-
   if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('onboarding_completed_at')
-      .eq('id', user.id)
-      .single()
-    const onboardingDone = !!profile?.onboarding_completed_at
-
-    // Logged-in users hitting auth pages → redirect to app
+    // Logged-in users hitting auth pages → redirect to dashboard
     if (isAuthRoute) {
-      return NextResponse.redirect(new URL(
-        onboardingDone ? '/dashboard' : '/onboarding/welcome',
-        request.url
-      ))
-    }
-
-    const isOnboarding = pathname.startsWith('/onboarding')
-
-    // Any authenticated route that isn't onboarding requires completed onboarding.
-    // This is a deny-by-default pattern — new routes are automatically covered.
-    if (!isOnboarding && !isAppPublic && !onboardingDone) {
-      return NextResponse.redirect(new URL('/onboarding/welcome', request.url))
-    }
-
-    // Fully onboarded user hitting /onboarding/* → send to dashboard
-    if (isOnboarding && onboardingDone) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
-  }
-
-  // Unauthenticated users on auth pages (login, signup, etc.) → allow through
-  if (!user && isAuthRoute) {
+    // Authenticated users can access all app routes freely.
+    // Onboarding is optional — dashboard shows CalibrationHero for uncalibrated users.
     return supabaseResponse
   }
 
-  // Unauthenticated users on app-public routes (onboarding) → allow through
-  if (!user && isAppPublic) {
+  // Unauthenticated users on auth pages (login, signup, etc.) → allow through
+  if (isAuthRoute) {
+    return supabaseResponse
+  }
+
+  // Unauthenticated users on onboarding pages → allow through
+  const isAppPublic = APP_PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
+  if (isAppPublic) {
     return supabaseResponse
   }
 
   // Unauthenticated users on any other route → redirect to login
-  if (!user) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  // Admin route protection (role check done in page/layout)
-  if (pathname.startsWith('/admin') && !user) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  return supabaseResponse
+  return NextResponse.redirect(new URL('/login', request.url))
 }
 
 export const config = {
