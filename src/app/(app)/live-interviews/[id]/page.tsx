@@ -195,7 +195,16 @@ export default function SessionPage({
     setTurns((prev) => [...prev, turn])
     setTotalTurns((prev) => prev + 1)
     if (role === 'luma') setLumaState('idle')
-  }, [])
+
+    // Fire-and-forget: analyze user voice turns for FLOW move detection
+    if (role === 'user' && cleanContent) {
+      fetch(`/api/live-interview/${sessionId}/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: cleanContent, role: 'user' }),
+      }).catch(() => {})
+    }
+  }, [sessionId])
 
   const handleAgentSpeaking = useCallback(() => {
     setLumaState('speaking')
