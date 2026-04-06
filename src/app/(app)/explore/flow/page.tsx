@@ -602,9 +602,9 @@ export default function LearnFlowPage() {
       {/* ── Section 1: Hero ─────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-6 py-10">
         <div className="mb-2">
-          <Link href="/learn" className="flex items-center gap-1 text-xs text-on-surface-variant hover:text-primary transition-colors font-label w-fit">
+          <Link href="/explore" className="flex items-center gap-1 text-xs text-on-surface-variant hover:text-primary transition-colors font-label w-fit">
             <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 0" }}>arrow_back</span>
-            Learn
+            Explore
           </Link>
         </div>
 

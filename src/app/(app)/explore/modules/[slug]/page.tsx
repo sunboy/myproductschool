@@ -262,7 +262,7 @@ function AfterThisModule({ currentSlug }: { currentSlug: string }) {
       {nextModules.map(nm => (
         <Link
           key={nm.slug}
-          href={`/learn/${nm.slug}`}
+          href={`/explore/modules/${nm.slug}`}
           className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-surface-container-high transition-colors"
         >
           <div className="w-6 h-6 rounded-md flex-shrink-0" style={{ background: nm.cover_color }} />
@@ -302,7 +302,7 @@ function ModulePageInner({ slug }: { slug: string }) {
 
   const handleSelectChapter = (chSlug: string) => {
     setActiveChapterSlug(chSlug)
-    router.replace(`/learn/${slug}?chapter=${chSlug}`, { scroll: false })
+    router.replace(`/explore/modules/${slug}?chapter=${chSlug}`, { scroll: false })
   }
 
   const handleNext = (chSlug: string) => {
@@ -330,7 +330,7 @@ function ModulePageInner({ slug }: { slug: string }) {
     return (
       <div className="p-8">
         <p className="text-error text-sm">{error ?? 'Module not found'}</p>
-        <Link href="/learn" className="text-primary text-sm mt-2 inline-block">← Back to Learn</Link>
+        <Link href="/explore" className="text-primary text-sm mt-2 inline-block">← Back to Explore</Link>
       </div>
     )
   }
@@ -343,7 +343,7 @@ function ModulePageInner({ slug }: { slug: string }) {
       {/* Top breadcrumb bar */}
       <div className="h-11 flex items-center gap-2 px-4 border-b border-outline-variant flex-shrink-0 bg-background">
         <Link
-          href="/learn"
+          href="/explore/modules"
           className="inline-flex items-center gap-1 text-xs font-bold font-label text-on-surface-variant hover:text-on-surface transition-colors"
         >
           <span className="material-symbols-outlined text-sm">arrow_back</span>

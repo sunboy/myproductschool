@@ -12,7 +12,7 @@ export default function ChapterRedirect({
   const router = useRouter()
 
   useEffect(() => {
-    router.replace(`/learn/${slug}?chapter=${chapter}`)
+    router.replace(`/explore/modules/${slug}?chapter=${chapter}`)
   }, [slug, chapter, router])
 
   return null

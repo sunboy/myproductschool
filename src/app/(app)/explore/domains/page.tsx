@@ -7,7 +7,7 @@ export default async function DomainsPage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-6">
       <div className="flex items-center gap-2 mb-5 font-label text-xs text-on-surface-variant">
-        <Link href="/learn" className="hover:text-primary transition-colors">Learn</Link>
+        <Link href="/explore" className="hover:text-primary transition-colors">Explore</Link>
         <span>/</span>
         <span className="text-on-surface font-bold">Domains</span>
       </div>
