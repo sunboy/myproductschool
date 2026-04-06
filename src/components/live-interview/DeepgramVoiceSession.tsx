@@ -109,7 +109,12 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
         }
 
         source.connect(processor)
-        processor.connect(audioCtx.destination)
+        // Connect to a silent GainNode instead of destination — prevents mic
+        // audio from playing through speakers (which causes crackling/feedback)
+        const silentDest = audioCtx.createGain()
+        silentDest.gain.value = 0
+        silentDest.connect(audioCtx.destination)
+        processor.connect(silentDest)
 
         onConnected()
       }).catch((err) => {
