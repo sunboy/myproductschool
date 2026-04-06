@@ -73,6 +73,7 @@ export default function SessionPage({
   const [isVoiceAvailable, setIsVoiceAvailable] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isEnding, setIsEnding] = useState(false)
+  const [showEndConfirm, setShowEndConfirm] = useState(false)
 
   const eventSourceRef = useRef<EventSource | null>(null)
   const lastSignalTurnIndexRef = useRef<number>(-1)
@@ -314,10 +315,15 @@ export default function SessionPage({
     }
   }, [sessionId])
 
-  // End interview
-  const handleEndInterview = useCallback(async () => {
+  // End interview — show confirmation modal first
+  const handleEndInterview = useCallback(() => {
     if (isEnding) return
-    if (!IS_MOCK && !confirm('End this interview? Luma will generate your debrief.')) return
+    setShowEndConfirm(true)
+  }, [isEnding])
+
+  // Confirmed end — actually terminate the session
+  const confirmEndInterview = useCallback(async () => {
+    setShowEndConfirm(false)
     setIsEnding(true)
     setInterviewPhase('ended')
 
@@ -332,11 +338,11 @@ export default function SessionPage({
       await fetch(`/api/live-interview/${sessionId}/end`, { method: 'POST' })
       router.push(`/live-interviews/${sessionId}/debrief`)
     } catch {
-      setError('Failed to end interview')
+      setError('Failed to generate debrief')
       setIsEnding(false)
       setInterviewPhase('active')
     }
-  }, [sessionId, isEnding, router])
+  }, [sessionId, router])
 
   // Auto-end at turn limit
   useEffect(() => {
@@ -357,6 +363,40 @@ export default function SessionPage({
         <div className="flex flex-col items-center gap-4">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
           <p className="text-white/60 font-body text-sm">Starting interview session...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Generating debrief screen ──
+  if (interviewPhase === 'ended') {
+    return (
+      <div className="min-h-screen bg-inverse-surface flex items-center justify-center">
+        <div className="flex flex-col items-center gap-6 max-w-sm text-center px-6">
+          <LumaGlyph size={80} state="reviewing" className="text-primary" />
+          <div className="space-y-2">
+            <h2 className="font-headline text-xl font-bold text-white">Generating your debrief</h2>
+            <p className="font-body text-sm text-white/60 leading-relaxed">
+              Luma is analyzing your interview performance across all four FLOW moves. This usually takes a few seconds.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="h-1 w-24 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: '60%' }} />
+            </div>
+            <span className="text-xs text-white/40 font-label">{timerDisplay}</span>
+          </div>
+          {error && (
+            <div className="rounded-lg bg-error/20 border border-error/30 px-4 py-2 w-full">
+              <p className="font-body text-sm text-error">{error}</p>
+              <button
+                onClick={() => { setError(null); setIsEnding(false); setInterviewPhase('active') }}
+                className="text-xs text-error/80 hover:text-error mt-1 underline"
+              >
+                Return to interview
+              </button>
+            </div>
+          )}
         </div>
       </div>
     )
@@ -539,6 +579,37 @@ export default function SessionPage({
         onError={handleVoiceError}
         disabled={IS_MOCK || interviewPhase !== 'active'}
       />
+
+      {/* End interview confirmation modal */}
+      {showEndConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-surface-container rounded-2xl p-6 max-w-sm mx-4 shadow-lg">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <LumaGlyph size={48} state="reviewing" className="text-primary" />
+              <div>
+                <h3 className="font-headline text-lg font-bold text-on-surface">End this interview?</h3>
+                <p className="font-body text-sm text-on-surface-variant mt-1">
+                  Luma will analyze your performance and generate a detailed debrief.
+                </p>
+              </div>
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => setShowEndConfirm(false)}
+                  className="flex-1 py-2.5 rounded-full border border-outline-variant text-on-surface-variant font-label text-sm font-semibold hover:bg-surface-container-high transition-colors"
+                >
+                  Keep going
+                </button>
+                <button
+                  onClick={confirmEndInterview}
+                  className="flex-1 py-2.5 rounded-full bg-primary text-on-primary font-label text-sm font-semibold hover:opacity-90 transition-opacity"
+                >
+                  End &amp; debrief
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
