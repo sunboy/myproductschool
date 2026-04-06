@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@amplitude/analytics-browser": "^1.14.0",
     "@anthropic-ai/sdk": "^0.80.0",
     "@react-three/drei": "^9.108.4",
     "@react-three/fiber": "^8.16.8",

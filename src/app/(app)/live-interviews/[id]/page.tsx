@@ -196,12 +196,19 @@ export default function SessionPage({
     setTotalTurns((prev) => prev + 1)
     if (role === 'luma') setLumaState('idle')
 
-    // Fire-and-forget: analyze user voice turns for FLOW move detection
+    // Analyze user voice turns for FLOW move — update coverage locally on response
     if (role === 'user' && cleanContent) {
       fetch(`/api/live-interview/${sessionId}/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: cleanContent, role: 'user' }),
+      }).then((res) => res.ok ? res.json() : null).then((data) => {
+        if (data?.flowMove) {
+          setFlowCoverage((prev) => ({
+            ...prev,
+            [data.flowMove]: Math.min(1.0, (prev[data.flowMove as keyof typeof prev] ?? 0) + 0.15),
+          }))
+        }
       }).catch(() => {})
     }
   }, [sessionId])
