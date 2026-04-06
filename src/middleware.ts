@@ -5,9 +5,9 @@ import { IS_MOCK } from '@/lib/mock'
 // ── Pre-launch gate ──────────────────────────────────────────
 // Set to true to restrict all routes to the waitlist page.
 // Flip to false (or remove the block) when ready to launch.
-const PRE_LAUNCH = true
+const PRE_LAUNCH = false
 
-const LAUNCH_ALLOWED = ['/waitlist', '/waitlist-b', '/waitlist-flow', '/api/waitlist', '/luma-preview']
+const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist', '/luma-preview']
 
 // ── Post-launch route config ─────────────────────────────────
 // Marketing / auth pages — accessible without any session.
@@ -28,34 +28,46 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // ── A/B split for root → waitlist variants ──────────────
+  // Assign a stable variant via cookie so the same visitor always
+  // sees the same page. 50/50 split between /waitlist and /waitlist-b.
+  if (pathname === '/') {
+    const existing = request.cookies.get('ab_waitlist')?.value
+    const variant = existing === 'a' || existing === 'b'
+      ? existing
+      : Math.random() < 0.5 ? 'a' : 'b'
+
+    const response = NextResponse.next({ request })
+    response.headers.set('x-ab-waitlist', variant)
+    if (!existing) {
+      response.cookies.set('ab_waitlist', variant, {
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+        path: '/',
+        sameSite: 'lax',
+      })
+    }
+    return response
+  }
+
   // ── Pre-launch: only waitlist + its API are accessible ──
   if (PRE_LAUNCH) {
     const isAllowed = LAUNCH_ALLOWED.some(r => pathname === r || pathname.startsWith(r + '/'))
       || pathname.startsWith('/api/waitlist')
     if (!isAllowed) {
-      return NextResponse.redirect(new URL('/waitlist-b', request.url))
+      return NextResponse.redirect(new URL('/waitlist', request.url))
     }
     return NextResponse.next()
   }
 
-  // ── Marketing & auth pages classification ──
-  const WAITLIST_ROUTES = ['/waitlist', '/waitlist-b', '/waitlist-flow']
-  const isRoot      = pathname === '/'
+  // ── Marketing & auth pages: always public, skip Supabase ──
   const isMarketing = MARKETING_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
-  const isWaitlist  = WAITLIST_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isAuthRoute = AUTH_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isApi       = pathname.startsWith('/api/')
 
-  // Pure marketing routes that never need auth (not / or waitlist which need redirect logic)
-  const isPureMarketing = isMarketing && !isRoot && !isWaitlist
-  if (isPureMarketing || isApi) {
+  if (isMarketing || isApi) {
     return NextResponse.next()
   }
 
-  // ── Single unified Supabase client for all routes that need auth awareness ──
-  // This MUST use the full supabaseResponse + setAll pattern so that token
-  // refresh works correctly. A lightweight client with setAll(){} no-op causes
-  // getUser() / getSession() to return null when the access token needs refreshing.
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -67,51 +79,17 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          // Must set on both request (for downstream server reads) and response (to send to browser)
-          cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set(name, value)
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
-          })
+          )
         },
       },
     }
   )
 
-  const { data: { user }, error: userError } = await supabase.auth.getUser()
-  if (isRoot || pathname.startsWith('/dashboard')) {
-    console.log('[mw]', pathname, 'cookies:', request.cookies.getAll().length, 'hasAuth:', request.cookies.getAll().some(c => c.name.includes('auth')), 'user:', user?.email ?? null, 'err:', userError?.message ?? null)
-  }
-
-  // ── A/B split for root → waitlist variants ──────────────
-  // Authenticated users visiting / go straight to dashboard.
-  // Unauthenticated visitors get a stable 50/50 split between waitlist variants.
-  if (isRoot) {
-    if (user) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
-    const existing = request.cookies.get('ab_waitlist')?.value
-    const variant = existing === 'a' || existing === 'b'
-      ? existing
-      : Math.random() < 0.5 ? 'a' : 'b'
-
-    supabaseResponse.headers.set('x-ab-waitlist', variant)
-    if (!existing) {
-      supabaseResponse.cookies.set('ab_waitlist', variant, {
-        maxAge: 60 * 60 * 24 * 30, // 30 days
-        path: '/',
-        sameSite: 'lax',
-      })
-    }
-    return supabaseResponse
-  }
-
-  // ── Waitlist routes: redirect logged-in users to dashboard ──
-  if (isWaitlist) {
-    if (user) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
-    return supabaseResponse
-  }
+  const { data: { user } } = await supabase.auth.getUser()
 
   // Routes that don't require a completed profile
   const isAppPublic = APP_PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
@@ -140,11 +118,6 @@ export async function middleware(request: NextRequest) {
 
     if (isAppRoute && !isOnboarding && !onboardingDone) {
       return NextResponse.redirect(new URL('/onboarding/welcome', request.url))
-    }
-
-    // Fully onboarded user hitting /onboarding/* → send to dashboard
-    if (isOnboarding && onboardingDone) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
     }
   }
 
