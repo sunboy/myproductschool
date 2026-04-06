@@ -66,7 +66,7 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
             provider: { type: 'deepgram', model: 'aura-2-asteria-en' },
           },
           think: {
-            provider: { type: 'open_ai', model: 'gpt-4o-mini' },
+            provider: { type: 'anthropic', model: 'claude-sonnet-4-6', temperature: 0.7 },
             prompt: systemPrompt,
           },
         },

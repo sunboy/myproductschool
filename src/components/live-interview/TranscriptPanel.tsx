@@ -19,6 +19,8 @@ export interface TranscriptTurn {
 interface TranscriptPanelProps {
   turns: TranscriptTurn[]
   className?: string
+  /** Show FLOW move coaching chips below Luma turns. Default false — only enable on debrief/review pages. */
+  showCoachingChips?: boolean
 }
 
 const FLOW_LABELS: Record<string, string> = {
@@ -67,7 +69,7 @@ function CoachingChip({ signal }: { signal: CoachingSignal }) {
   )
 }
 
-export default function TranscriptPanel({ turns, className }: TranscriptPanelProps) {
+export default function TranscriptPanel({ turns, className, showCoachingChips = false }: TranscriptPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const lastTurnId = turns[turns.length - 1]?.id
 
@@ -100,7 +102,7 @@ export default function TranscriptPanel({ turns, className }: TranscriptPanelPro
             >
               {turn.content}
             </div>
-            {turn.role === 'luma' && turn.coachingSignal && (
+            {showCoachingChips && turn.role === 'luma' && turn.coachingSignal && (
               <CoachingChip signal={turn.coachingSignal} />
             )}
           </div>

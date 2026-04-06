@@ -61,6 +61,8 @@ export async function POST(
     sessionId: id,
     turns,
     calibrationSnapshot: session.calibration_snapshot ?? { archetype: 'Analyst', moveLevels: {} },
+    scenarioRubric: session.scenario_rubric ?? null,
+    challengeId: session.challenge_id ?? null,
   })
 
   const duration = Math.floor((Date.now() - new Date(session.started_at).getTime()) / 1000)

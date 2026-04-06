@@ -3,9 +3,9 @@
 import { use, useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import LumaAvatar from '@/components/live-interview/LumaAvatar'
+import LumaAvatar, { type LumaAvatarState } from '@/components/live-interview/LumaAvatar'
 import DeepgramVoiceSession from '@/components/live-interview/DeepgramVoiceSession'
-import FlowCoveragePanel from '@/components/live-interview/FlowCoveragePanel'
+// FlowCoveragePanel hidden during active interview — only shown on debrief page
 import TranscriptPanel from '@/components/live-interview/TranscriptPanel'
 import ChatPanel from '@/components/live-interview/ChatPanel'
 import InterviewControls from '@/components/live-interview/InterviewControls'
@@ -48,6 +48,7 @@ export default function SessionPage({
   const [systemPrompt, setSystemPrompt] = useState('')
   const [companyName, setCompanyName] = useState(IS_MOCK ? MOCK_LIVE_SESSION.companyName ?? '' : '')
   const [roleName, setRoleName] = useState(IS_MOCK ? MOCK_LIVE_SESSION.role ?? '' : '')
+  const [scenarioTitle, setScenarioTitle] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [interviewPhase, setInterviewPhase] = useState<InterviewPhase>(IS_MOCK ? 'ready' : 'loading')
   const [interviewStartedAt, setInterviewStartedAt] = useState<number | null>(null)
@@ -66,7 +67,7 @@ export default function SessionPage({
   )
 
   // UI state
-  const [lumaState, setLumaState] = useState<'idle' | 'listening' | 'speaking' | 'thinking'>('idle')
+  const [lumaState, setLumaState] = useState<LumaAvatarState>('idle')
   const [isThinking, setIsThinking] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [isVoiceActive, setIsVoiceActive] = useState(false)
@@ -107,6 +108,7 @@ export default function SessionPage({
         setSystemPrompt(data.systemPrompt ?? '')
         setCompanyName(data.companyName ?? company ?? '')
         setRoleName(data.role ?? roleParam ?? '')
+        setScenarioTitle(data.scenarioTitle ?? null)
         setInterviewPhase('ready')
       } catch (err) {
         if (cancelled) return
@@ -138,6 +140,20 @@ export default function SessionPage({
         const data = JSON.parse(e.data)
         if (data.flowCoverage) setFlowCoverage(data.flowCoverage)
         if (data.totalTurns != null) setTotalTurns(data.totalTurns)
+        // Drive avatar emotional state from grading response
+        if (data.emotionalBeat && data.emotionalBeat !== 'neutral') {
+          const beatToState: Record<string, LumaAvatarState> = {
+            intrigued: 'intrigued',
+            challenging: 'challenging',
+            delighted: 'delighted',
+            concerned: 'thinking',
+          }
+          const mappedState = beatToState[data.emotionalBeat]
+          if (mappedState) {
+            setLumaState(mappedState)
+            setTimeout(() => setLumaState('listening'), 3000)
+          }
+        }
         // Attach latestSignal to the most recent luma voice turn
         if (data.latestSignal?.flowMove && data.latestSignal.turnIndex != null) {
           const signalTurnIndex = data.latestSignal.turnIndex as number
@@ -154,6 +170,17 @@ export default function SessionPage({
               return updated
             })
           }
+        }
+        // Detect session phase 'done' from grading signal
+        if (data.sessionPhase === 'done' && !isEnding) {
+          setTimeout(() => {
+            setIsEnding(true)
+            setInterviewPhase('ended')
+            es.close()
+            fetch(`/api/live-interview/${sessionId}/end`, { method: 'POST' })
+              .then(() => router.push(`/live-interviews/${sessionId}/debrief`))
+              .catch(() => setError('Failed to generate debrief'))
+          }, 2000)
         }
         if (data.done) {
           es.close()
@@ -213,8 +240,10 @@ export default function SessionPage({
     setTotalTurns((prev) => prev + 1)
     if (role === 'luma') setLumaState('idle')
 
-    // Detect Luma's closing phrase — auto-end interview after short delay
-    if (role === 'luma' && cleanContent.toLowerCase().includes("let's debrief")) {
+    // Detect natural session ending — Luma uses varied closing phrases
+    const CLOSING_PHRASES = ["wrap up", "stop here", "covered good ground", "have what i need", "call it", "good session", "shall we stop", "want to stop"]
+    const lower = cleanContent.toLowerCase()
+    if (role === 'luma' && CLOSING_PHRASES.some((phrase) => lower.includes(phrase))) {
       setTimeout(() => {
         setIsEnding(true)
         setInterviewPhase('ended')
@@ -273,9 +302,8 @@ export default function SessionPage({
         const lumaReply: TranscriptTurn = {
           id: crypto.randomUUID(),
           role: 'luma',
-          content: "That's interesting — can you say more about that?",
+          content: "Hold on — you jumped straight to a solution. What's the actual problem here?",
           source: 'chat',
-          coachingSignal: { flowMove: 'frame', competency: 'cognitive_empathy', signal: 'Good instinct to explore the problem space.' },
         }
         setTurns((prev) => [...prev, lumaReply])
         setTotalTurns((prev) => prev + 1)
@@ -292,13 +320,12 @@ export default function SessionPage({
         body: JSON.stringify({ message: text }),
       })
       if (res.ok) {
-        const { reply, signal } = await res.json()
+        const { reply } = await res.json()
         const lumaTurn: TranscriptTurn = {
           id: crypto.randomUUID(),
           role: 'luma',
           content: reply,
           source: 'chat',
-          coachingSignal: signal ?? undefined,
         }
         setTurns((prev) => [...prev, lumaTurn])
         setTotalTurns((prev) => prev + 1)
@@ -344,14 +371,8 @@ export default function SessionPage({
     }
   }, [sessionId, router])
 
-  // Auto-end at turn limit
-  useEffect(() => {
-    if (totalTurns >= 10 && interviewPhase === 'active' && !isEnding) {
-      setError('Turn limit reached — wrapping up the interview.')
-      const timer = setTimeout(() => handleEndInterview(), 3000)
-      return () => clearTimeout(timer)
-    }
-  }, [totalTurns, interviewPhase, isEnding, handleEndInterview])
+  // Removed: hard turn limit. Interviews end naturally via time-based soft signal
+  // or when Luma/user decides to wrap up.
 
   // Both panels show the full conversation — voice and chat are interleaved
   // The `source` tag is kept for potential styling differences
@@ -487,6 +508,11 @@ export default function SessionPage({
               {companyName}
             </span>
             <span className="font-label text-sm text-white/60">{roleName} Round</span>
+            {scenarioTitle && (
+              <span className="rounded-full bg-primary/20 px-3 py-1 font-label text-xs text-primary/80 hidden md:inline">
+                {scenarioTitle}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -498,10 +524,6 @@ export default function SessionPage({
               : 'bg-white/10 text-white/80'
           )}>
             {timerDisplay}
-          </span>
-          {/* Turn counter */}
-          <span className="rounded-full bg-white/10 px-3 py-1 font-label text-xs text-white/60">
-            Turn: {totalTurns} / 10
           </span>
         </div>
       </div>
@@ -515,24 +537,12 @@ export default function SessionPage({
 
       {/* Main content */}
       <div className="flex-1 flex flex-col gap-4 px-4 pb-4 md:px-6">
-        {/* Top row: Avatar + Flow Coverage */}
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="md:w-2/3">
-            <LumaAvatar
-              state={lumaState}
-              className="h-full min-h-[200px] bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl"
-            />
-          </div>
-
-          <div className="md:w-1/3">
-            <div className="rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 p-5 h-full">
-              <FlowCoveragePanel
-                flowCoverage={flowCoverage}
-                totalTurns={totalTurns}
-                className="[&_span]:text-white/80 [&_.text-on-surface]:text-white/80 [&_.text-on-surface-variant]:text-white/50 [&_.bg-surface-container]:bg-white/10 [&_.bg-surface-container-high]:bg-white/5"
-              />
-            </div>
-          </div>
+        {/* Avatar — full width during active interview */}
+        <div>
+          <LumaAvatar
+            state={lumaState}
+            className="h-full min-h-[200px] bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl"
+          />
         </div>
 
         {/* Transcript — voice turns only */}

@@ -1,6 +1,6 @@
 'use client'
 
-export type LumaState = 'idle' | 'listening' | 'reviewing' | 'speaking' | 'celebrating' | 'none'
+export type LumaState = 'idle' | 'listening' | 'reviewing' | 'speaking' | 'celebrating' | 'intrigued' | 'challenging' | 'delighted' | 'none'
 
 interface LumaGlyphProps {
   size?: number
@@ -215,6 +215,42 @@ export function LumaGlyph({
             </path>
           </>
         )}
+
+        {/* Intrigued: wide eyes, slight head tilt via parent transform */}
+        {state === 'intrigued' && (
+          <>
+            <circle cx="25" cy="34" r="3.5" fill="#4a7c59">
+              <animate attributeName="r" values="3;3.5;3.5" dur="0.4s" fill="freeze" />
+            </circle>
+            <circle cx="39" cy="34" r="3.5" fill="#4a7c59">
+              <animate attributeName="r" values="3;3.5;3.5" dur="0.4s" fill="freeze" />
+            </circle>
+            <circle cx="26" cy="33" r="1.3" fill="white" opacity="0.95" />
+            <circle cx="40" cy="33" r="1.3" fill="white" opacity="0.95" />
+          </>
+        )}
+
+        {/* Challenging: narrowed eyes, leaning forward */}
+        {state === 'challenging' && (
+          <>
+            <ellipse cx="25" cy="36" rx="3.5" ry="1.8" fill="#4a7c59">
+              <animate attributeName="ry" values="2.5;1.8;1.8" dur="0.3s" fill="freeze" />
+            </ellipse>
+            <ellipse cx="39" cy="36" rx="3.5" ry="1.8" fill="#4a7c59">
+              <animate attributeName="ry" values="2.5;1.8;1.8" dur="0.3s" fill="freeze" />
+            </ellipse>
+            <circle cx="26" cy="35.5" r="0.8" fill="white" opacity="0.8" />
+            <circle cx="40" cy="35.5" r="0.8" fill="white" opacity="0.8" />
+          </>
+        )}
+
+        {/* Delighted: happy arched eyes + sparkle */}
+        {state === 'delighted' && (
+          <>
+            <path d="M22 36 Q25 32 28 36" stroke="#4a7c59" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+            <path d="M36 36 Q39 32 42 36" stroke="#4a7c59" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+          </>
+        )}
       </g>
 
       {/* ── Mouth ── */}
@@ -260,6 +296,23 @@ export function LumaGlyph({
               repeatCount="indefinite"
             />
           </path>
+        )}
+
+        {/* Intrigued: small open O mouth */}
+        {state === 'intrigued' && (
+          <ellipse cx="32" cy="44" rx="2.5" ry="3" fill="#4a7c59" opacity="0.8">
+            <animate attributeName="ry" values="1;3;3" dur="0.3s" fill="freeze" />
+          </ellipse>
+        )}
+
+        {/* Challenging: flat pressed line */}
+        {state === 'challenging' && (
+          <line x1="27" y1="44" x2="37" y2="44" stroke="#4a7c59" strokeWidth="2.5" strokeLinecap="round" />
+        )}
+
+        {/* Delighted: warm smile */}
+        {state === 'delighted' && (
+          <path d="M26 43 Q32 48 38 43" stroke="#4a7c59" strokeWidth="2" strokeLinecap="round" fill="none" />
         )}
       </g>
 
@@ -318,6 +371,43 @@ export function LumaGlyph({
             <animate attributeName="opacity" values="0;0.3;0" dur="4s" begin="1.6s" repeatCount="indefinite" />
             <animate attributeName="y" values="18;12;18" dur="4s" begin="1.6s" repeatCount="indefinite" />
           </text>
+        </g>
+      )}
+
+      {/* ── Intrigued: slight head tilt ── */}
+      {state === 'intrigued' && (
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          values="0 32 38;-3 32 38;-3 32 38"
+          dur="0.4s"
+          fill="freeze"
+        />
+      )}
+
+      {/* ── Challenging: subtle lean forward ── */}
+      {state === 'challenging' && (
+        <animateTransform
+          attributeName="transform"
+          type="translate"
+          values="0,0;0,-1;0,-1"
+          dur="0.3s"
+          fill="freeze"
+        />
+      )}
+
+      {/* ── Delighted: brief sparkles ── */}
+      {state === 'delighted' && (
+        <g>
+          <circle cx="10" cy="24" r="1.5" fill="#c4a66a">
+            <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" />
+          </circle>
+          <circle cx="54" cy="22" r="1.5" fill="#c4a66a">
+            <animate attributeName="opacity" values="0;1;0" dur="1s" begin="0.2s" repeatCount="indefinite" />
+          </circle>
+          <path d="M8 46 L9 49 L12 50 L9 51 L8 54 L7 51 L4 50 L7 49 Z" fill="#8ecf9e" opacity="0.7">
+            <animate attributeName="opacity" values="0;0.7;0" dur="1.2s" begin="0.4s" repeatCount="indefinite" />
+          </path>
         </g>
       )}
 

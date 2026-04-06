@@ -7,9 +7,10 @@ import { cn } from '@/lib/utils'
 interface StartInterviewButtonProps {
   companyId: string
   roleId: string
+  challengeId?: string
 }
 
-export default function StartInterviewButton({ companyId, roleId }: StartInterviewButtonProps) {
+export default function StartInterviewButton({ companyId, roleId, challengeId }: StartInterviewButtonProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
@@ -19,7 +20,7 @@ export default function StartInterviewButton({ companyId, roleId }: StartIntervi
       const res = await fetch('/api/live-interview/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ companyId, roleId }),
+        body: JSON.stringify({ companyId, roleId, challengeId }),
       })
       if (!res.ok) throw new Error('Failed to start interview')
       const { sessionId } = await res.json()

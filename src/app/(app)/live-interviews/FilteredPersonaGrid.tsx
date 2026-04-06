@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import type { LiveInterviewPersona } from '@/lib/mock-live-interviews'
-import StartInterviewButton from './StartInterviewButton'
+import type { ScenarioBrief } from './page'
+import ScenarioPickerSheet from './ScenarioPickerSheet'
 
 const FILTER_ROLES = ['All', 'PM', 'SWE', 'Data Eng', 'ML Eng'] as const
 type FilterRole = typeof FILTER_ROLES[number]
@@ -23,10 +24,12 @@ const DIFFICULTY_LABEL: Record<LiveInterviewPersona['difficulty'], string> = {
 
 interface FilteredPersonaGridProps {
   personas: LiveInterviewPersona[]
+  scenarios?: ScenarioBrief[]
 }
 
-export default function FilteredPersonaGrid({ personas }: FilteredPersonaGridProps) {
+export default function FilteredPersonaGrid({ personas, scenarios = [] }: FilteredPersonaGridProps) {
   const [activeFilter, setActiveFilter] = useState<FilterRole>('All')
+  const [selectedPersona, setSelectedPersona] = useState<LiveInterviewPersona | null>(null)
 
   const filtered = personas.filter(p => matchesFilter(p, activeFilter))
 
@@ -55,6 +58,7 @@ export default function FilteredPersonaGrid({ personas }: FilteredPersonaGridPro
         {filtered.map(persona => (
           <div
             key={persona.slug}
+            onClick={() => setSelectedPersona(persona)}
             className="bg-surface-container rounded-xl p-5 border border-outline-variant hover:border-primary cursor-pointer transition-colors flex flex-col gap-3"
           >
             {/* Company header */}
@@ -88,9 +92,11 @@ export default function FilteredPersonaGrid({ personas }: FilteredPersonaGridPro
                 {DIFFICULTY_LABEL[persona.difficulty]}
               </span>
               <span className="text-xs text-on-surface-variant">~{persona.estimatedMins} min</span>
-              <div className="ml-auto">
-                <StartInterviewButton companyId={persona.companyId} roleId={persona.role} />
-              </div>
+              {scenarios.length > 0 && (
+                <span className="ml-auto text-xs text-primary font-label font-semibold">
+                  Choose →
+                </span>
+              )}
             </div>
           </div>
         ))}
@@ -101,6 +107,17 @@ export default function FilteredPersonaGrid({ personas }: FilteredPersonaGridPro
           </div>
         )}
       </div>
+
+      {/* Scenario picker sheet */}
+      {selectedPersona && (
+        <ScenarioPickerSheet
+          companyId={selectedPersona.companyId}
+          companyName={selectedPersona.companyName}
+          role={selectedPersona.role}
+          scenarios={scenarios}
+          onClose={() => setSelectedPersona(null)}
+        />
+      )}
     </div>
   )
 }

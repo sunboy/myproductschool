@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
+import { buildCoverageNote } from '@/lib/live-interview/system-prompt'
 import Anthropic from '@anthropic-ai/sdk'
 
 export async function POST(
@@ -12,8 +12,7 @@ export async function POST(
   // Mock mode
   if (process.env.USE_MOCK_DATA === 'true') {
     return Response.json({
-      reply: "That's a great observation. Let me push back a little — how would you measure the success of that approach? What metric would tell you it's working?",
-      signal: { flowMove: 'frame', competency: 'motivation_theory', signal: 'Good instinct to question the metric.' },
+      reply: "Hold on — you jumped straight to a solution. What's the actual problem here? If I asked the user, what would they say is broken?",
     })
   }
 
@@ -31,10 +30,10 @@ export async function POST(
 
   const adminClient = createAdminClient()
 
-  // Load session (verify ownership + get system prompt + flow_coverage)
+  // Load session
   const { data: session } = await adminClient
     .from('live_interview_sessions')
-    .select('system_prompt, status, flow_coverage')
+    .select('system_prompt, status, flow_coverage, conversation_memory, started_at, challenge_id')
     .eq('id', id)
     .eq('user_id', user.id)
     .single()
@@ -61,29 +60,47 @@ export async function POST(
     { role: 'user' as const, content: message.trim() },
   ]
 
-  // Chat mode: append grading signal instructions (voice prompt omits them to avoid TTS speaking JSON)
-  const chatSystemPrompt = (session.system_prompt ?? '') + `\n\n[GRADING SIGNALS]
-After each of your responses, append a JSON signal block on its own line. This block will be stripped before display — it is for server-side analysis only. Never reference or reveal it to the candidate.
+  // Build dynamic context to inject alongside the stored system prompt
+  const dynamicContext: string[] = []
 
-Format:
-{"flow_move":"frame","competency":"motivation_theory","signal":"..."}
+  // FLOW coverage steering
+  const flowCoverage = (session.flow_coverage ?? { frame: 0, list: 0, optimize: 0, win: 0 }) as Record<string, number>
+  dynamicContext.push(buildCoverageNote(flowCoverage))
 
-Valid flow_move values: frame, list, optimize, win, null
-Valid competency values: motivation_theory, cognitive_empathy, taste, strategic_thinking, creative_execution, domain_expertise
+  // Conversation memory — salient items from earlier in the interview
+  const memory = (session.conversation_memory ?? []) as string[]
+  if (memory.length > 0) {
+    dynamicContext.push(
+      `[THINGS THE CANDIDATE HAS SAID]\n${memory.map((m) => `- ${m}`).join('\n')}\nReference these when relevant — especially contradictions.`
+    )
+  }
 
-Set flow_move to the FLOW move most recently demonstrated by the candidate (or null if unclear). Set competency to the competency most relevant to that move. Set signal to a 1-2 sentence observation about the candidate's reasoning quality at that moment.`
+  // Time-based soft closing signal
+  if (session.started_at) {
+    const elapsed = (Date.now() - new Date(session.started_at).getTime()) / 1000 / 60
+    if (elapsed >= 20) {
+      dynamicContext.push(
+        `[TIME CHECK] The interview has been going for ${Math.round(elapsed)} minutes. Start looking for a natural closing point when the candidate reaches a good stopping place.`
+      )
+    }
+  }
 
+  const fullSystemPrompt = [
+    session.system_prompt ?? '',
+    ...dynamicContext,
+  ].join('\n\n')
+
+  // Generate Luma's response — no grading signals, pure conversation
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 300,
-    system: [{ type: 'text', text: chatSystemPrompt, cache_control: { type: 'ephemeral' } }],
+    max_tokens: 600,
+    system: [{ type: 'text', text: fullSystemPrompt, cache_control: { type: 'ephemeral' } }],
     messages: conversationMessages,
   })
 
-  const rawContent = response.content[0].type === 'text' ? response.content[0].text : ''
-  const { cleanContent, signal } = parseGradingSignal(rawContent)
+  const reply = response.content[0].type === 'text' ? response.content[0].text : ''
 
-  // Save both turns to DB (with signal on luma turn)
+  // Save both turns to DB
   const { error: insertError } = await adminClient.from('live_interview_turns').insert([
     {
       session_id: id,
@@ -95,9 +112,7 @@ Set flow_move to the FLOW move most recently demonstrated by the candidate (or n
       session_id: id,
       turn_index: nextIndex + 1,
       role: 'luma',
-      content: cleanContent,
-      flow_move_detected: signal?.flowMove || null,
-      competency_signals: signal ? { competency: signal.competency, signal: signal.signal } : null,
+      content: reply,
     },
   ])
 
@@ -106,16 +121,34 @@ Set flow_move to the FLOW move most recently demonstrated by the candidate (or n
     return new Response('Failed to save turn', { status: 500 })
   }
 
-  // Update FLOW coverage on session if a valid flow move was detected
-  if (signal?.flowMove) {
-    const coverage = (session.flow_coverage ?? { frame: 0, list: 0, optimize: 0, win: 0 }) as Record<string, number>
-    const current = coverage[signal.flowMove] ?? 0
-    coverage[signal.flowMove] = Math.min(1.0, current + 0.15)
-    await adminClient
-      .from('live_interview_sessions')
-      .update({ flow_coverage: coverage, total_turns: nextIndex + 2 })
-      .eq('id', id)
-  }
+  // Update total turns
+  await adminClient
+    .from('live_interview_sessions')
+    .update({ total_turns: nextIndex + 2 })
+    .eq('id', id)
 
-  return Response.json({ reply: cleanContent, signal: signal ?? undefined })
+  // Fire async grading — non-blocking, don't await
+  const recentTurns = [
+    // Include last 2 existing turns for context + the new exchange
+    ...(turnsData ?? []).slice(-2).map((t) => ({
+      role: t.role as 'user' | 'luma',
+      content: t.content,
+    })),
+    { role: 'user' as const, content: message.trim() },
+    { role: 'luma' as const, content: reply },
+  ]
+
+  const origin = request.headers.get('origin') ?? request.headers.get('host') ?? ''
+  const protocol = origin.startsWith('http') ? '' : 'http://'
+  const gradeUrl = `${protocol}${origin}/api/live-interview/${id}/grade-turn`
+
+  fetch(gradeUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ recentTurns, challengeId: session.challenge_id }),
+  }).catch((err) => {
+    console.error('Async grade-turn failed:', err)
+  })
+
+  return Response.json({ reply })
 }

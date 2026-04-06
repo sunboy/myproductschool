@@ -3,17 +3,26 @@
 import { cn } from '@/lib/utils'
 import { LumaGlyph, LumaState } from '@/components/shell/LumaGlyph'
 
+export type LumaAvatarState = 'idle' | 'listening' | 'speaking' | 'thinking' | 'intrigued' | 'challenging' | 'delighted'
+
 interface LumaAvatarProps {
-  state: 'idle' | 'listening' | 'speaking' | 'thinking'
+  state: LumaAvatarState
   audioAnalyser?: AnalyserNode | null
   className?: string
 }
 
+const STATE_MAP: Record<LumaAvatarState, LumaState> = {
+  speaking: 'speaking',
+  listening: 'listening',
+  thinking: 'reviewing',
+  idle: 'idle',
+  intrigued: 'intrigued',
+  challenging: 'challenging',
+  delighted: 'delighted',
+}
+
 export default function LumaAvatar({ state, className }: LumaAvatarProps) {
-  const lumaState: LumaState = state === 'speaking' ? 'speaking'
-    : state === 'listening' ? 'listening'
-    : state === 'thinking' ? 'reviewing'
-    : 'idle'
+  const lumaState = STATE_MAP[state]
 
   return (
     <div className={cn('relative flex items-center justify-center rounded-2xl overflow-hidden', className)}>
