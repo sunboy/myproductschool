@@ -48,46 +48,45 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
     wsRef.current = ws
     ws.binaryType = 'arraybuffer'
 
-    ws.addEventListener('open', async () => {
-      // Request mic access and pipe audio — do this first so we know the actual sample rate
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    ws.addEventListener('open', () => {
+      // Send Settings immediately — Deepgram times out if this is delayed
+      const settings = {
+        type: 'Settings',
+        audio: {
+          input: { encoding: 'linear16', sample_rate: 16000 },
+          output: { encoding: 'linear16', sample_rate: 16000 },
+        },
+        agent: {
+          listen: {
+            provider: { type: 'deepgram' },
+            model: 'nova-3',
+          },
+          speak: {
+            provider: { type: 'deepgram' },
+            model: 'aura-2-asteria-en',
+          },
+          think: {
+            provider: { type: 'anthropic' },
+            model: 'claude-sonnet-4-6',
+            instructions: systemPrompt,
+          },
+        },
+      }
+      ws.send(JSON.stringify(settings))
+
+      // Request mic access after Settings is sent (permission prompt can block)
+      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+        if (ws.readyState !== WebSocket.OPEN) {
+          stream.getTracks().forEach((t) => t.stop())
+          return
+        }
         streamRef.current = stream
 
         const audioCtx = new AudioContext({ sampleRate: 16000 })
         audioCtxRef.current = audioCtx
 
-        // Read back the actual sample rate (browsers may not honour the requested value)
-        const actualSampleRate = audioCtx.sampleRate
-
-        // Send settings message using the actual sample rate
-        const settings = {
-          type: 'Settings',
-          audio: {
-            input: { encoding: 'linear16', sample_rate: actualSampleRate },
-            output: { encoding: 'linear16', sample_rate: actualSampleRate },
-          },
-          agent: {
-            listen: {
-              provider: { type: 'deepgram' },
-              model: 'nova-3',
-            },
-            speak: {
-              provider: { type: 'deepgram' },
-              model: 'aura-2-asteria-en',
-            },
-            think: {
-              provider: { type: 'anthropic' },
-              model: 'claude-sonnet-4-6',
-              instructions: systemPrompt,
-            },
-          },
-        }
-        ws.send(JSON.stringify(settings))
-
         const source = audioCtx.createMediaStreamSource(stream)
         sourceNodeRef.current = source
-        // ScriptProcessorNode is deprecated but widely supported; replace with AudioWorklet in production
         const processor = audioCtx.createScriptProcessor(4096, 1, 1)
         processorRef.current = processor
 
@@ -105,11 +104,10 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
         source.connect(processor)
         processor.connect(audioCtx.destination)
 
-        // Signal connected only after mic + audio graph are fully wired
         onConnected()
-      } catch (err) {
+      }).catch((err) => {
         onError(err instanceof Error ? err.message : 'Microphone access denied')
-      }
+      })
     })
 
     ws.addEventListener('message', (event) => {
