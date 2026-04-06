@@ -39,12 +39,12 @@ export function OptionCard({ option, selected, revealed, revealData, disabled, o
       className={[
         'w-full text-left rounded-xl p-4 border-2 transition-all font-body text-sm',
         revealed && selected
-          ? 'ring-2 ring-primary border-primary bg-surface-container-low'
+          ? 'ring-2 ring-primary border-primary bg-white'
           : revealed
-          ? 'border-outline-variant bg-surface-container opacity-60'
+          ? 'border-outline-variant/60 bg-white opacity-60'
           : selected
-          ? 'border-primary bg-surface-container-low'
-          : 'border-outline-variant bg-surface-container hover:bg-surface-container-high',
+          ? 'border-primary bg-white'
+          : 'border-outline-variant/60 bg-white hover:border-primary/40',
         disabled && !revealed ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
       ].join(' ')}
     >

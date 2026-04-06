@@ -42,8 +42,8 @@ export function FlowStepper({ currentStep, completedSteps, onStepClick, question
           isActive
             ? 'bg-primary text-on-primary'
             : isCompleted
-            ? 'bg-primary-fixed text-on-surface hover:bg-[#b8ddc6] cursor-pointer'
-            : 'bg-surface-container text-on-surface-variant',
+            ? 'bg-primary/10 text-primary hover:bg-primary/15 cursor-pointer'
+            : 'bg-surface-container-high text-on-surface-variant',
           isPending ? 'opacity-60' : '',
         ].join(' ')
 

@@ -247,15 +247,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // ── Render states ──────────────────────────────────────────────
 
-  if ((isApiMode && challengeLoading) || phase === 'loading') {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <LumaGlyph size={56} state="reviewing" className="text-primary" />
-        <p className="font-body text-on-surface-variant text-sm">Loading challenge…</p>
-      </div>
-    )
-  }
-
   if (isApiMode && challengeError) {
     return (
       <div className="text-center py-12 space-y-2">
@@ -265,9 +256,21 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     )
   }
 
+  if ((isApiMode && challengeLoading) || phase === 'loading') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <LumaGlyph size={56} state="reviewing" className="text-primary" />
+        <p className="font-body text-on-surface-variant text-sm">Loading challenge…</p>
+      </div>
+    )
+  }
+
   // Resolve challenge display data across both modes
   const challengeTitle = isApiMode ? detail?.challenge.title : adapterChallenge?.title
   const challengeScenarioQ = isApiMode ? detail?.challenge.scenario_question : adapterChallenge?.scenario_question
+  const scenarioRole = isApiMode ? detail?.challenge.scenario_role : adapterChallenge?.scenario_role
+  const scenarioContext = isApiMode ? detail?.challenge.scenario_context : adapterChallenge?.scenario_context
+  const scenarioTrigger = isApiMode ? detail?.challenge.scenario_trigger : adapterChallenge?.scenario_trigger
 
   if (phase === 'complete') {
     return (
@@ -305,22 +308,57 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     )
   }
 
+  // Shared left panel (scenario brief)
+  const scenarioPanel = (
+    <aside className="w-[360px] shrink-0 bg-surface-taupe border-r border-outline-variant/40 overflow-y-auto p-6 space-y-4">
+      {scenarioRole && (
+        <span className="inline-block bg-secondary-container text-on-secondary-container rounded-full text-xs font-label px-3 py-1">
+          {scenarioRole}
+        </span>
+      )}
+      {challengeTitle && (
+        <h1 className="font-headline text-xl text-on-surface leading-snug">{challengeTitle}</h1>
+      )}
+      {scenarioContext && (
+        <div className="space-y-1">
+          <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">Context</p>
+          <p className="font-body text-sm text-on-surface-variant leading-relaxed">{scenarioContext}</p>
+        </div>
+      )}
+      {scenarioTrigger && (
+        <div className="space-y-1">
+          <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">The Trigger</p>
+          <p className="font-body text-sm text-on-surface-variant leading-relaxed">{scenarioTrigger}</p>
+        </div>
+      )}
+      {challengeScenarioQ && (
+        <div className="bg-surface-container rounded-xl p-4 space-y-1 border border-black/5">
+          <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">Your Challenge</p>
+          <p className="font-body text-sm text-on-surface font-medium leading-relaxed">{challengeScenarioQ}</p>
+        </div>
+      )}
+    </aside>
+  )
+
   if (phase === 'reveal') {
     const stepIdx = FLOW_STEPS.indexOf(currentStep)
     return (
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        <FlowStepper currentStep={currentStep} completedSteps={completedSteps} />
-        <StepReveal
-          step={currentStep}
-          stepScore={stepScore}
-          maxScore={3.0}
-          gradeLabel={stepGrade}
-          roleContext={roleContext}
-          careerSignal={careerSignal}
-          competencySignal={competencySignal}
-          onNext={handleNextStep}
-          isLastStep={stepIdx === FLOW_STEPS.length - 1}
-        />
+      <div className="flex h-full">
+        {scenarioPanel}
+        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+          <FlowStepper currentStep={currentStep} completedSteps={completedSteps} questionIdx={questionIdx} questionCount={activeStepData?.questions.length} />
+          <StepReveal
+            step={currentStep}
+            stepScore={stepScore}
+            maxScore={3.0}
+            gradeLabel={stepGrade}
+            roleContext={roleContext}
+            careerSignal={careerSignal}
+            competencySignal={competencySignal}
+            onNext={handleNextStep}
+            isLastStep={stepIdx === FLOW_STEPS.length - 1}
+          />
+        </div>
       </div>
     )
   }
@@ -333,66 +371,59 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     : false
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-      <FlowStepper currentStep={currentStep} completedSteps={completedSteps} />
+    <div className="flex h-full">
+      {scenarioPanel}
+      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+        <FlowStepper currentStep={currentStep} completedSteps={completedSteps} questionIdx={questionIdx} questionCount={activeStepData?.questions.length} />
 
-      {/* Challenge context */}
-      {(challengeTitle || challengeScenarioQ) && (
-        <div className="bg-surface-container-low rounded-xl p-4 space-y-1">
-          {challengeTitle && (
-            <h1 className="font-headline text-lg text-on-surface">{challengeTitle}</h1>
-          )}
-          {challengeScenarioQ && (
-            <p className="font-body text-sm text-on-surface-variant">{challengeScenarioQ}</p>
-          )}
-        </div>
-      )}
+        {/* Nudge */}
+        {activeStepData?.nudge && (
+          <div className="flex items-start gap-3 bg-secondary-container rounded-xl px-4 py-3">
+            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shrink-0">
+              <span
+                className="material-symbols-outlined text-primary text-[18px]"
+                style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
+              >
+                lightbulb
+              </span>
+            </div>
+            <p className="font-body text-sm text-on-secondary-container leading-relaxed">{activeStepData.nudge}</p>
+          </div>
+        )}
 
-      {/* Nudge */}
-      {activeStepData?.nudge && (
-        <div className="flex items-start gap-2 bg-secondary-container rounded-xl px-4 py-3">
-          <span
-            className="material-symbols-outlined text-on-secondary-container text-[18px] shrink-0 mt-0.5"
-            style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-          >
-            lightbulb
-          </span>
-          <p className="font-body text-sm text-on-secondary-container">{activeStepData.nudge}</p>
-        </div>
-      )}
+        {/* Question */}
+        {(isApiMode ? stepLoading : false) ? (
+          <div className="flex justify-center py-8">
+            <LumaGlyph size={40} state="reviewing" className="text-primary" />
+          </div>
+        ) : (isApiMode && stepError) ? (
+          <p className="font-body text-error text-sm text-center">{stepError}</p>
+        ) : currentQuestion ? (
+          <StepQuestion
+            question={currentQuestion}
+            responseType={currentQuestion.response_type}
+            selectedOptionId={selectedOptionId}
+            elaboration={elaboration}
+            revealed={false}
+            onOptionSelect={setSelectedOptionId}
+            onElaborationChange={setElaboration}
+            disabled={activeSubmitting}
+          />
+        ) : null}
 
-      {/* Question */}
-      {(isApiMode ? stepLoading : false) ? (
-        <div className="flex justify-center py-8">
-          <LumaGlyph size={40} state="reviewing" className="text-primary" />
-        </div>
-      ) : (isApiMode && stepError) ? (
-        <p className="font-body text-error text-sm text-center">{stepError}</p>
-      ) : currentQuestion ? (
-        <StepQuestion
-          question={currentQuestion}
-          responseType={currentQuestion.response_type}
-          selectedOptionId={selectedOptionId}
-          elaboration={elaboration}
-          revealed={false}
-          onOptionSelect={setSelectedOptionId}
-          onElaborationChange={setElaboration}
-          disabled={activeSubmitting}
-        />
-      ) : null}
-
-      {/* Submit */}
-      {currentQuestion && (
-        <div className="flex justify-end">
-          <button
-            onClick={handleSubmit}
-            disabled={!canSubmit || activeSubmitting}
-            className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {activeSubmitting ? 'Grading…' : 'Submit'}
-          </button>
-        </div>
-      )}
+        {/* Submit */}
+        {currentQuestion && (
+          <div className="flex justify-end">
+            <button
+              onClick={handleSubmit}
+              disabled={!canSubmit || activeSubmitting}
+              className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {activeSubmitting ? 'Grading…' : 'Submit'}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

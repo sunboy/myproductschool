@@ -58,7 +58,7 @@ export function TopBar() {
   const xpTotal = profile?.xp_total ?? 0
 
   return (
-    <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-lg border-b border-outline-variant/40">
+    <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-surface-container-high">
       <div className="flex items-center gap-3 px-4 h-13">
 
         {/* Mobile: logo */}
