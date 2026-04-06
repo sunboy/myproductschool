@@ -11,6 +11,7 @@ import ChatPanel from '@/components/live-interview/ChatPanel'
 import InterviewControls from '@/components/live-interview/InterviewControls'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { useInterviewTimer } from '@/hooks/useInterviewTimer'
+import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
 import { MOCK_LIVE_SESSION, MOCK_LIVE_TURNS } from '@/lib/mock-live-interviews'
 
 const IS_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
@@ -175,11 +176,23 @@ export default function SessionPage({
 
   // Deepgram callbacks
   const handleTranscript = useCallback((text: string, role: 'luma' | 'user') => {
+    // Strip grading signal JSON from Luma's voice responses
+    let content = text
+    let coachingSignal: CoachingSignal | undefined
+    if (role === 'luma') {
+      const { cleanContent, signal } = parseGradingSignal(text)
+      content = cleanContent
+      if (signal && signal.flowMove) {
+        coachingSignal = signal
+      }
+    }
+
     const turn: TranscriptTurn = {
       id: crypto.randomUUID(),
       role,
-      content: text,
+      content,
       source: 'voice',
+      coachingSignal,
     }
     setTurns((prev) => [...prev, turn])
     setTotalTurns((prev) => prev + 1)
@@ -194,10 +207,12 @@ export default function SessionPage({
     if (IS_MOCK) return
 
     if (!audioCtxRef.current) {
-      const ctx = new AudioContext({ sampleRate: 16000 })
+      // Use browser's default sample rate for smooth playback
+      const ctx = new AudioContext()
       const analyser = ctx.createAnalyser()
       analyser.fftSize = 256
       analyser.smoothingTimeConstant = 0.8
+      analyser.connect(ctx.destination)
       audioCtxRef.current = ctx
       analyserRef.current = analyser
     }
@@ -206,20 +221,20 @@ export default function SessionPage({
     const analyser = analyserRef.current
     if (!analyser) return
 
-    // Deepgram sends raw linear16 PCM — convert to float32 for Web Audio
+    // Deepgram sends raw linear16 PCM at 16kHz — convert to float32
     const int16 = new Int16Array(buffer)
     const float32 = new Float32Array(int16.length)
     for (let i = 0; i < int16.length; i++) {
       float32[i] = int16[i] / 0x8000
     }
 
+    // Create buffer at 16kHz source rate — browser will resample to output rate
     const audioBuffer = ctx.createBuffer(1, float32.length, 16000)
     audioBuffer.getChannelData(0).set(float32)
 
     const source = ctx.createBufferSource()
     source.buffer = audioBuffer
     source.connect(analyser)
-    analyser.connect(ctx.destination)
     source.start()
   }, [])
 
