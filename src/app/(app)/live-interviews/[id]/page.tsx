@@ -285,8 +285,14 @@ export default function SessionPage({
     setLumaState('listening')
   }, [])
 
+  const [voiceError, setVoiceError] = useState<string | null>(null)
+
   const handleVoiceError = useCallback((err: string) => {
-    setError(err)
+    // Voice errors are non-fatal — fall back to chat-only mode with a visible warning
+    setVoiceError(err)
+    setIsVoiceAvailable(false)
+    setIsVoiceActive(false)
+    setIsChatOpen(true)
   }, [])
 
   // Chat text message
@@ -532,6 +538,23 @@ export default function SessionPage({
       {error && (
         <div className="mx-4 mb-2 rounded-lg bg-error/20 border border-error/30 px-4 py-2 md:mx-6">
           <p className="font-body text-sm text-error">{error}</p>
+        </div>
+      )}
+
+      {/* Voice fallback banner — dismissible */}
+      {voiceError && (
+        <div className="mx-4 mb-2 rounded-lg bg-tertiary/10 border border-tertiary/20 px-4 py-2 md:mx-6 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-tertiary text-[18px]">headset_off</span>
+            <p className="font-body text-sm text-tertiary">{voiceError}</p>
+          </div>
+          <button
+            onClick={() => setVoiceError(null)}
+            className="text-tertiary/60 hover:text-tertiary shrink-0"
+            aria-label="Dismiss"
+          >
+            <span className="material-symbols-outlined text-[16px]">close</span>
+          </button>
         </div>
       )}
 

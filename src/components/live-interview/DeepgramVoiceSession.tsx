@@ -42,7 +42,10 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
     if (disabled) return
 
     const apiKey = process.env.NEXT_PUBLIC_DEEPGRAM_API_KEY ?? ''
-    if (!apiKey) return
+    if (!apiKey) {
+      onError('Voice unavailable — Deepgram API key not configured. Using chat mode.')
+      return
+    }
 
     const ws = new WebSocket('wss://agent.deepgram.com/v1/agent/converse', ['token', apiKey])
     wsRef.current = ws
