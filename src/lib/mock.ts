@@ -6,6 +6,7 @@ export const IS_MOCK =
 // ── Dashboard mock data ──────────────────────────────────────
 
 export interface HotChallenge {
+  id: string
   title: string
   attempts: number
   avgScore: number
@@ -49,9 +50,9 @@ export interface DashboardPreferences {
 }
 
 export const MOCK_HOT_CHALLENGES: HotChallenge[] = [
-  { title: 'Spotify DAU up, revenue flat', attempts: 284, avgScore: 71, domain: 'Product Strategy' },
-  { title: 'DoorDash driver retention', attempts: 197, avgScore: 64, domain: 'Growth' },
-  { title: 'Airbnb superhost funnel', attempts: 153, avgScore: 68, domain: 'Conversion' },
+  { id: 'mock-1', title: 'Spotify DAU up, revenue flat', attempts: 284, avgScore: 71, domain: 'Product Strategy' },
+  { id: 'mock-2', title: 'DoorDash driver retention', attempts: 197, avgScore: 64, domain: 'Growth' },
+  { id: 'mock-3', title: 'Airbnb superhost funnel', attempts: 153, avgScore: 68, domain: 'Conversion' },
 ]
 
 export const MOCK_DISCUSSIONS: DiscussionPreview[] = [

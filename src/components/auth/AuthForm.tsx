@@ -55,7 +55,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         password,
         options: {
           data: { display_name: name },
-          emailRedirectTo: `${window.location.origin}/onboarding/welcome`,
+          emailRedirectTo: `${window.location.origin}/dashboard`,
         }
       })
       if (error) {
@@ -74,7 +74,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   async function handleGoogleSignIn() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/onboarding/welcome` }
+      options: { redirectTo: `${window.location.origin}/dashboard` }
     })
   }
 

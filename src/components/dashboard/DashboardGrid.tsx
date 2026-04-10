@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import type { UserInterview } from '@/lib/data/dashboard'
+import type { UserInterview, HotChallenge } from '@/lib/data/dashboard'
 import { DismissibleCard } from '@/components/dashboard/DismissibleCard'
 import { CardPicker } from '@/components/dashboard/CardPicker'
 import { DEFAULT_SIZES, COL_SPAN_CLASS } from '@/lib/dashboard-cards'
@@ -31,12 +31,6 @@ interface Dimension {
   score: number
 }
 
-interface HotChallenge {
-  title: string
-  attempts: number
-  avgScore: number
-  domain: string
-}
 
 interface Discussion {
   challenge: string

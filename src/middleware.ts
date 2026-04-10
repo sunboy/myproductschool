@@ -142,10 +142,7 @@ export async function middleware(request: NextRequest) {
 
     // Logged-in users hitting auth pages → redirect to app
     if (isAuthRoute) {
-      return NextResponse.redirect(new URL(
-        onboardingDone ? '/dashboard' : '/onboarding/welcome',
-        request.url
-      ))
+      return NextResponse.redirect(new URL('/dashboard', request.url))
     }
 
     const isOnboarding = pathname.startsWith('/onboarding')
@@ -154,9 +151,7 @@ export async function middleware(request: NextRequest) {
       || pathname.startsWith('/cohort') || pathname.startsWith('/prep')
       || pathname.startsWith('/settings')
 
-    if (isAppRoute && !isOnboarding && !onboardingDone) {
-      return NextResponse.redirect(new URL('/onboarding/welcome', request.url))
-    }
+    // Uncalibrated users on app routes are allowed through — dashboard handles the uncalibrated state
 
     // Fully onboarded user hitting /onboarding/* → send to dashboard
     if (isOnboarding && onboardingDone) {
