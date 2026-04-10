@@ -15,8 +15,8 @@ ALTER TABLE flow_options ADD COLUMN IF NOT EXISTS precomputed_competency_signal 
 -- ── step_attempts: competency signal from grading ────────────
 ALTER TABLE step_attempts ADD COLUMN IF NOT EXISTS competency_signal JSONB;
 
--- ── challenge_attempts_v2: post-challenge mental models map ──
-ALTER TABLE challenge_attempts_v2 ADD COLUMN IF NOT EXISTS mental_models_breakdown JSONB;
+-- ── challenge_attempts: post-challenge mental models map ──
+ALTER TABLE challenge_attempts ADD COLUMN IF NOT EXISTS mental_models_breakdown JSONB;
 
 -- ── Index for failure pattern trend queries ──────────────────
 CREATE INDEX IF NOT EXISTS idx_user_failure_patterns_trend

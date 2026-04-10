@@ -24,7 +24,7 @@ export async function POST(
       total_score: 2.4,
       max_score: 3.0,
       grade_label: 'Strong',
-      xp_awarded: 240,
+      xp_awarded: 80,
       step_breakdown: [
         { step: 'frame', score: 2.4, max_score: 3.0 },
         { step: 'list', score: 2.1, max_score: 3.0 },
@@ -168,16 +168,24 @@ export async function POST(
     )
   }
 
-  // Award XP: total_score * 100 rounded to int
-  const xp_earned = Math.round(total_score * 100)
+  // Fetch challenge difficulty and current streak for XP calculation
+  const [{ data: challenge }, { data: currentProfile }] = await Promise.all([
+    admin.from('challenges').select('difficulty').eq('id', challengeId).single(),
+    admin.from('profiles').select('xp_total, streak_days').eq('id', userId).single(),
+  ])
+
+  // XP = difficulty base * score (0–1)
+  // base: beginner=50, intermediate=100, advanced=150
+  const DIFFICULTY_BASE: Record<string, number> = { beginner: 50, intermediate: 100, advanced: 150 }
+  const difficultyBase = DIFFICULTY_BASE[challenge?.difficulty ?? 'beginner'] ?? 50
+  const baseXp = Math.round(difficultyBase * (total_score / max_score))
+
+  // Streak multiplier: +5% per streak day, capped at 1.5× (hits cap at 10 days)
+  const streakDays = currentProfile?.streak_days ?? 0
+  const streakMultiplier = Math.min(1 + streakDays * 0.05, 1.5)
+  const xp_earned = Math.round(baseXp * streakMultiplier)
 
   // Update profiles.xp_total
-  const { data: currentProfile } = await admin
-    .from('profiles')
-    .select('xp_total')
-    .eq('id', userId)
-    .single()
-
   if (currentProfile) {
     await admin
       .from('profiles')
@@ -187,6 +195,18 @@ export async function POST(
 
   // Fire-and-forget streak RPC — do NOT await
   admin.rpc('update_user_streak', { p_user_id: userId }).then(() => {}, () => {})
+
+  // Update FLOW skill levels based on per-step scores (fire and forget)
+  const moveScores: Record<string, number> = {}
+  for (const s of stepResults) {
+    // step_score is 0–1; scale to 0–10 for the update route
+    moveScores[s.step] = Math.round(s.step_score * 10)
+  }
+  fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/move-levels/update`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, scores: moveScores }),
+  }).catch(() => {})
 
   // Update challenge_attempts
   await admin

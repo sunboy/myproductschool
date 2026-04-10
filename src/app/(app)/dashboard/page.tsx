@@ -9,12 +9,14 @@ import {
   getMoveLevel,
 } from '@/lib/data/dashboard'
 import { getLumaContext } from '@/lib/luma-context'
+import { getEnrolledPlans } from '@/lib/data/study-plans'
 import { QuickTakeCard } from '@/components/dashboard/cards/QuickTakeCard'
 import { NextChallengeCard } from '@/components/dashboard/cards/NextChallengeCard'
 import { MoveLevelsCard } from '@/components/dashboard/cards/MoveLevelsCard'
 import { HotChallengesCard } from '@/components/dashboard/cards/HotChallengesCard'
 import { LeaderboardPeekCard } from '@/components/dashboard/cards/LeaderboardPeekCard'
 import { InterviewCountdownCard } from '@/components/dashboard/cards/InterviewCountdownCard'
+import { EnrolledPlansCard } from '@/components/dashboard/cards/EnrolledPlansCard'
 import type { UserInterview } from '@/lib/data/dashboard'
 
 function getGreeting(): string {
@@ -114,10 +116,11 @@ export default async function DashboardPage() {
   }
 
   const userId = user?.id ?? ''
-  const [hotChallenges, leaderboard, moveLevels] = await Promise.all([
+  const [hotChallenges, leaderboard, moveLevels, enrolledPlans] = await Promise.all([
     getHotChallenges(),
     userId ? getLeaderboardPeek(userId) : [],
     userId ? getMoveLevel(userId) : [],
+    userId ? getEnrolledPlans(userId) : [],
   ])
 
   // Fetch personalized Quick Take and Next Challenge via admin client
@@ -238,7 +241,7 @@ export default async function DashboardPage() {
           <div className="flex gap-2 flex-shrink-0">
             <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/60 rounded-full text-xs font-label font-bold text-on-surface">
               <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1", color: '#c94b1b' }}>local_fire_department</span>
-              {streakDays} days
+              {streakDays} {streakDays === 1 ? 'day' : 'days'}
             </span>
             <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/60 rounded-full text-xs font-label font-bold text-on-surface">
               <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1", color: '#4a7c59' }}>bolt</span>
@@ -269,6 +272,9 @@ export default async function DashboardPage() {
 
           {/* FLOW Move Levels */}
           <MoveLevelsCard levels={moveLevels} />
+
+          {/* Enrolled Study Plans */}
+          {enrolledPlans.length > 0 && <EnrolledPlansCard plans={enrolledPlans} />}
 
           {/* Secondary row */}
           <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">

@@ -174,6 +174,7 @@ export interface ChallengeWithDomain extends ChallengePrompt {
   attempt_count: number
   best_score: number | null
   is_completed: boolean
+  is_in_progress?: boolean
 }
 
 // ── Failure Pattern Detection ─────────────────────────────
@@ -651,6 +652,7 @@ export interface StudyPlanWithItems extends StudyPlan {
   chapter_count: number
   completed_count: number
   progress_percentage: number
+  is_enrolled?: boolean
 }
 
 // ── Learn Section ─────────────────────────────────────────────

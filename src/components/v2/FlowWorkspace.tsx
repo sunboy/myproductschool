@@ -85,7 +85,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (detail && !attemptId) {
       if (detail.current_attempt?.status === 'in_progress') {
         setAttemptId(detail.current_attempt.id)
-        setCurrentStep(detail.current_attempt.current_step === 'done' ? 'frame' : detail.current_attempt.current_step as FlowStep)
+        const resumeStep = detail.current_attempt.current_step === 'done' ? 'frame' : detail.current_attempt.current_step as FlowStep
+        setCurrentStep(resumeStep)
+        // Mark all steps before the current one as completed
+        const resumeIdx = FLOW_STEPS.indexOf(resumeStep)
+        if (resumeIdx > 0) setCompletedSteps(FLOW_STEPS.slice(0, resumeIdx))
         setPhase('question')
       } else {
         startAttempt(initialRoleId).then((attempt) => {
@@ -196,6 +200,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       }
     }
   }, [isApiMode, currentQuestion, attemptId, selectedOptionId, elaboration, submitAnswer, fetchCoaching, initialRoleId, currentStep, props])
+
+  const handleStepClick = useCallback((step: FlowStep) => {
+    if (!completedSteps.includes(step)) return
+    setCurrentStep(step)
+    setPhase('question')
+    setSelectedOptionId(null)
+    setElaboration('')
+    setRevealedOptions([])
+    setQuestionIdx(0)
+  }, [completedSteps])
 
   const handleNextStep = useCallback(async () => {
     const stepIdx = FLOW_STEPS.indexOf(currentStep)
@@ -346,7 +360,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       <div className="flex h-full">
         {scenarioPanel}
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-          <FlowStepper currentStep={currentStep} completedSteps={completedSteps} questionIdx={questionIdx} questionCount={activeStepData?.questions.length} />
+          <FlowStepper currentStep={currentStep} completedSteps={completedSteps} onStepClick={handleStepClick} questionIdx={questionIdx} questionCount={activeStepData?.questions.length} />
           <StepReveal
             step={currentStep}
             stepScore={stepScore}

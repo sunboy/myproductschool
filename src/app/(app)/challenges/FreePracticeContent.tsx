@@ -1,43 +1,50 @@
 import { getChallenges } from '@/lib/data/challenges'
-import { getDomains } from '@/lib/data/domains'
 import Link from 'next/link'
 import { ChallengeCard } from './ChallengeCard'
 import { LumaPick } from './LumaPick'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
-import { V2ChallengesSection } from './V2ChallengesSection'
 
 export interface FreePracticeContentProps {
   searchParams: Promise<{ paradigm?: string; role?: string; difficulty?: string; tab?: string }>
 }
 
 const PARADIGMS = [
-  { key: 'all', label: 'All Paradigms', dot: null },
-  { key: 'traditional', label: 'Traditional', dot: 'bg-emerald-500' },
-  { key: 'ai-assisted', label: 'AI-Assisted', dot: 'bg-blue-500' },
-  { key: 'agentic', label: 'Agentic', dot: 'bg-purple-500' },
-  { key: 'ai-native', label: 'AI-Native', dot: 'bg-amber-500' },
+  { key: 'all',         label: 'All Paradigms', dot: null },
+  { key: 'traditional', label: 'Traditional',   dot: 'bg-emerald-500' },
+  { key: 'ai_assisted', label: 'AI-Assisted',   dot: 'bg-blue-500' },
+  { key: 'agentic',     label: 'Agentic',        dot: 'bg-purple-500' },
+  { key: 'ai_native',   label: 'AI-Native',      dot: 'bg-amber-500' },
 ] as const
 
-const ROLES = ['SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng'] as const
+const ROLES = [
+  { key: 'swe',          label: 'SWE' },
+  { key: 'data_eng',     label: 'Data Eng' },
+  { key: 'ml_eng',       label: 'ML Eng' },
+  { key: 'devops',       label: 'DevOps' },
+  { key: 'em',           label: 'EM' },
+  { key: 'founding_eng', label: 'Founding Eng' },
+] as const
 
-const PARADIGM_LABELS = ['Traditional', 'AI-Assisted', 'Agentic', 'AI-Native'] as const
-function getParadigmLabel(index: number): string {
-  return PARADIGM_LABELS[index % PARADIGM_LABELS.length]
+const PARADIGM_DISPLAY: Record<string, string> = {
+  traditional: 'Traditional',
+  ai_assisted: 'AI-Assisted',
+  agentic: 'Agentic',
+  ai_native: 'AI-Native',
+}
+function getParadigmLabel(paradigm?: string | null): string {
+  return (paradigm && PARADIGM_DISPLAY[paradigm]) ?? 'Traditional'
 }
 
 
 export async function FreePracticeContent({ searchParams }: FreePracticeContentProps) {
   const { paradigm, role, difficulty } = await searchParams
-  const [, challenges] = await Promise.all([
-    getDomains(),
-    getChallenges({ difficulty, paradigm, role }),
-  ])
+  const challenges = await getChallenges({ difficulty, paradigm, role })
 
-  const buildHref = (params: Record<string, string | undefined>) => {
+  const buildHref = (overrides: Record<string, string | undefined>) => {
     const p = new URLSearchParams()
-    const pa = params.paradigm ?? paradigm
-    const r = params.role ?? role
-    const d = params.difficulty ?? difficulty
+    const pa = 'paradigm' in overrides ? overrides.paradigm : paradigm
+    const r  = 'role'     in overrides ? overrides.role      : role
+    const d  = 'difficulty' in overrides ? overrides.difficulty : difficulty
     if (pa && pa !== 'all') p.set('paradigm', pa)
     if (r) p.set('role', r)
     if (d) p.set('difficulty', d)
@@ -71,15 +78,15 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
           </Link>
           {ROLES.map(r => (
             <Link
-              key={r}
-              href={buildHref({ role: role === r ? undefined : r })}
+              key={r.key}
+              href={buildHref({ role: role === r.key ? undefined : r.key })}
               className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                role === r
+                role === r.key
                   ? 'bg-on-surface text-on-primary'
                   : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
               }`}
             >
-              {r}
+              {r.label}
             </Link>
           ))}
         </div>
@@ -133,11 +140,11 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
             <span className="text-[10px] text-on-surface-variant font-medium">Curated picks</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {challenges.slice(0, 3).map((challenge, idx) => (
+            {challenges.slice(0, 5).map((challenge) => (
               <ChallengeCard
                 key={`rec-${challenge.id}`}
                 challenge={challenge}
-                paradigm={getParadigmLabel(idx)}
+                paradigm={getParadigmLabel(challenge.paradigm)}
               />
             ))}
           </div>
@@ -163,16 +170,15 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {challenges.map((challenge, idx) => (
+          {challenges.map((challenge) => (
             <ChallengeCard
               key={challenge.id}
               challenge={challenge}
-              paradigm={getParadigmLabel(idx)}
+              paradigm={getParadigmLabel(challenge.paradigm)}
             />
           ))}
         </div>
       )}
-      <V2ChallengesSection />
     </div>
   )
 }

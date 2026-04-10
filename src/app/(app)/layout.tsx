@@ -1,25 +1,18 @@
+'use client'
+
+import { useState } from 'react'
 import { NavRail } from '@/components/shell/NavRail'
 import { BottomTabs } from '@/components/shell/BottomTabs'
 import { TopBar } from '@/components/shell/TopBar'
-import { createClient } from '@/lib/supabase/server'
+import { AskLumaDrawer } from '@/components/shell/AskLumaDrawer'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  let dailyDone = 0
-  if (user) {
-    const today = new Date().toISOString().split('T')[0]
-    const { count } = await supabase
-      .from('challenge_attempts')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .gte('created_at', today)
-    dailyDone = count ?? 0
-  }
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   return (
     <div className="flex min-h-screen bg-background">
-      <NavRail dailyDone={dailyDone} dailyTotal={5} />
+      <NavRail onAskLuma={() => setDrawerOpen(true)} />
       <div className="flex flex-col flex-1 min-w-0">
         <TopBar />
         <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
@@ -27,6 +20,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </main>
       </div>
       <BottomTabs />
+
+      {/* Mobile FAB */}
+      <button
+        onClick={() => setDrawerOpen(true)}
+        className="md:hidden fixed bottom-20 right-4 z-40 w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-lg"
+        aria-label="Ask Luma"
+      >
+        <LumaGlyph size={24} state="idle" className="text-white" />
+      </button>
+
+      <AskLumaDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </div>
   )
 }

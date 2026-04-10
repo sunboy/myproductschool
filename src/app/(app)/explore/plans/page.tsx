@@ -1,11 +1,14 @@
 import Link from 'next/link'
 import { getStudyPlans } from '@/lib/data/study-plans'
 import { StudyPlanCard } from '@/components/explore/StudyPlanCard'
+import { createClient } from '@/lib/supabase/server'
 
 const DIFFICULTY_FILTERS = ['All', 'Beginner', 'Intermediate', 'Advanced'] as const
 
 export default async function StudyPlansPage() {
-  const studyPlans = await getStudyPlans()
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const studyPlans = await getStudyPlans(user?.id)
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-6">

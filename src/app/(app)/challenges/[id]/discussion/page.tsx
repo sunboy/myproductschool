@@ -151,18 +151,11 @@ export default function ChallengeDiscussionPage() {
             responseCount={discussions.length}
             participantCount={new Set(discussions.map(d => d.user_id)).size}
           />
-          <TopContributorsPanel />
+          <TopContributorsPanel discussions={discussions} />
           <RelatedChallengesPanel currentChallengeId={id} />
         </div>
       </div>
 
-      {/* FAB */}
-      <button
-        onClick={() => document.querySelector('textarea')?.focus()}
-        className="fixed bottom-20 md:bottom-8 right-6 bg-primary text-on-primary w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl hover:scale-105 transition-transform active:scale-95 z-50"
-      >
-        <span className="material-symbols-outlined text-3xl">add_comment</span>
-      </button>
     </div>
   )
 }

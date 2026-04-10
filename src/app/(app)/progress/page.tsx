@@ -70,22 +70,23 @@ const FLOW_MOVES_MOCK = [
 ]
 
 const MOVE_ICONS: Record<string, string> = {
-  frame: 'navigation', list: 'grid_view', optimize: 'balance', win: 'campaign',
+  frame: 'crop_free', list: 'list', optimize: 'tune', win: 'emoji_events',
 }
 const MOVE_COLORS: Record<string, string> = {
   frame: '#5eaeff', list: '#2dd4a0', optimize: '#f59e0b', win: '#a78bfa',
 }
-
-type SquareState = 'unplayed' | 'low' | 'mid' | 'mastered'
-
-function squareColor(s: SquareState) {
-  switch (s) {
-    case 'unplayed': return 'bg-surface-container-highest'
-    case 'low': return 'bg-error'
-    case 'mid': return 'bg-tertiary-container'
-    case 'mastered': return 'bg-primary'
-  }
+const MOVE_DESCRIPTIONS: Record<string, string> = {
+  frame: 'Define the right problem',
+  list:  'Generate options',
+  optimize: 'Pick the best tradeoff',
+  win:   'Defend the decision',
 }
+
+
+// Certification thresholds
+const CERT_CHALLENGE_QUOTA = 10      // challenges completed with score ≥ 60%
+const CERT_MOVE_LEVEL = 3            // all 4 moves must reach this level
+const CERT_MOVES: string[] = ['frame', 'list', 'optimize', 'win']
 
 export default function ProgressPage() {
   const router = useRouter()
@@ -95,6 +96,7 @@ export default function ProgressPage() {
   const [recentInterviews, setRecentInterviews] = useState<Array<{ id: string; companyName: string; roleId: string; status: string; overallScore: number | null; grade: string | null; durationSeconds: number | null; endedAt: string | null }>>([])
   const [masteryEntries, setMasteryEntries] = useState<MasteryEntry[]>([])
   const [growthSnapshot, setGrowthSnapshot] = useState<GrowthSnapshot | null>(null)
+  const [growthOpen, setGrowthOpen] = useState(false)
 
   useEffect(() => {
     // Fetch recent attempts for pattern display
@@ -122,13 +124,14 @@ export default function ProgressPage() {
   const flowMoves = moves.length > 0
     ? moves.map(m => ({
         name: m.move.charAt(0).toUpperCase() + m.move.slice(1),
+        move: m.move as string,
         level: m.level,
         pct: m.progress_pct,
-        icon: MOVE_ICONS[m.move] ?? 'circle',
-        color: MOVE_COLORS[m.move] ?? '#4a7c59',
-        fill: m.move !== 'frame',
+        icon: MOVE_ICONS[m.move as string] ?? 'circle',
+        color: MOVE_COLORS[m.move as string] ?? '#4a7c59',
+        description: MOVE_DESCRIPTIONS[m.move as string] ?? '',
       }))
-    : FLOW_MOVES_MOCK
+    : FLOW_MOVES_MOCK.map(m => ({ ...m, move: m.name.toLowerCase(), description: MOVE_DESCRIPTIONS[m.name.toLowerCase()] ?? '' }))
 
   return (
     <div className="max-w-7xl mx-auto p-6 w-full flex flex-col gap-6 animate-fade-in-up">
@@ -159,16 +162,6 @@ export default function ProgressPage() {
                   <p className="text-sm text-on-surface-variant mt-2 max-w-md">{profile.archetype_description}</p>
                 )}
               </>
-            ) : moves.length > 0 ? (
-              <>
-                <h2 className="text-3xl font-headline font-bold text-on-surface">The Analyst</h2>
-                <p className="text-sm text-on-surface-variant mt-2 max-w-md">
-                  {moves.length >= 2
-                    ? `Strong at ${moves.slice(0, 2).map(m => m.move.charAt(0).toUpperCase() + m.move.slice(1)).join(' + ')} — keep building the rest of your stack.`
-                    : 'Complete more challenges to unlock your full thinking archetype.'
-                  }
-                </p>
-              </>
             ) : (
               <>
                 <h2 className="text-2xl font-headline font-bold text-on-surface">Complete calibration</h2>
@@ -188,19 +181,17 @@ export default function ProgressPage() {
           </div>
         </section>
 
-        {/* Move Levels */}
+        {/* FLOW Skills */}
         <section className="col-span-12 lg:col-span-5 bg-surface-container rounded-xl p-5 border border-outline-variant/30">
-          <h3 className="text-sm font-bold mb-4 flex items-center justify-between">
-            Move Levels
-            <span className="text-xs font-normal text-on-surface-variant">4 core competencies</span>
-          </h3>
+          <h3 className="text-sm font-bold mb-1">FLOW Skills</h3>
+          <p className="text-[11px] text-on-surface-variant mb-4">Your proficiency at each step of the FLOW framework</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {flowMoves.map((m) => (
               <div key={m.name} className="bg-white p-3 rounded-lg border border-outline-variant/20">
                 <div className="flex justify-between items-start mb-2">
                   <span
                     className="material-symbols-outlined"
-                    style={{ color: m.color, fontVariationSettings: m.fill ? "'FILL' 1" : "'FILL' 0" }}
+                    style={{ color: m.color, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
                   >
                     {m.icon}
                   </span>
@@ -211,11 +202,12 @@ export default function ProgressPage() {
                     Level {m.level}
                   </span>
                 </div>
-                <div className="text-xs font-bold mb-1">{m.name}</div>
+                <div className="text-xs font-bold mb-0.5">{m.name}</div>
+                <div className="text-[10px] text-on-surface-variant mb-2">{m.description}</div>
                 <div className="w-full bg-surface-container-highest h-1.5 rounded-full">
-                  <div className="h-1.5 rounded-full" style={{ width: `${m.pct}%`, backgroundColor: m.color }} />
+                  <div className="h-1.5 rounded-full transition-all duration-500" style={{ width: `${m.pct}%`, backgroundColor: m.color }} />
                 </div>
-                <div className="text-right text-[10px] mt-1 text-on-surface-variant">{m.pct}%</div>
+                <div className="text-right text-[10px] mt-1 text-on-surface-variant">{m.pct}% to next level</div>
               </div>
             ))}
           </div>
@@ -226,44 +218,62 @@ export default function ProgressPage() {
           <LearnerDNASection />
         </section>
 
-        {/* Mastery Map */}
-        <section className="col-span-12 md:col-span-6 bg-surface-container rounded-xl p-5 border border-outline-variant/30">
-          <h3 className="text-sm font-bold mb-1">Challenge Mastery Map</h3>
-          {masteryEntries.length > 0 ? (
-            <>
-              <p className="text-[11px] text-on-surface-variant mb-4">
-                {masteryEntries.filter(e => e.is_completed).length} of {masteryEntries.length} challenges attempted
-                {' • '}
-                {masteryEntries.filter(e => e.score !== null && e.score >= 80).length} mastered
-              </p>
-              <div className="grid grid-cols-5 gap-3 mb-6">
-                {masteryEntries.slice(0, 20).map((entry, i) => {
-                  const sq = !entry.is_completed ? 'unplayed' : entry.score === null ? 'mid' : entry.score < 50 ? 'low' : entry.score < 80 ? 'mid' : 'mastered'
-                  return <div key={i} className={`w-6 h-6 rounded shadow-sm ${squareColor(sq)}`} />
-                })}
-                {/* Pad to 20 */}
-                {Array.from({ length: Math.max(0, 20 - masteryEntries.length) }).map((_, i) => (
-                  <div key={`pad-${i}`} className="w-6 h-6 rounded shadow-sm bg-surface-container-highest" />
-                ))}
+        {/* Challenge Progress */}
+        {(() => {
+          const total = masteryEntries.length
+          const attempted = masteryEntries.filter(e => e.is_completed).length
+          const mastered = masteryEntries.filter(e => e.is_completed && e.score !== null && (e.score as number) >= 80).length
+          const inProgress = masteryEntries.filter(e => e.is_completed && e.score !== null && (e.score as number) >= 50 && (e.score as number) < 80).length
+          const attemptedPct = total > 0 ? Math.round((attempted / total) * 100) : 0
+          const masteredPct = total > 0 ? Math.round((mastered / total) * 100) : 0
+
+          return (
+            <section className="col-span-12 md:col-span-6 bg-surface-container rounded-xl p-5 border border-outline-variant/30">
+              <h3 className="text-sm font-bold mb-1">Challenge Progress</h3>
+              <p className="text-[11px] text-on-surface-variant mb-5">{total} challenges available</p>
+
+              <div className="flex flex-col gap-4">
+                {/* Stat row */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-surface-container-low rounded-lg p-3 text-center">
+                    <div className="text-2xl font-headline font-bold text-on-surface">{attempted}</div>
+                    <div className="text-[10px] text-on-surface-variant font-medium mt-0.5">Attempted</div>
+                  </div>
+                  <div className="bg-primary/10 rounded-lg p-3 text-center">
+                    <div className="text-2xl font-headline font-bold text-primary">{mastered}</div>
+                    <div className="text-[10px] text-primary/80 font-medium mt-0.5">Mastered</div>
+                  </div>
+                  <div className="bg-surface-container-low rounded-lg p-3 text-center">
+                    <div className="text-2xl font-headline font-bold text-tertiary">{inProgress}</div>
+                    <div className="text-[10px] text-on-surface-variant font-medium mt-0.5">In Range</div>
+                  </div>
+                </div>
+
+                {/* Stacked bar */}
+                <div>
+                  <div className="flex justify-between text-[10px] font-bold text-on-surface-variant mb-1.5">
+                    <span>Library coverage</span>
+                    <span>{attemptedPct}% attempted · {masteredPct}% mastered</span>
+                  </div>
+                  <div className="w-full h-3 bg-surface-container-highest rounded-full overflow-hidden flex">
+                    <div className="h-full bg-primary transition-all duration-500" style={{ width: `${masteredPct}%` }} />
+                    <div className="h-full bg-tertiary-container transition-all duration-500" style={{ width: `${Math.max(0, attemptedPct - masteredPct)}%` }} />
+                  </div>
+                  <div className="flex gap-4 mt-2 text-[10px] text-on-surface-variant">
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary inline-block" />Mastered (≥80%)</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-tertiary-container inline-block" />Attempted</span>
+                  </div>
+                </div>
+
+                {attempted === 0 && (
+                  <p className="text-xs text-on-surface-variant text-center pt-1">
+                    Complete your first challenge to start tracking progress
+                  </p>
+                )}
               </div>
-            </>
-          ) : (
-            <>
-              <p className="text-[11px] text-on-surface-variant mb-4">Complete challenges to build your mastery map</p>
-              <div className="grid grid-cols-5 gap-3 mb-6">
-                {Array.from({ length: 20 }).map((_, i) => (
-                  <div key={i} className="w-6 h-6 rounded shadow-sm bg-surface-container-highest" />
-                ))}
-              </div>
-            </>
-          )}
-          <div className="flex items-center gap-4 text-[10px] font-bold text-on-surface-variant pt-2 border-t border-outline-variant/20">
-            <div className="flex items-center gap-1"><div className="w-2 h-2 rounded bg-surface-container-highest" /> Unplayed</div>
-            <div className="flex items-center gap-1"><div className="w-2 h-2 rounded bg-error" /> &lt;50</div>
-            <div className="flex items-center gap-1"><div className="w-2 h-2 rounded bg-tertiary-container" /> 50–79</div>
-            <div className="flex items-center gap-1"><div className="w-2 h-2 rounded bg-primary" /> 80+ Mastered</div>
-          </div>
-        </section>
+            </section>
+          )
+        })()}
 
         {/* Recent Thinking Patterns */}
         <section className="col-span-12 md:col-span-6 bg-surface-container rounded-xl p-5 border border-outline-variant/30">
@@ -363,130 +373,194 @@ export default function ProgressPage() {
           <LumaReflectionCard />
         </section>
 
-        {/* Your Growth — Frame Move */}
+        {/* Your Growth */}
         <section className="col-span-12 bg-surface-container rounded-xl overflow-hidden border border-outline-variant/30">
-          <button className="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-high transition-colors">
+          <button
+            className="w-full flex items-center justify-between p-4 text-left hover:bg-surface-container-high transition-colors"
+            onClick={() => setGrowthOpen(o => !o)}
+          >
             <div className="flex items-center gap-3">
               <span className="material-symbols-outlined text-primary">trending_up</span>
               <div>
-                <h3 className="text-sm font-bold">Your Growth — Frame Move</h3>
-                <p className="text-[11px] text-on-surface-variant">See how your thinking has evolved over time</p>
+                <h3 className="text-sm font-bold">Your Growth</h3>
+                <p className="text-[11px] text-on-surface-variant">First response vs. latest — how your thinking has evolved</p>
               </div>
             </div>
-            <span className="material-symbols-outlined">expand_more</span>
+            <span
+              className="material-symbols-outlined transition-transform duration-200"
+              style={{ transform: growthOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+            >
+              expand_more
+            </span>
           </button>
-          <div className="p-5 border-t border-outline-variant/20 bg-white/40">
-            {growthSnapshot === null ? (
-              /* Loading state */
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="flex flex-col gap-2">
-                  <div className="h-4 bg-surface-container-highest rounded animate-pulse w-24" />
-                  <div className="h-20 bg-surface-container-low rounded-lg animate-pulse" />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <div className="h-4 bg-surface-container-highest rounded animate-pulse w-24" />
-                  <div className="h-20 bg-surface-container-low rounded-lg animate-pulse" />
-                </div>
-              </div>
-            ) : growthSnapshot.first === null ? (
-              /* No attempts yet */
-              <div className="flex flex-col items-center justify-center py-6 gap-2 text-center">
-                <span className="material-symbols-outlined text-2xl text-on-surface-variant">trending_up</span>
-                <p className="text-sm text-on-surface-variant">Complete your first challenge to see your growth</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* First response */}
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">Day 1 Response</span>
-                    <span className="bg-surface-container-highest text-on-surface px-2 py-0.5 rounded text-[10px] font-bold">
-                      {growthSnapshot.first.grade_label} · {growthSnapshot.first.total_score}%
-                    </span>
+          {growthOpen && (
+            <div className="p-5 border-t border-outline-variant/20 bg-white/40">
+              {growthSnapshot === null ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="flex flex-col gap-2">
+                    <div className="h-4 bg-surface-container-highest rounded animate-pulse w-24" />
+                    <div className="h-20 bg-surface-container-low rounded-lg animate-pulse" />
                   </div>
-                  <p className="text-xs italic text-on-surface-variant bg-surface-container-low p-3 rounded-lg border border-outline-variant/10 leading-relaxed">
-                    &ldquo;{growthSnapshot.first.excerpt}&rdquo;
-                  </p>
-                </div>
-                {/* Latest response — or prompt if only one */}
-                {growthSnapshot.latest === null ? (
-                  <div className="flex flex-col items-center justify-center gap-2 text-center bg-surface-container-low p-3 rounded-lg border border-outline-variant/10">
-                    <span className="material-symbols-outlined text-lg text-on-surface-variant">add_circle</span>
-                    <p className="text-xs text-on-surface-variant">Complete more challenges to see your growth</p>
+                  <div className="flex flex-col gap-2">
+                    <div className="h-4 bg-surface-container-highest rounded animate-pulse w-24" />
+                    <div className="h-20 bg-surface-container-low rounded-lg animate-pulse" />
                   </div>
-                ) : (
+                </div>
+              ) : growthSnapshot.first === null ? (
+                <div className="flex flex-col items-center justify-center py-6 gap-2 text-center">
+                  <span className="material-symbols-outlined text-2xl text-on-surface-variant">trending_up</span>
+                  <p className="text-sm text-on-surface-variant">Complete your first challenge to see your growth</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold uppercase tracking-wide text-primary">Latest Response</span>
-                      <span className="bg-primary-fixed text-primary px-2 py-0.5 rounded text-[10px] font-bold">
-                        {growthSnapshot.latest.grade_label} · {growthSnapshot.latest.total_score}%
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">First Response</span>
+                      <span className="bg-surface-container-highest text-on-surface px-2 py-0.5 rounded text-[10px] font-bold">
+                        {growthSnapshot.first.grade_label} · {growthSnapshot.first.total_score}%
                       </span>
                     </div>
-                    <p className="text-xs text-on-surface bg-primary/5 p-3 rounded-lg border border-primary/20 leading-relaxed">
-                      &ldquo;{growthSnapshot.latest.excerpt}&rdquo;
+                    <p className="text-xs italic text-on-surface-variant bg-surface-container-low p-3 rounded-lg border border-outline-variant/10 leading-relaxed">
+                      &ldquo;{growthSnapshot.first.excerpt}&rdquo;
                     </p>
                   </div>
-                )}
-              </div>
-            )}
-          </div>
+                  {growthSnapshot.latest === null ? (
+                    <div className="flex flex-col items-center justify-center gap-2 text-center bg-surface-container-low p-3 rounded-lg border border-outline-variant/10">
+                      <span className="material-symbols-outlined text-lg text-on-surface-variant">add_circle</span>
+                      <p className="text-xs text-on-surface-variant">Complete more challenges to see your growth</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-primary">Latest Response</span>
+                        <span className="bg-primary-fixed text-primary px-2 py-0.5 rounded text-[10px] font-bold">
+                          {growthSnapshot.latest.grade_label} · {growthSnapshot.latest.total_score}%
+                        </span>
+                      </div>
+                      <p className="text-xs text-on-surface bg-primary/5 p-3 rounded-lg border border-primary/20 leading-relaxed">
+                        &ldquo;{growthSnapshot.latest.excerpt}&rdquo;
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </section>
 
         {/* Certification Path */}
-        <section className="col-span-12 bg-surface-container-highest/50 rounded-xl p-6 border-2 border-dashed border-outline-variant relative overflow-hidden">
-          <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px] flex items-center justify-center z-10">
-            <div className="bg-on-surface text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-xl">
-              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>lock</span>
-              <span className="text-xs font-bold">LOCKED: REACH LEVEL 3 IN ALL MOVES</span>
-            </div>
-          </div>
-          <div className="opacity-50 flex flex-col md:flex-row items-center gap-8">
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-24 h-24 rounded-full border-4 border-primary/20 flex items-center justify-center bg-white shadow-inner">
-                <span className="material-symbols-outlined text-5xl text-primary/40">verified</span>
-              </div>
-              <div className="text-center">
-                <h3 className="font-headline font-bold text-lg">HackProduct Certified</h3>
-                <p className="text-[10px] font-bold uppercase text-on-surface-variant">Industry Ready</p>
-              </div>
-            </div>
-            <div className="flex-1 w-full flex flex-col gap-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white/40 p-3 rounded-lg border border-outline-variant/20">
-                  <div className="text-[10px] font-bold text-on-surface-variant mb-1">CHALLENGE QUOTA</div>
-                  <div className="text-sm font-bold">12 / 20 challenges</div>
-                  <div className="w-full h-1 bg-surface-container-highest mt-2 rounded-full overflow-hidden">
-                    <div className="bg-primary h-full" style={{ width: '60%' }} />
+        {(() => {
+          const qualifiedChallenges = masteryEntries.filter(e => e.is_completed && e.score !== null && (e.score as number) >= 60).length
+          const challengePct = Math.min(100, Math.round((qualifiedChallenges / CERT_CHALLENGE_QUOTA) * 100))
+
+          const moveLevelMap = new Map<string, number>(moves.map(m => [m.move as string, m.level]))
+          const movesAtLevel = CERT_MOVES.filter(m => (moveLevelMap.get(m) ?? 0) >= CERT_MOVE_LEVEL).length
+          const movePct = Math.round((movesAtLevel / CERT_MOVES.length) * 100)
+
+          const isCertified = qualifiedChallenges >= CERT_CHALLENGE_QUOTA && movesAtLevel === CERT_MOVES.length
+          // Overall = average of two gates (capstone not yet available)
+          const overallPct = Math.round((challengePct + movePct) / 2)
+
+          return (
+            <section className="col-span-12 bg-surface-container rounded-xl p-6 border border-outline-variant/30">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                {/* Badge */}
+                <div className="flex flex-col items-center gap-2 shrink-0">
+                  <div className={`w-20 h-20 rounded-full border-4 flex items-center justify-center shadow-inner ${isCertified ? 'border-primary bg-primary/10' : 'border-outline-variant bg-surface-container-high'}`}>
+                    <span
+                      className={`material-symbols-outlined text-5xl ${isCertified ? 'text-primary' : 'text-on-surface-variant/40'}`}
+                      style={{ fontVariationSettings: isCertified ? "'FILL' 1" : "'FILL' 0" }}
+                    >
+                      verified
+                    </span>
+                  </div>
+                  <div className="text-center">
+                    <h3 className="font-headline font-bold text-base">HackProduct Certified</h3>
+                    <p className="text-[10px] font-bold uppercase text-on-surface-variant">
+                      {isCertified ? 'Achieved' : 'In Progress'}
+                    </p>
                   </div>
                 </div>
-                <div className="bg-white/40 p-3 rounded-lg border border-outline-variant/20">
-                  <div className="text-[10px] font-bold text-on-surface-variant mb-1">DIMENSION MASTERY</div>
-                  <div className="text-sm font-bold">3 / 5 dimensions (Lvl 2+)</div>
-                  <div className="w-full h-1 bg-surface-container-highest mt-2 rounded-full overflow-hidden">
-                    <div className="bg-primary h-full" style={{ width: '60%' }} />
+
+                {/* Gates */}
+                <div className="flex-1 w-full flex flex-col gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {/* Gate 1 — Challenge Quota */}
+                    <div className="bg-surface-container-low p-3 rounded-lg border border-outline-variant/20">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">Challenge Quota</span>
+                        {qualifiedChallenges >= CERT_CHALLENGE_QUOTA && (
+                          <span className="material-symbols-outlined text-sm text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                        )}
+                      </div>
+                      <div className="text-sm font-bold mb-0.5">
+                        {qualifiedChallenges} / {CERT_CHALLENGE_QUOTA}
+                        <span className="text-[10px] font-normal text-on-surface-variant ml-1">scored ≥ 60%</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+                        <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${challengePct}%` }} />
+                      </div>
+                    </div>
+
+                    {/* Gate 2 — Move Mastery */}
+                    <div className="bg-surface-container-low p-3 rounded-lg border border-outline-variant/20">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">Move Mastery</span>
+                        {movesAtLevel === CERT_MOVES.length && (
+                          <span className="material-symbols-outlined text-sm text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                        )}
+                      </div>
+                      <div className="text-sm font-bold mb-0.5">
+                        {movesAtLevel} / {CERT_MOVES.length}
+                        <span className="text-[10px] font-normal text-on-surface-variant ml-1">moves at Level {CERT_MOVE_LEVEL}+</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+                        <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${movePct}%` }} />
+                      </div>
+                      {/* Per-move dots */}
+                      <div className="flex gap-1.5 mt-2">
+                        {CERT_MOVES.map(m => {
+                          const lvl = moveLevelMap.get(m) ?? 0
+                          const done = lvl >= CERT_MOVE_LEVEL
+                          return (
+                            <div key={m} className="flex flex-col items-center gap-0.5">
+                              <div className={`w-2 h-2 rounded-full ${done ? 'bg-primary' : 'bg-surface-container-highest'}`} />
+                              <span className="text-[9px] text-on-surface-variant capitalize">{m}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Gate 3 — Capstone (coming soon) */}
+                    <div className="bg-surface-container-low p-3 rounded-lg border border-outline-variant/20 opacity-50">
+                      <div className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide mb-1">Capstone</div>
+                      <div className="text-sm font-bold mb-0.5 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-sm text-on-surface-variant">lock</span>
+                        Coming soon
+                      </div>
+                      <div className="w-full h-1.5 bg-surface-container-highest rounded-full" />
+                    </div>
                   </div>
-                </div>
-                <div className="bg-white/40 p-3 rounded-lg border border-outline-variant/20">
-                  <div className="text-[10px] font-bold text-on-surface-variant mb-1">CAPSTONE</div>
-                  <div className="text-sm font-bold">Locked</div>
-                  <div className="w-full h-1 bg-surface-container-highest mt-2 rounded-full" />
+
+                  {/* Overall bar */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <div className="flex justify-between text-[11px] font-bold mb-1">
+                        <span>Overall Certification Progress</span>
+                        <span>{overallPct}%</span>
+                      </div>
+                      <div className="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                        <div className="bg-primary h-full rounded-full transition-all duration-500" style={{ width: `${overallPct}%` }} />
+                      </div>
+                    </div>
+                    <LumaGlyph size={40} state={isCertified ? 'celebrating' : 'idle'} className="text-primary shrink-0" />
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center justify-between gap-4 mt-2">
-                <div className="flex-1">
-                  <div className="flex justify-between text-[11px] font-bold mb-1">
-                    <span>Overall Certification Progress</span>
-                    <span>42%</span>
-                  </div>
-                  <div className="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden">
-                    <div className="bg-primary h-full" style={{ width: '42%' }} />
-                  </div>
-                </div>
-                <LumaGlyph size={48} state="none" className="text-primary grayscale" />
-              </div>
-            </div>
-          </div>
-        </section>
+            </section>
+          )
+        })()}
       </div>
 
       {/* ── Footer ── */}

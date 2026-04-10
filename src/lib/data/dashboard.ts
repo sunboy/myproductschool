@@ -201,11 +201,35 @@ export async function getUserNotes(userId: string): Promise<UserNote[]> {
   return (data ?? []) as UserNote[]
 }
 
-// ── Move levels (mock for now) ───────────────────────────────
+// ── Move levels ──────────────────────────────────────────────
 
-export async function getMoveLevel(_userId: string): Promise<MoveLevel[]> {
-  // Move levels are fully mock until scoring pipeline tracks per-move progression
-  return MOCK_MOVE_LEVELS
+const MOVE_ICONS: Record<string, string> = {
+  frame: '◇',
+  list: '◈',
+  optimize: '◆',
+  win: '◎',
+}
+
+export async function getMoveLevel(userId: string): Promise<MoveLevel[]> {
+  if (IS_MOCK) return MOCK_MOVE_LEVELS
+
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .from('move_levels')
+    .select('move, level, progress_pct')
+    .eq('user_id', userId)
+    .order('move')
+
+  if (!data || data.length === 0) return MOCK_MOVE_LEVELS
+
+  return data.map(row => ({
+    move: row.move.charAt(0).toUpperCase() + row.move.slice(1),
+    icon: MOVE_ICONS[row.move] ?? '◇',
+    level: row.level,
+    pct: row.progress_pct,
+  }))
 }
 
 // ── Helpers ──────────────────────────────────────────────────

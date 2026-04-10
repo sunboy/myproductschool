@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
-import type { StudyPlan, AutopsyProduct, DomainWithProgress } from '@/lib/types'
+import type { StudyPlan, AutopsyProduct, DomainWithProgress, LearnModule } from '@/lib/types'
 import { getShowcaseProducts } from '@/lib/data/showcase'
-
-const ROLES = ['All', 'SWE', 'Data Eng', 'ML Eng', 'DevOps', 'EM', 'Founding Eng'] as const
+import { getStudyPlanSummaries } from '@/lib/data/study-plans'
+import { getLearnModuleSummaries } from '@/lib/data/learn-modules'
+import { getDomainsWithProgress } from '@/lib/data/domains'
 
 const PARADIGMS = [
   {
@@ -75,91 +76,31 @@ const STUDY_PLANS_MOCK = [
   },
 ]
 
-interface ExplorePageProps {
-  searchParams: Promise<{ role?: string; paradigm?: string }>
-}
-
-async function fetchStudyPlans(): Promise<typeof STUDY_PLANS_MOCK> {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-    const res = await fetch(`${baseUrl}/api/study-plans?limit=3`, { next: { revalidate: 300 } })
-    if (!res.ok) return STUDY_PLANS_MOCK
-    const data: StudyPlan[] = await res.json()
-    if (!data?.length) return STUDY_PLANS_MOCK
-    return data.map(p => ({
-      title: p.title,
-      roles: p.role_tags ?? [],
-      duration: `${p.estimated_hours} hrs`,
-      description: p.description ?? '',
-      slug: p.slug,
-      participantCount: (p as unknown as { participant_count?: number }).participant_count
-        ? `+${(p as unknown as { participant_count: number }).participant_count}`
-        : '',
-    }))
-  } catch {
-    return STUDY_PLANS_MOCK
-  }
-}
-
-interface ModuleSummary {
-  id: string
-  slug: string
-  name: string
-  tagline: string
-  cover_color: string | null
-  chapter_count: number
-  est_minutes: number
-}
-
-async function fetchModules(): Promise<ModuleSummary[]> {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-    const res = await fetch(`${baseUrl}/api/learn?limit=8`, { next: { revalidate: 300 } })
-    if (!res.ok) return []
-    const data = await res.json()
-    return Array.isArray(data) ? data : (data.modules ?? [])
-  } catch {
-    return []
-  }
-}
-
-async function fetchDomains(): Promise<DomainWithProgress[]> {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-    const res = await fetch(`${baseUrl}/api/domains`, { next: { revalidate: 300 } })
-    if (!res.ok) return []
-    const data = await res.json()
-    return Array.isArray(data) ? data : (data.domains ?? [])
-  } catch {
-    return []
-  }
-}
-
-export default async function ExplorePage({ searchParams }: ExplorePageProps) {
-  const { role, paradigm } = await searchParams
-  const activeRole = role || 'All'
-  const activeParadigm = paradigm || null
-
-  const [studyPlans, showcaseProducts, modules, domains] = await Promise.all([
-    fetchStudyPlans().catch(() => [] as Awaited<ReturnType<typeof fetchStudyPlans>>),
+export default async function ExplorePage() {
+  const [studyPlansRaw, showcaseProducts, modules, domains] = await Promise.all([
+    getStudyPlanSummaries(3).catch(() => [] as StudyPlan[]),
     getShowcaseProducts().catch(() => [] as AutopsyProduct[]),
-    fetchModules().catch(() => [] as ModuleSummary[]),
-    fetchDomains().catch(() => [] as DomainWithProgress[]),
+    getLearnModuleSummaries(8).catch(() => [] as LearnModule[]),
+    getDomainsWithProgress().catch(() => [] as DomainWithProgress[]),
   ])
 
-  const buildHref = (r: string) => {
-    const params = new URLSearchParams()
-    if (r !== 'All') params.set('role', r)
-    if (activeParadigm) params.set('paradigm', activeParadigm)
-    const qs = params.toString()
-    return qs ? `/explore?${qs}` : '/explore'
-  }
+  const studyPlans = studyPlansRaw.length > 0
+    ? studyPlansRaw.map(p => ({
+        title: p.title,
+        roles: p.role_tags ?? [],
+        duration: `${p.estimated_hours} hrs`,
+        description: p.description ?? '',
+        slug: p.slug,
+        participantCount: (p as unknown as { participant_count?: number }).participant_count
+          ? `+${(p as unknown as { participant_count: number }).participant_count}`
+          : '',
+      }))
+    : STUDY_PLANS_MOCK
 
   const buildParadigmHref = (name: string) => {
     // Navigate to Practice Hub filtered by this paradigm
     const params = new URLSearchParams()
     params.set('paradigm', name.toLowerCase().replace(' ', '-'))
-    if (activeRole !== 'All') params.set('role', activeRole)
     return `/challenges?${params.toString()}`
   }
 
@@ -173,28 +114,11 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
         </div>
       </section>
 
-      {/* Role Filter Row */}
-      <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1">
-        {ROLES.map(r => (
-          <Link
-            key={r}
-            href={buildHref(r)}
-            className={`px-5 py-1.5 rounded-full text-xs font-bold shadow-sm transition-all ${
-              activeRole === r
-                ? 'bg-primary text-on-primary'
-                : 'bg-surface-variant text-on-surface-variant hover:bg-surface-container-high'
-            }`}
-          >
-            {r}
-          </Link>
-        ))}
-      </div>
-
       {/* Luma Recommendation Banner */}
       <section className="bg-primary-container/40 border border-primary-container rounded-xl p-4 flex items-center gap-4">
         <LumaGlyph size={40} state="speaking" className="text-primary shrink-0" />
-        <div className="relative bg-white/60 px-4 py-2 rounded-2xl rounded-tl-none border border-white/40 flex-1">
-          <p className="text-sm text-on-primary-container font-medium leading-relaxed">
+        <div className="relative bg-surface-container-low px-4 py-2 rounded-2xl rounded-tl-none border border-outline-variant/30 flex-1">
+          <p className="text-sm text-on-surface font-medium leading-relaxed">
             New here? Start with a <strong>Traditional</strong> challenge to baseline your thinking, then explore AI paradigms once you have your skill radar.
           </p>
         </div>
@@ -288,7 +212,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
           </div>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {domains.slice(0, 10).map(d => (
-              <Link key={d.id} href={`/domains/${d.slug}`} className="flex flex-col items-center gap-1.5 shrink-0 w-20 py-3 px-2 rounded-xl hover:bg-surface-container transition-colors text-center">
+              <Link key={d.id} href={`/explore/domains/${d.slug}`} className="flex flex-col items-center gap-1.5 shrink-0 w-20 py-3 px-2 rounded-xl hover:bg-surface-container transition-colors text-center">
                 <div className="w-11 h-11 rounded-2xl bg-primary-fixed flex items-center justify-center">
                   <span className="material-symbols-outlined text-xl text-primary" style={{ fontVariationSettings: "'FILL' 0" }}>{d.icon ?? 'category'}</span>
                 </div>
@@ -349,7 +273,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
       <section className="space-y-4 pt-2">
         <div className="flex items-center justify-between">
           <h2 className="font-headline text-lg font-bold text-on-surface">Study Plans</h2>
-          <Link href="/prep/study-plans" className="text-xs font-bold text-primary hover:underline">
+          <Link href="/explore/plans" className="text-xs font-bold text-primary hover:underline">
             View All
           </Link>
         </div>
@@ -357,7 +281,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
           {studyPlans.map(plan => (
             <Link
               key={plan.slug}
-              href={`/prep/study-plans/${plan.slug}`}
+              href={`/explore/plans/${plan.slug}`}
               className="bg-surface-container-low rounded-xl p-4 border border-outline-variant/30 flex flex-col justify-between hover:shadow-sm transition-shadow"
             >
               <div>

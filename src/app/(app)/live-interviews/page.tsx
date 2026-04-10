@@ -1,6 +1,7 @@
 import { MOCK_LIVE_INTERVIEW_PERSONAS } from '@/lib/mock-live-interviews'
 import FilteredPersonaGrid from './FilteredPersonaGrid'
 import PastInterviews from './PastInterviews'
+import { GuidedTab } from '../challenges/GuidedTab'
 
 export interface ScenarioBrief {
   id: string
@@ -71,24 +72,58 @@ async function getScenarios(): Promise<ScenarioBrief[]> {
   }))
 }
 
-export default async function LiveInterviewsPage() {
+export default async function LiveInterviewsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>
+}) {
+  const { tab } = await searchParams
+  const activeTab = tab === 'prep' ? 'prep' : 'mock'
+
   const [personas, scenarios] = await Promise.all([getPersonas(), getScenarios()])
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       {/* Header */}
       <section>
-        <h1 className="font-headline text-3xl font-extrabold text-on-surface">Live Interviews</h1>
+        <h1 className="font-headline text-3xl font-extrabold text-on-surface">Interviews</h1>
         <p className="text-sm text-on-surface-variant mt-1">
-          Practice product sense with Luma as your interviewer. Pick a company and role, then choose a scenario or go free-form.
+          Practice mock interviews and follow structured study plans to prepare.
         </p>
       </section>
 
-      {/* Filtered grid — client component handles chips + cards + scenario picker */}
-      <FilteredPersonaGrid personas={personas} scenarios={scenarios} />
+      {/* Tab Toggle */}
+      <div className="flex items-center gap-1 bg-surface-container rounded-xl p-1 w-fit">
+        <a
+          href="/live-interviews"
+          className={`px-5 py-2 rounded-lg text-sm font-bold transition-colors ${
+            activeTab === 'mock'
+              ? 'bg-primary text-on-primary shadow-sm'
+              : 'text-on-surface-variant hover:text-on-surface'
+          }`}
+        >
+          Mock Interviews
+        </a>
+        <a
+          href="/live-interviews?tab=prep"
+          className={`px-5 py-2 rounded-lg text-sm font-bold transition-colors ${
+            activeTab === 'prep'
+              ? 'bg-primary text-on-primary shadow-sm'
+              : 'text-on-surface-variant hover:text-on-surface'
+          }`}
+        >
+          Study Plans
+        </a>
+      </div>
 
-      {/* Past completed/abandoned interviews */}
-      <PastInterviews />
+      {activeTab === 'mock' ? (
+        <>
+          <FilteredPersonaGrid personas={personas} scenarios={scenarios} />
+          <PastInterviews />
+        </>
+      ) : (
+        <GuidedTab />
+      )}
     </div>
   )
 }

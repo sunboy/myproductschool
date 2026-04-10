@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -55,34 +55,38 @@ export default function SettingsPage() {
   const [editingName, setEditingName] = useState(false)
   const [profileSaving, setProfileSaving] = useState(false)
   const [profileInitial, setProfileInitial] = useState('?')
-  // Learning preferences (local state only — persisted to localStorage)
-  const [flowFocus, setFlowFocus] = useState<string>(() =>
-    typeof window !== 'undefined' ? (localStorage.getItem('hackproduct_flow_focus') ?? 'List') : 'List'
-  )
-  const [difficulty, setDifficulty] = useState<string>(() =>
-    typeof window !== 'undefined' ? (localStorage.getItem('hackproduct_difficulty') ?? 'Mixed') : 'Mixed'
-  )
-  const [timezone, setTimezone] = useState<string>(() =>
-    typeof window !== 'undefined' ? (localStorage.getItem('hackproduct_timezone') ?? Intl.DateTimeFormat().resolvedOptions().timeZone) : 'Asia/Kolkata'
-  )
+  const [preferredRole, setPreferredRole] = useState<string | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [avatarUploading, setAvatarUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  // Learning preferences — synced to backend + localStorage
+  const [flowFocus, setFlowFocus] = useState<string>('List')
+  const [difficulty, setDifficulty] = useState<string>('Mixed')
+  const [timezone, setTimezone] = useState<string>('Asia/Kolkata')
 
   useEffect(() => {
     fetch('/api/settings')
       .then(r => r.json())
-      .then((data: UserSettings) => {
+      .then((data: UserSettings & { flow_focus?: string; difficulty?: string; timezone?: string }) => {
         setSettings(data)
         setDailyGoal(data.daily_goal_count ?? 3)
         setNotifications(data.notifications ?? DEFAULT_NOTIFICATIONS)
+        // Prefer API values over localStorage
+        setFlowFocus(data.flow_focus ?? localStorage.getItem('hackproduct_flow_focus') ?? 'List')
+        setDifficulty(data.difficulty ?? localStorage.getItem('hackproduct_difficulty') ?? 'Mixed')
+        setTimezone(data.timezone ?? localStorage.getItem('hackproduct_timezone') ?? Intl.DateTimeFormat().resolvedOptions().timeZone)
       })
       .catch(() => {})
 
     fetch('/api/profile')
       .then(r => r.ok ? r.json() : null)
-      .then((data: { display_name?: string } | null) => {
+      .then((data: { display_name?: string; preferred_role?: string; avatar_url?: string } | null) => {
         if (data?.display_name) {
           setDisplayName(data.display_name)
           setProfileInitial(data.display_name[0]?.toUpperCase() ?? '?')
         }
+        if (data?.preferred_role) setPreferredRole(data.preferred_role)
+        if (data?.avatar_url) setAvatarUrl(data.avatar_url)
       })
       .catch(() => {})
   }, [])
@@ -105,7 +109,27 @@ export default function SettingsPage() {
     }
   }
 
-  const patchSettings = useCallback(async (patch: Partial<{ notifications: NotificationSettings; daily_goal_count: number }>) => {
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setAvatarUploading(true)
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      const res = await fetch('/api/profile/avatar', { method: 'POST', body: form })
+      if (res.ok) {
+        const data = await res.json()
+        setAvatarUrl(data.avatar_url)
+      }
+    } catch {
+      // ignore
+    } finally {
+      setAvatarUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const patchSettings = useCallback(async (patch: Partial<{ notifications: NotificationSettings; daily_goal_count: number; flow_focus: string; difficulty: string; timezone: string }>) => {
     setSaving(true)
     try {
       const resp = await fetch('/api/settings', {
@@ -157,10 +181,35 @@ export default function SettingsPage() {
         <section className="bg-surface-container-high rounded-xl p-8 transition-all hover:bg-surface-container-highest">
           <h3 className="font-nunito text-xs font-bold uppercase tracking-[0.2em] text-outline mb-8">ACCOUNT</h3>
           <div className="flex items-center space-x-6 mb-10">
-            <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-on-primary text-2xl font-headline font-bold">{profileInitial}</div>
-            <div>
-              <span className="text-primary font-bold text-sm">Avatar updates coming soon</span>
+            <div
+              className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-on-primary text-2xl font-headline font-bold relative cursor-pointer hover:opacity-90 transition-opacity overflow-hidden"
+              onClick={() => fileInputRef.current?.click()}
+              suppressHydrationWarning
+            >
+              {avatarUrl
+                ? <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                : <span suppressHydrationWarning>{profileInitial}</span>
+              }
+              {avatarUploading && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-white text-xl animate-spin">progress_activity</span>
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/0 hover:bg-black/20 flex items-end justify-center pb-1 transition-colors">
+                <span className="material-symbols-outlined text-white text-sm opacity-0 hover:opacity-100">photo_camera</span>
+              </div>
             </div>
+            <div>
+              <p className="text-sm font-semibold text-on-surface">Click avatar to upload photo</p>
+              <p className="text-xs text-on-surface-variant mt-0.5">Max 2MB, image files only</p>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
           </div>
           <div className="space-y-6">
             {/* Name Row */}
@@ -198,7 +247,7 @@ export default function SettingsPage() {
             <div className="flex justify-between items-center py-4 border-b border-outline-variant/20">
               <div>
                 <label className="block text-xs text-outline font-bold mb-1">Role</label>
-                <p className="font-nunito text-lg italic">Engineer &rarr; PM</p>
+                <p className="font-nunito text-lg italic" suppressHydrationWarning>{preferredRole ?? settings?.preferred_role ?? 'Not set'}</p>
               </div>
               <Link href="/onboarding/role" className="material-symbols-outlined text-outline hover:text-primary transition-colors">edit</Link>
             </div>
@@ -221,7 +270,7 @@ export default function SettingsPage() {
             {/* Item 1 */}
             <div className="flex justify-between items-center h-16 px-4 hover:bg-surface-container rounded-lg transition-colors">
               <div className="flex items-center space-x-3">
-                <span className="font-nunito">Daily Quick Take reminder</span>
+                <span className="font-nunito">New challenge alerts</span>
                 <span className="bg-primary-container/10 text-primary-container text-xs px-2 py-1 rounded font-bold">9:00 AM</span>
               </div>
               <Toggle enabled={notifications.new_challenges} onToggle={() => toggleNotification('new_challenges')} />
@@ -278,8 +327,10 @@ export default function SettingsPage() {
               <select
                 value={flowFocus}
                 onChange={e => {
-                  setFlowFocus(e.target.value)
-                  localStorage.setItem('hackproduct_flow_focus', e.target.value)
+                  const v = e.target.value
+                  setFlowFocus(v)
+                  localStorage.setItem('hackproduct_flow_focus', v)
+                  patchSettings({ flow_focus: v })
                 }}
                 className="font-headline text-xl bg-transparent w-full border-none outline-none cursor-pointer text-on-surface"
               >
@@ -296,8 +347,10 @@ export default function SettingsPage() {
               <select
                 value={difficulty}
                 onChange={e => {
-                  setDifficulty(e.target.value)
-                  localStorage.setItem('hackproduct_difficulty', e.target.value)
+                  const v = e.target.value
+                  setDifficulty(v)
+                  localStorage.setItem('hackproduct_difficulty', v)
+                  patchSettings({ difficulty: v })
                 }}
                 className="font-headline text-xl bg-transparent w-full border-none outline-none cursor-pointer text-on-surface"
               >
@@ -313,8 +366,10 @@ export default function SettingsPage() {
               <select
                 value={timezone}
                 onChange={e => {
-                  setTimezone(e.target.value)
-                  localStorage.setItem('hackproduct_timezone', e.target.value)
+                  const v = e.target.value
+                  setTimezone(v)
+                  localStorage.setItem('hackproduct_timezone', v)
+                  patchSettings({ timezone: v })
                 }}
                 className="font-headline text-xl bg-transparent w-full border-none outline-none cursor-pointer text-on-surface"
               >

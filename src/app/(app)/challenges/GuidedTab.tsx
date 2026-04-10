@@ -2,8 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+
+interface CohortData {
+  total_participants: number
+  user_rank: number | null
+  user_percentile: number | null
+  rankings: Array<{ rank: number; user_id: string; display_name: string; score: number }>
+}
 
 interface Company {
   id: string
@@ -46,22 +52,12 @@ const COMPANY_COLORS: Record<string, string> = {
 }
 
 export function GuidedTab() {
-  const router = useRouter()
   const [companies, setCompanies] = useState<Company[]>(COMPANIES_MOCK)
   const [selectedCompany, setSelectedCompany] = useState<Company>(COMPANIES_MOCK[0])
   const [coachingDismissed, setCoachingDismissed] = useState(false)
-  const [interviewDate, setInterviewDate] = useState<string | null>(null)
   const [expandedChapter, setExpandedChapter] = useState<number | null>(1)
   const [chapters, setChapters] = useState<Chapter[]>([])
-
-  const daysLeft = interviewDate
-    ? Math.max(0, Math.ceil((new Date(interviewDate).getTime() - new Date().getTime()) / 86400000))
-    : null
-
-  useEffect(() => {
-    const saved = localStorage.getItem('hackproduct_interview_date')
-    if (saved) setInterviewDate(saved)
-  }, [])
+  const [cohort, setCohort] = useState<CohortData | null>(null)
 
   useEffect(() => {
     fetch('/api/prep/companies')
@@ -73,12 +69,15 @@ export function GuidedTab() {
         }
       })
       .catch(() => {})
-  }, [])
 
-  useEffect(() => {
     fetch('/api/prep/challenges')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data?.chapters?.length) setChapters(data.chapters) })
+      .catch(() => {})
+
+    fetch('/api/cohort/leaderboard')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setCohort(data) })
       .catch(() => {})
   }, [])
 
@@ -189,89 +188,74 @@ export function GuidedTab() {
           </div>
         </div>
 
-        {/* Right Column: Status & Simulation */}
-        <div className="col-span-12 lg:col-span-4 space-y-4">
-          {/* Prep Status Card */}
-          <div className="bg-surface-container rounded-xl p-5 shadow-sm border border-white/50">
-            <h3 className="font-bold text-sm mb-4">Prep Status</h3>
-            <div className="flex items-center gap-6">
-              <div className="relative w-20 h-20 flex items-center justify-center">
-                <svg className="w-full h-full -rotate-90">
-                  <circle className="text-outline-variant" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" strokeWidth="6" />
-                  <circle className="text-primary" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" strokeDasharray="213.6" strokeDashoffset="138.8" strokeWidth="6" />
-                </svg>
-                <span className="absolute text-xl font-black font-headline text-on-surface">35%</span>
+        {/* Right Column: Community */}
+        <div className="col-span-12 lg:col-span-4">
+          <div className="bg-surface-container rounded-xl p-5 border border-outline-variant/30">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="material-symbols-outlined text-primary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>group</span>
+              <h3 className="font-bold text-sm">This Week&apos;s Cohort</h3>
+            </div>
+
+            {cohort === null ? (
+              /* Loading */
+              <div className="space-y-2 animate-pulse">
+                <div className="h-4 bg-surface-container-highest rounded w-3/4" />
+                <div className="h-4 bg-surface-container-highest rounded w-1/2" />
+                <div className="h-4 bg-surface-container-highest rounded w-2/3" />
               </div>
-              <div className="flex-1 space-y-1">
-                {daysLeft !== null ? (
-                  <div className="text-xs font-bold text-orange-700">{daysLeft} days until interview</div>
-                ) : (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs text-on-surface-variant">Interview date:</span>
-                    <input
-                      type="date"
-                      className="text-xs border border-outline-variant rounded-lg px-2 py-1 bg-surface-container focus:outline-none focus:border-primary"
-                      min={new Date().toISOString().split('T')[0]}
-                      onChange={e => {
-                        setInterviewDate(e.target.value)
-                        localStorage.setItem('hackproduct_interview_date', e.target.value)
-                      }}
-                    />
+            ) : cohort.total_participants === 0 ? (
+              /* No active cohort */
+              <div className="flex flex-col items-center py-4 gap-2 text-center">
+                <LumaGlyph size={36} state="idle" className="text-primary" />
+                <p className="text-xs text-on-surface-variant">No active cohort challenge this week.</p>
+                <Link href="/cohort" className="text-xs font-bold text-primary hover:underline">Check back soon →</Link>
+              </div>
+            ) : (
+              <>
+                {/* Participant count */}
+                <p className="text-xs text-on-surface-variant mb-4">
+                  <span className="font-bold text-on-surface">{cohort.total_participants}</span> engineers competing this week
+                </p>
+
+                {/* Top 3 */}
+                <div className="space-y-2 mb-4">
+                  {cohort.rankings.slice(0, 3).map((r) => {
+                    const isYou = r.user_id !== 'u1' && r.user_id !== 'u2' && r.user_id !== 'u4' && cohort.user_rank === r.rank
+                    const medals = ['🥇', '🥈', '🥉']
+                    return (
+                      <div key={r.user_id} className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs ${isYou ? 'bg-primary/10 border border-primary/20' : 'bg-surface-container-low'}`}>
+                        <div className="flex items-center gap-2">
+                          <span>{medals[r.rank - 1] ?? `#${r.rank}`}</span>
+                          <span className={`font-medium ${isYou ? 'text-primary font-bold' : 'text-on-surface'}`}>
+                            {isYou ? 'You' : r.display_name}
+                          </span>
+                        </div>
+                        <span className="font-bold text-on-surface-variant">{r.score}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* User's own rank if outside top 3 */}
+                {cohort.user_rank !== null && cohort.user_rank > 3 && (
+                  <div className="flex items-center justify-between px-3 py-2 rounded-lg text-xs bg-primary/10 border border-primary/20 mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-on-surface-variant">#{cohort.user_rank}</span>
+                      <span className="font-bold text-primary">You</span>
+                    </div>
+                    <span className="text-[10px] text-on-surface-variant">Top {100 - (cohort.user_percentile ?? 0)}%</span>
                   </div>
                 )}
-                <p className="text-[10px] text-on-surface-variant">Complete more challenges to track your progress</p>
-                <div className="w-full bg-outline-variant h-1 rounded-full mt-2 overflow-hidden">
-                  <div className="bg-primary h-full w-[35%]" />
-                </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Mock Interview Simulation */}
-          <div className="bg-primary-fixed rounded-xl p-5 shadow-sm relative overflow-hidden group">
-            <div className="absolute -right-2 -bottom-2 opacity-10 group-hover:scale-110 transition-transform duration-500">
-              <LumaGlyph size={128} state="idle" className="text-primary" />
-            </div>
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-4">
-                <LumaGlyph size={40} state="speaking" className="text-primary" />
-                <div>
-                  <h3 className="font-black font-headline text-primary leading-none">Practice with Luma</h3>
-                  <p className="text-[10px] font-bold text-primary/70 uppercase tracking-tighter">AI-Powered Simulation</p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between mb-5 px-1">
-                <span className="text-xs font-bold text-primary">Standard</span>
-                <div className="w-8 h-4 bg-primary/20 rounded-full relative p-0.5 cursor-pointer">
-                  <div className="w-3 h-3 bg-white rounded-full shadow-sm" />
-                </div>
-                <span className="text-xs font-bold text-primary/40">Advanced</span>
-              </div>
-              <button
-                onClick={() => router.push('/simulation')}
-                className="w-full bg-primary text-on-primary py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#3d6549] transition-colors shadow-md"
-              >
-                Start Simulation
-                <span className="material-symbols-outlined text-sm">arrow_forward</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Community Card */}
-          <div className="bg-surface-container rounded-xl p-4 shadow-sm border border-outline-variant/30">
-            <div className="flex items-center gap-3">
-              <div className="flex -space-x-2">
-                <div className="w-6 h-6 rounded-full border-2 border-surface-container bg-primary-fixed flex items-center justify-center text-[8px] font-bold text-primary">A</div>
-                <div className="w-6 h-6 rounded-full border-2 border-surface-container bg-tertiary-container flex items-center justify-center text-[8px] font-bold text-tertiary">B</div>
-                <div className="w-6 h-6 rounded-full border-2 border-surface-container bg-secondary-container flex items-center justify-center text-[8px] font-bold text-secondary">C</div>
-                <div className="w-6 h-6 rounded-full border-2 border-surface-container bg-surface-container-high flex items-center justify-center text-[8px] font-bold">+9</div>
-              </div>
-              <span className="text-xs font-bold text-on-surface-variant">Engineers practicing for {selectedCompany.name}</span>
-            </div>
-            <Link className="mt-3 block text-[11px] font-black text-primary uppercase tracking-widest hover:underline flex items-center gap-1" href="/cohort">
-              Join discussion
-              <span className="material-symbols-outlined text-xs">chevron_right</span>
-            </Link>
+                <Link
+                  href="/cohort"
+                  className="flex items-center justify-center gap-1 w-full py-2 rounded-full border border-primary/30 text-xs font-bold text-primary hover:bg-primary/5 transition-colors"
+                >
+                  View full leaderboard
+                  <span className="material-symbols-outlined text-sm">chevron_right</span>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

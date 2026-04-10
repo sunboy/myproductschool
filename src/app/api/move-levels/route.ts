@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import type { MoveLevel, FlowMove } from '@/lib/types'
 import { IS_MOCK } from '@/lib/mock'
 
-const FLOW_MOVES: FlowMove[] = ['frame', 'list', 'weigh', 'sell']
+const FLOW_MOVES: FlowMove[] = ['frame', 'list', 'optimize', 'win'] as unknown as FlowMove[]
 
 const MOCK_MOVES: MoveLevel[] = FLOW_MOVES.map((move, i) => ({
   id: `mock-${move}`,

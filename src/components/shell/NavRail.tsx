@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { LumaGlyph } from './LumaGlyph'
 
 const navItems = [
@@ -12,13 +13,21 @@ const navItems = [
 ]
 
 interface NavRailProps {
-  dailyDone?: number
-  dailyTotal?: number
+  onAskLuma?: () => void
 }
 
-export function NavRail({ dailyDone = 0, dailyTotal = 5 }: NavRailProps) {
+export function NavRail({ onAskLuma }: NavRailProps) {
   const pathname = usePathname()
+  const [dailyDone, setDailyDone] = useState(0)
+  const dailyTotal = 5
   const pct = dailyTotal > 0 ? Math.round((dailyDone / dailyTotal) * 100) : 0
+
+  useEffect(() => {
+    fetch('/api/profile')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.daily_attempts_today != null) setDailyDone(data.daily_attempts_today) })
+      .catch(() => {})
+  }, [])
 
   return (
     <nav className="hidden md:flex flex-col h-screen sticky top-0 w-56 bg-primary shrink-0 text-white">
@@ -97,13 +106,11 @@ export function NavRail({ dailyDone = 0, dailyTotal = 5 }: NavRailProps) {
 
         {/* Ask Luma */}
         <button
-          disabled
-          title="Coming soon"
-          className="flex items-center gap-2 px-3 py-2 rounded-xl text-white/50 w-full cursor-not-allowed"
+          onClick={onAskLuma}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl text-white/80 hover:bg-white/10 hover:text-white w-full transition-colors"
         >
-          <LumaGlyph size={16} state="none" className="shrink-0" />
+          <LumaGlyph size={16} state="idle" className="shrink-0" />
           <span className="text-xs font-semibold font-label">Ask Luma</span>
-          <span className="ml-auto text-[9px] font-bold text-white/40 font-label uppercase tracking-wider">Soon</span>
         </button>
       </div>
     </nav>

@@ -3,7 +3,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import type { FlowMove } from '@/lib/types'
 import { IS_MOCK } from '@/lib/mock'
 
-const XP_PER_LEVEL = 500
+// 100 XP per level: ~10 quality challenge completions to advance one level
+const XP_PER_LEVEL = 100
 
 interface UpdateBody {
   userId: string
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
   const level_ups: FlowMove[] = []
 
   for (const move of moves) {
-    const xpDelta = Math.round(scores[move] * 10) // scale score 0-10 → xp delta
+    const xpDelta = Math.round(scores[move]) // scores are already 0–10
     const current = (currentLevels ?? []).find((l: { move: string }) => l.move === move)
     if (!current) continue
 

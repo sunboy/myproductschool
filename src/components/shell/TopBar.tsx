@@ -66,37 +66,23 @@ export function TopBar() {
           <LumaGlyph size={22} className="text-primary animate-luma-glow" state="idle" />
         </div>
 
-        {/* Search */}
-        <div className="flex-1 flex">
-          <div className="relative w-full max-w-sm">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-base pointer-events-none">
-              search
-            </span>
-            <input
-              type="text"
-              placeholder="Search challenges, concepts..."
-              className="w-full bg-surface-container rounded-full pl-9 pr-4 py-1.5 text-sm text-on-surface placeholder:text-on-surface-variant/60 outline-none border border-outline-variant/40 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
-            />
-          </div>
-        </div>
-
         {/* Right badges + avatar */}
         <div className="flex items-center gap-2 shrink-0">
 
-          {/* Streak */}
-          <div className="flex items-center gap-1 px-2.5 py-1 bg-tertiary-fixed/70 rounded-full">
+          {/* Streak + XP — suppressHydrationWarning because these update after client fetch */}
+          <div className="flex items-center gap-1 px-2.5 py-1 bg-tertiary-fixed/70 rounded-full" suppressHydrationWarning>
             <span
               className="material-symbols-outlined text-tertiary text-sm"
               style={{ fontVariationSettings: "'FILL' 1" }}
             >
               local_fire_department
             </span>
-            <span className="text-xs font-bold text-tertiary font-label">{streakDays}</span>
+            <span className="text-xs font-bold text-tertiary font-label" suppressHydrationWarning>{streakDays}</span>
           </div>
 
           {/* XP */}
-          <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 bg-primary-fixed/70 rounded-full">
-            <span className="text-xs font-bold text-primary font-label">{xpTotal.toLocaleString()} XP</span>
+          <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 bg-primary-fixed/70 rounded-full" suppressHydrationWarning>
+            <span className="text-xs font-bold text-primary font-label" suppressHydrationWarning>{xpTotal.toLocaleString()} XP</span>
           </div>
 
           {/* Avatar + dropdown */}

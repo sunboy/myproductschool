@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useLearnModule } from '@/hooks/useLearnModule'
 import { useLearnChapter } from '@/hooks/useLearnChapter'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
-import { LEARN_MODULES_SEED } from '@/lib/learn-seed'
 import type { LearnModule, LearnChapterWithProgress, LearnDifficulty } from '@/lib/types'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -255,17 +254,27 @@ function ProgressCard({ module, completedCount }: { module: LearnModule; complet
 }
 
 function AfterThisModule({ currentSlug }: { currentSlug: string }) {
-  const nextModules = LEARN_MODULES_SEED.filter(m => m.slug !== currentSlug).slice(0, 2)
+  const [modules, setModules] = useState<LearnModule[]>([])
+
+  useEffect(() => {
+    fetch('/api/learn')
+      .then(r => r.ok ? r.json() : [])
+      .then((data: { modules: LearnModule[] }) => setModules((data.modules ?? []).filter(m => m.slug !== currentSlug).slice(0, 2)))
+      .catch(() => {})
+  }, [currentSlug])
+
+  if (modules.length === 0) return null
+
   return (
     <div className="bg-surface-container rounded-xl p-3 space-y-2">
       <div className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">After this module</div>
-      {nextModules.map(nm => (
+      {modules.map(nm => (
         <Link
           key={nm.slug}
           href={`/explore/modules/${nm.slug}`}
           className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-surface-container-high transition-colors"
         >
-          <div className="w-6 h-6 rounded-md flex-shrink-0" style={{ background: nm.cover_color }} />
+          <div className="w-6 h-6 rounded-md flex-shrink-0" style={{ background: nm.cover_color ?? '#4a7c59' }} />
           <div className="flex-1 min-w-0">
             <div className="text-xs font-bold text-on-surface truncate">{nm.name}</div>
             <div className="text-[10px] text-on-surface-variant">{nm.chapter_count} chapters</div>

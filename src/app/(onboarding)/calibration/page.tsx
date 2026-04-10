@@ -377,7 +377,7 @@ function CalibrationPage() {
     }).catch(() => {})
   }
 
-  async function handleComplete(dest: '/dashboard' | '/prep') {
+  async function handleComplete(dest: '/dashboard' | '/live-interviews?tab=prep') {
     setIsCompleting(true)
     try { localStorage.removeItem(CAL_STORAGE_KEY) } catch { /* ignore */ }
     try { await fetch('/api/onboarding/complete', { method: 'POST' }) } catch { /* ok */ }
@@ -820,7 +820,7 @@ function CalibrationPage() {
                   <span className="material-symbols-outlined text-base">arrow_forward</span>
                 </button>
                 <button
-                  onClick={() => handleComplete('/prep')}
+                  onClick={() => handleComplete('/live-interviews?tab=prep')}
                   disabled={isCompleting}
                   className="w-full text-center text-sm font-bold text-primary hover:underline underline-offset-4 decoration-2 disabled:opacity-50"
                 >

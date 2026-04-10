@@ -34,7 +34,7 @@ export function useCohort() {
 
       if (leaderboardRes.ok) {
         const lbData = await leaderboardRes.json()
-        setLeaderboard(lbData ?? [])
+        setLeaderboard(lbData?.rankings ?? lbData ?? [])
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error')

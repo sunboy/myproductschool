@@ -1,8 +1,8 @@
 import Link from 'next/link'
-import { getDomains } from '@/lib/data/domains'
+import { getDomainsWithProgress } from '@/lib/data/domains'
 
 export default async function DomainsPage() {
-  const domains = await getDomains()
+  const domains = await getDomainsWithProgress()
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-6">
@@ -16,7 +16,7 @@ export default async function DomainsPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {domains.map(d => (
-          <Link key={d.id} href={`/domains/${d.slug}`}
+          <Link key={d.id} href={`/explore/domains/${d.slug}`}
             className="flex items-center gap-3 bg-surface-container rounded-xl p-4 hover:bg-surface-container-high transition-colors">
             <div className="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-xl text-primary" style={{ fontVariationSettings: "'FILL' 0" }}>{d.icon ?? 'category'}</span>

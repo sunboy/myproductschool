@@ -1,10 +1,19 @@
 'use client'
 
-import { use, useCallback, useEffect, useRef, useState } from 'react'
+import { Component, use, useCallback, useEffect, useRef, useState } from 'react'
+import type { ErrorInfo, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import LumaAvatar, { type LumaAvatarState } from '@/components/live-interview/LumaAvatar'
+import dynamic from 'next/dynamic'
 import DeepgramVoiceSession from '@/components/live-interview/DeepgramVoiceSession'
+import type { TalkingHeadHandle } from '@/components/live-interview/TalkingHeadAvatar'
+
+// Lazy-load TalkingHead avatar — avoids SSR issues with Three.js/Canvas
+const TalkingHeadAvatar = dynamic(
+  () => import('@/components/live-interview/TalkingHeadAvatar'),
+  { ssr: false }
+)
 // FlowCoveragePanel hidden during active interview — only shown on debrief page
 import TranscriptPanel from '@/components/live-interview/TranscriptPanel'
 import ChatPanel from '@/components/live-interview/ChatPanel'
@@ -15,6 +24,27 @@ import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
 import { MOCK_LIVE_SESSION, MOCK_LIVE_TURNS } from '@/lib/mock-live-interviews'
 
 const IS_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+
+// Error boundary to catch R3F/WebGL crashes and fall back to glyph avatar
+class AvatarErrorBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode; fallback: ReactNode }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.warn('[AvatarErrorBoundary] 3D avatar crashed, falling back to glyph:', error.message, info.componentStack)
+  }
+  render() {
+    if (this.state.hasError) return this.props.fallback
+    return this.props.children
+  }
+}
 
 interface CoachingSignal {
   flowMove: string
@@ -75,6 +105,7 @@ export default function SessionPage({
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isEnding, setIsEnding] = useState(false)
   const [showEndConfirm, setShowEndConfirm] = useState(false)
+  const talkingHeadRef = useRef<TalkingHeadHandle | null>(null)
 
   const eventSourceRef = useRef<EventSource | null>(null)
   const lastSignalTurnIndexRef = useRef<number>(-1)
@@ -560,12 +591,24 @@ export default function SessionPage({
 
       {/* Main content */}
       <div className="flex-1 flex flex-col gap-4 px-4 pb-4 md:px-6">
-        {/* Avatar — full width during active interview */}
+        {/* Avatar — always 3D during active interview, lip-sync when voice connected */}
         <div>
-          <LumaAvatar
-            state={lumaState}
-            className="h-full min-h-[200px] bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl"
-          />
+          <AvatarErrorBoundary
+            fallback={
+              <LumaAvatar
+                state={lumaState}
+                className="h-full min-h-[200px] bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl"
+              />
+            }
+          >
+            <div className="h-[280px] bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden">
+              <TalkingHeadAvatar
+                ref={talkingHeadRef}
+                lumaState={lumaState}
+                onError={(err) => console.warn('[TalkingHead]', err)}
+              />
+            </div>
+          </AvatarErrorBoundary>
         </div>
 
         {/* Transcript — voice turns only */}
@@ -610,6 +653,7 @@ export default function SessionPage({
         onAgentDoneSpeaking={handleAgentDoneSpeaking}
         onConnected={handleConnected}
         onError={handleVoiceError}
+        onAnalyserReady={(analyser) => talkingHeadRef.current?.setAnalyser(analyser)}
         disabled={IS_MOCK || interviewPhase !== 'active'}
       />
 
