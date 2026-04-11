@@ -31,32 +31,41 @@ const TIER_STYLES: Record<number, { badge: string; label: string }> = {
 export function OptionCard({ option, selected, revealed, revealData, disabled, onSelect }: OptionCardProps) {
   const tier = revealData ? TIER_STYLES[revealData.points] ?? TIER_STYLES[0] : null
 
+  const cardClasses = [
+    'w-full text-left rounded-xl p-4 border font-body text-sm transition-all duration-150',
+    revealed && selected
+      ? 'bg-primary/[0.06] shadow-md border-primary ring-2 ring-primary/20'
+      : revealed
+      ? 'bg-surface-container-low border-outline-variant/30 opacity-50'
+      : selected
+      ? 'bg-primary/[0.04] shadow-md border-primary ring-1 ring-primary/20'
+      : 'bg-white shadow-sm border-outline-variant/40 hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30',
+    disabled && !revealed ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
+  ].join(' ')
+
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={() => !disabled && onSelect(option.id)}
-      className={[
-        'w-full text-left rounded-xl p-4 border-2 transition-all font-body text-sm',
-        revealed && selected
-          ? 'ring-2 ring-primary border-primary bg-white'
-          : revealed
-          ? 'border-outline-variant/60 bg-white opacity-60'
-          : selected
-          ? 'border-primary bg-white'
-          : 'border-outline-variant/60 bg-white hover:border-primary/40',
-        disabled && !revealed ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
-      ].join(' ')}
+      className={cardClasses}
     >
       <div className="flex items-start gap-3">
-        <span className="shrink-0 w-6 h-6 rounded-full bg-surface-container-highest text-on-surface-variant font-label text-xs font-semibold flex items-center justify-center mt-0.5">
+        <span
+          className={[
+            'shrink-0 w-6 h-6 rounded-full font-label text-xs font-semibold flex items-center justify-center mt-0.5 transition-colors duration-150',
+            selected
+              ? 'bg-primary text-white'
+              : 'bg-surface-container-highest text-on-surface-variant',
+          ].join(' ')}
+        >
           {option.option_label}
         </span>
         <div className="flex-1 min-w-0">
           <p className="text-on-surface">{option.option_text}</p>
           {revealed && revealData && tier && (
             <div className="mt-2 space-y-1">
-              <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-label font-semibold ${tier.badge}`}>
+              <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-label font-semibold shadow-sm ${tier.badge}`}>
                 {tier.label}
               </span>
               <p className="text-on-surface-variant text-xs">{revealData.explanation}</p>

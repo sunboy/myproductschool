@@ -223,7 +223,137 @@ const MOCK_NOTION_DETAIL: AutopsyProductDetail = {
       },
     },
   ],
-  stories: [],
+  stories: [
+    {
+      id: 'story-notion-blocks-001',
+      product_id: 'prod-notion-001',
+      slug: 'notion-block-architecture',
+      title: 'The block bet',
+      read_time: '8 min read',
+      sort_order: 1,
+      created_at: '2024-01-15T00:00:00Z',
+      related_challenge_ids: ['chal-notion-001'],
+      sections: [
+        {
+          id: 's1',
+          layout: 'fullbleed_cover',
+          content: {
+            label: 'Notion · Architecture Decision',
+            headline: 'The block bet that changed productivity software',
+            subline: 'In 2016, Notion chose to rebuild from scratch around a single, radical idea. Every piece of content — text, image, table, embed — is a block.',
+            meta: '8 min read · Core Architecture',
+          },
+        },
+        {
+          id: 's2',
+          layout: 'split_panel',
+          content: {
+            label: 'The problem',
+            title: 'Rich text was everyone\'s answer. It was also a dead end.',
+            paragraphs: [
+              'Word processors had dominated document creation since the 1980s. By 2015, every serious note-taking app — Evernote, Google Docs, Bear — used the same underlying model: rich text. A stream of formatted characters with inline images.',
+              'The model worked. Users understood it. Engineers knew how to build it. And it had one fatal flaw: you couldn\'t do anything with the content. Text was text. You couldn\'t turn a paragraph into a database row, or filter your meeting notes by project, or embed a live view of a table inside a document.',
+            ],
+            textSide: 'left',
+          },
+          illustration: { type: 'comparison_bars', data: { before: 'Rich text', after: 'Block system' }, animationTrigger: 'onVisible' },
+        },
+        {
+          id: 's3',
+          layout: 'fullbleed_stat',
+          content: {
+            stat: '3×',
+            context: 'Engineering cost of building a block editor vs. a standard rich-text system — the number Notion\'s eng lead quoted internally before the rewrite.',
+            source: 'Internal planning estimate, 2016',
+          },
+        },
+        {
+          id: 's4',
+          layout: 'split_panel',
+          content: {
+            label: 'The decision',
+            title: 'Blocks are content atoms. Atoms can compose.',
+            paragraphs: [
+              'The founders made a counterintuitive call: instead of adding database features on top of a document editor, they rebuilt the entire editor so that documents and databases shared the same primitive — the block.',
+              'A paragraph is a block. A heading is a block. A table row is a block. An embedded page is a block. This means a Notion page isn\'t a document with some data bolted on — it\'s a canvas of composable units, each one capable of being moved, linked, referenced, or transformed.',
+            ],
+            textSide: 'right',
+          },
+          illustration: { type: 'block_anatomy', data: {}, animationTrigger: 'onVisible' },
+        },
+        {
+          id: 's5',
+          layout: 'quote',
+          content: {
+            quote: 'The database is not a feature we added to Notion. It\'s the same thing as a document, just viewed differently.',
+            attribution: 'Ivan Zhao, Notion CEO',
+            context: 'On the architectural decision to unify docs and databases',
+          },
+        },
+        {
+          id: 's6',
+          layout: 'before_after',
+          content: {
+            title: 'What the block bet unlocked',
+            before: {
+              label: 'Rich-text world',
+              items: [
+                'Documents live in folders',
+                'Data lives in spreadsheets',
+                'You context-switch between tools',
+                'Content is a flat stream of characters',
+                'Embedding = pasting a screenshot',
+              ],
+              summary: 'Fragmented. Context-switching is the tax.',
+            },
+            after: {
+              label: 'Block world',
+              items: [
+                'Pages embed other pages',
+                'Databases are just views on blocks',
+                'One workspace, every context',
+                'Content is structured and queryable',
+                'Embedding = a live, filterable view',
+              ],
+              summary: 'Composable. The same data, infinite surfaces.',
+            },
+          },
+        },
+        {
+          id: 's7',
+          layout: 'fullbleed_principle',
+          content: {
+            principle: 'Structure enables composability',
+            attribution: 'The core insight behind Notion\'s block architecture — and the reason databases and documents feel like one product, not two.',
+          },
+        },
+        {
+          id: 's8',
+          layout: 'timeline',
+          content: {
+            title: 'How the block bet paid off over time',
+            events: [
+              { date: '2016', label: 'The rewrite', description: 'Notion scraps its first version and rebuilds entirely around blocks. Team ships nothing for 18 months.', type: 'decision' },
+              { date: '2018', label: 'Databases ship', description: 'Inline databases launch — tables, kanbans, galleries, calendars. Built in weeks because blocks already composed.', type: 'milestone' },
+              { date: '2019', label: 'Linked databases', description: 'Same database, multiple views, across different pages. Only possible because of the block model.', type: 'milestone' },
+              { date: '2020', label: '$2B valuation', description: 'Notion raises at $2B. The block architecture is now described as the core competitive moat in investor materials.', type: 'outcome' },
+              { date: '2021', label: 'AI blocks ship', description: 'Notion AI operates natively on blocks — summarize a block, generate into a block, translate a block. The architecture made AI integration trivial.', type: 'outcome' },
+            ],
+          },
+        },
+        {
+          id: 's9',
+          layout: 'fullbleed_cta',
+          content: {
+            headline: 'Now make the call yourself',
+            subline: 'You\'re the PM. Rich text or blocks — and why? This is the exact decision Notion faced.',
+            buttonText: 'Take the challenge',
+            targetPath: '/explore/showcase/notion',
+          },
+        },
+      ],
+    },
+  ],
 }
 
 // ── Public API ─────────────────────────────────────────────────────────────

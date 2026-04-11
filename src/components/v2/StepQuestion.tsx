@@ -62,7 +62,7 @@ export function StepQuestion({
 
   return (
     <div className="space-y-4">
-      <p className="font-headline text-lg text-on-surface">{question.question_text}</p>
+      <p className="font-headline text-2xl text-on-surface leading-snug" style={{ letterSpacing: '-0.02em', fontWeight: 800 }}>{question.question_text}</p>
 
       {showOptions && (
         <div className="space-y-2">
@@ -91,7 +91,7 @@ export function StepQuestion({
             onChange={(e) => onElaborationChange(e.target.value)}
             disabled={disabled}
             placeholder={elaborationPlaceholder}
-            className="w-full rounded-xl border border-outline-variant/60 bg-white p-3 text-on-surface font-body text-sm resize-none min-h-[100px] focus:outline-none focus:border-primary disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full rounded-xl border border-outline-variant/60 bg-white p-3 text-on-surface font-body text-sm resize-none min-h-[100px] shadow-inner focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:shadow-md transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
           />
         </div>
       )}

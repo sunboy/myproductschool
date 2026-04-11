@@ -9,6 +9,75 @@ interface AuthFormProps {
   mode: 'login' | 'signup'
 }
 
+// Luma mascot as giant outline-only line art — no fills, strokes only
+function LumaLineArt() {
+  // viewBox="0 0 64 72", scaled ~10.5x, centered in left half
+  const s = 10.5
+  const ox = 82
+  const oy = 58
+  const sp = (x: number, y: number) => ({ x: x * s + ox, y: y * s + oy })
+  const sc = (x: number, y: number) => `${x * s + ox},${y * s + oy}`
+
+  const headTL = sp(14, 22)
+  const earL = sp(8, 32), earR = sp(50, 32)
+  const capRect = sp(22, 10)
+  const eyeL = sp(25, 36), eyeR = sp(39, 36)
+  const mouthL = sp(27, 44), mouthR = sp(37, 44)
+  const arrL1 = sp(48, 18), arrL2 = sp(54, 10)
+  const capPoly = [sc(18, 22), sc(46, 22), sc(50, 16), sc(14, 16)].join(' ')
+  const arrPoly = [sc(50, 10), sc(54, 10), sc(54, 14)].join(' ')
+
+  return (
+    <svg
+      className="absolute inset-0 w-full h-full pointer-events-none select-none"
+      viewBox="0 0 800 900"
+      preserveAspectRatio="xMidYMid meet"
+      aria-hidden
+    >
+      {/* Ear nubs */}
+      <rect x={earL.x} y={earL.y} width={6 * s} height={10 * s} rx={3 * s} fill="none" stroke="rgba(142,207,158,0.09)" strokeWidth="2.5" />
+      <rect x={earR.x} y={earR.y} width={6 * s} height={10 * s} rx={3 * s} fill="none" stroke="rgba(142,207,158,0.09)" strokeWidth="2.5" />
+      {/* Head */}
+      <rect x={headTL.x} y={headTL.y} width={36 * s} height={30 * s} rx={8 * s} fill="none" stroke="rgba(142,207,158,0.13)" strokeWidth="3" />
+      {/* Eyes */}
+      <circle cx={eyeL.x} cy={eyeL.y} r={3 * s} fill="none" stroke="rgba(142,207,158,0.08)" strokeWidth="2.5" />
+      <circle cx={eyeR.x} cy={eyeR.y} r={3 * s} fill="none" stroke="rgba(142,207,158,0.08)" strokeWidth="2.5" />
+      {/* Mouth */}
+      <line x1={mouthL.x} y1={mouthL.y} x2={mouthR.x} y2={mouthR.y} stroke="rgba(142,207,158,0.07)" strokeWidth="2.5" strokeLinecap="round" />
+      {/* Cap brim */}
+      <polygon points={capPoly} fill="none" stroke="rgba(142,207,158,0.11)" strokeWidth="2.5" strokeLinejoin="round" />
+      {/* Cap top */}
+      <rect x={capRect.x} y={capRect.y} width={20 * s} height={12 * s} rx={s} fill="none" stroke="rgba(142,207,158,0.11)" strokeWidth="2.5" />
+      {/* Growth arrow */}
+      <line x1={arrL1.x} y1={arrL1.y} x2={arrL2.x} y2={arrL2.y} stroke="rgba(142,207,158,0.14)" strokeWidth="3" strokeLinecap="round" />
+      <polyline points={arrPoly} fill="none" stroke="rgba(142,207,158,0.14)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+
+      {/* Ambient wobbly lines */}
+      <path d="M -40 80 C 120 60, 200 200, 300 260 C 420 330, 340 480, 460 560 C 580 640, 720 620, 840 700"
+        stroke="rgba(142,207,158,0.06)" strokeWidth="1.5" fill="none" strokeLinecap="round"
+        style={{ strokeDasharray: 1800, strokeDashoffset: 1800, animationName: 'lumaDrawA', animationDuration: '70s', animationTimingFunction: 'linear', animationIterationCount: 'infinite' }} />
+      <path d="M -60 600 C 80 570, 160 630, 260 600 C 360 570, 400 640, 500 610 C 600 580, 680 630, 760 605"
+        stroke="rgba(142,207,158,0.05)" strokeWidth="1" fill="none" strokeLinecap="round"
+        style={{ strokeDasharray: 1200, strokeDashoffset: 1200, animationName: 'lumaDrawB', animationDuration: '90s', animationTimingFunction: 'linear', animationIterationCount: 'infinite', animationDelay: '-20s' }} />
+
+      <style>{`
+        @keyframes lumaDrawA {
+          0%   { stroke-dashoffset: 1800; opacity: 0; }
+          5%   { opacity: 1; }
+          90%  { opacity: 1; }
+          100% { stroke-dashoffset: 0; opacity: 0; }
+        }
+        @keyframes lumaDrawB {
+          0%   { stroke-dashoffset: 1200; opacity: 0; }
+          5%   { opacity: 1; }
+          90%  { opacity: 1; }
+          100% { stroke-dashoffset: 0; opacity: 0; }
+        }
+      `}</style>
+    </svg>
+  )
+}
+
 export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const [activeMode, setActiveMode] = useState<'login' | 'signup'>(initialMode)
   const [name, setName] = useState('')
@@ -30,13 +99,11 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       if (error) {
         setError(error.message)
       } else {
-        // Check if user completed onboarding
         const { data: profile } = await supabase
           .from('profiles')
           .select('onboarding_completed_at, display_name')
           .eq('id', data.user.id)
           .single()
-        // Backfill display_name for existing users whose profile.display_name is null
         const meta = data.user.user_metadata
         const metaName = meta?.display_name ?? meta?.full_name ?? meta?.name ?? null
         if (!profile?.display_name && metaName) {
@@ -61,7 +128,6 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       if (error) {
         setError(error.message)
       } else if (data.session) {
-        // Auto-confirmed — new users always start with onboarding
         router.push('/onboarding/welcome')
         router.refresh()
       } else {
@@ -78,153 +144,211 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     })
   }
 
-  return (
-    <div className="min-h-screen flex">
-      {/* Left panel */}
-      <div className="w-2/5 bg-surface-container-low flex flex-col justify-center px-12 py-16">
-        <div className="flex items-center gap-2 mb-8">
-          <LumaGlyph size={36} state="idle" className="text-primary" />
-          <span className="font-headline text-2xl font-bold text-primary">HackProduct</span>
-        </div>
-        <h2 className="font-headline text-3xl text-on-surface mb-3 leading-snug">
-          Tell me where you are. I&apos;ll tell you where to go.
-        </h2>
-        <p className="text-sm text-on-surface-variant italic mb-10">— Luma, Product Sense Coach</p>
+  const inputClass = [
+    'w-full px-4 py-2.5 text-sm rounded-xl transition-all duration-200',
+    'bg-white/[0.08] border border-white/20 text-white',
+    'placeholder:text-white/40',
+    'focus:outline-none focus:border-white/50 focus:bg-white/[0.12]',
+  ].join(' ')
 
-        <ul className="space-y-4">
-          {[
-            'Scenario-based interview practice',
-            'Real-time feedback from Luma',
-            'Daily product thinking drills',
-          ].map(bullet => (
-            <li key={bullet} className="flex items-center gap-3">
-              <span
-                className="material-symbols-outlined text-primary text-xl"
-                style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
-              >check_circle</span>
-              <span className="text-sm text-on-surface font-body">{bullet}</span>
-            </li>
-          ))}
-        </ul>
+  return (
+    /*
+     * ONE unified background — the gradient lives here, on a single element.
+     * No separate panel backgrounds. The form card floats on top.
+     * Mobile: stacks vertically with the same gradient top→bottom.
+     */
+    <div
+      className="relative min-h-[100dvh] overflow-hidden"
+      style={{
+        background: 'linear-gradient(118deg, #07100c 0%, #0c1610 25%, #163324 48%, #1e4a31 60%, #29623f 70%, #3d7a52 80%, #5a9468 90%, #7ab088 100%)',
+      }}
+    >
+      {/* Grain overlay — fixed so it doesn't repaint on scroll */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E")`,
+          backgroundRepeat: 'repeat',
+          backgroundSize: '128px 128px',
+          mixBlendMode: 'overlay',
+          zIndex: 0,
+        }}
+        aria-hidden
+      />
+
+      {/* Luma line art — left half only */}
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
+        <LumaLineArt />
       </div>
 
-      {/* Right panel */}
-      <div className="flex-1 flex flex-col justify-center px-12 py-16 bg-background">
-        <div className="w-full max-w-sm mx-auto space-y-6">
-          {/* Tab switcher */}
-          <div className="flex gap-1 p-1 bg-surface-container rounded-full w-fit">
-            <button
-              type="button"
-              onClick={() => { setActiveMode('signup'); setError(null); setSuccess(null) }}
-              className={`px-5 py-1.5 rounded-full text-sm font-semibold font-label transition-all ${
-                activeMode === 'signup'
-                  ? 'bg-primary text-on-primary'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
+      {/* Radial glow — top left */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          top: '-5%', left: '-5%', width: '55%', height: '65%',
+          background: 'radial-gradient(ellipse, rgba(74,124,89,0.18) 0%, transparent 65%)',
+          zIndex: 1,
+        }}
+        aria-hidden
+      />
+
+      {/* Content: left brand/headline + right form card — on desktop side by side */}
+      <div className="relative min-h-[100dvh] flex flex-col md:flex-row md:items-center" style={{ zIndex: 2 }}>
+
+        {/* ── Left: brand + headline ───────────────────── */}
+        <div className="flex flex-col justify-center px-10 py-12 md:px-16 md:py-0 md:flex-1">
+          {/* Brand mark */}
+          <div className="flex items-center gap-2 mb-10 md:mb-12">
+            <LumaGlyph size={30} state="idle" className="text-primary" />
+            <span
+              className="font-headline font-bold text-white"
+              style={{ fontSize: 19, letterSpacing: '-0.01em' }}
             >
-              Sign Up
-            </button>
-            <button
-              type="button"
-              onClick={() => { setActiveMode('login'); setError(null); setSuccess(null) }}
-              className={`px-5 py-1.5 rounded-full text-sm font-semibold font-label transition-all ${
-                activeMode === 'login'
-                  ? 'bg-primary text-on-primary'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-            >
-              Log In
-            </button>
+              HackProduct
+            </span>
           </div>
 
-          {/* Google OAuth */}
-          <button
-            type="button"
-            onClick={handleGoogleSignIn}
-            className="w-full flex items-center justify-center gap-2 border border-outline-variant rounded-full py-2.5 text-on-surface text-sm font-medium hover:bg-surface-container transition-colors"
+          {/* Headline */}
+          <h1
+            className="font-headline font-extrabold text-white"
+            style={{
+              fontSize: 'clamp(32px, 4.5vw, 68px)',
+              lineHeight: 1.04,
+              letterSpacing: '-0.03em',
+              maxWidth: '11ch',
+            } as React.CSSProperties}
           >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            Continue with Google
-          </button>
+            Think like a product person.
+          </h1>
+          <p
+            className="font-body mt-4 leading-relaxed"
+            style={{ fontSize: 'clamp(13px, 1.2vw, 16px)', color: 'rgba(255,255,255,0.45)', maxWidth: '38ch' }}
+          >
+            Build the thinking. Ship the confidence.
+          </p>
 
-          {/* Divider */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-outline-variant" />
-            <span className="text-xs text-on-surface-variant">or</span>
-            <div className="flex-1 h-px bg-outline-variant" />
-          </div>
+          {/* Feature bullets — desktop only */}
+          <ul className="hidden md:flex flex-col gap-3 mt-10">
+            {[
+              'Scenario-based interview practice',
+              'Real-time coaching from Luma',
+              'Daily product thinking drills',
+            ].map(item => (
+              <li key={item} className="flex items-center gap-3">
+                <span
+                  className="material-symbols-outlined shrink-0"
+                  style={{ fontSize: 16, color: '#8ecf9e', fontVariationSettings: "'FILL' 1" }}
+                >
+                  check_circle
+                </span>
+                <span className="font-body text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-          {/* Email form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {activeMode === 'signup' && (
-              <div>
-                <label className="block text-sm font-medium text-on-surface mb-1.5 font-label">Name</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  required
-                  className="w-full px-4 py-2.5 bg-surface-container border border-outline-variant rounded-xl text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary transition-colors text-sm"
-                  placeholder="Your name"
-                />
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-on-surface mb-1.5 font-label">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-2.5 bg-surface-container border border-outline-variant rounded-xl text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary transition-colors text-sm"
-                placeholder="you@example.com"
-              />
+        {/* ── Right: form card — glass on the gradient ─── */}
+        <div className="flex items-center justify-center px-6 py-10 md:py-0 md:px-12 md:w-[460px] md:shrink-0">
+          <div
+            className="w-full max-w-sm rounded-2xl p-8 space-y-5"
+            style={{
+              background: 'rgba(8,18,12,0.72)',
+              backdropFilter: 'blur(28px)',
+              WebkitBackdropFilter: 'blur(28px)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              boxShadow: '0 16px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)',
+            }}
+          >
+            {/* Tab switcher */}
+            <div className="flex gap-1 p-1 rounded-full w-fit" style={{ background: 'rgba(255,255,255,0.08)' }}>
+              {(['signup', 'login'] as const).map(m => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => { setActiveMode(m); setError(null); setSuccess(null) }}
+                  className="px-5 py-1.5 rounded-full text-sm font-semibold font-label transition-all duration-200"
+                  style={activeMode === m
+                    ? { background: 'rgba(255,255,255,0.92)', color: '#0f1a14' }
+                    : { color: 'rgba(255,255,255,0.65)' }
+                  }
+                >
+                  {m === 'signup' ? 'Sign Up' : 'Log In'}
+                </button>
+              ))}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-on-surface mb-1.5 font-label">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                minLength={8}
-                className="w-full px-4 py-2.5 bg-surface-container border border-outline-variant rounded-xl text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary transition-colors text-sm"
-                placeholder="Password"
-              />
-              {activeMode === 'login' && (
-                <div className="mt-1.5 text-right">
-                  <a href="/forgot-password" className="text-sm text-primary hover:underline">Forgot password?</a>
+            {/* Google OAuth */}
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              className="w-full flex items-center justify-center gap-2.5 rounded-full py-2.5 text-sm font-medium font-label transition-all duration-200 active:scale-[0.98]"
+              style={{
+                background: 'rgba(255,255,255,0.10)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                color: 'rgba(255,255,255,0.9)',
+              }}
+            >
+              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden>
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              Continue with Google
+            </button>
+
+            {/* Divider */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.12)' }} />
+              <span className="text-xs font-label" style={{ color: 'rgba(255,255,255,0.45)' }}>or</span>
+              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.12)' }} />
+            </div>
+
+            {/* Email form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {activeMode === 'signup' && (
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold font-label" style={{ color: 'rgba(255,255,255,0.75)' }}>Name</label>
+                  <input type="text" value={name} onChange={e => setName(e.target.value)} required className={inputClass} placeholder="Your name" />
                 </div>
               )}
-            </div>
 
-            {error && (
-              <p className="text-sm text-error">{error}</p>
-            )}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold font-label" style={{ color: 'rgba(255,255,255,0.75)' }}>Email</label>
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)} required className={inputClass} placeholder="you@company.com" />
+              </div>
 
-            {success && (
-              <p className="text-sm text-primary">{success}</p>
-            )}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold font-label" style={{ color: 'rgba(255,255,255,0.75)' }}>Password</label>
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} className={inputClass} placeholder="8+ characters" />
+                {activeMode === 'login' && (
+                  <div className="text-right">
+                    <a href="/forgot-password" className="text-xs font-label transition-colors" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                      Forgot password?
+                    </a>
+                  </div>
+                )}
+              </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-primary text-on-primary rounded-full py-2.5 font-semibold font-label text-sm hover:opacity-90 disabled:opacity-50 transition-opacity"
-            >
-              {loading ? '...' : activeMode === 'login' ? 'Log In' : 'Create Account'}
-            </button>
+              {error && <p className="text-xs leading-relaxed" style={{ color: '#f87171' }}>{error}</p>}
+              {success && <p className="text-xs leading-relaxed" style={{ color: '#86efac' }}>{success}</p>}
 
-            {activeMode === 'signup' && (
-              <p className="text-sm text-on-surface-variant mt-3">New? You&apos;ll meet Luma next.</p>
-            )}
-          </form>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-full py-2.5 font-semibold font-label text-sm transition-all duration-200 active:scale-[0.98] disabled:opacity-50"
+                style={{ background: '#4a7c59', color: '#ffffff' }}
+              >
+                {loading ? 'Just a moment...' : activeMode === 'login' ? 'Log In' : 'Create Account'}
+              </button>
+
+              {activeMode === 'signup' && (
+                <p className="text-xs text-center font-label" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                  You&apos;ll meet Luma right after.
+                </p>
+              )}
+            </form>
+          </div>
         </div>
       </div>
     </div>

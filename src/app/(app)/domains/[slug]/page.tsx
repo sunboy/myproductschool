@@ -94,23 +94,23 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
 
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center">
-            <span className="material-symbols-outlined text-xl text-primary" style={{ fontVariationSettings: "'FILL' 0" }}>{domain.icon ?? 'grid_view'}</span>
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-12 h-12 rounded-2xl bg-primary-fixed flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-2xl text-primary" style={{ fontVariationSettings: "'FILL' 0" }}>{domain.icon ?? 'grid_view'}</span>
           </div>
-          <h1 className="font-headline text-2xl font-bold text-on-surface">{domain.title}</h1>
+          <h1 className="font-headline text-2xl font-extrabold text-on-surface leading-tight">{domain.title}</h1>
         </div>
         {domain.description && (
           <p className="font-body text-sm text-on-surface-variant leading-relaxed mb-4">{domain.description}</p>
         )}
-        <div className="flex items-center gap-4 text-xs text-on-surface-variant">
-          <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 0" }}>layers</span>
+        <div className="flex items-center gap-5 font-label text-xs text-on-surface-variant font-medium">
+          <span className="flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[15px]" style={{ fontVariationSettings: "'FILL' 0" }}>layers</span>
             {challenges.length} challenges
           </span>
           {completedCount > 0 && (
-            <span className="flex items-center gap-1 text-primary font-bold">
-              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+            <span className="flex items-center gap-1.5 text-primary font-bold">
+              <span className="material-symbols-outlined text-[15px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
               {completedCount}/{challenges.length} completed
             </span>
           )}
@@ -120,12 +120,12 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
       {/* Progress bar */}
       {challenges.length > 0 && completedCount > 0 && (
         <div className="mb-6">
-          <div className="flex justify-between text-[10px] font-bold text-on-surface-variant mb-1.5">
-            <span>Progress</span>
-            <span>{progressPct}%</span>
+          <div className="flex justify-between text-[11px] font-bold text-on-surface-variant mb-1.5">
+            <span className="font-label">Progress</span>
+            <span className="font-label tabular-nums">{progressPct}%</span>
           </div>
-          <div className="h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
-            <div className="h-full bg-primary rounded-full" style={{ width: `${progressPct}%` }} />
+          <div className="h-2 bg-surface-container-highest rounded-full overflow-hidden">
+            <div className="h-full bg-primary rounded-full transition-all duration-700" style={{ width: `${progressPct}%` }} />
           </div>
         </div>
       )}

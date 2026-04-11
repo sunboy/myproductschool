@@ -322,35 +322,62 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     )
   }
 
-  // Shared left panel (scenario brief)
+  // Shared left panel (scenario brief) — elevated with Terra green accent
   const scenarioPanel = (
-    <aside className="w-[360px] shrink-0 bg-surface-taupe border-r border-outline-variant/40 overflow-y-auto p-6 space-y-4">
-      {scenarioRole && (
-        <span className="inline-block bg-secondary-container text-on-secondary-container rounded-full text-xs font-label px-3 py-1">
-          {scenarioRole}
-        </span>
-      )}
-      {challengeTitle && (
-        <h1 className="font-headline text-xl text-on-surface leading-snug">{challengeTitle}</h1>
-      )}
-      {scenarioContext && (
-        <div className="space-y-1">
-          <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">Context</p>
-          <p className="font-body text-sm text-on-surface-variant leading-relaxed">{scenarioContext}</p>
-        </div>
-      )}
-      {scenarioTrigger && (
-        <div className="space-y-1">
-          <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">The Trigger</p>
-          <p className="font-body text-sm text-on-surface-variant leading-relaxed">{scenarioTrigger}</p>
-        </div>
-      )}
-      {challengeScenarioQ && (
-        <div className="bg-surface-container rounded-xl p-4 space-y-1 border border-black/5">
-          <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">Your Challenge</p>
-          <p className="font-body text-sm text-on-surface font-medium leading-relaxed">{challengeScenarioQ}</p>
-        </div>
-      )}
+    <aside
+      className="w-[360px] shrink-0 border-r border-outline-variant/30 overflow-y-auto relative"
+      style={{ background: '#f0ece8' }}
+    >
+      {/* Top accent line — Terra primary green */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 z-10 bg-primary" />
+
+      {/* Radial ambient glow from top-left */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at 0% 0%, rgba(74,124,89,0.09) 0%, transparent 60%)' }}
+        aria-hidden
+      />
+
+      <div className="relative z-10 p-6 space-y-4 pt-7">
+        {scenarioRole && (
+          <span className="inline-block bg-secondary-container text-on-secondary-container rounded-full text-xs font-label px-3 py-1">
+            {scenarioRole}
+          </span>
+        )}
+        {challengeTitle && (
+          <h1 className="font-headline text-xl text-on-surface leading-snug">{challengeTitle}</h1>
+        )}
+        {scenarioContext && (
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-primary/60" />
+              <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">Context</p>
+            </div>
+            <p className="font-body text-sm text-on-surface-variant leading-relaxed">{scenarioContext}</p>
+          </div>
+        )}
+        {scenarioTrigger && (
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-primary/60" />
+              <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">The Trigger</p>
+            </div>
+            <p className="font-body text-sm text-on-surface-variant leading-relaxed">{scenarioTrigger}</p>
+          </div>
+        )}
+        {challengeScenarioQ && (
+          <div
+            className="rounded-xl p-4 space-y-1.5 border border-outline-variant/40"
+            style={{ background: '#fff', boxShadow: '0 2px 12px rgba(46,50,48,0.07)' }}
+          >
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-primary" />
+              <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">Your Challenge</p>
+            </div>
+            <p className="font-body text-sm text-on-surface font-medium leading-relaxed">{challengeScenarioQ}</p>
+          </div>
+        )}
+      </div>
     </aside>
   )
 
@@ -359,7 +386,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     return (
       <div className="flex h-full">
         {scenarioPanel}
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+        <div
+          key={`${currentStep}-reveal`}
+          className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter"
+          style={{ background: 'radial-gradient(ellipse at 100% 100%, rgba(74,124,89,0.04) 0%, transparent 55%)' }}
+        >
           <FlowStepper currentStep={currentStep} completedSteps={completedSteps} onStepClick={handleStepClick} questionIdx={questionIdx} questionCount={activeStepData?.questions.length} />
           <StepReveal
             step={currentStep}
@@ -387,21 +418,33 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   return (
     <div className="flex h-full">
       {scenarioPanel}
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+      <div
+        key={`${currentStep}-question`}
+        className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter"
+        style={{ background: 'radial-gradient(ellipse at 100% 100%, rgba(74,124,89,0.04) 0%, transparent 55%)' }}
+      >
         <FlowStepper currentStep={currentStep} completedSteps={completedSteps} questionIdx={questionIdx} questionCount={activeStepData?.questions.length} />
 
-        {/* Nudge */}
+        {/* Nudge — glass float with primary green left bar */}
         {activeStepData?.nudge && (
-          <div className="flex items-start gap-3 bg-secondary-container rounded-xl px-4 py-3">
-            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shrink-0">
-              <span
-                className="material-symbols-outlined text-primary text-[18px]"
-                style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-              >
-                lightbulb
-              </span>
-            </div>
-            <p className="font-body text-sm text-on-secondary-container leading-relaxed">{activeStepData.nudge}</p>
+          <div
+            className="flex items-start gap-3 rounded-xl px-4 py-3"
+            style={{
+              background: 'rgba(255,255,255,0.72)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1px solid rgba(74,124,89,0.18)',
+              borderLeft: '4px solid #4a7c59',
+              boxShadow: '0 2px 12px rgba(46,50,48,0.06)',
+            }}
+          >
+            <span
+              className="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5"
+              style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
+            >
+              lightbulb
+            </span>
+            <p className="font-body text-sm text-on-surface leading-relaxed">{activeStepData.nudge}</p>
           </div>
         )}
 
@@ -431,7 +474,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             <button
               onClick={handleSubmit}
               disabled={!canSubmit || activeSubmitting}
-              className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+              className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm shadow-sm hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {activeSubmitting ? 'Grading…' : 'Submit'}
             </button>

@@ -9,29 +9,32 @@ interface QuickTakeCardProps {
 
 export function QuickTakeCard({ prompt, challengeId, lumaContext }: QuickTakeCardProps) {
   return (
-    <div className="bg-primary rounded-xl p-6 text-on-primary flex flex-col gap-4">
-      <div className="flex items-center gap-3">
-        <LumaGlyph size={40} state="speaking" className="text-on-primary" />
+    <div className="bg-primary rounded-2xl p-5 text-on-primary flex flex-col gap-4 relative overflow-hidden">
+      {/* Subtle texture overlay */}
+      <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
+
+      <div className="flex items-start gap-3 relative">
+        <LumaGlyph size={36} state="speaking" className="text-on-primary shrink-0 mt-0.5" />
         <div>
-          <h3 className="font-headline font-bold text-lg">Quick Take</h3>
-          <p className="text-on-primary/80 text-xs font-label">90 seconds. Grade in 15s.</p>
+          <h3 className="font-headline font-bold text-base leading-tight">Quick Take</h3>
+          <p className="text-on-primary/70 text-[11px] font-label mt-0.5">90 seconds · instant grade</p>
         </div>
       </div>
 
-      <div className="bg-primary/20 rounded-xl p-4">
-        <p className="italic text-on-primary/90 text-sm leading-relaxed">&ldquo;{prompt}&rdquo;</p>
+      <div className="bg-black/20 rounded-xl p-4 relative">
+        <p className="text-on-primary/90 text-sm leading-relaxed">&ldquo;{prompt}&rdquo;</p>
       </div>
 
       {lumaContext && (
-        <p className="text-xs text-on-primary/70 font-label">
-          <span className="material-symbols-outlined text-xs align-middle mr-1">auto_awesome</span>
+        <p className="text-xs text-on-primary/65 font-label flex items-start gap-1.5">
+          <span className="material-symbols-outlined text-[13px] mt-0.5 shrink-0">auto_awesome</span>
           {lumaContext}
         </p>
       )}
 
       <Link
         href={`/workspace/challenges/${challengeId}?mode=quick`}
-        className="self-start bg-on-primary text-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity"
+        className="self-start bg-white text-primary rounded-full px-5 py-2 font-label font-bold text-sm hover:bg-white/90 active:scale-95 transition-all duration-150 shadow-sm"
       >
         Start Quick Take
       </Link>

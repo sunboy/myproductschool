@@ -48,21 +48,21 @@ function getDailyGoalMessage(dailyDone: number): string {
 function LockedMoveLevels() {
   const moves = ['Frame', 'List', 'Optimize', 'Win']
   return (
-    <div className="bg-surface-container rounded-xl p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-headline font-semibold text-base text-on-surface">FLOW Move Levels</h3>
-        <div className="flex items-center gap-1 text-xs text-on-surface-variant">
-          <span className="material-symbols-outlined text-sm">lock</span>
+    <div className="bg-surface-container-low rounded-2xl p-5 border border-outline-variant/30">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-headline font-semibold text-sm text-on-surface">FLOW Move Levels</h3>
+        <div className="flex items-center gap-1 text-[11px] text-on-surface-variant font-label">
+          <span className="material-symbols-outlined text-[13px]">lock</span>
           Unlocks after calibration
         </div>
       </div>
-      <div className="grid grid-cols-4 gap-3 opacity-40 blur-[1px] pointer-events-none select-none">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 opacity-30 blur-[1.5px] pointer-events-none select-none">
         {moves.map(move => (
-          <div key={move} className="bg-surface-container-high rounded-xl p-3 flex flex-col gap-2">
-            <div className="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center">
-              <span className="material-symbols-outlined text-base text-on-surface-variant">lock</span>
+          <div key={move} className="bg-surface-container-high rounded-xl p-3 flex flex-col gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-surface-container-highest flex items-center justify-center">
+              <span className="material-symbols-outlined text-sm text-on-surface-variant">lock</span>
             </div>
-            <div className="text-xs font-bold text-on-surface">{move}</div>
+            <div className="text-xs font-bold text-on-surface font-label">{move}</div>
             <div className="h-1 bg-surface-container-highest rounded-full" />
           </div>
         ))}
@@ -227,24 +227,26 @@ export default async function DashboardPage() {
     <div className="max-w-5xl mx-auto px-6 py-6 space-y-4">
 
       {/* Luma Greeting Bar */}
-      <div className="bg-primary-fixed rounded-2xl p-4 flex flex-wrap items-center gap-4 animate-luma-card">
-        <LumaGlyph size={52} state={isCalibrated ? 'idle' : 'celebrating'} className="flex-shrink-0" />
-        <div className="flex-1 min-w-0">
-          <p className="font-headline font-bold text-lg text-on-surface">
+      <div className="bg-primary-fixed rounded-2xl p-5 flex flex-wrap items-center gap-4 animate-luma-card relative overflow-hidden">
+        {/* Soft radial highlight */}
+        <div className="absolute top-0 right-0 w-48 h-full opacity-30" style={{ background: 'radial-gradient(ellipse at 100% 50%, rgba(74,124,89,0.3) 0%, transparent 70%)' }} />
+        <LumaGlyph size={48} state={isCalibrated ? 'idle' : 'celebrating'} className="flex-shrink-0 relative" />
+        <div className="flex-1 min-w-0 relative">
+          <p className="font-headline font-bold text-[17px] text-on-surface leading-tight">
             {getPersonalizedGreeting(displayName, streakDays, lastAttemptDate, isCalibrated)}
           </p>
-          <p className="text-sm text-on-surface-variant">
+          <p className="text-sm text-on-surface-variant mt-0.5">
             {isCalibrated ? getDailyGoalMessage(dailyDone) : "I'm Luma, your product thinking coach. Let's find your starting point."}
           </p>
         </div>
         {isCalibrated && (
-          <div className="flex gap-2 flex-shrink-0">
-            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/60 rounded-full text-xs font-label font-bold text-on-surface">
-              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1", color: '#c94b1b' }}>local_fire_department</span>
-              {streakDays} {streakDays === 1 ? 'day' : 'days'}
+          <div className="flex gap-1.5 flex-shrink-0 relative">
+            <span className="flex items-center gap-1 px-2.5 py-1.5 bg-white/50 rounded-full text-[11px] font-label font-bold text-on-surface">
+              <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 1", color: '#c94b1b' }}>local_fire_department</span>
+              {streakDays}d
             </span>
-            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/60 rounded-full text-xs font-label font-bold text-on-surface">
-              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1", color: '#4a7c59' }}>bolt</span>
+            <span className="flex items-center gap-1 px-2.5 py-1.5 bg-white/50 rounded-full text-[11px] font-label font-bold text-on-surface tabular-nums">
+              <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 1", color: '#4a7c59' }}>bolt</span>
               {xpTotal.toLocaleString()} XP
             </span>
           </div>

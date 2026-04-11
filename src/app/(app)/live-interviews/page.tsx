@@ -83,12 +83,12 @@ export default async function LiveInterviewsPage({
   const [personas, scenarios] = await Promise.all([getPersonas(), getScenarios()])
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <section>
         <h1 className="font-headline text-3xl font-extrabold text-on-surface">Interviews</h1>
         <p className="text-sm text-on-surface-variant mt-1">
-          Practice mock interviews and follow structured study plans to prepare.
+          Practice with real interviewers from top companies. Pick a seat.
         </p>
       </section>
 
