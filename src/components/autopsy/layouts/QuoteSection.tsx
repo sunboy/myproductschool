@@ -22,24 +22,12 @@ export function QuoteSection({ section, hasBeenVisible }: Props) {
   return (
     <div
       className="relative flex flex-col justify-center overflow-hidden"
-      style={{ minHeight: 'min(70vh, 560px)', background: '#0c1810' }}
+      style={{ minHeight: 'min(70vh, 560px)', background: '#f5f1ea' }}
     >
-      {/* Grain */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E")`,
-          backgroundRepeat: 'repeat',
-          backgroundSize: '128px 128px',
-          mixBlendMode: 'overlay',
-        }}
-        aria-hidden
-      />
-
       {/* Left accent bar */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-px pointer-events-none"
-        style={{ background: 'linear-gradient(to bottom, transparent, rgba(74,124,89,0.6) 30%, rgba(74,124,89,0.6) 70%, transparent)' }}
+        className="absolute left-0 top-0 bottom-0 w-[3px] pointer-events-none"
+        style={{ background: 'linear-gradient(to bottom, transparent, rgba(74,124,89,0.5) 30%, rgba(74,124,89,0.5) 70%, transparent)' }}
         aria-hidden
       />
 
@@ -55,7 +43,7 @@ export function QuoteSection({ section, hasBeenVisible }: Props) {
         >
           <span
             className="font-headline font-extrabold leading-none select-none block mb-4"
-            style={{ fontSize: 'clamp(60px, 8vw, 120px)', color: 'rgba(74,124,89,0.25)', lineHeight: 0.8 }}
+            style={{ fontSize: 'clamp(60px, 8vw, 120px)', color: 'rgba(74,124,89,0.2)', lineHeight: 0.8 }}
           >
             &ldquo;
           </span>
@@ -63,10 +51,11 @@ export function QuoteSection({ section, hasBeenVisible }: Props) {
 
         {/* Quote text */}
         <blockquote
-          className="font-headline text-white leading-[1.2]"
+          className="font-headline leading-[1.2]"
           style={{
             fontSize: 'clamp(22px, 3vw, 42px)',
             letterSpacing: '-0.01em',
+            color: '#2e3230',
             opacity: entered ? 1 : 0,
             transform: entered ? 'none' : 'translateY(20px)',
             transition: 'opacity 0.8s ease, transform 0.8s ease',
@@ -86,13 +75,13 @@ export function QuoteSection({ section, hasBeenVisible }: Props) {
             transitionDelay: '250ms',
           }}
         >
-          <div className="h-px w-8" style={{ backgroundColor: 'rgba(74,124,89,0.5)' }} />
+          <div className="h-px w-8" style={{ backgroundColor: 'rgba(74,124,89,0.4)' }} />
           <div>
-            <p className="font-label font-bold text-sm" style={{ color: '#8ecf9e' }}>
+            <p className="font-label font-bold text-sm" style={{ color: '#4a7c59' }}>
               {attribution}
             </p>
             {context && (
-              <p className="font-label text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              <p className="font-label text-xs mt-0.5" style={{ color: 'rgba(74,78,74,0.5)' }}>
                 {context}
               </p>
             )}

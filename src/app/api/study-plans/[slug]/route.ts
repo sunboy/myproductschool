@@ -64,11 +64,11 @@ export async function GET(
   // Collect all challenge IDs across all chapters
   const allChallengeIds = chapters.flatMap((ch: { challenge_ids: string[] }) => ch.challenge_ids ?? [])
 
-  let challengeMap: Record<string, { id: string; title: string; difficulty: string; paradigm?: string | null }> = {}
+  let challengeMap: Record<string, { id: string; slug?: string; title: string; difficulty: string; paradigm?: string | null }> = {}
   if (allChallengeIds.length > 0) {
     const { data: challengeRows } = await adminClient
       .from('challenges')
-      .select('id, title, difficulty, paradigm')
+      .select('id, slug, title, difficulty, paradigm')
       .in('id', allChallengeIds)
     for (const row of challengeRows ?? []) {
       challengeMap[row.id] = row

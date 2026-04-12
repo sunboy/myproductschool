@@ -27,25 +27,13 @@ export function FullbleedCTASection({ section, hasBeenVisible }: Props) {
       className="relative flex flex-col justify-center overflow-hidden"
       style={{
         minHeight: 'min(85vh, 700px)',
-        background: 'linear-gradient(180deg, #0b1610 0%, #0f1a14 60%, #080f0b 100%)',
+        background: '#f5f1ea',
       }}
     >
-      {/* Grain */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E")`,
-          backgroundRepeat: 'repeat',
-          backgroundSize: '128px 128px',
-          mixBlendMode: 'overlay',
-        }}
-        aria-hidden
-      />
-
       {/* Top accent line */}
       <div
         className="absolute top-0 left-0 right-0 h-px pointer-events-none"
-        style={{ background: 'linear-gradient(90deg, transparent, rgba(74,124,89,0.4) 30%, rgba(74,124,89,0.4) 70%, transparent)' }}
+        style={{ background: 'linear-gradient(90deg, transparent, rgba(74,124,89,0.35) 30%, rgba(74,124,89,0.35) 70%, transparent)' }}
         aria-hidden
       />
 
@@ -58,7 +46,7 @@ export function FullbleedCTASection({ section, hasBeenVisible }: Props) {
           transform: 'translate(-50%, -50%)',
           width: '60vw',
           height: '60vw',
-          background: 'radial-gradient(circle, rgba(74,124,89,0.1) 0%, transparent 65%)',
+          background: 'radial-gradient(circle, rgba(74,124,89,0.06) 0%, transparent 65%)',
           borderRadius: '50%',
         }}
         aria-hidden
@@ -88,7 +76,7 @@ export function FullbleedCTASection({ section, hasBeenVisible }: Props) {
         >
           <span
             className="font-label text-xs font-bold uppercase tracking-[0.25em]"
-            style={{ color: 'rgba(142,207,158,0.6)' }}
+            style={{ color: 'rgba(74,124,89,0.7)' }}
           >
             Ready to practice?
           </span>
@@ -97,8 +85,8 @@ export function FullbleedCTASection({ section, hasBeenVisible }: Props) {
         {/* Headline — word stagger */}
         <div style={{ marginBottom: 20 }}>
           <h2
-            className="font-headline font-extrabold text-white leading-[1.05]"
-            style={{ fontSize: 'clamp(28px, 4.5vw, 64px)', letterSpacing: '-0.025em', maxWidth: '14ch' } as React.CSSProperties}
+            className="font-headline font-extrabold leading-[1.05]"
+            style={{ fontSize: 'clamp(28px, 4.5vw, 64px)', letterSpacing: '-0.025em', maxWidth: '14ch', color: '#2e3230' } as React.CSSProperties}
           >
             {words.map((word, i) => (
               <span
@@ -126,17 +114,18 @@ export function FullbleedCTASection({ section, hasBeenVisible }: Props) {
             marginBottom: 20,
           }}
         >
-          <div className="h-px w-10" style={{ backgroundColor: 'rgba(74,124,89,0.4)' }} />
+          <div className="h-px w-10" style={{ backgroundColor: 'rgba(74,124,89,0.35)' }} />
         </div>
 
         {/* Subline */}
         {subline && (
           <p
-            className="font-body text-white/55 leading-relaxed"
+            className="font-body leading-relaxed"
             style={{
               fontSize: 'clamp(15px, 1.3vw, 20px)',
               maxWidth: '48ch',
               marginBottom: 40,
+              color: '#4a4e4a',
               opacity: entered ? 1 : 0,
               transform: entered ? 'none' : 'translateY(10px)',
               transition: 'opacity 0.6s ease, transform 0.6s ease',
@@ -163,6 +152,7 @@ export function FullbleedCTASection({ section, hasBeenVisible }: Props) {
               backgroundColor: '#4a7c59',
               color: '#ffffff',
               letterSpacing: '0.01em',
+              boxShadow: '0 2px 12px rgba(74,124,89,0.25)',
             }}
           >
             {buttonText}

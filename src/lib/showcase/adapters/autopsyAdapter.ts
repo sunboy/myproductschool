@@ -26,8 +26,12 @@ export interface AdapterStepData {
 
 export interface AdapterRevealedOption {
   id: string
+  option_label?: string
+  option_text?: string
+  quality?: string
   points: number
   explanation: string
+  framework_hint?: string
 }
 
 export interface AdapterSubmitResult {
@@ -181,8 +185,12 @@ export function createAutopsyAdapter(
       // Build revealed options from the local challenge data (don't rely on API shape)
       const revealedOptions: AdapterRevealedOption[] = challenge.options.map((opt) => ({
         id: opt.id,
+        option_label: opt.id.toUpperCase(),
+        option_text: opt.text,
+        quality: opt.quality,
         points: QUALITY_TO_POINTS[opt.quality] ?? 0,
         explanation: opt.explanation,
+        framework_hint: undefined,
       }))
 
       const selectedOption = challenge.options.find((o) => o.id === params.selectedOptionId)

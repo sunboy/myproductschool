@@ -12,7 +12,6 @@ export function FullbleedPrincipleSection({ section, hasBeenVisible }: Props) {
   const { principle, attribution } = section.content
   const [entered, setEntered] = React.useState(false)
 
-  // Split into words for stagger
   const words = principle.split(' ')
 
   React.useEffect(() => {
@@ -27,21 +26,9 @@ export function FullbleedPrincipleSection({ section, hasBeenVisible }: Props) {
       className="relative flex flex-col justify-center overflow-hidden"
       style={{
         minHeight: 'min(85vh, 700px)',
-        background: 'linear-gradient(160deg, #0a1510 0%, #0f1a14 40%, #091210 100%)',
+        background: '#f0ece4',
       }}
     >
-      {/* Grain */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E")`,
-          backgroundRepeat: 'repeat',
-          backgroundSize: '128px 128px',
-          mixBlendMode: 'overlay',
-        }}
-        aria-hidden
-      />
-
       {/* Ambient bottom glow */}
       <div
         className="absolute pointer-events-none"
@@ -50,7 +37,7 @@ export function FullbleedPrincipleSection({ section, hasBeenVisible }: Props) {
           left: '10%',
           right: '10%',
           height: '50%',
-          background: 'radial-gradient(ellipse, rgba(74,124,89,0.12) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse, rgba(74,124,89,0.06) 0%, transparent 70%)',
         }}
         aria-hidden
       />
@@ -61,8 +48,8 @@ export function FullbleedPrincipleSection({ section, hasBeenVisible }: Props) {
         aria-hidden
       >
         <span
-          className="font-headline font-extrabold text-white/[0.025]"
-          style={{ fontSize: 'clamp(200px, 35vw, 400px)', lineHeight: 1 }}
+          className="font-headline font-extrabold"
+          style={{ fontSize: 'clamp(200px, 35vw, 400px)', lineHeight: 1, color: 'rgba(46,50,48,0.04)' }}
         >
           P
         </span>
@@ -78,7 +65,7 @@ export function FullbleedPrincipleSection({ section, hasBeenVisible }: Props) {
         >
           <span
             className="font-label text-xs font-bold uppercase tracking-[0.3em]"
-            style={{ color: 'rgba(142,207,158,0.6)' }}
+            style={{ color: 'rgba(74,124,89,0.7)' }}
           >
             Design principle
           </span>
@@ -87,8 +74,8 @@ export function FullbleedPrincipleSection({ section, hasBeenVisible }: Props) {
         {/* Principle — word stagger */}
         <div className="mt-6 mb-8">
           <p
-            className="font-headline font-extrabold text-white leading-[1.1]"
-            style={{ fontSize: 'clamp(28px, 4vw, 60px)', letterSpacing: '-0.02em' } as React.CSSProperties}
+            className="font-headline font-extrabold leading-[1.1]"
+            style={{ fontSize: 'clamp(28px, 4vw, 60px)', letterSpacing: '-0.02em', color: '#2e3230' } as React.CSSProperties}
           >
             {words.map((word, i) => (
               <span
@@ -117,10 +104,10 @@ export function FullbleedPrincipleSection({ section, hasBeenVisible }: Props) {
             transitionDelay: `${80 + words.length * 35 + 100}ms`,
           }}
         >
-          <div className="h-px w-8" style={{ backgroundColor: 'rgba(74,124,89,0.5)' }} />
+          <div className="h-px w-8" style={{ backgroundColor: 'rgba(74,124,89,0.4)' }} />
           <span
             className="font-label text-xs uppercase tracking-[0.2em]"
-            style={{ color: 'rgba(255,255,255,0.4)' }}
+            style={{ color: 'rgba(74,78,74,0.5)' }}
           >
             {attribution}
           </span>

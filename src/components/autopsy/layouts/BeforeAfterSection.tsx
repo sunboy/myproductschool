@@ -22,20 +22,8 @@ export function BeforeAfterSection({ section, hasBeenVisible }: Props) {
   return (
     <div
       className="relative overflow-hidden"
-      style={{ minHeight: 'min(80vh, 700px)', background: '#0f1a14' }}
+      style={{ minHeight: 'min(80vh, 700px)', background: '#faf6f0' }}
     >
-      {/* Grain */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E")`,
-          backgroundRepeat: 'repeat',
-          backgroundSize: '128px 128px',
-          mixBlendMode: 'overlay',
-        }}
-        aria-hidden
-      />
-
       <div className="relative z-10 flex flex-col justify-center h-full px-8 py-16 md:px-16 md:py-24 gap-12">
         {/* Title */}
         <div
@@ -46,8 +34,8 @@ export function BeforeAfterSection({ section, hasBeenVisible }: Props) {
           }}
         >
           <h2
-            className="font-headline font-extrabold text-white"
-            style={{ fontSize: 'clamp(26px, 3.5vw, 48px)', letterSpacing: '-0.02em', maxWidth: '20ch' } as React.CSSProperties}
+            className="font-headline font-extrabold"
+            style={{ fontSize: 'clamp(26px, 3.5vw, 48px)', letterSpacing: '-0.02em', maxWidth: '20ch', color: '#2e3230' } as React.CSSProperties}
           >
             {title}
           </h2>
@@ -66,12 +54,12 @@ export function BeforeAfterSection({ section, hasBeenVisible }: Props) {
             }}
           >
             {/* Top accent line — error red */}
-            <div className="h-px w-full mb-6" style={{ backgroundColor: 'rgba(184,50,48,0.5)' }} />
+            <div className="h-px w-full mb-6" style={{ backgroundColor: 'rgba(184,50,48,0.4)' }} />
 
             <div className="pr-8 md:pr-12">
               <p
                 className="font-label text-xs font-bold uppercase tracking-[0.25em] mb-6"
-                style={{ color: 'rgba(184,50,48,0.8)' }}
+                style={{ color: 'rgba(184,50,48,0.75)' }}
               >
                 {before.label}
               </p>
@@ -88,16 +76,16 @@ export function BeforeAfterSection({ section, hasBeenVisible }: Props) {
                     }}
                   >
                     <span
-                      className="shrink-0 mt-[3px]"
+                      className="shrink-0"
                       style={{
                         width: 4,
                         height: 4,
                         borderRadius: '50%',
-                        backgroundColor: 'rgba(184,50,48,0.6)',
+                        backgroundColor: 'rgba(184,50,48,0.5)',
                         marginTop: 8,
                       }}
                     />
-                    <span className="font-body text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                    <span className="font-body text-sm leading-relaxed" style={{ color: 'rgba(74,78,74,0.7)' }}>
                       {item}
                     </span>
                   </li>
@@ -106,7 +94,7 @@ export function BeforeAfterSection({ section, hasBeenVisible }: Props) {
               {before.summary && (
                 <p
                   className="mt-6 font-body text-xs italic leading-relaxed"
-                  style={{ color: 'rgba(255,255,255,0.3)' }}
+                  style={{ color: 'rgba(74,78,74,0.5)' }}
                 >
                   {before.summary}
                 </p>
@@ -117,7 +105,7 @@ export function BeforeAfterSection({ section, hasBeenVisible }: Props) {
           {/* Divider (desktop: vertical line) */}
           <div
             className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px pointer-events-none"
-            style={{ background: 'linear-gradient(to bottom, transparent, rgba(74,124,89,0.2) 20%, rgba(74,124,89,0.2) 80%, transparent)' }}
+            style={{ background: 'linear-gradient(to bottom, transparent, rgba(74,124,89,0.15) 20%, rgba(74,124,89,0.15) 80%, transparent)' }}
             aria-hidden
           />
 
@@ -132,12 +120,12 @@ export function BeforeAfterSection({ section, hasBeenVisible }: Props) {
             }}
           >
             {/* Top accent line — green */}
-            <div className="h-px w-full mb-6" style={{ backgroundColor: 'rgba(74,124,89,0.6)' }} />
+            <div className="h-px w-full mb-6" style={{ backgroundColor: 'rgba(74,124,89,0.5)' }} />
 
             <div className="md:pl-12">
               <p
                 className="font-label text-xs font-bold uppercase tracking-[0.25em] mb-6"
-                style={{ color: '#8ecf9e' }}
+                style={{ color: '#4a7c59' }}
               >
                 {after.label}
               </p>
@@ -159,11 +147,11 @@ export function BeforeAfterSection({ section, hasBeenVisible }: Props) {
                         width: 4,
                         height: 4,
                         borderRadius: '50%',
-                        backgroundColor: 'rgba(74,124,89,0.8)',
+                        backgroundColor: 'rgba(74,124,89,0.7)',
                         marginTop: 8,
                       }}
                     />
-                    <span className="font-body text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.65)' }}>
+                    <span className="font-body text-sm leading-relaxed" style={{ color: '#4a4e4a' }}>
                       {item}
                     </span>
                   </li>
@@ -172,7 +160,7 @@ export function BeforeAfterSection({ section, hasBeenVisible }: Props) {
               {after.summary && (
                 <p
                   className="mt-6 font-body text-xs italic leading-relaxed"
-                  style={{ color: 'rgba(255,255,255,0.4)' }}
+                  style={{ color: 'rgba(74,78,74,0.5)' }}
                 >
                   {after.summary}
                 </p>

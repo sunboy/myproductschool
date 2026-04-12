@@ -10,14 +10,14 @@ interface Props {
 
 const EVENT_COLORS: Record<string, string> = {
   milestone: '#4a7c59',
-  launch: '#8ecf9e',
+  launch: '#78a886',
   pivot: '#b83230',
 }
 
-const EVENT_GLOW: Record<string, string> = {
-  milestone: 'rgba(74,124,89,0.3)',
-  launch: 'rgba(142,207,158,0.2)',
-  pivot: 'rgba(184,50,48,0.3)',
+const EVENT_BG: Record<string, string> = {
+  milestone: 'rgba(74,124,89,0.08)',
+  launch: 'rgba(120,168,134,0.10)',
+  pivot: 'rgba(184,50,48,0.08)',
 }
 
 export function TimelineSection({ section, hasBeenVisible }: Props) {
@@ -34,20 +34,8 @@ export function TimelineSection({ section, hasBeenVisible }: Props) {
   return (
     <div
       className="relative overflow-hidden"
-      style={{ background: '#0b1610', minHeight: 'min(90vh, 800px)' }}
+      style={{ background: '#faf6f0', minHeight: 'min(90vh, 800px)' }}
     >
-      {/* Grain */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E")`,
-          backgroundRepeat: 'repeat',
-          backgroundSize: '128px 128px',
-          mixBlendMode: 'overlay',
-        }}
-        aria-hidden
-      />
-
       <div className="relative z-10 px-10 py-16 md:px-16 md:py-24">
         {/* Section header */}
         <div
@@ -60,13 +48,13 @@ export function TimelineSection({ section, hasBeenVisible }: Props) {
         >
           <span
             className="font-label text-xs font-bold uppercase tracking-[0.25em] block mb-3"
-            style={{ color: 'rgba(142,207,158,0.6)' }}
+            style={{ color: 'rgba(74,124,89,0.7)' }}
           >
             Timeline
           </span>
           <h2
-            className="font-headline font-extrabold text-white"
-            style={{ fontSize: 'clamp(26px, 3.5vw, 48px)', letterSpacing: '-0.02em' } as React.CSSProperties}
+            className="font-headline font-extrabold"
+            style={{ fontSize: 'clamp(26px, 3.5vw, 48px)', letterSpacing: '-0.02em', color: '#2e3230' } as React.CSSProperties}
           >
             {title}
           </h2>
@@ -82,7 +70,7 @@ export function TimelineSection({ section, hasBeenVisible }: Props) {
               top: 12,
               bottom: 12,
               width: 1,
-              background: 'linear-gradient(to bottom, transparent, rgba(74,124,89,0.3) 10%, rgba(74,124,89,0.3) 90%, transparent)',
+              background: 'linear-gradient(to bottom, transparent, rgba(74,124,89,0.25) 10%, rgba(74,124,89,0.25) 90%, transparent)',
               opacity: entered ? 1 : 0,
               transition: 'opacity 0.8s ease',
               transitionDelay: '200ms',
@@ -93,7 +81,7 @@ export function TimelineSection({ section, hasBeenVisible }: Props) {
           <div className="flex flex-col gap-0 pl-8">
             {events.map((event, i) => {
               const color = EVENT_COLORS[event.type] ?? '#4a7c59'
-              const glow = EVENT_GLOW[event.type] ?? 'rgba(74,124,89,0.2)'
+              const bg = EVENT_BG[event.type] ?? 'rgba(74,124,89,0.06)'
               const isLast = i === events.length - 1
 
               return (
@@ -106,18 +94,18 @@ export function TimelineSection({ section, hasBeenVisible }: Props) {
                   <div
                     className="absolute"
                     style={{
-                      left: -8 - 8, // pl-8 = 32px, dot w = 16px, so left = -24
+                      left: -8 - 8,
                       top: 4,
                       width: 16,
                       height: 16,
                       borderRadius: '50%',
                       backgroundColor: color,
-                      boxShadow: `0 0 12px 2px ${glow}`,
+                      boxShadow: `0 0 8px 2px ${bg}`,
                       opacity: entered ? 1 : 0,
                       transform: entered ? 'none' : 'scale(0.5)',
-                      transition: `opacity 0.4s ease, transform 0.4s ease`,
+                      transition: 'opacity 0.4s ease, transform 0.4s ease',
                       transitionDelay: `${300 + i * 100}ms`,
-                      border: '2px solid rgba(255,255,255,0.1)',
+                      border: '2px solid rgba(255,255,255,0.6)',
                     }}
                   />
 
@@ -140,8 +128,8 @@ export function TimelineSection({ section, hasBeenVisible }: Props) {
                       <span
                         className="font-label text-[10px] uppercase tracking-wider px-2 py-0.5 rounded"
                         style={{
-                          backgroundColor: `${color}18`,
-                          color: `${color}`,
+                          backgroundColor: bg,
+                          color,
                           border: `1px solid ${color}30`,
                         }}
                       >
@@ -149,14 +137,14 @@ export function TimelineSection({ section, hasBeenVisible }: Props) {
                       </span>
                     </div>
                     <p
-                      className="font-headline font-bold text-white mb-2"
-                      style={{ fontSize: 'clamp(16px, 1.4vw, 22px)', letterSpacing: '-0.01em' } as React.CSSProperties}
+                      className="font-headline font-bold mb-2"
+                      style={{ fontSize: 'clamp(16px, 1.4vw, 22px)', letterSpacing: '-0.01em', color: '#2e3230' } as React.CSSProperties}
                     >
                       {event.label}
                     </p>
                     <p
                       className="font-body leading-relaxed"
-                      style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', maxWidth: '52ch' }}
+                      style={{ fontSize: 14, color: '#4a4e4a', maxWidth: '52ch' }}
                     >
                       {event.description}
                     </p>

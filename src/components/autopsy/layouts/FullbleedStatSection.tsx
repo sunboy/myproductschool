@@ -22,20 +22,8 @@ export function FullbleedStatSection({ section, hasBeenVisible }: Props) {
   return (
     <div
       className="relative flex flex-col items-center justify-center text-center overflow-hidden"
-      style={{ minHeight: 'min(90vh, 700px)', background: '#080f0b' }}
+      style={{ minHeight: 'min(90vh, 700px)', background: '#f0ece4' }}
     >
-      {/* Grain */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E")`,
-          backgroundRepeat: 'repeat',
-          backgroundSize: '128px 128px',
-          mixBlendMode: 'overlay',
-        }}
-        aria-hidden
-      />
-
       {/* Radial glow behind the number */}
       <div
         className="absolute pointer-events-none"
@@ -45,7 +33,7 @@ export function FullbleedStatSection({ section, hasBeenVisible }: Props) {
           transform: 'translate(-50%, -50%)',
           width: '80vw',
           height: '80vw',
-          background: 'radial-gradient(circle, rgba(74,124,89,0.15) 0%, transparent 60%)',
+          background: 'radial-gradient(circle, rgba(74,124,89,0.08) 0%, transparent 60%)',
           borderRadius: '50%',
         }}
         aria-hidden
@@ -57,8 +45,8 @@ export function FullbleedStatSection({ section, hasBeenVisible }: Props) {
         aria-hidden
       >
         <span
-          className="font-headline font-extrabold text-white/[0.025]"
-          style={{ fontSize: 'clamp(200px, 40vw, 480px)', lineHeight: 1 }}
+          className="font-headline font-extrabold"
+          style={{ fontSize: 'clamp(200px, 40vw, 480px)', lineHeight: 1, color: 'rgba(46,50,48,0.04)' }}
         >
           {stat}
         </span>
@@ -75,8 +63,8 @@ export function FullbleedStatSection({ section, hasBeenVisible }: Props) {
           }}
         >
           <span
-            className="font-headline font-extrabold text-white block"
-            style={{ fontSize: 'clamp(72px, 16vw, 200px)', lineHeight: 0.9, letterSpacing: '-0.03em' }}
+            className="font-headline font-extrabold block"
+            style={{ fontSize: 'clamp(72px, 16vw, 200px)', lineHeight: 0.9, letterSpacing: '-0.03em', color: '#2e3230' }}
           >
             {stat}
           </span>
@@ -92,8 +80,8 @@ export function FullbleedStatSection({ section, hasBeenVisible }: Props) {
           }}
         >
           <p
-            className="font-body text-white/55 leading-relaxed"
-            style={{ fontSize: 'clamp(16px, 1.5vw, 22px)', maxWidth: '50ch' }}
+            className="font-body leading-relaxed"
+            style={{ fontSize: 'clamp(16px, 1.5vw, 22px)', maxWidth: '50ch', color: '#4a4e4a' }}
           >
             {context}
           </p>
@@ -110,7 +98,7 @@ export function FullbleedStatSection({ section, hasBeenVisible }: Props) {
           >
             <span
               className="font-label text-xs uppercase tracking-[0.2em]"
-              style={{ color: 'rgba(142,207,158,0.4)' }}
+              style={{ color: 'rgba(74,124,89,0.6)' }}
             >
               {source}
             </span>
@@ -121,7 +109,7 @@ export function FullbleedStatSection({ section, hasBeenVisible }: Props) {
       {/* Thin accent line at bottom */}
       <div
         className="absolute bottom-0 left-0 right-0 h-px"
-        style={{ background: 'linear-gradient(90deg, transparent, rgba(74,124,89,0.4), transparent)' }}
+        style={{ background: 'linear-gradient(90deg, transparent, rgba(74,124,89,0.3), transparent)' }}
         aria-hidden
       />
     </div>

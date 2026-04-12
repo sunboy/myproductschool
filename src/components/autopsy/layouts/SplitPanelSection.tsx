@@ -23,7 +23,7 @@ export function SplitPanelSection({ section, isVisible, hasBeenVisible }: Props)
   const textCol = (
     <div
       className="flex flex-col justify-center gap-6 px-10 py-16 md:px-16 md:py-24"
-      style={{ background: '#0f1a14' }}
+      style={{ background: '#faf6f0' }}
     >
       {/* Label */}
       <div
@@ -36,7 +36,7 @@ export function SplitPanelSection({ section, isVisible, hasBeenVisible }: Props)
       >
         <span
           className="font-label text-xs font-bold uppercase tracking-[0.25em]"
-          style={{ color: '#8ecf9e' }}
+          style={{ color: '#4a7c59' }}
         >
           {label}
         </span>
@@ -44,10 +44,11 @@ export function SplitPanelSection({ section, isVisible, hasBeenVisible }: Props)
 
       {/* Title */}
       <h2
-        className="font-headline font-extrabold text-white leading-[1.05]"
+        className="font-headline font-extrabold leading-[1.05]"
         style={{
           fontSize: 'clamp(28px, 3.5vw, 52px)',
           letterSpacing: '-0.02em',
+          color: '#2e3230',
           opacity: entered ? 1 : 0,
           transform: entered ? 'none' : 'translateY(16px)',
           transition: 'opacity 0.7s ease, transform 0.7s ease',
@@ -65,7 +66,7 @@ export function SplitPanelSection({ section, isVisible, hasBeenVisible }: Props)
           transitionDelay: '160ms',
         }}
       >
-        <div className="h-px w-10" style={{ backgroundColor: 'rgba(74,124,89,0.4)' }} />
+        <div className="h-px w-10" style={{ backgroundColor: 'rgba(74,124,89,0.35)' }} />
       </div>
 
       {/* Paragraphs */}
@@ -73,10 +74,11 @@ export function SplitPanelSection({ section, isVisible, hasBeenVisible }: Props)
         {paragraphs.map((p, i) => (
           <p
             key={i}
-            className="font-body text-white/60 leading-relaxed"
+            className="font-body leading-relaxed"
             style={{
               fontSize: 'clamp(15px, 1.2vw, 18px)',
               maxWidth: '52ch',
+              color: '#4a4e4a',
               opacity: entered ? 1 : 0,
               transform: entered ? 'none' : 'translateY(8px)',
               transition: 'opacity 0.6s ease, transform 0.6s ease',
@@ -95,26 +97,15 @@ export function SplitPanelSection({ section, isVisible, hasBeenVisible }: Props)
       className="relative flex items-center justify-center overflow-hidden"
       style={{
         minHeight: '50vh',
-        background: 'linear-gradient(135deg, #0a1410 0%, #162318 50%, #0d1c14 100%)',
+        background: '#f0ece4',
       }}
     >
-      {/* Grain */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E")`,
-          backgroundRepeat: 'repeat',
-          backgroundSize: '128px 128px',
-          mixBlendMode: 'overlay',
-        }}
-        aria-hidden
-      />
-      {/* Radial glow */}
+      {/* Subtle radial glow */}
       <div
         className="absolute pointer-events-none"
         style={{
           inset: '-20%',
-          background: 'radial-gradient(circle at 50% 50%, rgba(74,124,89,0.12) 0%, transparent 65%)',
+          background: 'radial-gradient(circle at 50% 50%, rgba(74,124,89,0.07) 0%, transparent 65%)',
         }}
         aria-hidden
       />
