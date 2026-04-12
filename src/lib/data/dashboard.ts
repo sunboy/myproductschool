@@ -56,16 +56,53 @@ export async function getHotChallenges(): Promise<HotChallenge[]> {
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
 
+  // Sample recent 500 attempts — bounded to avoid full-table scan at scale
+  const { data: attemptData } = await supabase
+    .from('challenge_attempts')
+    .select('challenge_id')
+    .eq('status', 'completed')
+    .order('created_at', { ascending: false })
+    .limit(500)
+
+  if (attemptData && attemptData.length > 0) {
+    const counts: Record<string, number> = {}
+    for (const row of attemptData) {
+      if (row.challenge_id) counts[row.challenge_id] = (counts[row.challenge_id] ?? 0) + 1
+    }
+    const topIds = Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([id]) => id)
+
+    const { data: challenges } = await supabase
+      .from('challenges')
+      .select('id, title, domains(title)')
+      .in('id', topIds)
+      .eq('is_published', true)
+
+    if (challenges && challenges.length > 0) {
+      return challenges.map(c => ({
+        id: c.id,
+        title: c.title,
+        attempts: counts[c.id] ?? 0,
+        avgScore: 0,
+        domain: ((c.domains as unknown as { title: string } | null))?.title ?? 'General',
+      })).sort((a, b) => b.attempts - a.attempts)
+    }
+  }
+
+  // Fallback: 5 most recently inserted published challenges
   const { data } = await supabase
-    .from('challenge_prompts')
-    .select('title, domain_id, domains(title)')
+    .from('challenges')
+    .select('id, title, domains(title)')
     .eq('is_published', true)
     .order('created_at', { ascending: false })
-    .limit(3)
+    .limit(5)
 
   if (!data || data.length === 0) return MOCK_HOT_CHALLENGES
 
   return data.map(c => ({
+    id: c.id,
     title: c.title,
     attempts: 0,
     avgScore: 0,
@@ -164,11 +201,35 @@ export async function getUserNotes(userId: string): Promise<UserNote[]> {
   return (data ?? []) as UserNote[]
 }
 
-// ── Move levels (mock for now) ───────────────────────────────
+// ── Move levels ──────────────────────────────────────────────
 
-export async function getMoveLevel(_userId: string): Promise<MoveLevel[]> {
-  // Move levels are fully mock until scoring pipeline tracks per-move progression
-  return MOCK_MOVE_LEVELS
+const MOVE_ICONS: Record<string, string> = {
+  frame: '◇',
+  list: '◈',
+  optimize: '◆',
+  win: '◎',
+}
+
+export async function getMoveLevel(userId: string): Promise<MoveLevel[]> {
+  if (IS_MOCK) return MOCK_MOVE_LEVELS
+
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .from('move_levels')
+    .select('move, level, progress_pct')
+    .eq('user_id', userId)
+    .order('move')
+
+  if (!data || data.length === 0) return MOCK_MOVE_LEVELS
+
+  return data.map(row => ({
+    move: row.move.charAt(0).toUpperCase() + row.move.slice(1),
+    icon: MOVE_ICONS[row.move] ?? '◇',
+    level: row.level,
+    pct: row.progress_pct,
+  }))
 }
 
 // ── Helpers ──────────────────────────────────────────────────

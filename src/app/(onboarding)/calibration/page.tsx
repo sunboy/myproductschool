@@ -7,6 +7,19 @@ import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import type { CalibrationResults } from '@/lib/types'
 import { QUESTIONS } from '@/lib/calibration/questions'
 
+const ROLES = [
+  { id: 'swe',            icon: 'code',                     badge: 'SWE',          title: 'Software Engineer',    description: 'Ship clean code but keep getting passed over for Staff' },
+  { id: 'data_eng',       icon: 'database',                 badge: 'Data Eng',     title: 'Data Engineer',        description: 'Build reliable pipelines but feel invisible to product decisions' },
+  { id: 'ml_eng',         icon: 'psychology',               badge: 'ML Eng',       title: 'ML Engineer',          description: 'Improve model accuracy but struggle to translate it to business impact' },
+  { id: 'devops',         icon: 'settings_input_component', badge: 'DevOps',       title: 'DevOps / SRE',         description: 'Keep systems running but rarely get credit for product value' },
+  { id: 'em',             icon: 'groups',                   badge: 'EM',           title: 'Eng Manager',          description: 'Manage delivery but want to shape direction, not just execute' },
+  { id: 'founding_eng',   icon: 'rocket_launch',            badge: 'Founding Eng', title: 'Founding Engineer',    description: 'You ARE the product team — need to think like a CPO' },
+  { id: 'tech_lead',      icon: 'account_tree',             badge: 'Tech Lead',    title: 'Tech Lead',            description: 'Own architecture but want more say in product strategy' },
+  { id: 'pm',             icon: 'manage_accounts',          badge: 'PM',           title: 'Product Manager',      description: 'Drive product direction and sharpen cross-functional thinking' },
+  { id: 'designer',       icon: 'design_services',          badge: 'Designer',     title: 'Product Designer',     description: 'Craft experiences but want to drive product decisions, not just polish them' },
+  { id: 'data_scientist', icon: 'query_stats',              badge: 'Data Sci',     title: 'Data Scientist',       description: 'Run analyses but struggle to turn findings into product decisions' },
+]
+
 const FLOW_MOVES = [
   { key: 'frame',    symbol: '◇', label: 'Frame',    color: '#e8f5e9', textColor: '#2e7d32', desc: 'Define the real problem' },
   { key: 'list',     symbol: '◈', label: 'List',     color: '#e3f2fd', textColor: '#1565c0', desc: 'Surface options & trade-offs' },
@@ -116,13 +129,48 @@ const DEBRIEF = {
 // ─────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────
-// Screens: 0=intro, 1-8=questions, 9=grading, 10=results
+// Screens: 0=role, 15=flow intro, 1-8=questions, 9=grading, 10=results
 // 11=Frame debrief, 12=List debrief, 13=Optimize debrief, 14=Win debrief
-type Screen = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14
+type Screen = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15
 
 // ─────────────────────────────────────────────
 // Radar chart
 // ─────────────────────────────────────────────
+function FlowMoveCard({ m }: { m: typeof FLOW_MOVES[number] }) {
+  const [expanded, setExpanded] = useState(false)
+  const debrief = DEBRIEF[m.key as keyof typeof DEBRIEF]
+  return (
+    <button
+      onClick={() => setExpanded(e => !e)}
+      className={`rounded-xl p-3.5 flex flex-col gap-1 text-left transition-all duration-200 ${expanded ? 'col-span-2' : 'hover:brightness-95 active:scale-[0.98]'}`}
+      style={{ background: m.color, outline: expanded ? `2px solid ${m.textColor}` : 'none' }}
+    >
+      <div className="flex items-center justify-between">
+        <span className="text-lg font-bold" style={{ color: m.textColor }}>{m.symbol}</span>
+        <span className="material-symbols-outlined text-sm transition-transform duration-200" style={{ color: m.textColor, transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', fontVariationSettings: "'FILL' 0" }}>
+          expand_more
+        </span>
+      </div>
+      <span className="font-bold text-sm text-on-surface">{m.label}</span>
+      <span className="text-[11px] text-on-surface-variant leading-snug">{m.desc}</span>
+      {expanded && (
+        <div className="mt-2 pt-2 border-t border-black/10 text-left space-y-1">
+          <p className="text-[12px] text-on-surface leading-snug">{debrief.what}</p>
+          <p className="text-[11px] text-on-surface-variant leading-snug italic">{debrief.why}</p>
+        </div>
+      )}
+    </button>
+  )
+}
+
+function FlowMoveCards() {
+  return (
+    <div className="grid grid-cols-2 gap-2.5 w-full max-w-xs">
+      {FLOW_MOVES.map(m => <FlowMoveCard key={m.key} m={m} />)}
+    </div>
+  )
+}
+
 function RadarChart({ scores, visible }: { scores: CalibrationResults['scores']; visible: boolean }) {
   return (
     <div className="relative w-52 h-52 flex items-center justify-center mx-auto">
@@ -178,10 +226,13 @@ function CalibrationPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const [expandedMove, setExpandedMove] = useState<string | null>(null)
   const [screen, setScreen] = useState<Screen>(0)
   const [exiting, setExiting] = useState(false)
   const [direction, setDirection] = useState<'forward' | 'back'>('forward')
+
+  // Role selection (screen 0)
+  const [selectedRole, setSelectedRole] = useState<string | null>(null)
+  const [roleSubmitting, setRoleSubmitting] = useState(false)
 
   // Answers: questionIndex → chosen option id
   const [answers, setAnswers] = useState<Record<number, string>>({})
@@ -195,11 +246,16 @@ function CalibrationPage() {
 
   // ── Restore saved progress on mount ────────
   useEffect(() => {
-    if (searchParams.get('resume') !== '1') return
+    if (searchParams.get('resume') !== '1') {
+      try { localStorage.removeItem(CAL_STORAGE_KEY) } catch { /* ignore */ }
+      return
+    }
     try {
       const saved = localStorage.getItem(CAL_STORAGE_KEY)
       if (!saved) return
-      const { screen: savedScreen, answers: savedAnswers } = JSON.parse(saved)
+      const { screen: savedScreen, answers: savedAnswers, role: savedRole } = JSON.parse(saved)
+      if (!savedRole) return
+      setSelectedRole(savedRole)
       if (savedScreen && savedScreen >= 1 && savedScreen <= 8) {
         setAnswers(savedAnswers ?? {})
         setScreen(savedScreen as Screen)
@@ -210,9 +266,24 @@ function CalibrationPage() {
   // ── Persist progress to localStorage ───────
   const saveProgress = useCallback((s: Screen, a: Record<number, string>) => {
     if (s >= 1 && s <= 8) {
-      try { localStorage.setItem(CAL_STORAGE_KEY, JSON.stringify({ screen: s, answers: a })) } catch { /* ignore */ }
+      try { localStorage.setItem(CAL_STORAGE_KEY, JSON.stringify({ screen: s, answers: a, role: selectedRole })) } catch { /* ignore */ }
     }
-  }, [])
+  }, [selectedRole])
+
+  // ── Role selection → advance to questions ──
+  async function handleRoleNext() {
+    if (!selectedRole) return
+    setRoleSubmitting(true)
+    try {
+      await fetch('/api/onboarding/role', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: selectedRole }),
+      })
+    } catch { /* non-fatal */ }
+    setRoleSubmitting(false)
+    goTo(15)
+  }
 
   // ── Save & exit — preserves progress for resume ─────
   function handleSaveAndExit() {
@@ -306,11 +377,12 @@ function CalibrationPage() {
     }).catch(() => {})
   }
 
-  async function handleComplete(dest: '/dashboard' | '/prep') {
+  async function handleComplete(dest: '/dashboard' | '/live-interviews?tab=prep') {
     setIsCompleting(true)
     try { localStorage.removeItem(CAL_STORAGE_KEY) } catch { /* ignore */ }
     try { await fetch('/api/onboarding/complete', { method: 'POST' }) } catch { /* ok */ }
     router.push(dest)
+    router.refresh()
   }
 
   // ── Derived ─────────────────────────────────
@@ -330,14 +402,15 @@ function CalibrationPage() {
 
   // Which FLOW move pills are done/active
   // Frame=1-2 (debrief=11), List=3-4 (debrief=12), Optimize=5-6 (debrief=13), Win=7-8 (debrief=14)
-  const frameDone      = screen === 12 || screen === 13 || screen === 14 || screen >= 9
+  // Done = past that move's questions. Active = currently on that move's questions or its debrief.
   const frameActive    = screen === 1 || screen === 2 || screen === 11
-  const listDone       = screen === 13 || screen === 14 || screen >= 9
+  const frameDone      = !frameActive && screen !== 0 && screen !== 15
   const listActive     = screen === 3 || screen === 4 || screen === 12
-  const optimizeDone   = screen === 14 || screen >= 9
+  const listDone       = !listActive && (screen === 13 || screen === 14 || screen === 9 || screen === 10 || screen === 5 || screen === 6 || screen === 7 || screen === 8)
   const optimizeActive = screen === 5 || screen === 6 || screen === 13
-  const winDone        = screen >= 9
+  const optimizeDone   = !optimizeActive && (screen === 14 || screen === 9 || screen === 10 || screen === 7 || screen === 8)
   const winActive      = screen === 7 || screen === 8 || screen === 14
+  const winDone        = screen === 9 || screen === 10
 
   const scores = results?.scores ?? { frame: 72, list: 58, optimize: 65, win: 44 }
   const archetype = results?.archetype ?? 'The Systematic Builder'
@@ -388,23 +461,30 @@ function CalibrationPage() {
       {screen >= 1 && screen <= 14 && (
         <div className="relative z-10 flex items-center justify-center gap-3 px-6 py-2 bg-background/80 backdrop-blur-sm border-b border-outline-variant/40 flex-shrink-0">
           {[
-            { symbol: '◇', label: 'Frame',    done: frameDone,     active: frameActive },
-            { symbol: '◈', label: 'List',     done: listDone,      active: listActive },
-            { symbol: '◆', label: 'Optimize', done: optimizeDone,  active: optimizeActive },
-            { symbol: '◎', label: 'Win',      done: winDone,       active: winActive },
+            { symbol: '◇', label: 'Frame',    done: frameDone,     active: frameActive,    backTo: 11 as Screen },
+            { symbol: '◈', label: 'List',     done: listDone,      active: listActive,     backTo: 12 as Screen },
+            { symbol: '◆', label: 'Optimize', done: optimizeDone,  active: optimizeActive, backTo: 13 as Screen },
+            { symbol: '◎', label: 'Win',      done: winDone,       active: winActive,      backTo: 14 as Screen },
           ].map((m, i) => (
             <div key={m.label} className="flex items-center gap-1.5">
-              <div className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all duration-300 ${
-                m.done   ? 'bg-primary text-on-primary' :
-                m.active ? 'bg-white text-primary border-2 border-primary shadow-sm' :
-                           'bg-surface-container-high text-on-surface-variant opacity-40'
-              }`}>
-                {m.done
-                  ? <span className="material-symbols-outlined text-[11px]" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
-                  : <span>{m.symbol}</span>
-                }
-                {m.label}
-              </div>
+              {m.done ? (
+                <button
+                  onClick={() => goTo(m.backTo, 'back')}
+                  className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all duration-300 bg-primary text-on-primary hover:opacity-80 active:scale-95"
+                  title={`Review ${m.label}`}
+                >
+                  <span className="material-symbols-outlined text-[11px]" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
+                  {m.label}
+                </button>
+              ) : (
+                <div className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all duration-300 ${
+                  m.active ? 'bg-white text-primary border-2 border-primary shadow-sm' :
+                             'bg-surface-container-high text-on-surface-variant opacity-40'
+                }`}>
+                  <span>{m.symbol}</span>
+                  {m.label}
+                </div>
+              )}
               {i < 3 && (
                 <div className={`w-4 h-0.5 rounded-full transition-all duration-500 ${m.done ? 'bg-primary' : 'bg-outline-variant'}`} />
               )}
@@ -417,8 +497,59 @@ function CalibrationPage() {
       <main className="relative z-10 flex-1 overflow-y-auto">
         <div className={`max-w-xl mx-auto px-5 py-8 ${contentClass}`}>
 
-          {/* ── Screen 0: Intro ── */}
+          {/* ── Screen 0: Role selection ── */}
           {screen === 0 && (
+            <div className="flex flex-col gap-6">
+              <div className="flex items-start gap-4 bg-primary-fixed rounded-2xl p-4">
+                <LumaGlyph size={44} state="listening" className="flex-shrink-0 mt-0.5" />
+                <div>
+                  <h1 className="font-headline text-xl font-bold text-on-surface mb-1">What&apos;s your role?</h1>
+                  <p className="text-sm text-on-surface-variant leading-relaxed">
+                    Luma will personalize your calibration challenge and learning path for your role.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {ROLES.map(role => {
+                  const isSelected = selectedRole === role.id
+                  return (
+                    <button
+                      key={role.id}
+                      onClick={() => setSelectedRole(role.id)}
+                      className={`text-left bg-surface-container border rounded-xl p-4 transition-all hover:bg-primary-fixed hover:border-primary hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-primary ${
+                        isSelected ? 'bg-primary-fixed border-primary shadow-sm' : 'border-outline-variant'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="material-symbols-outlined text-primary text-2xl">{role.icon}</span>
+                        <span className="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{role.badge}</span>
+                      </div>
+                      <p className="font-label font-bold text-sm text-on-surface mb-0.5">{role.title}</p>
+                      <p className="text-[11px] text-on-surface-variant leading-snug">{role.description}</p>
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div className="flex flex-col items-center gap-3 pt-1">
+                <button
+                  onClick={handleRoleNext}
+                  disabled={!selectedRole || roleSubmitting}
+                  className="inline-flex items-center gap-2 bg-primary text-on-primary rounded-full px-8 py-3 font-label font-bold text-sm shadow-lg shadow-primary/25 hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  {roleSubmitting ? 'Saving…' : 'Start calibration'}
+                  <span className="material-symbols-outlined text-base">arrow_forward</span>
+                </button>
+                <button onClick={handleSkip} className="text-xs text-on-surface-variant hover:text-on-surface underline underline-offset-2 transition-colors">
+                  Skip — browse challenges first
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Screen 15: FLOW intro ── */}
+          {screen === 15 && (
             <div className="flex flex-col items-center text-center gap-6">
               <div className="animate-luma-glow">
                 <LumaGlyph size={88} state="celebrating" />
@@ -436,35 +567,7 @@ function CalibrationPage() {
                 Tap any move to learn more
               </p>
 
-              <div className="grid grid-cols-2 gap-2.5 w-full max-w-xs">
-                {FLOW_MOVES.map(m => {
-                  const isExpanded = expandedMove === m.key
-                  const debrief = DEBRIEF[m.key as keyof typeof DEBRIEF]
-                  return (
-                    <button
-                      key={m.key}
-                      onClick={() => setExpandedMove(isExpanded ? null : m.key)}
-                      className={`rounded-xl p-3.5 flex flex-col gap-1 text-left transition-all duration-200 ${isExpanded ? 'col-span-2' : 'hover:brightness-95 active:scale-[0.98]'}`}
-                      style={{ background: m.color, outline: isExpanded ? `2px solid ${m.textColor}` : 'none' }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold" style={{ color: m.textColor }}>{m.symbol}</span>
-                        <span className="material-symbols-outlined text-sm transition-transform duration-200" style={{ color: m.textColor, transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', fontVariationSettings: "'FILL' 0" }}>
-                          expand_more
-                        </span>
-                      </div>
-                      <span className="font-bold text-sm text-on-surface">{m.label}</span>
-                      <span className="text-[11px] text-on-surface-variant leading-snug">{m.desc}</span>
-                      {isExpanded && (
-                        <div className="mt-2 pt-2 border-t border-black/10 text-left space-y-1">
-                          <p className="text-[12px] text-on-surface leading-snug">{debrief.what}</p>
-                          <p className="text-[11px] text-on-surface-variant leading-snug italic">{debrief.why}</p>
-                        </div>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
+              <FlowMoveCards />
 
               <button
                 onClick={() => goTo(1)}
@@ -473,9 +576,13 @@ function CalibrationPage() {
                 Let&apos;s go
                 <span className="material-symbols-outlined text-base">arrow_forward</span>
               </button>
-              <a href="/challenges" className="text-xs text-on-surface-variant hover:text-on-surface underline underline-offset-2 transition-colors">
-                Skip — browse challenges first
-              </a>
+              <button
+                onClick={() => goTo(0, 'back')}
+                className="text-xs text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1"
+              >
+                <span className="material-symbols-outlined text-sm">arrow_back</span>
+                Back to role selection
+              </button>
             </div>
           )}
 
@@ -529,10 +636,9 @@ function CalibrationPage() {
                 })}
               </div>
 
-              {/* Back link — subtle, only on screens 2+ */}
-              {screen > 1 && !justSelected && (
+              {screen >= 1 && !justSelected && (
                 <button
-                  onClick={() => goTo((screen - 1) as Screen, 'back')}
+                  onClick={() => goTo(screen === 1 ? 15 : (screen - 1) as Screen, 'back')}
                   className="flex items-center gap-1 text-xs text-on-surface-variant hover:text-on-surface transition-colors mt-2 mx-auto"
                 >
                   <span className="material-symbols-outlined text-sm">arrow_back</span>
@@ -714,7 +820,7 @@ function CalibrationPage() {
                   <span className="material-symbols-outlined text-base">arrow_forward</span>
                 </button>
                 <button
-                  onClick={() => handleComplete('/prep')}
+                  onClick={() => handleComplete('/live-interviews?tab=prep')}
                   disabled={isCompleting}
                   className="w-full text-center text-sm font-bold text-primary hover:underline underline-offset-4 decoration-2 disabled:opacity-50"
                 >

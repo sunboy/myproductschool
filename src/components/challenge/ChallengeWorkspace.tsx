@@ -169,9 +169,9 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
         }),
       })
       const data = await res.json()
-      router.push(`/challenges/${challenge.id}/grading?attempt=${data.attemptId ?? 'mock'}`)
+      router.push(`/workspace/challenges/${challenge.id}/grading?attempt=${data.attemptId ?? 'mock'}`)
     } catch {
-      router.push(`/challenges/${challenge.id}/grading?attempt=mock`)
+      router.push(`/workspace/challenges/${challenge.id}/grading?attempt=mock`)
     }
   }, [challenge.id, mode, submitting, responses, freeformResponse, router])
 

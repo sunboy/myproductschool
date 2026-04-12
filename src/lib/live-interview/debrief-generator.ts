@@ -16,6 +16,8 @@ export interface DebriefParams {
   sessionId: string
   turns: Array<{ role: 'luma' | 'user'; content: string; turnIndex: number }>
   calibrationSnapshot: { archetype: string; moveLevels: Record<string, number> }
+  scenarioRubric?: Record<string, unknown> | null
+  challengeId?: string | null
 }
 
 const SYSTEM_PROMPT = `You are an expert PM interview evaluator for HackProduct. Analyze the provided interview transcript against the FLOW rubric and return a structured JSON debrief.
@@ -54,7 +56,7 @@ export async function generateDebrief(params: DebriefParams): Promise<DebriefRes
     return MOCK_LIVE_DEBRIEF
   }
 
-  const { turns, calibrationSnapshot } = params
+  const { turns, calibrationSnapshot, scenarioRubric } = params
 
   // Build transcript sorted by turnIndex
   const sorted = [...turns].sort((a, b) => a.turnIndex - b.turnIndex)
@@ -65,13 +67,45 @@ export async function generateDebrief(params: DebriefParams): Promise<DebriefRes
     })
     .join('\n')
 
+  // Build scenario context for the debrief prompt
+  let scenarioSection = ''
+  if (scenarioRubric) {
+    const rubric = scenarioRubric
+    const steps = rubric.steps as Record<string, { weight: number; nudge: string | null }> | undefined
+    const stepLines: string[] = []
+    if (steps) {
+      for (const [step, data] of Object.entries(steps)) {
+        const nudge = data.nudge ? ` — ${data.nudge}` : ''
+        stepLines.push(`${step.charAt(0).toUpperCase() + step.slice(1)} (weight: ${data.weight})${nudge}`)
+      }
+    }
+    scenarioSection = `
+SCENARIO EVALUATED:
+${rubric.scenarioQuestion ?? ''}
+
+WHAT SEPARATES GREAT FROM GOOD:
+${rubric.engineerStandout ?? ''}
+
+TARGET COMPETENCIES: ${((rubric.primaryCompetencies as string[]) ?? []).join(', ')}
+
+SCENARIO RUBRIC:
+${stepLines.join('\n')}
+
+Evaluate the candidate's performance against this specific scenario. Reference the scenario's rubric in your assessment — did they identify the core insight? Did they address what separates great from good?
+`
+  }
+
+  const systemPrompt = scenarioRubric
+    ? `${SYSTEM_PROMPT}\n\n${scenarioSection}`
+    : SYSTEM_PROMPT
+
   const userMessage = `Candidate archetype: ${calibrationSnapshot.archetype}
 Move levels: Frame L${calibrationSnapshot.moveLevels.frame ?? '?'}, List L${calibrationSnapshot.moveLevels.list ?? '?'}, Optimize L${calibrationSnapshot.moveLevels.optimize ?? '?'}, Win L${calibrationSnapshot.moveLevels.win ?? '?'}
 
 Interview transcript:
 ${transcript}`
 
-  const response = await createCachedMessage(SYSTEM_PROMPT, userMessage, {
+  const response = await createCachedMessage(systemPrompt, userMessage, {
     model: 'claude-opus-4-6',
     max_tokens: 1500,
   })

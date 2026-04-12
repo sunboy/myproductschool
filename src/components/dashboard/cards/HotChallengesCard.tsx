@@ -1,11 +1,5 @@
 import Link from 'next/link'
-
-interface HotChallenge {
-  title: string
-  attempts: number
-  avgScore: number
-  domain: string
-}
+import type { HotChallenge } from '@/lib/data/dashboard'
 
 interface HotChallengesCardProps {
   challenges: HotChallenge[]
@@ -13,34 +7,40 @@ interface HotChallengesCardProps {
 
 export function HotChallengesCard({ challenges }: HotChallengesCardProps) {
   return (
-    <div className="bg-surface-container rounded-xl p-4 flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        <span className="material-symbols-outlined text-tertiary text-xl">local_fire_department</span>
-        <h3 className="font-headline font-semibold text-base text-on-surface">Hot Challenges</h3>
+    <div className="bg-surface-container-low rounded-2xl p-5 flex flex-col gap-3 border border-outline-variant/30">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span
+            className="material-symbols-outlined text-[18px] leading-none"
+            style={{ fontVariationSettings: "'FILL' 1", color: '#c94b1b' }}
+          >
+            local_fire_department
+          </span>
+          <h3 className="font-headline font-semibold text-sm text-on-surface">Trending</h3>
+        </div>
+        <Link href="/challenges" className="text-[11px] text-primary font-label font-semibold hover:underline">
+          All challenges
+        </Link>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-0.5">
         {challenges.map((ch, i) => (
-          <div key={i} className="flex items-center gap-3 py-1.5 border-b border-outline-variant/20 last:border-0">
-            <span className="text-sm font-bold text-tertiary w-5">{i + 1}</span>
+          <Link
+            key={ch.id}
+            href={`/workspace/challenges/${ch.id}`}
+            className="flex items-center gap-3 py-2 px-2 -mx-2 rounded-xl hover:bg-surface-container-high transition-colors duration-150 group"
+          >
+            <span className="text-xs font-bold text-tertiary w-4 text-center tabular-nums shrink-0 font-label">{i + 1}</span>
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-on-surface truncate font-semibold">{ch.title}</p>
-              <p className="text-xs text-on-surface-variant font-label">{ch.domain}</p>
+              <p className="text-[13px] text-on-surface truncate font-semibold leading-snug">{ch.title}</p>
+              <p className="text-[11px] text-on-surface-variant font-label mt-0.5">{ch.domain}</p>
             </div>
-            <div className="text-right flex-shrink-0">
-              <p className="text-xs text-on-surface-variant font-label">{ch.attempts} attempts</p>
-              <p className="text-xs text-on-surface-variant font-label">avg {ch.avgScore}</p>
+            <div className="shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="material-symbols-outlined text-[14px] text-on-surface-variant">chevron_right</span>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
-
-      <Link
-        href="/challenges"
-        className="text-xs text-primary font-label font-semibold hover:underline self-start"
-      >
-        View all challenges
-      </Link>
     </div>
   )
 }

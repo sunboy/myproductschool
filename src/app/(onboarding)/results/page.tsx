@@ -231,7 +231,7 @@ export default function ResultsPage() {
               } catch {
                 // Non-fatal
               }
-              router.push('/prep')
+              router.push('/live-interviews?tab=prep')
             }}
             disabled={isCompleting}
             className="block w-full text-center text-sm font-bold text-primary hover:underline underline-offset-4 decoration-2 disabled:opacity-50"

@@ -114,7 +114,7 @@ export function MentalModelsBreakdown({
           </div>
           {nextChallengeId && nextChallengeTitle && (
             <Link
-              href={`/challenges/${nextChallengeId}`}
+              href={`/workspace/challenges/${nextChallengeId}`}
               className="inline-flex items-center gap-1.5 text-sm font-label font-semibold text-primary hover:underline"
             >
               Next challenge to develop this

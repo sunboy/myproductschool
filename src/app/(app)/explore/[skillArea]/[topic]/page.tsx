@@ -160,7 +160,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
                 {topicChallenges.map(challenge => (
                   <Link
                     key={challenge.id}
-                    href={`/challenges/${challenge.slug ?? challenge.id}`}
+                    href={`/workspace/challenges/${challenge.slug ?? challenge.id}`}
                     className="group flex items-center gap-2 py-1.5 hover:text-primary transition-colors"
                   >
                     <span className="material-symbols-outlined text-on-surface-variant text-base group-hover:text-primary">

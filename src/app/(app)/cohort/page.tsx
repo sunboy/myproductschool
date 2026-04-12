@@ -7,6 +7,14 @@ import { useCohort } from '@/hooks/useCohort'
 
 const MEDAL_COLORS = ['text-amber-400', 'text-slate-400', 'text-amber-700']
 
+function getWeekNumber(weekStart: string): number {
+  // ISO week number
+  const date = new Date(weekStart)
+  const startOfYear = new Date(date.getFullYear(), 0, 1)
+  const dayOfYear = Math.floor((date.getTime() - startOfYear.getTime()) / 86400000)
+  return Math.ceil((dayOfYear + startOfYear.getDay() + 1) / 7)
+}
+
 function buildLinkedInShareUrl(rank: number, score: number, challengeTitle: string): string {
   const text = encodeURIComponent(
     `I ranked #${rank} on this week's HackProduct community challenge: "${challengeTitle}" — scored ${score}/100. Sharpening my product thinking one challenge at a time. 🧠\n\nhackproduct.io`
@@ -64,8 +72,6 @@ export default function CohortPage() {
     rank: e.rank,
     name: e.display_name ?? 'Anonymous',
     score: e.score,
-    move: 'Optimize',
-    time: '--',
     medalColor: MEDAL_COLORS[i] ?? 'text-outline',
   }))
 
@@ -128,7 +134,7 @@ export default function CohortPage() {
         <div className="relative z-10 flex flex-col md:flex-row justify-between gap-6">
           <div className="space-y-4 max-w-2xl">
             <div className="flex gap-2">
-              <span className="bg-tertiary text-white px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">Week 12 · {moveTag}</span>
+              <span className="bg-tertiary text-white px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">{challenge?.week_start ? `Week ${getWeekNumber(challenge.week_start)}` : 'Current Week'} · {moveTag}</span>
             </div>
             <h2 className="text-xl md:text-2xl font-bold leading-tight font-headline">
               {challengeTitle ?? 'This week\'s challenge is loading...'}
@@ -286,8 +292,6 @@ export default function CohortPage() {
                   <th className="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Rank</th>
                   <th className="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Engineer</th>
                   <th className="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Score</th>
-                  <th className="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Move</th>
-                  <th className="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Time</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
@@ -309,10 +313,6 @@ export default function CohortPage() {
                       </div>
                     </td>
                     <td className="px-6 text-sm font-bold text-primary">{entry.score}/100</td>
-                    <td className="px-6">
-                      <span className="px-2 py-0.5 bg-secondary-container rounded-full text-[10px] font-bold">{entry.move}</span>
-                    </td>
-                    <td className="px-6 text-xs text-on-surface-variant font-medium">{entry.time}</td>
                   </tr>
                 ))}
 
@@ -320,7 +320,7 @@ export default function CohortPage() {
                 {submission && displayRank !== null && !leaderboardDisplay.some(e => e.rank === displayRank) && (
                   <>
                     <tr className="h-10">
-                      <td className="px-6 text-center" colSpan={5}>
+                      <td className="px-6 text-center" colSpan={3}>
                         <span className="material-symbols-outlined text-outline">more_horiz</span>
                       </td>
                     </tr>
@@ -340,10 +340,6 @@ export default function CohortPage() {
                         </div>
                       </td>
                       <td className="px-6 text-sm font-black text-primary">{displayScore !== null ? `${displayScore}/100` : '—'}</td>
-                      <td className="px-6">
-                        <span className="px-2 py-0.5 bg-primary text-white rounded-full text-[10px] font-bold">{moveTag}</span>
-                      </td>
-                      <td className="px-6 text-xs text-on-surface-variant font-black">—</td>
                     </tr>
                   </>
                 )}
@@ -351,7 +347,7 @@ export default function CohortPage() {
                 {/* Show more rows if available */}
                 {leaderboard.length > 3 && (
                   <tr className="h-10">
-                    <td className="px-6 text-center" colSpan={5}>
+                    <td className="px-6 text-center" colSpan={3}>
                       <span className="text-xs text-on-surface-variant font-medium">
                         +{leaderboard.length - 3} more engineers
                       </span>
@@ -373,8 +369,7 @@ export default function CohortPage() {
           <div>
             <h4 className="text-xs font-bold text-tertiary uppercase tracking-widest mb-1">Coming Next</h4>
             <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-lg font-black font-headline">NEXT WEEK: FRAME MOVE</span>
-              <span className="text-xs bg-white px-2 py-0.5 rounded border border-outline-variant font-medium">Drops Sunday</span>
+              <span className="text-lg font-black font-headline">Next challenge coming soon</span>
             </div>
           </div>
         </div>

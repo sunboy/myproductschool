@@ -1,89 +1,143 @@
 import { getDomainBySlug } from '@/lib/data/domains'
-import { getConcepts } from '@/lib/data/concepts'
 import { getChallenges } from '@/lib/data/challenges'
 import { notFound } from 'next/navigation'
-import { LumaInsightBlock } from '@/components/learning/LumaInsightBlock'
-import { PMComparisonTable } from '@/components/learning/PMComparisonTable'
+import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
+import { ChallengeAccordion } from '@/components/challenges/ChallengeAccordion'
+import type { AccordionChapter } from '@/components/challenges/ChallengeAccordion'
+
+const DIFFICULTY_CHAPTERS: Record<string, { title: string; icon: string }> = {
+  warmup:     { title: 'Warm-Up',   icon: 'psychology' },
+  standard:   { title: 'Standard',  icon: 'monitoring' },
+  advanced:   { title: 'Advanced',  icon: 'diversity_3' },
+  staff_plus: { title: 'Staff+',    icon: 'military_tech' },
+}
+
+const DIFFICULTY_ORDER = ['warmup', 'standard', 'advanced', 'staff_plus']
 
 export default async function DomainDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const domain = await getDomainBySlug(slug)
   if (!domain) notFound()
 
-  const [concepts, challenges] = await Promise.all([
-    getConcepts(domain.id),
-    getChallenges({ domainId: domain.id }),
-  ])
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const challenges = await getChallenges({ domainId: domain.id })
+
+  // Build score map from user's attempts
+  let scoreMap: Record<string, number> = {}
+  if (user && challenges.length > 0) {
+    const ids = challenges.map(c => c.id)
+    const { data: attempts } = await supabase
+      .from('challenge_attempts')
+      .select('challenge_id, total_score')
+      .eq('user_id', user.id)
+      .in('challenge_id', ids)
+      .not('submitted_at', 'is', null)
+      .order('total_score', { ascending: false })
+
+    for (const a of attempts ?? []) {
+      if (!scoreMap[a.challenge_id] || a.total_score > scoreMap[a.challenge_id]) {
+        scoreMap[a.challenge_id] = a.total_score
+      }
+    }
+  }
+
+  // Group by difficulty
+  const chapterMap = new Map<string, AccordionChapter>()
+  for (const diff of DIFFICULTY_ORDER) {
+    const meta = DIFFICULTY_CHAPTERS[diff]
+    const items = challenges
+      .filter(c => c.difficulty === diff)
+      .map(c => ({
+        id: c.id,
+        slug: c.slug,
+        title: c.title,
+        difficulty: c.difficulty,
+        best_score: scoreMap[c.id] ?? null,
+        is_completed: c.id in scoreMap,
+      }))
+    if (items.length > 0) {
+      chapterMap.set(diff, { key: diff, title: meta.title, icon: meta.icon, items })
+    }
+  }
+  // Any uncategorised difficulties
+  for (const c of challenges) {
+    if (!DIFFICULTY_ORDER.includes(c.difficulty) && !chapterMap.has('other')) {
+      chapterMap.set('other', { key: 'other', title: 'Other', icon: 'category', items: [] })
+    }
+    if (!DIFFICULTY_ORDER.includes(c.difficulty)) {
+      chapterMap.get('other')!.items.push({
+        id: c.id,
+        slug: c.slug,
+        title: c.title,
+        difficulty: c.difficulty,
+        best_score: scoreMap[c.id] ?? null,
+        is_completed: c.id in scoreMap,
+      })
+    }
+  }
+  const chapters = Array.from(chapterMap.values())
+
+  const completedCount = Object.keys(scoreMap).length
+  const progressPct = challenges.length > 0 ? Math.round((completedCount / challenges.length) * 100) : 0
 
   return (
-    <>
-      <main className="max-w-3xl mx-auto px-6 py-10 pb-24">
-        {/* Page header */}
-        <div className="mb-8">
-          <span className="material-symbols-outlined text-primary text-4xl">{domain.icon ?? 'grid_view'}</span>
-          <h1 className="font-headline text-4xl text-on-surface mt-2">{domain.title}</h1>
-          <p className="text-on-surface-variant mt-3 text-base leading-relaxed">{domain.description}</p>
-        </div>
-
-        {/* Luma Insight Block */}
-        <LumaInsightBlock
-          insight={`${domain.title} is where PM thinking becomes tangible. The strongest engineers in product roles don't just understand the concepts — they apply them instinctively when making tradeoffs.`}
-        />
-
-        {/* Key Concepts section */}
-        <section className="mb-10">
-          <h2 className="font-headline text-xl text-on-surface mb-4">Core Terminology</h2>
-          <div className="divide-y divide-outline-variant">
-            {concepts.slice(0, 6).map(concept => (
-              <div key={concept.id} className="py-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-semibold text-on-surface font-label">{concept.title}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${
-                    concept.difficulty === 'advanced'
-                      ? 'bg-error-container text-on-error-container'
-                      : concept.difficulty === 'intermediate'
-                      ? 'bg-tertiary-container text-on-tertiary-container'
-                      : 'bg-primary-fixed text-on-primary-fixed'
-                  }`}>{concept.difficulty}</span>
-                </div>
-                <p className="text-on-surface-variant text-sm">{concept.definition}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* PM Mindset Comparison */}
-        <section className="mb-10">
-          <h2 className="font-headline text-xl text-on-surface mb-2">The PM Mindset Shift</h2>
-          <p className="text-on-surface-variant text-sm mb-4">How strong PMs think differently about {domain.title.toLowerCase()}.</p>
-          <PMComparisonTable rows={[
-            { dimension: 'Problem framing', weak: 'Jumps to solutions immediately', strong: 'Deeply understands the problem space first' },
-            { dimension: 'Metrics', weak: 'Tracks vanity metrics', strong: 'Focuses on leading indicators tied to business goals' },
-            { dimension: 'Prioritization', weak: 'Builds what stakeholders ask for', strong: 'Prioritizes by impact and strategic fit' },
-            { dimension: 'Tradeoffs', weak: 'Avoids hard decisions', strong: 'Makes explicit tradeoffs with clear reasoning' },
-          ]} />
-        </section>
-
-        {/* Challenges callout */}
-        <section className="bg-surface-container rounded-2xl p-6">
-          <h2 className="font-headline text-lg text-on-surface mb-2">Practice with challenges</h2>
-          <p className="text-on-surface-variant text-sm mb-4">
-            {challenges.length} challenge{challenges.length !== 1 ? 's' : ''} available in this domain
-          </p>
-          <a href={`/challenges?domain=${domain.slug}`} className="inline-flex items-center gap-2 bg-primary text-on-primary rounded-full px-5 py-2 text-sm font-semibold font-label">
-            View challenges
-            <span className="material-symbols-outlined text-base">arrow_forward</span>
-          </a>
-        </section>
-      </main>
-
-      {/* Sticky bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur border-t border-outline-variant p-4 flex justify-end md:left-60">
-        <button className="flex items-center gap-2 bg-primary text-on-primary rounded-full px-6 py-2.5 font-semibold font-label text-sm">
-          Mark complete + Continue
-          <span className="material-symbols-outlined text-base">arrow_forward</span>
-        </button>
+    <div className="max-w-3xl mx-auto px-6 py-6 pb-12">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 mb-5 font-label text-xs text-on-surface-variant">
+        <Link href="/explore/domains" className="hover:text-primary transition-colors">Domains</Link>
+        <span>/</span>
+        <span className="text-on-surface font-bold">{domain.title}</span>
       </div>
-    </>
+
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-12 h-12 rounded-2xl bg-primary-fixed flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-2xl text-primary" style={{ fontVariationSettings: "'FILL' 0" }}>{domain.icon ?? 'grid_view'}</span>
+          </div>
+          <h1 className="font-headline text-2xl font-extrabold text-on-surface leading-tight">{domain.title}</h1>
+        </div>
+        {domain.description && (
+          <p className="font-body text-sm text-on-surface-variant leading-relaxed mb-4">{domain.description}</p>
+        )}
+        <div className="flex items-center gap-5 font-label text-xs text-on-surface-variant font-medium">
+          <span className="flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[15px]" style={{ fontVariationSettings: "'FILL' 0" }}>layers</span>
+            {challenges.length} challenges
+          </span>
+          {completedCount > 0 && (
+            <span className="flex items-center gap-1.5 text-primary font-bold">
+              <span className="material-symbols-outlined text-[15px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+              {completedCount}/{challenges.length} completed
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      {challenges.length > 0 && completedCount > 0 && (
+        <div className="mb-6">
+          <div className="flex justify-between text-[11px] font-bold text-on-surface-variant mb-1.5">
+            <span className="font-label">Progress</span>
+            <span className="font-label tabular-nums">{progressPct}%</span>
+          </div>
+          <div className="h-2 bg-surface-container-highest rounded-full overflow-hidden">
+            <div className="h-full bg-primary rounded-full transition-all duration-700" style={{ width: `${progressPct}%` }} />
+          </div>
+        </div>
+      )}
+
+      {/* Challenge accordion */}
+      {chapters.length > 0 ? (
+        <ChallengeAccordion chapters={chapters} defaultOpenIndex={0} />
+      ) : (
+        <div className="text-center py-12 text-on-surface-variant text-sm">
+          No challenges in this domain yet.
+        </div>
+      )}
+    </div>
   )
 }

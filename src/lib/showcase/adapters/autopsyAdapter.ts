@@ -26,8 +26,12 @@ export interface AdapterStepData {
 
 export interface AdapterRevealedOption {
   id: string
+  option_label?: string
+  option_text?: string
+  quality?: string
   points: number
   explanation: string
+  framework_hint?: string
 }
 
 export interface AdapterSubmitResult {
@@ -181,8 +185,12 @@ export function createAutopsyAdapter(
       // Build revealed options from the local challenge data (don't rely on API shape)
       const revealedOptions: AdapterRevealedOption[] = challenge.options.map((opt) => ({
         id: opt.id,
+        option_label: opt.id.toUpperCase(),
+        option_text: opt.text,
+        quality: opt.quality,
         points: QUALITY_TO_POINTS[opt.quality] ?? 0,
         explanation: opt.explanation,
+        framework_hint: undefined,
       }))
 
       const selectedOption = challenge.options.find((o) => o.id === params.selectedOptionId)
@@ -210,9 +218,13 @@ export function createAutopsyAdapter(
       optionId: string | null
       userText: string | null
     }): Promise<{ role_context: string; career_signal: string } | null> {
-      // Only provide coaching after the win step
-      if (params.step !== 'win') return null
-      return { role_context: challenge.insight, career_signal: '' }
+      const stepCoaching: Record<FlowStep, string> = {
+        frame: "Good — you've framed the decision context. As you move forward, think about who was most affected and what was at stake for each stakeholder.",
+        list: "You've mapped the landscape. Now ask yourself: what second-order effects did this decision unlock, and who wins or loses long-term?",
+        optimize: "You've identified the reasoning behind the move. Push further: what would the team have had to believe — about the market, the user, or the competition — to make this the right call?",
+        win: challenge.insight,
+      }
+      return { role_context: stepCoaching[params.step], career_signal: '' }
     },
 
     async complete(): Promise<AdapterCompletionData | null> {

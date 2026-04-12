@@ -19,7 +19,6 @@ export function StoryReader({ story, productName, productSlug }: Props) {
 
   const sectionRefs = React.useRef<(HTMLDivElement | null)[]>([])
 
-  // Attach scroll listener to the (app) layout's <main> scroll container
   React.useEffect(() => {
     const main = document.querySelector('main')
     if (!main) return
@@ -33,7 +32,6 @@ export function StoryReader({ story, productName, productSlug }: Props) {
     return () => main.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Observe all section divs with IntersectionObserver
   React.useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -65,60 +63,65 @@ export function StoryReader({ story, productName, productSlug }: Props) {
 
   return (
     <div className="relative">
-      {/* Scroll progress bar */}
+      {/* Scroll progress bar — Terra green */}
       <div
-        className="fixed top-0 left-0 right-0 h-[3px] bg-primary z-50 pointer-events-none"
-        style={{ width: `${scrollPct}%`, transition: 'width 0.1s linear' }}
+        className="fixed top-0 left-0 right-0 h-[2px] z-50 pointer-events-none"
+        style={{
+          width: `${scrollPct}%`,
+          transition: 'width 0.1s linear',
+          background: 'linear-gradient(90deg, #4a7c59, #78a886)',
+        }}
       />
 
-      {/* Sticky breadcrumb — sits below the TopBar (h-13 = 52px) */}
-      <div className="sticky top-[52px] z-30 bg-background/90 backdrop-blur-md border-b border-outline-variant/30 h-10 flex items-center px-4 gap-2 text-sm">
+      {/* Breadcrumb — light surface, matches app shell */}
+      <div className="fixed top-[52px] left-0 md:left-56 right-0 z-30 h-10 flex items-center px-4 gap-2 bg-surface-container-low border-b border-outline-variant/40">
         <Link
           href={`/explore/showcase/${productSlug}`}
-          className="text-on-surface-variant hover:text-primary transition-colors"
+          className="font-label text-xs text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
         >
-          ← {productName}
+          <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>arrow_back</span>
+          {productName}
         </Link>
-        <span className="text-outline-variant">·</span>
-        <span className="text-on-surface truncate">{story.title}</span>
-        <span className="text-outline-variant">·</span>
-        <span className="text-on-surface-variant text-xs shrink-0">{story.read_time}</span>
+        <span className="text-outline-variant/60 text-xs">·</span>
+        <span className="font-label text-xs text-on-surface-variant truncate">{story.title}</span>
+        <span className="text-outline-variant/60 text-xs">·</span>
+        <span className="font-label text-[11px] text-on-surface-variant/60 shrink-0">{story.read_time}</span>
       </div>
 
-      {/* Section navigation dots — fixed right, hidden on mobile */}
-      <div className="fixed right-4 top-1/2 -translate-y-1/2 z-30 hidden md:flex flex-col gap-2">
+      {/* Section navigation dots — right side, hidden mobile */}
+      <div className="fixed right-5 top-1/2 -translate-y-1/2 z-30 hidden md:flex flex-col gap-2.5">
         {story.sections.map((s, i) => (
           <button
             key={s.id}
             onClick={() => scrollToSection(s.id)}
             aria-label={`Go to section ${i + 1}`}
-            className={cn(
-              'rounded-full bg-primary transition-all duration-300',
-              i === activeIndex
-                ? 'w-2.5 h-2.5 opacity-100'
-                : visitedSet.has(i)
-                ? 'w-2 h-2 opacity-50'
-                : 'w-1.5 h-1.5 opacity-25'
-            )}
+            className={cn('rounded-full transition-all duration-300', i === activeIndex ? 'w-2 h-2' : 'w-1.5 h-1.5')}
+            style={{
+              backgroundColor: '#4a7c59',
+              opacity: i === activeIndex ? 1 : visitedSet.has(i) ? 0.35 : 0.15,
+              boxShadow: i === activeIndex ? '0 0 6px 1px rgba(74,124,89,0.3)' : 'none',
+            }}
           />
         ))}
       </div>
 
-      {/* Story sections */}
-      {story.sections.map((section, i) => (
-        <div
-          key={section.id}
-          id={`section-${section.id}`}
-          data-section-index={i}
-          ref={el => { sectionRefs.current[i] = el }}
-        >
-          <StorySection
-            section={section}
-            isVisible={visibleSet.has(i)}
-            hasBeenVisible={visitedSet.has(i)}
-          />
-        </div>
-      ))}
+      {/* Story sections — offset for fixed breadcrumb */}
+      <div className="pt-10">
+        {story.sections.map((section, i) => (
+          <div
+            key={section.id}
+            id={`section-${section.id}`}
+            data-section-index={i}
+            ref={el => { sectionRefs.current[i] = el }}
+          >
+            <StorySection
+              section={section}
+              isVisible={visibleSet.has(i)}
+              hasBeenVisible={visitedSet.has(i)}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

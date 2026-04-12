@@ -1,4 +1,4 @@
-import { ChallengePrompt, ChallengeWithDomain } from '@/lib/types'
+import { Challenge, ChallengeWithDomain } from '@/lib/types'
 import { MOCK_CHALLENGES, MOCK_DOMAINS } from '@/lib/mock-data'
 import { IS_MOCK } from '@/lib/mock'
 
@@ -22,11 +22,11 @@ export async function getChallenges(filters?: { domainId?: string; difficulty?: 
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
-  let query = supabase.from('challenge_prompts').select('*, domains(slug, title, icon)').eq('is_published', true)
+  let query = supabase.from('challenges').select('*, domains(slug, title, icon)').eq('is_published', true)
   if (filters?.domainId) query = query.eq('domain_id', filters.domainId)
   if (filters?.difficulty) query = query.eq('difficulty', filters.difficulty)
   if (filters?.paradigm && filters.paradigm !== 'all') query = query.eq('paradigm', filters.paradigm)
-  if (filters?.role) query = query.contains('role_tags', [filters.role])
+  if (filters?.role) query = query.contains('relevant_roles', [filters.role])
   const { data } = await query.order('created_at', { ascending: false })
 
   return (data ?? []).map(c => ({
@@ -38,13 +38,13 @@ export async function getChallenges(filters?: { domainId?: string; difficulty?: 
   }))
 }
 
-export async function getChallengeById(id: string): Promise<ChallengePrompt | null> {
+export async function getChallengeById(id: string): Promise<Challenge | null> {
   if (IS_MOCK) {
-    return MOCK_CHALLENGES.find(c => c.id === id) ?? null
+    return (MOCK_CHALLENGES.find(c => c.id === id) ?? null) as unknown as Challenge | null
   }
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
-  const { data } = await supabase.from('challenge_prompts').select('*').eq('id', id).single()
+  const { data } = await supabase.from('challenges').select('*').eq('id', id).single()
   return data
 }

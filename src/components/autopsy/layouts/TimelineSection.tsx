@@ -1,5 +1,5 @@
 'use client'
-import { cn } from '@/lib/utils'
+import React from 'react'
 import type { StorySection } from '@/lib/types'
 
 interface Props {
@@ -8,49 +8,152 @@ interface Props {
   hasBeenVisible: boolean
 }
 
-const eventDotClass: Record<string, string> = {
-  milestone: 'bg-primary',
-  launch: 'bg-tertiary',
-  pivot: 'bg-error',
+const EVENT_COLORS: Record<string, string> = {
+  milestone: '#4a7c59',
+  launch: '#78a886',
+  pivot: '#b83230',
 }
 
-export function TimelineSection({ section, isVisible, hasBeenVisible }: Props) {
-  const { title, events } = section.content
-  return (
-    <div className={cn(
-      'py-12 px-6 max-w-4xl mx-auto',
-      hasBeenVisible ? 'section-visible' : 'section-hidden'
-    )}>
-      <h2 className="font-headline italic text-on-surface text-2xl mb-10 text-center">{title}</h2>
-      {/* Vertical timeline on mobile, horizontal on desktop */}
-      <div className="relative flex flex-col md:flex-row gap-0 md:gap-0">
-        {/* Track line */}
-        <div className="absolute left-[11px] top-0 bottom-0 w-0.5 bg-outline-variant md:hidden" />
-        <div className="hidden md:block absolute left-0 right-0 top-[11px] h-0.5 bg-outline-variant" />
+const EVENT_BG: Record<string, string> = {
+  milestone: 'rgba(74,124,89,0.08)',
+  launch: 'rgba(120,168,134,0.10)',
+  pivot: 'rgba(184,50,48,0.08)',
+}
 
-        {events.map((event, i) => (
-          <div
-            key={i}
-            className="relative flex flex-row md:flex-col items-start md:items-center gap-4 md:gap-0 pl-8 md:pl-0 md:flex-1 pb-8 md:pb-0"
-            style={{
-              transition: `opacity 0.4s ease ${i * 0.1}s, transform 0.4s ease ${i * 0.1}s`,
-              opacity: hasBeenVisible ? 1 : 0,
-              transform: hasBeenVisible ? 'none' : 'translateY(12px)',
-            }}
+export function TimelineSection({ section, hasBeenVisible }: Props) {
+  const { title, events } = section.content
+  const [entered, setEntered] = React.useState(false)
+
+  React.useEffect(() => {
+    if (hasBeenVisible) {
+      const t = setTimeout(() => setEntered(true), 60)
+      return () => clearTimeout(t)
+    }
+  }, [hasBeenVisible])
+
+  return (
+    <div
+      className="relative overflow-hidden"
+      style={{ background: '#faf6f0', minHeight: 'min(90vh, 800px)' }}
+    >
+      <div className="relative z-10 px-10 py-16 md:px-16 md:py-24">
+        {/* Section header */}
+        <div
+          className="mb-16"
+          style={{
+            opacity: entered ? 1 : 0,
+            transform: entered ? 'none' : 'translateY(16px)',
+            transition: 'opacity 0.6s ease, transform 0.6s ease',
+          }}
+        >
+          <span
+            className="font-label text-xs font-bold uppercase tracking-[0.25em] block mb-3"
+            style={{ color: 'rgba(74,124,89,0.7)' }}
           >
-            {/* Dot — absolute on mobile, static in flex column on desktop */}
-            <div className={cn(
-              'absolute left-0 top-0 md:static shrink-0 w-[22px] h-[22px] rounded-full border-2 border-background z-10',
-              eventDotClass[event.type] ?? 'bg-outline-variant'
-            )} />
-            {/* Text */}
-            <div className="md:text-center md:pt-3 md:px-2">
-              <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-wide">{event.date}</p>
-              <p className="font-label font-bold text-on-surface text-sm mt-0.5">{event.label}</p>
-              <p className="font-body text-xs text-on-surface-variant mt-1 leading-relaxed md:max-w-[120px]">{event.description}</p>
-            </div>
+            Timeline
+          </span>
+          <h2
+            className="font-headline font-extrabold"
+            style={{ fontSize: 'clamp(26px, 3.5vw, 48px)', letterSpacing: '-0.02em', color: '#2e3230' } as React.CSSProperties}
+          >
+            {title}
+          </h2>
+        </div>
+
+        {/* Vertical timeline */}
+        <div className="relative">
+          {/* Track line */}
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              left: 0,
+              top: 12,
+              bottom: 12,
+              width: 1,
+              background: 'linear-gradient(to bottom, transparent, rgba(74,124,89,0.25) 10%, rgba(74,124,89,0.25) 90%, transparent)',
+              opacity: entered ? 1 : 0,
+              transition: 'opacity 0.8s ease',
+              transitionDelay: '200ms',
+            }}
+            aria-hidden
+          />
+
+          <div className="flex flex-col gap-0 pl-8">
+            {events.map((event, i) => {
+              const color = EVENT_COLORS[event.type] ?? '#4a7c59'
+              const bg = EVENT_BG[event.type] ?? 'rgba(74,124,89,0.06)'
+              const isLast = i === events.length - 1
+
+              return (
+                <div
+                  key={i}
+                  className="relative"
+                  style={{ paddingBottom: isLast ? 0 : 40 }}
+                >
+                  {/* Timeline dot */}
+                  <div
+                    className="absolute"
+                    style={{
+                      left: -8 - 8,
+                      top: 4,
+                      width: 16,
+                      height: 16,
+                      borderRadius: '50%',
+                      backgroundColor: color,
+                      boxShadow: `0 0 8px 2px ${bg}`,
+                      opacity: entered ? 1 : 0,
+                      transform: entered ? 'none' : 'scale(0.5)',
+                      transition: 'opacity 0.4s ease, transform 0.4s ease',
+                      transitionDelay: `${300 + i * 100}ms`,
+                      border: '2px solid rgba(255,255,255,0.6)',
+                    }}
+                  />
+
+                  {/* Event content */}
+                  <div
+                    style={{
+                      opacity: entered ? 1 : 0,
+                      transform: entered ? 'none' : 'translateX(-12px)',
+                      transition: 'opacity 0.6s ease, transform 0.6s ease',
+                      transitionDelay: `${350 + i * 100}ms`,
+                    }}
+                  >
+                    <div className="flex items-center gap-3 mb-1.5">
+                      <span
+                        className="font-label text-[11px] font-bold uppercase tracking-[0.15em]"
+                        style={{ color }}
+                      >
+                        {event.date}
+                      </span>
+                      <span
+                        className="font-label text-[10px] uppercase tracking-wider px-2 py-0.5 rounded"
+                        style={{
+                          backgroundColor: bg,
+                          color,
+                          border: `1px solid ${color}30`,
+                        }}
+                      >
+                        {event.type}
+                      </span>
+                    </div>
+                    <p
+                      className="font-headline font-bold mb-2"
+                      style={{ fontSize: 'clamp(16px, 1.4vw, 22px)', letterSpacing: '-0.01em', color: '#2e3230' } as React.CSSProperties}
+                    >
+                      {event.label}
+                    </p>
+                    <p
+                      className="font-body leading-relaxed"
+                      style={{ fontSize: 14, color: '#4a4e4a', maxWidth: '52ch' }}
+                    >
+                      {event.description}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   )

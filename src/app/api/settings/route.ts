@@ -44,6 +44,9 @@ export async function GET() {
       notifications: { weekly_summary: true, streak_reminder: true, new_challenges: true, cohort_updates: true },
       daily_goal_count: 3,
       preferred_role: null,
+      flow_focus: 'List',
+      difficulty: 'Mixed',
+      timezone: 'Asia/Kolkata',
       created_at: null,
       updated_at: null,
     })
@@ -62,7 +65,7 @@ export async function PATCH(request: Request) {
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const allowed = ['notifications', 'daily_goal_count', 'preferred_role']
+  const allowed = ['notifications', 'daily_goal_count', 'preferred_role', 'flow_focus', 'difficulty', 'timezone']
   const updates = Object.fromEntries(Object.entries(body).filter(([k]) => allowed.includes(k)))
 
   const adminClient = createAdminClient()

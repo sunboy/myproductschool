@@ -185,7 +185,7 @@ export default async function RevealPage({
         {/* Action buttons */}
         <div className="mt-8 flex items-center gap-4">
           <Link
-            href={`/challenges/${id.replace(/^c\d+-/, '')}`}
+            href={`/workspace/challenges/${id}`}
             className="bg-primary text-on-primary rounded-full px-6 py-3 font-label font-bold inline-flex items-center gap-2 hover:opacity-90 transition-opacity"
           >
             Next: Optimize
@@ -201,7 +201,7 @@ export default async function RevealPage({
             </span>
           </Link>
           <Link
-            href={`/challenges/${id.replace(/^c\d+-/, '')}/feedback`}
+            href={`/challenges/${id}/feedback`}
             className="text-primary font-label font-semibold hover:opacity-80 transition-opacity"
           >
             See full feedback

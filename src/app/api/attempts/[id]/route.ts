@@ -16,7 +16,7 @@ export async function GET(
   const [attemptResult, patternsResult] = await Promise.all([
     adminClient
       .from('challenge_attempts')
-      .select('*, challenge_prompts(id, title, prompt_text, difficulty, domain_id)')
+      .select('*, challenges(id, title, prompt_text, difficulty, domain_id)')
       .eq('id', id)
       .eq('user_id', user.id)
       .single(),

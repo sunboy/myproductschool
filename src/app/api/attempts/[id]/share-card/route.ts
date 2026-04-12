@@ -17,7 +17,7 @@ export async function GET(
       user_display_name: 'Alex K.',
       xp_earned: 240,
       percentile: 78,
-      share_url: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://hackproduct.io'}/challenges/${id}/share`,
+      share_url: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://hackproduct.io'}/workspace/challenges/${id}/share`,
     })
   }
 
@@ -33,8 +33,8 @@ export async function GET(
       id,
       score,
       user_id,
-      prompt_id,
-      challenge_prompts(title, move_tags),
+      challenge_id,
+      challenges(title, move_tags),
       move_level_history(xp_delta)
     `)
     .eq('id', id)
@@ -50,7 +50,7 @@ export async function GET(
     .eq('id', user.id)
     .single()
 
-  const prompt = attempt.challenge_prompts as unknown as { title: string; move_tags: string[] } | null
+  const prompt = attempt.challenges as unknown as { title: string; move_tags: string[] } | null
   const xpHistory = attempt.move_level_history as { xp_delta: number }[] | null
   const xpEarned = xpHistory?.reduce((sum, h) => sum + (h.xp_delta ?? 0), 0) ?? 0
 
@@ -63,6 +63,6 @@ export async function GET(
     user_display_name: profile?.display_name ?? 'Anonymous',
     xp_earned: xpEarned,
     percentile: attempt.score ? Math.round(attempt.score * 0.85) : 50,
-    share_url: `${appUrl}/challenges/${id}/share`,
+    share_url: `${appUrl}/workspace/challenges/${id}/share`,
   })
 }

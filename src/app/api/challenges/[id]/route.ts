@@ -54,6 +54,11 @@ export async function GET(
       is_calibration: false,
       is_premium: false,
       created_at: '2024-01-01T00:00:00Z',
+      challenge_type: 'flow' as const,
+      prompt_text: null,
+      domain_id: null,
+      move_tags: [],
+      decision_id: null,
     }
     const mockSteps: StepSummary[] = [
       { step: 'frame',    step_order: 0, question_count: 2 },

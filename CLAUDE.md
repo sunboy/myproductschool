@@ -12,6 +12,10 @@ npm run lint         # ESLint
 npx shadcn@latest add <component>  # Add shadcn/ui components
 ```
 
+## UI Change Workflow
+
+For every UI change made, use a haiku subagent to run a Playwright test for the change before asking the user to check that it works. The haiku agent should navigate to the affected page, take a screenshot, and report what renders.
+
 ## Reference Archive
 
 - **Stitch v2 project**: https://stitch.withgoogle.com/projects/12072135267645366200 — **canonical design reference** for all screens. This supersedes the old `material-*.html` files.
@@ -327,6 +331,44 @@ Canonical reasoning structures Luma grades against:
 
 ---
 
+## XP & Streak System
+
+### XP Award Formulas
+
+**Challenge completion** (`src/app/api/challenges/[id]/complete/route.ts`):
+```
+base_xp   = difficulty_base × (total_score / max_score)
+difficulty_base: beginner=50, intermediate=100, advanced=150
+
+streak_multiplier = min(1 + streak_days × 0.05, 1.5)   // +5%/day, caps at 1.5× at 10 days
+xp_earned = round(base_xp × streak_multiplier)
+```
+Examples: perfect advanced + 10-day streak = 225 XP. 0.6 score on beginner, no streak = 30 XP.
+
+**Quick-take** (`src/app/api/challenges/quick-take/submit/route.ts`):
+```
+quality_score = Haiku grading → 0.0–1.0
+xp_earned     = round(20 × quality_score)
+```
+Haiku grades on: Sharp (0.8–1.0) / Solid (0.5–0.79) / Surface (0.2–0.49) / Weak (0–0.19).
+Fallback to word-count heuristic if AI call fails.
+
+**Achievements**: 50–500 XP (seeded in `005_achievements.sql`)
+
+**Streak recovery cost**: −50 XP (via `/api/streak/recover`)
+
+### Streak Tracking
+
+`update_user_streak(p_user_id)` Postgres RPC (migration `042_xp_streak_rpc_fix.sql`):
+- Inserts row into `user_streaks` for today
+- If yesterday exists → `streak_days + 1`, else reset to 1
+- Does **not** award flat XP — streak value is baked into challenge XP via the multiplier above
+
+**Storage**: `profiles.streak_days` (current count) + `user_streaks` (daily rows)
+**Shield recovery**: `profiles.streak_shield_count` — use 1 shield or 50 XP to recover a broken streak
+
+---
+
 ## Token Optimization & Caching
 
 All Luma AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropic prompt caching (`cache_control: { type: 'ephemeral' }`). System prompts are cached, reducing input token costs by ~90% on cache hits.
@@ -339,6 +381,7 @@ All Luma AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropic
 | Coaching (all paths) | claude-sonnet-4-6 | Template-like output |
 | Feedback | claude-sonnet-4-6 | Structured output |
 | Nudge | claude-haiku-4-5-20251001 | 1-2 sentences, highly constrained |
+| Quick-take grading | claude-haiku-4-5-20251001 | Quality score 0–1, one-sentence feedback |
 | Chat / Simulation | claude-sonnet-4-6 | Conversational quality |
 
 ### Caching Layers

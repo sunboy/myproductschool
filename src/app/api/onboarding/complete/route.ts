@@ -26,8 +26,7 @@ export async function POST(request: Request) {
 
   await adminClient
     .from('profiles')
-    .update(profileUpdate)
-    .eq('id', user.id)
+    .upsert({ id: user.id, ...profileUpdate }, { onConflict: 'id' })
 
   // Upsert onboarding response if context provided
   if (role_context && experience_level) {

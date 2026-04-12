@@ -1,7 +1,7 @@
-import type { ChallengePrompt } from '@/lib/types'
+import type { Challenge } from '@/lib/types'
 
 interface ModelAnswerProps {
-  challenge: ChallengePrompt
+  challenge: Challenge
   isPro: boolean
 }
 

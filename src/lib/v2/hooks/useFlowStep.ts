@@ -27,6 +27,9 @@ interface StepData {
 
 interface RevealedOption {
   id: string
+  option_label?: string
+  option_text?: string
+  quality?: string
   points: number
   explanation: string
   framework_hint?: string
@@ -36,6 +39,7 @@ interface SubmitResult {
   score: number
   grade_label: string
   step_complete: boolean
+  step_score?: number
   revealed_options: RevealedOption[]
   role_context?: string
   career_signal?: string
@@ -48,6 +52,7 @@ interface UseFlowStepReturn {
   submitting: boolean
   error: string | null
   submitResult: SubmitResult | null
+  clearStepData: () => void
   loadStep: (attemptId: string) => Promise<void>
   submitAnswer: (params: {
     attemptId: string
@@ -153,5 +158,10 @@ export function useFlowStep(challengeId: string, step: FlowStep): UseFlowStepRet
     }
   }, [challengeId, step])
 
-  return { stepData, loading, submitting, error, submitResult, loadStep, submitAnswer, fetchCoaching }
+  const clearStepData = useCallback(() => {
+    setStepData(null)
+    setError(null)
+  }, [])
+
+  return { stepData, loading, submitting, error, submitResult, clearStepData, loadStep, submitAnswer, fetchCoaching }
 }

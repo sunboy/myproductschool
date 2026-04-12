@@ -14,7 +14,7 @@ export async function GET(
         try {
           const { data: session } = await adminClient
             .from('live_interview_sessions')
-            .select('flow_coverage, total_turns, status')
+            .select('flow_coverage, total_turns, status, calibration_snapshot')
             .eq('id', id)
             .single()
 
@@ -53,10 +53,16 @@ export async function GET(
             }
           }
 
+          // Extract latest grading data (emotional beat, session phase) from calibration_snapshot
+          const snapshot = session.calibration_snapshot as Record<string, unknown> | null
+          const latestGrading = snapshot?._latestGrading as { emotionalBeat?: string; sessionPhase?: string } | undefined
+
           const payload = JSON.stringify({
             flowCoverage: session.flow_coverage,
             totalTurns: session.total_turns,
             latestSignal,
+            emotionalBeat: latestGrading?.emotionalBeat ?? null,
+            sessionPhase: latestGrading?.sessionPhase ?? null,
           })
           controller.enqueue(encoder.encode(`data: ${payload}\n\n`))
         } catch {

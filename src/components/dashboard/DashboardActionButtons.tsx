@@ -13,14 +13,15 @@ export function DashboardActionButtons() {
     const cacheKey = `hackproduct_daily_challenge_${today}`
     const cached = localStorage.getItem(cacheKey)
     if (cached) {
-      setDailyHref(`/challenges/${cached}`)
+      setDailyHref(`/workspace/challenges/${cached}`)
     } else {
       fetch('/api/challenges/next')
         .then(r => r.ok ? r.json() : null)
         .then(data => {
-          if (data?.id) {
-            localStorage.setItem(cacheKey, data.id)
-            setDailyHref(`/challenges/${data.id}`)
+          const slug = data?.challenge?.slug ?? data?.challenge?.id ?? data?.id
+          if (slug) {
+            localStorage.setItem(cacheKey, slug)
+            setDailyHref(`/workspace/challenges/${slug}`)
           }
         })
         .catch(() => {})
@@ -31,7 +32,7 @@ export function DashboardActionButtons() {
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         const last = Array.isArray(data) ? data[0] : null
-        if (last?.challenge_id) setResumeHref(`/challenges/${last.challenge_id}`)
+        if (last?.challenge_id) setResumeHref(`/workspace/challenges/${last.challenge_id}`)
       })
       .catch(() => {})
   }, [])

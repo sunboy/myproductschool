@@ -11,10 +11,10 @@ interface FlowStepperProps {
 }
 
 const STEPS: Array<{ id: FlowStep; label: string; icon: string }> = [
-  { id: 'frame', label: 'Frame', icon: 'crop_free' },
-  { id: 'list', label: 'List', icon: 'list' },
+  { id: 'frame',    label: 'Frame',    icon: 'crop_free' },
+  { id: 'list',     label: 'List',     icon: 'list' },
   { id: 'optimize', label: 'Optimize', icon: 'tune' },
-  { id: 'win', label: 'Win', icon: 'emoji_events' },
+  { id: 'win',      label: 'Win',      icon: 'emoji_events' },
 ]
 
 export function FlowStepper({ currentStep, completedSteps, onStepClick, questionIdx, questionCount }: FlowStepperProps) {
@@ -37,16 +37,6 @@ export function FlowStepper({ currentStep, completedSteps, onStepClick, question
           </>
         )
 
-        const pillClasses = [
-          'flex items-center gap-1.5 rounded-full px-3 py-1.5 font-label text-sm font-medium transition-colors flex-1 justify-center',
-          isActive
-            ? 'bg-primary text-on-primary'
-            : isCompleted
-            ? 'bg-primary-fixed text-on-surface hover:bg-[#b8ddc6] cursor-pointer'
-            : 'bg-surface-container text-on-surface-variant',
-          isPending ? 'opacity-60' : '',
-        ].join(' ')
-
         const nextStepCompleted = idx < STEPS.length - 1 && completedSteps.includes(STEPS[idx + 1].id)
         const connectorGreen = isCompleted && nextStepCompleted
 
@@ -55,13 +45,22 @@ export function FlowStepper({ currentStep, completedSteps, onStepClick, question
             <div className="flex flex-col items-center flex-1">
               {isCompleted ? (
                 <button
-                  className={pillClasses}
+                  className="flex items-center gap-1.5 rounded-full px-3 py-1.5 font-label text-sm font-medium transition-all duration-200 flex-1 justify-center bg-primary text-on-primary hover:opacity-80 cursor-pointer"
                   onClick={() => onStepClick?.(step.id)}
                 >
                   {pillContent}
                 </button>
+              ) : isActive ? (
+                <div className="flex items-center gap-1.5 rounded-full px-3 py-1.5 font-label text-sm font-medium flex-1 justify-center bg-primary text-on-primary shadow-sm transition-all duration-200">
+                  {pillContent}
+                </div>
               ) : (
-                <div className={pillClasses}>
+                <div
+                  className={[
+                    'flex items-center gap-1.5 rounded-full px-3 py-1.5 font-label text-sm font-medium flex-1 justify-center bg-surface-container-high text-on-surface-variant transition-all duration-200',
+                    isPending ? 'opacity-60' : '',
+                  ].join(' ')}
+                >
                   {pillContent}
                 </div>
               )}
@@ -90,7 +89,10 @@ export function FlowStepper({ currentStep, completedSteps, onStepClick, question
             </div>
 
             {idx < STEPS.length - 1 && (
-              <div className={`w-3 h-0.5 mx-1 shrink-0 ${connectorGreen ? 'bg-primary' : 'bg-outline-variant'}`} />
+              <div
+                className="w-3 h-0.5 mx-1 shrink-0 transition-colors duration-500"
+                style={{ background: connectorGreen ? '#4a7c59' : '#c4c8bc' }}
+              />
             )}
           </div>
         )

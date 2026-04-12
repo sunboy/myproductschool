@@ -61,7 +61,7 @@ export async function POST(
 
   // Verify attempt ownership
   const { data: attempt, error: attemptError } = await adminClient
-    .from('challenge_attempts_v2')
+    .from('challenge_attempts')
     .select('id, user_id, status, current_step, current_question_sequence')
     .eq('id', attempt_id)
     .eq('user_id', user.id)
@@ -212,14 +212,67 @@ export async function POST(
     })
 
   if (insertError) {
-    console.error('[submit] Failed to insert step_attempt:', insertError)
+    // UNIQUE(attempt_id, question_id) violation — user already answered this question
+    if (insertError.code === '23505') {
+      // Fetch the existing answer and return it as if it were a fresh submission
+      const { data: existing } = await adminClient
+        .from('step_attempts')
+        .select('score, quality_label, competencies_demonstrated, grading_explanation')
+        .eq('attempt_id', attempt_id)
+        .eq('question_id', question_id)
+        .single()
+
+      if (existing) {
+        // Check step completion (same logic as below)
+        const { data: flowStepRow } = await adminClient
+          .from('flow_steps')
+          .select('id')
+          .eq('challenge_id', challenge_id)
+          .eq('step', step)
+          .single()
+
+        const { count: totalQuestionsCount } = await adminClient
+          .from('step_questions')
+          .select('id', { count: 'exact', head: true })
+          .eq('flow_step_id', flowStepRow?.id ?? '')
+
+        const { count: answeredCount } = await adminClient
+          .from('step_attempts')
+          .select('id', { count: 'exact', head: true })
+          .eq('attempt_id', attempt_id)
+          .eq('step', step)
+
+        const revealedOptions = options.map(o => ({
+          id: o.id,
+          option_label: o.option_label,
+          option_text: o.option_text,
+          quality: o.quality,
+          points: o.points,
+          explanation: o.explanation,
+          framework_hint: o.framework_hint ?? '',
+        }))
+
+        return NextResponse.json({
+          score: existing.score,
+          quality_label: existing.quality_label,
+          grade_label: existing.quality_label,
+          explanation: existing.grading_explanation,
+          competencies_demonstrated: existing.competencies_demonstrated,
+          competency_signal,
+          step_complete: (answeredCount ?? 0) >= (totalQuestionsCount ?? 0) && (totalQuestionsCount ?? 0) > 0,
+          revealed_options: revealedOptions,
+        })
+      }
+    }
+
+    console.error('[submit] Failed to insert step_attempt:', insertError.message, insertError.code, insertError.details)
     return NextResponse.json({ error: 'Failed to save attempt' }, { status: 500 })
   }
 
   // ── Update current_question_sequence ─────────────────────
 
   await adminClient
-    .from('challenge_attempts_v2')
+    .from('challenge_attempts')
     .update({ current_question_sequence: (attempt.current_question_sequence ?? 0) + 1 })
     .eq('id', attempt_id)
 
@@ -309,7 +362,7 @@ export async function POST(
       })
 
       await adminClient
-        .from('challenge_attempts_v2')
+        .from('challenge_attempts')
         .update({
           current_step: 'done',
           status: 'completed',
@@ -319,7 +372,7 @@ export async function POST(
         .eq('id', attempt_id)
     } else {
       await adminClient
-        .from('challenge_attempts_v2')
+        .from('challenge_attempts')
         .update({ current_step: next })
         .eq('id', attempt_id)
     }

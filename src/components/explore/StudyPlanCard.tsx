@@ -17,7 +17,8 @@ export function StudyPlanCard({ plan }: StudyPlanCardProps) {
   const difficultyColor =
     DIFFICULTY_COLORS[diff] ?? 'bg-secondary-container text-on-secondary-container'
   const hasProgress = plan.progress_percentage > 0
-  const ctaLabel = hasProgress ? 'Continue →' : 'Start →'
+  const isEnrolled = plan.is_enrolled ?? false
+  const ctaLabel = hasProgress ? 'Resume →' : isEnrolled ? 'Begin →' : 'Start →'
 
   return (
     <div className="bg-surface-container rounded-xl overflow-hidden flex flex-col">
@@ -32,11 +33,17 @@ export function StudyPlanCard({ plan }: StudyPlanCardProps) {
               {plan.icon ?? 'school'}
             </span>
           </div>
-          <span
-            className={`rounded-full text-xs px-2 py-0.5 font-label font-semibold ${difficultyColor}`}
-          >
-            {difficultyLabel}
-          </span>
+          <div className="flex items-center gap-1.5">
+            {isEnrolled && (
+              <span className="flex items-center gap-0.5 text-[10px] font-bold text-primary bg-primary-fixed rounded-full px-2 py-0.5">
+                <span className="material-symbols-outlined text-xs" style={{ fontVariationSettings: "'FILL' 1" }}>school</span>
+                Enrolled
+              </span>
+            )}
+            <span className={`rounded-full text-xs px-2 py-0.5 font-label font-semibold ${difficultyColor}`}>
+              {difficultyLabel}
+            </span>
+          </div>
         </div>
 
         {/* Title */}

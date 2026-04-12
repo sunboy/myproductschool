@@ -24,7 +24,7 @@ export function ChallengeCard({
   const cardProps = locked
     ? { className: 'relative flex items-center gap-3 p-3 bg-surface-container rounded-lg border border-outline-variant opacity-75 cursor-default' }
     : {
-        href: `/challenges/${challenge.id}`,
+        href: `/workspace/challenges/${challenge.id}`,
         className: 'relative flex items-center gap-3 p-3 bg-surface-container rounded-lg border border-outline-variant hover:bg-surface-container-high hover:border-primary/30 transition-all',
       }
 

@@ -24,7 +24,7 @@ export async function POST(
 
   const { data: session, error: sessionError } = await adminClient
     .from('simulation_sessions')
-    .select('*, company_profiles(name, industry, product_focus, interview_style), challenge_prompts(title, prompt_text)')
+    .select('*, company_profiles(name, industry, product_focus, interview_style), challenges(title, prompt_text)')
     .eq('id', id)
     .eq('user_id', user.id)
     .single()
@@ -47,8 +47,8 @@ export async function POST(
   const companyContext = session.company_profiles
     ? `\n\nYou are interviewing for ${session.company_profiles.name} (${session.company_profiles.industry}). Interview style: ${session.company_profiles.interview_style}.`
     : ''
-  const challengeContext = session.challenge_prompts
-    ? `\n\nChallenge prompt: ${session.challenge_prompts.prompt_text}`
+  const challengeContext = session.challenges
+    ? `\n\nChallenge prompt: ${session.challenges.prompt_text}`
     : ''
   const candidateContext = buildLumaContextString(lumaCtx, 'chat')
   const baseSystemPrompt = LUMA_CHAT_SYSTEM_PROMPT + companyContext + challengeContext

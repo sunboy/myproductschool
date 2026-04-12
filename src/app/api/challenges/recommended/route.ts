@@ -27,16 +27,16 @@ export async function GET() {
 
   // Get completed challenge IDs and move levels in parallel
   const [attemptsResult, levelsResult] = await Promise.all([
-    adminClient.from('challenge_attempts').select('prompt_id, score').eq('user_id', user.id).not('submitted_at', 'is', null),
+    adminClient.from('challenge_attempts').select('challenge_id, score').eq('user_id', user.id).not('submitted_at', 'is', null),
     adminClient.from('move_levels').select('move, xp').eq('user_id', user.id).order('xp', { ascending: true }),
   ])
 
-  const completedIds = (attemptsResult.data ?? []).map((a: { prompt_id: string }) => a.prompt_id)
+  const completedIds = (attemptsResult.data ?? []).map((a: { challenge_id: string }) => a.challenge_id)
   const weakestMove = levelsResult.data?.[0]?.move ?? 'frame'
 
   // Select highest learning-impact challenge: uncompleted, targets weak move
   let query = adminClient
-    .from('challenge_prompts')
+    .from('challenges')
     .select('id, title, prompt_text, difficulty, domain_id, move_tags')
     .eq('is_published', true)
     .contains('move_tags', [weakestMove])

@@ -115,7 +115,7 @@ async function handleV2Feedback(attemptId: string, userId: string | undefined, c
 
   // Fetch attempt with challenge info
   const { data: attempt, error: attemptError } = await admin
-    .from('challenge_attempts_v2')
+    .from('challenge_attempts')
     .select('id, challenge_id, user_id, role_id')
     .eq('id', attemptId)
     .single()

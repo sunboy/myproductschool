@@ -35,22 +35,24 @@ export async function GET() {
   // Try to get today's quick take first, then fall back to weakest move targeting
   const today = new Date().toISOString().split('T')[0]
   const { data: todayPrompt } = await adminClient
-    .from('quick_take_prompts')
-    .select('id, prompt_text, move')
+    .from('challenges')
+    .select('id, prompt_text, move_tags')
+    .eq('challenge_type', 'quick_take')
     .gte('created_at', today)
     .eq('is_published', true)
     .limit(1)
     .maybeSingle()
 
   if (todayPrompt) {
-    return NextResponse.json({ ...todayPrompt, time_limit_seconds: 90 })
+    return NextResponse.json({ ...todayPrompt, move: todayPrompt.move_tags?.[0] ?? 'frame', time_limit_seconds: 90 })
   }
 
   // Fall back to a random prompt targeting weakest move
   const { data: prompt } = await adminClient
-    .from('quick_take_prompts')
-    .select('id, prompt_text, move')
-    .eq('move', weakestMove)
+    .from('challenges')
+    .select('id, prompt_text, move_tags')
+    .eq('challenge_type', 'quick_take')
+    .contains('move_tags', [weakestMove])
     .eq('is_published', true)
     .limit(1)
     .maybeSingle()
@@ -59,5 +61,5 @@ export async function GET() {
     return NextResponse.json({ error: 'No quick take available' }, { status: 404 })
   }
 
-  return NextResponse.json({ ...prompt, time_limit_seconds: 90 })
+  return NextResponse.json({ ...prompt, move: prompt.move_tags?.[0] ?? 'frame', time_limit_seconds: 90 })
 }

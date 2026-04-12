@@ -2,6 +2,7 @@
 
 // Mic capture via AudioWorklet (off main thread) + TTS playback.
 // Two separate AudioContexts: micCtx for capture, ttsCtx for playback.
+// An AnalyserNode on the TTS path is exposed to drive avatar lip-sync.
 
 import { useEffect, useRef } from 'react'
 
@@ -14,6 +15,7 @@ interface DeepgramVoiceSessionProps {
   onAgentDoneSpeaking?: () => void
   onConnected: () => void
   onError: (err: string) => void
+  onAnalyserReady?: (analyser: AnalyserNode | null) => void
   disabled?: boolean
 }
 
@@ -27,6 +29,7 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
     onAgentDoneSpeaking,
     onConnected,
     onError,
+    onAnalyserReady,
     disabled,
   } = props
 
@@ -35,6 +38,7 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
   const workletNodeRef = useRef<AudioWorkletNode | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const ttsCtxRef = useRef<AudioContext | null>(null)
+  const ttsAnalyserRef = useRef<AnalyserNode | null>(null)
   const ttsStartTimeRef = useRef<number>(0)
   const scheduledSourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set())
 
@@ -42,7 +46,10 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
     if (disabled) return
 
     const apiKey = process.env.NEXT_PUBLIC_DEEPGRAM_API_KEY ?? ''
-    if (!apiKey) return
+    if (!apiKey) {
+      onError('Voice unavailable — Deepgram API key not configured. Using chat mode.')
+      return
+    }
 
     const ws = new WebSocket('wss://agent.deepgram.com/v1/agent/converse', ['token', apiKey])
     wsRef.current = ws
@@ -50,6 +57,13 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
 
     const ttsCtx = new AudioContext()
     ttsCtxRef.current = ttsCtx
+    // Analyser taps the TTS output so the avatar can lip-sync to audio energy
+    const analyser = ttsCtx.createAnalyser()
+    analyser.fftSize = 512
+    analyser.smoothingTimeConstant = 0.6
+    analyser.connect(ttsCtx.destination)
+    ttsAnalyserRef.current = analyser
+    onAnalyserReady?.(analyser)
 
     ws.addEventListener('open', () => {
       const settings = {
@@ -66,7 +80,7 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
             provider: { type: 'deepgram', model: 'aura-2-asteria-en' },
           },
           think: {
-            provider: { type: 'open_ai', model: 'gpt-4o-mini' },
+            provider: { type: 'anthropic', model: 'claude-sonnet-4-6', temperature: 0.7 },
             prompt: systemPrompt,
           },
         },
@@ -136,7 +150,8 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
 
     function playAudio(data: ArrayBuffer) {
       const ctx = ttsCtxRef.current
-      if (!ctx) return
+      const node = ttsAnalyserRef.current
+      if (!ctx || !node) return
 
       const int16 = new Int16Array(data)
       if (int16.length === 0) return
@@ -149,7 +164,8 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
 
       const source = ctx.createBufferSource()
       source.buffer = buffer
-      source.connect(ctx.destination)
+      // Route through analyser so we can tap amplitude for lip-sync
+      source.connect(node)
 
       const now = ctx.currentTime
       if (ttsStartTimeRef.current < now) {
@@ -179,6 +195,9 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
       micCtxRef.current?.close()
       micCtxRef.current = null
 
+      onAnalyserReady?.(null)
+      ttsAnalyserRef.current?.disconnect()
+      ttsAnalyserRef.current = null
       ttsCtxRef.current?.close()
       ttsCtxRef.current = null
 

@@ -64,7 +64,7 @@ export function CalibrationHero() {
               </span>
               {inProgress ? 'Resume calibration' : 'Start calibration'}
             </Link>
-            <Link href="/learn/flow" className="text-primary text-xs font-label font-bold hover:underline underline-offset-2">
+            <Link href="/explore/flow" className="text-primary text-xs font-label font-bold hover:underline underline-offset-2">
               What is FLOW? →
             </Link>
             <Link href="/challenges" className="text-on-surface-variant text-xs hover:text-on-surface transition-colors">
