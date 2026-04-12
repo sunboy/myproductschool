@@ -1,3 +1,20 @@
+## Stripe — Needs Valid Secret Key
+
+**Status:** Blocked on valid API key
+The current key (`mk_1Pnt7sEGJUB78L7naxFkCSLi`) is not a standard Stripe format and is rejected by the API.
+
+Get the real secret key from: **Stripe Dashboard → Developers → API keys → Secret key** (starts with `sk_live_` or `sk_test_`)
+
+Once available:
+1. Update `STRIPE_SECRET_KEY` in `.env.local`
+2. Run `stripe listen --api-key sk_... --forward-to localhost:3000/api/stripe/webhook` to get `STRIPE_WEBHOOK_SECRET`
+3. Update `STRIPE_WEBHOOK_SECRET` in `.env.local`
+4. Set both in production env (Vercel)
+
+See `stripe.md` for full setup details.
+
+---
+
 ## Luma Brain — Personalized Context Architecture
 
 **Status:** Stubbed in `src/lib/v2/luma-context.ts`

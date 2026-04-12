@@ -1,6 +1,8 @@
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { CalibrationHero } from './CalibrationHero'
+import { UpgradedBanner } from '@/components/dashboard/UpgradedBanner'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -225,6 +227,10 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-6 space-y-4">
+
+      <Suspense fallback={null}>
+        <UpgradedBanner />
+      </Suspense>
 
       {/* Luma Greeting Bar */}
       <div className="bg-primary-fixed rounded-2xl p-5 flex flex-wrap items-center gap-4 animate-luma-card relative overflow-hidden">

@@ -10,6 +10,7 @@ interface ProfileBadge {
   xp_total: number
   display_name: string | null
   avatar_url: string | null
+  plan: string | null
 }
 
 function getInitials(name: string | null | undefined): string {
@@ -32,7 +33,7 @@ export function TopBar() {
         if (r.status === 401) { window.location.href = '/login'; return null }
         return r.ok ? r.json() : null
       })
-      .then(data => { if (data) setProfile({ streak_days: data.streak_days ?? 0, xp_total: data.xp_total ?? 0, display_name: data.display_name ?? null, avatar_url: data.avatar_url ?? null }) })
+      .then(data => { if (data) setProfile({ streak_days: data.streak_days ?? 0, xp_total: data.xp_total ?? 0, display_name: data.display_name ?? null, avatar_url: data.avatar_url ?? null, plan: data.plan ?? null }) })
       .catch(() => {})
   }, [])
 
@@ -92,13 +93,24 @@ export function TopBar() {
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenuOpen(o => !o)}
-              className="w-8 h-8 rounded-full overflow-hidden bg-primary flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              className="relative w-8 h-8 rounded-full overflow-visible bg-primary flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
               aria-label="Profile menu"
             >
-              {profile?.avatar_url
-                ? <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
-                : <span className="text-xs font-bold text-on-primary font-label">{getInitials(profile?.display_name)}</span>
-              }
+              <div className="w-8 h-8 rounded-full overflow-hidden">
+                {profile?.avatar_url
+                  ? <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+                  : <span className="w-full h-full flex items-center justify-center text-xs font-bold text-on-primary font-label">{getInitials(profile?.display_name)}</span>
+                }
+              </div>
+              {profile?.plan === 'pro' && (
+                <span
+                  className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center"
+                  style={{ background: 'linear-gradient(135deg, #4a7c59, #3a6b4a)', boxShadow: '0 0 0 1.5px #faf6f0' }}
+                  title="Pro"
+                >
+                  <span className="material-symbols-outlined text-white" style={{ fontSize: '8px', fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
+                </span>
+              )}
             </button>
 
             {menuOpen && (

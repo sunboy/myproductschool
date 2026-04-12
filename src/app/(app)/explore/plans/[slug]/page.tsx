@@ -44,6 +44,13 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
 
   const chapters = groupByChapter(plan.items)
   const diff = plan.difficulty ?? 'intermediate'
+
+  // Compute the first incomplete challenge for the CTA button
+  const allChallengeItems = plan.items.filter(i => i.item_type === 'challenge' && i.challenge_id)
+  const firstIncomplete = allChallengeItems.find(i => !i.challenge?.is_completed)
+  const ctaHref = firstIncomplete?.challenge_id
+    ? `/workspace/challenges/${firstIncomplete.challenge_id}?from_plan=${slug}`
+    : `/workspace/challenges/${allChallengeItems[0]?.challenge_id ?? '#'}?from_plan=${slug}`
   const difficultyLabel = diff.charAt(0).toUpperCase() + diff.slice(1)
   const difficultyColor =
     DIFFICULTY_COLORS[diff] ?? 'bg-secondary-container text-on-secondary-container'
@@ -107,7 +114,7 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
           </h2>
           <div className="space-y-2">
             {Array.from(chapters.entries()).map(([chapterTitle, items], chapterIdx) => {
-              const completedInChapter = 0 // placeholder until user progress is wired
+              const completedInChapter = items.filter(i => i.challenge?.is_completed).length
               return (
                 <details
                   key={chapterTitle}
@@ -128,16 +135,18 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
 
                   <div className="divide-y divide-outline-variant/30">
                     {items.map(item => {
-                      const typeIcon = ITEM_TYPE_ICON[item.item_type] ?? 'article'
                       const typeLabel = ITEM_TYPE_LABEL[item.item_type] ?? item.item_type
                       const title =
                         item.challenge?.title ?? item.concept?.title ?? 'Untitled'
                       const href =
                         item.item_type === 'challenge' && item.challenge_id
-                          ? `/workspace/challenges/${item.challenge_id}`
+                          ? `/workspace/challenges/${item.challenge_id}?from_plan=${slug}`
                           : item.item_type === 'concept' && item.concept_id
                           ? `/vocabulary/${item.concept_id}`
                           : '#'
+
+                      const isCompleted = item.challenge?.is_completed ?? false
+                      const isInProgress = item.challenge?.is_in_progress ?? false
 
                       return (
                         <Link
@@ -145,10 +154,26 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
                           href={href}
                           className="h-10 px-4 flex items-center gap-3 hover:bg-surface-container-high transition-colors group"
                         >
-                          {/* Status placeholder */}
-                          <span className="material-symbols-outlined text-outline-variant text-base flex-shrink-0">
-                            radio_button_unchecked
-                          </span>
+                          {/* Status icon */}
+                          {isCompleted ? (
+                            <span
+                              className="material-symbols-outlined text-primary text-base flex-shrink-0"
+                              style={{ fontVariationSettings: "'FILL' 1, 'wght' 400" }}
+                            >
+                              check_circle
+                            </span>
+                          ) : isInProgress ? (
+                            <span
+                              className="material-symbols-outlined text-tertiary text-base flex-shrink-0"
+                              style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}
+                            >
+                              play_circle
+                            </span>
+                          ) : (
+                            <span className="material-symbols-outlined text-outline-variant text-base flex-shrink-0">
+                              radio_button_unchecked
+                            </span>
+                          )}
 
                           {/* Type badge */}
                           <span className="bg-secondary-container text-on-secondary-container rounded-full text-xs px-2 py-0.5 flex-shrink-0 font-label">
@@ -156,14 +181,16 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
                           </span>
 
                           {/* Title */}
-                          <span className="text-sm text-on-surface flex-1 truncate group-hover:text-primary transition-colors">
+                          <span className={`text-sm flex-1 truncate group-hover:text-primary transition-colors ${isCompleted ? 'text-on-surface-variant' : 'text-on-surface'}`}>
                             {title}
                           </span>
 
-                          {/* Score/status placeholder */}
-                          <span className="material-symbols-outlined text-outline-variant text-sm flex-shrink-0 group-hover:text-primary">
-                            {typeIcon}
-                          </span>
+                          {/* Best score if completed */}
+                          {isCompleted && item.challenge?.best_score != null && (
+                            <span className="text-xs font-label font-semibold text-primary flex-shrink-0">
+                              {item.challenge.best_score.toFixed(1)}
+                            </span>
+                          )}
                         </Link>
                       )
                     })}
@@ -205,7 +232,7 @@ export default async function StudyPlanDetailPage({ params }: StudyPlanDetailPag
             </div>
 
             <Link
-              href={`/explore/plans/${slug}`}
+              href={ctaHref}
               className="mt-4 block bg-primary text-on-primary rounded-full px-5 py-2 text-sm font-label font-semibold text-center hover:opacity-90 transition-opacity"
             >
               {plan.progress_percentage > 0 ? 'Continue Plan' : 'Start Plan'}

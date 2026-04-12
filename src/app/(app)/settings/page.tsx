@@ -1,56 +1,12 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-
-interface NotificationSettings {
-  weekly_summary: boolean
-  streak_reminder: boolean
-  new_challenges: boolean
-  cohort_updates: boolean
-}
-
-interface UserSettings {
-  id: string | null
-  user_id: string
-  notifications: NotificationSettings
-  daily_goal_count: number
-  preferred_role: string | null
-}
-
-function Toggle({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer ${
-        enabled ? 'bg-primary' : 'bg-outline-variant'
-      }`}
-    >
-      <div
-        className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
-          enabled ? 'right-1' : 'left-1'
-        }`}
-      />
-    </button>
-  )
-}
-
-const DEFAULT_NOTIFICATIONS: NotificationSettings = {
-  weekly_summary: true,
-  streak_reminder: true,
-  new_challenges: true,
-  cohort_updates: true,
-}
+import { createClient } from '@/lib/supabase/client'
 
 export default function SettingsPage() {
   const router = useRouter()
-  const [settings, setSettings] = useState<UserSettings | null>(null)
-  const [dailyGoal, setDailyGoal] = useState(3)
-  const [notifications, setNotifications] = useState<NotificationSettings>(DEFAULT_NOTIFICATIONS)
-  const [saving, setSaving] = useState(false)
-  // Profile edits
   const [displayName, setDisplayName] = useState('')
   const [editingName, setEditingName] = useState(false)
   const [profileSaving, setProfileSaving] = useState(false)
@@ -58,35 +14,21 @@ export default function SettingsPage() {
   const [preferredRole, setPreferredRole] = useState<string | null>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [avatarUploading, setAvatarUploading] = useState(false)
+  const [plan, setPlan] = useState<string>('free')
   const fileInputRef = useRef<HTMLInputElement>(null)
-  // Learning preferences — synced to backend + localStorage
-  const [flowFocus, setFlowFocus] = useState<string>('List')
-  const [difficulty, setDifficulty] = useState<string>('Mixed')
-  const [timezone, setTimezone] = useState<string>('Asia/Kolkata')
 
   useEffect(() => {
-    fetch('/api/settings')
-      .then(r => r.json())
-      .then((data: UserSettings & { flow_focus?: string; difficulty?: string; timezone?: string }) => {
-        setSettings(data)
-        setDailyGoal(data.daily_goal_count ?? 3)
-        setNotifications(data.notifications ?? DEFAULT_NOTIFICATIONS)
-        // Prefer API values over localStorage
-        setFlowFocus(data.flow_focus ?? localStorage.getItem('hackproduct_flow_focus') ?? 'List')
-        setDifficulty(data.difficulty ?? localStorage.getItem('hackproduct_difficulty') ?? 'Mixed')
-        setTimezone(data.timezone ?? localStorage.getItem('hackproduct_timezone') ?? Intl.DateTimeFormat().resolvedOptions().timeZone)
-      })
-      .catch(() => {})
-
     fetch('/api/profile')
       .then(r => r.ok ? r.json() : null)
-      .then((data: { display_name?: string; preferred_role?: string; avatar_url?: string } | null) => {
-        if (data?.display_name) {
+      .then((data: { display_name?: string; preferred_role?: string; avatar_url?: string; plan?: string } | null) => {
+        if (!data) return
+        if (data.display_name) {
           setDisplayName(data.display_name)
           setProfileInitial(data.display_name[0]?.toUpperCase() ?? '?')
         }
-        if (data?.preferred_role) setPreferredRole(data.preferred_role)
-        if (data?.avatar_url) setAvatarUrl(data.avatar_url)
+        if (data.preferred_role) setPreferredRole(data.preferred_role)
+        if (data.avatar_url) setAvatarUrl(data.avatar_url)
+        if (data.plan) setPlan(data.plan)
       })
       .catch(() => {})
   }, [])
@@ -102,8 +44,6 @@ export default function SettingsPage() {
       })
       setProfileInitial(displayName.trim()[0]?.toUpperCase() ?? '?')
       setEditingName(false)
-    } catch {
-      // ignore
     } finally {
       setProfileSaving(false)
     }
@@ -121,341 +61,219 @@ export default function SettingsPage() {
         const data = await res.json()
         setAvatarUrl(data.avatar_url)
       }
-    } catch {
-      // ignore
     } finally {
       setAvatarUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
-  const patchSettings = useCallback(async (patch: Partial<{ notifications: NotificationSettings; daily_goal_count: number; flow_focus: string; difficulty: string; timezone: string }>) => {
-    setSaving(true)
-    try {
-      const resp = await fetch('/api/settings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(patch),
-      })
-      if (resp.ok) {
-        const updated: UserSettings = await resp.json()
-        setSettings(updated)
-        if (updated.notifications) setNotifications(updated.notifications)
-        if (updated.daily_goal_count) setDailyGoal(updated.daily_goal_count)
-      }
-    } catch {
-      // ignore
-    } finally {
-      setSaving(false)
-    }
-  }, [])
-
-  const toggleNotification = (key: keyof NotificationSettings) => {
-    const next = { ...notifications, [key]: !notifications[key] }
-    setNotifications(next)
-    patchSettings({ notifications: next })
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
   }
 
-  const updateDailyGoal = (newVal: number) => {
-    setDailyGoal(newVal)
-    patchSettings({ daily_goal_count: newVal })
-  }
+  const isPro = plan === 'pro'
 
   return (
-    <div className="flex flex-col">
-      {/* Top App Bar — settings-specific */}
-      <header className="flex justify-between items-center w-full px-8 py-6 sticky top-0 z-40 bg-surface border-b border-on-surface/10">
-        <div className="flex items-center space-x-4">
-          <button onClick={() => router.back()} className="material-symbols-outlined text-primary hover:opacity-70 transition-all">arrow_back</button>
-          <h2 className="font-headline text-2xl text-primary-container">Settings</h2>
-        </div>
-        <div className="flex items-center space-x-4">
-          {(saving || profileSaving) && <span className="text-xs text-outline animate-pulse">Saving…</span>}
-          <button className="material-symbols-outlined text-outline hover:opacity-70">more_vert</button>
-        </div>
-      </header>
+    <div className="max-w-xl mx-auto px-6 py-8 space-y-6">
 
-      {/* Content Canvas */}
-      <div className="max-w-4xl w-full mx-auto px-8 py-12 flex flex-col space-y-12">
-        {/* 1. ACCOUNT */}
-        <section className="bg-surface-container-high rounded-xl p-8 transition-all hover:bg-surface-container-highest">
-          <h3 className="font-nunito text-xs font-bold uppercase tracking-[0.2em] text-outline mb-8">ACCOUNT</h3>
-          <div className="flex items-center space-x-6 mb-10">
-            <div
-              className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-on-primary text-2xl font-headline font-bold relative cursor-pointer hover:opacity-90 transition-opacity overflow-hidden"
-              onClick={() => fileInputRef.current?.click()}
-              suppressHydrationWarning
-            >
-              {avatarUrl
-                ? <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
-                : <span suppressHydrationWarning>{profileInitial}</span>
+      <h1 className="font-headline font-bold text-lg text-on-surface" style={{ letterSpacing: '-0.02em' }}>
+        Settings
+      </h1>
+
+      {/* ── PROFILE ── */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: '#eae6de' }}>
+
+        {/* Avatar + name header */}
+        <div className="flex items-center gap-4 px-5 py-5">
+          <div
+            className="relative w-14 h-14 rounded-full bg-primary flex items-center justify-center cursor-pointer overflow-hidden shrink-0 group"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {avatarUrl
+              ? <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+              : <span className="text-lg font-bold text-on-primary font-label" suppressHydrationWarning>{profileInitial}</span>
+            }
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center">
+              <span className="material-symbols-outlined text-white text-base opacity-0 group-hover:opacity-100 transition-opacity">photo_camera</span>
+            </div>
+            {avatarUploading && (
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <span className="material-symbols-outlined text-white text-lg animate-spin">progress_activity</span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            {editingName ? (
+              <div className="flex items-center gap-2">
+                <input
+                  autoFocus
+                  value={displayName}
+                  onChange={e => setDisplayName(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') saveDisplayName(); if (e.key === 'Escape') setEditingName(false) }}
+                  className="font-body text-sm border border-primary rounded-lg px-2.5 py-1.5 flex-1 focus:outline-none focus:ring-1 ring-primary bg-white"
+                />
+                <button
+                  onClick={saveDisplayName}
+                  disabled={profileSaving}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-primary text-white disabled:opacity-50 shrink-0"
+                >
+                  <span className="material-symbols-outlined text-sm">check</span>
+                </button>
+                <button
+                  onClick={() => setEditingName(false)}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-black/10 transition-colors shrink-0"
+                >
+                  <span className="material-symbols-outlined text-sm">close</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <p className="font-body font-semibold text-sm text-on-surface truncate">{displayName || 'Add your name'}</p>
+                <button onClick={() => setEditingName(true)} className="text-on-surface-variant hover:text-on-surface transition-colors shrink-0">
+                  <span className="material-symbols-outlined text-[14px]">edit</span>
+                </button>
+              </div>
+            )}
+            <p className="text-xs text-on-surface-variant mt-0.5 font-body truncate" suppressHydrationWarning>
+              {preferredRole ?? 'Role not set'}
+            </p>
+          </div>
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+        </div>
+
+        {/* Divider */}
+        <div className="mx-5 h-px bg-outline-variant/30" />
+
+        {/* Email row */}
+        <div className="flex items-center justify-between px-5 py-3.5">
+          <div>
+            <p className="text-sm font-body text-on-surface">Email</p>
+            <p className="text-xs text-on-surface-variant font-body mt-0.5">Managed by your auth provider</p>
+          </div>
+          <span className="material-symbols-outlined text-[16px] text-on-surface-variant">lock</span>
+        </div>
+
+        <div className="mx-5 h-px bg-outline-variant/30" />
+
+        {/* Role row */}
+        <div className="flex items-center justify-between px-5 py-3.5">
+          <p className="text-sm font-body text-on-surface">Role</p>
+          <Link
+            href="/onboarding/role"
+            className="flex items-center gap-0.5 text-xs font-semibold text-primary font-label hover:opacity-70 transition-opacity"
+          >
+            Change
+            <span className="material-symbols-outlined text-[13px]">chevron_right</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* ── PLAN ── */}
+      <div
+        className="rounded-2xl px-5 py-4 flex items-center justify-between"
+        style={{
+          background: isPro
+            ? 'linear-gradient(135deg, #2d5a3d 0%, #4a7c59 100%)'
+            : '#eae6de',
+        }}
+      >
+        <div className="flex items-center gap-3">
+          <span
+            className="material-symbols-outlined text-[20px]"
+            style={{ fontVariationSettings: "'FILL' 1", color: isPro ? '#fbbf24' : '#74796e' }}
+          >
+            workspace_premium
+          </span>
+          <div>
+            <p className={`font-label font-bold text-sm ${isPro ? 'text-white' : 'text-on-surface'}`}>
+              {isPro ? 'HackProduct Pro' : 'Free plan'}
+            </p>
+            <p className={`text-xs font-body mt-0.5 ${isPro ? 'text-white/60' : 'text-on-surface-variant'}`}>
+              {isPro ? 'Unlimited · full coaching · Learner DNA' : '3 challenges/day · basic feedback'}
+            </p>
+          </div>
+        </div>
+        {!isPro && (
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade-modal'))}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold font-label text-white shrink-0 transition-all active:scale-[0.97]"
+            style={{ background: 'linear-gradient(135deg, #4a7c59 0%, #3a6b4a 100%)', boxShadow: '0 2px 8px rgba(74,124,89,0.30)' }}
+          >
+            Upgrade
+            <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+          </button>
+        )}
+      </div>
+
+      {/* ── ACCOUNT ── */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: '#eae6de' }}>
+        <div className="flex items-center justify-between px-5 py-3.5">
+          <div>
+            <p className="text-sm font-body text-on-surface">Export my data</p>
+            <p className="text-xs text-on-surface-variant font-body mt-0.5">Download your progress and history</p>
+          </div>
+          <button
+            onClick={async () => {
+              const res = await fetch('/api/profile/export')
+              if (!res.ok) return
+              const blob = await res.blob()
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url; a.download = 'hackproduct-data.json'; a.click()
+              URL.revokeObjectURL(url)
+            }}
+            className="flex items-center gap-1 text-xs font-semibold text-primary font-label hover:opacity-70 transition-opacity shrink-0"
+          >
+            Export
+            <span className="material-symbols-outlined text-[13px]">download</span>
+          </button>
+        </div>
+
+        <div className="mx-5 h-px bg-outline-variant/30" />
+
+        <div className="flex items-center justify-between px-5 py-3.5">
+          <p className="text-sm font-body text-on-surface">Sign out</p>
+          <button
+            onClick={handleLogout}
+            className="text-xs font-semibold text-on-surface-variant font-label hover:text-on-surface transition-colors"
+          >
+            Sign out
+          </button>
+        </div>
+      </div>
+
+      {/* ── DANGER ── */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: '#eae6de' }}>
+        <div className="flex items-center justify-between px-5 py-3.5">
+          <div>
+            <p className="text-sm font-body text-on-surface">Delete account</p>
+            <p className="text-xs text-on-surface-variant font-body mt-0.5">Permanently removes your account and all data</p>
+          </div>
+          <button
+            onClick={() => {
+              if (confirm('Delete your account? This cannot be undone.')) {
+                window.location.href = '/api/profile/delete-account'
               }
-              {avatarUploading && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-white text-xl animate-spin">progress_activity</span>
-                </div>
-              )}
-              <div className="absolute inset-0 bg-black/0 hover:bg-black/20 flex items-end justify-center pb-1 transition-colors">
-                <span className="material-symbols-outlined text-white text-sm opacity-0 hover:opacity-100">photo_camera</span>
-              </div>
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-on-surface">Click avatar to upload photo</p>
-              <p className="text-xs text-on-surface-variant mt-0.5">Max 2MB, image files only</p>
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleAvatarChange}
-            />
-          </div>
-          <div className="space-y-6">
-            {/* Name Row */}
-            <div className="flex justify-between items-center py-4 border-b border-outline-variant/20">
-              <div className="flex-1 mr-4">
-                <label className="block text-xs text-outline font-bold mb-1">Display name</label>
-                {editingName ? (
-                  <input
-                    autoFocus
-                    value={displayName}
-                    onChange={e => setDisplayName(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') saveDisplayName(); if (e.key === 'Escape') setEditingName(false) }}
-                    className="font-nunito text-lg border border-primary rounded-lg px-3 py-1 w-full focus:outline-none focus:ring-1 ring-primary"
-                  />
-                ) : (
-                  <p className="font-nunito text-lg">{displayName || 'Add your name'}</p>
-                )}
-              </div>
-              <button
-                onClick={() => editingName ? saveDisplayName() : setEditingName(true)}
-                className="material-symbols-outlined text-outline hover:text-primary transition-colors"
-              >
-                {editingName ? 'check' : 'edit'}
-              </button>
-            </div>
-            {/* Email Row */}
-            <div className="flex justify-between items-center py-4 border-b border-outline-variant/20">
-              <div>
-                <label className="block text-xs text-outline font-bold mb-1">Email</label>
-                <p className="font-nunito text-lg text-on-surface-variant">Managed by your auth provider</p>
-              </div>
-              <span className="material-symbols-outlined text-outline-variant">lock</span>
-            </div>
-            {/* Role Row */}
-            <div className="flex justify-between items-center py-4 border-b border-outline-variant/20">
-              <div>
-                <label className="block text-xs text-outline font-bold mb-1">Role</label>
-                <p className="font-nunito text-lg italic" suppressHydrationWarning>{preferredRole ?? settings?.preferred_role ?? 'Not set'}</p>
-              </div>
-              <Link href="/onboarding/role" className="material-symbols-outlined text-outline hover:text-primary transition-colors">edit</Link>
-            </div>
-          </div>
-          <div className="mt-10">
-            <button
-              onClick={saveDisplayName}
-              disabled={profileSaving}
-              className="bg-primary-container text-on-primary px-8 py-3 rounded-full font-bold hover:opacity-90 transition-all disabled:opacity-50"
-            >
-              Save changes
-            </button>
-          </div>
-        </section>
-
-        {/* 2. NOTIFICATIONS */}
-        <section className="bg-surface-container-high rounded-xl p-8">
-          <h3 className="font-nunito text-xs font-bold uppercase tracking-[0.2em] text-outline mb-8">NOTIFICATIONS</h3>
-          <div className="space-y-2">
-            {/* Item 1 */}
-            <div className="flex justify-between items-center h-16 px-4 hover:bg-surface-container rounded-lg transition-colors">
-              <div className="flex items-center space-x-3">
-                <span className="font-nunito">New challenge alerts</span>
-                <span className="bg-primary-container/10 text-primary-container text-xs px-2 py-1 rounded font-bold">9:00 AM</span>
-              </div>
-              <Toggle enabled={notifications.new_challenges} onToggle={() => toggleNotification('new_challenges')} />
-            </div>
-            {/* Item 2 */}
-            <div className="flex justify-between items-center h-20 px-4 hover:bg-surface-container rounded-lg transition-colors">
-              <div>
-                <p className="font-nunito">Streak at-risk alert</p>
-                <p className="text-xs text-outline">6:00 PM if not practiced</p>
-              </div>
-              <Toggle enabled={notifications.streak_reminder} onToggle={() => toggleNotification('streak_reminder')} />
-            </div>
-            {/* Item 3 */}
-            <div className="flex justify-between items-center h-16 px-4 hover:bg-surface-container rounded-lg transition-colors">
-              <span className="font-nunito">Weekly cohort results</span>
-              <Toggle enabled={notifications.weekly_summary} onToggle={() => toggleNotification('weekly_summary')} />
-            </div>
-            {/* Item 4 */}
-            <div className="flex justify-between items-center h-16 px-4 hover:bg-surface-container rounded-lg transition-colors">
-              <span className="font-nunito">Level up celebrations</span>
-              <Toggle enabled={notifications.cohort_updates} onToggle={() => toggleNotification('cohort_updates')} />
-            </div>
-          </div>
-        </section>
-
-        {/* 3. LEARNING */}
-        <section className="bg-surface-container-high rounded-xl p-8">
-          <h3 className="font-nunito text-xs font-bold uppercase tracking-[0.2em] text-outline mb-8">LEARNING</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Daily Goal */}
-            <div className="p-4 bg-surface rounded-lg">
-              <label className="block text-xs text-outline font-bold mb-3">Daily goal</label>
-              <div className="flex items-center justify-between">
-                <span className="font-headline text-xl">{dailyGoal} challenges</span>
-                <div className="flex items-center space-x-4">
-                  <button
-                    onClick={() => updateDailyGoal(Math.max(1, dailyGoal - 1))}
-                    className="w-8 h-8 rounded-full border border-outline-variant flex items-center justify-center hover:bg-primary-container hover:text-white transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-sm">remove</span>
-                  </button>
-                  <button
-                    onClick={() => updateDailyGoal(Math.min(10, dailyGoal + 1))}
-                    className="w-8 h-8 rounded-full border border-outline-variant flex items-center justify-center hover:bg-primary-container hover:text-white transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-sm">add</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-            {/* Flow Focus */}
-            <div className="p-4 bg-surface rounded-lg">
-              <label className="block text-xs text-outline font-bold mb-3">Preferred FLOW focus</label>
-              <select
-                value={flowFocus}
-                onChange={e => {
-                  const v = e.target.value
-                  setFlowFocus(v)
-                  localStorage.setItem('hackproduct_flow_focus', v)
-                  patchSettings({ flow_focus: v })
-                }}
-                className="font-headline text-xl bg-transparent w-full border-none outline-none cursor-pointer text-on-surface"
-              >
-                <option value="All">All</option>
-                <option value="Frame">Frame</option>
-                <option value="List">List</option>
-                <option value="Optimize">Optimize</option>
-                <option value="Win">Win</option>
-              </select>
-            </div>
-            {/* Difficulty */}
-            <div className="p-4 bg-surface rounded-lg">
-              <label className="block text-xs text-outline font-bold mb-3">Challenge difficulty</label>
-              <select
-                value={difficulty}
-                onChange={e => {
-                  const v = e.target.value
-                  setDifficulty(v)
-                  localStorage.setItem('hackproduct_difficulty', v)
-                  patchSettings({ difficulty: v })
-                }}
-                className="font-headline text-xl bg-transparent w-full border-none outline-none cursor-pointer text-on-surface"
-              >
-                <option value="Mixed">Mixed</option>
-                <option value="Beginner">Beginner</option>
-                <option value="Intermediate">Intermediate</option>
-                <option value="Advanced">Advanced</option>
-              </select>
-            </div>
-            {/* Timezone */}
-            <div className="p-4 bg-surface rounded-lg">
-              <label className="block text-xs text-outline font-bold mb-3">Reminder timezone</label>
-              <select
-                value={timezone}
-                onChange={e => {
-                  const v = e.target.value
-                  setTimezone(v)
-                  localStorage.setItem('hackproduct_timezone', v)
-                  patchSettings({ timezone: v })
-                }}
-                className="font-headline text-xl bg-transparent w-full border-none outline-none cursor-pointer text-on-surface"
-              >
-                <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
-                <option value="America/New_York">America/New_York (EST)</option>
-                <option value="America/Los_Angeles">America/Los_Angeles (PST)</option>
-                <option value="America/Chicago">America/Chicago (CST)</option>
-                <option value="Europe/London">Europe/London (GMT)</option>
-                <option value="Europe/Berlin">Europe/Berlin (CET)</option>
-                <option value="Asia/Singapore">Asia/Singapore (SGT)</option>
-                <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
-                <option value="Australia/Sydney">Australia/Sydney (AEDT)</option>
-              </select>
-            </div>
-          </div>
-        </section>
-
-        {/* 4. PLAN */}
-        <section className="bg-surface-container-high rounded-xl p-8 border-l-4 border-primary">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div>
-              <h3 className="font-nunito text-xs font-bold uppercase tracking-[0.2em] text-outline mb-4">PLAN</h3>
-              <div className="flex items-center space-x-3">
-                <span className="font-headline text-3xl">Current plan</span>
-                <span className="bg-outline-variant/30 text-on-surface text-xs px-3 py-1 rounded-full font-bold uppercase tracking-widest">Free</span>
-              </div>
-            </div>
-            <div className="flex flex-col items-end gap-3">
-              <Link
-                href="/pricing"
-                className="bg-primary text-on-primary px-8 py-3 rounded-full font-bold hover:opacity-90 transition-all flex items-center space-x-2"
-              >
-                <span>Upgrade to Pro</span>
-                <span className="material-symbols-outlined text-sm">arrow_forward</span>
-              </Link>
-              <Link href="/settings/billing" className="text-xs text-outline font-bold hover:text-primary transition-colors">View billing history</Link>
-            </div>
-          </div>
-        </section>
-
-        {/* 5. PRIVACY & SECURITY */}
-        <section className="bg-surface-container-high rounded-xl p-8">
-          <h3 className="font-nunito text-xs font-bold uppercase tracking-[0.2em] text-outline mb-8">PRIVACY &amp; SECURITY</h3>
-          <div className="flex flex-col md:flex-row gap-8">
-            <button
-              onClick={async () => {
-                const res = await fetch('/api/profile/export')
-                if (!res.ok) { return }
-                const blob = await res.blob()
-                const url = URL.createObjectURL(blob)
-                const a = document.createElement('a')
-                a.href = url
-                a.download = 'hackproduct-data.json'
-                a.click()
-                URL.revokeObjectURL(url)
-              }}
-              className="flex items-center space-x-2 text-primary-container font-bold hover:opacity-70 transition-all group"
-            >
-              <span className="material-symbols-outlined">download</span>
-              <span>Export my data</span>
-            </button>
-            <button
-              onClick={() => {
-                if (confirm('Are you sure you want to delete your account? This cannot be undone.')) {
-                  window.location.href = '/api/profile/delete-account'
-                }
-              }}
-              className="flex items-center space-x-2 text-error font-bold hover:opacity-70 transition-all group"
-            >
-              <span className="material-symbols-outlined">delete_forever</span>
-              <span>Delete account</span>
-            </button>
-          </div>
-        </section>
+            }}
+            className="text-xs font-semibold text-error font-label hover:opacity-70 transition-opacity shrink-0"
+          >
+            Delete
+          </button>
+        </div>
       </div>
 
       {/* Footer */}
-      <footer className="mt-auto px-8 py-12 flex flex-col md:flex-row justify-between items-center border-t border-on-surface/5 bg-surface-container-low">
-        <div className="text-outline font-nunito text-[10px] uppercase tracking-[0.25em] mb-4 md:mb-0">
-          HackProduct v2.0 &middot; Sunboy Labs
+      <div className="flex items-center justify-between pb-8 pt-2">
+        <p className="text-[10px] text-on-surface-variant/40 font-label uppercase tracking-widest">HackProduct · Sunboy Labs</p>
+        <div className="flex gap-4">
+          <Link href="/privacy" className="text-[10px] text-on-surface-variant/40 font-label hover:text-on-surface-variant transition-colors">Privacy</Link>
+          <Link href="/terms" className="text-[10px] text-on-surface-variant/40 font-label hover:text-on-surface-variant transition-colors">Terms</Link>
         </div>
-        <div className="flex space-x-6 text-outline font-nunito text-[10px] uppercase tracking-[0.25em]">
-          <Link className="hover:text-primary transition-colors" href="/privacy">Privacy Policy</Link>
-          <Link className="hover:text-primary transition-colors" href="/terms">Terms of Service</Link>
-        </div>
-      </footer>
+      </div>
     </div>
   )
 }
