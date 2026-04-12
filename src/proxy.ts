@@ -5,7 +5,7 @@ import { IS_MOCK } from '@/lib/mock'
 // ── Pre-launch gate ──────────────────────────────────────────
 // Set to true to restrict all routes to the waitlist page.
 // Flip to false (or remove the block) when ready to launch.
-const PRE_LAUNCH = true
+const PRE_LAUNCH = false
 
 const LAUNCH_ALLOWED = ['/waitlist', '/waitlist-quick', '/waitlist-flow', '/api/waitlist', '/luma-preview']
 
