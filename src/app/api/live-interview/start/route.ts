@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getLumaContext, buildLumaContextString } from '@/lib/luma-context'
 import { buildLiveInterviewSystemPrompt } from '@/lib/live-interview/system-prompt'
 import type { ScenarioParams, RoleLensParams } from '@/lib/live-interview/system-prompt'
+import { checkUsageLimit, recordUsageEvent } from '@/lib/usage/check-limit'
 
 export async function POST(request: Request) {
   if (process.env.USE_MOCK_DATA === 'true') {
@@ -16,6 +17,32 @@ export async function POST(request: Request) {
   if (!user) return new Response('Unauthorized', { status: 401 })
 
   const adminClient = createAdminClient()
+
+  // Fetch profile for plan + admin status (early check before expensive lookups)
+  const { data: profileForLimit } = await adminClient
+    .from('profiles')
+    .select('plan, role')
+    .eq('id', user.id)
+    .single()
+
+  const isAdminUser = profileForLimit?.role === 'admin'
+  const userPlanForLimit = profileForLimit?.plan ?? 'free'
+
+  if (!isAdminUser) {
+    const limitResult = await checkUsageLimit(user.id, 'interviews', userPlanForLimit)
+    if (!limitResult.allowed) {
+      return Response.json(
+        {
+          error: 'limit_reached',
+          used: limitResult.used,
+          limit: limitResult.limit,
+          feature: 'interviews',
+          windowDays: limitResult.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+  }
 
   // Fetch user data in parallel
   const [profileResult, moveLevelsResult, competenciesResult, failurePatternsResult] = await Promise.all([
@@ -177,6 +204,11 @@ export async function POST(request: Request) {
     })
     .select('id')
     .single()
+
+  // Record usage event
+  if (!isAdminUser) {
+    await recordUsageEvent(user.id, 'interviews')
+  }
 
   return Response.json({
     sessionId: session?.id,
