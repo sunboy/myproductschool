@@ -211,6 +211,10 @@ export default async function AdminPage() {
           <span className="material-symbols-outlined text-sm text-primary">rate_review</span>
           Luma queue
         </Link>
+        <Link href="/admin/paywall-config" className="flex items-center gap-2 px-4 py-2.5 bg-surface-container border border-outline-variant text-on-surface rounded-xl text-sm hover:bg-surface-container-high transition-colors">
+          <span className="material-symbols-outlined text-sm text-primary">lock</span>
+          Paywall config
+        </Link>
       </div>
     </div>
   )
