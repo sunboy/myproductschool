@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { IS_MOCK } from '@/lib/mock'
+import { checkUsageLimit, recordUsageEvent } from '@/lib/usage/check-limit'
 import type { UserRoleV2 } from '@/lib/types'
 
 export async function POST(
@@ -19,7 +20,7 @@ export async function POST(
   const body = await req.json().catch(() => ({})) as { role_id?: UserRoleV2 }
   const role_id: UserRoleV2 = body.role_id ?? 'swe'
 
-  // In mock mode return a synthetic attempt — no DB write (mock-user is not in auth.users)
+  // In mock mode return a synthetic attempt — no DB write
   if (isMock) {
     return NextResponse.json({
       attempt: {
@@ -61,37 +62,29 @@ export async function POST(
     })
   }
 
-  // Daily limit — skip for admins, configurable per user via profile.daily_challenge_limit
-  const [{ data: profile }, { data: subscription }] = await Promise.all([
-    adminClient
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single(),
-    adminClient
-      .from('subscriptions')
-      .select('plan')
-      .eq('user_id', userId)
-      .eq('status', 'active')
-      .maybeSingle(),
-  ])
+  // Fetch profile to check plan + admin status
+  const { data: profile } = await adminClient
+    .from('profiles')
+    .select('plan, role')
+    .eq('id', userId)
+    .single()
 
   const isAdmin = profile?.role === 'admin'
-  const isFreeTier = !subscription || subscription.plan === 'free'
+  const userPlan = profile?.plan ?? 'free'
 
-  if (!isAdmin && isFreeTier) {
-    const dailyLimit = (profile?.daily_challenge_limit as number | undefined) ?? 3
-    const today = new Date().toISOString().split('T')[0]
-    const { count: todayCount } = await adminClient
-      .from('challenge_attempts')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .gte('started_at', today)
-
-    if ((todayCount ?? 0) >= dailyLimit) {
+  // Rolling-window usage limit (skip for admins)
+  if (!isAdmin) {
+    const limitResult = await checkUsageLimit(userId, 'challenges', userPlan)
+    if (!limitResult.allowed) {
       return NextResponse.json(
-        { error: 'Daily limit reached', limit: dailyLimit },
-        { status: 403 }
+        {
+          error: 'limit_reached',
+          used: limitResult.used,
+          limit: limitResult.limit,
+          feature: 'challenges',
+          windowDays: limitResult.windowDays,
+        },
+        { status: 402 }
       )
     }
   }
@@ -112,6 +105,11 @@ export async function POST(
 
   if (error || !attempt) {
     return NextResponse.json({ error: 'Failed to create attempt' }, { status: 500 })
+  }
+
+  // Record usage event (after successful attempt creation)
+  if (!isAdmin) {
+    await recordUsageEvent(userId, 'challenges')
   }
 
   return NextResponse.json({
