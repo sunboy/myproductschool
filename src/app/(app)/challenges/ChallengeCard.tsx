@@ -62,10 +62,12 @@ export function ChallengeCard({
   challenge,
   paradigm,
   listView = false,
+  locked = false,
 }: {
   challenge: ChallengeWithDomain
   paradigm: string
   listView?: boolean
+  locked?: boolean
 }) {
   const moveTags = (challenge.move_tags ?? []) as FlowMove[]
   const style = PARADIGM_STYLE[paradigm] ?? PARADIGM_STYLE.Traditional
@@ -133,14 +135,21 @@ export function ChallengeCard({
         </span>
 
         {/* CTA */}
-        <Link
-          href={`/workspace/challenges/${challenge.slug ?? challenge.id}`}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-lg text-on-primary font-label transition-all duration-150 active:scale-95 shrink-0"
-          style={{ backgroundColor: style.accent }}
-        >
-          Start
-          <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
-        </Link>
+        {locked ? (
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-label font-semibold bg-surface-container-high text-on-surface-variant cursor-not-allowed select-none shrink-0">
+            <span className="material-symbols-outlined text-[14px]">lock</span>
+            Upgrade
+          </span>
+        ) : (
+          <Link
+            href={`/workspace/challenges/${challenge.slug ?? challenge.id}`}
+            className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-lg text-on-primary font-label transition-all duration-150 active:scale-95 shrink-0"
+            style={{ backgroundColor: style.accent }}
+          >
+            Start
+            <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+          </Link>
+        )}
       </div>
     )
   }
@@ -215,14 +224,21 @@ export function ChallengeCard({
           >
             <span className="material-symbols-outlined text-[15px]">forum</span>
           </Link>
-          <Link
-            href={`/workspace/challenges/${challenge.slug ?? challenge.id}`}
-            className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-lg text-on-primary font-label transition-all duration-150 active:scale-95"
-            style={{ backgroundColor: style.accent }}
-          >
-            Start
-            <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
-          </Link>
+          {locked ? (
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-label font-semibold bg-surface-container-high text-on-surface-variant cursor-not-allowed select-none">
+              <span className="material-symbols-outlined text-[14px]">lock</span>
+              Upgrade
+            </span>
+          ) : (
+            <Link
+              href={`/workspace/challenges/${challenge.slug ?? challenge.id}`}
+              className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-lg text-on-primary font-label transition-all duration-150 active:scale-95"
+              style={{ backgroundColor: style.accent }}
+            >
+              Start
+              <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+            </Link>
+          )}
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { getChallenges } from '@/lib/data/challenges'
 import Link from 'next/link'
 import { ChallengeCard } from './ChallengeCard'
+import { LockedChallengeGrid } from './LockedChallengeGrid'
 import { LumaPick } from './LumaPick'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
@@ -40,6 +41,11 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
   const { paradigm, role, difficulty, view } = await searchParams
   const isListView = view === 'list'
   const challenges = await getChallenges({ difficulty, paradigm, role })
+
+  const paradigmMap: Record<string, string> = {}
+  challenges.forEach(c => {
+    paradigmMap[c.id] = getParadigmLabel(c.paradigm ?? undefined)
+  })
 
   const buildHref = (overrides: Record<string, string | undefined>) => {
     const p = new URLSearchParams()
@@ -192,24 +198,19 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
         </div>
       ) : isListView ? (
         <div className="flex flex-col divide-y divide-outline-variant/20 border border-outline-variant/30 rounded-2xl overflow-hidden">
-          {challenges.map((challenge) => (
-            <ChallengeCard
-              key={challenge.id}
-              challenge={challenge}
-              paradigm={getParadigmLabel(challenge.paradigm)}
-              listView
-            />
-          ))}
+          <LockedChallengeGrid
+            challenges={challenges}
+            paradigms={paradigmMap}
+            listView
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {challenges.map((challenge) => (
-            <ChallengeCard
-              key={challenge.id}
-              challenge={challenge}
-              paradigm={getParadigmLabel(challenge.paradigm)}
-            />
-          ))}
+          <LockedChallengeGrid
+            challenges={challenges}
+            paradigms={paradigmMap}
+            listView={false}
+          />
         </div>
       )}
     </div>
