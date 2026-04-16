@@ -9,10 +9,16 @@ interface ChallengeDetail {
   current_attempt: ChallengeAttemptV2 | null
 }
 
+export interface PaywallData {
+  used: number
+  limit: number
+}
+
 interface UseChallengeReturn {
   detail: ChallengeDetail | null
   loading: boolean
   error: string | null
+  paywallData: PaywallData | null
   startAttempt: (roleId: UserRoleV2) => Promise<ChallengeAttemptV2 | null>
   reload: () => Promise<void>
 }
@@ -21,6 +27,7 @@ export function useChallenge(challengeId: string): UseChallengeReturn {
   const [detail, setDetail] = useState<ChallengeDetail | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [paywallData, setPaywallData] = useState<PaywallData | null>(null)
 
   const reload = useCallback(async () => {
     setLoading(true)
@@ -45,6 +52,11 @@ export function useChallenge(challengeId: string): UseChallengeReturn {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role_id: roleId }),
       })
+      if (res.status === 402) {
+        const data = await res.json()
+        setPaywallData({ used: data.used, limit: data.limit })
+        return null
+      }
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         throw new Error(body.error ?? `Start failed: ${res.status}`)
@@ -58,5 +70,5 @@ export function useChallenge(challengeId: string): UseChallengeReturn {
     }
   }, [challengeId])
 
-  return { detail, loading, error, startAttempt, reload }
+  return { detail, loading, error, paywallData, startAttempt, reload }
 }

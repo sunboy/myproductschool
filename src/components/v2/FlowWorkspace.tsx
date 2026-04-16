@@ -43,13 +43,14 @@ interface CompletionData {
 }
 
 type FlowWorkspaceProps =
-  | { mode: 'api'; challengeId: string; initialRoleId: UserRoleV2; onExit?: () => void; fromPlan?: string; nextChallengeSlug?: string }
+  | { mode: 'api'; challengeId: string; initialRoleId: UserRoleV2; onExit?: () => void; onPaywall?: (data: { used: number; limit: number }) => void; fromPlan?: string; nextChallengeSlug?: string }
   | { mode: 'adapter'; adapter: ChallengeAdapter; onComplete?: (data: AdapterCompletionData | null) => void; onExit?: () => void; fromPlan?: string; nextChallengeSlug?: string }
 
 export function FlowWorkspace(props: FlowWorkspaceProps) {
   const isApiMode = props.mode === 'api'
   const challengeId = isApiMode ? props.challengeId : ''
   const initialRoleId = isApiMode ? props.initialRoleId : 'engineer' as UserRoleV2
+  const onPaywall = isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).onPaywall : undefined
   const fromPlan = props.fromPlan
   const nextChallengeSlug = props.nextChallengeSlug
 
@@ -57,7 +58,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [currentStep, setCurrentStep] = useState<FlowStep>('frame')
 
   // Always call hooks unconditionally (React rules of hooks)
-  const { detail, loading: challengeLoading, error: challengeError, startAttempt, reload } = useChallengeV2(challengeId)
+  const { detail, loading: challengeLoading, error: challengeError, paywallData, startAttempt, reload } = useChallengeV2(challengeId)
   const { stepData, loading: stepLoading, submitting, error: stepError, clearStepData, loadStep, submitAnswer, fetchCoaching } = useFlowStep(challengeId, currentStep)
 
   const [attemptId, setAttemptId] = useState<string | null>(null)
@@ -88,6 +89,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const startTimeRef = useRef<number>(Date.now())
   // Prevents double-submit: locks for the full duration of submitAnswer + fetchCoaching
   const handlingSubmitRef = useRef(false)
+
+  // Surface paywall to parent when 402 is returned from start API
+  useEffect(() => {
+    if (paywallData && onPaywall) {
+      onPaywall(paywallData)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paywallData])
 
   // Bootstrap
   useEffect(() => {
