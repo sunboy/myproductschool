@@ -20,6 +20,7 @@ import ChatPanel from '@/components/live-interview/ChatPanel'
 import InterviewControls from '@/components/live-interview/InterviewControls'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { useInterviewTimer } from '@/hooks/useInterviewTimer'
+import { InterviewLimitModal } from '@/components/paywalls/InterviewLimitModal'
 import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
 import { MOCK_LIVE_SESSION, MOCK_LIVE_TURNS } from '@/lib/mock-live-interviews'
 
@@ -105,15 +106,18 @@ export default function SessionPage({
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isEnding, setIsEnding] = useState(false)
   const [showEndConfirm, setShowEndConfirm] = useState(false)
+  const [showLimitModal, setShowLimitModal] = useState(false)
+  const [interviewUsageData, setInterviewUsageData] = useState<{ used: number; limit: number }>({ used: 1, limit: 5 })
   const talkingHeadRef = useRef<TalkingHeadHandle | null>(null)
 
   const eventSourceRef = useRef<EventSource | null>(null)
   const lastSignalTurnIndexRef = useRef<number>(-1)
 
   // Timer
-  const { formatted: timerDisplay, isWarning } = useInterviewTimer(
+  const { formatted: timerDisplay, isWarning, isLimitReached } = useInterviewTimer(
     interviewStartedAt,
-    interviewPhase === 'active'
+    interviewPhase === 'active',
+    30
   )
 
   // Start session (non-mock)
@@ -151,6 +155,15 @@ export default function SessionPage({
     startSession()
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Fetch actual usage on mount for limit modal
+  useEffect(() => {
+    if (IS_MOCK) return
+    fetch('/api/usage/me')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setInterviewUsageData({ used: d.interviews.used, limit: d.interviews.limit }) })
+      .catch(() => {})
   }, [])
 
   // Handle starting the interview (user clicks "Start Interview")
@@ -246,6 +259,14 @@ export default function SessionPage({
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [interviewPhase, sessionId])
+
+  // Show limit modal when free session reaches time limit
+  useEffect(() => {
+    if (isLimitReached && interviewPhase === 'active' && !showLimitModal) {
+      setShowLimitModal(true)
+      setIsMuted(true)
+    }
+  }, [isLimitReached, interviewPhase, showLimitModal])
 
   // Deepgram callbacks
   const handleTranscript = useCallback((text: string, role: 'luma' | 'user') => {
@@ -417,7 +438,7 @@ export default function SessionPage({
   // ── Loading state ──
   if (interviewPhase === 'loading') {
     return (
-      <div className="min-h-screen bg-inverse-surface flex items-center justify-center">
+      <div className="h-full bg-inverse-surface flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
           <p className="text-white/60 font-body text-sm">Starting interview session...</p>
@@ -429,7 +450,7 @@ export default function SessionPage({
   // ── Generating debrief screen ──
   if (interviewPhase === 'ended') {
     return (
-      <div className="min-h-screen bg-inverse-surface flex items-center justify-center">
+      <div className="h-full bg-inverse-surface flex items-center justify-center">
         <div className="flex flex-col items-center gap-6 max-w-sm text-center px-6">
           <LumaGlyph size={80} state="reviewing" className="text-primary" />
           <div className="space-y-2">
@@ -463,7 +484,7 @@ export default function SessionPage({
   // ── Ready screen ──
   if (interviewPhase === 'ready') {
     return (
-      <div className="min-h-screen bg-inverse-surface flex items-center justify-center">
+      <div className="h-full bg-inverse-surface flex items-center justify-center overflow-y-auto">
         <div className="flex flex-col items-center gap-6 max-w-md text-center px-6">
           <LumaGlyph size={80} state="idle" className="text-primary" />
 
@@ -518,12 +539,20 @@ export default function SessionPage({
     )
   }
 
+  // FLOW coverage HUD — dots showing progress per move
+  const flowMoves = [
+    { key: 'frame', label: 'F' },
+    { key: 'list', label: 'L' },
+    { key: 'optimize', label: 'O' },
+    { key: 'win', label: 'W' },
+  ] as const
+
   // ── Active interview ──
   return (
-    <div className="min-h-screen bg-inverse-surface flex flex-col">
+    <div className="h-full flex flex-col overflow-hidden" style={{ background: '#111614' }}>
       {/* Mock mode banner */}
       {IS_MOCK && (
-        <div className="bg-tertiary/20 border-b border-tertiary/30 px-4 py-1.5 text-center">
+        <div className="bg-tertiary/20 border-b border-tertiary/30 px-4 py-1.5 text-center shrink-0">
           <span className="font-label text-xs font-semibold text-tertiary">
             Mock Mode — Voice disabled
           </span>
@@ -531,34 +560,33 @@ export default function SessionPage({
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 md:px-6">
+      <div className="flex items-center justify-between px-4 py-2.5 md:px-6 border-b shrink-0" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push('/live-interviews')}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/60 hover:bg-white/20 transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/60 hover:bg-white/20 transition-colors"
             aria-label="Back to interviews"
           >
-            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
           </button>
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-white/10 px-3 py-1 font-label text-xs font-semibold text-white/80">
+            <span className="rounded-lg bg-white/10 px-2.5 py-1 font-label text-xs font-semibold text-white/80">
               {companyName}
             </span>
-            <span className="font-label text-sm text-white/60">{roleName} Round</span>
+            <span className="font-label text-sm text-white/50">{roleName} Round</span>
             {scenarioTitle && (
-              <span className="rounded-full bg-primary/20 px-3 py-1 font-label text-xs text-primary/80 hidden md:inline">
+              <span className="rounded-lg bg-primary/20 px-2.5 py-1 font-label text-xs text-primary/80 hidden md:inline">
                 {scenarioTitle}
               </span>
             )}
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {/* Timer */}
           <span className={cn(
-            'rounded-full px-3 py-1 font-label text-sm font-mono tabular-nums',
+            'rounded-lg px-3 py-1 font-label text-sm font-mono tabular-nums',
             isWarning
               ? 'bg-error/20 text-error'
-              : 'bg-white/10 text-white/80'
+              : 'bg-white/8 text-white/70'
           )}>
             {timerDisplay}
           </span>
@@ -567,14 +595,14 @@ export default function SessionPage({
 
       {/* Error banner */}
       {error && (
-        <div className="mx-4 mb-2 rounded-lg bg-error/20 border border-error/30 px-4 py-2 md:mx-6">
+        <div className="mx-4 mt-2 rounded-lg bg-error/20 border border-error/30 px-4 py-2 md:mx-6 shrink-0">
           <p className="font-body text-sm text-error">{error}</p>
         </div>
       )}
 
       {/* Voice fallback banner — dismissible */}
       {voiceError && (
-        <div className="mx-4 mb-2 rounded-lg bg-tertiary/10 border border-tertiary/20 px-4 py-2 md:mx-6 flex items-center justify-between gap-3">
+        <div className="mx-4 mt-2 rounded-lg px-4 py-2 md:mx-6 flex items-center justify-between gap-3 shrink-0" style={{ background: 'rgba(112,92,48,0.12)', borderColor: 'rgba(112,92,48,0.2)', border: '1px solid' }}>
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-tertiary text-[18px]">headset_off</span>
             <p className="font-body text-sm text-tertiary">{voiceError}</p>
@@ -589,59 +617,91 @@ export default function SessionPage({
         </div>
       )}
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col gap-4 px-4 pb-4 md:px-6">
-        {/* Avatar — always 3D during active interview, lip-sync when voice connected */}
-        <div>
-          <AvatarErrorBoundary
-            fallback={
-              <LumaAvatar
-                state={lumaState}
-                className="h-full min-h-[200px] bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl"
-              />
-            }
-          >
-            <div className="h-[280px] bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden">
-              <TalkingHeadAvatar
-                ref={talkingHeadRef}
-                lumaState={lumaState}
-                onError={(err) => console.warn('[TalkingHead]', err)}
+      {/* Body — horizontal split: main content + inline chat panel */}
+      <div className="flex-1 flex overflow-hidden">
+
+        {/* Main content column */}
+        <div className="flex-1 flex flex-col gap-3 px-4 py-4 md:px-6 min-w-0 overflow-hidden">
+
+          {/* Avatar — radial glow wrapper */}
+          <div className="relative rounded-2xl overflow-hidden shrink-0" style={{ background: 'radial-gradient(ellipse at center, rgba(74,124,89,0.15) 0%, rgba(0,0,0,0) 70%)' }}>
+            <AvatarErrorBoundary
+              fallback={
+                <LumaAvatar
+                  state={lumaState}
+                  className="h-full min-h-[200px] bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl"
+                />
+              }
+            >
+              <div className="h-[280px] bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden">
+                <TalkingHeadAvatar
+                  ref={talkingHeadRef}
+                  lumaState={lumaState}
+                  onError={(err) => console.warn('[TalkingHead]', err)}
+                />
+              </div>
+            </AvatarErrorBoundary>
+          </div>
+
+          {/* Transcript panel */}
+          <div className="flex-1 rounded-2xl border overflow-hidden flex flex-col" style={{ background: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(8px)' }}>
+            <div className="px-4 pt-3 pb-1 shrink-0">
+              <span className="font-label text-[10px] uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.25)' }}>Transcript</span>
+            </div>
+            <div className="flex-1 overflow-y-auto px-4 pb-4">
+              <TranscriptPanel
+                turns={turns}
+                className="[&_span]:text-white/50 [&_.text-on-surface-variant]:text-white/50 [&_.bg-primary-container]:bg-primary/30 [&_.text-on-primary-container]:text-white/90 [&_.bg-surface-container-high]:bg-white/10 [&_.text-on-surface]:text-white/80"
               />
             </div>
-          </AvatarErrorBoundary>
+          </div>
+
+          {/* FLOW coverage HUD */}
+          <div className="flex items-center justify-center gap-3 shrink-0">
+            {flowMoves.map(({ key, label }) => {
+              const score = flowCoverage[key] ?? 0
+              const filledDots = Math.round(score * 4)
+              return (
+                <div key={key} className="flex items-center gap-1.5">
+                  <span className="font-label text-[10px] font-bold tracking-wider" style={{ color: score > 0.5 ? 'rgba(142,207,158,0.9)' : 'rgba(255,255,255,0.3)' }}>{label}</span>
+                  <div className="flex gap-0.5">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className="w-1.5 h-1.5 rounded-full transition-colors duration-500"
+                        style={{ background: i < filledDots ? 'rgba(74,124,89,0.9)' : 'rgba(255,255,255,0.12)' }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Controls */}
+          <div className="flex justify-center pb-2 shrink-0">
+            <InterviewControls
+              isMuted={isMuted}
+              isVoiceActive={isVoiceActive}
+              isVoiceAvailable={isVoiceAvailable}
+              isChatOpen={isChatOpen}
+              onToggleMute={() => setIsMuted((m) => !m)}
+              onToggleVoice={() => setIsVoiceActive((v) => !v)}
+              onToggleChat={() => setIsChatOpen((o) => !o)}
+              onEndInterview={handleEndInterview}
+            />
+          </div>
         </div>
 
-        {/* Transcript — voice turns only */}
-        <div className="flex-1 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 p-4">
-          <TranscriptPanel
-            turns={turns}
-            className="[&_span]:text-white/50 [&_.text-on-surface-variant]:text-white/50 [&_.bg-primary-container]:bg-primary/30 [&_.text-on-primary-container]:text-white/90 [&_.bg-surface-container-high]:bg-white/10 [&_.text-on-surface]:text-white/80"
-          />
-        </div>
-
-        {/* Controls */}
-        <div className="flex justify-center pb-2">
-          <InterviewControls
-            isMuted={isMuted}
-            isVoiceActive={isVoiceActive}
-            isVoiceAvailable={isVoiceAvailable}
-            isChatOpen={isChatOpen}
-            onToggleMute={() => setIsMuted((m) => !m)}
-            onToggleVoice={() => setIsVoiceActive((v) => !v)}
-            onToggleChat={() => setIsChatOpen((o) => !o)}
-            onEndInterview={handleEndInterview}
-          />
-        </div>
+        {/* Inline chat panel — pushes main content left */}
+        <ChatPanel
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+          turns={turns}
+          isThinking={isThinking}
+          onSendMessage={handleSendChatMessage}
+        />
       </div>
-
-      {/* Chat Panel — chat turns only */}
-      <ChatPanel
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        turns={turns}
-        isThinking={isThinking}
-        onSendMessage={handleSendChatMessage}
-      />
 
       {/* Deepgram Voice Session (invisible — renders null) */}
       <DeepgramVoiceSession
@@ -656,6 +716,19 @@ export default function SessionPage({
         onAnalyserReady={(analyser) => talkingHeadRef.current?.setAnalyser(analyser)}
         disabled={IS_MOCK || interviewPhase !== 'active'}
       />
+
+      {/* Interview limit modal — shown when free tier time limit is reached */}
+      {showLimitModal && (
+        <InterviewLimitModal
+          used={interviewUsageData.used}
+          limit={interviewUsageData.limit}
+          onUpgrade={() => router.push('/settings/billing')}
+          onEndSession={() => {
+            setShowLimitModal(false)
+            handleEndInterview()
+          }}
+        />
+      )}
 
       {/* End interview confirmation modal */}
       {showEndConfirm && (
