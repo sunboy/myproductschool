@@ -2,6 +2,7 @@ import { MOCK_LIVE_INTERVIEW_PERSONAS } from '@/lib/mock-live-interviews'
 import FilteredPersonaGrid from './FilteredPersonaGrid'
 import PastInterviews from './PastInterviews'
 import { GuidedTab } from '../challenges/GuidedTab'
+import { UsageProvider } from '@/context/UsageContext'
 
 export interface ScenarioBrief {
   id: string
@@ -83,47 +84,49 @@ export default async function LiveInterviewsPage({
   const [personas, scenarios] = await Promise.all([getPersonas(), getScenarios()])
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <section>
-        <h1 className="font-headline text-3xl font-extrabold text-on-surface">Interviews</h1>
-        <p className="text-sm text-on-surface-variant mt-1">
-          Practice with real interviewers from top companies. Pick a seat.
-        </p>
-      </section>
+    <UsageProvider>
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <section>
+          <h1 className="font-headline text-3xl font-extrabold text-on-surface">Interviews</h1>
+          <p className="text-sm text-on-surface-variant mt-1">
+            Practice with real interviewers from top companies. Pick a seat.
+          </p>
+        </section>
 
-      {/* Tab Toggle */}
-      <div className="flex items-center gap-1 bg-surface-container rounded-xl p-1 w-fit">
-        <a
-          href="/live-interviews"
-          className={`px-5 py-2 rounded-lg text-sm font-bold transition-colors ${
-            activeTab === 'mock'
-              ? 'bg-primary text-on-primary shadow-sm'
-              : 'text-on-surface-variant hover:text-on-surface'
-          }`}
-        >
-          Mock Interviews
-        </a>
-        <a
-          href="/live-interviews?tab=prep"
-          className={`px-5 py-2 rounded-lg text-sm font-bold transition-colors ${
-            activeTab === 'prep'
-              ? 'bg-primary text-on-primary shadow-sm'
-              : 'text-on-surface-variant hover:text-on-surface'
-          }`}
-        >
-          Study Plans
-        </a>
+        {/* Tab Toggle */}
+        <div className="flex items-center gap-1 bg-surface-container rounded-xl p-1 w-fit">
+          <a
+            href="/live-interviews"
+            className={`px-5 py-2 rounded-lg text-sm font-bold transition-colors ${
+              activeTab === 'mock'
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'text-on-surface-variant hover:text-on-surface'
+            }`}
+          >
+            Mock Interviews
+          </a>
+          <a
+            href="/live-interviews?tab=prep"
+            className={`px-5 py-2 rounded-lg text-sm font-bold transition-colors ${
+              activeTab === 'prep'
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'text-on-surface-variant hover:text-on-surface'
+            }`}
+          >
+            Study Plans
+          </a>
+        </div>
+
+        {activeTab === 'mock' ? (
+          <>
+            <FilteredPersonaGrid personas={personas} scenarios={scenarios} />
+            <PastInterviews />
+          </>
+        ) : (
+          <GuidedTab />
+        )}
       </div>
-
-      {activeTab === 'mock' ? (
-        <>
-          <FilteredPersonaGrid personas={personas} scenarios={scenarios} />
-          <PastInterviews />
-        </>
-      ) : (
-        <GuidedTab />
-      )}
-    </div>
+    </UsageProvider>
   )
 }
