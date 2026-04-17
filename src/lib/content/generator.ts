@@ -6,7 +6,7 @@ import {
   buildTaxonomyPrompt,
 } from './prompts'
 import { validateChallengeJson } from './validator'
-import type { ChallengeJson, DraftFlowStep, FlowStep } from '@/lib/types'
+import type { ChallengeJson, DraftFlowStep, FlowStep, IntellectualTheme } from '@/lib/types'
 
 const client = new Anthropic()
 
@@ -91,7 +91,7 @@ export async function generateChallenge(input: GeneratorInput): Promise<Challeng
 
     flow_steps.push({
       step,
-      theme: THEME_MAP[step].theme as any,
+      theme: THEME_MAP[step].theme as IntellectualTheme,
       theme_name: THEME_MAP[step].theme_name,
       step_nudge: mcqData.question_nudge,
       grading_weight: WEIGHTS[step],
@@ -144,7 +144,7 @@ export async function regenerateStep(
 
   return {
     step,
-    theme: THEME_MAP[step].theme as any,
+    theme: THEME_MAP[step].theme as IntellectualTheme,
     theme_name: THEME_MAP[step].theme_name,
     step_nudge: mcqData.question_nudge,
     grading_weight: WEIGHTS[step],
