@@ -1,11 +1,11 @@
 ---
 name: hackproduct-content-authoring
-description: "Content authoring pipeline for HackProduct challenges. Use when creating, generating, validating, or publishing FLOW challenges — from raw markdown, from scratch, or via admin API. Triggers on: create challenge, generate MCQ, write nudges, tag competencies, seed challenges, populate database, content pipeline, authoring, publish."
+description: "Content authoring pipeline for HackProduct challenges. Use when creating, generating, validating, or publishing FLOW challenges, whether from raw markdown, from scratch, or via admin API. Triggers on: create challenge, generate MCQ, write nudges, tag competencies, seed challenges, populate database, content pipeline, authoring, publish."
 ---
 
 # HackProduct Content Authoring Pipeline
 
-Transforms raw questions into structured FLOW challenges with MCQ options, nudges, taxonomy tags, and validation.
+Takes raw questions and turns them into structured FLOW challenges with MCQ options, nudges, taxonomy tags, and validation.
 
 ## Pipeline: 8 steps, ~$0.18/challenge, ~40s
 
@@ -23,7 +23,7 @@ For each question, generate exactly 4 options. See `references/mcq-generation-pr
 
 | Quality | Points | What it demonstrates |
 |---|---|---|
-| `best` | 3 | Full competency stack — compressed FLOW answer |
+| `best` | 3 | Full competency stack, compressed FLOW answer |
 | `good_but_incomplete` | 2 | Correct but missing one perspective |
 | `surface` | 1 | Restates problem, generic, lacks depth |
 | `plausible_wrong` | 0 | Sounds smart but misreads the situation |
@@ -46,6 +46,40 @@ Tags: `paradigm` (traditional/ai_assisted/agentic/ai_native), `industry`, `relev
 ## Competency Tagging
 
 2-3 primary + 1-2 secondary from: motivation_theory, cognitive_empathy, taste, strategic_thinking, creative_execution, domain_expertise
+
+### Scenario Output Fields (Extended)
+
+The scenario object must include these fields:
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `role` | Yes | Specific role, company type, stage |
+| `context` | Yes | 2-3 sentences: company, product, current situation |
+| `trigger` | Yes | 1 sentence: concrete event forcing a decision |
+| `question` | Yes | The core PM question being tested (not a restatement of trigger) |
+| `explanation` | Yes | 2-3 sentences: why this question matters to product thinking |
+| `engineer_standout` | Yes | 1-2 sentences: what makes an engineer's answer valuable here |
+| `data_points` | No | String[]. Quantitative facts from source. Only populate when source contains real metrics. Leave empty otherwise. |
+| `visuals` | No | String[]. SVG strings or markdown tables only. Use only when structural/tabular content from source genuinely aids comprehension. Never generate images. |
+
+**Rules for `data_points` and `visuals`:**
+- Only include if the source material genuinely contains quantitative data or structural/tabular content
+- Never fabricate data points
+- For visuals: use SVG strings or markdown tables only — never image URLs or base64
+- Absence is preferred over noise — empty arrays are the correct default
+
+### FLOW Step → Intellectual Theme Mapping
+
+Each FLOW step is anchored to a primary intellectual theme. The `theme` and `theme_name` fields are **required** in each `flow_step` in the JSON output. MCQ options for each step must apply the theme's reasoning pattern:
+
+| Step | Primary Theme | Secondary Theme | `theme` value | MCQ Generation Instruction |
+|------|--------------|-----------------|---------------|----------------------------|
+| Frame | T1: Upstream Before Downstream | T6: Exclusion Is Precision | `"T1"` | Best option identifies root cause upstream of the stated problem. Plausible_wrong diagnoses a downstream symptom. |
+| List | T4: Width Before Depth | T2: The Job Behind the Feature | `"T4"` | Options must represent structurally distinct paradigms, not variations of one approach. Best option addresses a distinct user job. |
+| Optimize | T5: Name the Criterion, Name the Sacrifice | — | `"T5"` | Best option explicitly names the optimization criterion AND the named sacrifice. Surface option gives vague tradeoffs. |
+| Win | T7: A Recommendation Is a Falsifiable Hypothesis | T3: Simulate the Other Side | `"T7"` | Best option makes a crisp, testable recommendation. Plausible_wrong hedges or gives consensus non-answer. |
+
+**Validation:** Content validator will reject any `flow_step` missing `theme` or `theme_name`.
 
 ## Content Validator (deterministic)
 
