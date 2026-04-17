@@ -153,7 +153,7 @@ Challenge content summary: ${flowStepsSummary}
 
 Return ONLY valid JSON:
 {
-  "paradigm": "...",             // one of: B2B, B2C, Marketplace, Platform, Infrastructure, Consumer, Enterprise
+  "paradigm": "...",             // one of: traditional, ai_assisted, agentic, ai_native — describes the PM paradigm tested (traditional=classic PM tradeoffs, ai_assisted=using AI tools, agentic=autonomous agents, ai_native=AI-first products)
   "industry": "...",             // e.g. Fintech, HealthTech, EdTech, SaaS, E-commerce, Gaming, Media
   "sub_vertical": "...",        // more specific, e.g. "Payments", "EHR", "LMS"
   "difficulty": "standard",     // one of: warmup, standard, advanced, staff_plus

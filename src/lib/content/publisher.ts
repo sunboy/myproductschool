@@ -2,6 +2,19 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { ChallengeJson, FlowStep } from '@/lib/types'
 
+const VALID_PARADIGMS = ['traditional', 'ai_assisted', 'agentic', 'ai_native'] as const
+
+// Normalize paradigm from LLM output to DB-valid values
+function normalizeParadigm(rawParadigm: string | undefined): string {
+  if (!rawParadigm) return 'traditional'
+  const lower = rawParadigm.toLowerCase().replace(/[-\s]/g, '_')
+  for (const valid of VALID_PARADIGMS) {
+    if (lower === valid || lower.includes(valid.replace('_', ''))) return valid
+  }
+  // If LLM returned something like "B2B", "SaaS", etc. — default to traditional
+  return 'traditional'
+}
+
 function generateChallengeId(metadata: ChallengeJson['metadata']): string {
   const paradigm = (metadata.paradigm || 'GN').slice(0, 2).toUpperCase()
   const industry = (metadata.industry || 'GN').slice(0, 3).toUpperCase()
@@ -36,7 +49,7 @@ export async function publishDraft(draftId: string): Promise<string> {
     scenario_trigger: json.scenario.trigger,
     scenario_question: json.scenario.question,
     engineer_standout: json.scenario.engineer_standout,
-    paradigm: json.metadata.paradigm,
+    paradigm: normalizeParadigm(json.metadata.paradigm),
     industry: json.metadata.industry,
     sub_vertical: json.metadata.sub_vertical,
     difficulty: json.metadata.difficulty,

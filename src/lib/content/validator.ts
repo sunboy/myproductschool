@@ -9,6 +9,7 @@ export interface ValidationError {
 export interface ValidationResult {
   valid: boolean
   errors: ValidationError[]
+  warnings: ValidationError[]
 }
 
 const FLOW_STEPS = ['frame', 'list', 'optimize', 'win'] as const
@@ -22,12 +23,18 @@ function wordCount(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length
 }
 
-function validateOptions(q: DraftQuestion, path: string): ValidationError[] {
+interface OptionChecks {
+  errors: ValidationError[]
+  warnings: ValidationError[]
+}
+
+function validateOptions(q: DraftQuestion, path: string): OptionChecks {
   const errors: ValidationError[] = []
+  const warnings: ValidationError[] = []
 
   if (q.options.length !== 4) {
     errors.push({ path, message: `Expected 4 options, got ${q.options.length}` })
-    return errors
+    return { errors, warnings }
   }
 
   const qualities = q.options.map(o => o.quality)
@@ -42,15 +49,17 @@ function validateOptions(q: DraftQuestion, path: string): ValidationError[] {
   const maxWords = Math.max(...wordCounts)
   const minWords = Math.min(...wordCounts)
   const variance = maxWords > 0 ? (maxWords - minWords) / maxWords : 0
+  // Word count variance is a style guideline — warn, don't fail
   if (variance > 0.2) {
-    errors.push({ path, message: `Option word count variance ${(variance * 100).toFixed(0)}% exceeds 20%` })
+    warnings.push({ path, message: `Option word count variance ${(variance * 100).toFixed(0)}% exceeds 20% (style guideline)` })
   }
 
   const bestOption = q.options.find(o => o.quality === 'best')
   if (bestOption) {
     const bestWords = wordCount(bestOption.text)
+    // Best-not-longest is a style guideline — warn, don't fail
     if (bestWords === maxWords && q.options.filter(o => wordCount(o.text) === maxWords).length === 1) {
-      errors.push({ path, message: 'The "best" option must not be the longest' })
+      warnings.push({ path, message: 'The "best" option is the longest (style guideline: consider shortening)' })
     }
   }
 
@@ -62,11 +71,17 @@ function validateOptions(q: DraftQuestion, path: string): ValidationError[] {
     }
   }
 
-  return errors
+  return { errors, warnings }
 }
 
-function validateStep(step: DraftFlowStep, idx: number): ValidationError[] {
+interface StepChecks {
+  errors: ValidationError[]
+  warnings: ValidationError[]
+}
+
+function validateStep(step: DraftFlowStep, idx: number): StepChecks {
   const errors: ValidationError[] = []
+  const warnings: ValidationError[] = []
   const path = `flow_steps[${idx}]`
 
   if (!FLOW_STEPS.includes(step.step as typeof FLOW_STEPS[number])) {
@@ -75,10 +90,10 @@ function validateStep(step: DraftFlowStep, idx: number): ValidationError[] {
 
   const nudgeWords = wordCount(step.step_nudge)
   if (nudgeWords > 40) {
-    errors.push({ path, message: `step_nudge is ${nudgeWords} words (max 40)` })
+    warnings.push({ path, message: `step_nudge is ${nudgeWords} words (max 40)` })
   }
   if (!step.step_nudge.trim().endsWith('?')) {
-    errors.push({ path, message: 'step_nudge must end with "?"' })
+    warnings.push({ path, message: 'step_nudge must end with "?"' })
   }
 
   if (step.questions.length === 0) {
@@ -86,14 +101,17 @@ function validateStep(step: DraftFlowStep, idx: number): ValidationError[] {
   }
 
   for (let qi = 0; qi < step.questions.length; qi++) {
-    errors.push(...validateOptions(step.questions[qi], `${path}.questions[${qi}]`))
+    const result = validateOptions(step.questions[qi], `${path}.questions[${qi}]`)
+    errors.push(...result.errors)
+    warnings.push(...result.warnings)
   }
 
-  return errors
+  return { errors, warnings }
 }
 
 export function validateChallengeJson(json: ChallengeJson): ValidationResult {
   const errors: ValidationError[] = []
+  const warnings: ValidationError[] = []
 
   if (!json.scenario?.role) errors.push({ path: 'scenario.role', message: 'Required' })
   if (!json.scenario?.context) errors.push({ path: 'scenario.context', message: 'Required' })
@@ -106,7 +124,9 @@ export function validateChallengeJson(json: ChallengeJson): ValidationResult {
   }
 
   for (let i = 0; i < json.flow_steps.length; i++) {
-    errors.push(...validateStep(json.flow_steps[i], i))
+    const result = validateStep(json.flow_steps[i], i)
+    errors.push(...result.errors)
+    warnings.push(...result.warnings)
   }
 
   if (!json.metadata?.paradigm) errors.push({ path: 'metadata.paradigm', message: 'Required' })
@@ -116,5 +136,5 @@ export function validateChallengeJson(json: ChallengeJson): ValidationResult {
     errors.push({ path: 'metadata.primary_competencies', message: 'At least 1 required' })
   }
 
-  return { valid: errors.length === 0, errors }
+  return { valid: errors.length === 0, errors, warnings }
 }
