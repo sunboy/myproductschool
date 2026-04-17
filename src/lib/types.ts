@@ -746,3 +746,96 @@ export interface ShowcaseAttempt {
   decision_index: number
   selected_option_label: string
 }
+
+// ─── Content Management ───────────────────────────────────────────────────────
+
+export type IntellectualTheme = 'T1' | 'T2' | 'T3' | 'T4' | 'T5' | 'T6' | 'T7'
+
+export type GenerationJobStatus =
+  | 'pending' | 'scraping' | 'generating' | 'review' | 'published' | 'failed'
+
+export type GenerationMode = 'local' | 'api'
+
+export type ReviewStatus = 'pending_review' | 'approved' | 'rejected'
+
+export interface DraftOption {
+  label: 'A' | 'B' | 'C' | 'D'
+  quality: OptionQuality
+  text: string
+  explanation: string
+  competencies: string[]
+}
+
+export interface DraftQuestion {
+  question_text: string
+  question_nudge: string
+  sequence: number
+  grading_weight_within_step: number
+  target_competencies: string[]
+  options: DraftOption[]
+}
+
+export interface DraftFlowStep {
+  step: FlowStep
+  theme: IntellectualTheme
+  theme_name: string
+  step_nudge: string
+  grading_weight: number
+  questions: DraftQuestion[]
+}
+
+export interface ChallengeJsonScenario {
+  role: string
+  context: string
+  trigger: string
+  question: string
+  explanation: string
+  engineer_standout: string
+  data_points?: string[]
+  visuals?: string[]   // SVG strings or markdown tables
+}
+
+export interface ChallengeJsonMetadata {
+  paradigm: string
+  industry: string
+  sub_vertical: string
+  difficulty: DifficultyV2
+  estimated_minutes: number
+  primary_competencies: string[]
+  secondary_competencies: string[]
+  frameworks: string[]
+  relevant_roles: string[]
+  company_tags: string[]
+  tags: string[]
+}
+
+export interface ChallengeJson {
+  scenario: ChallengeJsonScenario
+  flow_steps: DraftFlowStep[]
+  metadata: ChallengeJsonMetadata
+}
+
+export interface GenerationJob {
+  id: string
+  input_type: 'url' | 'text' | 'question'
+  input_raw: string
+  scraped_text: string | null
+  status: GenerationJobStatus
+  mode: GenerationMode
+  result_challenge_id: string | null
+  error_message: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface DraftChallenge {
+  id: string
+  job_id: string
+  challenge_json: ChallengeJson
+  review_status: ReviewStatus
+  step_approvals: Record<FlowStep, boolean>
+  reviewer_notes: string | null
+  created_at: string
+  updated_at: string
+}
