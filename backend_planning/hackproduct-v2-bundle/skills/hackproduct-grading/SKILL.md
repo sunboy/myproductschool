@@ -193,6 +193,18 @@ creative_execution  → T4 (structurally distinct options)
 domain_expertise    → T7 (real metric requires domain knowledge)
 ```
 
+## Writing Style
+
+All copy produced by this skill — grading explanations, theme signal text, anti-pattern descriptions, feedback copy — must follow these rules:
+
+- Write like a sharp senior colleague, not a corporate document or an AI assistant
+- Professional but not stiff. Clear but not over-explained.
+- No em dashes. Use a comma, period, or restructure the sentence instead.
+- No AI slop: never use "delve", "leverage", "utilize", "holistic", "robust", "seamlessly", "it's worth noting", "in order to", "as well as", or any phrase that sounds like it was generated to sound thorough
+- Say what you mean in the fewest words. Cut filler. Cut hedges.
+- Grading explanations should be direct about what the answer got right or wrong, not diplomatic
+- Anti-pattern descriptions should name the reasoning failure precisely, not soften it
+
 ## Files This Skill Produces
 
 ```

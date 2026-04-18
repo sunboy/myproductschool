@@ -78,6 +78,17 @@ if (isV2) return <FlowWorkspace challengeId={params.id} />
 return <LegacyWorkspace challengeId={params.id} />
 ```
 
+## Writing Style
+
+All copy produced by this skill — nudges, labels, status messages, coaching text, UI strings — must follow these rules:
+
+- Write like a sharp senior colleague, not a corporate document or an AI assistant
+- Professional but not stiff. Clear but not over-explained.
+- No em dashes. Use a comma, period, or restructure the sentence instead.
+- No AI slop: never use "delve", "leverage", "utilize", "holistic", "robust", "seamlessly", "it's worth noting", "in order to", "as well as", or any phrase that sounds like it was generated to sound thorough
+- Say what you mean in the fewest words. Cut filler. Cut hedges.
+- No motivational padding. If something is weak, say it's weak.
+
 ## Files This Skill Produces
 
 ```

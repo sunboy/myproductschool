@@ -105,6 +105,17 @@ Find uncompleted challenge targeting weakest competency. If in a study plan, pre
 Inline SVG, 6 axes at 60° intervals, score 0-100 → radius.
 Fill: `fill-primary/20 stroke-primary`. Labels outside hexagon. Animate on mount.
 
+## Writing Style
+
+All copy produced by this skill — competency labels, weakness summaries, recommendation copy, radar chart labels — must follow these rules:
+
+- Write like a sharp senior colleague, not a corporate document or an AI assistant
+- Professional but not stiff. Clear but not over-explained.
+- No em dashes. Use a comma, period, or restructure the sentence instead.
+- No AI slop: never use "delve", "leverage", "utilize", "holistic", "robust", "seamlessly", "it's worth noting", "in order to", "as well as", or any phrase that sounds like it was generated to sound thorough
+- Say what you mean in the fewest words. Cut filler. Cut hedges.
+- Weakness descriptions should name the gap plainly, not soften it into a "growth opportunity"
+
 ## Files This Skill Produces
 
 ```

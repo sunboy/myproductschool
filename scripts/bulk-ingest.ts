@@ -27,8 +27,8 @@ interface PipelineRow {
 }
 
 async function getQueuedRows(): Promise<PipelineRow[]> {
-  const res = await notion.databases.query({
-    database_id: NOTION_DB_ID,
+  const res = await notion.dataSources.query({
+    data_source_id: NOTION_DB_ID,
     filter: {
       property: 'Status',
       select: { equals: 'Queued' },

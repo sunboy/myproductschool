@@ -15,6 +15,43 @@ Raw markdown → scenario_extractor → competency_tagger → taxonomy_tagger
   → nudge_writer (×4) → difficulty_calibrator → content_validator → publish
 ```
 
+## Writing Style
+
+All generated content — scenarios, question text, nudges, option text, explanations, taxonomy labels — must follow these rules:
+
+- Write like a sharp senior product thinker talking to a peer, not an AI assistant producing training data
+- Professional but not stiff. Clear but not over-explained.
+- No em dashes. Use a comma, period, or restructure the sentence instead.
+- No AI slop: never use "delve", "leverage", "utilize", "holistic", "robust", "seamlessly", "it's worth noting", "in order to", "as well as", or any phrase that sounds like it was generated to sound thorough
+- Say what you mean in the fewest words. Cut filler. Cut hedges.
+- Scenarios should read like a real situation someone has been in, not a case study intro
+- Option text should sound like a real person's reasoning, not a textbook answer
+- The "best" option should be genuinely better, not just longer or more comprehensive-sounding
+
+## Questions Per FLOW Step
+
+Each FLOW step gets 1 to 3 questions. The default is 1. Add a second or third question only when the source material contains enough distinct sub-problems to justify it.
+
+**Add a second question to a step when:**
+- The step has two genuinely separable decisions (e.g. Frame has both a scope question and a root-cause question that don't collapse into each other)
+- The source material contains a second concrete situation that tests a different aspect of the same theme
+- Omitting it would leave a meaningful insight from the source unused
+
+**Do not add a second question when:**
+- The second question is a variation of the first (same reasoning pattern, slightly different wording)
+- The source material is thin (a short question prompt or a brief article)
+- You are adding it to seem thorough
+
+**Hard limits:**
+- 1 question: default for all steps
+- 2 questions: allowed when source richness justifies it
+- 3 questions: only for exceptionally dense source material (long detailed article, multi-part scenario); rare
+- Never more than 3 per step
+
+Each question still gets exactly 4 MCQ options (one of each quality archetype).
+
+The `step_questions` insert count reflects this: 1–3 rows per `flow_step`, not always 1.
+
 ## MCQ Option Generation
 
 For each question, generate exactly 4 options. See `references/mcq-generation-prompt.md` for the full Claude prompt.
