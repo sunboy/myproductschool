@@ -309,6 +309,62 @@ export default function ReviewPage() {
         )}
       </div>
 
+      {/* Metadata / Tags */}
+      <div className="bg-surface-container rounded-2xl p-6 space-y-4 mb-6">
+        <h2 className="font-label font-semibold text-on-surface-variant text-xs uppercase tracking-wide">Taxonomy &amp; Tags</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="font-label text-xs text-on-surface-variant mb-1">Paradigm</p>
+            <select
+              value={json.metadata.paradigm ?? 'traditional'}
+              onChange={e => updateJson({ ...json, metadata: { ...json.metadata, paradigm: e.target.value } })}
+              className="w-full bg-surface-container-low rounded-lg px-3 py-2 font-body text-sm text-on-surface border border-outline-variant outline-none focus:border-primary"
+            >
+              {['traditional','ai_assisted','agentic','ai_native'].map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
+          <div>
+            <p className="font-label text-xs text-on-surface-variant mb-1">Difficulty</p>
+            <select
+              value={json.metadata.difficulty ?? 'standard'}
+              onChange={e => updateJson({ ...json, metadata: { ...json.metadata, difficulty: e.target.value as ChallengeJson['metadata']['difficulty'] } })}
+              className="w-full bg-surface-container-low rounded-lg px-3 py-2 font-body text-sm text-on-surface border border-outline-variant outline-none focus:border-primary"
+            >
+              {['warmup','standard','advanced','staff_plus'].map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
+          <div>
+            <p className="font-label text-xs text-on-surface-variant mb-1">Industry</p>
+            <EditableText value={json.metadata.industry ?? ''} onChange={v => updateJson({ ...json, metadata: { ...json.metadata, industry: v } })} />
+          </div>
+          <div>
+            <p className="font-label text-xs text-on-surface-variant mb-1">Sub-vertical</p>
+            <EditableText value={json.metadata.sub_vertical ?? ''} onChange={v => updateJson({ ...json, metadata: { ...json.metadata, sub_vertical: v } })} />
+          </div>
+        </div>
+        <div>
+          <p className="font-label text-xs text-on-surface-variant mb-1">Frameworks (comma-separated)</p>
+          <EditableText
+            value={(json.metadata.frameworks ?? []).join(', ')}
+            onChange={v => updateJson({ ...json, metadata: { ...json.metadata, frameworks: v.split(',').map(s => s.trim()).filter(Boolean) } })}
+          />
+        </div>
+        <div>
+          <p className="font-label text-xs text-on-surface-variant mb-1">Company tags (comma-separated)</p>
+          <EditableText
+            value={(json.metadata.company_tags ?? []).join(', ')}
+            onChange={v => updateJson({ ...json, metadata: { ...json.metadata, company_tags: v.split(',').map(s => s.trim()).filter(Boolean) } })}
+          />
+        </div>
+        <div>
+          <p className="font-label text-xs text-on-surface-variant mb-1">Tags (comma-separated)</p>
+          <EditableText
+            value={(json.metadata.tags ?? []).join(', ')}
+            onChange={v => updateJson({ ...json, metadata: { ...json.metadata, tags: v.split(',').map(s => s.trim()).filter(Boolean) } })}
+          />
+        </div>
+      </div>
+
       {/* FLOW Steps */}
       <div className="space-y-4 mb-6">
         {json.flow_steps.map(step => (

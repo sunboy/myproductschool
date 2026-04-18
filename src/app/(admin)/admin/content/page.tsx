@@ -201,6 +201,14 @@ export default function AdminContentPage() {
                         Review →
                       </a>
                     )}
+                    {job.status === 'published' && job.result_challenge_id && (
+                      <a
+                        href={`/admin/content/challenges/${job.result_challenge_id}`}
+                        className="text-on-surface-variant font-label text-sm hover:text-primary"
+                      >
+                        Edit Tags →
+                      </a>
+                    )}
                     {job.status === 'failed' && (
                       <span className="text-error font-label text-xs" title={job.error_message ?? ''}>
                         Failed
