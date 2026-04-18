@@ -41,5 +41,9 @@ yarn-error.log*
 next-env.d.ts
 
 # git worktrees
-.claude/worktrees/
 .worktrees/
+
+# local tooling (Claude Code, Playwright MCP, Superpowers)
+.claude/
+.playwright-mcp/
+.superpowers/
