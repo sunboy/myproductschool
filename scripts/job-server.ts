@@ -8,6 +8,7 @@ import { createClient } from '@supabase/supabase-js'
 import { execFileSync } from 'child_process'
 import {
   buildScrapePrompt, buildScenarioPrompt, buildMcqPrompt, buildTaxonomyPrompt,
+  buildStepQuestionPlanPrompt,
 } from '../src/lib/content/prompts'
 import { validateChallengeJson } from '../src/lib/content/validator'
 import { scrapeUrl } from '../src/lib/content/scraper'
@@ -72,7 +73,9 @@ async function generateChallengeLocally(inputType: string, inputRaw: string): Pr
     situation_summary: string
     data_points: string[]
     has_table_content: boolean
+    source_richness: 'thin' | 'normal' | 'rich'
   }>(scrapeRaw)
+  const sourceRichness = scrapeResult.source_richness ?? 'normal'
 
   // Step 3: scenario
   console.log('  [claude] generating scenario...')
@@ -82,32 +85,45 @@ async function generateChallengeLocally(inputType: string, inputRaw: string): Pr
     scenario.data_points = scrapeResult.data_points
   }
 
-  // Step 4: MCQs for each FLOW step
+  // Step 4: MCQs for each FLOW step (1-3 questions per step based on source richness)
   const flow_steps: DraftFlowStep[] = []
   for (const step of FLOW_STEPS) {
-    console.log(`  [claude] generating ${step} MCQ...`)
-    const mcqRaw = callClaude(buildMcqPrompt(scenario, step, THEME_MAP[step].theme), 2000)
-    const mcqData = parseJson<{
-      question_text: string
-      question_nudge: string
-      target_competencies: string[]
-      options: DraftFlowStep['questions'][0]['options']
-    }>(mcqRaw)
+    // Plan how many questions this step needs
+    console.log(`  [claude] planning ${step} questions (richness: ${sourceRichness})...`)
+    const planRaw = callClaude(buildStepQuestionPlanPrompt(scenario, step, sourceRichness, rawText), 400)
+    const plan = parseJson<{
+      question_count: number
+      questions: Array<{ sequence: number; focus: string; grading_weight: number }>
+    }>(planRaw)
+
+    const questions: DraftFlowStep['questions'] = []
+    for (const q of plan.questions) {
+      console.log(`  [claude] generating ${step} Q${q.sequence} MCQ...`)
+      const mcqRaw = callClaude(buildMcqPrompt(scenario, step, THEME_MAP[step].theme), 2000)
+      const mcqData = parseJson<{
+        question_text: string
+        question_nudge: string
+        target_competencies: string[]
+        options: DraftFlowStep['questions'][0]['options']
+      }>(mcqRaw)
+
+      questions.push({
+        question_text: mcqData.question_text,
+        question_nudge: mcqData.question_nudge,
+        sequence: q.sequence,
+        grading_weight_within_step: q.grading_weight,
+        target_competencies: mcqData.target_competencies,
+        options: mcqData.options,
+      })
+    }
 
     flow_steps.push({
       step,
       theme: THEME_MAP[step].theme as IntellectualTheme,
       theme_name: THEME_MAP[step].theme_name,
-      step_nudge: mcqData.question_nudge,
+      step_nudge: questions[0].question_nudge,
       grading_weight: WEIGHTS[step],
-      questions: [{
-        question_text: mcqData.question_text,
-        question_nudge: mcqData.question_nudge,
-        sequence: 1,
-        grading_weight_within_step: 1.0,
-        target_competencies: mcqData.target_competencies,
-        options: mcqData.options,
-      }],
+      questions,
     })
   }
 

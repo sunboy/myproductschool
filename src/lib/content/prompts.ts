@@ -24,13 +24,20 @@ Given the following article or content, extract:
 1. The core business/product situation in 2-3 sentences
 2. Up to 3 specific quantitative data points (numbers, percentages, growth rates) — only if genuinely present in the text
 3. Whether any tables or structured comparisons exist that would be clearer as a markdown table
+4. Source richness score: how much distinct, usable PM decision content is in this source?
 
 Return ONLY valid JSON:
 {
   "situation_summary": "...",
   "data_points": ["..."],   // empty array if none found
-  "has_table_content": false
+  "has_table_content": false,
+  "source_richness": "thin" | "normal" | "rich"
 }
+
+source_richness guide:
+- "thin": short question prompt, brief paragraph, single topic — 1 question per step is right
+- "normal": article or scenario with one clear throughline — 1 question per step, maybe 2 for the most complex step
+- "rich": long article, multi-part scenario, multiple distinct sub-problems worth testing — 2-3 questions per step is appropriate
 
 CONTENT:
 ${inputText.slice(0, 6000)}`
@@ -140,6 +147,55 @@ Return ONLY valid JSON:
 { "nudge": "..." }
 
 Rules: ≤40 words, ends with "?", references the specific scenario context, surfaces the right thinking dimension without naming the answer.`
+}
+
+export function buildStepQuestionPlanPrompt(
+  scenario: { role: string; context: string; trigger: string; question: string },
+  step: string,
+  sourceRichness: 'thin' | 'normal' | 'rich',
+  rawText: string
+): string {
+  const maxQuestions = sourceRichness === 'rich' ? 3 : sourceRichness === 'normal' ? 2 : 1
+
+  const stepPurposes: Record<string, string> = {
+    frame: 'Identify the root problem: what is really going on and why does it matter?',
+    list: 'Generate structurally distinct options: what are the meaningfully different paths forward?',
+    optimize: 'Evaluate tradeoffs: which option wins given explicit criteria, and what are you giving up?',
+    win: 'Make a crisp recommendation: what exactly should be done and why will it work?',
+  }
+
+  return `You are planning the questions for one FLOW step in a product thinking challenge.
+
+SCENARIO:
+Role: ${scenario.role}
+Context: ${scenario.context}
+Trigger: ${scenario.trigger}
+Core question: ${scenario.question}
+
+STEP: ${step.toUpperCase()} — ${stepPurposes[step]}
+SOURCE RICHNESS: ${sourceRichness} (max ${maxQuestions} question${maxQuestions > 1 ? 's' : ''} for this step)
+
+SOURCE MATERIAL (excerpt):
+${rawText.slice(0, 3000)}
+
+Decide how many questions this step needs (1 to ${maxQuestions}) and what each should focus on.
+
+Rules for adding a second or third question:
+- The source contains a genuinely distinct sub-problem that tests a different aspect of the same step theme
+- The questions do not overlap in what reasoning they require
+- Do not add questions to seem thorough. Default to 1.
+
+Return ONLY valid JSON:
+{
+  "question_count": 1,
+  "questions": [
+    {
+      "sequence": 1,
+      "focus": "...",           // 1 sentence: what specific reasoning this question tests
+      "grading_weight": 1.0    // weights across questions in this step must sum to 1.0
+    }
+  ]
+}`
 }
 
 export function buildTaxonomyPrompt(
