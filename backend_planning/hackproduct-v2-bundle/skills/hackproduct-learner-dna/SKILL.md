@@ -1,6 +1,6 @@
 ---
 name: hackproduct-learner-dna
-description: "Learner DNA competency system for HackProduct — 6-axis scoring with role-weighted ELO updates, trend analysis, weakness identification, and adaptive recommendations. Use when building competency updater, DNA API, CompetencyRadar, trend analyzer, or any learner_competencies code. Triggers on: competency, learner DNA, radar chart, trend, weakness, recommendation, ELO, skill profile, progress."
+description: "Learner DNA competency system for HackProduct. Covers 6-axis scoring with role-weighted ELO updates, trend analysis, weakness identification, and next-challenge recommendations. Use when building competency updater, DNA API, CompetencyRadar, trend analyzer, or any learner_competencies code. Triggers on: competency, learner DNA, radar chart, trend, weakness, recommendation, ELO, skill profile, progress."
 ---
 
 # HackProduct Learner DNA System

@@ -1,6 +1,6 @@
 ---
 name: hackproduct-challenge-delivery
-description: "Challenge delivery system for HackProduct — listing, filtering, loading FLOW steps, managing attempts, and the workspace state machine. Use when building challenge list API, detail API, step loading, attempt management, workspace page, or FlowStepper. Triggers on: challenge list, detail, load step, start attempt, resume, workspace, FLOW stepper, taxonomy filters, option shuffling, state machine."
+description: "Challenge delivery system for HackProduct. Covers listing, filtering, loading FLOW steps, managing attempts, and the workspace state machine. Use when building challenge list API, detail API, step loading, attempt management, workspace page, or FlowStepper. Triggers on: challenge list, detail, load step, start attempt, resume, workspace, FLOW stepper, taxonomy filters, option shuffling, state machine."
 ---
 
 # HackProduct Challenge Delivery

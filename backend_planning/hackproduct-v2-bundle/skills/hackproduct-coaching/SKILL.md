@@ -1,13 +1,13 @@
 ---
 name: hackproduct-coaching
-description: "Luma coaching system for HackProduct — role-contextualized nudges, post-answer coaching, and career signals. Use when building the coaching endpoint, nudge resolver, role context generator, or any Luma feedback code. Also for coaching_cache, role_lenses, or luma_context_v2. Triggers on: coaching, nudge, Luma, role context, career signal, feedback, coaching cache, role lens."
+description: "Luma coaching system for HackProduct. Covers role-contextualized nudges, post-answer coaching, and career signals. Use when building the coaching endpoint, nudge resolver, role context generator, or any Luma feedback code. Also for coaching_cache, role_lenses, or luma_context_v2. Triggers on: coaching, nudge, Luma, role context, career signal, feedback, coaching cache, role lens."
 ---
 
 # HackProduct Coaching System (Luma)
 
-Luma appears at three moments: before answering (nudge), after answering (role coaching), and across sessions (contextual insights).
+Luma appears at three moments: before answering (nudge), after answering (role coaching), and across sessions (stored context).
 
-## 1. Nudge Resolution (deterministic — no AI)
+## 1. Nudge Resolution (deterministic, no AI)
 
 ```typescript
 export function resolveNudge(baseNudge: string | null, step: FlowStep, roleLens: RoleLens): string {
@@ -49,13 +49,13 @@ The learner is a {{role_label}} who just answered the {{step}} step.
 Challenge: {{scenario_context}} {{scenario_trigger}}
 They selected: "{{selected_option_text}}" ({{quality_label}})
 Best answer: "{{best_option_text}}"
-Static explanation: {{static_explanation}}
+Explanation: {{static_explanation}}
 
-Generate two short paragraphs:
-1. "role_context" (2-3 sentences): Connect their choice to a real-world situation a {{role_label}} faces.
-2. "career_signal" (1 sentence): How this skill/gap affects their career. Be concrete.
+Write two short paragraphs:
+1. "role_context" (2-3 sentences): Connect their answer to a specific situation a {{role_label}} actually runs into. Name the situation concretely.
+2. "career_signal" (1 sentence): What this reasoning gap or strength means for their work. Be specific, not motivational.
 
-Tone: Direct, warm. Senior {{role_label}} mentoring a junior. No filler.
+Tone: Direct. A senior {{role_label}} talking to someone earlier in their career. No padding, no praise for weak answers, no hedging.
 Return ONLY JSON: {"role_context":"...","career_signal":"..."}
 ```
 
