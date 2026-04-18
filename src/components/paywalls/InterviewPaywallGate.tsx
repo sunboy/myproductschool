@@ -1,7 +1,5 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import { gsap } from 'gsap'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 interface InterviewPaywallGateProps {
@@ -17,32 +15,12 @@ export function InterviewPaywallGate({
   onUpgrade,
   onDismiss,
 }: InterviewPaywallGateProps) {
-  const backdropRef = useRef<HTMLDivElement>(null)
-  const cardRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        backdropRef.current,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.3, ease: 'power2.out' }
-      )
-      gsap.fromTo(
-        cardRef.current,
-        { scale: 0.92, opacity: 0, y: 30 },
-        { scale: 1, opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', delay: 0.1 }
-      )
-    })
-    return () => ctx.revert()
-  }, [])
-
   const progressPct = Math.min((used / limit) * 100, 100)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        ref={backdropRef}
-        className="fixed inset-0"
+        className="fixed inset-0 animate-in fade-in duration-300"
         style={{
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
@@ -51,8 +29,7 @@ export function InterviewPaywallGate({
         onClick={onDismiss}
       />
       <div
-        ref={cardRef}
-        className="relative w-full max-w-[420px] rounded-2xl overflow-hidden z-10"
+        className="relative w-full max-w-[420px] rounded-2xl overflow-hidden z-10 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500"
         style={{
           background: '#ffffff',
           boxShadow: '0 32px 80px rgba(46,50,48,0.20), 0 0 0 1px rgba(196,200,188,0.3)',
