@@ -44,29 +44,28 @@ ${inputText.slice(0, 6000)}`
 }
 
 export function buildScenarioPrompt(inputText: string, situationSummary: string): string {
-  return `You are an expert PM interviewer creating a scenario for HackProduct, a product thinking practice platform.
+  return `You are writing a scenario for a product thinking challenge. The voice is Shreyas Doshi: direct, grounded, slightly opinionated, no corporate filler.
 
 Context: ${situationSummary}
 
 Source material:
 ${inputText.slice(0, 4000)}
 
-Create a realistic PM interview scenario with these exact fields. Return ONLY valid JSON:
+Create the scenario with these exact fields. Return ONLY valid JSON:
 {
-  "role": "...",            // e.g. "Senior PM at a fintech startup"
-  "context": "...",         // 2-3 sentences: company, product, current situation
-  "trigger": "...",         // 1 sentence: the specific event forcing a decision
-  "question": "...",        // The core PM question being explored (what strategic question does this scenario test?)
-  "explanation": "...",     // 2-3 sentences: why this question matters to product thinking
-  "engineer_standout": "..." // 1-2 sentences: what makes an engineer's perspective valuable here
+  "role": "...",            // specific: company type, stage, domain. e.g. "PM at a Series B fintech, owns the payments product"
+  "context": "...",         // 2-3 sentences. Drop straight into the situation. No "the VP wants" or "stakeholders need". Write it like the person is already in it.
+  "trigger": "...",         // 1 sentence: the concrete thing that just happened. Specific, not generic.
+  "question": "...",        // The exact decision that needs to be made. Not a restatement of the trigger.
+  "explanation": "...",     // 2-3 sentences. Why this problem is interesting — as insight, not instruction. No "this tests your ability to..."
+  "engineer_standout": "..." // 1-2 sentences. What an engineer sees here that a pure PM might not. Be specific.
 }
 
-Rules:
-- role is specific (company type, stage, domain)
-- context gives enough detail to answer intelligently
-- trigger is a concrete event (board meeting, metric drop, competitor launch, etc.)
-- question names the PM decision being tested, not just restates the trigger
-- explanation connects to a broader product principle`
+Voice rules:
+- No em dashes
+- No "leverage", "utilize", "holistic", "robust", "seamlessly", "in order to", or similar AI slop
+- Context should read like something that actually happened, not a case study prompt
+- Explanation should sound like a smart person sharing a real observation, not a rubric description`
 }
 
 export function buildMcqPrompt(
@@ -88,7 +87,7 @@ export function buildMcqPrompt(
     win: 'Make a crisp recommendation — what exactly should be done and why will it work?',
   }
 
-  return `You are writing MCQ options for a product thinking challenge on HackProduct.
+  return `You are writing a question and MCQ options for a product thinking challenge. The voice is Shreyas Doshi: direct, specific, no corporate filler, no case-study framing.
 
 SCENARIO:
 Role: ${scenario.role}
@@ -105,14 +104,14 @@ ${referenceAnswer ? `\nREFERENCE ANSWER (use as basis for BEST option):\n${refer
 Generate a question and exactly 4 MCQ options. Return ONLY valid JSON:
 {
   "question_text": "...",
-  "question_nudge": "...",   // hint for the user, ≤40 words, ends with "?"
+  "question_nudge": "...",   // ≤40 words, ends with "?". Sounds like a smart colleague pointing at the interesting part. Not a hint that gives away the answer.
   "target_competencies": ["motivation_theory"],   // 2-3 from: motivation_theory, cognitive_empathy, taste, strategic_thinking, creative_execution, domain_expertise
   "options": [
     {
       "label": "A",
       "quality": "best",
       "text": "...",
-      "explanation": "...",   // why this quality label — 1 sentence
+      "explanation": "...",   // 1 sentence: why this is the best reasoning, not why it scores highest
       "competencies": ["motivation_theory"]
     },
     { "label": "B", "quality": "good_but_incomplete", "text": "...", "explanation": "...", "competencies": [...] },
@@ -126,10 +125,17 @@ OPTION RULES:
 - The BEST option must NOT be the longest
 - No option may reference another option
 - Each option must work as a standalone answer
-- plausible_wrong sounds smart but misreads the situation
-- surface restates the problem without insight
-- good_but_incomplete is correct but misses one key dimension that best captures
-- best applies the primary intellectual theme correctly`
+- Option text sounds like a real person's reasoning, not a textbook category
+- plausible_wrong sounds confident but is solving the wrong problem
+- surface is the answer someone gives when they haven't thought hard enough
+- good_but_incomplete gets the direction right but misses the key distinction
+- best applies the primary intellectual theme, compressed and precise
+
+VOICE RULES:
+- No em dashes
+- No "leverage", "utilize", "holistic", "robust", "seamlessly", "in order to", or similar
+- Question text should be a real question someone would ask, not a prompt scaffold
+- Nudge should make the reader stop and think, not nudge them toward the answer`
 }
 
 export function buildNudgePrompt(
