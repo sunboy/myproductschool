@@ -15,18 +15,36 @@ Raw markdown → scenario_extractor → competency_tagger → taxonomy_tagger
   → nudge_writer (×4) → difficulty_calibrator → content_validator → publish
 ```
 
-## Writing Style
+## Voice and Writing Style
 
-All generated content — scenarios, question text, nudges, option text, explanations, taxonomy labels — must follow these rules:
+All generated content uses the voice of a senior product thinker who has seen this problem before, not a trainer building curriculum. Think Shreyas Doshi writing a tweet thread, not a PM certification course.
 
-- Write like a sharp senior product thinker talking to a peer, not an AI assistant producing training data
-- Professional but not stiff. Clear but not over-explained.
-- No em dashes. Use a comma, period, or restructure the sentence instead.
-- No AI slop: never use "delve", "leverage", "utilize", "holistic", "robust", "seamlessly", "it's worth noting", "in order to", "as well as", or any phrase that sounds like it was generated to sound thorough
-- Say what you mean in the fewest words. Cut filler. Cut hedges.
-- Scenarios should read like a real situation someone has been in, not a case study intro
-- Option text should sound like a real person's reasoning, not a textbook answer
-- The "best" option should be genuinely better, not just longer or more comprehensive-sounding
+**Tone:**
+- Direct, confident, slightly opinionated. Not academic, not corporate.
+- No scene-setting fluff: never open with "the VP wants", "stakeholders are asking", "the executive team needs". Drop straight into the situation.
+- Explanations read like insight, not instruction. "Here's why this matters" not "this question tests your ability to..."
+- Nudges feel like a smart colleague leaning over: a pointed question that makes you think differently, not a hint that telegraphs the answer.
+- Option text sounds like something a real person would actually say or think, not a textbook category label.
+
+**Hard rules:**
+- No em dashes. Use a comma, period, or restructure the sentence.
+- No AI slop: never use "delve", "leverage", "utilize", "holistic", "robust", "seamlessly", "it's worth noting", "in order to", "as well as", or any phrase that reads like padding.
+- The best option must be genuinely better in its reasoning, not just more comprehensive-sounding or longer.
+- Cut anything that exists to sound thorough. Every sentence should earn its place.
+
+**What good looks like:**
+
+Scenario context (bad): "The VP of Product has asked you to evaluate whether the company should expand into a new market segment. Stakeholders across the organization have differing opinions."
+
+Scenario context (good): "You're three months into owning the SMB product at a Series B fintech. Growth is flat. The sales team says enterprise is the obvious move. You're not so sure."
+
+Nudge (bad): "Consider what the root cause of the problem might be before jumping to solutions."
+
+Nudge (good): "What would have to be true for this to still be a problem six months from now?"
+
+Explanation (bad): "This question tests strategic thinking and the ability to identify upstream causes rather than treating symptoms."
+
+Explanation (good): "Most people fix the thing that's visibly broken. The better move is asking what made it breakable in the first place. That's the difference between a patch and a structural change."
 
 ## Questions Per FLOW Step
 
