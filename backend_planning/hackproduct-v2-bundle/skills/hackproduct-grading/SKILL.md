@@ -1,20 +1,20 @@
 ---
 name: hackproduct-grading
-description: "Rubric-anchored grading pipeline for HackProduct FLOW challenges. Use this skill whenever building, modifying, or debugging the grading system — including the submit API route, freeform grader, elaboration evaluator, scoring functions, or any code that evaluates a user's challenge response. Triggers on: grading, scoring, rubric, freeform evaluation, MCQ scoring, response evaluation, elaboration adjustment, confidence gating, submit route."
+description: "Rubric-anchored grading pipeline for HackProduct FLOW challenges. Use when building, modifying, or debugging the grading system, including the submit API route, freeform grader, elaboration evaluator, scoring functions, or any code that evaluates a user's challenge response. Triggers on: grading, scoring, rubric, freeform evaluation, MCQ scoring, response evaluation, elaboration adjustment, confidence gating, submit route."
 ---
 
 # HackProduct Grading Pipeline
 
-Every question has 4 MCQ options that serve as the **rubric** — they define what scores 0, 1, 2, and 3 look like. The AI grader compares freeform text against these exemplars, never grades from scratch.
+Every question has 4 MCQ options that serve as the **rubric**. They define what scores 0, 1, 2, and 3 look like. The AI grader compares freeform text against these exemplars and never grades from scratch.
 
 ## The 4 Grading Paths
 
 | Response type | Path | Latency | AI? |
 |---|---|---|---|
-| `pure_mcq` — picks option, no text | Deterministic lookup | <5ms | No |
-| `mcq_plus_elaboration` — picks + adds text | Deterministic base ± AI adjustment | ~1-2s | Yes |
-| `modified_option` — picks but edits text | Full AI evaluation | ~2-3s | Yes |
-| `freeform` — ignores options, writes own | Full AI evaluation | ~2-3s | Yes |
+| `pure_mcq` (picks option, no text) | Deterministic lookup | <5ms | No |
+| `mcq_plus_elaboration` (picks + adds text) | Deterministic base +/- AI adjustment | ~1-2s | Yes |
+| `modified_option` (picks but edits text) | Full AI evaluation | ~2-3s | Yes |
+| `freeform` (ignores options, writes own) | Full AI evaluation | ~2-3s | Yes |
 
 ## Routing Logic
 
@@ -65,12 +65,21 @@ See `references/freeform-grading-prompt.md` for the exact Claude prompt.
 
 **Zod validation:**
 ```typescript
+const ThemeSignalSchema = z.object({
+  theme: z.enum(['T1','T2','T3','T4','T5','T6','T7']),
+  name: z.string(),
+  reasoning_move: z.string().max(200),
+  theme_applied: z.boolean(),
+  anti_pattern: z.string().max(200).nullable(),
+})
+
 const GradingResponseSchema = z.object({
   score: z.number().min(0).max(3),
   quality_label: z.enum(['best','good_but_incomplete','surface','plausible_wrong','between_levels']),
   competencies_demonstrated: z.array(z.string()),
   grading_explanation: z.string().max(500),
   confidence: z.number().min(0).max(1),
+  theme_signal: ThemeSignalSchema,
 })
 ```
 
@@ -119,6 +128,70 @@ The route at `POST /api/v2/challenges/[id]/step/[step]/submit`:
 6. Check if step complete → aggregate if so
 7. Update `challenge_attempts_v2.current_step`
 8. Return score + all options revealed with quality labels
+
+## Intellectual Themes: The 7 Reasoning Traditions Behind the Rubric
+
+Every FLOW criterion belongs to one of 7 intellectual themes. The grading prompts inject a compact version of this map so Luma can identify which tradition the learner's answer engaged with, and whether they applied that reasoning move correctly. The full breakdown is in `content/THINKER_THEMES.md`.
+
+| Theme | Criteria (primary) | Thinkers | Anti-pattern caught |
+|---|---|---|---|
+| **T1** Upstream Before Downstream | F1, F2 | Shreyas Doshi, Cagan, Dunford | Accepting the stated problem as the real problem |
+| **T2** The Job Behind the Feature | F3, L1, L4 | Ben Erez, Rahul/cognitive_empathy | Treating the feature as the job; same-interest stakeholder map |
+| **T3** Simulate the Other Side | W4 | Rahul Pandey | Handing ownership to "the team" without naming who acts |
+| **T4** Width Before Depth | L2, L3 | Rahul/creative_execution, Dunford, Gergely | Variations of one idea presented as an option space |
+| **T5** Name the Criterion, Name the Sacrifice | O1, O2, O4 | Gergely Orosz, Rahul/taste | "It depends" as a conclusion; gain named without sacrifice |
+| **T6** Exclusion Is Precision | F4 | April Dunford | Scope as given, not chosen; unbounded problem statement |
+| **T7** A Recommendation Is a Falsifiable Hypothesis | W1, W2, W3 | Marty Cagan, Gibson Biddle | Qualitative success definition; no metric/threshold/timeline |
+
+### Step → primary theme(s) at-a-glance
+
+```
+FRAME    → T1 (F1, F2)  ·  T2 (F3)  ·  T6 (F4)
+LIST     → T2 (L1, L4)  ·  T4 (L2, L3)
+OPTIMIZE → T5 (O1, O2, O4)  ·  [T7 secondary on O3]
+WIN      → T7 (W1, W2, W3)  ·  T3 (W4)
+```
+
+### theme_signal in grading output
+
+Both freeform and elaboration graders return a `theme_signal` block:
+
+```typescript
+// Freeform result
+theme_signal: {
+  theme: 'T5',
+  name: 'Name the Criterion, Name the Sacrifice',
+  reasoning_move: 'State the criterion before comparing options, then name what is given up.',
+  theme_applied: false,
+  anti_pattern: 'Options compared by description without a stated criterion. Reads as preference, not analysis.',
+}
+
+// Elaboration result
+theme_signal: {
+  theme: 'T5',
+  theme_applied: true,
+  reasoning_move: 'Learner named the sacrifice explicitly: "we give up speed in favour of trust, which is acceptable because this is a compliance product."',
+}
+```
+
+**Downstream consumers of `theme_signal`:**
+- Feedback page "What you were building" section: surfaces `reasoning_move` and `name`
+- Luma coaching copy: uses `anti_pattern` text when `theme_applied: false`
+- Learner DNA: aggregates theme weakness across challenges for next-challenge routing
+- `/api/v2/dna/recommend`: selects the next challenge to exercise the weakest theme
+
+### 6 competency dimensions → theme mapping
+
+The `competencies_demonstrated` array uses these six values. Each maps to a theme:
+
+```
+motivation_theory   → T1 (friction identification at Frame)
+cognitive_empathy   → T2, T3 (stakeholder simulation)
+taste               → T5 (feel the real tradeoff vs preference)
+strategic_thinking  → T5, T7 (criterion + hypothesis)
+creative_execution  → T4 (structurally distinct options)
+domain_expertise    → T7 (real metric requires domain knowledge)
+```
 
 ## Files This Skill Produces
 

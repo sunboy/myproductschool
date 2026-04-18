@@ -10,7 +10,7 @@ Role: {{scenario_role}}
 Context: {{scenario_context}}
 Trigger: {{scenario_trigger}}
 
-FLOW STEP: {{step}} — {{step_purpose}}
+FLOW STEP: {{step}} ({{step_purpose}})
 REFERENCE ANSWER: "{{flow_answer_text}}"
 TARGET COMPETENCIES: {{target_competencies}}
 

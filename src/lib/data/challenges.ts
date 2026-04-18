@@ -31,7 +31,8 @@ export async function getChallenges(filters?: { domainId?: string; difficulty?: 
 
   return (data ?? []).map(c => ({
     ...c,
-    domain: c.domains ?? { slug: '', title: '', icon: null },
+    slug: c.slug ?? c.id.replace(/^c\d+-/, ''),
+    domain: { slug: '', title: '', icon: null },
     attempt_count: 0,
     best_score: null,
     is_completed: false,
