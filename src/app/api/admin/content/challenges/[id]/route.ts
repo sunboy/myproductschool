@@ -30,7 +30,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const allowed = [
     'paradigm', 'industry', 'sub_vertical', 'difficulty', 'estimated_minutes',
     'primary_competencies', 'secondary_competencies', 'frameworks',
-    'relevant_roles', 'company_tags', 'tags', 'is_premium',
+    'relevant_roles', 'company_tags', 'tags', 'is_premium', 'is_published',
   ]
   const update: Record<string, unknown> = {}
   for (const key of allowed) {

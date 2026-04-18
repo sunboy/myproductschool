@@ -25,6 +25,7 @@ interface ChallengeTagData {
   company_tags: string[]
   tags: string[]
   is_premium: boolean
+  is_published: boolean
 }
 
 function TagInput({ label, values, onChange }: {
@@ -135,6 +136,7 @@ export default function ChallengeTagsPage() {
         company_tags: data.company_tags,
         tags: data.tags,
         is_premium: data.is_premium,
+        is_published: data.is_published,
       }),
     })
     if (res.ok) {
@@ -205,15 +207,27 @@ export default function ChallengeTagsPage() {
                 className="w-full bg-surface-container-low rounded-lg px-3 py-2 font-body text-sm text-on-surface border border-outline-variant outline-none focus:border-primary"
               />
             </div>
-            <div className="flex items-center gap-2 pt-5">
-              <input
-                type="checkbox"
-                id="is_premium"
-                checked={!!data.is_premium}
-                onChange={e => setData({ ...data, is_premium: e.target.checked })}
-                className="accent-primary"
-              />
-              <label htmlFor="is_premium" className="font-label text-sm text-on-surface cursor-pointer">Premium only</label>
+            <div className="flex flex-col gap-2 pt-5">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="is_published"
+                  checked={!!data.is_published}
+                  onChange={e => setData({ ...data, is_published: e.target.checked })}
+                  className="accent-primary"
+                />
+                <label htmlFor="is_published" className="font-label text-sm text-on-surface cursor-pointer">Published</label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="is_premium"
+                  checked={!!data.is_premium}
+                  onChange={e => setData({ ...data, is_premium: e.target.checked })}
+                  className="accent-primary"
+                />
+                <label htmlFor="is_premium" className="font-label text-sm text-on-surface cursor-pointer">Premium only</label>
+              </div>
             </div>
           </div>
         </div>
