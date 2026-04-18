@@ -131,6 +131,7 @@ export default function AdminContentPage() {
   const [jobs, setJobs] = useState<GenerationJob[]>([])
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const fetchJobs = useCallback(async () => {
     const res = await fetch('/api/admin/content/jobs', {
@@ -142,6 +143,17 @@ export default function AdminContentPage() {
     }
     setLoading(false)
   }, [])
+
+  async function handleDelete(jobId: string) {
+    if (!confirm('Delete this job and any associated challenge? This cannot be undone.')) return
+    setDeletingId(jobId)
+    await fetch(`/api/admin/content/jobs/${jobId}`, {
+      method: 'DELETE',
+      headers: { 'x-admin-secret': ADMIN_SECRET },
+    })
+    setDeletingId(null)
+    fetchJobs()
+  }
 
   useEffect(() => {
     fetchJobs()
@@ -192,28 +204,56 @@ export default function AdminContentPage() {
                   <td className="px-4 py-3 font-label text-sm text-on-surface-variant">
                     {new Date(job.created_at).toLocaleDateString()}
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    {job.status === 'review' && (
-                      <a
-                        href={`/admin/content/review/${job.id}`}
-                        className="text-primary font-label text-sm hover:underline"
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-3">
+                      {/* View / Review */}
+                      {job.status === 'review' && (
+                        <a
+                          href={`/admin/content/review/${job.id}`}
+                          className="text-primary font-label text-sm hover:underline"
+                        >
+                          Review
+                        </a>
+                      )}
+                      {(job.status === 'generating' || job.status === 'scraping' || job.status === 'pending') && (
+                        <a
+                          href={`/admin/content/review/${job.id}`}
+                          className="text-on-surface-variant font-label text-sm hover:text-on-surface"
+                        >
+                          View
+                        </a>
+                      )}
+                      {job.status === 'published' && job.result_challenge_id && (
+                        <a
+                          href={`/admin/content/review/${job.id}`}
+                          className="text-on-surface-variant font-label text-sm hover:text-on-surface"
+                        >
+                          View
+                        </a>
+                      )}
+                      {job.status === 'published' && job.result_challenge_id && (
+                        <a
+                          href={`/admin/content/challenges/${job.result_challenge_id}`}
+                          className="text-on-surface-variant font-label text-sm hover:text-primary"
+                        >
+                          Tags
+                        </a>
+                      )}
+                      {job.status === 'failed' && (
+                        <span className="text-error font-label text-xs" title={job.error_message ?? ''}>
+                          Failed
+                        </span>
+                      )}
+
+                      {/* Delete */}
+                      <button
+                        onClick={() => handleDelete(job.id)}
+                        disabled={deletingId === job.id}
+                        className="text-error font-label text-sm hover:underline disabled:opacity-40"
                       >
-                        Review →
-                      </a>
-                    )}
-                    {job.status === 'published' && job.result_challenge_id && (
-                      <a
-                        href={`/admin/content/challenges/${job.result_challenge_id}`}
-                        className="text-on-surface-variant font-label text-sm hover:text-primary"
-                      >
-                        Edit Tags →
-                      </a>
-                    )}
-                    {job.status === 'failed' && (
-                      <span className="text-error font-label text-xs" title={job.error_message ?? ''}>
-                        Failed
-                      </span>
-                    )}
+                        {deletingId === job.id ? '...' : 'Delete'}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

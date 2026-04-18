@@ -21,7 +21,6 @@ export async function GET(
 
   if (error || !job) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  // Also fetch draft if exists
   const { data: draft } = await supabase
     .from('draft_challenges')
     .select('*')
@@ -29,4 +28,36 @@ export async function GET(
     .maybeSingle()
 
   return NextResponse.json({ job, draft: draft ?? null })
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const authErr = checkAdminSecret(req)
+  if (authErr) return authErr
+
+  const { id } = await params
+  const supabase = createAdminClient()
+
+  // Fetch job first to get result_challenge_id
+  const { data: job } = await supabase
+    .from('generation_jobs')
+    .select('result_challenge_id')
+    .eq('id', id)
+    .single()
+
+  // Delete published challenge if present (cascades to flow_steps, questions, options)
+  if (job?.result_challenge_id) {
+    await supabase.from('challenges').delete().eq('id', job.result_challenge_id)
+  }
+
+  // Delete draft
+  await supabase.from('draft_challenges').delete().eq('job_id', id)
+
+  // Delete job
+  const { error } = await supabase.from('generation_jobs').delete().eq('id', id)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  return NextResponse.json({ ok: true })
 }
