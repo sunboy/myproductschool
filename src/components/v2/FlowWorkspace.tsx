@@ -1,17 +1,23 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import type { FlowStep, ResponseType, UserRoleV2 } from '@/lib/types'
+import gsap from 'gsap'
+import type { FlowStep, UserRoleV2 } from '@/lib/types'
 import type { ChallengeAdapter, AdapterCompletionData, AdapterStepData, SyntheticChallenge } from '@/lib/showcase/adapters/autopsyAdapter'
 import { useChallengeV2 } from '@/lib/v2/hooks/useChallengeV2'
 import { useFlowStep } from '@/lib/v2/hooks/useFlowStep'
 import { FlowStepper } from './FlowStepper'
 import { StepQuestion } from './StepQuestion'
 import { StepReveal } from './StepReveal'
-import { ChallengeComplete } from './ChallengeComplete'
+import { PostSessionMirror, type StepResult as MirrorStepResult, type CompetencyDelta as MirrorCompetencyDelta } from './PostSessionMirror'
+import { ConfidenceDock } from './ConfidenceDock'
+import { LumaSidePanel } from './LumaSidePanel'
+import { CalibrationPreview } from './CalibrationPreview'
+import type { StepCalibration } from './CalibrationPreview'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 const FLOW_STEPS: FlowStep[] = ['frame', 'list', 'optimize', 'win']
+const CONF_LABELS = ['Guessing', 'Not sure', 'Fairly sure', 'Rock solid']
 
 interface RevealedOption {
   id: string
@@ -68,7 +74,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Per-question state
   const [questionIdx, setQuestionIdx] = useState(0)
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null)
-  const [elaboration, setElaboration] = useState('')
+  const [reasoning, setReasoning] = useState('')
   const [revealedOptions, setRevealedOptions] = useState<RevealedOption[]>([])
   const [stepScore, setStepScore] = useState(0)
   const [stepTotalScore, setStepTotalScore] = useState<number | null>(null) // step_score from API on final question
@@ -78,6 +84,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [competencySignal, setCompetencySignal] = useState<{ primary: string; signal: string; framework_hint: string } | null>(null)
   const [completionData, setCompletionData] = useState<CompletionData | null>(null)
 
+  // Confidence state
+  const [confidence, setConfidence] = useState<number | null>(null)
+
+  // Derived: dock fade-out fires when answer has been submitted (phase leaves 'question')
+  const dockSubmitted = phase === 'reveal' || phase === 'complete'
+
   // Accumulates per-question results for the reveal screen
   const [questionRevealHistory, setQuestionRevealHistory] = useState<QuestionRevealRecord[]>([])
 
@@ -86,9 +98,35 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [adapterStepData, setAdapterStepData] = useState<AdapterStepData | null>(null)
   const [adapterSubmitting, setAdapterSubmitting] = useState(false)
 
+  // Accumulated per-step results for PostSessionMirror
+  const [mirrorStepResults, setMirrorStepResults] = useState<MirrorStepResult[]>([])
+
+  // Calibration state
+  const [calibrationSteps, setCalibrationSteps] = useState<StepCalibration[]>([
+    { stepKey: 'frame',    stepLabel: 'Frame',    status: 'pending', confidenceLabel: null },
+    { stepKey: 'list',     stepLabel: 'List',     status: 'pending', confidenceLabel: null },
+    { stepKey: 'optimize', stepLabel: 'Optimize', status: 'pending', confidenceLabel: null },
+    { stepKey: 'win',      stepLabel: 'Win',      status: 'pending', confidenceLabel: null },
+  ])
+
+  // Luma message state
+  const [lumaMessage, setLumaMessage] = useState('Ready when you are. Pick the option that fits best.')
+  const [lumaState, setLumaState] = useState<'idle' | 'listening' | 'reviewing' | 'speaking'>('idle')
+
+  // Resizable panel state
+  const leftPanelRef = useRef<HTMLDivElement>(null)
+  const separatorRef = useRef<HTMLDivElement>(null)
+  const [leftWidth, setLeftWidth] = useState('60%')
+  const isDragging = useRef(false)
+
+  // GSAP workspace ref for session-start animation
+  const workspaceRef = useRef<HTMLDivElement>(null)
+
   const startTimeRef = useRef<number>(Date.now())
   // Prevents double-submit: locks for the full duration of submitAnswer + fetchCoaching
   const handlingSubmitRef = useRef(false)
+  // Tracks drag listener cleanup so they can be removed on unmount
+  const dragCleanupRef = useRef<(() => void) | null>(null)
 
   // Surface paywall to parent when 402 is returned from start API
   useEffect(() => {
@@ -140,7 +178,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (phase !== 'question') return
     setQuestionIdx(0)
     setSelectedOptionId(null)
-    setElaboration('')
+    setReasoning('')
+    setConfidence(null)
     setRevealedOptions([])
     handlingSubmitRef.current = false
     startTimeRef.current = Date.now()
@@ -165,11 +204,74 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const currentQuestion = activeStepData?.questions[questionIdx] ?? null
   const activeSubmitting = isApiMode ? submitting : adapterSubmitting
 
+  // Update Luma message when step loads
+  useEffect(() => {
+    if (phase !== 'question' || !activeStepData) return
+    setLumaMessage(activeStepData.nudge ?? 'Pick the best option.')
+    setLumaState('listening')
+  }, [phase, activeStepData])
+
+  // GSAP session-start animation — fires once when phase first becomes 'question'
+  const hasAnimated = useRef(false)
+  useEffect(() => {
+    if (phase !== 'question') return
+    if (hasAnimated.current) return
+    hasAnimated.current = true
+    const children = workspaceRef.current?.children
+    if (!children) return
+    const tween = gsap.fromTo(
+      Array.from(children),
+      { opacity: 0, y: 8 },
+      { opacity: 1, y: 0, stagger: 0.07, duration: 0.4, ease: 'power2.out' }
+    )
+    return () => { tween.kill() }
+  }, [phase])
+
+  // Resizable panel drag logic
+  const handleSeparatorMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    isDragging.current = true
+    const startX = e.clientX
+    const startWidth = leftPanelRef.current?.offsetWidth ?? 0
+    const container = leftPanelRef.current?.parentElement
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current || !container) return
+      const containerWidth = container.offsetWidth
+      const newWidth = Math.max(320, Math.min(startWidth + (e.clientX - startX), containerWidth * 0.7))
+      setLeftWidth(`${newWidth}px`)
+    }
+    const onMouseUp = () => {
+      isDragging.current = false
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+    dragCleanupRef.current = () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
+  }, [])
+
+  // Remove drag listeners on unmount (in case component unmounts mid-drag)
+  useEffect(() => {
+    return () => {
+      dragCleanupRef.current?.()
+    }
+  }, [])
+
+  const canSubmit = selectedOptionId !== null && confidence !== null
+
   const handleSubmit = useCallback(async () => {
     if (!currentQuestion) return
+    if (!canSubmit) return
     // Prevent double-submit: lock for the full duration including coaching fetch
     if (handlingSubmitRef.current) return
     handlingSubmitRef.current = true
+
+    setLumaMessage('Reviewing your answer…')
+    setLumaState('reviewing')
 
     try {
       if (isApiMode) {
@@ -179,7 +281,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           attemptId,
           questionId: currentQuestion.id,
           selectedOptionId,
-          userText: elaboration || null,
+          userText: reasoning || null,
           responseType: currentQuestion.response_type,
           timespentSeconds: elapsed,
         })
@@ -195,19 +297,32 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         setQuestionRevealHistory((prev) => [...prev, {
           questionText: currentQuestion.question_text,
           selectedOptionId,
-          userText: elaboration || null,
+          userText: reasoning || null,
           revealedOptions: thisRevealedOptions,
           score: result.score,
           gradeLabel: result.grade_label,
           competencySignal: thisCompetencySignal,
         }])
+
+        // Set Luma message based on result
+        const hasReasoning = reasoning.trim().length > 10
+        const isCorrect = result.grade_label === 'best'
+        let lumaMsg = ''
+        if (isCorrect && hasReasoning) lumaMsg = 'Luma saw your thinking. Sharp pick.'
+        else if (isCorrect) lumaMsg = 'Nice pick. Reasoning next time will get you tier 2.'
+        else if (confidence === 3) lumaMsg = 'Rock solid — but missed. High-value learning moment.'
+        else if (hasReasoning) lumaMsg = 'Worth looking at. Your reasoning shows the gap.'
+        else lumaMsg = 'One to revisit. Think about why the best option works.'
+        setLumaMessage(lumaMsg)
+        setLumaState('speaking')
+
         // Fetch coaching in parallel — don't block step advancement on it
         fetchCoaching({
           attemptId,
           questionId: currentQuestion.id,
           optionId: selectedOptionId,
           roleId: initialRoleId,
-          userText: elaboration || null,
+          userText: reasoning || null,
         }).then((coaching) => {
           if (coaching) {
             setRoleContext(coaching.role_context)
@@ -219,7 +334,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         } else {
           setQuestionIdx((i) => i + 1)
           setSelectedOptionId(null)
-          setElaboration('')
+          setReasoning('')
+          setConfidence(null)
           setRevealedOptions([])
           startTimeRef.current = Date.now()
         }
@@ -231,7 +347,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             step: currentStep,
             questionId: currentQuestion.id,
             selectedOptionId,
-            userText: elaboration || null,
+            userText: reasoning || null,
           })
           const adapterRevealedOptions = result.revealed_options ?? []
           setRevealedOptions(adapterRevealedOptions)
@@ -242,18 +358,31 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             setQuestionRevealHistory((prev) => [...prev, {
               questionText: currentQuestion.question_text,
               selectedOptionId,
-              userText: elaboration || null,
+              userText: reasoning || null,
               revealedOptions: adapterRevealedOptions,
               score: result.score,
               gradeLabel: result.grade_label,
               competencySignal: null,
             }])
           }
+
+          // Set Luma message based on result
+          const hasReasoning = reasoning.trim().length > 10
+          const isCorrect = result.grade_label === 'best'
+          let lumaMsg = ''
+          if (isCorrect && hasReasoning) lumaMsg = 'Luma saw your thinking. Sharp pick.'
+          else if (isCorrect) lumaMsg = 'Nice pick. Reasoning next time will get you tier 2.'
+          else if (confidence === 3) lumaMsg = 'Rock solid — but missed. High-value learning moment.'
+          else if (hasReasoning) lumaMsg = 'Worth looking at. Your reasoning shows the gap.'
+          else lumaMsg = 'One to revisit. Think about why the best option works.'
+          setLumaMessage(lumaMsg)
+          setLumaState('speaking')
+
           // Fetch coaching without blocking step advancement
           adapter.fetchCoaching({
             step: currentStep,
             optionId: selectedOptionId,
-            userText: elaboration || null,
+            userText: reasoning || null,
           }).then((coaching) => {
             if (coaching) {
               setRoleContext(coaching.role_context)
@@ -265,7 +394,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           } else {
             setQuestionIdx((i) => i + 1)
             setSelectedOptionId(null)
-            setElaboration('')
+            setReasoning('')
+            setConfidence(null)
             setRevealedOptions([])
             startTimeRef.current = Date.now()
           }
@@ -276,14 +406,15 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     } finally {
       handlingSubmitRef.current = false
     }
-  }, [isApiMode, currentQuestion, attemptId, selectedOptionId, elaboration, submitAnswer, fetchCoaching, initialRoleId, currentStep, props])
+  }, [isApiMode, currentQuestion, attemptId, selectedOptionId, reasoning, confidence, submitAnswer, fetchCoaching, initialRoleId, currentStep, props])
 
   const handleStepClick = useCallback((step: FlowStep) => {
     if (!completedSteps.includes(step)) return
     setCurrentStep(step)
     setPhase('question')
     setSelectedOptionId(null)
-    setElaboration('')
+    setReasoning('')
+    setConfidence(null)
     setRevealedOptions([])
     setQuestionIdx(0)
     setQuestionRevealHistory([])
@@ -293,6 +424,29 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const handleNextStep = useCallback(async () => {
     const stepIdx = FLOW_STEPS.indexOf(currentStep)
     const isLast = stepIdx === FLOW_STEPS.length - 1
+
+    // Update calibration for the completed step
+    const lastRecord = questionRevealHistory[questionRevealHistory.length - 1]
+    const isCorrect = lastRecord?.gradeLabel === 'best'
+    setCalibrationSteps((prev) => prev.map((s, i) =>
+      i === stepIdx
+        ? { ...s, status: isCorrect ? 'correct' : 'incorrect', confidenceLabel: confidence !== null ? CONF_LABELS[confidence] : null }
+        : s
+    ))
+
+    // Accumulate step result for PostSessionMirror
+    const stepRevealRecord = questionRevealHistory[questionRevealHistory.length - 1]
+    if (stepRevealRecord) {
+      const mirrorResult: MirrorStepResult = {
+        step: currentStep as 'frame' | 'list' | 'optimize' | 'win',
+        score: stepRevealRecord.score ?? 0,
+        quality_label: stepRevealRecord.gradeLabel ?? 'plausible_wrong',
+        confidence: confidence,
+        reasoning: reasoning,
+        competency_signal: stepRevealRecord.competencySignal ?? undefined,
+      }
+      setMirrorStepResults((prev) => [...prev, mirrorResult])
+    }
 
     if (isLast) {
       if (isApiMode) {
@@ -336,7 +490,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setCurrentStep(FLOW_STEPS[stepIdx + 1])
       setPhase('question')
     }
-  }, [isApiMode, challengeId, currentStep, attemptId, props])
+  }, [isApiMode, challengeId, currentStep, attemptId, props, questionRevealHistory, confidence])
+
+  // Handle option select — update Luma message
+  const handleOptionSelect = useCallback((id: string) => {
+    setSelectedOptionId(id)
+    setLumaMessage('Good. Now rate your confidence.')
+    setLumaState('listening')
+  }, [])
 
   // ── Render states ──────────────────────────────────────────────
 
@@ -367,8 +528,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // Shared left panel (scenario brief) — elevated with Terra green accent
   const scenarioPanel = (
-    <aside
-      className="w-[360px] shrink-0 border-r border-outline-variant/30 overflow-y-auto relative"
+    <div
+      className="overflow-y-auto relative h-full"
       style={{ background: '#f0ece8' }}
     >
       {/* Top accent line — Terra primary green */}
@@ -421,148 +582,259 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           </div>
         )}
       </div>
-    </aside>
+    </div>
   )
 
   if (phase === 'complete') {
     return (
-      <ChallengeComplete
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        challenge={{ title: challengeTitle ?? '', scenario_question: challengeScenarioQ ?? null } as any}
+      <PostSessionMirror
+        challengeTitle={challengeTitle ?? 'Challenge'}
         totalScore={completionData?.total_score ?? 0}
-        maxScore={completionData?.max_score ?? 12}
-        gradeLabel={completionData?.grade_label ?? ''}
         xpAwarded={completionData?.xp_awarded ?? 0}
-        stepBreakdown={(completionData?.step_breakdown ?? []).map((s) => ({
-          step: s.step,
-          score: s.score,
-          maxScore: s.max_score,
-        }))}
-        competencyDeltas={completionData?.competency_deltas ?? []}
-        scenarioPanel={scenarioPanel}
-        fromPlan={fromPlan}
-        nextChallengeSlug={nextChallengeSlug}
-        onRetry={() => {
-          setAttemptId(null)
-          setCompletedSteps([])
-          setCurrentStep('frame')
-          setAdapterStepData(null)
-          setRoleContext('')
-          setCareerSignal('')
-          setCompetencySignal(null)
+        stepResults={mirrorStepResults}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        competencyDeltas={(completionData?.competency_deltas ?? []).map((d: any) => ({
+          competency: d.competency ?? d.competency_key ?? '',
+          before: d.before ?? d.delta_before ?? 0,
+          after: d.after ?? d.delta_after ?? 0,
+          direction: d.direction ?? (d.delta > 0 ? 'up' : d.delta < 0 ? 'down' : 'flat'),
+        } as MirrorCompetencyDelta))}
+        onRunAnother={() => {
+          setMirrorStepResults([])
+          setCalibrationSteps([
+            { stepKey: 'frame',    stepLabel: 'Frame',    status: 'pending', confidenceLabel: null },
+            { stepKey: 'list',     stepLabel: 'List',     status: 'pending', confidenceLabel: null },
+            { stepKey: 'optimize', stepLabel: 'Optimize', status: 'pending', confidenceLabel: null },
+            { stepKey: 'win',      stepLabel: 'Win',      status: 'pending', confidenceLabel: null },
+          ])
+          hasAnimated.current = false
           if (isApiMode) {
             setPhase('loading')
             reload()
           } else {
+            setCurrentStep('frame')
+            setCompletedSteps([])
             setPhase('question')
-            // step-load effect will fire because currentStep='frame' + phase='question'
           }
         }}
-        onNextChallenge={props.onExit ?? (() => window.history.back())}
+        onDashboard={props.onExit ?? (() => window.history.back())}
       />
     )
   }
 
+  // Derive current step label for LumaSidePanel
+  const stepLabelMap: Record<FlowStep, string> = {
+    frame: 'Frame step',
+    list: 'List step',
+    optimize: 'Optimize step',
+    win: 'Win step',
+  }
+  const currentStepLabel = stepLabelMap[currentStep]
+
   if (phase === 'reveal') {
     const stepIdx = FLOW_STEPS.indexOf(currentStep)
     return (
-      <div className="flex h-full">
-        {scenarioPanel}
+      <div className="flex h-full overflow-hidden">
+        {/* Left panel */}
         <div
-          key={`${currentStep}-reveal`}
-          className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter"
-          style={{ background: 'radial-gradient(ellipse at 100% 100%, rgba(74,124,89,0.04) 0%, transparent 55%)' }}
+          ref={leftPanelRef}
+          style={{ width: leftWidth }}
+          className="flex flex-col overflow-hidden min-w-[320px]"
         >
-          <FlowStepper currentStep={currentStep} completedSteps={completedSteps} onStepClick={handleStepClick} questionIdx={questionIdx} questionCount={activeStepData?.questions.length} />
-          <StepReveal
-            step={currentStep}
-            stepScore={stepTotalScore ?? stepScore}
-            maxScore={3.0}
-            gradeLabel={stepGrade}
-            roleContext={roleContext}
-            careerSignal={careerSignal}
-            competencySignal={competencySignal}
-            questionRevealHistory={questionRevealHistory}
-            onNext={handleNextStep}
-            isLastStep={stepIdx === FLOW_STEPS.length - 1}
-          />
+          {scenarioPanel}
+        </div>
+
+        {/* Draggable separator with notch */}
+        <div
+          ref={separatorRef}
+          onMouseDown={handleSeparatorMouseDown}
+          className="w-2 bg-surface-container-high cursor-col-resize flex items-center justify-center shrink-0 hover:bg-primary/20 transition-colors group"
+        >
+          <div className="flex flex-col gap-1 opacity-40 group-hover:opacity-80 transition-opacity">
+            <div className="w-1 h-1 rounded-full bg-on-surface-variant" />
+            <div className="w-1 h-1 rounded-full bg-on-surface-variant" />
+            <div className="w-1 h-1 rounded-full bg-on-surface-variant" />
+          </div>
+        </div>
+
+        {/* Right area: reveal content + Luma sidebar */}
+        <div className="flex flex-1 overflow-hidden min-w-0">
+          {/* Reveal main content */}
+          <div
+            key={`${currentStep}-reveal`}
+            className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter"
+            style={{ background: 'radial-gradient(ellipse at 100% 100%, rgba(74,124,89,0.04) 0%, transparent 55%)' }}
+          >
+            <FlowStepper currentStep={currentStep} completedSteps={completedSteps} onStepClick={handleStepClick} questionIdx={questionIdx} questionCount={activeStepData?.questions.length} />
+            <StepReveal
+              step={currentStep}
+              stepScore={stepTotalScore ?? stepScore}
+              maxScore={3.0}
+              gradeLabel={stepGrade}
+              roleContext={roleContext}
+              careerSignal={careerSignal}
+              competencySignal={competencySignal}
+              questionRevealHistory={questionRevealHistory}
+              onNext={handleNextStep}
+              isLastStep={stepIdx === FLOW_STEPS.length - 1}
+            />
+          </div>
+
+          {/* Right sidebar: Luma + calibration */}
+          <div className="flex flex-col gap-4 p-4 overflow-y-auto w-[260px] shrink-0 min-w-[240px]">
+            <LumaSidePanel message={lumaMessage} lumaState={lumaState} stepName={currentStepLabel} />
+            <CalibrationPreview steps={calibrationSteps} />
+          </div>
         </div>
       </div>
     )
   }
 
   // phase === 'question'
-  const canSubmit = currentQuestion
-    ? (currentQuestion.response_type === 'freeform'
-        ? elaboration.trim().length > 0
-        : selectedOptionId !== null)
-    : false
-
   return (
-    <div className="flex h-full">
-      {scenarioPanel}
+    <div className="flex h-full overflow-hidden">
+      {/* Left panel — scenario + question */}
       <div
-        key={`${currentStep}-question`}
-        className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter"
-        style={{ background: 'radial-gradient(ellipse at 100% 100%, rgba(74,124,89,0.04) 0%, transparent 55%)' }}
+        ref={leftPanelRef}
+        style={{ width: leftWidth, maxWidth: '70%' } as React.CSSProperties}
+        className="flex flex-col overflow-hidden min-w-[320px]"
       >
-        <FlowStepper currentStep={currentStep} completedSteps={completedSteps} questionIdx={questionIdx} questionCount={activeStepData?.questions.length} />
-
-        {/* Nudge — glass float with primary green left bar */}
-        {activeStepData?.nudge && (
+        {/* Scenario panel at top, scrollable question area below */}
+        <div className="flex-none border-r border-outline-variant/30" style={{ maxHeight: '40%', minHeight: '160px', overflowY: 'auto', background: '#f0ece8', position: 'relative' }}>
+          {/* Top accent line */}
+          <div className="absolute top-0 left-0 right-0 h-0.5 z-10 bg-primary" />
           <div
-            className="flex items-start gap-3 rounded-xl px-4 py-3"
-            style={{
-              background: 'rgba(255,255,255,0.72)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-              border: '1px solid rgba(74,124,89,0.18)',
-              borderLeft: '4px solid #4a7c59',
-              boxShadow: '0 2px 12px rgba(46,50,48,0.06)',
-            }}
-          >
-            <span
-              className="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5"
-              style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-            >
-              lightbulb
-            </span>
-            <p className="font-body text-sm text-on-surface leading-relaxed">{activeStepData.nudge}</p>
-          </div>
-        )}
-
-        {/* Question */}
-        {(isApiMode ? stepLoading : false) ? (
-          <div className="flex justify-center py-8">
-            <LumaGlyph size={40} state="reviewing" className="text-primary" />
-          </div>
-        ) : (isApiMode && stepError) ? (
-          <p className="font-body text-error text-sm text-center">{stepError}</p>
-        ) : currentQuestion ? (
-          <StepQuestion
-            question={currentQuestion}
-            responseType={currentQuestion.response_type}
-            selectedOptionId={selectedOptionId}
-            elaboration={elaboration}
-            revealed={false}
-            onOptionSelect={setSelectedOptionId}
-            onElaborationChange={setElaboration}
-            disabled={activeSubmitting}
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: 'radial-gradient(ellipse at 0% 0%, rgba(74,124,89,0.09) 0%, transparent 60%)' }}
+            aria-hidden
           />
-        ) : null}
-
-        {/* Submit */}
-        {currentQuestion && (
-          <div className="flex justify-end">
-            <button
-              onClick={handleSubmit}
-              disabled={!canSubmit || activeSubmitting}
-              className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm shadow-sm hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {activeSubmitting ? 'Grading…' : 'Submit'}
-            </button>
+          <div className="relative z-10 p-6 space-y-4 pt-7">
+            {scenarioRole && (
+              <span className="inline-block bg-secondary-container text-on-secondary-container rounded-full text-xs font-label px-3 py-1">
+                {scenarioRole}
+              </span>
+            )}
+            {challengeTitle && (
+              <h1 className="font-headline text-xl text-on-surface leading-snug">{challengeTitle}</h1>
+            )}
+            {scenarioContext && (
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-primary/60" />
+                  <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">Context</p>
+                </div>
+                <p className="font-body text-sm text-on-surface-variant leading-relaxed">{scenarioContext}</p>
+              </div>
+            )}
+            {scenarioTrigger && (
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-primary/60" />
+                  <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">The Trigger</p>
+                </div>
+                <p className="font-body text-sm text-on-surface-variant leading-relaxed">{scenarioTrigger}</p>
+              </div>
+            )}
+            {challengeScenarioQ && (
+              <div
+                className="rounded-xl p-4 space-y-1.5 border border-outline-variant/40"
+                style={{ background: '#fff', boxShadow: '0 2px 12px rgba(46,50,48,0.07)' }}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-primary" />
+                  <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">Your Challenge</p>
+                </div>
+                <p className="font-body text-sm text-on-surface font-medium leading-relaxed">{challengeScenarioQ}</p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
+
+        {/* Question scrollable area */}
+        <div
+          ref={workspaceRef}
+          key={`${currentStep}-question`}
+          className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter border-r border-outline-variant/30"
+          style={{ background: 'radial-gradient(ellipse at 100% 100%, rgba(74,124,89,0.04) 0%, transparent 55%)' }}
+        >
+          <FlowStepper currentStep={currentStep} completedSteps={completedSteps} questionIdx={questionIdx} questionCount={activeStepData?.questions.length} />
+
+          {/* Nudge — glass float with primary green left bar */}
+          {activeStepData?.nudge && (
+            <div
+              className="flex items-start gap-3 rounded-xl px-4 py-3"
+              style={{
+                background: 'rgba(255,255,255,0.72)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                border: '1px solid rgba(74,124,89,0.18)',
+                borderLeft: '4px solid #4a7c59',
+                boxShadow: '0 2px 12px rgba(46,50,48,0.06)',
+              }}
+            >
+              <span
+                className="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5"
+                style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
+              >
+                lightbulb
+              </span>
+              <p className="font-body text-sm text-on-surface leading-relaxed">{activeStepData.nudge}</p>
+            </div>
+          )}
+
+          {/* Question */}
+          {(isApiMode ? stepLoading : false) ? (
+            <div className="flex justify-center py-8">
+              <LumaGlyph size={40} state="reviewing" className="text-primary" />
+            </div>
+          ) : (isApiMode && stepError) ? (
+            <p className="font-body text-error text-sm text-center">{stepError}</p>
+          ) : currentQuestion ? (
+            <StepQuestion
+              question={currentQuestion}
+              responseType={currentQuestion.response_type}
+              selectedOptionId={selectedOptionId}
+              elaboration={reasoning}
+              revealed={false}
+              onOptionSelect={handleOptionSelect}
+              onElaborationChange={setReasoning}
+              disabled={activeSubmitting}
+            />
+          ) : null}
+
+          {/* ConfidenceDock replaces old submit button */}
+          {currentQuestion && (
+            <ConfidenceDock
+              optionSelected={selectedOptionId !== null}
+              confidence={confidence}
+              onConfidenceChange={setConfidence}
+              reasoning={reasoning}
+              onReasoningChange={setReasoning}
+              onSubmit={handleSubmit}
+              submitting={activeSubmitting}
+              submitted={dockSubmitted}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Draggable separator with notch */}
+      <div
+        ref={separatorRef}
+        onMouseDown={handleSeparatorMouseDown}
+        className="w-2 bg-surface-container-high cursor-col-resize flex items-center justify-center shrink-0 hover:bg-primary/20 transition-colors group"
+      >
+        <div className="flex flex-col gap-1 opacity-40 group-hover:opacity-80 transition-opacity">
+          <div className="w-1 h-1 rounded-full bg-on-surface-variant" />
+          <div className="w-1 h-1 rounded-full bg-on-surface-variant" />
+          <div className="w-1 h-1 rounded-full bg-on-surface-variant" />
+        </div>
+      </div>
+
+      {/* Right panel — Luma sidebar + calibration */}
+      <div className="flex flex-col gap-4 p-4 overflow-y-auto flex-1 min-w-[240px]">
+        <LumaSidePanel message={lumaMessage} lumaState={lumaState} stepName={currentStepLabel} />
+        <CalibrationPreview steps={calibrationSteps} />
       </div>
     </div>
   )
