@@ -572,7 +572,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
         {/* Main grid */}
         <div className="flex flex-1 min-h-0 overflow-hidden">
-          {/* Left: reveal content */}
+          {/* Left sidebar: context + Luma + calibration */}
+          <div className="w-[300px] shrink-0 flex flex-col gap-3 p-4 overflow-y-auto border-r border-outline-variant/30">
+            {contextCard}
+            <LumaSidePanel message={lumaMessage} lumaState={lumaState} stepName={currentStepLabel} />
+            <CalibrationPreview steps={calibrationSteps} />
+          </div>
+
+          {/* Right: reveal content */}
           <div
             key={`${currentStep}-reveal`}
             className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter"
@@ -591,13 +598,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               isLastStep={stepIdx === FLOW_STEPS.length - 1}
             />
           </div>
-
-          {/* Right sidebar: Luma + calibration + context */}
-          <div className="w-[300px] shrink-0 flex flex-col gap-3 p-4 overflow-y-auto border-l border-outline-variant/30">
-            <LumaSidePanel message={lumaMessage} lumaState={lumaState} stepName={currentStepLabel} />
-            <CalibrationPreview steps={calibrationSteps} />
-            {contextCard}
-          </div>
         </div>
       </div>
     )
@@ -613,7 +613,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
       {/* Main grid */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Left: question + dock */}
+        {/* Left sidebar: context + Luma + calibration */}
+        <div className="w-[300px] shrink-0 flex flex-col gap-3 p-4 overflow-y-auto border-r border-outline-variant/30">
+          {contextCard}
+          <LumaSidePanel message={lumaMessage} lumaState={lumaState} stepName={currentStepLabel} />
+          <CalibrationPreview steps={calibrationSteps} />
+        </div>
+
+        {/* Right: question + dock */}
         <div
           ref={workspaceRef}
           key={`${currentStep}-question`}
@@ -676,13 +683,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               submitted={dockSubmitted}
             />
           )}
-        </div>
-
-        {/* Right sidebar: Luma + calibration + context */}
-        <div className="w-[300px] shrink-0 flex flex-col gap-3 p-4 overflow-y-auto border-l border-outline-variant/30">
-          <LumaSidePanel message={lumaMessage} lumaState={lumaState} stepName={currentStepLabel} />
-          <CalibrationPreview steps={calibrationSteps} />
-          {contextCard}
         </div>
       </div>
     </div>
