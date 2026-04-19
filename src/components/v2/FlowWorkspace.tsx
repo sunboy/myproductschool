@@ -113,20 +113,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [lumaMessage, setLumaMessage] = useState('Ready when you are. Pick the option that fits best.')
   const [lumaState, setLumaState] = useState<'idle' | 'listening' | 'reviewing' | 'speaking'>('idle')
 
-  // Resizable panel state
-  const leftPanelRef = useRef<HTMLDivElement>(null)
-  const separatorRef = useRef<HTMLDivElement>(null)
-  const [leftWidth, setLeftWidth] = useState('60%')
-  const isDragging = useRef(false)
-
   // GSAP workspace ref for session-start animation
   const workspaceRef = useRef<HTMLDivElement>(null)
 
   const startTimeRef = useRef<number>(Date.now())
   // Prevents double-submit: locks for the full duration of submitAnswer + fetchCoaching
   const handlingSubmitRef = useRef(false)
-  // Tracks drag listener cleanup so they can be removed on unmount
-  const dragCleanupRef = useRef<(() => void) | null>(null)
 
   // Surface paywall to parent when 402 is returned from start API
   useEffect(() => {
@@ -226,40 +218,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     )
     return () => { tween.kill() }
   }, [phase])
-
-  // Resizable panel drag logic
-  const handleSeparatorMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    isDragging.current = true
-    const startX = e.clientX
-    const startWidth = leftPanelRef.current?.offsetWidth ?? 0
-    const container = leftPanelRef.current?.parentElement
-
-    const onMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current || !container) return
-      const containerWidth = container.offsetWidth
-      const newWidth = Math.max(320, Math.min(startWidth + (e.clientX - startX), containerWidth * 0.7))
-      setLeftWidth(`${newWidth}px`)
-    }
-    const onMouseUp = () => {
-      isDragging.current = false
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-    }
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
-    dragCleanupRef.current = () => {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-    }
-  }, [])
-
-  // Remove drag listeners on unmount (in case component unmounts mid-drag)
-  useEffect(() => {
-    return () => {
-      dragCleanupRef.current?.()
-    }
-  }, [])
 
   const canSubmit = selectedOptionId !== null && confidence !== null
 
@@ -526,65 +484,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const scenarioContext = isApiMode ? detail?.challenge.scenario_context : adapterChallenge?.scenario_context
   const scenarioTrigger = isApiMode ? detail?.challenge.scenario_trigger : adapterChallenge?.scenario_trigger
 
-  // Shared left panel (scenario brief) — elevated with Terra green accent
-  const scenarioPanel = (
-    <div
-      className="overflow-y-auto relative h-full"
-      style={{ background: '#f0ece8' }}
-    >
-      {/* Top accent line — Terra primary green */}
-      <div className="absolute top-0 left-0 right-0 h-0.5 z-10 bg-primary" />
-
-      {/* Radial ambient glow from top-left */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at 0% 0%, rgba(74,124,89,0.09) 0%, transparent 60%)' }}
-        aria-hidden
-      />
-
-      <div className="relative z-10 p-6 space-y-4 pt-7">
-        {scenarioRole && (
-          <span className="inline-block bg-secondary-container text-on-secondary-container rounded-full text-xs font-label px-3 py-1">
-            {scenarioRole}
-          </span>
-        )}
-        {challengeTitle && (
-          <h1 className="font-headline text-xl text-on-surface leading-snug">{challengeTitle}</h1>
-        )}
-        {scenarioContext && (
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-primary/60" />
-              <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">Context</p>
-            </div>
-            <p className="font-body text-sm text-on-surface-variant leading-relaxed">{scenarioContext}</p>
-          </div>
-        )}
-        {scenarioTrigger && (
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-primary/60" />
-              <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">The Trigger</p>
-            </div>
-            <p className="font-body text-sm text-on-surface-variant leading-relaxed">{scenarioTrigger}</p>
-          </div>
-        )}
-        {challengeScenarioQ && (
-          <div
-            className="rounded-xl p-4 space-y-1.5 border border-outline-variant/40"
-            style={{ background: '#fff', boxShadow: '0 2px 12px rgba(46,50,48,0.07)' }}
-          >
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-primary" />
-              <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">Your Challenge</p>
-            </div>
-            <p className="font-body text-sm text-on-surface font-medium leading-relaxed">{challengeScenarioQ}</p>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-
   if (phase === 'complete') {
     return (
       <PostSessionMirror
@@ -631,41 +530,54 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   }
   const currentStepLabel = stepLabelMap[currentStep]
 
+  // Shared context card — challenge description shown in right sidebar
+  const contextCard = (challengeTitle || scenarioContext || scenarioTrigger || challengeScenarioQ) ? (
+    <div className="bg-surface-container rounded-xl overflow-hidden">
+      {/* Top accent */}
+      <div className="h-0.5 bg-primary" />
+      <div className="p-4 space-y-3">
+        {scenarioRole && (
+          <p className="font-label text-[9px] uppercase tracking-widest text-on-surface-variant">{scenarioRole}</p>
+        )}
+        {challengeTitle && (
+          <p className="font-headline text-sm text-on-surface leading-snug">{challengeTitle}</p>
+        )}
+        {scenarioContext && (
+          <p className="font-body text-xs text-on-surface-variant leading-relaxed">{scenarioContext}</p>
+        )}
+        {scenarioTrigger && (
+          <div className="border-t border-outline-variant/30 pt-3">
+            <p className="font-label text-[9px] uppercase tracking-widest text-on-surface-variant mb-1">The trigger</p>
+            <p className="font-body text-xs text-on-surface-variant leading-relaxed">{scenarioTrigger}</p>
+          </div>
+        )}
+        {challengeScenarioQ && (
+          <div className="rounded-lg p-3 bg-surface-container-high border border-outline-variant/40">
+            <p className="font-label text-[9px] uppercase tracking-widest text-on-surface-variant mb-1">Your challenge</p>
+            <p className="font-body text-xs text-on-surface font-medium leading-relaxed">{challengeScenarioQ}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  ) : null
+
   if (phase === 'reveal') {
     const stepIdx = FLOW_STEPS.indexOf(currentStep)
     return (
-      <div className="flex h-full overflow-hidden">
-        {/* Left panel */}
-        <div
-          ref={leftPanelRef}
-          style={{ width: leftWidth }}
-          className="flex flex-col overflow-hidden min-w-[320px]"
-        >
-          {scenarioPanel}
+      <div className="flex flex-col h-full overflow-hidden">
+        {/* Flow rail — full width */}
+        <div className="shrink-0 px-6 py-3 border-b border-outline-variant/40 bg-background">
+          <FlowStepper currentStep={currentStep} completedSteps={completedSteps} onStepClick={handleStepClick} questionIdx={questionIdx} questionCount={activeStepData?.questions.length} />
         </div>
 
-        {/* Draggable separator with notch */}
-        <div
-          ref={separatorRef}
-          onMouseDown={handleSeparatorMouseDown}
-          className="w-2 bg-surface-container-high cursor-col-resize flex items-center justify-center shrink-0 hover:bg-primary/20 transition-colors group"
-        >
-          <div className="flex flex-col gap-1 opacity-40 group-hover:opacity-80 transition-opacity">
-            <div className="w-1 h-1 rounded-full bg-on-surface-variant" />
-            <div className="w-1 h-1 rounded-full bg-on-surface-variant" />
-            <div className="w-1 h-1 rounded-full bg-on-surface-variant" />
-          </div>
-        </div>
-
-        {/* Right area: reveal content + Luma sidebar */}
-        <div className="flex flex-1 overflow-hidden min-w-0">
-          {/* Reveal main content */}
+        {/* Main grid */}
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+          {/* Left: reveal content */}
           <div
             key={`${currentStep}-reveal`}
             className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter"
             style={{ background: 'radial-gradient(ellipse at 100% 100%, rgba(74,124,89,0.04) 0%, transparent 55%)' }}
           >
-            <FlowStepper currentStep={currentStep} completedSteps={completedSteps} onStepClick={handleStepClick} questionIdx={questionIdx} questionCount={activeStepData?.questions.length} />
             <StepReveal
               step={currentStep}
               stepScore={stepTotalScore ?? stepScore}
@@ -680,10 +592,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             />
           </div>
 
-          {/* Right sidebar: Luma + calibration */}
-          <div className="flex flex-col gap-4 p-4 overflow-y-auto w-[260px] shrink-0 min-w-[240px]">
+          {/* Right sidebar: Luma + calibration + context */}
+          <div className="w-[300px] shrink-0 flex flex-col gap-3 p-4 overflow-y-auto border-l border-outline-variant/30">
             <LumaSidePanel message={lumaMessage} lumaState={lumaState} stepName={currentStepLabel} />
             <CalibrationPreview steps={calibrationSteps} />
+            {contextCard}
           </div>
         </div>
       </div>
@@ -692,74 +605,22 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // phase === 'question'
   return (
-    <div className="flex h-full overflow-hidden">
-      {/* Left panel — scenario + question */}
-      <div
-        ref={leftPanelRef}
-        style={{ width: leftWidth, maxWidth: '70%' } as React.CSSProperties}
-        className="flex flex-col overflow-hidden min-w-[320px]"
-      >
-        {/* Scenario panel at top, scrollable question area below */}
-        <div className="flex-none border-r border-outline-variant/30" style={{ maxHeight: '40%', minHeight: '160px', overflowY: 'auto', background: '#f0ece8', position: 'relative' }}>
-          {/* Top accent line */}
-          <div className="absolute top-0 left-0 right-0 h-0.5 z-10 bg-primary" />
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{ background: 'radial-gradient(ellipse at 0% 0%, rgba(74,124,89,0.09) 0%, transparent 60%)' }}
-            aria-hidden
-          />
-          <div className="relative z-10 p-6 space-y-4 pt-7">
-            {scenarioRole && (
-              <span className="inline-block bg-secondary-container text-on-secondary-container rounded-full text-xs font-label px-3 py-1">
-                {scenarioRole}
-              </span>
-            )}
-            {challengeTitle && (
-              <h1 className="font-headline text-xl text-on-surface leading-snug">{challengeTitle}</h1>
-            )}
-            {scenarioContext && (
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-primary/60" />
-                  <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">Context</p>
-                </div>
-                <p className="font-body text-sm text-on-surface-variant leading-relaxed">{scenarioContext}</p>
-              </div>
-            )}
-            {scenarioTrigger && (
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-primary/60" />
-                  <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">The Trigger</p>
-                </div>
-                <p className="font-body text-sm text-on-surface-variant leading-relaxed">{scenarioTrigger}</p>
-              </div>
-            )}
-            {challengeScenarioQ && (
-              <div
-                className="rounded-xl p-4 space-y-1.5 border border-outline-variant/40"
-                style={{ background: '#fff', boxShadow: '0 2px 12px rgba(46,50,48,0.07)' }}
-              >
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-primary" />
-                  <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">Your Challenge</p>
-                </div>
-                <p className="font-body text-sm text-on-surface font-medium leading-relaxed">{challengeScenarioQ}</p>
-              </div>
-            )}
-          </div>
-        </div>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Flow rail — full width */}
+      <div className="shrink-0 px-6 py-3 border-b border-outline-variant/40 bg-background">
+        <FlowStepper currentStep={currentStep} completedSteps={completedSteps} questionIdx={questionIdx} questionCount={activeStepData?.questions.length} />
+      </div>
 
-        {/* Question scrollable area */}
+      {/* Main grid */}
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* Left: question + dock */}
         <div
           ref={workspaceRef}
           key={`${currentStep}-question`}
-          className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter border-r border-outline-variant/30"
+          className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter"
           style={{ background: 'radial-gradient(ellipse at 100% 100%, rgba(74,124,89,0.04) 0%, transparent 55%)' }}
         >
-          <FlowStepper currentStep={currentStep} completedSteps={completedSteps} questionIdx={questionIdx} questionCount={activeStepData?.questions.length} />
-
-          {/* Nudge — glass float with primary green left bar */}
+          {/* Nudge */}
           {activeStepData?.nudge && (
             <div
               className="flex items-start gap-3 rounded-xl px-4 py-3"
@@ -802,7 +663,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             />
           ) : null}
 
-          {/* ConfidenceDock replaces old submit button */}
+          {/* ConfidenceDock */}
           {currentQuestion && (
             <ConfidenceDock
               optionSelected={selectedOptionId !== null}
@@ -816,25 +677,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             />
           )}
         </div>
-      </div>
 
-      {/* Draggable separator with notch */}
-      <div
-        ref={separatorRef}
-        onMouseDown={handleSeparatorMouseDown}
-        className="w-2 bg-surface-container-high cursor-col-resize flex items-center justify-center shrink-0 hover:bg-primary/20 transition-colors group"
-      >
-        <div className="flex flex-col gap-1 opacity-40 group-hover:opacity-80 transition-opacity">
-          <div className="w-1 h-1 rounded-full bg-on-surface-variant" />
-          <div className="w-1 h-1 rounded-full bg-on-surface-variant" />
-          <div className="w-1 h-1 rounded-full bg-on-surface-variant" />
+        {/* Right sidebar: Luma + calibration + context */}
+        <div className="w-[300px] shrink-0 flex flex-col gap-3 p-4 overflow-y-auto border-l border-outline-variant/30">
+          <LumaSidePanel message={lumaMessage} lumaState={lumaState} stepName={currentStepLabel} />
+          <CalibrationPreview steps={calibrationSteps} />
+          {contextCard}
         </div>
-      </div>
-
-      {/* Right panel — Luma sidebar + calibration */}
-      <div className="flex flex-col gap-4 p-4 overflow-y-auto flex-1 min-w-[240px]">
-        <LumaSidePanel message={lumaMessage} lumaState={lumaState} stepName={currentStepLabel} />
-        <CalibrationPreview steps={calibrationSteps} />
       </div>
     </div>
   )

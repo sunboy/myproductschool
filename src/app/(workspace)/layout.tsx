@@ -17,7 +17,7 @@ function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <NavRail onAskLuma={() => setDrawerOpen(true)} compact={!!fromPlan} />
+      <NavRail onAskLuma={() => setDrawerOpen(true)} compact={true} />
       {fromPlan && (
         <StudyPlanIndexPanel planSlug={fromPlan} activeChallengeId={cid} />
       )}
