@@ -50,41 +50,39 @@ The verifier exists to mitigate hallucination bias introduced by the expansion s
 
 ## Voice and Writing Style
 
-Write like Shreyas Doshi in a tweet thread or an opinionated staff engineer thinking out loud. Not a trainer. Not a certification course.
+All generated content follows the canonical HackProduct Writing Style Guide: [`docs/notes/writing-style-guide.md`](../../../../docs/notes/writing-style-guide.md), summarized in `CLAUDE.md` at the repo root. Read it before writing prompts; the register applies to scenarios, question text, nudges, option text, explanations, and taxonomy labels alike.
 
-**Tone:**
-- Direct, confident, slightly opinionated. Not academic, not corporate.
-- Drop straight into the situation. No "the VP wants", "stakeholders are asking", "the executive team needs".
-- Explanations read like insight, not instruction. "Here's why this matters" not "this question tests your ability to..."
-- Nudges feel like a smart colleague leaning over: a pointed question that makes you think differently, not a hint that telegraphs the answer.
+**The hard rules the prompts must enforce:**
+- No second-person role framing in user-facing copy. No "you are a tech lead", "as a senior engineer", "imagine you work at". This is the number one smell that the model fell back to interview-prep framing. Role goes in `scenario.role` as metadata; it does not appear in `context`, `trigger`, `question`, `question_text`, or option text.
+- No em dashes. Use a comma, period, or restructure.
+- No AI slop: *delve, leverage, utilize, holistic, robust, seamlessly, it's worth noting, in order to, as well as, embark on, navigate, unlock, landscape, tapestry, ensure, tailored, cutting-edge, revolutionary, game-changing*.
+- Coherent sentences that flow together. Fragment-style prose reads as a speech, not writing. Exception: UI chrome (buttons, labels) where terse is correct.
+
+**Skill-specific voice requirements:**
+- The BEST option must be genuinely better in reasoning, not longer. It must reference something source-specific: a named company, a real metric, a contrarian take from the source, or a listed insight. Generic product truisms disqualify an option from being BEST.
+- Explanations read like insight, not instruction. "Here's why this matters" beats "this question tests your ability to...".
+- Nudges feel like a smart colleague leaning over, a pointed question that makes you think differently rather than a hint that telegraphs the answer.
 - Option text sounds like someone actually reasoning, not a textbook category label.
 
-**Hard rules:**
-- **No second-person role framing in user-facing copy.** No "you are a tech lead", "as a senior engineer", "imagine you work at". This is the number one smell that the model fell back to interview-prep framing.
-- No em dashes. Use a comma, period, or restructure.
-- No AI slop: never use "delve", "leverage", "utilize", "holistic", "robust", "seamlessly", "it's worth noting", "in order to", "as well as", or padding phrases.
-- The best option must be genuinely better in its reasoning, not longer or more comprehensive-sounding.
-- Best option must reference something source-specific: a named company, a metric, a contrarian take, a listed insight. No generic truisms.
+**Worked examples:**
 
-**What good looks like:**
+Scenario context, role-framed (reject): *"You're three months into owning the SMB product at a Series B fintech."*
 
-Scenario context (bad, role-framed): *"You're three months into owning the SMB product at a Series B fintech."*
+Scenario context, corporate (reject): *"The VP of Product has asked you to evaluate whether the company should expand into a new market segment."*
 
-Scenario context (bad, corporate): *"The VP of Product has asked you to evaluate whether the company should expand into a new market segment."*
+Scenario context, correct: *"Notifications went from 3 a day to 18. DAU dropped 14% the same week. The activity digest quadrupled notification volume, and customer success is hearing 'too many pings' on every call."*
 
-Scenario context (good): *"Notifications went from 3 a day to 18. DAU dropped 14% the same week. The activity digest quadrupled notification volume. Customer success is hearing 'too many pings' on every call."*
+Nudge, bad: *"Consider what the root cause might be before jumping to solutions."*
 
-Nudge (bad): *"Consider what the root cause might be before jumping to solutions."*
+Nudge, good: *"What would have to be true for this to still be a problem six months from now?"*
 
-Nudge (good): *"What would have to be true for this to still be a problem six months from now?"*
+Explanation, bad: *"This question tests strategic thinking and the ability to identify upstream causes rather than treating symptoms."*
 
-Explanation (bad): *"This question tests strategic thinking and the ability to identify upstream causes rather than treating symptoms."*
+Explanation, good: *"Most people fix the thing that's visibly broken, but the better move is asking what made it breakable in the first place, which is the difference between a patch and a structural change."*
 
-Explanation (good): *"Most people fix the thing that's visibly broken. The better move is asking what made it breakable in the first place. That's the difference between a patch and a structural change."*
+Option text, role-framed (reject): *"As a tech lead, I would segment users by notification volume and measure churn correlation."*
 
-Option text (bad, role-framed): *"As a tech lead, I would segment users by notification volume and measure churn correlation."*
-
-Option text (good): *"Segment users by notifications received per day. If the top quintile is churning faster than the median, volume is a proxy for the real problem. The real problem is signal."*
+Option text, correct: *"Segment users by notifications received per day, because if the top quintile is churning faster than the median then volume is a proxy for the real problem, and the real problem is signal."*
 
 ## Questions Per FLOW Step
 

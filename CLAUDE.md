@@ -269,6 +269,24 @@ Full architecture: [`docs/notes/content-authoring-architecture.md`](./docs/notes
 
 **Bulk ingest** from a Notion "Challenge Pipeline" database: `scripts/bulk-ingest.ts`. Reads rows where `Status=Queued`, submits jobs, updates Notion with `Job ID` and `Status=Generating`.
 
+## Writing Style
+
+Canonical guide: [`docs/notes/writing-style-guide.md`](./docs/notes/writing-style-guide.md). Every user-facing word the platform produces follows this. All five HackProduct skills (`backend_planning/hackproduct-v2-bundle/skills/*/SKILL.md`) inherit from it.
+
+**Register:** Shreyas Doshi in a tweet thread, or an opinionated staff engineer thinking out loud. Direct. Confident. Slightly opinionated. Academic is wrong. Corporate is worse.
+
+**Hard rules (enforced by the content validator):**
+- **No second-person role framing.** No "you are a tech lead", "as a senior engineer", "imagine you work at". Drop into the situation. Role is metadata, not copy.
+- **No em dashes.** Use a comma, a period, or restructure. Hard ban.
+- **No AI slop.** Never: *delve, leverage, utilize, holistic, robust, seamlessly, it's worth noting, in order to, as well as, embark on, navigate, unlock, landscape, tapestry, ensure, tailored, cutting-edge, revolutionary, game-changing*.
+- **Coherent sentences, not fragments.** Full flowing sentences that connect. Fragment-style ("Four moves. Real problem is upstream.") reads like a speech, not writing. Exception: UI chrome (buttons, labels, status).
+
+**Applies to:** challenge scenarios/questions/options/nudges, grading explanations, Luma coaching, learn chapter bodies, competency labels, push notifications, emails, and any admin UI copy that appears alongside user-facing content.
+
+**Does NOT apply to:** code comments, migration SQL, developer-facing error messages, internal reference docs.
+
+**Quick check before shipping generated text:** Does a sentence exist only to sound thorough? Cut it. Does a word appear in the AI-slop list? Replace it. Does the scenario open with "you are" or "as a"? Rewrite it into the situation.
+
 ## Key Conventions
 
 - `@/*` path alias maps to `./src/*`

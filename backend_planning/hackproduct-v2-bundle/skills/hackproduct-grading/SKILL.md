@@ -195,15 +195,24 @@ domain_expertise    → T7 (real metric requires domain knowledge)
 
 ## Writing Style
 
-All copy produced by this skill — grading explanations, theme signal text, anti-pattern descriptions, feedback copy — must follow these rules:
+All grading copy (explanations, theme signals, anti-pattern descriptions, reasoning-move text, feedback fragments) follows the canonical HackProduct Writing Style Guide: [`docs/notes/writing-style-guide.md`](../../../../docs/notes/writing-style-guide.md), summarized in `CLAUDE.md` at the repo root.
 
-- Write like a sharp senior colleague, not a corporate document or an AI assistant
-- Professional but not stiff. Clear but not over-explained.
-- No em dashes. Use a comma, period, or restructure the sentence instead.
-- No AI slop: never use "delve", "leverage", "utilize", "holistic", "robust", "seamlessly", "it's worth noting", "in order to", "as well as", or any phrase that sounds like it was generated to sound thorough
-- Say what you mean in the fewest words. Cut filler. Cut hedges.
-- Grading explanations should be direct about what the answer got right or wrong, not diplomatic
-- Anti-pattern descriptions should name the reasoning failure precisely, not soften it
+**Grading-specific applications of the rules:**
+- No second-person role framing. Grading explanations describe what the answer did and what a better answer would do, not what the learner should do next time. Keep the learner out of the second person.
+- No em dashes. No AI slop words.
+- Grading explanations are direct about what the answer got right or wrong. No diplomatic softening. "Names the tradeoff but not the sacrifice" beats "could be strengthened by naming the sacrifice".
+- Anti-pattern descriptions name the reasoning failure precisely. "Treats the retention drop as the thing to explain rather than as the thing to be explained by a change upstream of retention" beats "missed the root cause".
+- Theme signals explain which reasoning move was engaged and whether it was applied correctly. One sentence per field is enough.
+
+**Worked examples:**
+
+Grading explanation, bad (diplomatic): *"The answer demonstrates some good thinking but could be strengthened."*
+
+Grading explanation, good: *"The answer names a tradeoff but not the sacrifice, which is the move that separates a real tradeoff from a preference."*
+
+Anti-pattern, bad: *"Options were not fully distinct."*
+
+Anti-pattern, good: *"Options compared by description without a stated criterion, so the answer reads as preference rather than analysis."*
 
 ## Files This Skill Produces
 
