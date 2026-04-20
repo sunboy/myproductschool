@@ -23,22 +23,56 @@ const DIFFICULTY_LABELS: Record<LearnDifficulty, string> = {
   'entry-point': 'Entry Point',
 }
 
-// ─── renderMdx (minimal markdown → HTML) ─────────────────────────────────────
+// ─── renderMdx (markdown subset → HTML) ──────────────────────────────────────
+// Supports: # ## ### headings, **bold**, *italic*, `code`, --- hrules,
+// - unordered lists, 1. ordered lists, [text](url) links,
+// pass-through for block-level raw HTML (svg, ul, ol, div, figure, table).
 
-function renderMdx(mdx: string): string {
-  return mdx
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+function renderInline(text: string): string {
+  return text
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/^---$/gm, '<hr/>')
-    .split('\n\n')
-    .map(block => {
-      if (block.startsWith('<h') || block.startsWith('<hr')) return block
-      return `<p>${block.trim()}</p>`
-    })
-    .join('\n')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+}
+
+const BLOCK_TAG_RE = /^\s*<(svg|ul|ol|div|figure|table|pre|blockquote|aside)\b/i
+
+function renderBlock(block: string): string {
+  const trimmed = block.trim()
+  if (!trimmed) return ''
+
+  // Pass-through for raw block-level HTML (SVGs, pre-formatted lists, callouts)
+  if (BLOCK_TAG_RE.test(trimmed)) return trimmed
+
+  // Horizontal rule
+  if (/^-{3,}$/.test(trimmed)) return '<hr/>'
+
+  // Headings
+  const h3 = trimmed.match(/^### (.+)$/)
+  if (h3) return `<h3>${renderInline(h3[1])}</h3>`
+  const h2 = trimmed.match(/^## (.+)$/)
+  if (h2) return `<h2>${renderInline(h2[1])}</h2>`
+  const h1 = trimmed.match(/^# (.+)$/)
+  if (h1) return `<h1>${renderInline(h1[1])}</h1>`
+
+  // Lists: every non-empty line starts with "- " (unordered) or "1. "/"N. " (ordered)
+  const lines = trimmed.split('\n')
+  if (lines.every(l => /^-\s+/.test(l))) {
+    const items = lines.map(l => `<li>${renderInline(l.replace(/^-\s+/, ''))}</li>`).join('')
+    return `<ul>${items}</ul>`
+  }
+  if (lines.every(l => /^\d+\.\s+/.test(l))) {
+    const items = lines.map(l => `<li>${renderInline(l.replace(/^\d+\.\s+/, ''))}</li>`).join('')
+    return `<ol>${items}</ol>`
+  }
+
+  // Default: paragraph
+  return `<p>${renderInline(trimmed)}</p>`
+}
+
+function renderMdx(mdx: string): string {
+  return mdx.split(/\n\n+/).map(renderBlock).filter(Boolean).join('\n')
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -187,7 +221,16 @@ function ChapterPane({
           [&_p]:text-on-surface-variant [&_p]:leading-relaxed [&_p]:mb-3 [&_p]:text-sm
           [&_strong]:text-on-surface [&_strong]:font-semibold
           [&_em]:italic
-          [&_hr]:border-outline-variant [&_hr]:my-4"
+          [&_hr]:border-outline-variant [&_hr]:my-4
+          [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ul]:space-y-1 [&_ul]:text-sm [&_ul]:text-on-surface-variant
+          [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_ol]:space-y-1 [&_ol]:text-sm [&_ol]:text-on-surface-variant
+          [&_li]:leading-relaxed
+          [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:no-underline
+          [&_code]:bg-surface-container-high [&_code]:text-on-surface [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[0.85em] [&_code]:font-mono
+          [&_figure]:my-5 [&_figure]:bg-surface-container-low [&_figure]:rounded-xl [&_figure]:p-4 [&_figure]:border [&_figure]:border-outline-variant
+          [&_figcaption]:text-xs [&_figcaption]:text-on-surface-variant [&_figcaption]:mt-2 [&_figcaption]:text-center
+          [&_figure_svg]:mx-auto [&_figure_svg]:block [&_figure_svg]:max-w-full [&_figure_svg]:h-auto
+          [&_blockquote]:border-l-2 [&_blockquote]:border-primary [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-on-surface [&_blockquote]:my-4"
         dangerouslySetInnerHTML={{ __html: renderMdx(data.body_mdx) }}
       />
 
