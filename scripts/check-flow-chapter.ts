@@ -6,16 +6,14 @@ async function main() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
-
-  const { data, error } = await s
-    .from('learn_chapters')
-    .select('slug, body_mdx')
-    .eq('slug', 'why-flow')
-    .single()
-
-  if (error) { console.error(error); process.exit(1) }
-  console.log(`=== STORED BODY (${data.body_mdx.length} chars) ===`)
-  console.log(data.body_mdx)
+  const { data } = await s.from('learn_chapters')
+    .select('slug, title, body_mdx')
+    .in('slug', ['why-flow','frame','list','optimize','win','seven-themes','engineer-to-product','using-flow-live'])
+    .order('sort_order')
+  for (const ch of data ?? []) {
+    const figures = (ch.body_mdx.match(/<figure>/g) ?? []).length
+    const emDashes = (ch.body_mdx.match(/—/g) ?? []).length
+    console.log(`${ch.slug.padEnd(22)} ${String(ch.body_mdx.length).padStart(5)} chars  ${figures} figure(s)  ${emDashes} em dash(es)`)
+  }
 }
-
 main()
