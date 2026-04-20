@@ -437,6 +437,31 @@ All Luma AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropic
 
 This is pre-existing design (introduced in commit `47872c1`). Always use `quality` for scoring, never derive points from a boolean.
 
+## Content Authoring Pipeline
+
+Full architecture: [`docs/notes/content-authoring-architecture.md`](./docs/notes/content-authoring-architecture.md). Operator runbook: [`docs/notes/content-generation-runbook.md`](./docs/notes/content-generation-runbook.md).
+
+**What it does:** turns a URL, article, or question into a 4-step FLOW challenge (Frame / List / Optimize / Win) with 1-3 MCQ questions per step, 4 options each (one of each quality), taxonomy tags, and deterministic validation. Two pipelines with identical shape: local mode (`scripts/job-server.ts` using the `claude` CLI subprocess) and API mode (`src/lib/content/generator.ts` using Anthropic SDK).
+
+**Audience:** engineers first (tech lead, staff engineer, founding engineer, EM, SWE). PMs secondary. Taxonomy biases toward engineering roles. Copy never uses second-person role framing — no "you are a tech lead", no "as a senior engineer". Role is metadata, not copy.
+
+**Grounding is the core idea.** Every MCQ generation call receives a grounding pack: per-question `focus`, source `excerpts` filtered by step topic, real `data_points`, extracted `insights`, the `engineer_standout` angle, and `siblingFocuses` from other questions in the step to prevent overlap. The BEST option must reference a source-specific element (named entity, metric, or listed insight), or it does not qualify as BEST.
+
+**Open-ended prompts** (short questions like "how do you improve ChatGPT") run an expansion step that picks a concrete angle and writes source-like material, then a verifier step that strips fabricated claims before the main pipeline runs. Unsalvageable sources fail the job.
+
+**Voice rules** (enforced by prompts and validator warnings):
+- No second-person role framing in user-facing copy
+- No em dashes
+- No AI slop ("delve", "leverage", "utilize", "holistic", "robust", "seamlessly", "in order to", "as well as")
+- Explanations read like insight, not instruction
+- Best option is genuinely better in reasoning, not longer
+
+**Validator** runs after generation: hard errors (structural) block publish; warnings (grounding miss, sibling overlap, role-framing match) surface to the reviewer.
+
+**Admin UI:** `/admin/content` lists all jobs with View / Review / Tags / Delete actions. Review page has inline editing and step approvals. Tag editor for published challenges at `/admin/content/challenges/{id}`.
+
+**Bulk ingest** from a Notion "Challenge Pipeline" database: `scripts/bulk-ingest.ts`. Reads rows where `Status=Queued`, submits jobs, updates Notion with `Job ID` and `Status=Generating`.
+
 ## Key Conventions
 
 - `@/*` path alias maps to `./src/*`
