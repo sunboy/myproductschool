@@ -57,11 +57,19 @@ export function FlowMoveLevelsCard() {
           <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
         </Link>
       </div>
-      <div className="grid grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-4 gap-3.5 relative">
+        <div
+          aria-hidden
+          className="absolute top-7 z-0 pointer-events-none"
+          style={{
+            left: '12%', right: '12%', height: 2,
+            backgroundImage: 'repeating-linear-gradient(90deg, var(--color-outline-variant) 0 6px, transparent 6px 12px)',
+          }}
+        />
         {moves.map(m => (
           <div
             key={m.key}
-            className="rounded-2xl p-4 border"
+            className="relative z-10 rounded-2xl p-4 border"
             style={{ background: m.tint, borderColor: 'rgba(0,0,0,0.04)' }}
           >
             <div className="flex items-start justify-between mb-2.5">

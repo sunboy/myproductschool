@@ -85,7 +85,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
           >
             {timeOfDay()}, {displayName}.
           </h1>
-          <p key={idx} className="text-[15.5px] leading-relaxed opacity-80 max-w-lg">
+          <p key={idx} className="animate-fade-up text-[15.5px] leading-relaxed opacity-80 max-w-lg">
             {lines[idx]}
           </p>
           <div className="flex gap-2.5 mt-5">

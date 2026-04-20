@@ -280,29 +280,34 @@ export default async function DashboardPage() {
 
           {/* Right rail */}
           <aside className="flex flex-col gap-5">
-            {/* Luma Greeting Bar (compact right-rail version) */}
-            <div className="bg-primary-fixed rounded-2xl p-5 flex flex-col gap-3 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-full opacity-30" style={{ background: 'radial-gradient(ellipse at 100% 50%, rgba(74,124,89,0.3) 0%, transparent 70%)' }} />
-              <div className="flex items-center gap-3 relative">
-                <LumaGlyph size={40} state="idle" className="flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-headline font-bold text-[15px] text-on-surface leading-tight">
-                    {getPersonalizedGreeting(displayName, streakDays, lastAttemptDate, isCalibrated)}
-                  </p>
-                  <p className="text-xs text-on-surface-variant mt-0.5">
-                    {getDailyGoalMessage(dailyDone)}
-                  </p>
-                </div>
+            {/* Today's Path */}
+            <div className="rounded-2xl p-5 bg-surface border border-outline-faint">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="material-symbols-outlined text-primary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>today</span>
+                <h3 className="font-headline text-lg font-medium">Today&apos;s Path</h3>
               </div>
-              <div className="flex gap-1.5 relative">
-                <span className="flex items-center gap-1 px-2.5 py-1.5 bg-white/50 rounded-full text-[11px] font-label font-bold text-on-surface">
-                  <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 1", color: '#c94b1b' }}>local_fire_department</span>
-                  {streakDays}d
-                </span>
-                <span className="flex items-center gap-1 px-2.5 py-1.5 bg-white/50 rounded-full text-[11px] font-label font-bold text-on-surface tabular-nums">
-                  <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 1", color: '#4a7c59' }}>bolt</span>
-                  {xpTotal.toLocaleString()} XP
-                </span>
+              <div className="space-y-2 text-sm text-on-surface-variant">
+                <p>Your session plan for today will appear here as you progress.</p>
+              </div>
+            </div>
+            {/* Achievements */}
+            <div className="rounded-2xl p-5 bg-surface border border-outline-faint">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="material-symbols-outlined text-tertiary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>emoji_events</span>
+                <h3 className="font-headline text-lg font-medium">Achievements</h3>
+              </div>
+              <div className="text-sm text-on-surface-variant">
+                <p>Complete challenges to unlock badges and milestones.</p>
+              </div>
+            </div>
+            {/* Streak Calendar */}
+            <div className="rounded-2xl p-5 bg-surface border border-outline-faint">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="material-symbols-outlined text-primary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
+                <h3 className="font-headline text-lg font-medium">Streak</h3>
+              </div>
+              <div className="text-sm text-on-surface-variant">
+                <p>Your practice streak calendar will show here.</p>
               </div>
             </div>
           </aside>
