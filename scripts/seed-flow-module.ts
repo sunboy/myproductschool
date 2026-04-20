@@ -50,13 +50,13 @@ const CH1: ChapterSeed = {
 
 FLOW is four reasoning moves that separate product thinking from technical thinking, giving you a vocabulary for decisions you already make rather than a framework to memorize.
 
-{{figure:0}}
+<!-- figure:0 -->
 
 ## Why engineers already have most of this
 
 Five of the six competencies that define product sense already show up in engineering work every week, which means engineers are not missing product intuition so much as the vocabulary and reps that turn that intuition into visible reasoning.
 
-{{figure:1}}
+<!-- figure:1 -->
 
 The raw material is there, so what engineers need is a name for each move and a place to practice it where the stakes do not punish practice.
 
@@ -76,7 +76,7 @@ Each move corrects one anti-pattern, and once you can name the anti-pattern acti
 
 The same four moves already live inside engineering work under different names, which is why the vocabulary transfers rather than having to be learned from scratch.
 
-{{figure:2}}
+<!-- figure:2 -->
 
 ## Why not just read the books
 
@@ -155,7 +155,7 @@ Frame is the reasoning move that finds the real problem by refusing to accept th
 
 Every decision starts with a framing, whether anyone names it or not, and the default framing in most rooms is whatever the loudest person said first. The move is to treat that opening framing as a hypothesis worth testing rather than a fact worth acting on, and the test is simple: ask what would still be true if every proposed solution already existed. If the complaint survives, the framing is too shallow and the real problem is upstream of it.
 
-{{figure:0}}
+<!-- figure:0 -->
 
 ## A concrete example
 
@@ -204,7 +204,7 @@ List is the reasoning move that widens the option space on purpose, because the 
 
 A real option list contains bets that are structurally distinct, meaning they are trying to solve different underlying jobs, making different tradeoffs, or betting on different assumptions about the future. A fake option list contains the same bet phrased three ways, which produces the illusion of choice without any real decision power. The test for whether a list is real is whether the options, if all four shipped independently, would produce materially different products or outcomes.
 
-{{figure:0}}
+<!-- figure:0 -->
 
 ## A concrete example
 
@@ -253,7 +253,7 @@ Optimize is the reasoning move that turns a list of real options into a decision
 
 Every decision between structurally distinct options involves a tradeoff, and the tradeoff is only legible if both sides are named out loud. Saying "we picked option B because it is better" is a preference. Saying "we picked option B because it optimizes for time to first value, which means we are giving up the surface area option C would have covered, and we think time to first value matters more for this audience" is a tradeoff. The second version can be disagreed with on specific grounds; the first version cannot be disagreed with at all.
 
-{{figure:0}}
+<!-- figure:0 -->
 
 ## A concrete example
 
@@ -301,7 +301,7 @@ Win is the reasoning move that turns a decision into a recommendation by making 
 
 A real recommendation has three parts that travel together: a direction (what to do), a predicted result (what outcome will follow), and a timeline (by when). Each part is what makes the next part possible: the direction is what someone can execute, the predicted result is what someone can disagree with, and the timeline is what lets the team know when to come back and check. Drop any one of the three and the recommendation degrades into a status update.
 
-{{figure:0}}
+<!-- figure:0 -->
 
 ## A concrete example
 
@@ -350,7 +350,7 @@ FLOW is a compression of seven reasoning traditions, so understanding which trad
 
 The four moves (Frame, List, Optimize, Win) are the operational layer, and the seven themes (T1 through T7) are the reasoning layer that justifies why each move is the right move. This chapter is a map: for each FLOW step, which theme is the primary reasoning move being trained, which thinker named the tradition, and what anti-pattern the theme catches.
 
-{{figure:0}}
+<!-- figure:0 -->
 
 ## Why the themes matter operationally
 
@@ -402,7 +402,7 @@ The transition from engineer to product thinker is not a rebuild, because five o
 
 Rahul Pandey's six competencies are motivation theory, cognitive empathy, taste, strategic thinking, creative execution, and domain expertise, and five of those six have visible engineering analogs that most engineers have been exercising for years. The one that tends to arrive uncalibrated is taste, because engineering culture rewards correctness over preference and taste is specifically the skill of feeling the difference between a real tradeoff and a preference before anyone has named it out loud.
 
-{{figure:0}}
+<!-- figure:0 -->
 
 ## Why taste is the one that needs reps
 
@@ -453,7 +453,7 @@ FLOW is a sequence, and using it live means knowing which of the four moves the 
 
 The reading skill is recognizing which move is missing from the conversation already happening, because rooms tend to skip moves rather than do them badly. If everyone is arguing about which option wins, the missing move is usually Frame (they are optimizing the wrong problem) or List (they are choosing between two variations of the same bet). If the direction is clear but the team is hesitant, the missing move is usually Win (no one has named the falsifiable prediction) or Optimize (no one has named the sacrifice). Naming the missing move out loud is what unsticks the conversation.
 
-{{figure:0}}
+<!-- figure:0 -->
 
 ## A 20-minute product review using FLOW live
 

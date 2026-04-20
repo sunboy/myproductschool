@@ -34,7 +34,7 @@ Every week, most engineers exercise the raw material of product thinking without
 
 ## The same move, different room
 
-{{figure:0}}
+<!-- figure:0 -->
 
 ## The canonical framing
 
@@ -79,7 +79,7 @@ Every ten minutes an engineer spends upstream on "why" often saves weeks downstr
 
 ## Why the default order is wrong
 
-{{figure:0}}
+<!-- figure:0 -->
 
 ## A concrete example
 
@@ -122,7 +122,7 @@ Orosz wrote the list in 2019 after years at Uber, Microsoft, Skype, and Skyscann
 
 ## The nine traits
 
-{{figure:0}}
+<!-- figure:0 -->
 
 ## What the list points at
 
@@ -175,7 +175,7 @@ Engineers default to evaluating ideas in the order they feel competent, which is
 
 ## The three gates
 
-{{figure:0}}
+<!-- figure:0 -->
 
 ## Why the order matters
 
@@ -223,7 +223,7 @@ Exponent's 2024 PM Interview Report names product sense as the number-one reason
 
 ## The four modes, with their tells
 
-{{figure:0}}
+<!-- figure:0 -->
 
 ## Why interviewers see these so fast
 
@@ -271,7 +271,7 @@ Frameworks are compression of past reasoning. They work backward, not forward: s
 
 ## What the popular frameworks actually compress
 
-{{figure:0}}
+<!-- figure:0 -->
 
 ## The mapping, briefly
 
@@ -326,7 +326,7 @@ The reader cannot practice product thinking in the abstract. They need feedback 
 
 ## Four reps, one week
 
-{{figure:0}}
+<!-- figure:0 -->
 
 ## Why these four reps specifically
 
