@@ -18,12 +18,11 @@ const PARADIGMS = [
 ] as const
 
 const ROLES = [
-  { key: 'swe',          label: 'SWE' },
-  { key: 'data_eng',     label: 'Data Eng' },
-  { key: 'ml_eng',       label: 'ML Eng' },
-  { key: 'devops',       label: 'DevOps' },
-  { key: 'em',           label: 'EM' },
-  { key: 'founding_eng', label: 'Founding Eng' },
+  { key: 'all',         label: 'All' },
+  { key: 'pm',          label: 'PM' },
+  { key: 'engineer',    label: 'Engineer' },
+  { key: 'designer',    label: 'Designer' },
+  { key: 'founder',     label: 'Founder' },
 ] as const
 
 const PARADIGM_DISPLAY: Record<string, string> = {
@@ -75,36 +74,29 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
       {/* Luma's Pick */}
       <LumaPick />
 
-      {/* Filters */}
-      <div className="space-y-2.5 mb-8 p-4 bg-surface-container-low rounded-2xl border border-outline-variant/30">
-        {/* Role */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[11px] font-bold text-on-surface-variant font-label w-20 shrink-0">Role</span>
-          <Link
-            href={buildHref({ role: undefined })}
-            className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors font-label ${
-              !role ? 'bg-on-surface text-inverse-on-surface' : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
-            }`}
-          >
-            All
-          </Link>
-          {ROLES.map(r => (
+      {/* Role filter tabs */}
+      <div className="flex items-center gap-2 mb-5 flex-wrap">
+        {ROLES.map(r => {
+          const isActive = r.key === 'all' ? !role || role === 'all' : role === r.key
+          return (
             <Link
               key={r.key}
-              href={buildHref({ role: role === r.key ? undefined : r.key })}
-              className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors font-label ${
-                role === r.key
-                  ? 'bg-on-surface text-inverse-on-surface'
-                  : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
-              }`}
+              href={buildHref({ role: r.key === 'all' ? undefined : r.key })}
+              className={[
+                'px-3.5 py-1.5 rounded-full text-sm font-label font-semibold transition-all',
+                isActive
+                  ? 'bg-primary-container text-on-primary-container'
+                  : 'text-on-surface-variant hover:bg-surface-container border border-outline-variant',
+              ].join(' ')}
             >
               {r.label}
             </Link>
-          ))}
-        </div>
+          )
+        })}
+      </div>
 
-        <div className="border-t border-outline-variant/20" />
-
+      {/* Paradigm filter */}
+      <div className="mb-8 p-4 bg-surface-container-low rounded-2xl border border-outline-variant/30">
         {/* Paradigm */}
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[11px] font-bold text-on-surface-variant font-label w-20 shrink-0">Type</span>
