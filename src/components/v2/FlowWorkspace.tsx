@@ -116,6 +116,40 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // GSAP workspace ref for session-start animation
   const workspaceRef = useRef<HTMLDivElement>(null)
 
+  // Resizable panel state — left panel width in px
+  const [leftWidth, setLeftWidth] = useState(300)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const dragCleanupRef = useRef<(() => void) | null>(null)
+
+  const handleSeparatorMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = leftWidth
+
+    const onMouseMove = (ev: MouseEvent) => {
+      const container = containerRef.current
+      if (!container) return
+      const containerWidth = container.getBoundingClientRect().width
+      const delta = ev.clientX - startX
+      const newWidth = Math.min(Math.max(startWidth + delta, 200), containerWidth - 300)
+      setLeftWidth(newWidth)
+    }
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+      dragCleanupRef.current = null
+    }
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+    dragCleanupRef.current = onMouseUp
+  }, [leftWidth])
+
+  useEffect(() => {
+    return () => { dragCleanupRef.current?.() }
+  }, [])
+
   const startTimeRef = useRef<number>(Date.now())
   // Prevents double-submit: locks for the full duration of submitAnswer + fetchCoaching
   const handlingSubmitRef = useRef(false)
@@ -571,18 +605,28 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </div>
 
         {/* Main grid */}
-        <div className="flex flex-1 min-h-0 overflow-hidden">
+        <div ref={containerRef} className="flex flex-1 min-h-0 overflow-hidden">
           {/* Left sidebar: context + Luma + calibration */}
-          <div className="w-[300px] shrink-0 flex flex-col gap-3 p-4 overflow-y-auto border-r border-outline-variant/30">
+          <div
+            className="shrink-0 flex flex-col gap-3 p-4 overflow-y-auto"
+            style={{ width: leftWidth }}
+          >
             {contextCard}
             <LumaSidePanel message={lumaMessage} lumaState={lumaState} stepName={currentStepLabel} />
             <CalibrationPreview steps={calibrationSteps} />
           </div>
 
+          {/* Resizable separator */}
+          <div
+            onMouseDown={handleSeparatorMouseDown}
+            className="w-1 shrink-0 cursor-col-resize hover:bg-primary/20 active:bg-primary/40 transition-colors"
+            style={{ background: 'var(--color-outline-variant, rgba(196,200,188,0.3))' }}
+          />
+
           {/* Right: reveal content */}
           <div
             key={`${currentStep}-reveal`}
-            className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter"
+            className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter min-w-0"
             style={{ background: 'radial-gradient(ellipse at 100% 100%, rgba(74,124,89,0.04) 0%, transparent 55%)' }}
           >
             <StepReveal
@@ -612,19 +656,29 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       </div>
 
       {/* Main grid */}
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      <div ref={containerRef} className="flex flex-1 min-h-0 overflow-hidden">
         {/* Left sidebar: context + Luma + calibration */}
-        <div className="w-[300px] shrink-0 flex flex-col gap-3 p-4 overflow-y-auto border-r border-outline-variant/30">
+        <div
+          className="shrink-0 flex flex-col gap-3 p-4 overflow-y-auto"
+          style={{ width: leftWidth }}
+        >
           {contextCard}
           <LumaSidePanel message={lumaMessage} lumaState={lumaState} stepName={currentStepLabel} />
           <CalibrationPreview steps={calibrationSteps} />
         </div>
 
+        {/* Resizable separator */}
+        <div
+          onMouseDown={handleSeparatorMouseDown}
+          className="w-1 shrink-0 cursor-col-resize hover:bg-primary/20 active:bg-primary/40 transition-colors"
+          style={{ background: 'var(--color-outline-variant, rgba(196,200,188,0.3))' }}
+        />
+
         {/* Right: question + dock */}
         <div
           ref={workspaceRef}
           key={`${currentStep}-question`}
-          className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter"
+          className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter min-w-0"
           style={{ background: 'radial-gradient(ellipse at 100% 100%, rgba(74,124,89,0.04) 0%, transparent 55%)' }}
         >
           {/* Nudge */}
