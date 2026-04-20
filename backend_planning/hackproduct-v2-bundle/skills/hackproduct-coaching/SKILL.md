@@ -81,15 +81,14 @@ await admin.from('luma_context_v2').insert({
 
 ## Writing Style
 
-All copy produced by this skill — nudges, coaching paragraphs, career signals, Luma feedback text — must follow these rules:
+All coaching copy this skill produces (nudges, role-context paragraphs, career signals, Luma feedback text) follows the canonical HackProduct Writing Style Guide: [`docs/notes/writing-style-guide.md`](../../../../docs/notes/writing-style-guide.md), summarized in `CLAUDE.md` at the repo root.
 
-- Write like a sharp senior colleague, not a corporate document or an AI assistant
-- Professional but not stiff. Clear but not over-explained.
-- No em dashes. Use a comma, period, or restructure the sentence instead.
-- No AI slop: never use "delve", "leverage", "utilize", "holistic", "robust", "seamlessly", "it's worth noting", "in order to", "as well as", or any phrase that sounds like it was generated to sound thorough
-- Say what you mean in the fewest words. Cut filler. Cut hedges.
-- No motivational padding. If an answer is weak, name the gap directly. Praise only when genuinely earned.
-- Career signals should be concrete and specific to the role — not generic encouragement
+**Coaching-specific applications of the rules:**
+- No second-person role framing when describing the situation ("you are a tech lead", "as a senior engineer"). The coaching paragraph speaks to the learner, but the role is a fact pulled from metadata, not a scene-setting opener. Write like a colleague who already knows what the learner does.
+- No em dashes. No AI slop words.
+- If an answer is weak, name the gap directly. No motivational padding. Praise only when genuinely earned.
+- Career signals are concrete and specific to the role, not generic encouragement. "This reasoning move matters in the promo packet at staff level because X" beats "keep working on this skill".
+- Coaching is coherent prose, full sentences that connect, not a bulleted list of observations.
 
 ## Files This Skill Produces
 

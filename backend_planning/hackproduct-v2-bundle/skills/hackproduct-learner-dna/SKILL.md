@@ -107,14 +107,14 @@ Fill: `fill-primary/20 stroke-primary`. Labels outside hexagon. Animate on mount
 
 ## Writing Style
 
-All copy produced by this skill — competency labels, weakness summaries, recommendation copy, radar chart labels — must follow these rules:
+All learner DNA copy (competency labels, weakness summaries, recommendation copy, trend descriptions, radar chart labels) follows the canonical HackProduct Writing Style Guide: [`docs/notes/writing-style-guide.md`](../../../../docs/notes/writing-style-guide.md), summarized in `CLAUDE.md` at the repo root.
 
-- Write like a sharp senior colleague, not a corporate document or an AI assistant
-- Professional but not stiff. Clear but not over-explained.
-- No em dashes. Use a comma, period, or restructure the sentence instead.
-- No AI slop: never use "delve", "leverage", "utilize", "holistic", "robust", "seamlessly", "it's worth noting", "in order to", "as well as", or any phrase that sounds like it was generated to sound thorough
-- Say what you mean in the fewest words. Cut filler. Cut hedges.
-- Weakness descriptions should name the gap plainly, not soften it into a "growth opportunity"
+**Learner DNA-specific applications of the rules:**
+- No second-person role framing. Weakness and recommendation copy talks about the learner's pattern in third-person observation, not as advice delivered "to you as a tech lead".
+- No em dashes. No AI slop words.
+- Weakness descriptions name the gap plainly. No "growth opportunity", no "area for development", no "room to improve". "Scores bottom third on strategic_thinking across six attempts, driven by skipping the Optimize tradeoff sacrifice" beats "strategic thinking is a growth area".
+- Recommendation copy names the next challenge and the specific reasoning move it exercises, in one sentence.
+- Competency and axis labels on the radar chart are terse (one or two words) because they are UI chrome; the style-guide exception for chrome applies.
 
 ## Files This Skill Produces
 
