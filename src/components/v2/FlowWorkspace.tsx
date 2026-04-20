@@ -10,9 +10,6 @@ import { FlowStepper } from './FlowStepper'
 import { StepQuestion } from './StepQuestion'
 import { StepReveal } from './StepReveal'
 import { PostSessionMirror, type StepResult as MirrorStepResult, type CompetencyDelta as MirrorCompetencyDelta } from './PostSessionMirror'
-import { ConfidenceDock } from './ConfidenceDock'
-import { LumaSidePanel } from './LumaSidePanel'
-import { CalibrationPreview } from './CalibrationPreview'
 import type { StepCalibration } from './CalibrationPreview'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
@@ -116,35 +113,40 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // GSAP workspace ref for session-start animation
   const workspaceRef = useRef<HTMLDivElement>(null)
 
-  // Resizable panel state — left panel width in px
-  const [leftWidth, setLeftWidth] = useState(300)
+  // Resizable panel state — left panel width as percentage of container
+  const [leftWidth, setLeftWidth] = useState(50)
   const containerRef = useRef<HTMLDivElement>(null)
   const dragCleanupRef = useRef<(() => void) | null>(null)
 
+  // Left description tab state
+  const [leftTab, setLeftTab] = useState<'Description' | 'Editorial' | 'Discussions' | 'Submissions'>('Description')
+
+  // Hint card open/close state (right pane)
+  const [hintOpen, setHintOpen] = useState(true)
+
   const handleSeparatorMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
-    const startX = e.clientX
-    const startWidth = leftWidth
+    const container = containerRef.current
+    if (!container) return
 
     const onMouseMove = (ev: MouseEvent) => {
-      const container = containerRef.current
-      if (!container) return
-      const containerWidth = container.getBoundingClientRect().width
-      const delta = ev.clientX - startX
-      const newWidth = Math.min(Math.max(startWidth + delta, 200), containerWidth - 300)
-      setLeftWidth(newWidth)
+      const rect = container.getBoundingClientRect()
+      const pct = ((ev.clientX - rect.left) / rect.width) * 100
+      setLeftWidth(Math.max(28, Math.min(72, pct)))
     }
 
     const onMouseUp = () => {
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
+      document.body.style.cursor = ''
       dragCleanupRef.current = null
     }
 
+    document.body.style.cursor = 'col-resize'
     document.addEventListener('mousemove', onMouseMove)
     document.addEventListener('mouseup', onMouseUp)
     dragCleanupRef.current = onMouseUp
-  }, [leftWidth])
+  }, [])
 
   useEffect(() => {
     return () => { dragCleanupRef.current?.() }
@@ -555,79 +557,300 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     )
   }
 
-  // Derive current step label for LumaSidePanel
-  const stepLabelMap: Record<FlowStep, string> = {
-    frame: 'Frame step',
-    list: 'List step',
-    optimize: 'Optimize step',
-    win: 'Win step',
-  }
-  const currentStepLabel = stepLabelMap[currentStep]
+  const stepIdx = FLOW_STEPS.indexOf(currentStep)
+  const isLastStep = stepIdx === FLOW_STEPS.length - 1
 
-  // Shared context card — challenge description shown in right sidebar
-  const contextCard = (challengeTitle || scenarioContext || scenarioTrigger || challengeScenarioQ) ? (
-    <div className="bg-surface-container rounded-xl overflow-hidden">
-      {/* Top accent */}
-      <div className="h-0.5 bg-primary" />
-      <div className="p-4 space-y-3">
-        {scenarioRole && (
-          <p className="font-label text-[9px] uppercase tracking-widest text-on-surface-variant">{scenarioRole}</p>
-        )}
-        {challengeTitle && (
-          <p className="font-headline text-sm text-on-surface leading-snug">{challengeTitle}</p>
-        )}
-        {scenarioContext && (
-          <p className="font-body text-xs text-on-surface-variant leading-relaxed">{scenarioContext}</p>
-        )}
-        {scenarioTrigger && (
-          <div className="border-t border-outline-variant/30 pt-3">
-            <p className="font-label text-[9px] uppercase tracking-widest text-on-surface-variant mb-1">The trigger</p>
-            <p className="font-body text-xs text-on-surface-variant leading-relaxed">{scenarioTrigger}</p>
+  const STAGE_COLOR: Record<FlowStep, string> = {
+    frame:    '#4a7c59',
+    list:     '#6b8275',
+    optimize: '#c9933a',
+    win:      '#a878d6',
+  }
+  const STAGE_ICON: Record<FlowStep, string> = {
+    frame:    'crop_free',
+    list:     'format_list_bulleted',
+    optimize: 'tune',
+    win:      'emoji_events',
+  }
+  const STEP_LABEL: Record<FlowStep, string> = {
+    frame:    'Frame',
+    list:     'List',
+    optimize: 'Optimize',
+    win:      'Win',
+  }
+  const NEXT_LABEL: Record<FlowStep, string> = {
+    frame:    'List',
+    list:     'Optimize',
+    optimize: 'Win',
+    win:      'Finish',
+  }
+
+  const tabs = ['Description', 'Editorial', 'Discussions', 'Submissions'] as const
+
+  // Left pane description content
+  const descriptionPane = (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 80px' }}>
+      {/* Chips */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
+        <span className="chip" style={{ background: 'var(--color-primary-container)', color: 'var(--color-on-primary-container)', fontSize: 11 }}>Intermediate</span>
+        <span className="chip" style={{ fontSize: 11 }}>
+          <span className="material-symbols-outlined msi-sm">local_offer</span> Topics
+        </span>
+        <span className="chip" style={{ fontSize: 11 }}>
+          <span className="material-symbols-outlined msi-sm">domain</span> Companies
+        </span>
+        <span className="chip" style={{ background: 'var(--color-amber-soft, #f3e2b9)', color: '#8a5c00', border: '1px solid #e8d09a', fontSize: 11 }}>
+          <span className="material-symbols-outlined msi-sm">lightbulb</span> Hint available
+        </span>
+      </div>
+
+      {/* Title */}
+      {challengeTitle && (
+        <h2 style={{ fontFamily: 'var(--font-headline)', fontSize: 22, fontWeight: 600, lineHeight: 1.3, letterSpacing: '-0.01em', color: 'var(--color-on-surface)', marginBottom: 10 }}>
+          {challengeTitle}
+        </h2>
+      )}
+
+      {/* Meta row */}
+      <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--color-on-surface-variant)', marginBottom: 20 }}>
+        {scenarioRole && <span>{scenarioRole}</span>}
+        <span>·</span>
+        <span>{STEP_LABEL[currentStep]} stage</span>
+        <span>·</span>
+        <span>~15 min</span>
+      </div>
+
+      {/* Context */}
+      {scenarioContext && (
+        <div style={{ marginBottom: 20 }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, lineHeight: 1.7, color: 'var(--color-on-surface-variant)' }}>
+            {scenarioContext}
+          </p>
+        </div>
+      )}
+
+      {/* The trigger */}
+      {scenarioTrigger && (
+        <div style={{ marginBottom: 20, background: 'var(--color-amber-soft, #f3e2b9)', border: '1px solid #e8d09a', borderRadius: 12, padding: '14px 16px' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#8a5c00', marginBottom: 6 }}>
+            The trigger
           </div>
-        )}
-        {challengeScenarioQ && (
-          <div className="rounded-lg p-3 bg-surface-container-high border border-outline-variant/40">
-            <p className="font-label text-[9px] uppercase tracking-widest text-on-surface-variant mb-1">Your challenge</p>
-            <p className="font-body text-xs text-on-surface font-medium leading-relaxed">{challengeScenarioQ}</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13.5, lineHeight: 1.6, color: '#5c3a00' }}>
+            {scenarioTrigger}
+          </p>
+        </div>
+      )}
+
+      {/* Your challenge */}
+      {challengeScenarioQ && (
+        <div style={{ marginBottom: 20, background: 'var(--color-primary-container)', border: '1px solid rgba(74,124,89,0.25)', borderRadius: 12, padding: '14px 16px' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', marginBottom: 6 }}>
+            Your challenge
           </div>
-        )}
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13.5, lineHeight: 1.6, color: 'var(--color-on-surface)', fontWeight: 500 }}>
+            {challengeScenarioQ}
+          </p>
+        </div>
+      )}
+    </div>
+  )
+
+  const editorialPane = (
+    <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+      <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--color-outline)' }}>lock</span>
+      <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
+        Complete this challenge to unlock the editorial.
+      </p>
+    </div>
+  )
+
+  const discussionsPane = (
+    <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+      <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--color-outline)' }}>forum</span>
+      <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
+        Discussion forum coming soon.
+      </p>
+    </div>
+  )
+
+  const submissionsPane = (
+    <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+      <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--color-outline)' }}>history</span>
+      <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
+        No submissions yet.
+      </p>
+    </div>
+  )
+
+  // Left description panel
+  const leftDescriptionPanel = (
+    <section style={{
+      width: `${leftWidth}%`,
+      display: 'flex',
+      flexDirection: 'column',
+      borderRight: '1px solid var(--color-outline-faint)',
+      background: 'var(--color-surface)',
+      overflow: 'hidden',
+    }}>
+      {/* Tab bar */}
+      <div style={{
+        display: 'flex',
+        padding: '6px 12px 0',
+        borderBottom: '1px solid var(--color-outline-faint)',
+        background: 'var(--color-surface)',
+        flexShrink: 0,
+      }}>
+        {tabs.map(t => {
+          const active = leftTab === t
+          return (
+            <button
+              key={t}
+              onClick={() => setLeftTab(t)}
+              style={{
+                padding: '7px 14px',
+                fontSize: 13,
+                fontWeight: active ? 600 : 400,
+                color: active ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)',
+                background: active ? 'var(--color-surface-container-low)' : 'transparent',
+                border: active ? '1px solid var(--color-outline-faint)' : '1px solid transparent',
+                borderBottom: active ? '1px solid var(--color-surface-container-low)' : '1px solid transparent',
+                borderRadius: '8px 8px 0 0',
+                cursor: 'pointer',
+                marginBottom: active ? -1 : 0,
+                fontFamily: 'inherit',
+                transition: 'color 120ms',
+              }}
+            >
+              {t}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Tab content */}
+      {leftTab === 'Description' && descriptionPane}
+      {leftTab === 'Editorial' && editorialPane}
+      {leftTab === 'Discussions' && discussionsPane}
+      {leftTab === 'Submissions' && submissionsPane}
+
+      {/* Bottom chrome (only on Description) */}
+      {leftTab === 'Description' && (
+        <div style={{
+          flexShrink: 0,
+          borderTop: '1px solid var(--color-outline-faint)',
+          padding: '10px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: 'var(--color-surface)',
+          fontSize: 12,
+          color: 'var(--color-on-surface-variant)',
+        }}>
+          <div style={{ display: 'flex', gap: 14 }}>
+            <button className="btn btn--ghost" style={{ padding: '4px 10px', fontSize: 12, gap: 4 }}>
+              <span className="material-symbols-outlined msi-sm">thumb_up</span> 1.1K
+            </button>
+            <button className="btn btn--ghost" style={{ padding: '4px 10px', fontSize: 12, gap: 4 }}>
+              <span className="material-symbols-outlined msi-sm">bookmark_border</span> 342
+            </button>
+            <button className="btn btn--ghost" style={{ padding: '4px 10px', fontSize: 12, gap: 4 }}>
+              <span className="material-symbols-outlined msi-sm">share</span>
+            </button>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ width: 8, height: 8, borderRadius: 999, background: '#4a7c59', display: 'inline-block' }} />
+            3,589 online
+          </div>
+        </div>
+      )}
+    </section>
+  )
+
+  // Shared 3-col sticky header
+  const stickyHeader = (
+    <div
+      className="shrink-0"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'auto 1fr auto',
+        alignItems: 'center',
+        padding: '10px 20px',
+        gap: 20,
+        background: 'var(--color-surface)',
+        borderBottom: '1px solid var(--color-outline-faint)',
+      }}
+    >
+      {/* Left: back + title */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button
+          onClick={props.onExit ?? (() => window.history.back())}
+          className="btn btn--ghost"
+          style={{ padding: '6px 10px', fontSize: 12 }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_back</span>
+        </button>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-on-surface-muted, var(--color-on-surface-variant))' }}>
+            Challenge
+          </div>
+          {challengeTitle && (
+            <div style={{ fontFamily: 'var(--font-headline)', fontSize: 15, fontWeight: 600, letterSpacing: '-0.005em', color: 'var(--color-on-surface)', marginTop: 1 }}>
+              {challengeTitle}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Center: FLOW stepper */}
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <FlowStepper
+          currentStep={currentStep}
+          completedSteps={completedSteps}
+          onStepClick={handleStepClick}
+          questionIdx={questionIdx}
+          questionCount={activeStepData?.questions.length}
+        />
+      </div>
+
+      {/* Right: save + submit */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <button className="btn btn--ghost" style={{ padding: '7px 12px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <span className="material-symbols-outlined msi-sm">bookmark_border</span> Save
+        </button>
+        <button
+          className="btn btn--primary"
+          style={{ padding: '8px 16px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+          disabled={selectedOptionId === null || confidence === null || activeSubmitting}
+          onClick={handleSubmit}
+        >
+          {isLastStep ? 'Finish' : `Next: ${NEXT_LABEL[currentStep]}`}
+          <span className="material-symbols-outlined msi-sm">arrow_forward</span>
+        </button>
       </div>
     </div>
-  ) : null
+  )
+
+  // Shared drag handle
+  const dragHandle = (
+    <div
+      onMouseDown={handleSeparatorMouseDown}
+      style={{ width: 6, cursor: 'col-resize', background: 'transparent', flexShrink: 0, position: 'relative' }}
+    >
+      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 2, height: 32, background: 'var(--color-outline-variant)', borderRadius: 999 }} />
+    </div>
+  )
 
   if (phase === 'reveal') {
-    const stepIdx = FLOW_STEPS.indexOf(currentStep)
     return (
       <div className="flex flex-col h-full overflow-hidden">
-        {/* Flow rail — full width */}
-        <div className="shrink-0 px-6 py-3 border-b border-outline-variant/40 bg-background">
-          <FlowStepper currentStep={currentStep} completedSteps={completedSteps} onStepClick={handleStepClick} questionIdx={questionIdx} questionCount={activeStepData?.questions.length} />
-        </div>
-
-        {/* Main grid */}
+        {stickyHeader}
         <div ref={containerRef} className="flex flex-1 min-h-0 overflow-hidden">
-          {/* Left sidebar: context + Luma + calibration */}
-          <div
-            className="shrink-0 flex flex-col gap-3 p-4 overflow-y-auto"
-            style={{ width: leftWidth }}
-          >
-            {contextCard}
-            <LumaSidePanel message={lumaMessage} lumaState={lumaState} stepName={currentStepLabel} />
-            <CalibrationPreview steps={calibrationSteps} />
-          </div>
-
-          {/* Resizable separator */}
-          <div
-            onMouseDown={handleSeparatorMouseDown}
-            className="w-1 shrink-0 cursor-col-resize hover:bg-primary/20 active:bg-primary/40 transition-colors"
-            style={{ background: 'var(--color-outline-variant, rgba(196,200,188,0.3))' }}
-          />
-
+          {leftDescriptionPanel}
+          {dragHandle}
           {/* Right: reveal content */}
           <div
             key={`${currentStep}-reveal`}
             className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter min-w-0"
-            style={{ background: 'radial-gradient(ellipse at 100% 100%, rgba(74,124,89,0.04) 0%, transparent 55%)' }}
           >
             <StepReveal
               step={currentStep}
@@ -639,7 +862,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               competencySignal={competencySignal}
               questionRevealHistory={questionRevealHistory}
               onNext={handleNextStep}
-              isLastStep={stepIdx === FLOW_STEPS.length - 1}
+              isLastStep={isLastStep}
             />
           </div>
         </div>
@@ -650,94 +873,232 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // phase === 'question'
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Flow rail — full width */}
-      <div className="shrink-0 px-6 py-3 border-b border-outline-variant/40 bg-background">
-        <FlowStepper currentStep={currentStep} completedSteps={completedSteps} questionIdx={questionIdx} questionCount={activeStepData?.questions.length} />
-      </div>
+      {stickyHeader}
 
-      {/* Main grid */}
+      {/* Main two-pane body */}
       <div ref={containerRef} className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Left sidebar: context + Luma + calibration */}
-        <div
-          className="shrink-0 flex flex-col gap-3 p-4 overflow-y-auto"
-          style={{ width: leftWidth }}
-        >
-          {contextCard}
-          <LumaSidePanel message={lumaMessage} lumaState={lumaState} stepName={currentStepLabel} />
-          <CalibrationPreview steps={calibrationSteps} />
-        </div>
+        {leftDescriptionPanel}
+        {dragHandle}
 
-        {/* Resizable separator */}
-        <div
-          onMouseDown={handleSeparatorMouseDown}
-          className="w-1 shrink-0 cursor-col-resize hover:bg-primary/20 active:bg-primary/40 transition-colors"
-          style={{ background: 'var(--color-outline-variant, rgba(196,200,188,0.3))' }}
-        />
-
-        {/* Right: question + dock */}
-        <div
-          ref={workspaceRef}
-          key={`${currentStep}-question`}
-          className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter min-w-0"
-          style={{ background: 'radial-gradient(ellipse at 100% 100%, rgba(74,124,89,0.04) 0%, transparent 55%)' }}
-        >
-          {/* Nudge */}
-          {activeStepData?.nudge && (
-            <div
-              className="flex items-start gap-3 rounded-xl px-4 py-3"
-              style={{
-                background: 'rgba(255,255,255,0.72)',
-                backdropFilter: 'blur(8px)',
-                WebkitBackdropFilter: 'blur(8px)',
-                border: '1px solid rgba(74,124,89,0.18)',
-                borderLeft: '4px solid #4a7c59',
-                boxShadow: '0 2px 12px rgba(46,50,48,0.06)',
-              }}
-            >
+        {/* Right pane: workspace */}
+        <section style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--color-background)', overflow: 'hidden' }}>
+          {/* Workspace sub-header */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '10px 16px',
+            borderBottom: '1px solid var(--color-outline-faint)',
+            background: 'var(--color-surface)',
+            flexShrink: 0,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span
-                className="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5"
-                style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
+                className="material-symbols-outlined"
+                style={{ color: STAGE_COLOR[currentStep], fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
               >
-                lightbulb
+                {STAGE_ICON[currentStep]}
               </span>
-              <p className="font-body text-sm text-on-surface leading-relaxed">{activeStepData.nudge}</p>
+              <span style={{ fontFamily: 'var(--font-headline)', fontSize: 14, fontWeight: 700, color: 'var(--color-on-surface)' }}>
+                {STEP_LABEL[currentStep]} — answer
+              </span>
+              <span className="chip" style={{ fontSize: 11 }}>Step {stepIdx + 1} of 4</span>
             </div>
-          )}
-
-          {/* Question */}
-          {(isApiMode ? stepLoading : false) ? (
-            <div className="flex justify-center py-8">
-              <LumaGlyph size={40} state="reviewing" className="text-primary" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <button className="btn btn--ghost" style={{ padding: '6px 10px', fontSize: 12 }}>
+                <span className="material-symbols-outlined msi-sm">timer</span>
+              </button>
+              <button
+                className="btn btn--ghost"
+                style={{ padding: '6px 10px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                onClick={() => setHintOpen(v => !v)}
+              >
+                <span className="material-symbols-outlined msi-sm">lightbulb</span> Hint
+              </button>
+              <button className="btn btn--ghost" style={{ padding: '6px 10px', fontSize: 12 }}>
+                <span className="material-symbols-outlined msi-sm">fullscreen</span>
+              </button>
             </div>
-          ) : (isApiMode && stepError) ? (
-            <p className="font-body text-error text-sm text-center">{stepError}</p>
-          ) : currentQuestion ? (
-            <StepQuestion
-              question={currentQuestion}
-              responseType={currentQuestion.response_type}
-              selectedOptionId={selectedOptionId}
-              elaboration={reasoning}
-              revealed={false}
-              onOptionSelect={handleOptionSelect}
-              onElaborationChange={setReasoning}
-              disabled={activeSubmitting}
-            />
-          ) : null}
+          </div>
 
-          {/* ConfidenceDock */}
-          {currentQuestion && (
-            <ConfidenceDock
-              optionSelected={selectedOptionId !== null}
-              confidence={confidence}
-              onConfidenceChange={setConfidence}
-              reasoning={reasoning}
-              onReasoningChange={setReasoning}
-              onSubmit={handleSubmit}
-              submitting={activeSubmitting}
-              submitted={dockSubmitted}
-            />
-          )}
-        </div>
+          {/* Scrollable workspace content */}
+          <div
+            ref={workspaceRef}
+            key={`${currentStep}-question`}
+            className="flex-1 overflow-y-auto min-w-0"
+            style={{ padding: '20px 24px 32px', display: 'flex', flexDirection: 'column', gap: 16 }}
+          >
+            {/* Hint card */}
+            {hintOpen && activeStepData?.nudge && (
+              <div style={{
+                background: 'var(--color-amber-soft, #f3e2b9)',
+                border: '1px solid #e8d09a',
+                borderRadius: 12,
+                padding: '12px 14px',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 10,
+              }}>
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: 18, color: '#8a5c00', flexShrink: 0, marginTop: 1, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
+                >
+                  lightbulb
+                </span>
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontWeight: 700, fontSize: 13, color: '#5c3a00' }}>Hint · {STEP_LABEL[currentStep]} move: </span>
+                  <span style={{ fontSize: 13, color: '#5c3a00', lineHeight: 1.6 }}>{activeStepData.nudge}</span>
+                </div>
+                <button
+                  onClick={() => setHintOpen(false)}
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#8a5c00', flexShrink: 0 }}
+                >
+                  <span className="material-symbols-outlined msi-sm">close</span>
+                </button>
+              </div>
+            )}
+
+            {/* Question card */}
+            {(isApiMode ? stepLoading : false) ? (
+              <div className="flex justify-center py-8">
+                <LumaGlyph size={40} state="reviewing" className="text-primary" />
+              </div>
+            ) : (isApiMode && stepError) ? (
+              <p className="font-body text-error text-sm text-center">{stepError}</p>
+            ) : currentQuestion ? (
+              <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-outline-faint)', borderRadius: 14, padding: '18px 20px' }}>
+                <StepQuestion
+                  question={currentQuestion}
+                  responseType={currentQuestion.response_type}
+                  selectedOptionId={selectedOptionId}
+                  elaboration={reasoning}
+                  revealed={false}
+                  onOptionSelect={handleOptionSelect}
+                  onElaborationChange={setReasoning}
+                  disabled={activeSubmitting}
+                />
+              </div>
+            ) : null}
+
+            {/* Confidence card */}
+            {currentQuestion && (
+              <div style={{
+                background: 'var(--color-surface)',
+                border: '1px solid var(--color-outline-faint)',
+                borderRadius: 14,
+                padding: '14px 16px',
+              }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-on-surface-variant)', marginBottom: 10, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                  Confidence — how sure are you?
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                  {(['Guessing', 'Not sure', 'Fairly sure', 'Rock solid'] as const).map((c, i) => {
+                    const active = confidence === i
+                    return (
+                      <button
+                        key={c}
+                        onClick={() => setConfidence(i)}
+                        disabled={selectedOptionId === null}
+                        style={{
+                          padding: '9px 8px',
+                          borderRadius: 999,
+                          fontSize: 12.5,
+                          fontWeight: 600,
+                          background: active ? 'var(--color-on-surface)' : 'var(--color-surface-container-low)',
+                          color: active ? 'var(--color-inverse-on-surface, #f5f0e8)' : 'var(--color-on-surface-variant)',
+                          border: '1px solid ' + (active ? 'transparent' : 'var(--color-outline-faint)'),
+                          opacity: selectedOptionId !== null ? 1 : 0.5,
+                          cursor: selectedOptionId !== null ? 'pointer' : 'not-allowed',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 4,
+                          fontFamily: 'inherit',
+                          transition: 'background 120ms, color 120ms',
+                        }}
+                      >
+                        {i === 3 && (
+                          <span className="material-symbols-outlined msi-sm">verified</span>
+                        )}
+                        {c}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Scratchpad */}
+            {currentQuestion && (
+              <div style={{
+                background: 'var(--color-surface)',
+                border: '1px solid var(--color-outline-faint)',
+                borderRadius: 14,
+                padding: '14px 16px',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-on-surface-variant)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                    Scratchpad
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--color-on-surface-variant)', opacity: 0.7 }}>
+                    Not graded. Saved with your answer.
+                  </div>
+                </div>
+                <textarea
+                  value={reasoning}
+                  onChange={e => setReasoning(e.target.value)}
+                  placeholder="What's your reasoning?"
+                  rows={4}
+                  style={{
+                    width: '100%',
+                    resize: 'vertical',
+                    minHeight: 90,
+                    padding: '10px 12px',
+                    border: '1px solid var(--color-outline-variant)',
+                    borderRadius: 10,
+                    background: 'var(--color-surface-container-low)',
+                    fontFamily: 'inherit',
+                    fontSize: 13,
+                    color: 'var(--color-on-surface)',
+                    outline: 'none',
+                    lineHeight: 1.5,
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Actions bar */}
+            {currentQuestion && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 4 }}>
+                <button
+                  className="btn btn--ghost"
+                  style={{ fontSize: 12, padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  disabled={questionIdx === 0}
+                >
+                  <span className="material-symbols-outlined msi-sm">arrow_back</span> Previous
+                </button>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button
+                    className="btn btn--ghost"
+                    style={{ fontSize: 12, padding: '8px 14px' }}
+                    onClick={props.onExit ?? (() => window.history.back())}
+                  >
+                    Save &amp; exit
+                  </button>
+                  <button
+                    className="btn btn--primary"
+                    style={{ fontSize: 13, padding: '10px 18px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                    disabled={selectedOptionId === null || confidence === null || activeSubmitting}
+                    onClick={handleSubmit}
+                  >
+                    {isLastStep ? 'Finish' : `Next: ${NEXT_LABEL[currentStep]}`}
+                    <span className="material-symbols-outlined msi-sm">arrow_forward</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
       </div>
     </div>
   )
