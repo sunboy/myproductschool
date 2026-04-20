@@ -72,8 +72,58 @@ function renderBlock(block: string): string {
   return `<p>${renderInline(trimmed)}</p>`
 }
 
+// Tags that may contain blank lines internally. Split treats them as single
+// blocks and consumes lines until the matching closing tag.
+const WRAPPING_TAGS = ['figure', 'svg', 'table', 'ul', 'ol', 'div', 'pre', 'blockquote', 'aside']
+
+function splitIntoBlocks(mdx: string): string[] {
+  const blocks: string[] = []
+  const lines = mdx.split('\n')
+  let buffer: string[] = []
+  const flush = () => {
+    if (buffer.length === 0) return
+    blocks.push(buffer.join('\n'))
+    buffer = []
+  }
+
+  let i = 0
+  while (i < lines.length) {
+    const line = lines[i]
+    const openMatch = line.match(/^\s*<([a-z][a-z0-9]*)\b/i)
+    const tag = openMatch?.[1]?.toLowerCase()
+    if (tag && WRAPPING_TAGS.includes(tag)) {
+      flush()
+      const closeRe = new RegExp(`</${tag}>\\s*$`, 'i')
+      const wrapped: string[] = [line]
+      // If the opening line is also the closing line (single-line tag), emit immediately
+      if (closeRe.test(line)) {
+        blocks.push(line)
+        i++
+        continue
+      }
+      i++
+      while (i < lines.length) {
+        wrapped.push(lines[i])
+        if (closeRe.test(lines[i])) { i++; break }
+        i++
+      }
+      blocks.push(wrapped.join('\n'))
+      continue
+    }
+    if (line.trim() === '') {
+      flush()
+      i++
+      continue
+    }
+    buffer.push(line)
+    i++
+  }
+  flush()
+  return blocks
+}
+
 function renderMdx(mdx: string): string {
-  return mdx.split(/\n\n+/).map(renderBlock).filter(Boolean).join('\n')
+  return splitIntoBlocks(mdx).map(renderBlock).filter(Boolean).join('\n')
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
