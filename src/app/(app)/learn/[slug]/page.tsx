@@ -1,12 +1,13 @@
 'use client'
 
-import { use, useRef, useState, useEffect, Suspense } from 'react'
+import { use, useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useLearnModule } from '@/hooks/useLearnModule'
 import { useLearnChapter } from '@/hooks/useLearnChapter'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { LEARN_MODULES_SEED } from '@/lib/learn-seed'
+import { ChapterBody } from '@/components/learning/ChapterBody'
 import type { LearnModule, LearnChapterWithProgress, LearnDifficulty } from '@/lib/types'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -24,176 +25,8 @@ const DIFFICULTY_LABELS: Record<LearnDifficulty, string> = {
   'entry-point': 'Entry Point',
 }
 
-// ─── renderMdx (markdown subset → HTML) ──────────────────────────────────────
-// Supports: # ## ### headings, **bold**, *italic*, `code`, --- hrules,
-// - unordered lists, 1. ordered lists, [text](url) links,
-// pass-through for block-level raw HTML (svg, ul, ol, div, figure, table).
-
-function renderInline(text: string): string {
-  return text
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-}
-
-const BLOCK_TAG_RE = /^\s*<(svg|ul|ol|div|figure|table|pre|blockquote|aside)\b/i
-
-function renderBlock(block: string): string {
-  const trimmed = block.trim()
-  if (!trimmed) return ''
-
-  // Pass-through for raw block-level HTML (SVGs, pre-formatted lists, callouts)
-  if (BLOCK_TAG_RE.test(trimmed)) return trimmed
-
-  // Horizontal rule
-  if (/^-{3,}$/.test(trimmed)) return '<hr/>'
-
-  // Headings
-  const h3 = trimmed.match(/^### (.+)$/)
-  if (h3) return `<h3>${renderInline(h3[1])}</h3>`
-  const h2 = trimmed.match(/^## (.+)$/)
-  if (h2) return `<h2>${renderInline(h2[1])}</h2>`
-  const h1 = trimmed.match(/^# (.+)$/)
-  if (h1) return `<h1>${renderInline(h1[1])}</h1>`
-
-  // Lists: every non-empty line starts with "- " (unordered) or "1. "/"N. " (ordered)
-  const lines = trimmed.split('\n')
-  if (lines.every(l => /^-\s+/.test(l))) {
-    const items = lines.map(l => `<li>${renderInline(l.replace(/^-\s+/, ''))}</li>`).join('')
-    return `<ul>${items}</ul>`
-  }
-  if (lines.every(l => /^\d+\.\s+/.test(l))) {
-    const items = lines.map(l => `<li>${renderInline(l.replace(/^\d+\.\s+/, ''))}</li>`).join('')
-    return `<ol>${items}</ol>`
-  }
-
-  // Default: paragraph
-  return `<p>${renderInline(trimmed)}</p>`
-}
-
-// Tags that may contain blank lines internally. Split treats them as single
-// blocks and consumes lines until the matching closing tag.
-const WRAPPING_TAGS = ['figure', 'svg', 'table', 'ul', 'ol', 'div', 'pre', 'blockquote', 'aside']
-
-function splitIntoBlocks(mdx: string): string[] {
-  const blocks: string[] = []
-  const lines = mdx.split('\n')
-  let buffer: string[] = []
-  const flush = () => {
-    if (buffer.length === 0) return
-    blocks.push(buffer.join('\n'))
-    buffer = []
-  }
-
-  let i = 0
-  while (i < lines.length) {
-    const line = lines[i]
-    const openMatch = line.match(/^\s*<([a-z][a-z0-9]*)\b/i)
-    const tag = openMatch?.[1]?.toLowerCase()
-    if (tag && WRAPPING_TAGS.includes(tag)) {
-      flush()
-      const closeRe = new RegExp(`</${tag}>\\s*$`, 'i')
-      const wrapped: string[] = [line]
-      // If the opening line is also the closing line (single-line tag), emit immediately
-      if (closeRe.test(line)) {
-        blocks.push(line)
-        i++
-        continue
-      }
-      i++
-      while (i < lines.length) {
-        wrapped.push(lines[i])
-        if (closeRe.test(lines[i])) { i++; break }
-        i++
-      }
-      blocks.push(wrapped.join('\n'))
-      continue
-    }
-    if (line.trim() === '') {
-      flush()
-      i++
-      continue
-    }
-    buffer.push(line)
-    i++
-  }
-  flush()
-  return blocks
-}
-
-function renderMdx(mdx: string): string {
-  return splitIntoBlocks(mdx).map(renderBlock).filter(Boolean).join('\n')
-}
-
-// MdxBody renders pre-built HTML via a ref. The chapter body contains inline
-// SVG with nested <g transform=...> groups and <rect>/<text> children. The
-// HTML parser in DOMParser handles the outer <svg> correctly but loses some
-// nested SVG elements in the foreign-content path on certain engines. We
-// avoid that by parsing each <figure>/<svg> block with application/xhtml+xml
-// and every other block with text/html, then splicing the resulting DOM
-// nodes into the container.
-function parseBodyToNodes(html: string): Node[] {
-  const out: Node[] = []
-  const re = /<figure\b[\s\S]*?<\/figure>/gi
-  let lastIdx = 0
-  let m: RegExpExecArray | null
-  while ((m = re.exec(html)) !== null) {
-    if (m.index > lastIdx) {
-      const before = html.slice(lastIdx, m.index)
-      const htmlDoc = new DOMParser().parseFromString(`<!doctype html><html><body>${before}</body></html>`, 'text/html')
-      out.push(...Array.from(htmlDoc.body.childNodes))
-    }
-    const figureXhtml = `<div xmlns="http://www.w3.org/1999/xhtml">${m[0]}</div>`
-    const xmlDoc = new DOMParser().parseFromString(figureXhtml, 'application/xhtml+xml')
-    const root = xmlDoc.documentElement
-    if (root && root.getElementsByTagName('parsererror').length === 0) {
-      out.push(...Array.from(root.childNodes))
-    } else {
-      const fallback = new DOMParser().parseFromString(`<!doctype html><html><body>${m[0]}</body></html>`, 'text/html')
-      out.push(...Array.from(fallback.body.childNodes))
-    }
-    lastIdx = m.index + m[0].length
-  }
-  if (lastIdx < html.length) {
-    const tail = html.slice(lastIdx)
-    const htmlDoc = new DOMParser().parseFromString(`<!doctype html><html><body>${tail}</body></html>`, 'text/html')
-    out.push(...Array.from(htmlDoc.body.childNodes))
-  }
-  return out
-}
-
-function MdxBody({ html }: { html: string }) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    el.replaceChildren(...parseBodyToNodes(html))
-  }, [html])
-
-  return (
-    <div
-      ref={ref}
-      className="flex-1 overflow-y-auto px-6 py-5 prose prose-sm max-w-none
-        [&_h1]:font-headline [&_h1]:text-xl [&_h1]:font-bold [&_h1]:text-on-surface [&_h1]:mt-6 [&_h1]:mb-2
-        [&_h2]:font-headline [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-on-surface [&_h2]:mt-5 [&_h2]:mb-2
-        [&_h3]:font-label [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-on-surface [&_h3]:mt-4 [&_h3]:mb-1
-        [&_p]:text-on-surface-variant [&_p]:leading-relaxed [&_p]:mb-3 [&_p]:text-sm
-        [&_strong]:text-on-surface [&_strong]:font-semibold
-        [&_em]:italic
-        [&_hr]:border-outline-variant [&_hr]:my-4
-        [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ul]:space-y-1 [&_ul]:text-sm [&_ul]:text-on-surface-variant
-        [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_ol]:space-y-1 [&_ol]:text-sm [&_ol]:text-on-surface-variant
-        [&_li]:leading-relaxed
-        [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:no-underline
-        [&_code]:bg-surface-container-high [&_code]:text-on-surface [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[0.85em] [&_code]:font-mono
-        [&_figure]:my-5 [&_figure]:bg-surface-container-low [&_figure]:rounded-xl [&_figure]:p-4 [&_figure]:border [&_figure]:border-outline-variant
-        [&_figcaption]:text-xs [&_figcaption]:text-on-surface-variant [&_figcaption]:mt-2 [&_figcaption]:text-center
-        [&_figure_svg]:mx-auto [&_figure_svg]:block [&_figure_svg]:max-w-full [&_figure_svg]:h-auto
-        [&_blockquote]:border-l-2 [&_blockquote]:border-primary [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-on-surface [&_blockquote]:my-4"
-    />
-  )
-}
+// Chapter body rendering moved to `src/components/learning/ChapterBody.tsx`.
+// Figures are typed React components (src/components/learning/figures/*).
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
@@ -333,7 +166,7 @@ function ChapterPane({
       </div>
 
       {/* Body — scrollable */}
-      <MdxBody html={renderMdx(data.body_mdx)} />
+      <ChapterBody body_mdx={data.body_mdx} figures={data.figures ?? []} />
 
       {/* Footer */}
       <div className="px-5 py-3 border-t border-outline-variant bg-surface-container-low flex items-center justify-between flex-shrink-0">

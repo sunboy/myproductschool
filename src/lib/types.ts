@@ -657,6 +657,63 @@ export interface LearnModule {
   created_at: string
 }
 
+// ── Learn chapter figures (typed, structured; render via React components) ──
+
+export type FigureTone = 'ok' | 'warn' | 'neutral'
+
+// Row in a two-or-more-column comparison table. Optional arrow is drawn
+// between the first and second cell (used for "same move, different room"
+// style figures). Optional badge is a FLOW move name. Optional tone flags
+// a row as the uncalibrated / anti-pattern one (rendered in red).
+export interface ComparisonRow {
+  cells: string[]
+  badge?: string
+  tone?: FigureTone
+  arrow?: boolean
+}
+
+export interface ComparisonTableFigure {
+  kind: 'comparison_table'
+  caption: string
+  ariaLabel: string
+  headers: string[]
+  rows: ComparisonRow[]
+  footer?: { cells: string[] }
+}
+
+// Labeled box in a sequence. Anti-line is rendered in red italic beneath
+// the body (used for FLOW move cards with their anti-patterns).
+export interface ConnectedBox {
+  label: string
+  body: string[]
+  anti?: string
+  tone?: FigureTone
+}
+
+export interface ConnectedBoxesFigure {
+  kind: 'connected_boxes'
+  caption: string
+  ariaLabel: string
+  orientation: 'horizontal' | 'vertical'
+  boxes: ConnectedBox[]
+  showArrows: boolean
+}
+
+// Many-to-few mapping diagram (sources at top, targets at bottom, crossing
+// lines between them). Used for "frameworks → FLOW moves".
+export interface MappingDiagramFigure {
+  kind: 'mapping_diagram'
+  caption: string
+  ariaLabel: string
+  sources: string[]
+  targets: Array<{ label: string; body?: string; tone?: FigureTone }>
+  links: Array<{ from: number; to: number }>  // indices into sources and targets
+  sourcesLabel?: string
+  targetsLabel?: string
+}
+
+export type ChapterFigure = ComparisonTableFigure | ConnectedBoxesFigure | MappingDiagramFigure
+
 export interface LearnChapter {
   id: string
   module_id: string
@@ -666,6 +723,7 @@ export interface LearnChapter {
   sort_order: number
   hook_text: string
   body_mdx: string
+  figures: ChapterFigure[]
   created_at: string
 }
 
