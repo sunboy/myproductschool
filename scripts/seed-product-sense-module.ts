@@ -1,11 +1,10 @@
 // scripts/seed-product-sense-module.ts
 //
-// Seeds full body content for the Product Sense module (7 chapters).
-// Idempotent. Safe to re-run.
-//
+// Seeds Product Sense module prose + structured figures.
 // Run: npx tsx --tsconfig tsconfig.json scripts/seed-product-sense-module.ts
 
 import { createClient } from '@supabase/supabase-js'
+import type { ChapterFigure } from '../src/lib/types'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,9 +14,19 @@ const supabase = createClient(
 
 const MODULE_SLUG = 'product-sense'
 
-// ── Chapter 1: Engineers do not lack intuition ───────────────────────────────
+type ChapterSeed = {
+  slug: string
+  sort_order: number
+  body_mdx: string
+  figures: ChapterFigure[]
+}
 
-const CHAPTER_1_BODY = `## The claim
+// ── Chapter 1 ────────────────────────────────────────────────────────────────
+
+const CH1: ChapterSeed = {
+  slug: 'chapter-1',
+  sort_order: 1,
+  body_mdx: `## The claim
 
 Engineers who get told they "lack product sense" almost always made the move and could not name it, and the failure is about vocabulary rather than reasoning.
 
@@ -25,68 +34,7 @@ Every week, most engineers exercise the raw material of product thinking without
 
 ## The same move, different room
 
-<figure>
-<svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Same reasoning move under engineering and product labels">
-  <defs>
-    <marker id="ps1-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4a4e4a"/></marker>
-  </defs>
-  <g font-family="Nunito Sans, sans-serif" font-size="12">
-    <text x="170" y="22" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="13">Engineering label</text>
-    <text x="540" y="22" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="13">Product-sense label</text>
-
-    <g transform="translate(24,40)">
-      <rect width="292" height="38" rx="8" fill="#f0e8db" stroke="#6b6358"/>
-      <text x="16" y="24" fill="#2e3230" font-size="12">Root-cause debugging a flaky test</text>
-    </g>
-    <g transform="translate(394,40)">
-      <rect width="292" height="38" rx="8" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="16" y="24" fill="#2e3230" font-size="12">Frame: problem upstream of the symptom</text>
-    </g>
-    <line x1="316" y1="59" x2="394" y2="59" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#ps1-arr)"/>
-
-    <g transform="translate(24,90)">
-      <rect width="292" height="38" rx="8" fill="#f0e8db" stroke="#6b6358"/>
-      <text x="16" y="24" fill="#2e3230" font-size="12">API design: imagining the next caller</text>
-    </g>
-    <g transform="translate(394,90)">
-      <rect width="292" height="38" rx="8" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="16" y="24" fill="#2e3230" font-size="12">Cognitive empathy with the user</text>
-    </g>
-    <line x1="316" y1="109" x2="394" y2="109" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#ps1-arr)"/>
-
-    <g transform="translate(24,140)">
-      <rect width="292" height="38" rx="8" fill="#f0e8db" stroke="#6b6358"/>
-      <text x="16" y="24" fill="#2e3230" font-size="12">Architecture review options</text>
-    </g>
-    <g transform="translate(394,140)">
-      <rect width="292" height="38" rx="8" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="16" y="24" fill="#2e3230" font-size="12">List: structurally distinct paths forward</text>
-    </g>
-    <line x1="316" y1="159" x2="394" y2="159" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#ps1-arr)"/>
-
-    <g transform="translate(24,190)">
-      <rect width="292" height="38" rx="8" fill="#f0e8db" stroke="#6b6358"/>
-      <text x="16" y="24" fill="#2e3230" font-size="12">Build vs buy decision</text>
-    </g>
-    <g transform="translate(394,190)">
-      <rect width="292" height="38" rx="8" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="16" y="24" fill="#2e3230" font-size="12">Optimize: criterion + named sacrifice</text>
-    </g>
-    <line x1="316" y1="209" x2="394" y2="209" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#ps1-arr)"/>
-
-    <g transform="translate(24,240)">
-      <rect width="292" height="38" rx="8" fill="#f0e8db" stroke="#6b6358"/>
-      <text x="16" y="24" fill="#2e3230" font-size="12">PR with rollout plan and metric</text>
-    </g>
-    <g transform="translate(394,240)">
-      <rect width="292" height="38" rx="8" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="16" y="24" fill="#2e3230" font-size="12">Win: falsifiable recommendation + timeline</text>
-    </g>
-    <line x1="316" y1="259" x2="394" y2="259" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#ps1-arr)"/>
-  </g>
-</svg>
-<figcaption>Five reasoning moves, each with an engineering label the reader is already fluent in and a product-sense label that unlocks the same move in a product room.</figcaption>
-</figure>
+{{figure:0}}
 
 ## The canonical framing
 
@@ -100,11 +48,30 @@ The strongest engineer-led products in recent memory (Stripe, Linear, Figma) ran
 
 The fastest way to acquire product sense is not to learn new skills but to name the reasoning moves you already make, which turns invisible competence into legible judgment that product rooms can respond to.
 
-Next: **The "how" vs "why" mindset shift**, the single biggest unlock for engineers who want the product room to hear what they already know.`.trim()
+Next: **The "how" vs "why" mindset shift**, the single biggest unlock for engineers who want the product room to hear what they already know.`,
+  figures: [
+    {
+      kind: 'comparison_table',
+      ariaLabel: 'Same reasoning move under engineering and product labels',
+      caption: 'Five reasoning moves, each with an engineering label the reader is already fluent in and a product-sense label that unlocks the same move in a product room.',
+      headers: ['Engineering label', 'Product-sense label'],
+      rows: [
+        { cells: ['Root-cause debugging a flaky test', 'Frame: problem upstream of the symptom'], arrow: true, tone: 'neutral' },
+        { cells: ['API design: imagining the next caller', 'Cognitive empathy with the user'], arrow: true, tone: 'neutral' },
+        { cells: ['Architecture review options', 'List: structurally distinct paths forward'], arrow: true, tone: 'neutral' },
+        { cells: ['Build vs buy decision', 'Optimize: criterion + named sacrifice'], arrow: true, tone: 'neutral' },
+        { cells: ['PR with rollout plan and metric', 'Win: falsifiable recommendation + timeline'], arrow: true, tone: 'neutral' },
+      ],
+    },
+  ],
+}
 
-// ── Chapter 2: "how" vs "why" mindset shift ──────────────────────────────────
+// ── Chapter 2 ────────────────────────────────────────────────────────────────
 
-const CHAPTER_2_BODY = `## The shift
+const CH2: ChapterSeed = {
+  slug: 'chapter-2',
+  sort_order: 2,
+  body_mdx: `## The shift
 
 Engineering culture rewards fast execution and competence lives in the "how", but the single biggest unlock in product thinking is staying in "why" long enough for the "how" to get a different answer.
 
@@ -112,37 +79,7 @@ Every ten minutes an engineer spends upstream on "why" often saves weeks downstr
 
 ## Why the default order is wrong
 
-<figure>
-<svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Why flows into how, not the other way around">
-  <defs>
-    <marker id="ps2-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4a4e4a"/></marker>
-    <marker id="ps2-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#b83230"/></marker>
-  </defs>
-  <g font-family="Nunito Sans, sans-serif" font-size="12">
-    <g transform="translate(160,30)">
-      <rect width="400" height="64" rx="14" fill="#d8f0de" stroke="#4a7c59" stroke-width="1.5"/>
-      <text x="200" y="28" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="14">Why</text>
-      <text x="200" y="48" text-anchor="middle" fill="#4a4e4a" font-size="11">Problem, user, business context</text>
-    </g>
-
-    <line x1="360" y1="94" x2="360" y2="148" stroke="#4a7c59" stroke-width="2" marker-end="url(#ps2-arr)"/>
-    <text x="370" y="124" fill="#4a7c59" font-size="11" font-style="italic">answer flows down</text>
-
-    <g transform="translate(160,158)">
-      <rect width="400" height="64" rx="14" fill="#f0e8db" stroke="#6b6358" stroke-width="1.5"/>
-      <text x="200" y="28" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="14">How</text>
-      <text x="200" y="48" text-anchor="middle" fill="#4a4e4a" font-size="11">Architecture, implementation, release</text>
-    </g>
-
-    <path d="M 120 190 Q 60 190 60 90 Q 60 60 120 60" fill="none" stroke="#b83230" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ps2-red)"/>
-    <text x="12" y="132" fill="#b83230" font-size="11" font-style="italic">engineer instinct</text>
-    <text x="12" y="146" fill="#b83230" font-size="11" font-style="italic">(wrong direction)</text>
-
-    <text x="360" y="260" text-anchor="middle" fill="#4a4e4a" font-size="11">The how derives from the why. The reverse produces technically correct answers to the wrong question.</text>
-  </g>
-</svg>
-<figcaption>Product thinking asks "why" first and lets the answer constrain the "how". The engineer default is to start at "how" and back-fill the "why" to justify it, which is how strong implementations end up solving weak problems.</figcaption>
-</figure>
+{{figure:0}}
 
 ## A concrete example
 
@@ -156,11 +93,28 @@ The Five Whys exercise from Toyota production and Google's postmortem culture is
 
 In any room where a feature decision is being made, ask exactly one "why" question before any "how" conversation starts, and keep asking until the "why" would still be true if every proposed solution already existed. That is the unlock.
 
-Next: **The nine traits of a product-minded engineer**, Gergely Orosz's canonical list, mapped onto the habits the reader can start practicing Monday.`.trim()
+Next: **The nine traits of a product-minded engineer**, Gergely Orosz's canonical list, mapped onto the habits the reader can start practicing Monday.`,
+  figures: [
+    {
+      kind: 'connected_boxes',
+      ariaLabel: 'Why flows into how, not the other way around',
+      caption: 'Product thinking asks "why" first and lets the answer constrain the "how". The engineer default is to start at "how" and back-fill the "why" to justify it, which is how strong implementations end up solving weak problems.',
+      orientation: 'vertical',
+      showArrows: true,
+      boxes: [
+        { label: 'Why', body: ['Problem, user, business context'], tone: 'ok' },
+        { label: 'How', body: ['Architecture, implementation, release'], tone: 'neutral' },
+      ],
+    },
+  ],
+}
 
-// ── Chapter 3: Nine traits ───────────────────────────────────────────────────
+// ── Chapter 3 ────────────────────────────────────────────────────────────────
 
-const CHAPTER_3_BODY = `## The list
+const CH3: ChapterSeed = {
+  slug: 'chapter-3',
+  sort_order: 3,
+  body_mdx: `## The list
 
 Gergely Orosz's nine traits of product-minded engineers are not a personality checklist, they are nine specific habits that, when practiced together, describe the engineer every product team wishes they had on every project.
 
@@ -168,62 +122,7 @@ Orosz wrote the list in 2019 after years at Uber, Microsoft, Skype, and Skyscann
 
 ## The nine traits
 
-<figure>
-<svg viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nine traits of product-minded engineers with engineering analogs">
-  <g font-family="Nunito Sans, sans-serif" font-size="11">
-    <rect x="16" y="12" width="688" height="32" fill="#eae6de" stroke="#c4c8bc"/>
-    <text x="32" y="32" font-weight="700" fill="#2e3230">Trait</text>
-    <text x="400" y="32" font-weight="700" fill="#2e3230">Engineering analog the reader probably has</text>
-
-    <g transform="translate(0,46)">
-      <rect x="16" y="0" width="688" height="38" fill="#f0e8db" stroke="#b83230" stroke-dasharray="4 3"/>
-      <text x="32" y="24" fill="#2e3230" font-weight="700">1. Proactive with product ideas and opinions</text>
-      <text x="400" y="24" fill="#b83230" font-style="italic">Needs new reps for most engineers</text>
-    </g>
-    <g transform="translate(0,88)">
-      <rect x="16" y="0" width="688" height="38" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="24" fill="#2e3230" font-weight="700">2. Interest in business, user behavior, and data</text>
-      <text x="400" y="24" fill="#4a4e4a">On-call rotations, analytics dashboards</text>
-    </g>
-    <g transform="translate(0,130)">
-      <rect x="16" y="0" width="688" height="38" fill="#f0e8db" stroke="#b83230" stroke-dasharray="4 3"/>
-      <text x="32" y="24" fill="#2e3230" font-weight="700">3. Curiosity and keen interest in "why?"</text>
-      <text x="400" y="24" fill="#b83230" font-style="italic">Needs new reps for most engineers</text>
-    </g>
-    <g transform="translate(0,172)">
-      <rect x="16" y="0" width="688" height="38" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="24" fill="#2e3230" font-weight="700">4. Strong communicator with non-engineers</text>
-      <text x="400" y="24" fill="#4a4e4a">Code review comments, design docs</text>
-    </g>
-    <g transform="translate(0,214)">
-      <rect x="16" y="0" width="688" height="38" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="24" fill="#2e3230" font-weight="700">5. Offering product/engineering tradeoffs upfront</text>
-      <text x="400" y="24" fill="#4a4e4a">Latency vs cost, build vs buy memos</text>
-    </g>
-    <g transform="translate(0,256)">
-      <rect x="16" y="0" width="688" height="38" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="24" fill="#2e3230" font-weight="700">6. Pragmatic handling of edge cases</text>
-      <text x="400" y="24" fill="#4a4e4a">SRE work, what an error budget defends</text>
-    </g>
-    <g transform="translate(0,298)">
-      <rect x="16" y="0" width="688" height="38" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="24" fill="#2e3230" font-weight="700">7. Quick product validation cycles</text>
-      <text x="400" y="24" fill="#4a4e4a">Canary deploys, feature flags, hallway testing</text>
-    </g>
-    <g transform="translate(0,340)">
-      <rect x="16" y="0" width="688" height="38" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="24" fill="#2e3230" font-weight="700">8. End-to-end product feature ownership</text>
-      <text x="400" y="24" fill="#4a4e4a">"You build it, you run it" DevOps culture</text>
-    </g>
-    <g transform="translate(0,382)">
-      <rect x="16" y="0" width="688" height="38" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="24" fill="#2e3230" font-weight="700">9. Strong product instincts from repeated cycles</text>
-      <text x="400" y="24" fill="#4a4e4a">Same mechanism as engineering taste</text>
-    </g>
-  </g>
-</svg>
-<figcaption>Seven of the nine traits have direct engineering analogs the reader probably already practices. Traits 1 and 3, which ask the engineer to be proactive with product ideas and to push for "why" in product meetings, are the two that usually need new reps because most engineering cultures explicitly defer those moves to PMs.</figcaption>
-</figure>
+{{figure:0}}
 
 ## What the list points at
 
@@ -241,11 +140,34 @@ Trait 9 is particularly worth naming: "strong product instincts built through re
 
 Pick one of traits 1 or 3 (the two that need new reps for most engineers) and practice it for a week before adding anything else. One week of asking one "why" per meeting, or one week of bringing one unsolicited product suggestion to the PM, does more than a month of reading about the other seven.
 
-Next: **The Why-First Check**, a three-gate filter that takes trait 3 and makes it a hard rule for any feature spec.`.trim()
+Next: **The Why-First Check**, a three-gate filter that takes trait 3 and makes it a hard rule for any feature spec.`,
+  figures: [
+    {
+      kind: 'comparison_table',
+      ariaLabel: 'Nine traits of product-minded engineers with engineering analogs',
+      caption: 'Seven of the nine traits have direct engineering analogs the reader probably already practices. Traits 1 and 3, which ask the engineer to be proactive with product ideas and to push for "why" in product meetings, are the two that usually need new reps because most engineering cultures explicitly defer those moves to PMs.',
+      headers: ['Trait', 'Engineering analog the reader probably has'],
+      rows: [
+        { cells: ['1. Proactive with product ideas and opinions', 'Needs new reps for most engineers'], tone: 'warn' },
+        { cells: ['2. Interest in business, user behavior, and data', 'On-call rotations, analytics dashboards'], tone: 'ok' },
+        { cells: ['3. Curiosity and keen interest in "why?"', 'Needs new reps for most engineers'], tone: 'warn' },
+        { cells: ['4. Strong communicator with non-engineers', 'Code review comments, design docs'], tone: 'ok' },
+        { cells: ['5. Offering product/engineering tradeoffs upfront', 'Latency vs cost, build vs buy memos'], tone: 'ok' },
+        { cells: ['6. Pragmatic handling of edge cases', 'SRE work, what an error budget defends'], tone: 'ok' },
+        { cells: ['7. Quick product validation cycles', 'Canary deploys, feature flags, hallway testing'], tone: 'ok' },
+        { cells: ['8. End-to-end product feature ownership', '"You build it, you run it" DevOps culture'], tone: 'ok' },
+        { cells: ['9. Strong product instincts from repeated cycles', 'Same mechanism as engineering taste'], tone: 'ok' },
+      ],
+    },
+  ],
+}
 
-// ── Chapter 4: Why-First Check ───────────────────────────────────────────────
+// ── Chapter 4 ────────────────────────────────────────────────────────────────
 
-const CHAPTER_4_BODY = `## The check
+const CH4: ChapterSeed = {
+  slug: 'chapter-4',
+  sort_order: 4,
+  body_mdx: `## The check
 
 Before any feature spec leaves engineering, it passes three questions in order: user impact, business viability, engineering sense. Engineering sense comes third, not first, and that ordering is the whole lesson.
 
@@ -253,48 +175,7 @@ Engineers default to evaluating ideas in the order they feel competent, which is
 
 ## The three gates
 
-<figure>
-<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three gates of the Why-First Check, top to bottom">
-  <defs>
-    <marker id="ps4-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4a4e4a"/></marker>
-    <marker id="ps4-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#b83230"/></marker>
-  </defs>
-  <g font-family="Nunito Sans, sans-serif" font-size="12">
-    <g transform="translate(180,20)">
-      <rect width="360" height="70" rx="14" fill="#d8f0de" stroke="#4a7c59" stroke-width="1.5"/>
-      <text x="180" y="26" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="14">Gate 1: User impact</text>
-      <text x="180" y="48" text-anchor="middle" fill="#4a4e4a" font-size="11">What changes for a real named person if this ships?</text>
-    </g>
-    <line x1="360" y1="90" x2="360" y2="114" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#ps4-arr)"/>
-
-    <g transform="translate(180,120)">
-      <rect width="360" height="70" rx="14" fill="#f0e8db" stroke="#6b6358" stroke-width="1.5"/>
-      <text x="180" y="26" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="14">Gate 2: Business viability</text>
-      <text x="180" y="48" text-anchor="middle" fill="#4a4e4a" font-size="11">Does this connect to a stakeholder's actual need or the business model?</text>
-    </g>
-    <line x1="360" y1="190" x2="360" y2="214" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#ps4-arr)"/>
-
-    <g transform="translate(180,220)">
-      <rect width="360" height="70" rx="14" fill="#c4a66a33" stroke="#705c30" stroke-width="1.5"/>
-      <text x="180" y="26" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="14">Gate 3: Engineering sense</text>
-      <text x="180" y="48" text-anchor="middle" fill="#4a4e4a" font-size="11">Can we build it well with what we have?</text>
-    </g>
-
-    <g transform="translate(570,40)">
-      <rect width="130" height="240" rx="10" fill="#faf6f0" stroke="#b83230" stroke-dasharray="4 3"/>
-      <text x="65" y="100" text-anchor="middle" fill="#b83230" font-size="11" font-style="italic">Engineer default</text>
-      <text x="65" y="118" text-anchor="middle" fill="#b83230" font-size="11" font-style="italic">starts at Gate 3</text>
-      <text x="65" y="140" text-anchor="middle" fill="#b83230" font-size="11" font-style="italic">and backfills 1+2</text>
-    </g>
-    <path d="M 568 220 Q 540 150 540 110 Q 540 60 540 50" fill="none" stroke="#b83230" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ps4-red)"/>
-
-    <text x="20" y="60" fill="#4a7c59" font-size="11">Product-sense</text>
-    <text x="20" y="76" fill="#4a7c59" font-size="11">order flows</text>
-    <text x="20" y="92" fill="#4a7c59" font-size="11">top down.</text>
-  </g>
-</svg>
-<figcaption>The check runs top-down. Engineer instinct is to start at Gate 3 and back-fill the other two, which is how technically excellent features end up solving weak problems.</figcaption>
-</figure>
+{{figure:0}}
 
 ## Why the order matters
 
@@ -312,11 +193,29 @@ Architecture reviews at companies with strong engineering cultures (Google, Stri
 
 On any feature the reader proposes or reviews this week, write the three gates on a sticky note in order and refuse to discuss Gate 3 until Gates 1 and 2 have answers that would survive a skeptical stakeholder. Feature quality rises the moment the order becomes habit.
 
-Next: **Four common failure modes in product-sense interviews**, the specific patterns that interviewers use to separate reasoning from recitation.`.trim()
+Next: **Four common failure modes in product-sense interviews**, the specific patterns that interviewers use to separate reasoning from recitation.`,
+  figures: [
+    {
+      kind: 'connected_boxes',
+      ariaLabel: 'Three gates of the Why-First Check, top to bottom',
+      caption: 'The check runs top-down. Engineer instinct is to start at Gate 3 and back-fill the other two, which is how technically excellent features end up solving weak problems.',
+      orientation: 'vertical',
+      showArrows: true,
+      boxes: [
+        { label: 'Gate 1: User impact', body: ['What changes for a real named person if this ships?'], tone: 'ok' },
+        { label: 'Gate 2: Business viability', body: ["Does this connect to a stakeholder's actual need or the business model?"], tone: 'neutral' },
+        { label: 'Gate 3: Engineering sense', body: ['Can we build it well with what we have?'], tone: 'neutral' },
+      ],
+    },
+  ],
+}
 
-// ── Chapter 5: Four failure modes ────────────────────────────────────────────
+// ── Chapter 5 ────────────────────────────────────────────────────────────────
 
-const CHAPTER_5_BODY = `## The four modes
+const CH5: ChapterSeed = {
+  slug: 'chapter-5',
+  sort_order: 5,
+  body_mdx: `## The four modes
 
 Interviewers can usually tell within the first two minutes whether a candidate is a product thinker or a framework reciter, and the signal comes from four recognizable failure modes that show up in the opening exchange.
 
@@ -324,49 +223,7 @@ Exponent's 2024 PM Interview Report names product sense as the number-one reason
 
 ## The four modes, with their tells
 
-<figure>
-<svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four failure modes and what the interviewer sees">
-  <g font-family="Nunito Sans, sans-serif" font-size="11">
-    <rect x="16" y="12" width="688" height="32" fill="#eae6de" stroke="#c4c8bc"/>
-    <text x="32" y="32" font-weight="700" fill="#2e3230">Failure mode</text>
-    <text x="360" y="32" font-weight="700" fill="#2e3230">The interviewer's tell</text>
-
-    <g transform="translate(0,46)">
-      <rect x="16" y="0" width="688" height="68" fill="#faf6f0" stroke="#b83230"/>
-      <text x="32" y="24" fill="#b83230" font-weight="700">1. Solution-first</text>
-      <text x="32" y="44" fill="#4a4e4a" font-size="10" font-style="italic">Candidate hears "improve Spotify" and is describing features within 30 seconds.</text>
-      <text x="360" y="24" fill="#4a4e4a">No user named. No problem framing.</text>
-      <text x="360" y="44" fill="#4a4e4a">Why-First Check skipped entirely.</text>
-      <text x="360" y="58" fill="#4a7c59" font-size="10" font-style="italic">Recover: stop, name the user, then pause.</text>
-    </g>
-    <g transform="translate(0,120)">
-      <rect x="16" y="0" width="688" height="68" fill="#faf6f0" stroke="#b83230"/>
-      <text x="32" y="24" fill="#b83230" font-weight="700">2. Framework recitation</text>
-      <text x="32" y="44" fill="#4a4e4a" font-size="10" font-style="italic">"Using CIRCLES, I will first Comprehend..."</text>
-      <text x="360" y="24" fill="#4a4e4a">Interviewer predicts every section.</text>
-      <text x="360" y="44" fill="#4a4e4a">Mechanical, not conversational.</text>
-      <text x="360" y="58" fill="#4a7c59" font-size="10" font-style="italic">Recover: use the framework in your head, not your mouth.</text>
-    </g>
-    <g transform="translate(0,194)">
-      <rect x="16" y="0" width="688" height="68" fill="#faf6f0" stroke="#b83230"/>
-      <text x="32" y="24" fill="#b83230" font-weight="700">3. Optimizing the wrong problem</text>
-      <text x="32" y="44" fill="#4a4e4a" font-size="10" font-style="italic">Accepts the stated question as the real question.</text>
-      <text x="360" y="24" fill="#4a4e4a">No reframe. No "what if the real issue is..."</text>
-      <text x="360" y="44" fill="#4a4e4a">Frame step skipped.</text>
-      <text x="360" y="58" fill="#4a7c59" font-size="10" font-style="italic">Recover: one sentence of reframing before answering.</text>
-    </g>
-    <g transform="translate(0,268)">
-      <rect x="16" y="0" width="688" height="68" fill="#faf6f0" stroke="#b83230"/>
-      <text x="32" y="24" fill="#b83230" font-weight="700">4. No named tradeoff</text>
-      <text x="32" y="44" fill="#4a4e4a" font-size="10" font-style="italic">Picks a solution and argues only the upside.</text>
-      <text x="360" y="24" fill="#4a4e4a">No sacrifice. Reads as advocacy, not analysis.</text>
-      <text x="360" y="44" fill="#4a4e4a">Optimize step incomplete.</text>
-      <text x="360" y="58" fill="#4a7c59" font-size="10" font-style="italic">Recover: name the criterion and what is given up.</text>
-    </g>
-  </g>
-</svg>
-<figcaption>Each failure mode maps to a specific skipped FLOW step. The recovery move in each case is the move the candidate skipped, applied deliberately in the first minute of the answer.</figcaption>
-</figure>
+{{figure:0}}
 
 ## Why interviewers see these so fast
 
@@ -384,11 +241,29 @@ The same four failure modes appear in technical interviews. Jumping to code with
 
 In the first minute of any product-sense question, name a user, reframe the problem if it needs reframing, and then commit to one criterion with one sacrifice. Skip any of the three and at least one of the four failure modes is active.
 
-Next: **Framework recitation vs actual thinking**, a closer look at why the internet's PM interview prep has optimized away the reasoning the frameworks were invented to produce.`.trim()
+Next: **Framework recitation vs actual thinking**, a closer look at why the internet's PM interview prep has optimized away the reasoning the frameworks were invented to produce.`,
+  figures: [
+    {
+      kind: 'comparison_table',
+      ariaLabel: 'Four failure modes and what the interviewer sees',
+      caption: "Each failure mode maps to a specific skipped FLOW step. The recovery move in each case is the move the candidate skipped, applied deliberately in the first minute of the answer.",
+      headers: ['Failure mode', "The interviewer's tell"],
+      rows: [
+        { cells: ['1. Solution-first', 'No user named. No problem framing. Why-First skipped.'], tone: 'warn' },
+        { cells: ['2. Framework recitation', 'Mechanical "Using CIRCLES, I will first..."'], tone: 'warn' },
+        { cells: ['3. Optimizing the wrong problem', 'No reframe. Frame step skipped.'], tone: 'warn' },
+        { cells: ['4. No named tradeoff', 'Only the upside. Optimize step incomplete.'], tone: 'warn' },
+      ],
+    },
+  ],
+}
 
-// ── Chapter 6: Framework recitation trap ─────────────────────────────────────
+// ── Chapter 6 ────────────────────────────────────────────────────────────────
 
-const CHAPTER_6_BODY = `## The trap
+const CH6: ChapterSeed = {
+  slug: 'chapter-6',
+  sort_order: 6,
+  body_mdx: `## The trap
 
 The internet has optimized PM interview prep into a recitation exam, and candidates can pass the test of knowing CIRCLES, DIGS, RICE, HEART, and AARRR without once demonstrating the reasoning those frameworks were invented to produce.
 
@@ -396,57 +271,7 @@ Frameworks are compression of past reasoning. They work backward, not forward: s
 
 ## What the popular frameworks actually compress
 
-<figure>
-<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Popular frameworks mapped onto the underlying reasoning moves">
-  <defs>
-    <marker id="ps6-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4a4e4a"/></marker>
-  </defs>
-  <g font-family="Nunito Sans, sans-serif" font-size="11">
-    <text x="360" y="22" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="13">Framework (what the candidate memorizes)</text>
-
-    <g transform="translate(40,36)">
-      <rect width="140" height="34" rx="8" fill="#f0e8db" stroke="#6b6358"/>
-      <text x="70" y="22" text-anchor="middle" fill="#2e3230" font-weight="700">CIRCLES</text>
-    </g>
-    <g transform="translate(200,36)">
-      <rect width="140" height="34" rx="8" fill="#f0e8db" stroke="#6b6358"/>
-      <text x="70" y="22" text-anchor="middle" fill="#2e3230" font-weight="700">RICE</text>
-    </g>
-    <g transform="translate(380,36)">
-      <rect width="140" height="34" rx="8" fill="#f0e8db" stroke="#6b6358"/>
-      <text x="70" y="22" text-anchor="middle" fill="#2e3230" font-weight="700">HEART</text>
-    </g>
-    <g transform="translate(540,36)">
-      <rect width="140" height="34" rx="8" fill="#f0e8db" stroke="#6b6358"/>
-      <text x="70" y="22" text-anchor="middle" fill="#2e3230" font-weight="700">AARRR</text>
-    </g>
-
-    <line x1="110" y1="74" x2="160" y2="130" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#ps6-arr)"/>
-    <line x1="270" y1="74" x2="360" y2="210" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#ps6-arr)"/>
-    <line x1="450" y1="74" x2="560" y2="260" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#ps6-arr)"/>
-    <line x1="610" y1="74" x2="560" y2="260" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#ps6-arr)"/>
-
-    <text x="360" y="160" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="13">The move (what the interviewer is listening for)</text>
-
-    <g transform="translate(80,170)">
-      <rect width="160" height="60" rx="12" fill="#d8f0de" stroke="#4a7c59" stroke-width="1.5"/>
-      <text x="80" y="24" text-anchor="middle" font-weight="700" fill="#2e3230">Frame + List</text>
-      <text x="80" y="44" text-anchor="middle" fill="#4a4e4a" font-size="10">user, problem, options</text>
-    </g>
-    <g transform="translate(280,220)">
-      <rect width="160" height="60" rx="12" fill="#c4a66a33" stroke="#705c30" stroke-width="1.5"/>
-      <text x="80" y="24" text-anchor="middle" font-weight="700" fill="#2e3230">Optimize</text>
-      <text x="80" y="44" text-anchor="middle" fill="#4a4e4a" font-size="10">criterion + sacrifice</text>
-    </g>
-    <g transform="translate(480,240)">
-      <rect width="160" height="60" rx="12" fill="#78a88644" stroke="#4a7c59" stroke-width="1.5"/>
-      <text x="80" y="24" text-anchor="middle" font-weight="700" fill="#2e3230">Win</text>
-      <text x="80" y="44" text-anchor="middle" fill="#4a4e4a" font-size="10">predicted outcome + metric</text>
-    </g>
-  </g>
-</svg>
-<figcaption>Every popular PM framework is a compression of one or two FLOW moves. The framework names help listeners locate what you are doing, but the reasoning move is the thing being evaluated.</figcaption>
-</figure>
+{{figure:0}}
 
 ## The mapping, briefly
 
@@ -464,11 +289,36 @@ The same trap exists in engineering, where candidates who cite "SOLID" or "micro
 
 The reader should learn the reasoning move, name it in their own words, and reference the framework only when it helps the listener place what the reader is doing. Saying "I am going to name the criterion and the sacrifice first" is worth more than saying "using the RICE framework."
 
-Next: **How to build product reps**, a weekly schedule the reader can run in their current job to convert the frameworks into the reasoning they were meant to produce.`.trim()
+Next: **How to build product reps**, a weekly schedule the reader can run in their current job to convert the frameworks into the reasoning they were meant to produce.`,
+  figures: [
+    {
+      kind: 'mapping_diagram',
+      ariaLabel: 'Popular frameworks mapped onto the underlying reasoning moves',
+      caption: 'Every popular PM framework is a compression of one or two FLOW moves. The framework names help listeners locate what you are doing, but the reasoning move is the thing being evaluated.',
+      sourcesLabel: 'Framework (what the candidate memorizes)',
+      targetsLabel: 'The move (what the interviewer is listening for)',
+      sources: ['CIRCLES', 'RICE', 'HEART', 'AARRR'],
+      targets: [
+        { label: 'Frame + List', body: 'user, problem, options', tone: 'ok' },
+        { label: 'Optimize', body: 'criterion + sacrifice', tone: 'neutral' },
+        { label: 'Win', body: 'predicted outcome + metric', tone: 'ok' },
+      ],
+      links: [
+        { from: 0, to: 0 },
+        { from: 1, to: 1 },
+        { from: 2, to: 2 },
+        { from: 3, to: 2 },
+      ],
+    },
+  ],
+}
 
-// ── Chapter 7: Building reps ─────────────────────────────────────────────────
+// ── Chapter 7 ────────────────────────────────────────────────────────────────
 
-const CHAPTER_7_BODY = `## The rep schedule
+const CH7: ChapterSeed = {
+  slug: 'chapter-7',
+  sort_order: 7,
+  body_mdx: `## The rep schedule
 
 Product sense is a cumulative skill that responds to frequency, not intensity, and the engineer who practices four small reps a week for six months ends up with better product instincts than the engineer who reads five books over a weekend.
 
@@ -476,50 +326,7 @@ The reader cannot practice product thinking in the abstract. They need feedback 
 
 ## Four reps, one week
 
-<figure>
-<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Weekly product-reps schedule for engineers">
-  <g font-family="Nunito Sans, sans-serif" font-size="11">
-    <rect x="16" y="12" width="688" height="32" fill="#eae6de" stroke="#c4c8bc"/>
-    <text x="32" y="32" font-weight="700" fill="#2e3230">Day</text>
-    <text x="120" y="32" font-weight="700" fill="#2e3230">Rep</text>
-    <text x="480" y="32" font-weight="700" fill="#2e3230">Time</text>
-
-    <g transform="translate(0,46)">
-      <rect x="16" y="0" width="688" height="46" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="20" fill="#2e3230" font-weight="700">Mon</text>
-      <text x="120" y="20" fill="#2e3230" font-weight="700">Attend one user research session or customer call</text>
-      <text x="120" y="38" fill="#4a4e4a" font-size="10" font-style="italic">Watch someone use the product; note friction and delight</text>
-      <text x="480" y="20" fill="#4a4e4a">30 min</text>
-    </g>
-    <g transform="translate(0,96)">
-      <rect x="16" y="0" width="688" height="46" fill="#f0e8db" stroke="#6b6358"/>
-      <text x="32" y="20" fill="#2e3230" font-weight="700">Wed</text>
-      <text x="120" y="20" fill="#2e3230" font-weight="700">Ask one "why" question in a product or design meeting</text>
-      <text x="120" y="38" fill="#4a4e4a" font-size="10" font-style="italic">Specific, not generic. About the problem, not the how.</text>
-      <text x="480" y="20" fill="#4a4e4a">2 min</text>
-    </g>
-    <g transform="translate(0,146)">
-      <rect x="16" y="0" width="688" height="46" fill="#c4a66a33" stroke="#705c30"/>
-      <text x="32" y="20" fill="#2e3230" font-weight="700">Thu</text>
-      <text x="120" y="20" fill="#2e3230" font-weight="700">Deconstruct one product in 200 words</text>
-      <text x="120" y="38" fill="#4a4e4a" font-size="10" font-style="italic">What job is it hiring, what is it optimizing, what is it sacrificing?</text>
-      <text x="480" y="20" fill="#4a4e4a">20 min</text>
-    </g>
-    <g transform="translate(0,196)">
-      <rect x="16" y="0" width="688" height="46" fill="#78a88644" stroke="#4a7c59"/>
-      <text x="32" y="20" fill="#2e3230" font-weight="700">Fri</text>
-      <text x="120" y="20" fill="#2e3230" font-weight="700">Write one tradeoff note on the week's PR or design doc</text>
-      <text x="120" y="38" fill="#4a4e4a" font-size="10" font-style="italic">"This decision optimizes for X at the cost of Y because Z."</text>
-      <text x="480" y="20" fill="#4a4e4a">10 min</text>
-    </g>
-
-    <rect x="16" y="254" width="688" height="44" fill="#faf6f0" stroke="#c4c8bc"/>
-    <text x="32" y="278" fill="#2e3230" font-weight="700">Total</text>
-    <text x="120" y="278" fill="#4a4e4a">Under three hours a week. Compounds over six months into legible product judgment.</text>
-  </g>
-</svg>
-<figcaption>Each rep is small enough to fit inside an existing engineering job. The total weekly commitment is under three hours, and the skill grows in the same cumulative way engineering taste grows: slowly, reliably, through reps.</figcaption>
-</figure>
+{{figure:0}}
 
 ## Why these four reps specifically
 
@@ -537,42 +344,50 @@ Engineers already build reps the same way in their craft. Reading other people's
 
 Pick one of the four reps and run it for two weeks before adding the second. Sustained single-rep practice for six months produces more product judgment than four-rep practice for two weeks followed by nothing.
 
-That is the end of the module. The next step is to put the vocabulary to work: pick a challenge tagged with the FLOW step you feel least sure about and run the move against a scenario where the stakes do not punish the practice.`.trim()
+That is the end of the module. The next step is to put the vocabulary to work: pick a challenge tagged with the FLOW step you feel least sure about and run the move against a scenario where the stakes do not punish the practice.`,
+  figures: [
+    {
+      kind: 'comparison_table',
+      ariaLabel: 'Weekly product-reps schedule for engineers',
+      caption: 'Each rep is small enough to fit inside an existing engineering job. The total weekly commitment is under three hours, and the skill grows in the same cumulative way engineering taste grows: slowly, reliably, through reps.',
+      headers: ['Day', 'Rep', 'Time'],
+      rows: [
+        { cells: ['Mon', 'Attend one user research session or customer call', '30 min'], tone: 'ok' },
+        { cells: ['Wed', 'Ask one "why" question in a product or design meeting', '2 min'], tone: 'neutral' },
+        { cells: ['Thu', 'Deconstruct one product in 200 words', '20 min'], tone: 'neutral' },
+        { cells: ['Fri', 'Write one tradeoff note on the week\'s PR or design doc', '10 min'], tone: 'ok' },
+      ],
+      footer: {
+        cells: ['Total', 'Under three hours a week. Compounds over six months.', ''],
+      },
+    },
+  ],
+}
 
-// ── Wire-up ──────────────────────────────────────────────────────────────────
-
-const CHAPTERS = [
-  { slug: 'chapter-1', sort_order: 1, body: CHAPTER_1_BODY },
-  { slug: 'chapter-2', sort_order: 2, body: CHAPTER_2_BODY },
-  { slug: 'chapter-3', sort_order: 3, body: CHAPTER_3_BODY },
-  { slug: 'chapter-4', sort_order: 4, body: CHAPTER_4_BODY },
-  { slug: 'chapter-5', sort_order: 5, body: CHAPTER_5_BODY },
-  { slug: 'chapter-6', sort_order: 6, body: CHAPTER_6_BODY },
-  { slug: 'chapter-7', sort_order: 7, body: CHAPTER_7_BODY },
-]
+const CHAPTERS: ChapterSeed[] = [CH1, CH2, CH3, CH4, CH5, CH6, CH7]
 
 async function run() {
   const mod = await supabase.from('learn_modules').select('id').eq('slug', MODULE_SLUG).single()
   if (mod.error || !mod.data) {
-    console.error(`[seed-product-sense-module] module "${MODULE_SLUG}" not found:`, mod.error)
+    console.error(`[seed-product-sense] module ${MODULE_SLUG} not found:`, mod.error)
     process.exit(1)
   }
-  console.log(`[seed-product-sense-module] module ${MODULE_SLUG} -> ${mod.data.id}`)
+  console.log(`[seed-product-sense] module ${MODULE_SLUG} -> ${mod.data.id}`)
 
   for (const ch of CHAPTERS) {
     const { error } = await supabase
       .from('learn_chapters')
-      .update({ body_mdx: ch.body })
+      .update({ body_mdx: ch.body_mdx, figures: ch.figures })
       .eq('module_id', mod.data.id)
       .eq('slug', ch.slug)
     if (error) {
-      console.error(`[seed-product-sense-module] ${ch.slug} failed:`, error)
+      console.error(`  ${ch.slug} failed:`, error)
       process.exit(1)
     }
-    console.log(`  ${ch.sort_order}. ${ch.slug} (${ch.body.length} chars)`)
+    console.log(`  ${ch.sort_order}. ${ch.slug} (${ch.body_mdx.length} chars, ${ch.figures.length} figure${ch.figures.length === 1 ? '' : 's'})`)
   }
 
-  console.log(`\n[seed-product-sense-module] Done. Visit http://localhost:3000/explore/modules/${MODULE_SLUG}`)
+  console.log('\n[seed-product-sense] Done.')
 }
 
 run().catch(e => { console.error(e); process.exit(1) })

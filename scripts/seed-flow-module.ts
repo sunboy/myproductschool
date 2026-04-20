@@ -1,13 +1,12 @@
 // scripts/seed-flow-module.ts
 //
-// Seeds the FLOW course module into learn_modules + learn_chapters.
+// Seeds FLOW module: prose + structured figures.
 // Idempotent. Safe to re-run.
 //
 // Run: npx tsx --tsconfig tsconfig.json scripts/seed-flow-module.ts
-//
-// Requires: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 
 import { createClient } from '@supabase/supabase-js'
+import type { ChapterFigure } from '../src/lib/types'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,73 +28,35 @@ const MODULE_ROW = {
   sort_order: 1,
 }
 
-// ── Chapter 1: full body ─────────────────────────────────────────────────────
-//
-// Renderer supports: headings, bold, italic, code, hrules, lists, links, and
-// pass-through for block-level HTML (svg, figure, div, ul, ol, table).
-// Voice: direct, no scene-setting, diagrams carry the load.
+type ChapterSeed = {
+  slug: string
+  title: string
+  subtitle: string
+  hook_text: string
+  sort_order: number
+  body_mdx: string
+  figures: ChapterFigure[]
+}
 
-const CHAPTER_1_BODY = `## What FLOW is
+// ── Chapter 1: Why FLOW ──────────────────────────────────────────────────────
+
+const CH1: ChapterSeed = {
+  slug: 'why-flow',
+  title: 'Why FLOW',
+  subtitle: 'And why engineers with strong intuition freeze in product reviews.',
+  hook_text: 'Engineers do not lack product intuition. They lack vocabulary and reps.',
+  sort_order: 1,
+  body_mdx: `## What FLOW is
 
 FLOW is four reasoning moves that separate product thinking from technical thinking, giving you a vocabulary for decisions you already make rather than a framework to memorize.
 
-<figure>
-<svg viewBox="0 0 720 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The four FLOW moves">
-  <defs>
-    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4a4e4a"/></marker>
-  </defs>
-  <g font-family="Nunito Sans, sans-serif" font-size="13">
-    <g><rect x="8" y="30" width="160" height="100" rx="14" fill="#d8f0de" stroke="#4a7c59" stroke-width="1.5"/><text x="88" y="62" text-anchor="middle" font-weight="700" fill="#2e3230">Frame</text><text x="88" y="88" text-anchor="middle" fill="#4a4e4a" font-size="11">Find the real</text><text x="88" y="104" text-anchor="middle" fill="#4a4e4a" font-size="11">problem</text><text x="88" y="122" text-anchor="middle" fill="#b83230" font-size="10" font-style="italic">not the stated one</text></g>
-    <g><rect x="188" y="30" width="160" height="100" rx="14" fill="#f0e8db" stroke="#6b6358" stroke-width="1.5"/><text x="268" y="62" text-anchor="middle" font-weight="700" fill="#2e3230">List</text><text x="268" y="88" text-anchor="middle" fill="#4a4e4a" font-size="11">Widen the</text><text x="268" y="104" text-anchor="middle" fill="#4a4e4a" font-size="11">option space</text><text x="268" y="122" text-anchor="middle" fill="#b83230" font-size="10" font-style="italic">structurally distinct</text></g>
-    <g><rect x="368" y="30" width="160" height="100" rx="14" fill="#c4a66a33" stroke="#705c30" stroke-width="1.5"/><text x="448" y="62" text-anchor="middle" font-weight="700" fill="#2e3230">Optimize</text><text x="448" y="88" text-anchor="middle" fill="#4a4e4a" font-size="11">Name the</text><text x="448" y="104" text-anchor="middle" fill="#4a4e4a" font-size="11">criterion + sacrifice</text><text x="448" y="122" text-anchor="middle" fill="#b83230" font-size="10" font-style="italic">not a preference</text></g>
-    <g><rect x="548" y="30" width="160" height="100" rx="14" fill="#78a88644" stroke="#4a7c59" stroke-width="1.5"/><text x="628" y="62" text-anchor="middle" font-weight="700" fill="#2e3230">Win</text><text x="628" y="88" text-anchor="middle" fill="#4a4e4a" font-size="11">Falsifiable</text><text x="628" y="104" text-anchor="middle" fill="#4a4e4a" font-size="11">recommendation</text><text x="628" y="122" text-anchor="middle" fill="#b83230" font-size="10" font-style="italic">not a hedge</text></g>
-    <line x1="168" y1="80" x2="186" y2="80" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#arr)"/>
-    <line x1="348" y1="80" x2="366" y2="80" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#arr)"/>
-    <line x1="528" y1="80" x2="546" y2="80" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#arr)"/>
-  </g>
-</svg>
-<figcaption>The four moves, each paired with the anti-pattern it corrects (shown in red italic).</figcaption>
-</figure>
+{{figure:0}}
 
 ## Why engineers already have most of this
 
 Five of the six competencies that define product sense already show up in engineering work every week, which means engineers are not missing product intuition so much as the vocabulary and reps that turn that intuition into visible reasoning.
 
-<figure>
-<svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Product sense competencies mapped to engineering work">
-  <g font-family="Nunito Sans, sans-serif" font-size="12">
-    <text x="140" y="26" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="13">Product sense competency</text>
-    <text x="480" y="26" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="13">Where engineers already do it</text>
-
-    <g transform="translate(0,44)">
-      <rect x="16" y="0" width="248" height="30" rx="6" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="20" fill="#2e3230" font-weight="600">Motivation theory</text>
-      <text x="300" y="20" fill="#4a4e4a">On-call. Why users rage. Why metrics move.</text>
-    </g>
-    <g transform="translate(0,82)">
-      <rect x="16" y="0" width="248" height="30" rx="6" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="20" fill="#2e3230" font-weight="600">Cognitive empathy</text>
-      <text x="300" y="20" fill="#4a4e4a">API design. Imagining the next caller.</text>
-    </g>
-    <g transform="translate(0,120)">
-      <rect x="16" y="0" width="248" height="30" rx="6" fill="#f0e8db" stroke="#b83230" stroke-dasharray="4 3"/>
-      <text x="32" y="20" fill="#2e3230" font-weight="600">Taste</text>
-      <text x="300" y="20" fill="#b83230" font-style="italic">Uncalibrated. Nobody named this as the thing being judged.</text>
-    </g>
-    <g transform="translate(0,158)">
-      <rect x="16" y="0" width="248" height="30" rx="6" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="20" fill="#2e3230" font-weight="600">Strategic thinking</text>
-      <text x="300" y="20" fill="#4a4e4a">Build vs buy. Tech debt payoff timing.</text>
-    </g>
-    <g transform="translate(0,196)">
-      <rect x="16" y="0" width="248" height="30" rx="6" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="20" fill="#2e3230" font-weight="600">Creative execution</text>
-      <text x="300" y="20" fill="#4a4e4a">Architecture reviews. Structurally distinct options.</text>
-    </g>
-  </g>
-</svg>
-<figcaption>Rahul Pandey's six competencies minus domain expertise, with the five an engineer already exercises weekly on the left and taste flagged as uncalibrated rather than missing.</figcaption>
-</figure>
+{{figure:1}}
 
 The raw material is there, so what engineers need is a name for each move and a place to practice it where the stakes do not punish practice.
 
@@ -115,42 +76,7 @@ Each move corrects one anti-pattern, and once you can name the anti-pattern acti
 
 The same four moves already live inside engineering work under different names, which is why the vocabulary transfers rather than having to be learned from scratch.
 
-<figure>
-<svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="FLOW moves mapped to engineering practices">
-  <g font-family="Nunito Sans, sans-serif" font-size="12">
-    <rect x="16" y="12" width="688" height="30" fill="#eae6de" stroke="#c4c8bc"/>
-    <text x="32" y="32" font-weight="700" fill="#2e3230">FLOW move</text>
-    <text x="200" y="32" font-weight="700" fill="#2e3230">Engineering version</text>
-    <text x="440" y="32" font-weight="700" fill="#2e3230">Product version</text>
-
-    <g transform="translate(0,42)">
-      <rect x="16" y="0" width="688" height="40" fill="#faf6f0" stroke="#c4c8bc"/>
-      <text x="32" y="24" fill="#4a7c59" font-weight="700">Frame</text>
-      <text x="200" y="24" fill="#4a4e4a">Root-cause debugging</text>
-      <text x="440" y="24" fill="#4a4e4a">Problem upstream of the stated complaint</text>
-    </g>
-    <g transform="translate(0,82)">
-      <rect x="16" y="0" width="688" height="40" fill="#f5f1ea" stroke="#c4c8bc"/>
-      <text x="32" y="24" fill="#6b6358" font-weight="700">List</text>
-      <text x="200" y="24" fill="#4a4e4a">Architecture review options</text>
-      <text x="440" y="24" fill="#4a4e4a">Structurally distinct solution paths</text>
-    </g>
-    <g transform="translate(0,122)">
-      <rect x="16" y="0" width="688" height="40" fill="#faf6f0" stroke="#c4c8bc"/>
-      <text x="32" y="24" fill="#705c30" font-weight="700">Optimize</text>
-      <text x="200" y="24" fill="#4a4e4a">Build vs buy. Latency vs cost.</text>
-      <text x="440" y="24" fill="#4a4e4a">Criterion named, sacrifice named</text>
-    </g>
-    <g transform="translate(0,162)">
-      <rect x="16" y="0" width="688" height="40" fill="#f5f1ea" stroke="#c4c8bc"/>
-      <text x="32" y="24" fill="#4a7c59" font-weight="700">Win</text>
-      <text x="200" y="24" fill="#4a4e4a">PR with a rollout plan + metric</text>
-      <text x="440" y="24" fill="#4a4e4a">Falsifiable recommendation + timeline</text>
-    </g>
-  </g>
-</svg>
-<figcaption>The same reasoning move expressed in two rooms, so that the engineering version is recognizable as the product version.</figcaption>
-</figure>
+{{figure:2}}
 
 ## Why not just read the books
 
@@ -172,57 +98,64 @@ Every one of those books is worth reading, but none of them on its own names the
 
 The whole module compresses into four sentences: the real problem is upstream of the stated one, the best option is usually not on the first list, a tradeoff is a sacrifice rather than a preference, and a recommendation is a hypothesis someone could prove wrong.
 
-That is the vocabulary to reach for in the next review meeting.`.trim()
+That is the vocabulary to reach for in the next review meeting.`,
+  figures: [
+    {
+      kind: 'connected_boxes',
+      ariaLabel: 'The four FLOW moves',
+      caption: 'The four moves, each paired with the anti-pattern it corrects (shown in red italic).',
+      orientation: 'horizontal',
+      showArrows: true,
+      boxes: [
+        { label: 'Frame', body: ['Find the real problem'], anti: 'not the stated one', tone: 'ok' },
+        { label: 'List', body: ['Widen the option space'], anti: 'structurally distinct', tone: 'neutral' },
+        { label: 'Optimize', body: ['Name criterion + sacrifice'], anti: 'not a preference', tone: 'neutral' },
+        { label: 'Win', body: ['Falsifiable recommendation'], anti: 'not a hedge', tone: 'ok' },
+      ],
+    },
+    {
+      kind: 'comparison_table',
+      ariaLabel: 'Product sense competencies mapped to engineering work',
+      caption: "Rahul Pandey's six competencies minus domain expertise, with the five an engineer already exercises weekly on the left and taste flagged as uncalibrated rather than missing.",
+      headers: ['Product sense competency', 'Where engineers already do it'],
+      rows: [
+        { cells: ['Motivation theory', 'On-call. Why users rage. Why metrics move.'], tone: 'ok' },
+        { cells: ['Cognitive empathy', 'API design. Imagining the next caller.'], tone: 'ok' },
+        { cells: ['Taste', 'Uncalibrated. Nobody named this as the thing being judged.'], tone: 'warn' },
+        { cells: ['Strategic thinking', 'Build vs buy. Tech debt payoff timing.'], tone: 'ok' },
+        { cells: ['Creative execution', 'Architecture reviews. Structurally distinct options.'], tone: 'ok' },
+      ],
+    },
+    {
+      kind: 'comparison_table',
+      ariaLabel: 'FLOW moves mapped to engineering practices',
+      caption: 'Same reasoning move, different room.',
+      headers: ['FLOW move', 'Engineering version', 'Product version'],
+      rows: [
+        { cells: ['Frame', 'Root-cause debugging', 'Problem upstream of the stated complaint'], tone: 'ok' },
+        { cells: ['List', 'Architecture review options', 'Structurally distinct solution paths'], tone: 'neutral' },
+        { cells: ['Optimize', 'Build vs buy. Latency vs cost.', 'Criterion named, sacrifice named'], tone: 'neutral' },
+        { cells: ['Win', 'PR with a rollout plan + metric', 'Falsifiable recommendation + timeline'], tone: 'ok' },
+      ],
+    },
+  ],
+}
 
 // ── Chapter 2: Frame ─────────────────────────────────────────────────────────
 
-const CHAPTER_2_BODY = `## The move
+const CH2: ChapterSeed = {
+  slug: 'frame',
+  title: 'Frame',
+  subtitle: 'The real problem is never the stated one.',
+  hook_text: 'The stated problem is the enemy of the real problem.',
+  sort_order: 2,
+  body_mdx: `## The move
 
 Frame is the reasoning move that finds the real problem by refusing to accept the stated one, because the stated problem is almost always a symptom of something further upstream.
 
 Every decision starts with a framing, whether anyone names it or not, and the default framing in most rooms is whatever the loudest person said first. The move is to treat that opening framing as a hypothesis worth testing rather than a fact worth acting on, and the test is simple: ask what would still be true if every proposed solution already existed. If the complaint survives, the framing is too shallow and the real problem is upstream of it.
 
-<figure>
-<svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Upstream versus downstream framing">
-  <defs>
-    <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4a4e4a"/></marker>
-  </defs>
-  <g font-family="Nunito Sans, sans-serif" font-size="12">
-    <text x="360" y="22" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="13">Upstream of stated problem</text>
-
-    <g transform="translate(40,44)">
-      <rect width="200" height="56" rx="10" fill="#d8f0de" stroke="#4a7c59" stroke-width="1.5"/>
-      <text x="100" y="26" text-anchor="middle" font-weight="700" fill="#2e3230">Root cause</text>
-      <text x="100" y="44" text-anchor="middle" fill="#4a4e4a" font-size="11">Systemic condition</text>
-    </g>
-    <g transform="translate(280,44)">
-      <rect width="200" height="56" rx="10" fill="#f0e8db" stroke="#6b6358" stroke-width="1.5"/>
-      <text x="100" y="26" text-anchor="middle" font-weight="700" fill="#2e3230">Contributing factor</text>
-      <text x="100" y="44" text-anchor="middle" fill="#4a4e4a" font-size="11">Makes the symptom worse</text>
-    </g>
-    <g transform="translate(520,44)">
-      <rect width="160" height="56" rx="10" fill="#faf6f0" stroke="#b83230" stroke-width="1.5" stroke-dasharray="4 3"/>
-      <text x="80" y="26" text-anchor="middle" font-weight="700" fill="#b83230">Stated problem</text>
-      <text x="80" y="44" text-anchor="middle" fill="#b83230" font-size="11" font-style="italic">the symptom</text>
-    </g>
-
-    <line x1="240" y1="72" x2="278" y2="72" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#arr2)"/>
-    <line x1="480" y1="72" x2="518" y2="72" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#arr2)"/>
-
-    <text x="360" y="140" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="13">The framing test</text>
-    <text x="360" y="164" text-anchor="middle" fill="#4a4e4a">If every proposed fix already existed, would the complaint still be true?</text>
-    <g transform="translate(160,186)">
-      <rect width="170" height="36" rx="8" fill="#78a88644" stroke="#4a7c59"/>
-      <text x="85" y="22" text-anchor="middle" fill="#2e3230">No → frame is real</text>
-    </g>
-    <g transform="translate(390,186)">
-      <rect width="170" height="36" rx="8" fill="#f0e8db" stroke="#b83230"/>
-      <text x="85" y="22" text-anchor="middle" fill="#b83230">Yes → frame is downstream</text>
-    </g>
-  </g>
-</svg>
-<figcaption>Every stated problem sits downstream of a real problem, so the job of Frame is to walk upstream until the complaint would no longer be true even if every proposed fix already existed.</figcaption>
-</figure>
+{{figure:0}}
 
 ## A concrete example
 
@@ -240,61 +173,38 @@ The harder application is in product framings, where the stated problem often co
 
 Frame is not "understand the problem more". It is "refuse to solve the problem you were handed until you have walked upstream far enough that the thing you are solving would stay true even if every proposed solution already existed."
 
-Next: **List**, the move that widens the option space so the real winner is not the first thing anyone proposes.`.trim()
+Next: **List**, the move that widens the option space so the real winner is not the first thing anyone proposes.`,
+  figures: [
+    {
+      kind: 'connected_boxes',
+      ariaLabel: 'Upstream versus downstream framing',
+      caption: 'Every stated problem sits downstream of a real problem, so the job of Frame is to walk upstream until the complaint would no longer be true even if every proposed fix already existed.',
+      orientation: 'horizontal',
+      showArrows: true,
+      boxes: [
+        { label: 'Root cause', body: ['Systemic condition'], tone: 'ok' },
+        { label: 'Contributing factor', body: ['Makes the symptom worse'], tone: 'neutral' },
+        { label: 'Stated problem', body: ['the symptom'], tone: 'warn' },
+      ],
+    },
+  ],
+}
 
 // ── Chapter 3: List ──────────────────────────────────────────────────────────
 
-const CHAPTER_3_BODY = `## The move
+const CH3: ChapterSeed = {
+  slug: 'list',
+  title: 'List',
+  subtitle: 'The options you missed matter more than the ones you found.',
+  hook_text: 'A list of five variations of one idea is a list of one idea.',
+  sort_order: 3,
+  body_mdx: `## The move
 
 List is the reasoning move that widens the option space on purpose, because the first list of options in any room is almost always a list of variations on a single idea rather than a set of genuinely different paths forward.
 
 A real option list contains bets that are structurally distinct, meaning they are trying to solve different underlying jobs, making different tradeoffs, or betting on different assumptions about the future. A fake option list contains the same bet phrased three ways, which produces the illusion of choice without any real decision power. The test for whether a list is real is whether the options, if all four shipped independently, would produce materially different products or outcomes.
 
-<figure>
-<svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Structurally distinct options versus variations">
-  <g font-family="Nunito Sans, sans-serif" font-size="12">
-    <text x="170" y="22" text-anchor="middle" font-weight="700" fill="#b83230" font-size="13">Variations (fake list)</text>
-    <text x="540" y="22" text-anchor="middle" font-weight="700" fill="#4a7c59" font-size="13">Structurally distinct (real list)</text>
-
-    <g transform="translate(24,36)">
-      <rect width="292" height="36" rx="8" fill="#f0e8db" stroke="#b83230" stroke-dasharray="4 3"/>
-      <text x="16" y="22" fill="#2e3230" font-size="11">Ship onboarding A</text>
-    </g>
-    <g transform="translate(24,80)">
-      <rect width="292" height="36" rx="8" fill="#f0e8db" stroke="#b83230" stroke-dasharray="4 3"/>
-      <text x="16" y="22" fill="#2e3230" font-size="11">Ship onboarding A with a tooltip</text>
-    </g>
-    <g transform="translate(24,124)">
-      <rect width="292" height="36" rx="8" fill="#f0e8db" stroke="#b83230" stroke-dasharray="4 3"/>
-      <text x="16" y="22" fill="#2e3230" font-size="11">Ship onboarding A with a video intro</text>
-    </g>
-    <g transform="translate(24,168)">
-      <rect width="292" height="36" rx="8" fill="#f0e8db" stroke="#b83230" stroke-dasharray="4 3"/>
-      <text x="16" y="22" fill="#2e3230" font-size="11">Ship onboarding A with both</text>
-    </g>
-    <text x="170" y="228" text-anchor="middle" fill="#b83230" font-size="11" font-style="italic">All four solve the same job the same way.</text>
-
-    <g transform="translate(394,36)">
-      <rect width="292" height="36" rx="8" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="16" y="22" fill="#2e3230" font-size="11">Onboarding teaches the product</text>
-    </g>
-    <g transform="translate(394,80)">
-      <rect width="292" height="36" rx="8" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="16" y="22" fill="#2e3230" font-size="11">Defaults remove the need to learn</text>
-    </g>
-    <g transform="translate(394,124)">
-      <rect width="292" height="36" rx="8" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="16" y="22" fill="#2e3230" font-size="11">Human-led setup for first 100 users</text>
-    </g>
-    <g transform="translate(394,168)">
-      <rect width="292" height="36" rx="8" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="16" y="22" fill="#2e3230" font-size="11">Narrow the audience until onboarding is unnecessary</text>
-    </g>
-    <text x="540" y="228" text-anchor="middle" fill="#4a7c59" font-size="11" font-style="italic">Each one bets on a different job the product is doing.</text>
-  </g>
-</svg>
-<figcaption>A list of four onboarding variations is really one option, while a list of four structurally distinct bets forces a real decision about what onboarding is for in the first place.</figcaption>
-</figure>
+{{figure:0}}
 
 ## A concrete example
 
@@ -312,40 +222,38 @@ Where engineering teams go wrong on List is in sprint planning, where the list o
 
 List is not "generate more options". It is "make sure every option on the list is a different bet", and the check is whether each option, if it shipped alone, would produce a materially different outcome.
 
-Next: **Optimize**, the move that takes a real option list and turns it into a decision by naming what you are optimizing for and what you are giving up.`.trim()
+Next: **Optimize**, the move that takes a real option list and turns it into a decision by naming what you are optimizing for and what you are giving up.`,
+  figures: [
+    {
+      kind: 'comparison_table',
+      ariaLabel: 'Structurally distinct options versus variations',
+      caption: 'A list of four onboarding variations is really one option, while a list of four structurally distinct bets forces a real decision about what onboarding is for in the first place.',
+      headers: ['Variations (fake list)', 'Structurally distinct (real list)'],
+      rows: [
+        { cells: ['Ship onboarding A', 'Onboarding teaches the product'], tone: 'neutral' },
+        { cells: ['Ship onboarding A with a tooltip', 'Defaults remove the need to learn'], tone: 'neutral' },
+        { cells: ['Ship onboarding A with a video intro', 'Human-led setup for first 100 users'], tone: 'neutral' },
+        { cells: ['Ship onboarding A with both', 'Narrow the audience until onboarding is unnecessary'], tone: 'neutral' },
+      ],
+    },
+  ],
+}
 
 // ── Chapter 4: Optimize ──────────────────────────────────────────────────────
 
-const CHAPTER_4_BODY = `## The move
+const CH4: ChapterSeed = {
+  slug: 'optimize',
+  title: 'Optimize',
+  subtitle: 'Name the criterion. Name the sacrifice.',
+  hook_text: 'A tradeoff you cannot name is a preference, not a tradeoff.',
+  sort_order: 4,
+  body_mdx: `## The move
 
 Optimize is the reasoning move that turns a list of real options into a decision by naming both the thing you are optimizing for and the thing you are explicitly giving up, because a tradeoff without a named sacrifice is a preference dressed up as analysis.
 
 Every decision between structurally distinct options involves a tradeoff, and the tradeoff is only legible if both sides are named out loud. Saying "we picked option B because it is better" is a preference. Saying "we picked option B because it optimizes for time to first value, which means we are giving up the surface area option C would have covered, and we think time to first value matters more for this audience" is a tradeoff. The second version can be disagreed with on specific grounds; the first version cannot be disagreed with at all.
 
-<figure>
-<svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Criterion and sacrifice paired">
-  <g font-family="Nunito Sans, sans-serif" font-size="12">
-    <g transform="translate(60,40)">
-      <rect width="260" height="120" rx="14" fill="#d8f0de" stroke="#4a7c59" stroke-width="1.5"/>
-      <text x="130" y="30" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="14">Criterion</text>
-      <text x="130" y="54" text-anchor="middle" fill="#4a4e4a" font-size="11">What you are optimizing for</text>
-      <text x="130" y="84" text-anchor="middle" fill="#2e3230" font-style="italic" font-size="11">"Time to first value"</text>
-      <text x="130" y="104" text-anchor="middle" fill="#4a4e4a" font-size="10">Specific, measurable, debatable</text>
-    </g>
-
-    <g transform="translate(400,40)">
-      <rect width="260" height="120" rx="14" fill="#f0e8db" stroke="#b83230" stroke-width="1.5"/>
-      <text x="130" y="30" text-anchor="middle" font-weight="700" fill="#b83230" font-size="14">Sacrifice</text>
-      <text x="130" y="54" text-anchor="middle" fill="#4a4e4a" font-size="11">What you are explicitly giving up</text>
-      <text x="130" y="84" text-anchor="middle" fill="#2e3230" font-style="italic" font-size="11">"Surface area across features"</text>
-      <text x="130" y="104" text-anchor="middle" fill="#4a4e4a" font-size="10">Named out loud, not implied</text>
-    </g>
-
-    <text x="360" y="186" text-anchor="middle" font-weight="700" fill="#2e3230">Both named → tradeoff.  Only one named → preference.</text>
-  </g>
-</svg>
-<figcaption>A real tradeoff names both sides explicitly, because the sacrifice is what lets someone else disagree with the decision on specific grounds rather than on taste.</figcaption>
-</figure>
+{{figure:0}}
 
 ## A concrete example
 
@@ -363,45 +271,37 @@ Engineers go wrong on Optimize when the sacrifice is implicit. "We refactored th
 
 Optimize is not "pick the best option". It is "pick an option and name the sacrifice", and the test for whether you have done it is whether someone reading your decision could disagree with it on specific grounds rather than on taste.
 
-Next: **Win**, the move that turns a decision into a recommendation someone could prove wrong.`.trim()
+Next: **Win**, the move that turns a decision into a recommendation someone could prove wrong.`,
+  figures: [
+    {
+      kind: 'connected_boxes',
+      ariaLabel: 'Criterion and sacrifice paired',
+      caption: 'A real tradeoff names both sides explicitly, because the sacrifice is what lets someone else disagree with the decision on specific grounds rather than on taste.',
+      orientation: 'horizontal',
+      showArrows: false,
+      boxes: [
+        { label: 'Criterion', body: ['What you are optimizing for', '"Time to first value"'], tone: 'ok' },
+        { label: 'Sacrifice', body: ['What you are explicitly giving up', '"Surface area across features"'], tone: 'warn' },
+      ],
+    },
+  ],
+}
 
 // ── Chapter 5: Win ───────────────────────────────────────────────────────────
 
-const CHAPTER_5_BODY = `## The move
+const CH5: ChapterSeed = {
+  slug: 'win',
+  title: 'Win',
+  subtitle: 'A recommendation is a falsifiable hypothesis.',
+  hook_text: 'If you cannot say what would prove you wrong, you are not recommending.',
+  sort_order: 5,
+  body_mdx: `## The move
 
 Win is the reasoning move that turns a decision into a recommendation by making it falsifiable, because a recommendation that cannot be proven wrong is a hedge rather than a call.
 
 A real recommendation has three parts that travel together: a direction (what to do), a predicted result (what outcome will follow), and a timeline (by when). Each part is what makes the next part possible: the direction is what someone can execute, the predicted result is what someone can disagree with, and the timeline is what lets the team know when to come back and check. Drop any one of the three and the recommendation degrades into a status update.
 
-<figure>
-<svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Anatomy of a falsifiable recommendation">
-  <g font-family="Nunito Sans, sans-serif" font-size="12">
-    <g transform="translate(32,40)">
-      <rect width="204" height="120" rx="14" fill="#d8f0de" stroke="#4a7c59" stroke-width="1.5"/>
-      <text x="102" y="28" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="14">Direction</text>
-      <text x="102" y="50" text-anchor="middle" fill="#4a4e4a" font-size="11">What to do</text>
-      <text x="102" y="80" text-anchor="middle" fill="#2e3230" font-style="italic" font-size="11">"Ship the two-click flow"</text>
-      <text x="102" y="100" text-anchor="middle" fill="#4a4e4a" font-size="10">Concrete, executable</text>
-    </g>
-    <g transform="translate(258,40)">
-      <rect width="204" height="120" rx="14" fill="#c4a66a33" stroke="#705c30" stroke-width="1.5"/>
-      <text x="102" y="28" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="14">Predicted result</text>
-      <text x="102" y="50" text-anchor="middle" fill="#4a4e4a" font-size="11">What outcome follows</text>
-      <text x="102" y="80" text-anchor="middle" fill="#2e3230" font-style="italic" font-size="11">"Activation up 8%"</text>
-      <text x="102" y="100" text-anchor="middle" fill="#4a4e4a" font-size="10">Measurable, disputable</text>
-    </g>
-    <g transform="translate(484,40)">
-      <rect width="204" height="120" rx="14" fill="#78a88644" stroke="#4a7c59" stroke-width="1.5"/>
-      <text x="102" y="28" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="14">Timeline</text>
-      <text x="102" y="50" text-anchor="middle" fill="#4a4e4a" font-size="11">By when</text>
-      <text x="102" y="80" text-anchor="middle" fill="#2e3230" font-style="italic" font-size="11">"Within 4 weeks"</text>
-      <text x="102" y="100" text-anchor="middle" fill="#4a4e4a" font-size="10">Bounded, checkable</text>
-    </g>
-    <text x="360" y="192" text-anchor="middle" font-weight="700" fill="#b83230">Missing any one piece collapses the recommendation into a hedge.</text>
-  </g>
-</svg>
-<figcaption>A falsifiable recommendation is a direction, a predicted result, and a timeline travelling together, because the three pieces are what make it possible for someone to check whether the recommendation was right.</figcaption>
-</figure>
+{{figure:0}}
 
 ## A concrete example
 
@@ -419,89 +319,42 @@ Rollout plans are the other place this shows up. A rollout that says "ship to 1%
 
 Win is not "be confident". It is "make a claim someone could prove wrong by a specific date", and the test for whether you have done it is whether a teammate could sincerely disagree with the predicted result on evidence.
 
-Next: **The seven themes**, which map the four FLOW moves onto the seven reasoning traditions the rubric is compressing.`.trim()
+Next: **The seven themes**, which map the four FLOW moves onto the seven reasoning traditions the rubric is compressing.`,
+  figures: [
+    {
+      kind: 'connected_boxes',
+      ariaLabel: 'Anatomy of a falsifiable recommendation',
+      caption: 'A falsifiable recommendation is a direction, a predicted result, and a timeline travelling together, because the three pieces are what make it possible for someone to check whether the recommendation was right.',
+      orientation: 'horizontal',
+      showArrows: false,
+      boxes: [
+        { label: 'Direction', body: ['What to do', '"Ship the two-click flow"'], tone: 'ok' },
+        { label: 'Predicted result', body: ['What outcome follows', '"Activation up 8%"'], tone: 'neutral' },
+        { label: 'Timeline', body: ['By when', '"Within 4 weeks"'], tone: 'ok' },
+      ],
+    },
+  ],
+}
 
 // ── Chapter 6: Seven themes ──────────────────────────────────────────────────
 
-const CHAPTER_6_BODY = `## The move
+const CH6: ChapterSeed = {
+  slug: 'seven-themes',
+  title: 'The seven themes behind the rubric',
+  subtitle: 'Which reasoning move each FLOW step is training, and which tradition it comes from.',
+  hook_text: 'FLOW is the compression. These are the traditions it compresses.',
+  sort_order: 6,
+  body_mdx: `## The move
 
 FLOW is a compression of seven reasoning traditions, so understanding which tradition each move is drawing from makes the move legible in rooms where the tradition is named by its original author rather than by its FLOW label.
 
 The four moves (Frame, List, Optimize, Win) are the operational layer, and the seven themes (T1 through T7) are the reasoning layer that justifies why each move is the right move. This chapter is a map: for each FLOW step, which theme is the primary reasoning move being trained, which thinker named the tradition, and what anti-pattern the theme catches.
 
-<figure>
-<svg viewBox="0 0 720 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="FLOW moves mapped to seven intellectual themes">
-  <g font-family="Nunito Sans, sans-serif" font-size="11">
-    <rect x="16" y="12" width="688" height="32" fill="#eae6de" stroke="#c4c8bc"/>
-    <text x="32" y="32" font-weight="700" fill="#2e3230">FLOW step</text>
-    <text x="140" y="32" font-weight="700" fill="#2e3230">Theme</text>
-    <text x="320" y="32" font-weight="700" fill="#2e3230">Tradition (primary thinker)</text>
-    <text x="520" y="32" font-weight="700" fill="#2e3230">Anti-pattern caught</text>
-
-    <g transform="translate(0,46)">
-      <rect x="16" y="0" width="688" height="54" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="22" font-weight="700" fill="#4a7c59">Frame</text>
-      <text x="140" y="22" fill="#2e3230" font-weight="600">T1. Upstream Before Downstream</text>
-      <text x="320" y="22" fill="#4a4e4a">Shreyas Doshi, Marty Cagan</text>
-      <text x="520" y="22" fill="#4a4e4a">Accepting the stated problem as real</text>
-      <text x="140" y="42" fill="#2e3230" font-weight="600">T6. Exclusion Is Precision</text>
-      <text x="320" y="42" fill="#4a4e4a">April Dunford</text>
-      <text x="520" y="42" fill="#4a4e4a">Scope taken as given, not chosen</text>
-    </g>
-    <g transform="translate(0,106)">
-      <rect x="16" y="0" width="688" height="54" fill="#f0e8db" stroke="#6b6358"/>
-      <text x="32" y="22" font-weight="700" fill="#6b6358">List</text>
-      <text x="140" y="22" fill="#2e3230" font-weight="600">T4. Width Before Depth</text>
-      <text x="320" y="22" fill="#4a4e4a">Rahul Pandey, Gergely Orosz</text>
-      <text x="520" y="22" fill="#4a4e4a">Variations presented as an option space</text>
-      <text x="140" y="42" fill="#2e3230" font-weight="600">T2. The Job Behind the Feature</text>
-      <text x="320" y="42" fill="#4a4e4a">Ben Erez, Clayton Christensen</text>
-      <text x="520" y="42" fill="#4a4e4a">Treating the feature as the job</text>
-    </g>
-    <g transform="translate(0,166)">
-      <rect x="16" y="0" width="688" height="54" fill="#c4a66a33" stroke="#705c30"/>
-      <text x="32" y="22" font-weight="700" fill="#705c30">Optimize</text>
-      <text x="140" y="22" fill="#2e3230" font-weight="600">T5. Name Criterion and Sacrifice</text>
-      <text x="320" y="22" fill="#4a4e4a">Gergely Orosz, Rahul Pandey</text>
-      <text x="520" y="22" fill="#4a4e4a">"It depends" as a conclusion</text>
-      <text x="140" y="42" fill="#4a4e4a" font-style="italic">(primary theme; no secondary)</text>
-    </g>
-    <g transform="translate(0,226)">
-      <rect x="16" y="0" width="688" height="54" fill="#78a88644" stroke="#4a7c59"/>
-      <text x="32" y="22" font-weight="700" fill="#4a7c59">Win</text>
-      <text x="140" y="22" fill="#2e3230" font-weight="600">T7. Falsifiable Hypothesis</text>
-      <text x="320" y="22" fill="#4a4e4a">Marty Cagan, Gibson Biddle</text>
-      <text x="520" y="22" fill="#4a4e4a">Qualitative success, no metric</text>
-      <text x="140" y="42" fill="#2e3230" font-weight="600">T3. Simulate the Other Side</text>
-      <text x="320" y="42" fill="#4a4e4a">Rahul Pandey</text>
-      <text x="520" y="42" fill="#4a4e4a">Handing ownership to "the team"</text>
-    </g>
-
-    <rect x="16" y="300" width="688" height="32" fill="#eae6de" stroke="#c4c8bc"/>
-    <text x="32" y="320" font-weight="700" fill="#2e3230" font-size="12">Thinker summary</text>
-
-    <text x="32" y="350" fill="#2e3230" font-weight="700">Shreyas Doshi</text>
-    <text x="180" y="350" fill="#4a4e4a">Upstream influence, high-agency work, leverage/neutral/overhead model</text>
-
-    <text x="32" y="372" fill="#2e3230" font-weight="700">April Dunford</text>
-    <text x="180" y="372" fill="#4a4e4a">Positioning as exclusion, precision comes from what is out</text>
-
-    <text x="32" y="394" fill="#2e3230" font-weight="700">Marty Cagan, Gibson Biddle</text>
-    <text x="220" y="394" fill="#4a4e4a">Outcome-based product, DHM model, strategy bets</text>
-
-    <text x="32" y="416" fill="#2e3230" font-weight="700">Rahul Pandey</text>
-    <text x="180" y="416" fill="#4a4e4a">Product sense as six competencies, width before depth</text>
-
-    <text x="32" y="438" fill="#2e3230" font-weight="700">Gergely Orosz</text>
-    <text x="180" y="438" fill="#4a4e4a">The product engineer, named tradeoffs over preference</text>
-  </g>
-</svg>
-<figcaption>Each FLOW step maps to one primary theme and often a secondary one, with each theme tracing back to a named thinker whose work is the source material the rubric compresses.</figcaption>
-</figure>
+{{figure:0}}
 
 ## Why the themes matter operationally
 
-Every time Luma grades an answer, the output includes a \`theme_signal\` block that names which theme was engaged and whether the reasoning move was applied correctly, because a grade without a theme attached is just a score. The theme is what makes the feedback actionable: knowing you scored low on Frame is not useful, knowing you scored low because you accepted the stated problem as real (T1) points at the specific reasoning move to practice next.
+Every time Luma grades an answer, the output includes a theme signal block that names which theme was engaged and whether the reasoning move was applied correctly, because a grade without a theme attached is just a score. The theme is what makes the feedback actionable: knowing you scored low on Frame is not useful, knowing you scored low because you accepted the stated problem as real (T1) points at the specific reasoning move to practice next.
 
 The seven themes also show up in the admin content-authoring pipeline, where the MCQ prompt injects the primary theme's reasoning move into the generation call so that the BEST option actually applies T1 or T4 or T5 rather than generic product advice.
 
@@ -515,64 +368,41 @@ The difference is that in engineering the themes are baked into the culture thro
 
 The themes are not new ideas, they are a compression of seven named traditions into one rubric, so that when a room invokes "Shreyas says do the upstream thing" or "Dunford says positioning is exclusion" you can recognize which FLOW move is being named and respond on the same layer.
 
-Next: **Engineer to product**, the chapter that names what engineers already bring and the one specific competency that needs new reps.`.trim()
+Next: **Engineer to product**, the chapter that names what engineers already bring and the one specific competency that needs new reps.`,
+  figures: [
+    {
+      kind: 'comparison_table',
+      ariaLabel: 'FLOW moves mapped to seven intellectual themes',
+      caption: 'Each FLOW step maps to one primary theme and often a secondary one, with each theme tracing back to a named thinker whose work is the source material the rubric compresses.',
+      headers: ['FLOW step', 'Theme', 'Tradition (thinker)', 'Anti-pattern caught'],
+      rows: [
+        { cells: ['Frame', 'T1. Upstream Before Downstream', 'Shreyas Doshi, Marty Cagan', 'Accepting the stated problem as real'], tone: 'ok' },
+        { cells: ['Frame', 'T6. Exclusion Is Precision', 'April Dunford', 'Scope taken as given, not chosen'], tone: 'ok' },
+        { cells: ['List', 'T4. Width Before Depth', 'Rahul Pandey, Gergely Orosz', 'Variations presented as an option space'], tone: 'neutral' },
+        { cells: ['List', 'T2. The Job Behind the Feature', 'Ben Erez, Clayton Christensen', 'Treating the feature as the job'], tone: 'neutral' },
+        { cells: ['Optimize', 'T5. Name Criterion and Sacrifice', 'Gergely Orosz, Rahul Pandey', '"It depends" as a conclusion'], tone: 'neutral' },
+        { cells: ['Win', 'T7. Falsifiable Hypothesis', 'Marty Cagan, Gibson Biddle', 'Qualitative success, no metric'], tone: 'ok' },
+        { cells: ['Win', 'T3. Simulate the Other Side', 'Rahul Pandey', 'Handing ownership to "the team"'], tone: 'ok' },
+      ],
+    },
+  ],
+}
 
 // ── Chapter 7: Engineer to product ───────────────────────────────────────────
 
-const CHAPTER_7_BODY = `## The move
+const CH7: ChapterSeed = {
+  slug: 'engineer-to-product',
+  title: 'Engineer to product',
+  subtitle: 'What engineers already have. What engineers still need.',
+  hook_text: 'Five of the six competencies are already in your week. One is not.',
+  sort_order: 7,
+  body_mdx: `## The move
 
 The transition from engineer to product thinker is not a rebuild, because five of the six competencies that define product sense are already active in engineering work; the rebuild is limited to a single competency that the engineering environment never asks you to practice in the open.
 
 Rahul Pandey's six competencies are motivation theory, cognitive empathy, taste, strategic thinking, creative execution, and domain expertise, and five of those six have visible engineering analogs that most engineers have been exercising for years. The one that tends to arrive uncalibrated is taste, because engineering culture rewards correctness over preference and taste is specifically the skill of feeling the difference between a real tradeoff and a preference before anyone has named it out loud.
 
-<figure>
-<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="What engineers already bring and what needs new reps">
-  <g font-family="Nunito Sans, sans-serif" font-size="11">
-    <rect x="16" y="12" width="688" height="32" fill="#eae6de" stroke="#c4c8bc"/>
-    <text x="32" y="32" font-weight="700" fill="#2e3230">Competency</text>
-    <text x="220" y="32" font-weight="700" fill="#2e3230">Engineering analog (already fluent)</text>
-    <text x="500" y="32" font-weight="700" fill="#2e3230">Product use</text>
-
-    <g transform="translate(0,46)">
-      <rect x="16" y="0" width="688" height="38" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="24" fill="#2e3230" font-weight="600">Motivation theory</text>
-      <text x="220" y="24" fill="#4a4e4a">On-call rotations, why users rage, why metrics move</text>
-      <text x="500" y="24" fill="#4a4e4a">User friction, activation drops</text>
-    </g>
-    <g transform="translate(0,88)">
-      <rect x="16" y="0" width="688" height="38" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="24" fill="#2e3230" font-weight="600">Cognitive empathy</text>
-      <text x="220" y="24" fill="#4a4e4a">API design, imagining the next caller</text>
-      <text x="500" y="24" fill="#4a4e4a">Stakeholder positions, UX</text>
-    </g>
-    <g transform="translate(0,130)">
-      <rect x="16" y="0" width="688" height="38" fill="#f0e8db" stroke="#b83230" stroke-dasharray="4 3"/>
-      <text x="32" y="24" fill="#2e3230" font-weight="600">Taste</text>
-      <text x="220" y="24" fill="#b83230" font-style="italic">Uncalibrated, not missing</text>
-      <text x="500" y="24" fill="#b83230" font-style="italic">Real tradeoff vs preference</text>
-    </g>
-    <g transform="translate(0,172)">
-      <rect x="16" y="0" width="688" height="38" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="24" fill="#2e3230" font-weight="600">Strategic thinking</text>
-      <text x="220" y="24" fill="#4a4e4a">Build vs buy, tech debt payoff timing</text>
-      <text x="500" y="24" fill="#4a4e4a">Competitive positioning, roadmap bets</text>
-    </g>
-    <g transform="translate(0,214)">
-      <rect x="16" y="0" width="688" height="38" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="24" fill="#2e3230" font-weight="600">Creative execution</text>
-      <text x="220" y="24" fill="#4a4e4a">Architecture reviews, structurally distinct options</text>
-      <text x="500" y="24" fill="#4a4e4a">Widening the option space</text>
-    </g>
-    <g transform="translate(0,256)">
-      <rect x="16" y="0" width="688" height="38" fill="#d8f0de" stroke="#4a7c59"/>
-      <text x="32" y="24" fill="#2e3230" font-weight="600">Domain expertise</text>
-      <text x="220" y="24" fill="#4a4e4a">Performance budgets, real latency thresholds</text>
-      <text x="500" y="24" fill="#4a4e4a">Real metrics, real timelines</text>
-    </g>
-  </g>
-</svg>
-<figcaption>Five of the six competencies carry across from engineering without retraining, which leaves taste as the single skill most engineers need new practice in before it becomes legible to a product room.</figcaption>
-</figure>
+{{figure:0}}
 
 ## Why taste is the one that needs reps
 
@@ -590,69 +420,40 @@ Gergely Orosz names this "the product engineer" and argues it is the most underv
 
 The engineer-to-product transition is not a rebuild, it is a calibration of taste, which the rest of HackProduct exists to let you practice without the real cost of being wrong.
 
-Next: **Using FLOW live**, which puts the four moves together in the room where the clock is ticking.`.trim()
+Next: **Using FLOW live**, which puts the four moves together in the room where the clock is ticking.`,
+  figures: [
+    {
+      kind: 'comparison_table',
+      ariaLabel: 'What engineers already bring and what needs new reps',
+      caption: 'Five of the six competencies carry across from engineering without retraining, which leaves taste as the single skill most engineers need new practice in before it becomes legible to a product room.',
+      headers: ['Competency', 'Engineering analog (already fluent)', 'Product use'],
+      rows: [
+        { cells: ['Motivation theory', 'On-call rotations, why users rage, why metrics move', 'User friction, activation drops'], tone: 'ok' },
+        { cells: ['Cognitive empathy', 'API design, imagining the next caller', 'Stakeholder positions, UX'], tone: 'ok' },
+        { cells: ['Taste', 'Uncalibrated, not missing', 'Real tradeoff vs preference'], tone: 'warn' },
+        { cells: ['Strategic thinking', 'Build vs buy, tech debt payoff timing', 'Competitive positioning, roadmap bets'], tone: 'ok' },
+        { cells: ['Creative execution', 'Architecture reviews, structurally distinct options', 'Widening the option space'], tone: 'ok' },
+        { cells: ['Domain expertise', 'Performance budgets, real latency thresholds', 'Real metrics, real timelines'], tone: 'ok' },
+      ],
+    },
+  ],
+}
 
 // ── Chapter 8: Using FLOW live ───────────────────────────────────────────────
 
-const CHAPTER_8_BODY = `## The move
+const CH8: ChapterSeed = {
+  slug: 'using-flow-live',
+  title: 'Using FLOW live',
+  subtitle: 'In a meeting, in a review, in an interview.',
+  hook_text: 'The four moves when the clock is ticking and the CEO is watching.',
+  sort_order: 8,
+  body_mdx: `## The move
 
 FLOW is a sequence, and using it live means knowing which of the four moves the room needs next rather than running all four in order every time, because meetings move faster than a rubric and a ten-minute product review will rarely accommodate a full Frame-List-Optimize-Win pass.
 
 The reading skill is recognizing which move is missing from the conversation already happening, because rooms tend to skip moves rather than do them badly. If everyone is arguing about which option wins, the missing move is usually Frame (they are optimizing the wrong problem) or List (they are choosing between two variations of the same bet). If the direction is clear but the team is hesitant, the missing move is usually Win (no one has named the falsifiable prediction) or Optimize (no one has named the sacrifice). Naming the missing move out loud is what unsticks the conversation.
 
-<figure>
-<svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Reading which FLOW move a room needs next">
-  <g font-family="Nunito Sans, sans-serif" font-size="11">
-    <rect x="16" y="12" width="688" height="32" fill="#eae6de" stroke="#c4c8bc"/>
-    <text x="32" y="32" font-weight="700" fill="#2e3230">If the room is...</text>
-    <text x="380" y="32" font-weight="700" fill="#2e3230">The missing move is...</text>
-
-    <g transform="translate(0,46)">
-      <rect x="16" y="0" width="688" height="38" fill="#faf6f0" stroke="#c4c8bc"/>
-      <text x="32" y="24" fill="#4a4e4a">Arguing about which option wins</text>
-      <text x="380" y="24" fill="#4a7c59" font-weight="700">Frame</text>
-      <text x="500" y="24" fill="#4a4e4a" font-size="10">(probably optimizing the wrong problem)</text>
-    </g>
-    <g transform="translate(0,88)">
-      <rect x="16" y="0" width="688" height="38" fill="#f5f1ea" stroke="#c4c8bc"/>
-      <text x="32" y="24" fill="#4a4e4a">Presenting variations that feel identical</text>
-      <text x="380" y="24" fill="#6b6358" font-weight="700">List</text>
-      <text x="500" y="24" fill="#4a4e4a" font-size="10">(fake option space disguised as choice)</text>
-    </g>
-    <g transform="translate(0,130)">
-      <rect x="16" y="0" width="688" height="38" fill="#faf6f0" stroke="#c4c8bc"/>
-      <text x="32" y="24" fill="#4a4e4a">Stuck on "it depends"</text>
-      <text x="380" y="24" fill="#705c30" font-weight="700">Optimize</text>
-      <text x="500" y="24" fill="#4a4e4a" font-size="10">(criterion and sacrifice not named)</text>
-    </g>
-    <g transform="translate(0,172)">
-      <rect x="16" y="0" width="688" height="38" fill="#f5f1ea" stroke="#c4c8bc"/>
-      <text x="32" y="24" fill="#4a4e4a">Direction clear but team hesitant</text>
-      <text x="380" y="24" fill="#4a7c59" font-weight="700">Win</text>
-      <text x="500" y="24" fill="#4a4e4a" font-size="10">(no falsifiable prediction + timeline)</text>
-    </g>
-    <g transform="translate(0,214)">
-      <rect x="16" y="0" width="688" height="38" fill="#faf6f0" stroke="#c4c8bc"/>
-      <text x="32" y="24" fill="#4a4e4a">Loudest person has the winning idea</text>
-      <text x="380" y="24" fill="#4a7c59" font-weight="700">Frame</text>
-      <text x="500" y="24" fill="#4a4e4a" font-size="10">(defaulted to stated problem, never tested)</text>
-    </g>
-    <g transform="translate(0,256)">
-      <rect x="16" y="0" width="688" height="38" fill="#f5f1ea" stroke="#c4c8bc"/>
-      <text x="32" y="24" fill="#4a4e4a">Recommendation has no deadline</text>
-      <text x="380" y="24" fill="#4a7c59" font-weight="700">Win</text>
-      <text x="500" y="24" fill="#4a4e4a" font-size="10">(timeline missing, check-in never scheduled)</text>
-    </g>
-    <g transform="translate(0,298)">
-      <rect x="16" y="0" width="688" height="38" fill="#faf6f0" stroke="#c4c8bc"/>
-      <text x="32" y="24" fill="#4a4e4a">Team agrees too quickly</text>
-      <text x="380" y="24" fill="#6b6358" font-weight="700">List</text>
-      <text x="500" y="24" fill="#4a4e4a" font-size="10">(option space is too narrow to disagree)</text>
-    </g>
-  </g>
-</svg>
-<figcaption>Most real decisions fail because one of the four moves was skipped rather than done badly, and the live skill is naming the missing move out loud before the room commits to the wrong thing.</figcaption>
-</figure>
+{{figure:0}}
 
 ## A 20-minute product review using FLOW live
 
@@ -670,112 +471,64 @@ The difference is that incident command has a norm that keeps the commander from
 
 FLOW live is not a script you run through, it is a reading skill for naming which of the four moves the current conversation has skipped, and the conversation will usually fix itself the moment the skipped move is spoken out loud.
 
-That is the end of the module. The next step is practice: pick a challenge tagged with the FLOW step you feel least sure about and run the move against a scenario where the stakes do not punish the practice.`.trim()
+That is the end of the module. The next step is practice: pick a challenge tagged with the FLOW step you feel least sure about and run the move against a scenario where the stakes do not punish the practice.`,
+  figures: [
+    {
+      kind: 'comparison_table',
+      ariaLabel: 'Reading which FLOW move a room needs next',
+      caption: 'Most real decisions fail because one of the four moves was skipped rather than done badly, and the live skill is naming the missing move out loud before the room commits to the wrong thing.',
+      headers: ['If the room is...', 'The missing move is...'],
+      rows: [
+        { cells: ['Arguing about which option wins', 'Frame (probably optimizing the wrong problem)'], badge: 'Frame', tone: 'ok' },
+        { cells: ['Presenting variations that feel identical', 'List (fake option space disguised as choice)'], badge: 'List', tone: 'neutral' },
+        { cells: ['Stuck on "it depends"', 'Optimize (criterion and sacrifice not named)'], badge: 'Optimize', tone: 'neutral' },
+        { cells: ['Direction clear but team hesitant', 'Win (no falsifiable prediction + timeline)'], badge: 'Win', tone: 'ok' },
+        { cells: ['Loudest person has the winning idea', 'Frame (defaulted to stated problem, never tested)'], badge: 'Frame', tone: 'ok' },
+        { cells: ['Recommendation has no deadline', 'Win (timeline missing)'], badge: 'Win', tone: 'ok' },
+        { cells: ['Team agrees too quickly', 'List (option space is too narrow to disagree)'], badge: 'List', tone: 'neutral' },
+      ],
+    },
+  ],
+}
 
-const PLACEHOLDER_BODY = '## In draft\n\nThis chapter is being written. Check back soon.'
-
-const CHAPTERS = [
-  {
-    slug: 'why-flow',
-    title: 'Why FLOW',
-    subtitle: 'And why engineers with strong intuition freeze in product reviews.',
-    hook_text: 'Engineers do not lack product intuition. They lack vocabulary and reps.',
-    body_mdx: CHAPTER_1_BODY,
-    sort_order: 1,
-  },
-  {
-    slug: 'frame',
-    title: 'Frame',
-    subtitle: 'The real problem is never the stated one.',
-    hook_text: 'The stated problem is the enemy of the real problem.',
-    body_mdx: CHAPTER_2_BODY,
-    sort_order: 2,
-  },
-  {
-    slug: 'list',
-    title: 'List',
-    subtitle: 'The options you missed matter more than the ones you found.',
-    hook_text: 'A list of five variations of one idea is a list of one idea.',
-    body_mdx: CHAPTER_3_BODY,
-    sort_order: 3,
-  },
-  {
-    slug: 'optimize',
-    title: 'Optimize',
-    subtitle: 'Name the criterion. Name the sacrifice.',
-    hook_text: 'A tradeoff you cannot name is a preference, not a tradeoff.',
-    body_mdx: CHAPTER_4_BODY,
-    sort_order: 4,
-  },
-  {
-    slug: 'win',
-    title: 'Win',
-    subtitle: 'A recommendation is a falsifiable hypothesis.',
-    hook_text: 'If you cannot say what would prove you wrong, you are not recommending.',
-    body_mdx: CHAPTER_5_BODY,
-    sort_order: 5,
-  },
-  {
-    slug: 'seven-themes',
-    title: 'The seven themes behind the rubric',
-    subtitle: 'Which reasoning move each FLOW step is training, and which tradition it comes from.',
-    hook_text: 'FLOW is the compression. These are the traditions it compresses.',
-    body_mdx: CHAPTER_6_BODY,
-    sort_order: 6,
-  },
-  {
-    slug: 'engineer-to-product',
-    title: 'Engineer to product',
-    subtitle: 'What engineers already have. What engineers still need.',
-    hook_text: 'Five of the six competencies are already in your week. One is not.',
-    body_mdx: CHAPTER_7_BODY,
-    sort_order: 7,
-  },
-  {
-    slug: 'using-flow-live',
-    title: 'Using FLOW live',
-    subtitle: 'In a meeting, in a review, in an interview.',
-    hook_text: 'The four moves when the clock is ticking and the CEO is watching.',
-    body_mdx: CHAPTER_8_BODY,
-    sort_order: 8,
-  },
-]
+const CHAPTERS: ChapterSeed[] = [CH1, CH2, CH3, CH4, CH5, CH6, CH7, CH8]
 
 async function run() {
-  console.log(`[seed-flow-module] Upserting module "${MODULE_SLUG}"...`)
+  console.log(`[seed-flow] Upserting module ${MODULE_SLUG}...`)
   const { data: mod, error: modErr } = await supabase
     .from('learn_modules')
     .upsert(MODULE_ROW, { onConflict: 'slug' })
-    .select('id, slug, name')
+    .select('id')
     .single()
-
   if (modErr || !mod) {
-    console.error('[seed-flow-module] Failed to upsert module:', modErr)
+    console.error('[seed-flow] module failed:', modErr)
     process.exit(1)
   }
-  console.log(`[seed-flow-module] ✓ module: ${mod.slug} (${mod.id})`)
 
-  console.log(`[seed-flow-module] Upserting ${CHAPTERS.length} chapters...`)
   for (const ch of CHAPTERS) {
-    const { error: chErr } = await supabase
+    const { error } = await supabase
       .from('learn_chapters')
       .upsert(
-        { module_id: mod.id, ...ch },
+        {
+          module_id: mod.id,
+          slug: ch.slug,
+          title: ch.title,
+          subtitle: ch.subtitle,
+          hook_text: ch.hook_text,
+          sort_order: ch.sort_order,
+          body_mdx: ch.body_mdx,
+          figures: ch.figures,
+        },
         { onConflict: 'module_id,slug' }
       )
-    if (chErr) {
-      console.error(`[seed-flow-module] ✗ chapter "${ch.slug}" failed:`, chErr)
+    if (error) {
+      console.error(`  ${ch.slug} failed:`, error)
       process.exit(1)
     }
-    const isPlaceholder = ch.body_mdx === PLACEHOLDER_BODY
-    console.log(`  ${isPlaceholder ? '○' : '●'} ${ch.sort_order}. ${ch.slug} — ${ch.title}`)
+    console.log(`  ${ch.sort_order}. ${ch.slug} (${ch.body_mdx.length} chars, ${ch.figures.length} figure${ch.figures.length === 1 ? '' : 's'})`)
   }
 
-  console.log('\n[seed-flow-module] Done.')
-  console.log(`[seed-flow-module] Visit http://localhost:3000/learn/${MODULE_SLUG} to review.`)
+  console.log('\n[seed-flow] Done.')
 }
 
-run().catch(err => {
-  console.error('[seed-flow-module] Fatal:', err)
-  process.exit(1)
-})
+run().catch(e => { console.error(e); process.exit(1) })

@@ -26,6 +26,7 @@ export async function GET(
       sort_order: chapterIndex + 1,
       hook_text: def.hook_text,
       body_mdx: `# ${def.title}\n\n*${def.subtitle}*\n\n${def.hook_text}\n\n---\n\n*Full chapter content coming soon. This will be a long-form article with section anchors, inline illustrations, and real product case examples.*`,
+      figures: [],
       created_at: new Date().toISOString(),
     })
   }
