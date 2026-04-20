@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState, useEffect, Suspense } from 'react'
+import { use, useRef, useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useLearnModule } from '@/hooks/useLearnModule'
@@ -123,6 +123,46 @@ function splitIntoBlocks(mdx: string): string[] {
 
 function renderMdx(mdx: string): string {
   return splitIntoBlocks(mdx).map(renderBlock).filter(Boolean).join('\n')
+}
+
+// MdxBody renders pre-built HTML via DOMParser + ref. This bypasses React's
+// dangerouslySetInnerHTML path, which drops nested SVG children in some cases
+// (child <g transform=...> groups were being stripped in React 19 hydration).
+// Parsing as full HTML preserves SVG namespace for every nested element.
+function MdxBody({ html }: { html: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const parsed = new DOMParser().parseFromString(
+      `<!doctype html><html><body>${html}</body></html>`,
+      'text/html'
+    )
+    el.replaceChildren(...Array.from(parsed.body.childNodes))
+  }, [html])
+
+  return (
+    <div
+      ref={ref}
+      className="flex-1 overflow-y-auto px-6 py-5 prose prose-sm max-w-none
+        [&_h1]:font-headline [&_h1]:text-xl [&_h1]:font-bold [&_h1]:text-on-surface [&_h1]:mt-6 [&_h1]:mb-2
+        [&_h2]:font-headline [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-on-surface [&_h2]:mt-5 [&_h2]:mb-2
+        [&_h3]:font-label [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-on-surface [&_h3]:mt-4 [&_h3]:mb-1
+        [&_p]:text-on-surface-variant [&_p]:leading-relaxed [&_p]:mb-3 [&_p]:text-sm
+        [&_strong]:text-on-surface [&_strong]:font-semibold
+        [&_em]:italic
+        [&_hr]:border-outline-variant [&_hr]:my-4
+        [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ul]:space-y-1 [&_ul]:text-sm [&_ul]:text-on-surface-variant
+        [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_ol]:space-y-1 [&_ol]:text-sm [&_ol]:text-on-surface-variant
+        [&_li]:leading-relaxed
+        [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:no-underline
+        [&_code]:bg-surface-container-high [&_code]:text-on-surface [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[0.85em] [&_code]:font-mono
+        [&_figure]:my-5 [&_figure]:bg-surface-container-low [&_figure]:rounded-xl [&_figure]:p-4 [&_figure]:border [&_figure]:border-outline-variant
+        [&_figcaption]:text-xs [&_figcaption]:text-on-surface-variant [&_figcaption]:mt-2 [&_figcaption]:text-center
+        [&_figure_svg]:mx-auto [&_figure_svg]:block [&_figure_svg]:max-w-full [&_figure_svg]:h-auto
+        [&_blockquote]:border-l-2 [&_blockquote]:border-primary [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-on-surface [&_blockquote]:my-4"
+    />
+  )
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -263,26 +303,7 @@ function ChapterPane({
       </div>
 
       {/* Body — scrollable */}
-      <div
-        className="flex-1 overflow-y-auto px-6 py-5 prose prose-sm max-w-none
-          [&_h1]:font-headline [&_h1]:text-xl [&_h1]:font-bold [&_h1]:text-on-surface [&_h1]:mt-6 [&_h1]:mb-2
-          [&_h2]:font-headline [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-on-surface [&_h2]:mt-5 [&_h2]:mb-2
-          [&_h3]:font-label [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-on-surface [&_h3]:mt-4 [&_h3]:mb-1
-          [&_p]:text-on-surface-variant [&_p]:leading-relaxed [&_p]:mb-3 [&_p]:text-sm
-          [&_strong]:text-on-surface [&_strong]:font-semibold
-          [&_em]:italic
-          [&_hr]:border-outline-variant [&_hr]:my-4
-          [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ul]:space-y-1 [&_ul]:text-sm [&_ul]:text-on-surface-variant
-          [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_ol]:space-y-1 [&_ol]:text-sm [&_ol]:text-on-surface-variant
-          [&_li]:leading-relaxed
-          [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:no-underline
-          [&_code]:bg-surface-container-high [&_code]:text-on-surface [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[0.85em] [&_code]:font-mono
-          [&_figure]:my-5 [&_figure]:bg-surface-container-low [&_figure]:rounded-xl [&_figure]:p-4 [&_figure]:border [&_figure]:border-outline-variant
-          [&_figcaption]:text-xs [&_figcaption]:text-on-surface-variant [&_figcaption]:mt-2 [&_figcaption]:text-center
-          [&_figure_svg]:mx-auto [&_figure_svg]:block [&_figure_svg]:max-w-full [&_figure_svg]:h-auto
-          [&_blockquote]:border-l-2 [&_blockquote]:border-primary [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-on-surface [&_blockquote]:my-4"
-        dangerouslySetInnerHTML={{ __html: renderMdx(data.body_mdx) }}
-      />
+      <MdxBody html={renderMdx(data.body_mdx)} />
 
       {/* Footer */}
       <div className="px-5 py-3 border-t border-outline-variant bg-surface-container-low flex items-center justify-between flex-shrink-0">
