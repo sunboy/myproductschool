@@ -692,39 +692,50 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       background: 'var(--color-surface)',
       overflow: 'hidden',
     }}>
-      {/* Tab bar */}
+      {/* Tab bar + bookmark button */}
       <div style={{
         display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'space-between',
         padding: '6px 12px 0',
         borderBottom: '1px solid var(--color-outline-faint)',
         background: 'var(--color-surface)',
         flexShrink: 0,
       }}>
-        {tabs.map(t => {
-          const active = leftTab === t
-          return (
-            <button
-              key={t}
-              onClick={() => setLeftTab(t)}
-              style={{
-                padding: '7px 14px',
-                fontSize: 13,
-                fontWeight: active ? 600 : 400,
-                color: active ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)',
-                background: active ? 'var(--color-surface-container-low)' : 'transparent',
-                border: active ? '1px solid var(--color-outline-faint)' : '1px solid transparent',
-                borderBottom: active ? '1px solid var(--color-surface-container-low)' : '1px solid transparent',
-                borderRadius: '8px 8px 0 0',
-                cursor: 'pointer',
-                marginBottom: active ? -1 : 0,
-                fontFamily: 'inherit',
-                transition: 'color 120ms',
-              }}
-            >
-              {t}
-            </button>
-          )
-        })}
+        <div style={{ display: 'flex' }}>
+          {tabs.map(t => {
+            const active = leftTab === t
+            return (
+              <button
+                key={t}
+                onClick={() => setLeftTab(t)}
+                style={{
+                  padding: '7px 14px',
+                  fontSize: 13,
+                  fontWeight: active ? 600 : 400,
+                  color: active ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)',
+                  background: active ? 'var(--color-surface-container-low)' : 'transparent',
+                  border: active ? '1px solid var(--color-outline-faint)' : '1px solid transparent',
+                  borderBottom: active ? '1px solid var(--color-surface-container-low)' : '1px solid transparent',
+                  borderRadius: '8px 8px 0 0',
+                  cursor: 'pointer',
+                  marginBottom: active ? -1 : 0,
+                  fontFamily: 'inherit',
+                  transition: 'color 120ms',
+                }}
+              >
+                {t}
+              </button>
+            )
+          })}
+        </div>
+        {/* Bookmark lives at the right of the left panel header */}
+        <button
+          className="btn btn--ghost"
+          style={{ padding: '5px 10px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 4 }}
+        >
+          <span className="material-symbols-outlined msi-sm">bookmark_border</span>
+        </button>
       </div>
 
       {/* Tab content */}
@@ -766,14 +777,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </section>
   )
 
-  // Shared 3-col sticky header
+  // Shared sticky header — back + title on left, submit on right
   const stickyHeader = (
     <div
       className="shrink-0"
       style={{
-        display: 'grid',
-        gridTemplateColumns: 'auto 1fr auto',
+        display: 'flex',
         alignItems: 'center',
+        justifyContent: 'space-between',
         padding: '10px 20px',
         gap: 20,
         background: 'var(--color-surface)',
@@ -801,32 +812,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </div>
       </div>
 
-      {/* Center: FLOW stepper */}
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <FlowStepper
-          currentStep={currentStep}
-          completedSteps={completedSteps}
-          onStepClick={handleStepClick}
-          questionIdx={questionIdx}
-          questionCount={activeStepData?.questions.length}
-        />
-      </div>
-
-      {/* Right: save + submit */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <button className="btn btn--ghost" style={{ padding: '7px 12px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          <span className="material-symbols-outlined msi-sm">bookmark_border</span> Save
-        </button>
-        <button
-          className="btn btn--primary"
-          style={{ padding: '8px 16px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 4 }}
-          disabled={selectedOptionId === null || confidence === null || activeSubmitting}
-          onClick={handleSubmit}
-        >
-          {isLastStep ? 'Finish' : `Next: ${NEXT_LABEL[currentStep]}`}
-          <span className="material-symbols-outlined msi-sm">arrow_forward</span>
-        </button>
-      </div>
+      {/* Right: submit */}
+      <button
+        className="btn btn--primary"
+        style={{ padding: '8px 16px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+        disabled={selectedOptionId === null || confidence === null || activeSubmitting}
+        onClick={handleSubmit}
+      >
+        {isLastStep ? 'Finish' : `Next: ${NEXT_LABEL[currentStep]}`}
+        <span className="material-symbols-outlined msi-sm">arrow_forward</span>
+      </button>
     </div>
   )
 
@@ -882,29 +877,30 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
         {/* Right pane: workspace */}
         <section style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--color-background)', overflow: 'hidden' }}>
-          {/* Workspace sub-header */}
+          {/* Workspace sub-header: FLOW stepper + step chip + timer/hint/fullscreen */}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: '10px 16px',
+            padding: '8px 16px',
             borderBottom: '1px solid var(--color-outline-faint)',
             background: 'var(--color-surface)',
             flexShrink: 0,
+            gap: 16,
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span
-                className="material-symbols-outlined"
-                style={{ color: STAGE_COLOR[currentStep], fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-              >
-                {STAGE_ICON[currentStep]}
-              </span>
-              <span style={{ fontFamily: 'var(--font-headline)', fontSize: 14, fontWeight: 700, color: 'var(--color-on-surface)' }}>
-                {STEP_LABEL[currentStep]} — answer
-              </span>
-              <span className="chip" style={{ fontSize: 11 }}>Step {stepIdx + 1} of 4</span>
+            {/* Left: FLOW stepper + step indicator */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+              <FlowStepper
+                currentStep={currentStep}
+                completedSteps={completedSteps}
+                onStepClick={handleStepClick}
+                questionIdx={questionIdx}
+                questionCount={activeStepData?.questions.length}
+              />
+              <span className="chip" style={{ fontSize: 11, flexShrink: 0 }}>Step {stepIdx + 1} of 4</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {/* Right: timer, hint, fullscreen */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
               <button className="btn btn--ghost" style={{ padding: '6px 10px', fontSize: 12 }}>
                 <span className="material-symbols-outlined msi-sm">timer</span>
               </button>
