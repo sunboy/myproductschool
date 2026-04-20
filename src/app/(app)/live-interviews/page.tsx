@@ -1,8 +1,10 @@
+import Link from 'next/link'
 import { MOCK_LIVE_INTERVIEW_PERSONAS } from '@/lib/mock-live-interviews'
 import FilteredPersonaGrid from './FilteredPersonaGrid'
 import PastInterviews from './PastInterviews'
 import { GuidedTab } from '../challenges/GuidedTab'
 import { UsageProvider } from '@/context/UsageContext'
+import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 export interface ScenarioBrief {
   id: string
@@ -85,7 +87,34 @@ export default async function LiveInterviewsPage({
 
   return (
     <UsageProvider>
-      <div className="p-6 space-y-6">
+      <div className="max-w-[1440px] mx-auto px-6 py-7 space-y-6">
+        {/* Luma Interview CTA Hero Card */}
+        <div
+          className="relative rounded-2xl p-6 overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, #3e6a4b 0%, #264a34 100%)',
+            color: '#f3ede0',
+            border: '1px solid rgba(255,255,255,0.06)',
+          }}
+        >
+          <div className="flex items-center gap-4">
+            <LumaGlyph size={64} state="listening" className="text-white shrink-0" />
+            <div>
+              <div className="font-label font-bold text-xs uppercase tracking-widest opacity-60 mb-1">Live Mock Interview</div>
+              <h2 className="font-headline text-2xl font-medium mb-2">Ready to be interviewed by Luma?</h2>
+              <p className="text-sm opacity-75 mb-4">Pick a persona and scenario. Luma will ask real PM interview questions and give you a debrief.</p>
+              <Link
+                href="/live-interviews"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-label font-bold text-sm"
+                style={{ background: '#f3ede0', color: '#1e1b14' }}
+              >
+                <span className="material-symbols-outlined text-[18px]">mic</span>
+                Start interview
+              </Link>
+            </div>
+          </div>
+        </div>
+
         {/* Header */}
         <section>
           <h1 className="font-headline text-3xl font-extrabold text-on-surface">Interviews</h1>
