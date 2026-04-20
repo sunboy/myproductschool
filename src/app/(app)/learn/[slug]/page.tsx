@@ -126,20 +126,49 @@ function renderMdx(mdx: string): string {
   return splitIntoBlocks(mdx).map(renderBlock).filter(Boolean).join('\n')
 }
 
-// MdxBody renders pre-built HTML via DOMParser + ref. This bypasses React's
-// dangerouslySetInnerHTML path, which drops nested SVG children in some cases
-// (child <g transform=...> groups were being stripped in React 19 hydration).
-// Parsing as full HTML preserves SVG namespace for every nested element.
+// MdxBody renders pre-built HTML via a ref. The chapter body contains inline
+// SVG with nested <g transform=...> groups and <rect>/<text> children. The
+// HTML parser in DOMParser handles the outer <svg> correctly but loses some
+// nested SVG elements in the foreign-content path on certain engines. We
+// avoid that by parsing each <figure>/<svg> block with application/xhtml+xml
+// and every other block with text/html, then splicing the resulting DOM
+// nodes into the container.
+function parseBodyToNodes(html: string): Node[] {
+  const out: Node[] = []
+  const re = /<figure\b[\s\S]*?<\/figure>/gi
+  let lastIdx = 0
+  let m: RegExpExecArray | null
+  while ((m = re.exec(html)) !== null) {
+    if (m.index > lastIdx) {
+      const before = html.slice(lastIdx, m.index)
+      const htmlDoc = new DOMParser().parseFromString(`<!doctype html><html><body>${before}</body></html>`, 'text/html')
+      out.push(...Array.from(htmlDoc.body.childNodes))
+    }
+    const figureXhtml = `<div xmlns="http://www.w3.org/1999/xhtml">${m[0]}</div>`
+    const xmlDoc = new DOMParser().parseFromString(figureXhtml, 'application/xhtml+xml')
+    const root = xmlDoc.documentElement
+    if (root && root.getElementsByTagName('parsererror').length === 0) {
+      out.push(...Array.from(root.childNodes))
+    } else {
+      const fallback = new DOMParser().parseFromString(`<!doctype html><html><body>${m[0]}</body></html>`, 'text/html')
+      out.push(...Array.from(fallback.body.childNodes))
+    }
+    lastIdx = m.index + m[0].length
+  }
+  if (lastIdx < html.length) {
+    const tail = html.slice(lastIdx)
+    const htmlDoc = new DOMParser().parseFromString(`<!doctype html><html><body>${tail}</body></html>`, 'text/html')
+    out.push(...Array.from(htmlDoc.body.childNodes))
+  }
+  return out
+}
+
 function MdxBody({ html }: { html: string }) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    const parsed = new DOMParser().parseFromString(
-      `<!doctype html><html><body>${html}</body></html>`,
-      'text/html'
-    )
-    el.replaceChildren(...Array.from(parsed.body.childNodes))
+    el.replaceChildren(...parseBodyToNodes(html))
   }, [html])
 
   return (
