@@ -14,7 +14,8 @@ import { getLumaContext } from '@/lib/luma-context'
 import { getEnrolledPlans } from '@/lib/data/study-plans'
 import { QuickTakeCard } from '@/components/dashboard/cards/QuickTakeCard'
 import { NextChallengeCard } from '@/components/dashboard/cards/NextChallengeCard'
-import { MoveLevelsCard } from '@/components/dashboard/cards/MoveLevelsCard'
+import { HeroGreeterCard } from '@/components/dashboard/cards/HeroGreeterCard'
+import { FlowMoveLevelsCard } from '@/components/dashboard/cards/FlowMoveLevelsCard'
 import { HotChallengesCard } from '@/components/dashboard/cards/HotChallengesCard'
 import { LeaderboardPeekCard } from '@/components/dashboard/cards/LeaderboardPeekCard'
 import { InterviewCountdownCard } from '@/components/dashboard/cards/InterviewCountdownCard'
@@ -226,84 +227,108 @@ export default async function DashboardPage() {
     : []
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-6 space-y-4">
+    <div className="max-w-[1440px] mx-auto px-6 py-7">
 
       <Suspense fallback={null}>
         <UpgradedBanner />
       </Suspense>
 
-      {/* Luma Greeting Bar */}
-      <div className="bg-primary-fixed rounded-2xl p-5 flex flex-wrap items-center gap-4 animate-luma-card relative overflow-hidden">
-        {/* Soft radial highlight */}
-        <div className="absolute top-0 right-0 w-48 h-full opacity-30" style={{ background: 'radial-gradient(ellipse at 100% 50%, rgba(74,124,89,0.3) 0%, transparent 70%)' }} />
-        <LumaGlyph size={48} state={isCalibrated ? 'idle' : 'celebrating'} className="flex-shrink-0 relative" />
-        <div className="flex-1 min-w-0 relative">
-          <p className="font-headline font-bold text-[17px] text-on-surface leading-tight">
-            {getPersonalizedGreeting(displayName, streakDays, lastAttemptDate, isCalibrated)}
-          </p>
-          <p className="text-sm text-on-surface-variant mt-0.5">
-            {isCalibrated ? getDailyGoalMessage(dailyDone) : "I'm Luma, your product thinking coach. Let's find your starting point."}
-          </p>
-        </div>
-        {isCalibrated && (
-          <div className="flex gap-1.5 flex-shrink-0 relative">
-            <span className="flex items-center gap-1 px-2.5 py-1.5 bg-white/50 rounded-full text-[11px] font-label font-bold text-on-surface">
-              <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 1", color: '#c94b1b' }}>local_fire_department</span>
-              {streakDays}d
-            </span>
-            <span className="flex items-center gap-1 px-2.5 py-1.5 bg-white/50 rounded-full text-[11px] font-label font-bold text-on-surface tabular-nums">
-              <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 1", color: '#4a7c59' }}>bolt</span>
-              {xpTotal.toLocaleString()} XP
-            </span>
-          </div>
-        )}
-      </div>
-
       {/* State A — Calibrated */}
       {isCalibrated && (
-        <>
-          {/* Hero row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <QuickTakeCard
-              prompt={quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
-              challengeId={quickTakePrompt?.slug ?? quickTakePrompt?.id ?? 'orientation'}
-              lumaContext={null}
+        <div className="grid gap-7" style={{ gridTemplateColumns: '1fr 340px' }}>
+          {/* Main column */}
+          <div className="flex flex-col gap-6 min-w-0">
+            <HeroGreeterCard
+              displayName={displayName}
+              streakDays={streakDays}
+              xpTotal={xpTotal}
             />
-            <NextChallengeCard
-              title={nextChallenge?.title ?? 'Designing a Metric Dashboard for a B2B SaaS Tool'}
-              domain="Product Strategy"
-              difficulty={nextChallenge?.difficulty ?? 'Medium'}
-              challengeId={nextChallenge?.slug ?? nextChallenge?.id ?? 'orientation'}
-              lumaInsight={nextChallenge?.luma_insight ?? null}
-            />
+
+            {/* Resume / Quick Take row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <QuickTakeCard
+                prompt={quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
+                challengeId={quickTakePrompt?.slug ?? quickTakePrompt?.id ?? 'orientation'}
+                lumaContext={null}
+              />
+              <NextChallengeCard
+                title={nextChallenge?.title ?? 'Designing a Metric Dashboard for a B2B SaaS Tool'}
+                domain="Product Strategy"
+                difficulty={nextChallenge?.difficulty ?? 'Medium'}
+                challengeId={nextChallenge?.slug ?? nextChallenge?.id ?? 'orientation'}
+                lumaInsight={nextChallenge?.luma_insight ?? null}
+              />
+            </div>
+
+            {/* FLOW Move Levels */}
+            <FlowMoveLevelsCard />
+
+            {/* Enrolled Study Plans */}
+            {enrolledPlans.length > 0 && <EnrolledPlansCard plans={enrolledPlans} />}
+
+            {/* Secondary row */}
+            <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
+              <HotChallengesCard challenges={hotChallenges} />
+              <LeaderboardPeekCard entries={leaderboard} userRank={userRank} />
+            </div>
+
+            {/* Interview Countdown — conditional */}
+            {interviewDate && (
+              <InterviewCountdownCard interviews={interviews} />
+            )}
           </div>
 
-          {/* FLOW Move Levels */}
-          <MoveLevelsCard levels={moveLevels} />
-
-          {/* Enrolled Study Plans */}
-          {enrolledPlans.length > 0 && <EnrolledPlansCard plans={enrolledPlans} />}
-
-          {/* Secondary row */}
-          <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
-            <HotChallengesCard challenges={hotChallenges} />
-            <LeaderboardPeekCard entries={leaderboard} userRank={userRank} />
-          </div>
-
-          {/* Interview Countdown — conditional */}
-          {interviewDate && (
-            <InterviewCountdownCard interviews={interviews} />
-          )}
-        </>
+          {/* Right rail */}
+          <aside className="flex flex-col gap-5">
+            {/* Luma Greeting Bar (compact right-rail version) */}
+            <div className="bg-primary-fixed rounded-2xl p-5 flex flex-col gap-3 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-full opacity-30" style={{ background: 'radial-gradient(ellipse at 100% 50%, rgba(74,124,89,0.3) 0%, transparent 70%)' }} />
+              <div className="flex items-center gap-3 relative">
+                <LumaGlyph size={40} state="idle" className="flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-headline font-bold text-[15px] text-on-surface leading-tight">
+                    {getPersonalizedGreeting(displayName, streakDays, lastAttemptDate, isCalibrated)}
+                  </p>
+                  <p className="text-xs text-on-surface-variant mt-0.5">
+                    {getDailyGoalMessage(dailyDone)}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-1.5 relative">
+                <span className="flex items-center gap-1 px-2.5 py-1.5 bg-white/50 rounded-full text-[11px] font-label font-bold text-on-surface">
+                  <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 1", color: '#c94b1b' }}>local_fire_department</span>
+                  {streakDays}d
+                </span>
+                <span className="flex items-center gap-1 px-2.5 py-1.5 bg-white/50 rounded-full text-[11px] font-label font-bold text-on-surface tabular-nums">
+                  <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 1", color: '#4a7c59' }}>bolt</span>
+                  {xpTotal.toLocaleString()} XP
+                </span>
+              </div>
+            </div>
+          </aside>
+        </div>
       )}
 
       {/* State B — Uncalibrated */}
       {!isCalibrated && (
-        <>
+        <div className="space-y-4">
+          {/* Luma Greeting Bar */}
+          <div className="bg-primary-fixed rounded-2xl p-5 flex flex-wrap items-center gap-4 animate-luma-card relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-48 h-full opacity-30" style={{ background: 'radial-gradient(ellipse at 100% 50%, rgba(74,124,89,0.3) 0%, transparent 70%)' }} />
+            <LumaGlyph size={48} state="celebrating" className="flex-shrink-0 relative" />
+            <div className="flex-1 min-w-0 relative">
+              <p className="font-headline font-bold text-[17px] text-on-surface leading-tight">
+                {getPersonalizedGreeting(displayName, streakDays, lastAttemptDate, false)}
+              </p>
+              <p className="text-sm text-on-surface-variant mt-0.5">
+                {"I'm Luma, your product thinking coach. Let's find your starting point."}
+              </p>
+            </div>
+          </div>
           <CalibrationHero />
           <LockedMoveLevels />
           <HotChallengesCard challenges={hotChallenges} />
-        </>
+        </div>
       )}
     </div>
   )
