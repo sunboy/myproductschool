@@ -37,7 +37,7 @@ const MODULE_ROW = {
 
 const CHAPTER_1_BODY = `## What FLOW is
 
-Four reasoning moves that make the difference between technical thinking and product thinking. Not a framework to memorize. A vocabulary for moves you already make.
+FLOW is four reasoning moves that separate product thinking from technical thinking, giving you a vocabulary for decisions you already make rather than a framework to memorize.
 
 <figure>
 <svg viewBox="0 0 720 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The four FLOW moves">
@@ -54,12 +54,12 @@ Four reasoning moves that make the difference between technical thinking and pro
     <line x1="528" y1="80" x2="546" y2="80" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#arr)"/>
   </g>
 </svg>
-<figcaption>The four moves. Each corrects a specific anti-pattern (red italic).</figcaption>
+<figcaption>The four moves, each paired with the anti-pattern it corrects (shown in red italic).</figcaption>
 </figure>
 
 ## Why engineers already have most of this
 
-Five of the six competencies that define product sense show up in engineering work every week. Engineers do not lack product intuition. They lack vocabulary and reps.
+Five of the six competencies that define product sense already show up in engineering work every week, which means engineers are not missing product intuition so much as the vocabulary and reps that turn that intuition into visible reasoning.
 
 <figure>
 <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Product sense competencies mapped to engineering work">
@@ -94,26 +94,26 @@ Five of the six competencies that define product sense show up in engineering wo
     </g>
   </g>
 </svg>
-<figcaption>Rahul Pandey's six competencies, minus domain expertise. Five are already in the engineering week. Taste is the one that usually gets flagged as missing, and it is not missing. It is uncalibrated.</figcaption>
+<figcaption>Rahul Pandey's six competencies minus domain expertise, with the five an engineer already exercises weekly on the left and taste flagged as uncalibrated rather than missing.</figcaption>
 </figure>
 
-The raw material is there. What is missing is a name for the move and a place to practice it where the stakes do not punish practice.
+The raw material is there, so what engineers need is a name for each move and a place to practice it where the stakes do not punish practice.
 
 ## The four moves, concretely
 
-Each move corrects one anti-pattern. If you can name which anti-pattern is active in a room, you can name the move that breaks it.
+Each move corrects one anti-pattern, and once you can name the anti-pattern active in a room you can name the move that breaks it.
 
-**Frame.** The stated problem is almost never the real problem. *"Users are churning"* is a symptom. Keep asking what is upstream until the complaint would still be true if every proposed fix already existed. That is the frame worth solving.
+**Frame.** The stated problem is almost never the real problem, which means a complaint like *"users are churning"* is a symptom worth pushing past by asking what is upstream until the complaint would still be true if every proposed fix already existed.
 
-**List.** A list of five variations of the same idea is a list of one idea. Real options are structurally distinct: different paradigms, different bets. If the winner is obvious before the second option is written, the list is too narrow.
+**List.** A list of five variations of the same idea is really a list of one idea, so a real option space contains structurally distinct bets, and if the winner looks obvious before you have written the second option the list is too narrow.
 
-**Optimize.** A tradeoff you cannot name is a preference. Name the criterion you are optimizing for, then name the thing you are giving up. *"We ship speed at the cost of polish, because this audience forgives ugly before it forgives slow"* is more useful than any scorecard.
+**Optimize.** A tradeoff you cannot name is a preference, which is why the move is to state the criterion you are optimizing for and the thing you are explicitly giving up, along the lines of *"we ship speed at the cost of polish, because this audience forgives ugly before it forgives slow."*
 
-**Win.** If the recommendation cannot be proven wrong, it is not a recommendation. It is a hedge. A real call picks a direction, predicts a measurable result, and commits to a timeline.
+**Win.** A recommendation that cannot be proven wrong is a hedge, not a recommendation, so a real call picks a direction, predicts a measurable result, and commits to a timeline that lets someone else disagree.
 
 ## Where this shows up in engineering language
 
-The same four moves already exist in engineering work. They have different names there.
+The same four moves already live inside engineering work under different names, which is why the vocabulary transfers rather than having to be learned from scratch.
 
 <figure>
 <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="FLOW moves mapped to engineering practices">
@@ -149,28 +149,28 @@ The same four moves already exist in engineering work. They have different names
     </g>
   </g>
 </svg>
-<figcaption>Same reasoning move, different room.</figcaption>
+<figcaption>The same reasoning move expressed in two rooms, so that the engineering version is recognizable as the product version.</figcaption>
 </figure>
 
 ## Why not just read the books
 
-The alternative is ten books and guessing at the distillation. *Inspired*. *Empowered*. *Obviously Awesome*. *The Build Trap*. *Measure What Matters*. *Competing Against Luck*. *Upstream*. *The Mom Test*. *Working Backwards*. *The Making of a Manager*.
+The alternative to FLOW is ten books and a guess at the distillation, starting with *Inspired*, *Empowered*, *Obviously Awesome*, *The Build Trap*, *Measure What Matters*, *Competing Against Luck*, *Upstream*, *The Mom Test*, *Working Backwards*, and *The Making of a Manager*.
 
-They are all worth reading. None of them alone gives you the four moves named cleanly. FLOW is the compression. The challenges that follow are the reps.
+Every one of those books is worth reading, but none of them on its own names the four moves cleanly, which is what FLOW does so that the challenges in the rest of this product can act as the reps.
 
 ## What is in this module
 
-- **Ch 2. Frame.** The root-cause move. How to find what is upstream without getting lost.
-- **Ch 3. List.** Widening the option space on purpose, not by accident.
-- **Ch 4. Optimize.** Naming the criterion and the sacrifice. What an answer looks like instead of *"it depends"*.
-- **Ch 5. Win.** The recommendation as a falsifiable hypothesis.
-- **Ch 6. Seven themes.** Mapping the four moves to Doshi, Dunford, Cagan, Pandey, Orosz, and Biddle.
-- **Ch 7. Engineer to product.** What you already have. What you still need.
-- **Ch 8. FLOW live.** Running the four moves when the clock is ticking.
+- **Ch 2. Frame.** The root-cause move, and how to find what is upstream without getting lost in it.
+- **Ch 3. List.** Widening the option space on purpose rather than by accident.
+- **Ch 4. Optimize.** Naming the criterion and the sacrifice, and what an answer looks like instead of *"it depends"*.
+- **Ch 5. Win.** Turning the recommendation into a falsifiable hypothesis.
+- **Ch 6. Seven themes.** Mapping the four moves onto Doshi, Dunford, Cagan, Pandey, Orosz, and Biddle.
+- **Ch 7. Engineer to product.** What you already have, and what you still need to learn.
+- **Ch 8. FLOW live.** Running the four moves when the clock is ticking and the room is watching.
 
 ## One handle to take with you
 
-Four moves. Real problem is upstream. Best option was not on the list. Tradeoff is a sacrifice, not a preference. Recommendation is a hypothesis that could be wrong.
+The whole module compresses into four sentences: the real problem is upstream of the stated one, the best option is usually not on the first list, a tradeoff is a sacrifice rather than a preference, and a recommendation is a hypothesis someone could prove wrong.
 
 That is the vocabulary to reach for in the next review meeting.`.trim()
 
