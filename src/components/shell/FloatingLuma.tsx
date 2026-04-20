@@ -21,6 +21,12 @@ export function FloatingLuma() {
   const contextKey = Object.keys(CONTEXT_LINES).find(k => pathname.startsWith(k)) ?? ''
   const contextLine = CONTEXT_LINES[contextKey] ?? 'Want to talk it through?'
 
+  function sendMessage() {
+    if (!message.trim()) return
+    console.log('[FloatingLuma] send:', message.trim())
+    setMessage('')
+  }
+
   return (
     <div className="fixed bottom-6 right-6 z-30">
       {/* Expanded panel */}
@@ -60,6 +66,7 @@ export function FloatingLuma() {
               {QUICK_REPLIES.map(r => (
                 <button
                   key={r}
+                  onClick={() => setMessage(r)}
                   className="px-3 py-1 rounded-full text-xs font-label font-semibold border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors"
                 >
                   {r}
@@ -73,10 +80,12 @@ export function FloatingLuma() {
             <input
               value={message}
               onChange={e => setMessage(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && sendMessage()}
               placeholder="Type a message…"
               className="flex-1 text-sm px-3 py-1.5 rounded-full border border-outline-variant bg-surface text-on-surface placeholder:text-on-surface-muted focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
             <button
+              onClick={sendMessage}
               className="w-8 h-8 rounded-full flex items-center justify-center text-on-primary shrink-0"
               style={{ background: 'var(--color-primary)' }}
               aria-label="Send"
