@@ -1,17 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 
-const BLOCK_TAG_RE = /^\s*<(svg|ul|ol|div|figure|table|pre|blockquote|aside)\b/i
 const WRAPPING_TAGS = ['figure', 'svg', 'table', 'ul', 'ol', 'div', 'pre', 'blockquote', 'aside']
+const BLOCK_TAG_RE = /^\s*<(svg|ul|ol|div|figure|table|pre|blockquote|aside)\b/i
 
 function splitIntoBlocks(mdx: string): string[] {
   const blocks: string[] = []
   const lines = mdx.split('\n')
   let buffer: string[] = []
-  const flush = () => {
-    if (buffer.length === 0) return
-    blocks.push(buffer.join('\n'))
-    buffer = []
-  }
+  const flush = () => { if (buffer.length) { blocks.push(buffer.join('\n')); buffer = [] } }
   let i = 0
   while (i < lines.length) {
     const line = lines[i]
@@ -20,11 +16,7 @@ function splitIntoBlocks(mdx: string): string[] {
     if (tag && WRAPPING_TAGS.includes(tag)) {
       flush()
       const closeRe = new RegExp(`</${tag}>\\s*$`, 'i')
-      if (closeRe.test(line)) {
-        blocks.push(line)
-        i++
-        continue
-      }
+      if (closeRe.test(line)) { blocks.push(line); i++; continue }
       const wrapped: string[] = [line]
       i++
       while (i < lines.length) {
@@ -50,12 +42,10 @@ async function main() {
   )
   const { data } = await s.from('learn_chapters').select('body_mdx').eq('slug', 'why-flow').single()
   const blocks = splitIntoBlocks(data!.body_mdx)
-  console.log(`=== ${blocks.length} blocks ===`)
-  for (let i = 0; i < blocks.length; i++) {
-    const first = blocks[i].split('\n')[0].slice(0, 80)
-    const isTag = BLOCK_TAG_RE.test(blocks[i].trim())
-    const lineCount = blocks[i].split('\n').length
-    console.log(`[${i}] ${isTag ? 'BLOCK' : 'para '} (${lineCount} lines) ${first}`)
-  }
+  // Print the second figure (competencies) in full
+  const fig = blocks.find(b => b.includes('Product sense competencies mapped'))!
+  console.log('=== SECOND FIGURE (stored) ===')
+  console.log(fig)
+  console.log(`\n=== LENGTH: ${fig.length} chars ===`)
 }
 main()
