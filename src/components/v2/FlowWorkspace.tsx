@@ -589,7 +589,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // Left pane description content
   const descriptionPane = (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 80px' }}>
+    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px' }}>
       {/* Chips */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
         <span className="chip" style={{ background: 'var(--color-primary-container)', color: 'var(--color-on-primary-container)', fontSize: 11 }}>Intermediate</span>
@@ -922,7 +922,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             ref={workspaceRef}
             key={`${currentStep}-question`}
             className="flex-1 overflow-y-auto min-w-0"
-            style={{ padding: '20px 24px 32px', display: 'flex', flexDirection: 'column', gap: 16 }}
+            style={{ padding: '20px 24px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}
           >
             {/* Hint card */}
             {hintOpen && activeStepData?.nudge && (
@@ -1063,37 +1063,46 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               </div>
             )}
 
-            {/* Actions bar */}
-            {currentQuestion && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 4 }}>
+          </div>
+
+          {/* Sticky actions footer */}
+          {currentQuestion && (
+            <div style={{
+              flexShrink: 0,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '12px 24px',
+              borderTop: '1px solid var(--color-outline-faint)',
+              background: 'var(--color-surface)',
+            }}>
+              <button
+                className="btn btn--ghost"
+                style={{ fontSize: 12, padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                disabled={questionIdx === 0}
+              >
+                <span className="material-symbols-outlined msi-sm">arrow_back</span> Previous
+              </button>
+              <div style={{ display: 'flex', gap: 10 }}>
                 <button
                   className="btn btn--ghost"
-                  style={{ fontSize: 12, padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                  disabled={questionIdx === 0}
+                  style={{ fontSize: 12, padding: '8px 14px' }}
+                  onClick={props.onExit ?? (() => window.history.back())}
                 >
-                  <span className="material-symbols-outlined msi-sm">arrow_back</span> Previous
+                  Save &amp; exit
                 </button>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button
-                    className="btn btn--ghost"
-                    style={{ fontSize: 12, padding: '8px 14px' }}
-                    onClick={props.onExit ?? (() => window.history.back())}
-                  >
-                    Save &amp; exit
-                  </button>
-                  <button
-                    className="btn btn--primary"
-                    style={{ fontSize: 13, padding: '10px 18px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                    disabled={selectedOptionId === null || confidence === null || activeSubmitting}
-                    onClick={handleSubmit}
-                  >
-                    {isLastStep ? 'Finish' : `Next: ${NEXT_LABEL[currentStep]}`}
-                    <span className="material-symbols-outlined msi-sm">arrow_forward</span>
-                  </button>
-                </div>
+                <button
+                  className="btn btn--primary"
+                  style={{ fontSize: 13, padding: '10px 18px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  disabled={selectedOptionId === null || confidence === null || activeSubmitting}
+                  onClick={handleSubmit}
+                >
+                  {isLastStep ? 'Finish' : `Next: ${NEXT_LABEL[currentStep]}`}
+                  <span className="material-symbols-outlined msi-sm">arrow_forward</span>
+                </button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </section>
       </div>
     </div>
