@@ -691,6 +691,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       borderRight: '1px solid var(--color-outline-faint)',
       background: 'var(--color-surface)',
       overflow: 'hidden',
+      minHeight: 0,
     }}>
       {/* Tab bar + bookmark button */}
       <div style={{
@@ -921,7 +922,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           <div
             ref={workspaceRef}
             key={`${currentStep}-question`}
-            className="flex-1 overflow-y-auto min-w-0"
+            className="flex-1 overflow-y-auto min-h-0 min-w-0"
             style={{ padding: '20px 24px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}
           >
             {/* Hint card */}
