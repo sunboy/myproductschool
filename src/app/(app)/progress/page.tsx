@@ -31,6 +31,41 @@ const MOVE_DESCRIPTIONS: Record<string, string> = {
   win:      'Defend the decision',
 }
 
+function FlowRadarCard() {
+  const skills = [
+    { key: 'Frame',    pct: 0.72, color: '#4a7c59' },
+    { key: 'List',     pct: 0.48, color: '#6b8275' },
+    { key: 'Optimize', pct: 0.30, color: '#c9933a' },
+    { key: 'Win',      pct: 0.10, color: '#a878d6' },
+  ]
+  return (
+    <div className="rounded-2xl p-6 bg-surface border border-outline-faint">
+      <div className="flex items-center gap-3 mb-5">
+        <h3 className="font-headline text-xl font-medium">FLOW Skills</h3>
+        <a href="/progress/skill-ladder" className="text-xs font-label font-bold text-primary uppercase tracking-wider flex items-center gap-1 ml-auto">
+          Full ladder <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+        </a>
+      </div>
+      <div className="space-y-3">
+        {skills.map(s => (
+          <div key={s.key}>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-sm font-label font-semibold text-on-surface">{s.key}</span>
+              <span className="text-xs text-on-surface-muted font-label">{Math.round(s.pct * 100)}%</span>
+            </div>
+            <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-surface-container)' }}>
+              <div
+                className="h-full rounded-full transition-all duration-700"
+                style={{ width: `${s.pct * 100}%`, background: s.color }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function LumaReflectionCard() {
   const [reflection, setReflection] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -152,7 +187,7 @@ export default function ProgressPage() {
   const overallPct = Math.round((challengePct + movePct) / 2)
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-6 w-full flex flex-col gap-5 animate-fade-in-up">
+    <div className="max-w-[1440px] mx-auto px-6 py-7 w-full flex flex-col gap-5 animate-fade-in-up">
 
       {/* Page header */}
       <div>
@@ -243,6 +278,11 @@ export default function ProgressPage() {
               )
             })}
           </div>
+        </section>
+
+        {/* FLOW Radar — bar chart summary */}
+        <section className="col-span-12 lg:col-span-5">
+          <FlowRadarCard />
         </section>
 
         {/* Learner DNA */}
