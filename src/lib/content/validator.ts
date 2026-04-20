@@ -109,6 +109,48 @@ function validateStep(step: DraftFlowStep, idx: number): StepChecks {
   return { errors, warnings }
 }
 
+// Second-person role-framing patterns we never want in user-facing copy
+const ROLE_FRAMING_PATTERNS: RegExp[] = [
+  /^you are (a|an) /i,
+  /\bas a (senior|staff|tech lead|founding|engineer|pm|em|designer|product manager|data scientist)/i,
+  /\bimagine you\b/i,
+  /\byou(?:'re| are) (a|an) /i,
+]
+
+const STOP_WORDS = new Set([
+  'the','a','an','and','or','but','is','are','was','were','in','on','at','to','for','of','with','by',
+  'from','as','it','this','that','these','those','your','their','its','you','we','they','he','she',
+  'do','does','did','be','been','being','have','has','had','will','would','could','should','can','may',
+  'what','which','how','when','where','why','who','if','so','then','than','not','no','yes'
+])
+
+function tokenize(text: string): string[] {
+  return text.toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length >= 4 && !STOP_WORDS.has(w))
+}
+
+function groundingTokens(json: ChallengeJson): Set<string> {
+  const tokens = new Set<string>()
+  const add = (s?: string | string[]) => {
+    if (!s) return
+    const arr = Array.isArray(s) ? s : [s]
+    for (const v of arr) for (const t of tokenize(v)) tokens.add(t)
+  }
+  add(json.scenario.specific_detail)
+  add(json.scenario.data_points)
+  add(json.scenario.insights)
+  if (json.scenario.excerpts) {
+    for (const e of json.scenario.excerpts) add(e.quote)
+  }
+  return tokens
+}
+
+function hasRoleFraming(text: string): boolean {
+  return ROLE_FRAMING_PATTERNS.some(re => re.test(text))
+}
+
 export function validateChallengeJson(json: ChallengeJson): ValidationResult {
   const errors: ValidationError[] = []
   const warnings: ValidationError[] = []
@@ -134,6 +176,71 @@ export function validateChallengeJson(json: ChallengeJson): ValidationResult {
   if (!json.metadata?.difficulty) errors.push({ path: 'metadata.difficulty', message: 'Required' })
   if (!json.metadata?.primary_competencies?.length) {
     errors.push({ path: 'metadata.primary_competencies', message: 'At least 1 required' })
+  }
+
+  // --- Grounding warnings (non-blocking) ---
+  const groundTokens = groundingTokens(json)
+
+  if (groundTokens.size > 0) {
+    for (let i = 0; i < json.flow_steps.length; i++) {
+      const step = json.flow_steps[i]
+      for (let qi = 0; qi < step.questions.length; qi++) {
+        const q = step.questions[qi]
+        const combinedText = q.options.map(o => o.text).join(' ')
+        const optionTokens = new Set(tokenize(combinedText))
+        const hit = [...optionTokens].some(t => groundTokens.has(t))
+        if (!hit) {
+          warnings.push({
+            path: `flow_steps[${i}].questions[${qi}]`,
+            message: 'No MCQ option references a grounding token (data_points / specific_detail / insights). Options may be too generic.',
+          })
+        }
+      }
+    }
+  }
+
+  // --- Sibling-question overlap warnings ---
+  for (let i = 0; i < json.flow_steps.length; i++) {
+    const step = json.flow_steps[i]
+    if (step.questions.length < 2) continue
+    for (let a = 0; a < step.questions.length; a++) {
+      for (let b = a + 1; b < step.questions.length; b++) {
+        const tA = new Set(tokenize(step.questions[a].question_text))
+        const tB = tokenize(step.questions[b].question_text)
+        const shared = tB.filter(t => tA.has(t)).length
+        if (shared >= 3) {
+          warnings.push({
+            path: `flow_steps[${i}].questions`,
+            message: `Questions Q${step.questions[a].sequence} and Q${step.questions[b].sequence} share ${shared} content words. May overlap.`,
+          })
+        }
+      }
+    }
+  }
+
+  // --- Voice warnings: reject second-person role framing in user-facing copy ---
+  const copyFields: Array<{ path: string; text: string }> = []
+  if (json.scenario?.context) copyFields.push({ path: 'scenario.context', text: json.scenario.context })
+  if (json.scenario?.trigger) copyFields.push({ path: 'scenario.trigger', text: json.scenario.trigger })
+  if (json.scenario?.question) copyFields.push({ path: 'scenario.question', text: json.scenario.question })
+  if (json.scenario?.explanation) copyFields.push({ path: 'scenario.explanation', text: json.scenario.explanation })
+  for (let i = 0; i < json.flow_steps.length; i++) {
+    const step = json.flow_steps[i]
+    if (step.step_nudge) copyFields.push({ path: `flow_steps[${i}].step_nudge`, text: step.step_nudge })
+    for (let qi = 0; qi < step.questions.length; qi++) {
+      const q = step.questions[qi]
+      copyFields.push({ path: `flow_steps[${i}].questions[${qi}].question_text`, text: q.question_text })
+      if (q.question_nudge) copyFields.push({ path: `flow_steps[${i}].questions[${qi}].question_nudge`, text: q.question_nudge })
+      for (const opt of q.options) {
+        copyFields.push({ path: `flow_steps[${i}].questions[${qi}].options.${opt.label}.text`, text: opt.text })
+      }
+    }
+  }
+
+  for (const { path, text } of copyFields) {
+    if (hasRoleFraming(text)) {
+      warnings.push({ path, message: 'Contains second-person role framing ("you are a…", "as a…"). Rewrite to drop into the situation.' })
+    }
   }
 
   return { valid: errors.length === 0, errors, warnings }

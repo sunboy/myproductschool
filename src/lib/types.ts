@@ -784,6 +784,12 @@ export interface DraftFlowStep {
   questions: DraftQuestion[]
 }
 
+export interface ScenarioExcerpt {
+  id: string
+  quote: string
+  topic: 'framing' | 'options' | 'tradeoff' | 'recommendation' | 'context'
+}
+
 export interface ChallengeJsonScenario {
   role: string
   context: string
@@ -791,8 +797,11 @@ export interface ChallengeJsonScenario {
   question: string
   explanation: string
   engineer_standout: string
+  specific_detail?: string
   data_points?: string[]
-  visuals?: string[]   // SVG strings or markdown tables
+  insights?: string[]
+  excerpts?: ScenarioExcerpt[]
+  visuals?: string[]
 }
 
 export interface ChallengeJsonMetadata {
