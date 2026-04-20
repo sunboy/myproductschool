@@ -31,72 +31,148 @@ const MODULE_ROW = {
 
 // ── Chapter 1: full body ─────────────────────────────────────────────────────
 //
-// Renderer constraints (src/app/(app)/learn/[slug]/page.tsx): only # ## ###,
-// **bold**, *italic*, --- hrules, and paragraph breaks. No lists, no links, no
-// blockquotes. Every paragraph separated by a blank line. No em dashes. No
-// second-person role framing.
+// Renderer supports: headings, bold, italic, code, hrules, lists, links, and
+// pass-through for block-level HTML (svg, figure, div, ul, ol, table).
+// Voice: direct, no scene-setting, diagrams carry the load.
 
-const CHAPTER_1_BODY = `## The room
+const CHAPTER_1_BODY = `## What FLOW is
 
-The room is a product review. The deck is open. A staff engineer has been asked what they think. They are the person in the room who has shipped the most, debugged the most, rewritten the most. They open their mouth and what comes out is "it depends" or "we could do A, but also B" or "let me think about what the user wants."
+Four reasoning moves that make the difference between technical thinking and product thinking. Not a framework to memorize. A vocabulary for moves you already make.
 
-The CEO nods politely. A more junior PM takes the floor and runs with a framework. The staff engineer, who understood the problem better than anyone, watched it happen.
+<figure>
+<svg viewBox="0 0 720 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The four FLOW moves">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4a4e4a"/></marker>
+  </defs>
+  <g font-family="Nunito Sans, sans-serif" font-size="13">
+    <g><rect x="8" y="30" width="160" height="100" rx="14" fill="#d8f0de" stroke="#4a7c59" stroke-width="1.5"/><text x="88" y="62" text-anchor="middle" font-weight="700" fill="#2e3230">Frame</text><text x="88" y="88" text-anchor="middle" fill="#4a4e4a" font-size="11">Find the real</text><text x="88" y="104" text-anchor="middle" fill="#4a4e4a" font-size="11">problem</text><text x="88" y="122" text-anchor="middle" fill="#b83230" font-size="10" font-style="italic">not the stated one</text></g>
+    <g><rect x="188" y="30" width="160" height="100" rx="14" fill="#f0e8db" stroke="#6b6358" stroke-width="1.5"/><text x="268" y="62" text-anchor="middle" font-weight="700" fill="#2e3230">List</text><text x="268" y="88" text-anchor="middle" fill="#4a4e4a" font-size="11">Widen the</text><text x="268" y="104" text-anchor="middle" fill="#4a4e4a" font-size="11">option space</text><text x="268" y="122" text-anchor="middle" fill="#b83230" font-size="10" font-style="italic">structurally distinct</text></g>
+    <g><rect x="368" y="30" width="160" height="100" rx="14" fill="#c4a66a33" stroke="#705c30" stroke-width="1.5"/><text x="448" y="62" text-anchor="middle" font-weight="700" fill="#2e3230">Optimize</text><text x="448" y="88" text-anchor="middle" fill="#4a4e4a" font-size="11">Name the</text><text x="448" y="104" text-anchor="middle" fill="#4a4e4a" font-size="11">criterion + sacrifice</text><text x="448" y="122" text-anchor="middle" fill="#b83230" font-size="10" font-style="italic">not a preference</text></g>
+    <g><rect x="548" y="30" width="160" height="100" rx="14" fill="#78a88644" stroke="#4a7c59" stroke-width="1.5"/><text x="628" y="62" text-anchor="middle" font-weight="700" fill="#2e3230">Win</text><text x="628" y="88" text-anchor="middle" fill="#4a4e4a" font-size="11">Falsifiable</text><text x="628" y="104" text-anchor="middle" fill="#4a4e4a" font-size="11">recommendation</text><text x="628" y="122" text-anchor="middle" fill="#b83230" font-size="10" font-style="italic">not a hedge</text></g>
+    <line x1="168" y1="80" x2="186" y2="80" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="348" y1="80" x2="366" y2="80" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="528" y1="80" x2="546" y2="80" stroke="#4a4e4a" stroke-width="1.5" marker-end="url(#arr)"/>
+  </g>
+</svg>
+<figcaption>The four moves. Each corrects a specific anti-pattern (red italic).</figcaption>
+</figure>
 
-## The gap
+## Why engineers already have most of this
 
-Engineers do not lack product intuition. They lack vocabulary and reps.
+Five of the six competencies that define product sense show up in engineering work every week. Engineers do not lack product intuition. They lack vocabulary and reps.
 
-The raw material is already there. Debugging is root-cause thinking. Architecture reviews are option-space thinking. Build-versus-buy is tradeoff naming. Shipping is hypothesis testing. These are the same four moves that a senior product thinker makes in a strategy meeting. The moves have different names in different rooms, but the shape is identical.
+<figure>
+<svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Product sense competencies mapped to engineering work">
+  <g font-family="Nunito Sans, sans-serif" font-size="12">
+    <text x="140" y="26" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="13">Product sense competency</text>
+    <text x="480" y="26" text-anchor="middle" font-weight="700" fill="#2e3230" font-size="13">Where engineers already do it</text>
 
-What engineers are missing is not intelligence. It is a vocabulary for the thing they already do, and a place to practice it when the stakes do not punish them for practicing.
+    <g transform="translate(0,44)">
+      <rect x="16" y="0" width="248" height="30" rx="6" fill="#d8f0de" stroke="#4a7c59"/>
+      <text x="32" y="20" fill="#2e3230" font-weight="600">Motivation theory</text>
+      <text x="300" y="20" fill="#4a4e4a">On-call. Why users rage. Why metrics move.</text>
+    </g>
+    <g transform="translate(0,82)">
+      <rect x="16" y="0" width="248" height="30" rx="6" fill="#d8f0de" stroke="#4a7c59"/>
+      <text x="32" y="20" fill="#2e3230" font-weight="600">Cognitive empathy</text>
+      <text x="300" y="20" fill="#4a4e4a">API design. Imagining the next caller.</text>
+    </g>
+    <g transform="translate(0,120)">
+      <rect x="16" y="0" width="248" height="30" rx="6" fill="#f0e8db" stroke="#b83230" stroke-dasharray="4 3"/>
+      <text x="32" y="20" fill="#2e3230" font-weight="600">Taste</text>
+      <text x="300" y="20" fill="#b83230" font-style="italic">Uncalibrated. Nobody named this as the thing being judged.</text>
+    </g>
+    <g transform="translate(0,158)">
+      <rect x="16" y="0" width="248" height="30" rx="6" fill="#d8f0de" stroke="#4a7c59"/>
+      <text x="32" y="20" fill="#2e3230" font-weight="600">Strategic thinking</text>
+      <text x="300" y="20" fill="#4a4e4a">Build vs buy. Tech debt payoff timing.</text>
+    </g>
+    <g transform="translate(0,196)">
+      <rect x="16" y="0" width="248" height="30" rx="6" fill="#d8f0de" stroke="#4a7c59"/>
+      <text x="32" y="20" fill="#2e3230" font-weight="600">Creative execution</text>
+      <text x="300" y="20" fill="#4a4e4a">Architecture reviews. Structurally distinct options.</text>
+    </g>
+  </g>
+</svg>
+<figcaption>Rahul Pandey's six competencies, minus domain expertise. Five are already in the engineering week. Taste is the one that usually gets flagged as missing, and it is not missing. It is uncalibrated.</figcaption>
+</figure>
 
-Rahul Pandey's formulation of product sense names six competencies. Motivation theory. Cognitive empathy. Taste. Strategic thinking. Creative execution. Domain expertise. Five of these six are things engineers exercise every week. Taste is the one that gets called out as missing, and taste is not missing. It is uncalibrated because nobody told the engineer it was the thing being evaluated.
+The raw material is there. What is missing is a name for the move and a place to practice it where the stakes do not punish practice.
 
-FLOW is the naming.
+## The four moves, concretely
 
-## What FLOW actually is
+Each move corrects one anti-pattern. If you can name which anti-pattern is active in a room, you can name the move that breaks it.
 
-FLOW is four reasoning moves. Not a framework. A vocabulary for the moves you are already making, plus a gym for making them against decisions where the answer is not obvious.
+**Frame.** The stated problem is almost never the real problem. *"Users are churning"* is a symptom. Keep asking what is upstream until the complaint would still be true if every proposed fix already existed. That is the frame worth solving.
 
-**Frame.** The stated problem is almost never the real problem. The real problem is upstream. "Users are churning" is a symptom. The move is to keep asking what is upstream of the stated complaint until the description would still be true if every proposed solution already existed. That is the frame that is worth solving.
+**List.** A list of five variations of the same idea is a list of one idea. Real options are structurally distinct: different paradigms, different bets. If the winner is obvious before the second option is written, the list is too narrow.
 
-**List.** The options you missed matter more than the options you found. A list of five variations of the same idea is a list of one idea. A real option space contains structurally distinct approaches, solving different underlying jobs, making different bets. If your list has a clear winner before you write the second option, the list is too narrow.
+**Optimize.** A tradeoff you cannot name is a preference. Name the criterion you are optimizing for, then name the thing you are giving up. *"We ship speed at the cost of polish, because this audience forgives ugly before it forgives slow"* is more useful than any scorecard.
 
-**Optimize.** A tradeoff you cannot name is not a tradeoff. It is a preference. The move is to name the criterion you are optimizing for, then name the thing you are explicitly giving up. "We will ship speed at the cost of visual polish, because this audience will forgive ugly before it forgives slow." That sentence is worth more than any scorecard.
+**Win.** If the recommendation cannot be proven wrong, it is not a recommendation. It is a hedge. A real call picks a direction, predicts a measurable result, and commits to a timeline.
 
-**Win.** A recommendation is a falsifiable hypothesis. If you cannot say what outcome would prove you wrong, you are not recommending. You are hedging. A crisp recommendation picks a direction, predicts a measurable result, and commits to a timeline. Everything else is a status update.
+## Where this shows up in engineering language
 
-Four moves. Four anti-patterns they correct. That is the whole framework.
+The same four moves already exist in engineering work. They have different names there.
 
-## Why this beats "learn product management"
+<figure>
+<svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="FLOW moves mapped to engineering practices">
+  <g font-family="Nunito Sans, sans-serif" font-size="12">
+    <rect x="16" y="12" width="688" height="30" fill="#eae6de" stroke="#c4c8bc"/>
+    <text x="32" y="32" font-weight="700" fill="#2e3230">FLOW move</text>
+    <text x="200" y="32" font-weight="700" fill="#2e3230">Engineering version</text>
+    <text x="440" y="32" font-weight="700" fill="#2e3230">Product version</text>
 
-The alternative is to read ten books and guess at the distillation. Inspired. Empowered. Obviously Awesome. The Build Trap. Measure What Matters. Competing Against Luck. Upstream. The Mom Test. Working Backwards. The Making of a Manager.
+    <g transform="translate(0,42)">
+      <rect x="16" y="0" width="688" height="40" fill="#faf6f0" stroke="#c4c8bc"/>
+      <text x="32" y="24" fill="#4a7c59" font-weight="700">Frame</text>
+      <text x="200" y="24" fill="#4a4e4a">Root-cause debugging</text>
+      <text x="440" y="24" fill="#4a4e4a">Problem upstream of the stated complaint</text>
+    </g>
+    <g transform="translate(0,82)">
+      <rect x="16" y="0" width="688" height="40" fill="#f5f1ea" stroke="#c4c8bc"/>
+      <text x="32" y="24" fill="#6b6358" font-weight="700">List</text>
+      <text x="200" y="24" fill="#4a4e4a">Architecture review options</text>
+      <text x="440" y="24" fill="#4a4e4a">Structurally distinct solution paths</text>
+    </g>
+    <g transform="translate(0,122)">
+      <rect x="16" y="0" width="688" height="40" fill="#faf6f0" stroke="#c4c8bc"/>
+      <text x="32" y="24" fill="#705c30" font-weight="700">Optimize</text>
+      <text x="200" y="24" fill="#4a4e4a">Build vs buy. Latency vs cost.</text>
+      <text x="440" y="24" fill="#4a4e4a">Criterion named, sacrifice named</text>
+    </g>
+    <g transform="translate(0,162)">
+      <rect x="16" y="0" width="688" height="40" fill="#f5f1ea" stroke="#c4c8bc"/>
+      <text x="32" y="24" fill="#4a7c59" font-weight="700">Win</text>
+      <text x="200" y="24" fill="#4a4e4a">PR with a rollout plan + metric</text>
+      <text x="440" y="24" fill="#4a4e4a">Falsifiable recommendation + timeline</text>
+    </g>
+  </g>
+</svg>
+<figcaption>Same reasoning move, different room.</figcaption>
+</figure>
 
-All of these books are good. Reading them is not the same as being able to make the move they are pointing at when it counts. The books are written for people who already have the reps. FLOW gives you the four moves and a way to practice each one until the motion is yours.
+## Why not just read the books
 
-This module teaches the vocabulary. The challenges in the rest of the product are the reps.
+The alternative is ten books and guessing at the distillation. *Inspired*. *Empowered*. *Obviously Awesome*. *The Build Trap*. *Measure What Matters*. *Competing Against Luck*. *Upstream*. *The Mom Test*. *Working Backwards*. *The Making of a Manager*.
 
-## What the module will do
+They are all worth reading. None of them alone gives you the four moves named cleanly. FLOW is the compression. The challenges that follow are the reps.
 
-Chapter 2 is Frame. The root-cause move. Why the stated problem is the enemy of the real problem, and how to find what is upstream without getting lost.
+## What is in this module
 
-Chapter 3 is List. How to widen the option space on purpose, not by accident. Why structurally distinct beats many variations.
-
-Chapter 4 is Optimize. Naming the criterion and the sacrifice. Why "it depends" is not an answer and what an answer looks like instead.
-
-Chapter 5 is Win. The recommendation as a falsifiable hypothesis. How to make a call someone can actually disagree with.
-
-Chapter 6 maps the four moves onto seven reasoning traditions from Shreyas Doshi, April Dunford, Marty Cagan, Rahul Pandey, Gergely Orosz, and Gibson Biddle. You will recognize the moves because you already make them. The chapter names them.
-
-Chapter 7 is the engineer-to-product shift. What engineers already have that most PMs envy. What engineers need to learn that most PMs take for granted.
-
-Chapter 8 is FLOW in a real meeting. How to run the four moves when the clock is ticking and the CEO is watching.
+- **Ch 2. Frame.** The root-cause move. How to find what is upstream without getting lost.
+- **Ch 3. List.** Widening the option space on purpose, not by accident.
+- **Ch 4. Optimize.** Naming the criterion and the sacrifice. What an answer looks like instead of *"it depends"*.
+- **Ch 5. Win.** The recommendation as a falsifiable hypothesis.
+- **Ch 6. Seven themes.** Mapping the four moves to Doshi, Dunford, Cagan, Pandey, Orosz, and Biddle.
+- **Ch 7. Engineer to product.** What you already have. What you still need.
+- **Ch 8. FLOW live.** Running the four moves when the clock is ticking.
 
 ## One handle to take with you
 
-Product thinking is not more thinking. It is different thinking. Four moves. The real problem is upstream. The best option was not on the list. The tradeoff is a sacrifice, not a preference. The recommendation is a hypothesis that could be wrong.
+Four moves. Real problem is upstream. Best option was not on the list. Tradeoff is a sacrifice, not a preference. Recommendation is a hypothesis that could be wrong.
 
-When the next review meeting opens, that is the vocabulary to reach for.`.trim()
+That is the vocabulary to reach for in the next review meeting.`.trim()
 
 const PLACEHOLDER_BODY = '## In draft\n\nThis chapter is being written. Check back soon.'
 
