@@ -1,0 +1,472 @@
+[
+  {
+    "id": "q001",
+    "question": "Design a solution to communicate with pets using AI",
+    "company": "OpenAI",
+    "category": "product_design",
+    "source_url": "https://www.pmaccelerator.io/blog/top-20-openai-product-manager-interview-questions-interview-process-tips",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "frame",
+    "notes": "Core product sense question testing ability to ideate on novel AI capabilities and define user problem"
+  },
+  {
+    "id": "q002",
+    "question": "How would you measure success for OpenAI? What if instrumentation went down?",
+    "company": "OpenAI",
+    "category": "metrics",
+    "source_url": "https://www.pmaccelerator.io/blog/top-20-openai-product-manager-interview-questions-interview-process-tips",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "win",
+    "notes": "Tests metrics thinking and resilience under constraints; how to measure at company level"
+  },
+  {
+    "id": "q003",
+    "question": "How would you design a product feature that helps users understand when an AI system is uncertain or may produce unreliable information?",
+    "company": "Anthropic",
+    "category": "product_design",
+    "source_url": "https://www.interviewquery.com/interview-guides/anthropic-product-manager",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "frame",
+    "notes": "Tests safety-first product thinking; core to Anthropic's mission; requires framing uncertainty as a product feature"
+  },
+  {
+    "id": "q004",
+    "question": "How would you prioritize between improving safety infrastructure and launching a new user-facing capability?",
+    "company": "Anthropic",
+    "category": "strategy",
+    "source_url": "https://www.interviewquery.com/interview-guides/anthropic-product-manager",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "optimize",
+    "notes": "Tradeoff between safety and velocity; core to Anthropic's values; tests strategic thinking"
+  },
+  {
+    "id": "q005",
+    "question": "How would you measure whether a new AI safety feature actually improves user trust and engagement?",
+    "company": "Anthropic",
+    "category": "metrics",
+    "source_url": "https://www.interviewquery.com/interview-guides/anthropic-product-manager",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "win",
+    "notes": "Tests ability to connect safety metrics to business outcomes; moves beyond surface metrics"
+  },
+  {
+    "id": "q006",
+    "question": "Imagine adoption of Anthropic's AI platform slows down despite increasing visibility. How would you diagnose and respond?",
+    "company": "Anthropic",
+    "category": "product_improvement",
+    "source_url": "https://www.interviewquery.com/interview-guides/anthropic-product-manager",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "frame",
+    "notes": "Diagnosis of visibility vs. adoption gap; tests ability to structure investigation across awareness, trust, and product-market fit"
+  },
+  {
+    "id": "q007",
+    "question": "Why has Perplexity's daily active user count for the AI chat feature dropped by 15% over the past week?",
+    "company": "Perplexity",
+    "category": "metrics",
+    "source_url": "https://nextsprints.com/guide/perplexity-product-manager-interview-guide",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "frame",
+    "notes": "Root cause analysis; tests diagnostic thinking and ability to structure investigative process"
+  },
+  {
+    "id": "q008",
+    "question": "How can Perplexity balance providing detailed, comprehensive answers with maintaining quick response times?",
+    "company": "Perplexity",
+    "category": "strategy",
+    "source_url": "https://nextsprints.com/guide/perplexity-product-manager-interview-guide",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "optimize",
+    "notes": "Core tradeoff for search/chat products; quality vs. latency fundamental tension"
+  },
+  {
+    "id": "q009",
+    "question": "Should Mistral AI prioritize expanding its language support or improving performance on existing languages?",
+    "company": "Mistral",
+    "category": "strategy",
+    "source_url": "https://nextsprints.com/mistralai-product-manager-interview-questions",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "optimize",
+    "notes": "Market expansion vs. depth; tests prioritization and portfolio strategy for foundational models"
+  },
+  {
+    "id": "q010",
+    "question": "What metrics would you use to evaluate Mistral AI's open-source language models?",
+    "company": "Mistral",
+    "category": "metrics",
+    "source_url": "https://nextsprints.com/mistralai-product-manager-interview-questions",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "win",
+    "notes": "Tests understanding of open-source model evaluation; must balance academic and commercial metrics"
+  },
+  {
+    "id": "q011",
+    "question": "What is your favorite product? Redesign it. Choose a Facebook product and redesign it.",
+    "company": "Meta",
+    "category": "product_design",
+    "source_url": "https://www.glassdoor.com/Interview/Product-Sense-2-What-is-your-favourite-product-Redesign-it-Choose-a-Facebook-product-Redesign-it-QTN_1801169.htm",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "frame",
+    "notes": "Classic Meta product sense question; appears in multiple Glassdoor reviews"
+  },
+  {
+    "id": "q012",
+    "question": "How would you improve Instagram Stories for creators?",
+    "company": "Meta",
+    "category": "product_improvement",
+    "source_url": "https://www.glassdoor.com/Interview/Meta-Product-Manager-Interview-Questions-EI_IE40772.0,4_KO5,20.htm",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "optimize",
+    "notes": "Tests creator economy understanding and feature prioritization"
+  },
+  {
+    "id": "q013",
+    "question": "How would you improve the peer-to-peer payments product on Messenger or WhatsApp?",
+    "company": "Meta",
+    "category": "product_improvement",
+    "source_url": "https://www.interviewquery.com/interview-guides/facebook-product-manager",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "optimize",
+    "notes": "Meta deep hypothetical with choice between two platforms; tests strategic thinking"
+  },
+  {
+    "id": "q014",
+    "question": "How would you improve Facebook Marketplace?",
+    "company": "Meta",
+    "category": "product_improvement",
+    "source_url": "https://www.tryexponent.com/blog/product-sense-interview",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "list",
+    "notes": "Meta product sense question on commerce feature"
+  },
+  {
+    "id": "q015",
+    "question": "Suggest a new feature for Amazon. What metrics would you use to measure its success?",
+    "company": "Amazon",
+    "category": "product_design",
+    "source_url": "https://productschool.com/blog/job-search/the-ultimate-list-product-manager-interview-questions",
+    "date_hint": "2024-Q4",
+    "flow_anchor": "win",
+    "notes": "Combined design and metrics question; tests ability to define success criteria"
+  },
+  {
+    "id": "q016",
+    "question": "Design LinkedIn's onboarding for new grads",
+    "company": "LinkedIn",
+    "category": "product_design",
+    "source_url": "https://www.productalliance.com/product-management-cheat-sheets/linkedin-pm-intervew-prep",
+    "date_hint": "2024-2025",
+    "flow_anchor": "frame",
+    "notes": "Core LinkedIn question about onboarding a key user segment; requires defining audience, pain points, and success metrics"
+  },
+  {
+    "id": "q017",
+    "question": "How would you grow profile completion on LinkedIn?",
+    "company": "LinkedIn",
+    "category": "product_improvement",
+    "source_url": "https://igotanoffer.com/blogs/product-manager/linkedin-product-manager-interview",
+    "date_hint": "2024-2025",
+    "flow_anchor": "optimize",
+    "notes": "Tests product sense around engagement mechanics and user motivation"
+  },
+  {
+    "id": "q018",
+    "question": "How would you improve LinkedIn's Jobs product to get a higher number of applications?",
+    "company": "LinkedIn",
+    "category": "product_improvement",
+    "source_url": "https://www.glassdoor.com/Interview/LinkedIn-Product-Manager-Interview-Questions-EI_IE34865.0,8_KO9,24.htm",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "optimize",
+    "notes": "Tests understanding of two-sided marketplace and metric optimization"
+  },
+  {
+    "id": "q019",
+    "question": "How would you improve the functionality 10x of an unnamed product as its Product Manager?",
+    "company": "Google",
+    "category": "product_improvement",
+    "source_url": "https://www.glassdoor.com/Interview/If-you-were-Product-Manager-of-unnamed-product-how-would-you-improve-the-functionality-10x-of-what-it-is-now-QTN_984320.htm",
+    "date_hint": "2024-2025",
+    "flow_anchor": "optimize",
+    "notes": "Tests creativity and scaling thinking"
+  },
+  {
+    "id": "q020",
+    "question": "How would you improve Google Maps?",
+    "company": "Google",
+    "category": "product_improvement",
+    "source_url": "https://www.productmanagementexercises.com/119/how-would-you-improve-google-maps",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "frame",
+    "notes": "Appears repeatedly across 2024-2025 interviews; user research and pain point identification emphasized"
+  },
+  {
+    "id": "q021",
+    "question": "Design a product that helps improve work-from-home productivity",
+    "company": "Google",
+    "category": "product_design",
+    "source_url": "https://www.productalliance.com/guides/google-pm-interview-cheat-sheet",
+    "date_hint": "2024-2025",
+    "flow_anchor": "frame",
+    "notes": "Open-ended design question testing problem definition and user-centric thinking"
+  },
+  {
+    "id": "q022",
+    "question": "Re-imagine a ride-sharing product like Uber that's specifically optimized for blind passengers",
+    "company": "Google",
+    "category": "product_design",
+    "source_url": "https://www.productalliance.com/guides/google-pm-interview-cheat-sheet",
+    "date_hint": "2024-2025",
+    "flow_anchor": "frame",
+    "notes": "Tests accessibility thinking and inclusive design; requires deep user understanding and empathy"
+  },
+  {
+    "id": "q023",
+    "question": "Design a parking feature for Maps",
+    "company": "Google",
+    "category": "product_design",
+    "source_url": "https://www.tryexponent.com/blog/product-sense-interview",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "frame",
+    "notes": "Google product design question — functional feature in existing product"
+  },
+  {
+    "id": "q024",
+    "question": "Estimate how many Zoom meetings take place over the course of the average week",
+    "company": "Google",
+    "category": "estimation",
+    "source_url": "https://www.productalliance.com/guides/google-pm-interview-cheat-sheet",
+    "date_hint": "2024-2025",
+    "flow_anchor": "win",
+    "notes": "Tests estimation skills and market sizing; product-adjacent to Google's collaboration tools strategy"
+  },
+  {
+    "id": "q025",
+    "question": "You work at YouTube as a PM. How would you develop the roadmap for YouTube for the next 5 years?",
+    "company": "YouTube",
+    "category": "strategy",
+    "source_url": "https://www.mypminterview.com/p/develop-the-roadmap-for-youtube",
+    "date_hint": "2024-2025",
+    "flow_anchor": "list",
+    "notes": "Tests strategic thinking across stakeholders; requires addressing TikTok competition and creator retention"
+  },
+  {
+    "id": "q026",
+    "question": "How would you improve YouTube? What metrics would you prioritize?",
+    "company": "YouTube",
+    "category": "product_improvement",
+    "source_url": "https://www.productmanagementexercises.com/interview-questions/youtube",
+    "date_hint": "2024-2025",
+    "flow_anchor": "optimize",
+    "notes": "Tests metric selection and prioritization across complex product"
+  },
+  {
+    "id": "q027",
+    "question": "How would you improve X (Twitter)? Come up with 5 improvements you would make",
+    "company": "X/Twitter",
+    "category": "product_improvement",
+    "source_url": "https://www.productalliance.com/guides/twitter-pm-interview-cheat-sheet",
+    "date_hint": "2024-2025",
+    "flow_anchor": "list",
+    "notes": "Tests enumeration of multiple product angles; requires prioritization and impact assessment"
+  },
+  {
+    "id": "q028",
+    "question": "Propose how X can monetize without relying on ads",
+    "company": "X/Twitter",
+    "category": "go_to_market",
+    "source_url": "https://www.productalliance.com/guides/twitter-pm-interview-cheat-sheet",
+    "date_hint": "2024-2025",
+    "flow_anchor": "optimize",
+    "notes": "Tests business model thinking; relevant to Musk-era focus on subscription and alternative monetization"
+  },
+  {
+    "id": "q029",
+    "question": "Tell me about a time when your intuition led you one way, but metrics led you another. How did you resolve it?",
+    "company": "X/Twitter",
+    "category": "strategy",
+    "source_url": "https://www.productalliance.com/guides/twitter-pm-interview-cheat-sheet",
+    "date_hint": "2024-2025",
+    "flow_anchor": "optimize",
+    "notes": "Behavioral/analytical hybrid; tests data-driven decision-making"
+  },
+  {
+    "id": "q030",
+    "question": "Design TikTok for an older audience",
+    "company": "TikTok",
+    "category": "product_design",
+    "source_url": "https://www.productalliance.com/product-management-cheat-sheets/tiktok-pm-intervew-prep",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "frame",
+    "notes": "Tests audience segmentation and product adaptation for new user groups"
+  },
+  {
+    "id": "q031",
+    "question": "If you were a PM at TikTok Shop, how would you cross-sell ads on TikTok Shop for creators?",
+    "company": "TikTok",
+    "category": "strategy",
+    "source_url": "https://www.teamblind.com/post/product-manager-tiktok-what-does-the-pm-hiring-process-at-tt-look-like",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "list",
+    "notes": "Tests monetization strategy and creator ecosystem understanding"
+  },
+  {
+    "id": "q032",
+    "question": "Compare the home screens of TikTok, Instagram Reels, and YouTube Shorts. What would you improve?",
+    "company": "TikTok",
+    "category": "product_improvement",
+    "source_url": "https://www.productalliance.com/product-management-cheat-sheets/tiktok-pm-intervew-prep",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "list",
+    "notes": "Competitive analysis framework; tests understanding of product differentiation"
+  },
+  {
+    "id": "q033",
+    "question": "As the Product Manager for Coinbase's onboarding experience, how would you set goals and define success?",
+    "company": "Coinbase",
+    "category": "product_design",
+    "source_url": "https://medium.com/@rohitverma141/pm-interview-question-as-the-product-manager-for-coinbases-onboarding-experience-how-would-you-85f6db8462a6",
+    "date_hint": "2024-2025",
+    "flow_anchor": "frame",
+    "notes": "Canonical Coinbase interview question focusing on defining success metrics for a core user flow"
+  },
+  {
+    "id": "q034",
+    "question": "How would you improve Coinbase's mobile experience for new users?",
+    "company": "Coinbase",
+    "category": "product_improvement",
+    "source_url": "https://www.tryexponent.com/guides/coinbase-pm-interview",
+    "date_hint": "2025",
+    "flow_anchor": "optimize",
+    "notes": "Mobile activation and new user experience focus; tests user research and retention thinking"
+  },
+  {
+    "id": "q035",
+    "question": "You're the PM for Coinbase. DAU is down by 10%. What do you do to investigate?",
+    "company": "Coinbase",
+    "category": "metrics",
+    "source_url": "https://www.tryexponent.com/questions?company=coinbase&role=pm",
+    "date_hint": "2025",
+    "flow_anchor": "frame",
+    "notes": "Diagnostic question testing root cause analysis and metric fluency in crypto/fintech context"
+  },
+  {
+    "id": "q036",
+    "question": "Design an international crypto remittance product",
+    "company": "Coinbase",
+    "category": "product_design",
+    "source_url": "https://www.tryexponent.com/questions?company=coinbase&role=pm",
+    "date_hint": "2024-2025",
+    "flow_anchor": "frame",
+    "notes": "Fintech-specific constraint: compliance, speed, cost — tests product thinking in regulated domain"
+  },
+  {
+    "id": "q037",
+    "question": "What metrics would you track for Coinbase's staking product?",
+    "company": "Coinbase",
+    "category": "metrics",
+    "source_url": "https://medium.com/design-bootcamp/how-coinbase-other-crypto-firm-interviews-for-a-product-manager-role-3d791e8582d9",
+    "date_hint": "2024-2025",
+    "flow_anchor": "win",
+    "notes": "Product-specific metrics in crypto domain; tests understanding of fintech KPIs and business drivers"
+  },
+  {
+    "id": "q038",
+    "question": "How would you define customer churn, and what factors do you think contribute to it?",
+    "company": "Brex",
+    "category": "metrics",
+    "source_url": "https://www.interviewquery.com/interview-guides/brex-product-manager",
+    "date_hint": "2025",
+    "flow_anchor": "frame",
+    "notes": "Foundational metric definition in fintech; critical for B2B SaaS retention strategies"
+  },
+  {
+    "id": "q039",
+    "question": "Describe a time when you had to prioritize multiple projects. How did you decide what to focus on?",
+    "company": "Ramp",
+    "category": "strategy",
+    "source_url": "https://www.interviewquery.com/interview-guides/ramp-product-manager",
+    "date_hint": "2025",
+    "flow_anchor": "optimize",
+    "notes": "Behavioral + prioritization; tests execution rigor and stakeholder management in fast-growing fintech"
+  },
+  {
+    "id": "q040",
+    "question": "How would you prioritize between fixing a bug or shipping a new feature?",
+    "company": "Coinbase",
+    "category": "strategy",
+    "source_url": "https://www.tryexponent.com/questions?company=coinbase&role=pm",
+    "date_hint": "2024-2025",
+    "flow_anchor": "optimize",
+    "notes": "Execution prioritization; tests tradeoff thinking and business acumen"
+  },
+  {
+    "id": "q041",
+    "question": "How would you improve your favorite product?",
+    "company": "General",
+    "category": "product_improvement",
+    "source_url": "https://www.lennysnewsletter.com/p/the-definitive-guide-to-mastering",
+    "date_hint": "2024-Q4",
+    "flow_anchor": "list",
+    "notes": "Open-ended improvement question used across multiple companies"
+  },
+  {
+    "id": "q042",
+    "question": "Build a podcast product for Netflix",
+    "company": "Netflix",
+    "category": "product_design",
+    "source_url": "https://www.lennysnewsletter.com/p/the-definitive-guide-to-mastering",
+    "date_hint": "2024-Q4",
+    "flow_anchor": "frame",
+    "notes": "Netflix product design question — new product category within streaming platform"
+  },
+  {
+    "id": "q043",
+    "question": "How would you improve Spotify for first-time users?",
+    "company": "Spotify",
+    "category": "product_improvement",
+    "source_url": "https://medium.com/@milesk_33/the-ultimate-product-manager-interview-toolkit-for-2025-f3a20dcf5110",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "list",
+    "notes": "Segment-specific improvement question focusing on onboarding experience"
+  },
+  {
+    "id": "q044",
+    "question": "DAU dropped 10% last week. What do you do?",
+    "company": "General",
+    "category": "metrics",
+    "source_url": "https://medium.com/@milesk_33/the-ultimate-product-manager-interview-toolkit-for-2025-f3a20dcf5110",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "frame",
+    "notes": "Metrics diagnosis question — tests ability to structure and diagnose a metric decline"
+  },
+  {
+    "id": "q045",
+    "question": "Design a product for drivers in rush hour",
+    "company": "Uber",
+    "category": "product_design",
+    "source_url": "https://www.tryexponent.com/blog/product-sense-interview",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "frame",
+    "notes": "Contextual product design for ride-sharing use case"
+  },
+  {
+    "id": "q046",
+    "question": "How would you define the North Star metric and key metrics for your team at Uber before leaving for a 3-month break?",
+    "company": "Uber",
+    "category": "metrics",
+    "source_url": "https://medium.com/design-bootcamp/product-management-interview-question-you-are-a-senior-pm-at-uber-how-would-you-define-the-north-c3b647865f78",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "frame",
+    "notes": "Tests strategic thinking and metrics alignment; appeared in 2025 Blind discussions"
+  },
+  {
+    "id": "q047",
+    "question": "How would you measure the success of launching a new pricing plan, and what metrics would you track?",
+    "company": "General",
+    "category": "metrics",
+    "source_url": "https://www.news.aakashg.com/p/product-metrics-interview",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "win",
+    "notes": "Metrics questions appear in majority of 2025 interviews; tests North Star metric framework"
+  }
+]
