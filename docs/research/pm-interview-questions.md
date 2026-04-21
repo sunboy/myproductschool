@@ -1,7 +1,7 @@
 # PM Interview Questions — Research Database
-_Scraped April 2026. 63 questions from Oct 2024–Apr 2026._
+_Scraped April 2026. 70 questions from Oct 2024–Apr 2026._
 
-Sources: Glassdoor, Blind, Exponent, Reddit, PMAccelerator, InterviewQuery, ProductAlliance, Lenny's Newsletter, Medium, ProductManagementExercises, NextSprints.
+Sources: Exponent, InterviewQuery, Leland, Blind (TeamBlind), PMAccelerator, Lenny's Newsletter, Aakash Gupta (Medium/Substack), Shopify InterviewQuery Guide, DoorDash InterviewQuery Guide, Substack (Ridhima Khurana).
 
 ---
 
@@ -11,31 +11,30 @@ Sources: Glassdoor, Blind, Exponent, Reddit, PMAccelerator, InterviewQuery, Prod
 
 | ID | Question | Category | FLOW Anchor | Source |
 |---|---|---|---|---|
-| q001 | Design a solution to communicate with pets using AI | product_design | frame | [link](https://www.pmaccelerator.io/blog/top-20-openai-product-manager-interview-questions-interview-process-tips) |
-| q002 | How would you measure success for OpenAI? What if instrumentation went down? | metrics | win | [link](https://www.pmaccelerator.io/blog/top-20-openai-product-manager-interview-questions-interview-process-tips) |
+| q001 | Design a solution to communicate with pets using AI | product_design | list | [link](https://www.pmaccelerator.io/blog/top-20-openai-product-manager-interview-questions-interview-process-tips) |
+| q002 | Design the future of music platform | product_design | list | [link](https://www.pmaccelerator.io/blog/top-20-openai-product-manager-interview-questions-interview-process-tips) |
+| q003 | How would you measure success for OpenAI? What if instrumentation went down? | metrics | win | [link](https://www.pmaccelerator.io/blog/top-20-openai-product-manager-interview-questions-interview-process-tips) |
+| q004 | Analyze a current OpenAI product and propose three improvements to enhance user engagement. | product_improvement | list | [link](https://www.pmaccelerator.io/blog/top-20-openai-product-manager-interview-questions-interview-process-tips) |
+| q005 | How would you increase weekly active users of ChatGPT image creation from 175M to 350M in 3 months with only 3 engineers? | strategy | optimize | [link](https://www.news.aakashg.com/p/ai-product-sense-interview) |
+| q006 | How would you launch a new ChatGPT model? | go_to_market | win | [link](https://www.tryexponent.com/blog/top-product-manager-interview-questions) |
+| q007 | Imagine a startup that has developed a model that scans your brain and can rank your perspectives and beliefs in order of how strongly you believe in them. You need to bring this product to market — how would you do that? | go_to_market | win | [link](https://ridhimakhurana.substack.com/p/1010-answer-to-a-recent-product-sense) |
+| q030 | How would you measure launching GPT-5? | metrics | win | [link](https://aakashgupta.medium.com/the-complete-guide-to-product-manager-metrics-interview-questions-b080c3076b39) |
 
 ### Anthropic
 
 | ID | Question | Category | FLOW Anchor | Source |
 |---|---|---|---|---|
-| q003 | How would you design a product feature that helps users understand when an AI system is uncertain or may produce unreliable information? | product_design | frame | [link](https://www.interviewquery.com/interview-guides/anthropic-product-manager) |
-| q004 | How would you prioritize between improving safety infrastructure and launching a new user-facing capability? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/anthropic-product-manager) |
-| q005 | How would you measure whether a new AI safety feature actually improves user trust and engagement? | metrics | win | [link](https://www.interviewquery.com/interview-guides/anthropic-product-manager) |
-| q006 | Imagine adoption of Anthropic's AI platform slows down despite increasing visibility. How would you diagnose and respond? | product_improvement | frame | [link](https://www.interviewquery.com/interview-guides/anthropic-product-manager) |
+| q008 | How would you design a product feature that helps users understand when an AI system is uncertain or may produce unreliable information? | product_design | frame | [link](https://www.interviewquery.com/interview-guides/anthropic-product-manager) |
+| q009 | How would you prioritize between improving safety infrastructure and launching a new user-facing capability? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/anthropic-product-manager) |
+| q010 | Imagine adoption of Anthropic's AI platform slows down despite increasing visibility. How would you diagnose and respond? | metrics | frame | [link](https://www.interviewquery.com/interview-guides/anthropic-product-manager) |
+| q011 | If a competitor released a more capable but less safe model, how would you position Anthropic's offerings in the market? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/anthropic-product-manager) |
+| q012 | How would you measure whether a new AI safety feature actually improves user trust and engagement? | metrics | win | [link](https://www.interviewquery.com/interview-guides/anthropic-product-manager) |
 
 ### Perplexity
 
 | ID | Question | Category | FLOW Anchor | Source |
 |---|---|---|---|---|
-| q007 | Why has Perplexity's daily active user count for the AI chat feature dropped by 15% over the past week? | metrics | frame | [link](https://nextsprints.com/guide/perplexity-product-manager-interview-guide) |
-| q008 | How can Perplexity balance providing detailed, comprehensive answers with maintaining quick response times? | strategy | optimize | [link](https://nextsprints.com/guide/perplexity-product-manager-interview-guide) |
-
-### Mistral
-
-| ID | Question | Category | FLOW Anchor | Source |
-|---|---|---|---|---|
-| q009 | Should Mistral AI prioritize expanding its language support or improving performance on existing languages? | strategy | optimize | [link](https://nextsprints.com/mistralai-product-manager-interview-questions) |
-| q010 | What metrics would you use to evaluate Mistral AI's open-source language models? | metrics | win | [link](https://nextsprints.com/mistralai-product-manager-interview-questions) |
+| q013 | How would you define success for an AI feature? | metrics | win | [link](https://www.tryexponent.com/blog/top-product-manager-interview-questions) |
 
 ---
 
@@ -45,69 +44,116 @@ Sources: Glassdoor, Blind, Exponent, Reddit, PMAccelerator, InterviewQuery, Prod
 
 | ID | Question | Category | FLOW Anchor | Source |
 |---|---|---|---|---|
-| q011 | What is your favorite product? Redesign it. Choose a Facebook product and redesign it. | product_design | frame | [link](https://www.glassdoor.com/Interview/Product-Sense-2-What-is-your-favourite-product-Redesign-it-Choose-a-Facebook-product-Redesign-it-QTN_1801169.htm) |
-| q012 | How would you improve Instagram Stories for creators? | product_improvement | optimize | [link](https://www.glassdoor.com/Interview/Meta-Product-Manager-Interview-Questions-EI_IE40772.0,4_KO5,20.htm) |
-| q013 | How would you improve the peer-to-peer payments product on Messenger or WhatsApp? | product_improvement | optimize | [link](https://www.interviewquery.com/interview-guides/facebook-product-manager) |
-| q014 | How would you improve Facebook Marketplace? | product_improvement | list | [link](https://www.tryexponent.com/blog/product-sense-interview) |
-| q056 | Daily active usage of Facebook Dating dropped 25% overnight. How would you diagnose the problem? | metrics | frame | [link](https://www.productalliance.com/guides/meta-pm-interview-cheat-sheet) |
-| q057 | You're a PM at Meta. Why should Meta continue investing in Reels? What goals and metrics would you set? | strategy | optimize | [link](https://www.tryexponent.com/questions?company=facebook&role=pm) |
-| q058 | What would you build to differentiate Instagram Reels from TikTok? | product_design | list | [link](https://www.productalliance.com/guides/meta-pm-interview-cheat-sheet) |
+| q014 | Identify reasons and metrics for decreasing average comments per post on Facebook | metrics | frame | [link](https://www.interviewquery.com/interview-guides/facebook-product-manager) |
+| q015 | How would you prioritize competing product requests from Facebook's News Feed and Reels teams? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/facebook-product-manager) |
+| q016 | How would you measure the impact on teen engagement when their parents join Facebook? | metrics | win | [link](https://www.interviewquery.com/interview-guides/facebook-product-manager) |
+| q017 | You're on the Facebook Growth team and tasked with promoting Instagram within the Facebook app. Where and how would you run this promotion? | go_to_market | win | [link](https://www.interviewquery.com/interview-guides/facebook-product-manager) |
+| q018 | Design a product for borrowing and lending money | product_design | list | [link](https://www.tryexponent.com/blog/top-product-manager-interview-questions) |
+| q019 | What is the biggest threat to Instagram right now? | strategy | frame | [link](https://www.teamblind.com/post/my-2025-pm-interview-plan-how-i-pivoted-and-got-offers-at-meta-microsoft-8zbr3nc3) |
+| q020 | If you were the CEO of Meta, what would be your top 3 priorities for the next 5 years? | strategy | optimize | [link](https://www.teamblind.com/post/my-2025-pm-interview-plan-how-i-pivoted-and-got-offers-at-meta-microsoft-8zbr3nc3) |
+| q021 | You're a PM at Meta. Design a product for gardening. | product_design | list | [link](https://www.lennysnewsletter.com/p/the-definitive-guide-to-mastering) |
+| q022 | Instagram Stories engagement dropped 5% overnight. Walk me through your diagnostic approach. | metrics | frame | [link](https://aakashgupta.medium.com/the-complete-guide-to-product-manager-metrics-interview-questions-b080c3076b39) |
 
-### Amazon
+### Apple
 
 | ID | Question | Category | FLOW Anchor | Source |
 |---|---|---|---|---|
-| q015 | Suggest a new feature for Amazon. What metrics would you use to measure its success? | product_design | win | [link](https://productschool.com/blog/job-search/the-ultimate-list-product-manager-interview-questions) |
-| q059 | Design a system to track reviews abuse on Amazon.com | product_design | frame | [link](https://www.tryexponent.com/questions?company=amazon&role=pm) |
-| q060 | How would you use data to build a better Kindle reading experience? | product_improvement | list | [link](https://www.productalliance.com/guides/amazon-pm-interview-cheat-sheet) |
+| q037 | How would you assess and improve the performance of one of our core apps in a newly entered market? | product_improvement | frame | [link](https://www.interviewquery.com/interview-guides/apple-product-manager) |
+| q038 | Redesign the iPad Notes app to improve collaboration. | product_improvement | list | [link](https://www.interviewquery.com/interview-guides/apple-product-manager) |
+| q039 | What feature would you add to AirPods Pro for accessibility? | product_design | list | [link](https://www.interviewquery.com/interview-guides/apple-product-manager) |
+| q040 | How would you make the App Store experience better for parents? | product_improvement | list | [link](https://www.interviewquery.com/interview-guides/apple-product-manager) |
+| q041 | How would you evaluate on-device versus cloud tradeoffs for an AI feature? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/apple-product-manager) |
+
+### Microsoft
+
+| ID | Question | Category | FLOW Anchor | Source |
+|---|---|---|---|---|
+| q031 | How would you redesign the sharing experience for a cloud storage app on mobile devices? | product_design | list | [link](https://www.interviewquery.com/interview-guides/microsoft-product-manager) |
+| q032 | Imagine launching a 'Focus Mode' feature in a communication platform. How would you define success and prioritize its key components? | metrics | win | [link](https://www.interviewquery.com/interview-guides/microsoft-product-manager) |
+| q033 | Design a feature to help remote teams better coordinate across time zones. What challenges would you address and how? | product_design | list | [link](https://www.interviewquery.com/interview-guides/microsoft-product-manager) |
+| q034 | Should Microsoft acquire another gaming studio? Why or why not? | strategy | optimize | [link](https://www.teamblind.com/post/my-2025-pm-interview-plan-how-i-pivoted-and-got-offers-at-meta-microsoft-8zbr3nc3) |
+| q035 | How would you evaluate whether to enter a new market with an existing cloud service? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/microsoft-product-manager) |
+| q036 | Analyze the risks and benefits of launching an AI-powered feature in an enterprise software product. | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/microsoft-product-manager) |
 
 ---
 
 ## Big Tech Platform
 
+### Google / YouTube
+
+| ID | Question | Category | FLOW Anchor | Source |
+|---|---|---|---|---|
+| q023 | How would you improve YouTube for first-time creators? | product_improvement | list | [link](https://www.interviewquery.com/interview-guides/google-product-manager) |
+| q024 | Weekly active users are up 5 percent but notification open rates are down 2 percent. What would you investigate? | metrics | frame | [link](https://www.interviewquery.com/interview-guides/google-product-manager) |
+| q025 | Revenue is up after increasing search ads, but total searches are down. Is this good or bad? | metrics | frame | [link](https://www.interviewquery.com/interview-guides/google-product-manager) |
+| q026 | What data would you use to evaluate whether amateur creators are being crowded out by 'superstars'? | metrics | frame | [link](https://www.interviewquery.com/interview-guides/google-product-manager) |
+| q027 | Improve YouTube's recommendation algorithm | product_improvement | optimize | [link](https://www.tryexponent.com/blog/top-product-manager-interview-questions) |
+| q028 | Design a time machine | product_design | list | [link](https://www.tryexponent.com/blog/top-product-manager-interview-questions) |
+| q029 | YouTube watch time is down 10%. How would you investigate? | metrics | frame | [link](https://www.teamblind.com/post/my-2025-pm-interview-plan-how-i-pivoted-and-got-offers-at-meta-microsoft-8zbr3nc3) |
+| q066 | What metrics would confirm (or disprove) that YouTube's algorithm now favors 'superstar' creators over amateurs? | metrics | frame | [link](https://www.interviewquery.com/interview-guides/tiktok-product-manager) |
+
 ### LinkedIn
 
 | ID | Question | Category | FLOW Anchor | Source |
 |---|---|---|---|---|
-| q016 | Design LinkedIn's onboarding for new grads | product_design | frame | [link](https://www.productalliance.com/product-management-cheat-sheets/linkedin-pm-intervew-prep) |
-| q017 | How would you grow profile completion on LinkedIn? | product_improvement | optimize | [link](https://igotanoffer.com/blogs/product-manager/linkedin-product-manager-interview) |
-| q018 | How would you improve LinkedIn's Jobs product to get a higher number of applications? | product_improvement | optimize | [link](https://www.glassdoor.com/Interview/LinkedIn-Product-Manager-Interview-Questions-EI_IE34865.0,8_KO9,24.htm) |
-
-### Google
-
-| ID | Question | Category | FLOW Anchor | Source |
-|---|---|---|---|---|
-| q019 | How would you improve the functionality 10x of an unnamed product as its Product Manager? | product_improvement | optimize | [link](https://www.glassdoor.com/Interview/If-you-were-Product-Manager-of-unnamed-product-how-would-you-improve-the-functionality-10x-of-what-it-is-now-QTN_984320.htm) |
-| q020 | How would you improve Google Maps? | product_improvement | frame | [link](https://www.productmanagementexercises.com/119/how-would-you-improve-google-maps) |
-| q021 | Design a product that helps improve work-from-home productivity | product_design | frame | [link](https://www.productalliance.com/guides/google-pm-interview-cheat-sheet) |
-| q022 | Re-imagine a ride-sharing product like Uber that's specifically optimized for blind passengers | product_design | frame | [link](https://www.productalliance.com/guides/google-pm-interview-cheat-sheet) |
-| q023 | Design a parking feature for Maps | product_design | frame | [link](https://www.tryexponent.com/blog/product-sense-interview) |
-| q024 | Estimate how many Zoom meetings take place over the course of the average week | estimation | win | [link](https://www.productalliance.com/guides/google-pm-interview-cheat-sheet) |
-| q062 | Why does Starbucks sometimes have coffee shops on both sides of the road? | strategy | optimize | [link](https://www.productalliance.com/guides/google-pm-interview-cheat-sheet) |
-
-### YouTube
-
-| ID | Question | Category | FLOW Anchor | Source |
-|---|---|---|---|---|
-| q025 | You work at YouTube as a PM. How would you develop the roadmap for YouTube for the next 5 years? | strategy | list | [link](https://www.mypminterview.com/p/develop-the-roadmap-for-youtube) |
-| q026 | How would you improve YouTube? What metrics would you prioritize? | product_improvement | optimize | [link](https://www.productmanagementexercises.com/interview-questions/youtube) |
-| q061 | How would you improve YouTube's recommendation algorithm? | product_improvement | optimize | [link](https://www.tryexponent.com/questions?company=google&role=pm) |
-
-### X/Twitter
-
-| ID | Question | Category | FLOW Anchor | Source |
-|---|---|---|---|---|
-| q027 | How would you improve X (Twitter)? Come up with 5 improvements you would make | product_improvement | list | [link](https://www.productalliance.com/guides/twitter-pm-interview-cheat-sheet) |
-| q028 | Propose how X can monetize without relying on ads | go_to_market | optimize | [link](https://www.productalliance.com/guides/twitter-pm-interview-cheat-sheet) |
-| q029 | Tell me about a time when your intuition led you one way, but metrics led you another. How did you resolve it? | strategy | optimize | [link](https://www.productalliance.com/guides/twitter-pm-interview-cheat-sheet) |
+| q042 | How would you improve LinkedIn Jobs for both job seekers and recruiters? | product_improvement | list | [link](https://www.joinleland.com/library/a/linkedin-product-manager-interview) |
+| q043 | Design a new feature for Sales Navigator. What problem does it solve and who benefits from it? | product_design | list | [link](https://www.joinleland.com/library/a/linkedin-product-manager-interview) |
+| q044 | How would you measure the success of the LinkedIn Skills & Endorsements feature? | metrics | win | [link](https://www.joinleland.com/library/a/linkedin-product-manager-interview) |
+| q045 | How would you improve retention for LinkedIn Premium? | product_improvement | frame | [link](https://www.joinleland.com/library/a/linkedin-product-manager-interview) |
+| q046 | If you were the Product Manager for LinkedIn Stories, what would you have done differently to ensure its success? | product_improvement | frame | [link](https://www.interviewquery.com/interview-guides/linkedin-product-manager) |
 
 ### TikTok
 
 | ID | Question | Category | FLOW Anchor | Source |
 |---|---|---|---|---|
-| q030 | Design TikTok for an older audience | product_design | frame | [link](https://www.productalliance.com/product-management-cheat-sheets/tiktok-pm-intervew-prep) |
-| q031 | If you were a PM at TikTok Shop, how would you cross-sell ads on TikTok Shop for creators? | strategy | list | [link](https://www.teamblind.com/post/product-manager-tiktok-what-does-the-pm-hiring-process-at-tt-look-like) |
-| q032 | Compare the home screens of TikTok, Instagram Reels, and YouTube Shorts. What would you improve? | product_improvement | list | [link](https://www.productalliance.com/product-management-cheat-sheets/tiktok-pm-intervew-prep) |
+| q068 | Which data and experiments would you run to decide whether recommendations, user acquisition, or creator tools will boost TikTok's DAU most effectively? | metrics | optimize | [link](https://www.interviewquery.com/interview-guides/tiktok-product-manager) |
+| q069 | If you were a PM at TikTok Shop, how would you cross-sell ads on TikTok Shop for creators? | go_to_market | win | [link](https://www.teamblind.com/post/my-2025-pm-interview-plan-how-i-pivoted-and-got-offers-at-meta-microsoft-8zbr3nc3) |
+
+---
+
+## Mid-Tier Tech
+
+### Shopify
+
+| ID | Question | Category | FLOW Anchor | Source |
+|---|---|---|---|---|
+| q047 | You're launching cross-border commerce for SMB merchants. Would you prioritize local currency & duties, translations, or new payment methods first? Why? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/shopify-product-manager) |
+| q048 | Shop Pay adoption is flattening. What is your strategy to re-accelerate repeat purchases in the next 2 quarters without harming checkout speed? | product_improvement | list | [link](https://www.interviewquery.com/interview-guides/shopify-product-manager) |
+| q049 | Should Shopify build a native Reviews product or double down on the partner ecosystem with deeper APIs? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/shopify-product-manager) |
+| q050 | Data Science flags a drop in add-to-cart after your recent search changes. What do you do in the next 48 hours? | metrics | frame | [link](https://www.interviewquery.com/interview-guides/shopify-product-manager) |
+| q051 | Checkout extensibility requests are slowing page load by ~60 ms at p95. What's your execution plan to restore performance without breaking merchant customizations? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/shopify-product-manager) |
+
+### Stripe
+
+| ID | Question | Category | FLOW Anchor | Source |
+|---|---|---|---|---|
+| q052 | Should Facebook add peer-to-peer payments inside Messenger, and what would a winning MVP look like? | product_design | list | [link](https://www.interviewquery.com/interview-guides/stripe-product-manager) |
+| q053 | Stripe is seeing a decline in developer activation rate. What metrics would you look at first, and how would you design an experiment to identify the root cause? | metrics | frame | [link](https://www.interviewquery.com/interview-guides/stripe-product-manager) |
+| q054 | How do you balance making Stripe's APIs simple enough for solo developers while powerful enough for enterprise companies? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/stripe-product-manager) |
+| q055 | What would you build next for Stripe to expand into a new financial services vertical? | strategy | list | [link](https://www.interviewquery.com/interview-guides/stripe-product-manager) |
+
+### DoorDash
+
+| ID | Question | Category | FLOW Anchor | Source |
+|---|---|---|---|---|
+| q056 | Design a feature to improve merchant retention on DoorDash. | product_design | list | [link](https://www.interviewquery.com/interview-guides/doordash-product-manager) |
+| q057 | How would you measure the success of a three-sided marketplace product like DoorDash, balancing consumers, dashers, and merchants? | metrics | win | [link](https://www.interviewquery.com/interview-guides/doordash-product-manager) |
+| q058 | DashPass adoption is slowing. What would you do? | product_improvement | frame | [link](https://www.interviewquery.com/interview-guides/doordash-product-manager) |
+| q059 | How would you design and roll out a standardized refund policy at DoorDash while balancing customer trust, merchant fairness, and revenue impact? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/doordash-product-manager) |
+| q060 | How would you improve delivery times without increasing dasher pay? | product_improvement | optimize | [link](https://www.interviewquery.com/interview-guides/doordash-product-manager) |
+
+### Reddit
+
+| ID | Question | Category | FLOW Anchor | Source |
+|---|---|---|---|---|
+| q066 | How would you improve Reddit Search to help users find relevant communities and posts more effectively? | product_improvement | list | [link](https://www.interviewquery.com/interview-guides/reddit-product-manager) |
+| q067 | How would you make videos rank higher on Reddit? | product_improvement | optimize | [link](https://www.tryexponent.com/blog/top-product-manager-interview-questions) |
+
+### Netflix
+
+| ID | Question | Category | FLOW Anchor | Source |
+|---|---|---|---|---|
+| q070 | Build a podcast product for Netflix. | product_design | list | [link](https://www.lennysnewsletter.com/p/the-definitive-guide-to-mastering) |
 
 ---
 
@@ -117,132 +163,46 @@ Sources: Glassdoor, Blind, Exponent, Reddit, PMAccelerator, InterviewQuery, Prod
 
 | ID | Question | Category | FLOW Anchor | Source |
 |---|---|---|---|---|
-| q033 | As the Product Manager for Coinbase's onboarding experience, how would you set goals and define success? | product_design | frame | [link](https://medium.com/@rohitverma141/pm-interview-question-as-the-product-manager-for-coinbases-onboarding-experience-how-would-you-85f6db8462a6) |
-| q034 | How would you improve Coinbase's mobile experience for new users? | product_improvement | optimize | [link](https://www.tryexponent.com/guides/coinbase-pm-interview) |
-| q035 | You're the PM for Coinbase. DAU is down by 10%. What do you do to investigate? | metrics | frame | [link](https://www.tryexponent.com/questions?company=coinbase&role=pm) |
-| q036 | Design an international crypto remittance product | product_design | frame | [link](https://www.tryexponent.com/questions?company=coinbase&role=pm) |
-| q037 | What metrics would you track for Coinbase's staking product? | metrics | win | [link](https://medium.com/design-bootcamp/how-coinbase-other-crypto-firm-interviews-for-a-product-manager-role-3d791e8582d9) |
-| q040 | How would you prioritize between fixing a bug or shipping a new feature? | strategy | optimize | [link](https://www.tryexponent.com/questions?company=coinbase&role=pm) |
+| q061 | How would you approach increasing crypto wallet adoption in developing markets? | go_to_market | win | [link](https://www.interviewquery.com/interview-guides/coinbase-product-manager) |
+| q062 | As the Product Manager for Coinbase's onboarding experience, how would you set goals and define success for the product? | metrics | win | [link](https://medium.com/@rohitverma141/pm-interview-question-as-the-product-manager-for-coinbases-onboarding-experience-how-would-you-85f6db8462a6) |
+| q063 | Share a crypto product you like. How would you grow that product 10x? | strategy | list | [link](https://www.joinleland.com/library/a/how-to-prepare-for-coinbase-product-management-case-interviews) |
 
-### Brex
+### Robinhood
 
 | ID | Question | Category | FLOW Anchor | Source |
 |---|---|---|---|---|
-| q038 | How would you define customer churn, and what factors do you think contribute to it? | metrics | frame | [link](https://www.interviewquery.com/interview-guides/brex-product-manager) |
-
-### Ramp
-
-| ID | Question | Category | FLOW Anchor | Source |
-|---|---|---|---|---|
-| q039 | Describe a time when you had to prioritize multiple projects. How did you decide what to focus on? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/ramp-product-manager) |
+| q064 | What trends do you see shaping the future of fintech, and how would you leverage them in your role? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/robinhood-product-manager) |
+| q065 | If you were the CPO of your favorite fintech product, what three teams would you build and why? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/robinhood-product-manager) |
 
 ---
 
-## Other / Multi-Company
-
-### Netflix
-
-| ID | Question | Category | FLOW Anchor | Source |
-|---|---|---|---|---|
-| q042 | Build a podcast product for Netflix | product_design | frame | [link](https://www.lennysnewsletter.com/p/the-definitive-guide-to-mastering) |
-
-### Spotify
-
-| ID | Question | Category | FLOW Anchor | Source |
-|---|---|---|---|---|
-| q043 | How would you improve Spotify for first-time users? | product_improvement | list | [link](https://medium.com/@milesk_33/the-ultimate-product-manager-interview-toolkit-for-2025-f3a20dcf5110) |
-| q063 | You're a PM for Spotify. How would you increase revenue 5x in the next five years? | strategy | list | [link](https://www.tryexponent.com/questions?company=google&role=pm) |
-
-### Uber
-
-| ID | Question | Category | FLOW Anchor | Source |
-|---|---|---|---|---|
-| q045 | Design a product for drivers in rush hour | product_design | frame | [link](https://www.tryexponent.com/blog/product-sense-interview) |
-| q046 | How would you define the North Star metric and key metrics for your team at Uber before leaving for a 3-month break? | metrics | frame | [link](https://medium.com/design-bootcamp/product-management-interview-question-you-are-a-senior-pm-at-uber-how-would-you-define-the-north-c3b647865f78) |
-
-### General / Cross-Company
-
-| ID | Question | Category | FLOW Anchor | Source |
-|---|---|---|---|---|
-| q041 | How would you improve your favorite product? | product_improvement | list | [link](https://www.lennysnewsletter.com/p/the-definitive-guide-to-mastering) |
-| q044 | DAU dropped 10% last week. What do you do? | metrics | frame | [link](https://medium.com/@milesk_33/the-ultimate-product-manager-interview-toolkit-for-2025-f3a20dcf5110) |
-| q047 | How would you measure the success of launching a new pricing plan, and what metrics would you track? | metrics | win | [link](https://www.news.aakashg.com/p/product-metrics-interview) |
-
----
-
-## Mid-Tier Tech
-
-### Stripe
-
-| ID | Question | Category | FLOW Anchor | Source |
-|---|---|---|---|---|
-| q048 | Should Facebook add peer-to-peer payments inside Messenger, and what would a winning MVP look like? | product_design | frame | [link](https://www.interviewquery.com/interview-guides/stripe-product-manager) |
-| q049 | Given access to full spending data, which co-branded partner card should we launch next? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/stripe-product-manager) |
-
-### Shopify
-
-| ID | Question | Category | FLOW Anchor | Source |
-|---|---|---|---|---|
-| q050 | You're launching cross-border commerce for SMB merchants. Would you prioritize local currency and duties, translations, or new payment methods first, and why? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/shopify-product-manager) |
-| q051 | Shop Pay adoption is flattening. What is your strategy to re-accelerate repeat purchases in the next 2 quarters without harming checkout speed? | product_improvement | list | [link](https://www.interviewquery.com/interview-guides/shopify-product-manager) |
-
-### Atlassian
-
-| ID | Question | Category | FLOW Anchor | Source |
-|---|---|---|---|---|
-| q052 | How would you improve the first-time setup experience in Jira for new project leads? | product_improvement | frame | [link](https://www.interviewquery.com/interview-guides/atlassian-product-manager) |
-| q053 | If user activation for Jira Work Management dropped by 15% this month, how would you investigate the issue? | metrics | frame | [link](https://www.interviewquery.com/interview-guides/atlassian-product-manager) |
-
-### Figma
-
-| ID | Question | Category | FLOW Anchor | Source |
-|---|---|---|---|---|
-| q054 | Tell me about a time you created a product from 0 to 1. | product_design | win | [link](https://www.glassdoor.com/Interview/Figma-Product-Manager-Interview-Questions-EI_IE1537286.0,5_KO6,21.htm) |
-
-### Notion
-
-| ID | Question | Category | FLOW Anchor | Source |
-|---|---|---|---|---|
-| q055 | Can you describe a product you managed from conception to launch? | product_design | win | [link](https://www.interviewquery.com/interview-guides/notion-labs-product-manager) |
-
----
-
-## Coverage Summary
-
-| Cluster | Count |
-|---|---|
-| AI Companies (OpenAI, Anthropic, Perplexity, Mistral) | 10 |
-| Big Tech Product (Meta, Amazon) | 8 |
-| Big Tech Platform (Google, YouTube, LinkedIn, X, TikTok) | 18 |
-| Mid-Tier Tech (Stripe, Shopify, Atlassian, Figma, Notion) | 8 |
-| Fintech (Coinbase, Brex, Ramp) | 8 |
-| Other (Netflix, Spotify, Uber, General) | 8 |
-| **Total** | **60** |
-
----
-
-## Category Breakdown
+## Category Summary
 
 | Category | Count |
 |---|---|
-| product_design | 14 |
-| product_improvement | 13 |
-| metrics | 11 |
-| strategy | 7 |
-| go_to_market | 1 |
-| estimation | 1 |
+| product_design | 16 |
+| product_improvement | 16 |
+| metrics | 18 |
+| strategy | 14 |
+| go_to_market | 5 |
+| estimation | 0 |
+
+## FLOW Anchor Summary
+
+| Anchor | Count |
+|---|---|
+| frame | 15 |
+| list | 24 |
+| optimize | 20 |
+| win | 11 |
 
 ---
 
-## FLOW Anchor Distribution
+_Review notes: flag questions to drop or modify before challenge authoring._
 
-| Anchor | Count | Notes |
-|---|---|---|
-| frame | 18 | Problem definition / diagnosis — strongest cluster |
-| optimize | 16 | Tradeoffs / prioritization |
-| list | 8 | Enumerate options / causes |
-| win | 5 | Measure success / launch |
-
----
-
-_Review notes: flag questions to drop or modify before challenge authoring. Questions marked "General" can be adapted to a specific company context in the pipeline._
+- q028 ("Design a time machine") is abstract/whimsical — good for lateral thinking content but verify fit for target audience
+- q007 (brain-scan startup) is highly speculative — strong for AI ethics angle
+- q021 (gardening for Meta) is a real Meta question type but may feel low-stakes; pair with a harder follow-up
+- Fintech cluster is thin on Robinhood — these two questions (q064, q065) are general fintech rather than Robinhood-specific
+- No Figma or Notion questions with strong sourcing were found — sources either blocked or only listed generic PM behavioral questions
+- No Google DeepMind product-specific questions found — skip for now; their PM questions overlap heavily with Google's general PM bank
