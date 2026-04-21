@@ -1,5 +1,5 @@
 # PM Interview Questions — Research Database
-_Scraped April 2026. 47 questions from Oct 2024–Apr 2026._
+_Scraped April 2026. 55 questions from Oct 2024–Apr 2026._
 
 Sources: Glassdoor, Blind, Exponent, Reddit, PMAccelerator, InterviewQuery, ProductAlliance, Lenny's Newsletter, Medium, ProductManagementExercises, NextSprints.
 
@@ -162,6 +162,43 @@ Sources: Glassdoor, Blind, Exponent, Reddit, PMAccelerator, InterviewQuery, Prod
 
 ---
 
+## Mid-Tier Tech
+
+### Stripe
+
+| ID | Question | Category | FLOW Anchor | Source |
+|---|---|---|---|---|
+| q048 | Should Facebook add peer-to-peer payments inside Messenger, and what would a winning MVP look like? | product_design | frame | [link](https://www.interviewquery.com/interview-guides/stripe-product-manager) |
+| q049 | Given access to full spending data, which co-branded partner card should we launch next? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/stripe-product-manager) |
+
+### Shopify
+
+| ID | Question | Category | FLOW Anchor | Source |
+|---|---|---|---|---|
+| q050 | You're launching cross-border commerce for SMB merchants. Would you prioritize local currency and duties, translations, or new payment methods first, and why? | strategy | optimize | [link](https://www.interviewquery.com/interview-guides/shopify-product-manager) |
+| q051 | Shop Pay adoption is flattening. What is your strategy to re-accelerate repeat purchases in the next 2 quarters without harming checkout speed? | product_improvement | list | [link](https://www.interviewquery.com/interview-guides/shopify-product-manager) |
+
+### Atlassian
+
+| ID | Question | Category | FLOW Anchor | Source |
+|---|---|---|---|---|
+| q052 | How would you improve the first-time setup experience in Jira for new project leads? | product_improvement | frame | [link](https://www.interviewquery.com/interview-guides/atlassian-product-manager) |
+| q053 | If user activation for Jira Work Management dropped by 15% this month, how would you investigate the issue? | metrics | frame | [link](https://www.interviewquery.com/interview-guides/atlassian-product-manager) |
+
+### Figma
+
+| ID | Question | Category | FLOW Anchor | Source |
+|---|---|---|---|---|
+| q054 | Tell me about a time you created a product from 0 to 1. | product_design | win | [link](https://www.glassdoor.com/Interview/Figma-Product-Manager-Interview-Questions-EI_IE1537286.0,5_KO6,21.htm) |
+
+### Notion
+
+| ID | Question | Category | FLOW Anchor | Source |
+|---|---|---|---|---|
+| q055 | Can you describe a product you managed from conception to launch? | product_design | win | [link](https://www.interviewquery.com/interview-guides/notion-labs-product-manager) |
+
+---
+
 ## Coverage Summary
 
 | Cluster | Count |
@@ -169,9 +206,10 @@ Sources: Glassdoor, Blind, Exponent, Reddit, PMAccelerator, InterviewQuery, Prod
 | AI Companies (OpenAI, Anthropic, Perplexity, Mistral) | 10 |
 | Big Tech Product (Meta, Amazon) | 5 |
 | Big Tech Platform (Google, YouTube, LinkedIn, X, TikTok) | 17 |
+| Mid-Tier Tech (Stripe, Shopify, Atlassian, Figma, Notion) | 8 |
 | Fintech (Coinbase, Brex, Ramp) | 8 |
 | Other (Netflix, Spotify, Uber, General) | 7 |
-| **Total** | **47** |
+| **Total** | **55** |
 
 ---
 
@@ -199,4 +237,4 @@ Sources: Glassdoor, Blind, Exponent, Reddit, PMAccelerator, InterviewQuery, Prod
 
 ---
 
-_Review notes: flag questions to drop or modify before challenge authoring. Questions marked "General" can be adapted to a specific company context in the pipeline. Mid-tier (Notion, Figma, Stripe, Shopify, Atlassian) needs additional scraping — orchestrator agent running._
+_Review notes: flag questions to drop or modify before challenge authoring. Questions marked "General" can be adapted to a specific company context in the pipeline._

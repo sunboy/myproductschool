@@ -468,5 +468,85 @@
     "date_hint": "2025-Q1",
     "flow_anchor": "win",
     "notes": "Metrics questions appear in majority of 2025 interviews; tests North Star metric framework"
+  },
+  {
+    "id": "q048",
+    "question": "Should Facebook add peer-to-peer payments inside Messenger, and what would a winning MVP look like?",
+    "company": "Stripe",
+    "category": "product_design",
+    "source_url": "https://www.interviewquery.com/interview-guides/stripe-product-manager",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "frame",
+    "notes": "Tests ability to scope MVP and identify core value prop for a new product in payments ecosystem"
+  },
+  {
+    "id": "q049",
+    "question": "Given access to full spending data, which co-branded partner card should we launch next?",
+    "company": "Stripe",
+    "category": "strategy",
+    "source_url": "https://www.interviewquery.com/interview-guides/stripe-product-manager",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "optimize",
+    "notes": "Prioritization with incomplete data; tests tradeoff reasoning between market opportunity vs. data-driven selection"
+  },
+  {
+    "id": "q050",
+    "question": "You're launching cross-border commerce for SMB merchants. Would you prioritize local currency and duties, translations, or new payment methods first, and why?",
+    "company": "Shopify",
+    "category": "strategy",
+    "source_url": "https://www.interviewquery.com/interview-guides/shopify-product-manager",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "optimize",
+    "notes": "Classic tradeoff question; tests prioritization when multiple foundational features are needed"
+  },
+  {
+    "id": "q051",
+    "question": "Shop Pay adoption is flattening. What is your strategy to re-accelerate repeat purchases in the next 2 quarters without harming checkout speed?",
+    "company": "Shopify",
+    "category": "product_improvement",
+    "source_url": "https://www.interviewquery.com/interview-guides/shopify-product-manager",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "list",
+    "notes": "Real product challenge; tests diagnostic thinking and constraint-aware solution generation"
+  },
+  {
+    "id": "q052",
+    "question": "How would you improve the first-time setup experience in Jira for new project leads?",
+    "company": "Atlassian",
+    "category": "product_improvement",
+    "source_url": "https://www.interviewquery.com/interview-guides/atlassian-product-manager",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "frame",
+    "notes": "Focuses on onboarding and activation; requires understanding of both user personas and system complexity"
+  },
+  {
+    "id": "q053",
+    "question": "If user activation for Jira Work Management dropped by 15% this month, how would you investigate the issue?",
+    "company": "Atlassian",
+    "category": "metrics",
+    "source_url": "https://www.interviewquery.com/interview-guides/atlassian-product-manager",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "frame",
+    "notes": "Tests diagnostic reasoning and metrics literacy; requires breaking down problem and identifying root causes"
+  },
+  {
+    "id": "q054",
+    "question": "Tell me about a time you created a product from 0 to 1.",
+    "company": "Figma",
+    "category": "product_design",
+    "source_url": "https://www.glassdoor.com/Interview/Figma-Product-Manager-Interview-Questions-EI_IE1537286.0,5_KO6,21.htm",
+    "date_hint": "2024-Q4",
+    "flow_anchor": "win",
+    "notes": "Behavioral; assesses full product lifecycle ownership and execution ability in ambiguous environments"
+  },
+  {
+    "id": "q055",
+    "question": "Can you describe a product you managed from conception to launch?",
+    "company": "Notion",
+    "category": "product_design",
+    "source_url": "https://www.interviewquery.com/interview-guides/notion-labs-product-manager",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "win",
+    "notes": "Behavioral; probes end-to-end product ownership and navigation of uncertainty from ideation to market"
   }
 ]
