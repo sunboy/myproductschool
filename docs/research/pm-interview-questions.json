@@ -548,5 +548,85 @@
     "date_hint": "2025-Q1",
     "flow_anchor": "win",
     "notes": "Behavioral; probes end-to-end product ownership and navigation of uncertainty from ideation to market"
+  },
+  {
+    "id": "q056",
+    "question": "Daily active usage of Facebook Dating dropped 25% overnight. How would you diagnose the problem?",
+    "company": "Meta",
+    "category": "metrics",
+    "source_url": "https://www.productalliance.com/guides/meta-pm-interview-cheat-sheet",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "frame",
+    "notes": "Core diagnostic/triage question testing analytical thinking and structured investigation"
+  },
+  {
+    "id": "q057",
+    "question": "You're a PM at Meta. Why should Meta continue investing in Reels? What goals and metrics would you set?",
+    "company": "Meta",
+    "category": "strategy",
+    "source_url": "https://www.tryexponent.com/questions?company=facebook&role=pm",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "optimize",
+    "notes": "Strategy and resource allocation with clear success criteria; tests ability to build a business case"
+  },
+  {
+    "id": "q058",
+    "question": "What would you build to differentiate Instagram Reels from TikTok?",
+    "company": "Meta",
+    "category": "product_design",
+    "source_url": "https://www.productalliance.com/guides/meta-pm-interview-cheat-sheet",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "list",
+    "notes": "Competitive differentiation and product strategy; requires knowing both products deeply"
+  },
+  {
+    "id": "q059",
+    "question": "Design a system to track reviews abuse on Amazon.com",
+    "company": "Amazon",
+    "category": "product_design",
+    "source_url": "https://www.tryexponent.com/questions?company=amazon&role=pm",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "frame",
+    "notes": "Requires defining metrics and system architecture for trust and safety; tests technical product thinking"
+  },
+  {
+    "id": "q060",
+    "question": "How would you use data to build a better Kindle reading experience?",
+    "company": "Amazon",
+    "category": "product_improvement",
+    "source_url": "https://www.productalliance.com/guides/amazon-pm-interview-cheat-sheet",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "list",
+    "notes": "Data-driven product iteration; tests ability to identify signals and translate to product decisions"
+  },
+  {
+    "id": "q061",
+    "question": "How would you improve YouTube's recommendation algorithm?",
+    "company": "YouTube",
+    "category": "product_improvement",
+    "source_url": "https://www.tryexponent.com/questions?company=google&role=pm",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "optimize",
+    "notes": "Tests systematic thinking about a core algorithmic product and how to define success metrics for it"
+  },
+  {
+    "id": "q062",
+    "question": "Why does Starbucks sometimes have coffee shops on both sides of the road?",
+    "company": "Google",
+    "category": "strategy",
+    "source_url": "https://www.productalliance.com/guides/google-pm-interview-cheat-sheet",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "optimize",
+    "notes": "Strategic thinking about market dynamics and cannibalization; tests business model intuition"
+  },
+  {
+    "id": "q063",
+    "question": "You're a PM for Spotify. How would you increase revenue 5x in the next five years?",
+    "company": "Spotify",
+    "category": "strategy",
+    "source_url": "https://www.tryexponent.com/questions?company=google&role=pm",
+    "date_hint": "2025-Q1",
+    "flow_anchor": "list",
+    "notes": "Long-term strategic planning and revenue model innovation; tests ability to think beyond advertising"
   }
 ]

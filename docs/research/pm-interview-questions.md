@@ -1,5 +1,5 @@
 # PM Interview Questions — Research Database
-_Scraped April 2026. 55 questions from Oct 2024–Apr 2026._
+_Scraped April 2026. 63 questions from Oct 2024–Apr 2026._
 
 Sources: Glassdoor, Blind, Exponent, Reddit, PMAccelerator, InterviewQuery, ProductAlliance, Lenny's Newsletter, Medium, ProductManagementExercises, NextSprints.
 
@@ -49,12 +49,17 @@ Sources: Glassdoor, Blind, Exponent, Reddit, PMAccelerator, InterviewQuery, Prod
 | q012 | How would you improve Instagram Stories for creators? | product_improvement | optimize | [link](https://www.glassdoor.com/Interview/Meta-Product-Manager-Interview-Questions-EI_IE40772.0,4_KO5,20.htm) |
 | q013 | How would you improve the peer-to-peer payments product on Messenger or WhatsApp? | product_improvement | optimize | [link](https://www.interviewquery.com/interview-guides/facebook-product-manager) |
 | q014 | How would you improve Facebook Marketplace? | product_improvement | list | [link](https://www.tryexponent.com/blog/product-sense-interview) |
+| q056 | Daily active usage of Facebook Dating dropped 25% overnight. How would you diagnose the problem? | metrics | frame | [link](https://www.productalliance.com/guides/meta-pm-interview-cheat-sheet) |
+| q057 | You're a PM at Meta. Why should Meta continue investing in Reels? What goals and metrics would you set? | strategy | optimize | [link](https://www.tryexponent.com/questions?company=facebook&role=pm) |
+| q058 | What would you build to differentiate Instagram Reels from TikTok? | product_design | list | [link](https://www.productalliance.com/guides/meta-pm-interview-cheat-sheet) |
 
 ### Amazon
 
 | ID | Question | Category | FLOW Anchor | Source |
 |---|---|---|---|---|
 | q015 | Suggest a new feature for Amazon. What metrics would you use to measure its success? | product_design | win | [link](https://productschool.com/blog/job-search/the-ultimate-list-product-manager-interview-questions) |
+| q059 | Design a system to track reviews abuse on Amazon.com | product_design | frame | [link](https://www.tryexponent.com/questions?company=amazon&role=pm) |
+| q060 | How would you use data to build a better Kindle reading experience? | product_improvement | list | [link](https://www.productalliance.com/guides/amazon-pm-interview-cheat-sheet) |
 
 ---
 
@@ -78,6 +83,7 @@ Sources: Glassdoor, Blind, Exponent, Reddit, PMAccelerator, InterviewQuery, Prod
 | q022 | Re-imagine a ride-sharing product like Uber that's specifically optimized for blind passengers | product_design | frame | [link](https://www.productalliance.com/guides/google-pm-interview-cheat-sheet) |
 | q023 | Design a parking feature for Maps | product_design | frame | [link](https://www.tryexponent.com/blog/product-sense-interview) |
 | q024 | Estimate how many Zoom meetings take place over the course of the average week | estimation | win | [link](https://www.productalliance.com/guides/google-pm-interview-cheat-sheet) |
+| q062 | Why does Starbucks sometimes have coffee shops on both sides of the road? | strategy | optimize | [link](https://www.productalliance.com/guides/google-pm-interview-cheat-sheet) |
 
 ### YouTube
 
@@ -85,6 +91,7 @@ Sources: Glassdoor, Blind, Exponent, Reddit, PMAccelerator, InterviewQuery, Prod
 |---|---|---|---|---|
 | q025 | You work at YouTube as a PM. How would you develop the roadmap for YouTube for the next 5 years? | strategy | list | [link](https://www.mypminterview.com/p/develop-the-roadmap-for-youtube) |
 | q026 | How would you improve YouTube? What metrics would you prioritize? | product_improvement | optimize | [link](https://www.productmanagementexercises.com/interview-questions/youtube) |
+| q061 | How would you improve YouTube's recommendation algorithm? | product_improvement | optimize | [link](https://www.tryexponent.com/questions?company=google&role=pm) |
 
 ### X/Twitter
 
@@ -144,6 +151,7 @@ Sources: Glassdoor, Blind, Exponent, Reddit, PMAccelerator, InterviewQuery, Prod
 | ID | Question | Category | FLOW Anchor | Source |
 |---|---|---|---|---|
 | q043 | How would you improve Spotify for first-time users? | product_improvement | list | [link](https://medium.com/@milesk_33/the-ultimate-product-manager-interview-toolkit-for-2025-f3a20dcf5110) |
+| q063 | You're a PM for Spotify. How would you increase revenue 5x in the next five years? | strategy | list | [link](https://www.tryexponent.com/questions?company=google&role=pm) |
 
 ### Uber
 
@@ -204,12 +212,12 @@ Sources: Glassdoor, Blind, Exponent, Reddit, PMAccelerator, InterviewQuery, Prod
 | Cluster | Count |
 |---|---|
 | AI Companies (OpenAI, Anthropic, Perplexity, Mistral) | 10 |
-| Big Tech Product (Meta, Amazon) | 5 |
-| Big Tech Platform (Google, YouTube, LinkedIn, X, TikTok) | 17 |
+| Big Tech Product (Meta, Amazon) | 8 |
+| Big Tech Platform (Google, YouTube, LinkedIn, X, TikTok) | 18 |
 | Mid-Tier Tech (Stripe, Shopify, Atlassian, Figma, Notion) | 8 |
 | Fintech (Coinbase, Brex, Ramp) | 8 |
-| Other (Netflix, Spotify, Uber, General) | 7 |
-| **Total** | **55** |
+| Other (Netflix, Spotify, Uber, General) | 8 |
+| **Total** | **60** |
 
 ---
 
