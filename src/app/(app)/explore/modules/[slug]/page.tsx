@@ -356,7 +356,7 @@ function ModulePageInner({ slug }: { slug: string }) {
           className="inline-flex items-center gap-1 text-xs font-bold font-label text-on-surface-variant hover:text-on-surface transition-colors"
         >
           <span className="material-symbols-outlined text-sm">arrow_back</span>
-          All modules
+          All guides
         </Link>
         <span className="text-on-surface-variant text-xs opacity-40">/</span>
         <span className="text-xs font-bold text-on-surface truncate">{module.name}</span>
