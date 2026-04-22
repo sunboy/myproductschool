@@ -24,7 +24,18 @@ export function updateCompetencies(
     deltas[comp] = Math.round(rawDelta * 100) / 100
   }
 
-  const updated = current.map(c => {
+  // Seed any missing competencies at baseline 50 so first-time users get real movement
+  const currentMap = new Map(current.map(c => [c.competency, c]))
+  const seeded: LearnerCompetency[] = ALL_COMPETENCIES.map(comp =>
+    currentMap.get(comp) ?? {
+      competency: comp as Competency,
+      score: 50,
+      total_attempts: 0,
+      last_updated: new Date().toISOString(),
+    } as LearnerCompetency
+  )
+
+  const updated = seeded.map(c => {
     const d = deltas[c.competency] ?? 0
     if (d === 0) return c
     const roleMultiplier = multipliers[c.competency] ?? 1.0

@@ -1200,6 +1200,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   maxScore={historyRecord ? historyRecord.maxScore : (completionData?.max_score ?? 3)}
                   xpAwarded={historyRecord ? historyRecord.xpAwarded : (completionData?.xp_awarded ?? 0)}
                   stepResults={historyRecord ? historyRecord.stepResults : mirrorStepResults}
+                  attemptId={historyRecord ? (historyRecord.attemptId ?? undefined) : (attemptId ?? undefined)}
                   competencyDeltas={historyRecord
                     ? historyRecord.competencyDeltas
                     : (completionData?.competency_deltas ?? []).map(d => ({

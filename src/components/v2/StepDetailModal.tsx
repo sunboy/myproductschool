@@ -1,7 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { StepResult, StepResultQuestion } from './PostSessionMirror'
+import {
+  type Verdict,
+  VERDICT_LABEL, QUALITY_ORDER, QUALITY_BADGE,
+  qualityToVerdict,
+} from './flow-constants'
 
 const STEP_LABELS: Record<string, string> = {
   frame: 'Frame',
@@ -17,33 +22,10 @@ const STEP_TITLES: Record<string, string> = {
   win: 'Define what winning looks like',
 }
 
-type Verdict = 'pass' | 'partial' | 'miss'
-
-function qualityToVerdict(quality: string): Verdict {
-  if (quality === 'best') return 'pass'
-  if (quality === 'good_but_incomplete' || quality === 'surface') return 'partial'
-  return 'miss'
-}
-
-const VERDICT_LABEL: Record<Verdict, string> = {
-  pass: 'CLEAN',
-  partial: 'PARTIAL',
-  miss: 'MISSED',
-}
-
 const VERDICT_COLORS: Record<Verdict, { text: string; bg: string }> = {
   pass: { text: '#2f7a4a', bg: 'rgba(47,122,74,0.10)' },
   partial: { text: '#c9933a', bg: 'rgba(201,147,58,0.10)' },
   miss: { text: '#b23a2a', bg: 'rgba(178,58,42,0.08)' },
-}
-
-const QUALITY_ORDER = ['best', 'good_but_incomplete', 'surface', 'plausible_wrong']
-
-const QUALITY_BADGE: Record<string, { label: string; color: string; bg: string }> = {
-  best: { label: 'Best', color: '#2f7a4a', bg: '#c8e8d0' },
-  good_but_incomplete: { label: 'Good', color: '#1e40af', bg: '#dbeafe' },
-  surface: { label: 'Surface', color: '#92400e', bg: '#fef3c7' },
-  plausible_wrong: { label: 'Misleading', color: '#991b1b', bg: '#fee2e2' },
 }
 
 interface QuestionPageProps {
@@ -145,16 +127,56 @@ function QuestionPage({ question, stepResult }: QuestionPageProps) {
 
 export interface StepDetailModalProps {
   stepResult: StepResult
+  attemptId?: string
   onClose: () => void
 }
 
-export function StepDetailModal({ stepResult, onClose }: StepDetailModalProps) {
+export function StepDetailModal({ stepResult, attemptId, onClose }: StepDetailModalProps) {
   const [currentQ, setCurrentQ] = useState(0)
-  const questions = stepResult.questions ?? []
+  const [fetchedQuestions, setFetchedQuestions] = useState<StepResultQuestion[] | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (stepResult.questions?.length || !attemptId) return
+    const controller = new AbortController()
+    setLoading(true)
+    fetch(`/api/attempts/${attemptId}/steps`, { signal: controller.signal })
+      .then(r => r.json())
+      .then(data => {
+        const stepQs = data.byStep?.[stepResult.step] ?? []
+        setFetchedQuestions(stepQs)
+      })
+      .catch(err => { if (err.name !== 'AbortError') console.error(err) })
+      .finally(() => setLoading(false))
+    return () => controller.abort()
+  }, [attemptId, stepResult.step, stepResult.questions])
+
+  const questions = stepResult.questions?.length ? stepResult.questions : (fetchedQuestions ?? [])
   const verdict = qualityToVerdict(stepResult.quality_label)
   const verdictStyle = VERDICT_COLORS[verdict]
   const isOnly = questions.length <= 1
   const isLast = currentQ === questions.length - 1
+
+  if (loading) return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      zIndex: 200,
+    }}>
+      <div style={{
+        background: 'var(--color-surface)', borderRadius: 20,
+        padding: '32px 48px',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
+      }}>
+        <span className="material-symbols-outlined" style={{ fontSize: 28, color: 'var(--color-primary)', animation: 'spin 1s linear infinite' }}>
+          progress_activity
+        </span>
+        <p style={{ fontSize: 13, color: 'var(--color-on-surface-variant)', margin: 0 }}>
+          Loading question breakdown…
+        </p>
+      </div>
+    </div>
+  )
 
   if (questions.length === 0) return null
 

@@ -40,7 +40,11 @@ export async function POST(
 
   const { id: challengeId } = await params
   const body = await req.json()
-  const { attempt_id } = body as { attempt_id: string }
+  const { attempt_id, from_plan, step_signals } = body as {
+    attempt_id: string
+    from_plan?: string
+    step_signals?: Array<{ step: string; quality_label: string; luma_signal: string | null; framework_hint: string | null }>
+  }
 
   if (!attempt_id) {
     return NextResponse.json({ error: 'attempt_id is required' }, { status: 400 })
@@ -64,7 +68,7 @@ export async function POST(
   // Fetch all step_attempts for this attempt, joined with question weights
   const { data: stepAttempts, error: stepAttemptsError } = await admin
     .from('step_attempts')
-    .select('question_id, step, score, competencies_demonstrated')
+    .select('question_id, step, score, competencies_demonstrated, quality_label, grading_explanation, competency_signal, selected_option_id')
     .eq('attempt_id', attempt_id)
 
   if (stepAttemptsError) {
@@ -208,7 +212,96 @@ export async function POST(
     body: JSON.stringify({ userId, scores: moveScores }),
   }).catch(() => {})
 
-  // Update challenge_attempts
+  const step_breakdown = stepResults.map((s) => ({
+    step: s.step,
+    score: s.step_score,
+    max_score: 1.0,
+  }))
+
+  // Update user_study_plans progress if coming from a plan
+  if (from_plan) {
+    const { data: plan } = await admin
+      .from('study_plans')
+      .select('id')
+      .eq('slug', from_plan)
+      .single()
+
+    if (plan) {
+      const { data: userPlan } = await admin
+        .from('user_study_plans')
+        .select('id, completed_challenges, plan_id')
+        .eq('user_id', userId)
+        .eq('plan_id', plan.id)
+        .maybeSingle()
+
+      if (userPlan) {
+        const completedSet = new Set<string>(userPlan.completed_challenges ?? [])
+        completedSet.add(challengeId)
+        const completed = Array.from(completedSet)
+
+        // Compute progress_pct from total challenges in the plan's chapters
+        const { data: chapters } = await admin
+          .from('study_plan_chapters')
+          .select('challenge_ids')
+          .eq('plan_id', plan.id)
+        const totalIds = (chapters ?? []).flatMap((ch: { challenge_ids: string[] }) => ch.challenge_ids ?? [])
+        const progress_pct = totalIds.length > 0 ? Math.round((completed.length / totalIds.length) * 100) : 0
+
+        await admin
+          .from('user_study_plans')
+          .update({ completed_challenges: completed, progress_pct })
+          .eq('id', userPlan.id)
+      }
+    }
+  }
+
+  // Insert luma_context row
+  const challengeTitle = challengeId.replace(/-/g, ' ').replace(/^c\d+ /, '')
+
+  // Transform deltas object to array format with before/after values
+  const deltaEntries = Object.entries(competency_deltas).map(([competency, deltaValue]) => {
+    const before = currentCompetencies.find(c => c.competency === competency)?.score ?? 50
+    const after = updatedCompetencies.find(c => c.competency === competency)?.score ?? before
+    return { competency, before, after, delta: deltaValue }
+  })
+
+  // Build step_signals from DB step_attempts (grading_explanation is the real coaching text)
+  const STEPS_ORDERED: FlowStep[] = ['frame', 'list', 'optimize', 'win']
+  type StepAttemptRow = { step: string; quality_label?: string; grading_explanation?: string; competency_signal?: { framework_hint?: string }; selected_option_id?: string | null }
+
+  // Resolve option UUIDs → letter labels (A/B/C/D) in one batch
+  const selectedOptionIds = attemptRows
+    .map((r: StepAttemptRow) => r.selected_option_id)
+    .filter((id): id is string => !!id)
+  const optionLabelMap = new Map<string, string>()
+  if (selectedOptionIds.length > 0) {
+    const { data: optionRows } = await admin
+      .from('flow_options')
+      .select('id, option_label')
+      .in('id', selectedOptionIds)
+    for (const o of (optionRows ?? [])) {
+      optionLabelMap.set(o.id, o.option_label)
+    }
+  }
+
+  const stepSignalsFromDB = STEPS_ORDERED
+    .filter(step => attemptRows.some((r: StepAttemptRow) => r.step === step))
+    .map(step => {
+      // Use the last attempt row for each step (multiple questions → use last one for step-level signal)
+      const rows = attemptRows.filter((r: StepAttemptRow) => r.step === step)
+      const lastRow = rows[rows.length - 1] as StepAttemptRow | undefined
+      const rawOptionId = lastRow?.selected_option_id ?? null
+      const optionLabel = rawOptionId ? (optionLabelMap.get(rawOptionId) ?? null) : null
+      return {
+        step,
+        quality_label: lastRow?.quality_label ?? 'plausible_wrong',
+        luma_signal: lastRow?.grading_explanation ?? null,
+        framework_hint: lastRow?.competency_signal?.framework_hint ?? null,
+        selected_option_id: optionLabel,
+      }
+    })
+
+  // Update challenge_attempts — store step_breakdown + deltas in feedback_json so history can reconstruct the result
   await admin
     .from('challenge_attempts')
     .update({
@@ -217,19 +310,9 @@ export async function POST(
       max_score,
       grade_label,
       completed_at: new Date().toISOString(),
+      feedback_json: { step_breakdown, step_signals: stepSignalsFromDB, competency_deltas: deltaEntries, grade_label, total_score, max_score, xp_awarded: xp_earned },
     })
     .eq('id', attempt_id)
-
-  // Insert luma_context row
-  const challengeTitle = challengeId.replace(/-/g, ' ').replace(/^c\d+ /, '')
-
-  // Transform deltas object to array format with before/after values
-  const deltaEntries = Object.entries(competency_deltas).map(([competency, deltaValue]) => {
-    const current = updatedCompetencies.find(c => c.competency === competency)
-    const before = (currentCompetencies.find(c => c.competency === competency)?.score ?? 50)
-    const after = (current?.score ?? before)
-    return { competency, before, after, delta: deltaValue }
-  })
 
   const topDelta = deltaEntries.length > 0
     ? [...deltaEntries].sort((a, b) => (b.after - b.before) - (a.after - a.before))[0]
@@ -250,11 +333,5 @@ export async function POST(
     created_at: new Date().toISOString(),
   })
 
-  const step_breakdown = stepResults.map((s) => ({
-    step: s.step,
-    score: s.step_score,
-    max_score: 1.0,
-  }))
-
-  return NextResponse.json({ total_score, max_score, grade_label, xp_awarded: xp_earned, competency_deltas: deltaEntries, step_breakdown })
+  return NextResponse.json({ total_score, max_score, grade_label, xp_awarded: xp_earned, competency_deltas: deltaEntries, step_breakdown, step_signals: stepSignalsFromDB })
 }

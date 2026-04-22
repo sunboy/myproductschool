@@ -4,6 +4,12 @@ import { useRef, useEffect, useState } from 'react'
 import gsap from 'gsap'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 import { StepDetailModal } from './StepDetailModal'
+import {
+  type Verdict,
+  VERDICT_COLOR, VERDICT_BG, VERDICT_LABEL, VERDICT_ICON,
+  QUALITY_BADGE, STEP_ICONS,
+  qualityToVerdict,
+} from './flow-constants'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -51,6 +57,7 @@ interface PostSessionMirrorProps {
   xpAwarded: number
   stepResults: StepResult[]
   competencyDeltas: CompetencyDelta[]
+  attemptId?: string
   onRunAnother?: () => void
   onDashboard: () => void
   onNextChallenge?: () => void
@@ -63,13 +70,6 @@ const STEP_LABELS: Record<string, string> = {
   list: 'List',
   optimize: 'Optimize',
   win: 'Win',
-}
-
-const STEP_ICONS: Record<string, string> = {
-  frame: 'center_focus_strong',
-  list: 'format_list_bulleted',
-  optimize: 'tune',
-  win: 'emoji_events',
 }
 
 const STEP_COLORS: Record<string, string> = {
@@ -99,37 +99,6 @@ function formatCompetencyName(key: string): string {
   return key.replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase())
 }
 
-type Verdict = 'pass' | 'partial' | 'miss'
-
-function qualityToVerdict(quality: string): Verdict {
-  if (quality === 'best') return 'pass'
-  if (quality === 'good_but_incomplete' || quality === 'surface') return 'partial'
-  return 'miss'
-}
-
-const VERDICT_COLOR: Record<Verdict, string> = {
-  pass: '#2f7a4a',
-  partial: '#c9933a',
-  miss: '#b23a2a',
-}
-
-const VERDICT_BG: Record<Verdict, string> = {
-  pass: 'rgba(47,122,74,0.08)',
-  partial: 'rgba(201,147,58,0.10)',
-  miss: 'rgba(178,58,42,0.08)',
-}
-
-const VERDICT_LABEL: Record<Verdict, string> = {
-  pass: 'CLEAN',
-  partial: 'PARTIAL',
-  miss: 'MISSED',
-}
-
-const VERDICT_ICON: Record<Verdict, string> = {
-  pass: 'check_circle',
-  partial: 'change_circle',
-  miss: 'cancel',
-}
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -168,6 +137,7 @@ interface StepCardProps {
 }
 
 function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardProps) {
+  const [expanded, setExpanded] = useState(false)
   const verdict = qualityToVerdict(result.quality_label)
   const verdictColor = VERDICT_COLOR[verdict]
   const coaching = result.lumaSignal ?? result.competency_signal?.signal
@@ -176,30 +146,33 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
     ? formatCompetencyName(result.competency_signal.primary)
     : (STEP_COMPETENCY_KEYS[result.step]?.[0] ?? null)
   const chips = buildChoiceChips(result)
+  const frameworkHint = result.competency_signal?.framework_hint ?? result.frameworkHint ?? null
 
   return (
     <div
       ref={cardRef}
-      onClick={() => onOpenModal(result)}
+      onClick={() => setExpanded(e => !e)}
       style={{
         background: 'var(--color-surface)',
-        border: '1px solid var(--color-outline-faint)',
+        border: `1px solid ${expanded ? verdictColor : 'var(--color-outline-faint)'}`,
         borderLeft: `3px solid ${verdictColor}`,
         borderRadius: 14,
-        padding: '12px 12px 10px',
-        display: 'flex', flexDirection: 'column', gap: 8,
+        padding: '14px 16px 12px',
+        display: 'flex', flexDirection: 'column', gap: 10,
         position: 'relative',
-        boxShadow: '0 1px 2px rgba(30,27,20,0.04)',
+        boxShadow: expanded ? `0 4px 20px -6px ${verdictColor}33` : '0 1px 2px rgba(30,27,20,0.04)',
         minWidth: 0,
         cursor: 'pointer',
         transition: 'box-shadow 200ms, border-color 200ms',
       }}
       onMouseEnter={e => {
+        if (expanded) return
         const el = e.currentTarget as HTMLDivElement
         el.style.boxShadow = `0 4px 16px -6px ${verdictColor}44`
         el.style.borderColor = verdictColor
       }}
       onMouseLeave={e => {
+        if (expanded) return
         const el = e.currentTarget as HTMLDivElement
         el.style.boxShadow = '0 1px 2px rgba(30,27,20,0.04)'
         el.style.borderTopColor = 'var(--color-outline-faint)'
@@ -212,7 +185,7 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
       <div
         ref={badgeRef}
         style={{
-          position: 'absolute', top: -14, left: 12,
+          position: 'absolute', top: -14, left: 14,
           width: 30, height: 30,
           background: verdictColor,
           color: '#fff',
@@ -229,82 +202,179 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
         </span>
       </div>
 
-      {/* Header: step pill + verdict */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginLeft: 32 }}>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          padding: '3px 10px', borderRadius: 999,
-          background: VERDICT_BG[verdict],
-          color: verdictColor,
-          fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase',
-        }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 13, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>
-            {STEP_ICONS[result.step]}
-          </span>
-          {STEP_LABELS[result.step]}
+      {/* Header row: step pill + verdict + chevron */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginLeft: 34 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '3px 10px', borderRadius: 999,
+            background: VERDICT_BG[verdict],
+            color: verdictColor,
+            fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase',
+          }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 13, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>
+              {STEP_ICONS[result.step]}
+            </span>
+            {STEP_LABELS[result.step]}
+          </div>
+          {chips.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+              {chips.map((chip, i) => (
+                <span key={i} style={{
+                  fontSize: 10, fontWeight: 700,
+                  padding: '2px 8px', borderRadius: 99,
+                  background: 'var(--color-surface-container-high)',
+                  color: 'var(--color-on-surface-variant)',
+                  border: '1px solid var(--color-outline-faint)',
+                }}>
+                  {chip}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', color: verdictColor }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 14, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>
-            {VERDICT_ICON[verdict]}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', color: verdictColor }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 14, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>
+              {VERDICT_ICON[verdict]}
+            </span>
+            {VERDICT_LABEL[verdict]}
+          </div>
+          <span className="material-symbols-outlined" style={{
+            fontSize: 18, color: 'var(--color-on-surface-variant)',
+            transition: 'transform 200ms',
+            transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+          }}>
+            expand_more
           </span>
-          {VERDICT_LABEL[verdict]}
         </div>
       </div>
 
-      {/* Choice chips */}
-      {chips.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-          {chips.map((chip, i) => (
-            <span
-              key={i}
-              style={{
-                fontSize: 10, fontWeight: 700,
-                padding: '2px 8px', borderRadius: 99,
-                background: 'var(--color-surface-container-high)',
-                color: 'var(--color-on-surface-variant)',
-                border: '1px solid var(--color-outline-faint)',
-              }}
-            >
-              {chip}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Luma coaching — 2-line clamp */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-        <div style={{ flexShrink: 0, marginTop: -2 }}>
-          <LumaGlyph size={20} state={verdict === 'pass' ? 'celebrating' : verdict === 'partial' ? 'listening' : 'idle'} className="text-primary" />
+      {/* Luma coaching — always visible, clamp when collapsed */}
+      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+        <div style={{ flexShrink: 0, marginTop: 1 }}>
+          <LumaGlyph size={22} state={verdict === 'pass' ? 'celebrating' : verdict === 'partial' ? 'listening' : 'idle'} className="text-primary" />
         </div>
         <p style={{
-          fontSize: 12, lineHeight: 1.5, color: 'var(--color-on-surface)', margin: 0,
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
+          fontSize: 13, lineHeight: 1.6, color: 'var(--color-on-surface)', margin: 0,
+          ...(expanded ? {} : {
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }),
         } as React.CSSProperties}>
           {coaching}
         </p>
       </div>
 
-      {/* Footer: competency tag + detail link */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 }}>
-        {competency && (
-          <span style={{
-            fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99,
-            background: 'var(--color-primary-fixed)',
-            color: 'var(--color-primary)',
-          }}>
-            {competency}
+      {/* Expanded content */}
+      {expanded && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* Framework hint */}
+          {frameworkHint && (
+            <div style={{
+              background: 'rgba(112,92,48,0.07)',
+              border: '1px dashed rgba(112,92,48,0.3)',
+              borderRadius: 10, padding: '10px 14px',
+              fontSize: 12, color: '#705c30', lineHeight: 1.5,
+              display: 'flex', gap: 8,
+            }}>
+              <span style={{ flexShrink: 0 }}>🧠</span>
+              <span>{frameworkHint}</span>
+            </div>
+          )}
+
+          {/* Selected choices summary */}
+          {(result.questions ?? []).length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {(result.questions ?? []).map((q, qi) => {
+                const selectedOpt = q.options.find(
+                  o => o.id === q.selectedOptionId || o.option_label === q.selectedOptionId
+                )
+                if (!selectedOpt) return null
+                const b = QUALITY_BADGE[selectedOpt.quality] ?? QUALITY_BADGE.plausible_wrong
+                return (
+                  <div key={qi} style={{
+                    background: 'var(--color-surface-container-low)',
+                    borderRadius: 10, padding: '10px 12px',
+                    fontSize: 12, lineHeight: 1.5,
+                  }}>
+                    {(result.questions ?? []).length > 1 && (
+                      <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-on-surface-variant)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Q{qi + 1}
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-on-surface-variant)', flexShrink: 0, paddingTop: 1 }}>
+                        {selectedOpt.option_label}.
+                      </span>
+                      <span style={{ flex: 1, color: 'var(--color-on-surface)' }}>{selectedOpt.option_text}</span>
+                      <span style={{
+                        fontSize: 10, fontWeight: 700,
+                        padding: '2px 7px', borderRadius: 99,
+                        background: b.bg, color: b.color,
+                        flexShrink: 0,
+                      }}>
+                        {b.label}
+                      </span>
+                    </div>
+                    {selectedOpt.explanation && (
+                      <p style={{ fontSize: 11, color: 'var(--color-on-surface-variant)', margin: '6px 0 0', lineHeight: 1.5 }}>
+                        {selectedOpt.explanation}
+                      </p>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Footer: competency + full detail */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 2 }}>
+            {competency && (
+              <span style={{
+                fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99,
+                background: 'var(--color-primary-fixed)',
+                color: 'var(--color-primary)',
+              }}>
+                {competency}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={e => { e.stopPropagation(); onOpenModal(result) }}
+              style={{
+                fontSize: 12, fontWeight: 600, color: 'var(--color-primary)',
+                display: 'inline-flex', alignItems: 'center', gap: 4, marginLeft: 'auto',
+                background: 'var(--color-primary-fixed)', border: 'none', cursor: 'pointer',
+                padding: '5px 12px', borderRadius: 99,
+              }}
+            >
+              Full detail
+              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>open_in_new</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Collapsed footer: competency only */}
+      {!expanded && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {competency && (
+            <span style={{
+              fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99,
+              background: 'var(--color-primary-fixed)',
+              color: 'var(--color-primary)',
+            }}>
+              {competency}
+            </span>
+          )}
+          <span style={{ fontSize: 10, color: 'var(--color-on-surface-variant)', marginLeft: 'auto' }}>
+            Click to expand
           </span>
-        )}
-        <span style={{
-          fontSize: 11, fontWeight: 600, color: 'var(--color-primary)',
-          display: 'inline-flex', alignItems: 'center', gap: 2, marginLeft: 'auto',
-        }}>
-          Full detail ›
-        </span>
-      </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -369,6 +439,7 @@ export function PostSessionMirror({
   xpAwarded,
   stepResults,
   competencyDeltas,
+  attemptId,
   onRunAnother,
   onDashboard,
   onNextChallenge,
@@ -477,14 +548,14 @@ export function PostSessionMirror({
           </div>
         </div>
 
-        {/* FLOW path + 4 step cards */}
+        {/* FLOW path + step cards */}
         {stepResults.length > 0 && (
           <div style={{ position: 'relative', flexShrink: 0, paddingTop: 18 }}>
             <svg
-              width="100%" height="100%"
-              viewBox="0 0 1000 260"
+              width="100%" height="60"
+              viewBox="0 0 1000 60"
               preserveAspectRatio="none"
-              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', zIndex: 1 }}
+              style={{ position: 'absolute', top: 0, left: 0, right: 0, pointerEvents: 'none', zIndex: 1 }}
               aria-hidden
             >
               <defs>
@@ -492,10 +563,9 @@ export function PostSessionMirror({
                   <path d="M 0 0 L 10 5 L 0 10 z" fill="#c9933a" />
                 </marker>
               </defs>
-              {/* Path near top of cards — matches reference design */}
               <path
                 ref={pathRef}
-                d="M 125 22 C 200 0, 260 80, 375 46 S 570 -6, 625 42 S 820 90, 875 28"
+                d="M 125 50 C 200 10, 300 55, 500 20 S 750 55, 875 30"
                 fill="none"
                 stroke="#c9933a"
                 strokeWidth="2"
@@ -511,6 +581,7 @@ export function PostSessionMirror({
               gap: 10,
               position: 'relative', zIndex: 2,
               width: '100%',
+              alignItems: 'start',
             }}>
               {stepResults.map((result, i) => (
                 <StepCard
@@ -665,6 +736,7 @@ export function PostSessionMirror({
       {modalStep && (
         <StepDetailModal
           stepResult={modalStep}
+          attemptId={attemptId}
           onClose={() => setModalStep(null)}
         />
       )}
