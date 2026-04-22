@@ -170,7 +170,7 @@ interface StepCardProps {
 function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardProps) {
   const verdict = qualityToVerdict(result.quality_label)
   const verdictColor = VERDICT_COLOR[verdict]
-  const coaching = result.lumaSignal ?? result.competency_signal?.signal ?? result.reasoning
+  const coaching = result.lumaSignal ?? result.competency_signal?.signal
     ?? (verdict === 'pass' ? 'Strong reasoning on this move.' : verdict === 'partial' ? 'Partially on track — room to sharpen.' : 'The key move was missed here.')
   const competency = result.competency_signal?.primary
     ? formatCompetencyName(result.competency_signal.primary)
@@ -202,7 +202,9 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
       onMouseLeave={e => {
         const el = e.currentTarget as HTMLDivElement
         el.style.boxShadow = '0 1px 2px rgba(30,27,20,0.04)'
-        el.style.borderColor = 'var(--color-outline-faint)'
+        el.style.borderTopColor = 'var(--color-outline-faint)'
+        el.style.borderRightColor = 'var(--color-outline-faint)'
+        el.style.borderBottomColor = 'var(--color-outline-faint)'
         el.style.borderLeftColor = verdictColor
       }}
     >
