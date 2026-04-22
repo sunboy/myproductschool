@@ -43,15 +43,28 @@ interface CompletionData {
   xp_awarded: number
   step_breakdown: Array<{ step: FlowStep; score: number; max_score: number }>
   competency_deltas: Array<{ competency: string; before: number; after: number }>
+  step_signals?: Array<{ step: string; quality_label: string; luma_signal: string | null; framework_hint: string | null; selected_option_id?: string | null }>
+}
+
+interface SessionRecord {
+  attemptId: string | null
+  completedAt: Date
+  gradeLabel: string
+  totalScore: number
+  maxScore: number
+  xpAwarded: number
+  stepResults: MirrorStepResult[]
+  competencyDeltas: MirrorCompetencyDelta[]
 }
 
 type FlowWorkspaceProps =
-  | { mode: 'api'; challengeId: string; initialRoleId: UserRoleV2; onExit?: () => void; onPaywall?: (data: { used: number; limit: number }) => void; fromPlan?: string; nextChallengeSlug?: string }
+  | { mode: 'api'; challengeId: string; challengeSlug?: string; initialRoleId: UserRoleV2; onExit?: () => void; onPaywall?: (data: { used: number; limit: number }) => void; fromPlan?: string; nextChallengeSlug?: string }
   | { mode: 'adapter'; adapter: ChallengeAdapter; onComplete?: (data: AdapterCompletionData | null) => void; onExit?: () => void; fromPlan?: string; nextChallengeSlug?: string }
 
 export function FlowWorkspace(props: FlowWorkspaceProps) {
   const isApiMode = props.mode === 'api'
   const challengeId = isApiMode ? props.challengeId : ''
+  const challengeSlug = isApiMode ? ((props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeSlug ?? challengeId) : ''
   const initialRoleId = isApiMode ? props.initialRoleId : 'engineer' as UserRoleV2
   const onPaywall = isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).onPaywall : undefined
   const fromPlan = props.fromPlan
@@ -113,16 +126,93 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // GSAP workspace ref for session-start animation
   const workspaceRef = useRef<HTMLDivElement>(null)
 
+  // Refs for option-select reveal animation
+  const confidenceCardRef = useRef<HTMLDivElement>(null)
+  const reasoningCardRef = useRef<HTMLTextAreaElement>(null)
+
   // Resizable panel state — left panel width as percentage of container
-  const [leftWidth, setLeftWidth] = useState(50)
+  const [leftWidth, setLeftWidth] = useState(30)
   const containerRef = useRef<HTMLDivElement>(null)
   const dragCleanupRef = useRef<(() => void) | null>(null)
 
   // Left description tab state
-  const [leftTab, setLeftTab] = useState<'Description' | 'Editorial' | 'Discussions' | 'Submissions'>('Description')
+  const [leftTab, setLeftTab] = useState<'Description' | 'Discussions' | 'Submissions'>('Description')
+
+  // Session history for Submissions tab
+  const [sessionHistory, setSessionHistory] = useState<SessionRecord[]>([])
+  const [selectedHistoryIdx, setSelectedHistoryIdx] = useState<number | null>(null)
+
+  // Load past completed attempts for this challenge from the DB on mount
+  useEffect(() => {
+    if (!isApiMode || !challengeId) return
+    fetch('/api/attempts?limit=20')
+      .then(r => r.ok ? r.json() : [])
+      .then((rows: Array<{
+        id: string
+        challenge_id: string
+        grade_label: string | null
+        score: number | null
+        max_score: number | null
+        submitted_at: string | null
+        feedback_json: {
+          step_breakdown?: Array<{ step: string; score: number; max_score: number }>
+          step_signals?: Array<{ step: string; quality_label: string; luma_signal: string | null; framework_hint: string | null; selected_option_id?: string | null }>
+          competency_deltas?: Array<{ competency: string; before: number; after: number; delta?: number }>
+          xp_awarded?: number
+          total_score?: number
+          max_score?: number
+        } | null
+      }>) => {
+        const past = rows
+          .filter(r => r.challenge_id === challengeSlug || r.challenge_id === challengeId)
+          .map((r): SessionRecord => {
+            const fb = r.feedback_json
+            const stepResults: MirrorStepResult[] = (fb?.step_breakdown ?? []).map(s => {
+              // step_breakdown scores are stored as 0-1; PostSessionMirror displays score/3
+              const normalizedScore = s.max_score > 1 ? s.score : s.score * 3
+              const sig = (fb?.step_signals ?? []).find(ss => ss.step === s.step)
+              return {
+                step: s.step as 'frame' | 'list' | 'optimize' | 'win',
+                score: Math.round(normalizedScore * 10) / 10,
+                quality_label: sig?.quality_label ?? (s.score >= 0.75 ? 'best' : s.score >= 0.45 ? 'good_but_incomplete' : 'plausible_wrong'),
+                confidence: null,
+                reasoning: '',
+                competency_signal: undefined,
+                lumaSignal: sig?.luma_signal ?? null,
+                frameworkHint: sig?.framework_hint ?? null,
+                selectedOptionId: sig?.selected_option_id ?? null,
+              }
+            })
+            const competencyDeltas: MirrorCompetencyDelta[] = (fb?.competency_deltas ?? []).map(d => ({
+              competency: d.competency,
+              before: d.before,
+              after: d.after,
+              direction: d.after > d.before ? 'up' : d.after < d.before ? 'down' : 'flat',
+            } as MirrorCompetencyDelta))
+            return {
+              attemptId: r.id,
+              completedAt: r.submitted_at ? new Date(r.submitted_at) : new Date(),
+              gradeLabel: r.grade_label ?? '',
+              totalScore: fb?.total_score ?? r.score ?? 0,
+              maxScore: fb?.max_score ?? r.max_score ?? 3,
+              xpAwarded: fb?.xp_awarded ?? 0,
+              stepResults,
+              competencyDeltas,
+            }
+          })
+        if (past.length > 0) setSessionHistory(past)
+      })
+      .catch(() => {/* silently ignore */})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isApiMode, challengeId, challengeSlug])
 
   // Hint card open/close state (right pane)
-  const [hintOpen, setHintOpen] = useState(true)
+  const [hintOpen, setHintOpen] = useState(false)
+
+  // Left panel footer interaction state
+  const [liked, setLiked] = useState(false)
+  const [bookmarked, setBookmarked] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const handleSeparatorMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
@@ -132,7 +222,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     const onMouseMove = (ev: MouseEvent) => {
       const rect = container.getBoundingClientRect()
       const pct = ((ev.clientX - rect.left) / rect.width) * 100
-      setLeftWidth(Math.max(28, Math.min(72, pct)))
+      setLeftWidth(Math.max(20, Math.min(80, pct)))
     }
 
     const onMouseUp = () => {
@@ -255,7 +345,70 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     return () => { tween.kill() }
   }, [phase])
 
-  const canSubmit = selectedOptionId !== null && confidence !== null
+  // GSAP: slide-up + green glow pulse when user picks an option; kill on submit/question change
+  const prevSelectedOptionRef = useRef<string | null>(null)
+  const glowTweensRef = useRef<gsap.core.Tween[]>([])
+
+  const killGlowTweens = useCallback(() => {
+    glowTweensRef.current.forEach(t => t.kill())
+    glowTweensRef.current = []
+    // Reset box-shadow so no residual glow remains
+    ;[reasoningCardRef.current, confidenceCardRef.current].forEach(el => {
+      if (el) el.style.boxShadow = ''
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!selectedOptionId || selectedOptionId === prevSelectedOptionRef.current) return
+    prevSelectedOptionRef.current = selectedOptionId
+
+    killGlowTweens()
+
+    const targets = ([reasoningCardRef.current, confidenceCardRef.current] as Array<HTMLElement | null>).filter((el): el is HTMLElement => el !== null)
+    if (!targets.length) return
+
+    // 1. Slide-up entrance
+    gsap.fromTo(
+      targets,
+      { opacity: 0.4, y: 12 },
+      {
+        opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', stagger: 0.1, clearProps: 'transform',
+        onComplete: () => {
+          confidenceCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        },
+      }
+    )
+
+    // 2. Slow repeating glow pulse on each target independently
+    targets.forEach(el => {
+      const tween = gsap.fromTo(
+        el,
+        { boxShadow: '0 0 0px 0px rgba(74, 124, 89, 0)' },
+        {
+          boxShadow: '0 0 12px 3px rgba(74, 124, 89, 0.28)',
+          duration: 1.4,
+          ease: 'sine.inOut',
+          repeat: -1,
+          yoyo: true,
+        }
+      )
+      glowTweensRef.current.push(tween)
+    })
+  }, [selectedOptionId, killGlowTweens])
+
+  // Kill glow when the answer is submitted (phase leaves 'question')
+  useEffect(() => {
+    if (phase !== 'question') killGlowTweens()
+  }, [phase, killGlowTweens])
+
+  // Kill glow when moving to next question within a step
+  useEffect(() => {
+    killGlowTweens()
+    prevSelectedOptionRef.current = null
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questionIdx])
+
+  const canSubmit = selectedOptionId !== null
 
   const handleSubmit = useCallback(async () => {
     if (!currentQuestion) return
@@ -430,61 +583,131 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
     // Accumulate step result for PostSessionMirror
     const stepRevealRecord = questionRevealHistory[questionRevealHistory.length - 1]
-    if (stepRevealRecord) {
-      const mirrorResult: MirrorStepResult = {
-        step: currentStep as 'frame' | 'list' | 'optimize' | 'win',
-        score: stepRevealRecord.score ?? 0,
-        quality_label: stepRevealRecord.gradeLabel ?? 'plausible_wrong',
-        confidence: confidence,
-        reasoning: reasoning,
-        competency_signal: stepRevealRecord.competencySignal ?? undefined,
-      }
+    const mirrorResult: MirrorStepResult | null = stepRevealRecord ? {
+      step: currentStep as 'frame' | 'list' | 'optimize' | 'win',
+      score: stepRevealRecord.score ?? 0,
+      quality_label: stepRevealRecord.gradeLabel ?? 'plausible_wrong',
+      confidence: confidence,
+      reasoning: reasoning,
+      competency_signal: stepRevealRecord.competencySignal ?? undefined,
+      lumaSignal: stepRevealRecord.competencySignal?.signal ?? null,
+      frameworkHint: stepRevealRecord.competencySignal?.framework_hint ?? null,
+      selectedOptionId: stepRevealRecord.selectedOptionId ?? null,
+      questions: questionRevealHistory.map(q => ({
+        questionText: q.questionText,
+        selectedOptionId: q.selectedOptionId,
+        options: q.revealedOptions.map(o => ({
+          id: o.id,
+          option_label: o.option_label ?? '',
+          option_text: o.option_text ?? '',
+          quality: o.quality ?? 'plausible_wrong',
+          explanation: o.explanation,
+          framework_hint: o.framework_hint,
+        })),
+      })),
+    } : null
+    if (mirrorResult) {
       setMirrorStepResults((prev) => [...prev, mirrorResult])
     }
 
     if (isLast) {
+      const finalStepResults = [...mirrorStepResults]
+      if (mirrorResult) finalStepResults.push(mirrorResult)
+
+      const completeSession = (cd: CompletionData | null, stepRes: MirrorStepResult[]) => {
+        const deltas: MirrorCompetencyDelta[] = (cd?.competency_deltas ?? []).map((d) => ({
+          competency: d.competency,
+          before: d.before,
+          after: d.after,
+          direction: d.after > d.before ? 'up' : d.after < d.before ? 'down' : 'flat',
+        } as MirrorCompetencyDelta))
+        // Enrich step results with real coaching text from the complete API response
+        const dbSignals = cd?.step_signals ?? []
+        const enrichedStepRes: MirrorStepResult[] = stepRes.map(r => {
+          const sig = dbSignals.find(s => s.step === r.step)
+          if (!sig) return r
+          return {
+            ...r,
+            quality_label: sig.quality_label ?? r.quality_label,
+            lumaSignal: sig.luma_signal ?? r.lumaSignal,
+            frameworkHint: sig.framework_hint ?? r.frameworkHint,
+            selectedOptionId: sig.selected_option_id ?? r.selectedOptionId,
+          }
+        })
+        const record: SessionRecord = {
+          attemptId,
+          completedAt: new Date(),
+          gradeLabel: cd?.grade_label ?? '',
+          totalScore: cd?.total_score ?? 0,
+          maxScore: cd?.max_score ?? 0,
+          xpAwarded: cd?.xp_awarded ?? 0,
+          stepResults: enrichedStepRes,
+          competencyDeltas: deltas,
+        }
+        setSessionHistory((prev) => [record, ...prev])
+        setSelectedHistoryIdx(0)
+        setPhase('complete')
+      }
+
       if (isApiMode) {
         try {
           const res = await fetch(`/api/challenges/${challengeId}/complete`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ attempt_id: attemptId }),
+            body: JSON.stringify({
+              attempt_id: attemptId,
+              from_plan: fromPlan,
+              step_signals: finalStepResults.map(r => ({
+                step: r.step,
+                quality_label: r.quality_label,
+                luma_signal: r.lumaSignal ?? null,
+                framework_hint: r.frameworkHint ?? null,
+              })),
+            }),
           })
           if (res.ok) {
             const data = await res.json()
-            setCompletionData({
+            const cd: CompletionData = {
               total_score: data.total_score,
               max_score: data.max_score,
               grade_label: data.grade_label,
               xp_awarded: data.xp_awarded,
               step_breakdown: data.step_breakdown ?? [],
               competency_deltas: data.competency_deltas ?? [],
-            })
-            setPhase('complete')
+              step_signals: data.step_signals ?? [],
+            }
+            setCompletionData(cd)
+            if (fromPlan) {
+              window.dispatchEvent(new CustomEvent('challenge-completed', { detail: { challengeId, fromPlan } }))
+            }
+            completeSession(cd, finalStepResults)
+          } else {
+            completeSession(null, finalStepResults)
           }
         } catch {
-          setPhase('complete')
+          completeSession(null, finalStepResults)
         }
       } else {
         const adapterProps = props as Extract<FlowWorkspaceProps, { mode: 'adapter' }>
         const data = await adapterProps.adapter.complete()
         adapterProps.onComplete?.(data)
-        setCompletionData(data ? {
+        const cd: CompletionData | null = data ? {
           total_score: data.total_score,
           max_score: data.max_score,
           grade_label: data.grade_label,
           xp_awarded: data.xp_awarded,
           step_breakdown: data.step_breakdown ?? [],
           competency_deltas: data.competency_deltas ?? [],
-        } : null)
-        setPhase('complete')
+        } : null
+        setCompletionData(cd)
+        completeSession(cd, finalStepResults)
       }
     } else {
       setCompletedSteps((prev) => [...prev, currentStep])
       setCurrentStep(FLOW_STEPS[stepIdx + 1])
       setPhase('question')
     }
-  }, [isApiMode, challengeId, currentStep, attemptId, props, questionRevealHistory, confidence])
+  }, [isApiMode, challengeId, currentStep, attemptId, props, questionRevealHistory, confidence, mirrorStepResults])
 
   // Handle option select — update Luma message
   const handleOptionSelect = useCallback((id: string) => {
@@ -520,41 +743,24 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const scenarioContext = isApiMode ? detail?.challenge.scenario_context : adapterChallenge?.scenario_context
   const scenarioTrigger = isApiMode ? detail?.challenge.scenario_trigger : adapterChallenge?.scenario_trigger
 
-  if (phase === 'complete') {
-    return (
-      <PostSessionMirror
-        challengeTitle={challengeTitle ?? 'Challenge'}
-        totalScore={completionData?.total_score ?? 0}
-        xpAwarded={completionData?.xp_awarded ?? 0}
-        stepResults={mirrorStepResults}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        competencyDeltas={(completionData?.competency_deltas ?? []).map((d: any) => ({
-          competency: d.competency ?? d.competency_key ?? '',
-          before: d.before ?? d.delta_before ?? 0,
-          after: d.after ?? d.delta_after ?? 0,
-          direction: d.direction ?? (d.delta > 0 ? 'up' : d.delta < 0 ? 'down' : 'flat'),
-        } as MirrorCompetencyDelta))}
-        onRunAnother={() => {
-          setMirrorStepResults([])
-          setCalibrationSteps([
-            { stepKey: 'frame',    stepLabel: 'Frame',    status: 'pending', confidenceLabel: null },
-            { stepKey: 'list',     stepLabel: 'List',     status: 'pending', confidenceLabel: null },
-            { stepKey: 'optimize', stepLabel: 'Optimize', status: 'pending', confidenceLabel: null },
-            { stepKey: 'win',      stepLabel: 'Win',      status: 'pending', confidenceLabel: null },
-          ])
-          hasAnimated.current = false
-          if (isApiMode) {
-            setPhase('loading')
-            reload()
-          } else {
-            setCurrentStep('frame')
-            setCompletedSteps([])
-            setPhase('question')
-          }
-        }}
-        onDashboard={props.onExit ?? (() => window.history.back())}
-      />
-    )
+  const handleRunAnother = () => {
+    setMirrorStepResults([])
+    setSelectedHistoryIdx(null)
+    setCalibrationSteps([
+      { stepKey: 'frame',    stepLabel: 'Frame',    status: 'pending', confidenceLabel: null },
+      { stepKey: 'list',     stepLabel: 'List',     status: 'pending', confidenceLabel: null },
+      { stepKey: 'optimize', stepLabel: 'Optimize', status: 'pending', confidenceLabel: null },
+      { stepKey: 'win',      stepLabel: 'Win',      status: 'pending', confidenceLabel: null },
+    ])
+    hasAnimated.current = false
+    if (isApiMode) {
+      setPhase('loading')
+      reload()
+    } else {
+      setCurrentStep('frame')
+      setCompletedSteps([])
+      setPhase('question')
+    }
   }
 
   const stepIdx = FLOW_STEPS.indexOf(currentStep)
@@ -585,7 +791,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     win:      'Finish',
   }
 
-  const tabs = ['Description', 'Editorial', 'Discussions', 'Submissions'] as const
+  const tabs = ['Description', 'Discussions', 'Submissions'] as const
 
   // Left pane description content
   const descriptionPane = (
@@ -673,160 +879,268 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   )
 
-  const submissionsPane = (
+  const GRADE_STYLE: Record<string, { bg: string; color: string }> = {
+    best:     { bg: 'var(--color-primary)', color: 'var(--color-on-primary)' },
+    good:     { bg: 'var(--color-tertiary-container)', color: 'var(--color-on-surface)' },
+    surface:  { bg: 'var(--color-secondary-container)', color: 'var(--color-on-secondary-container)' },
+    default:  { bg: 'var(--color-surface-container-high)', color: 'var(--color-on-surface-variant)' },
+  }
+  const gradeStyle = (label: string) =>
+    GRADE_STYLE[label] ?? GRADE_STYLE['default']
+
+  const submissionsPane = sessionHistory.length === 0 ? (
     <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
       <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--color-outline)' }}>history</span>
       <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
         No submissions yet.
       </p>
     </div>
+  ) : (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {sessionHistory.map((record, idx) => {
+        const gs = gradeStyle(record.gradeLabel)
+        const isSelected = selectedHistoryIdx === idx
+        return (
+          <button
+            key={idx}
+            onClick={() => setSelectedHistoryIdx(idx)}
+            style={{
+              textAlign: 'left',
+              background: isSelected ? 'var(--color-primary-fixed)' : 'var(--color-surface-container-low)',
+              border: isSelected ? '1.5px solid var(--color-primary)' : '1px solid var(--color-outline-variant)',
+              borderRadius: 12,
+              padding: '12px 14px',
+              cursor: 'pointer',
+              transition: 'background 120ms',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontFamily: 'var(--font-label)', fontSize: 12, fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>
+                Attempt {sessionHistory.length - idx}
+              </span>
+              <span style={{
+                fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 600, padding: '2px 8px',
+                borderRadius: 99, background: gs.bg, color: gs.color,
+              }}>
+                {record.gradeLabel || 'Scored'}
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-on-surface)' }}>
+                {record.totalScore} / {record.maxScore} pts
+              </span>
+              <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, color: 'var(--color-on-surface-variant)' }}>
+                +{record.xpAwarded} XP
+              </span>
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--color-on-surface-variant)', marginTop: 4 }}>
+              {record.completedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </div>
+          </button>
+        )
+      })}
+    </div>
   )
 
   // Left description panel
+  // Left panel — content only, no tab bar or footer (those are hoisted to span full width)
   const leftDescriptionPanel = (
     <section style={{
       width: `${leftWidth}%`,
+      flexShrink: 0,
       display: 'flex',
       flexDirection: 'column',
-      borderRight: '1px solid var(--color-outline-faint)',
       background: 'var(--color-surface)',
       overflow: 'hidden',
       minHeight: 0,
     }}>
-      {/* Tab bar + bookmark button */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'space-between',
-        padding: '6px 12px 0',
-        borderBottom: '1px solid var(--color-outline-faint)',
-        background: 'var(--color-surface)',
-        flexShrink: 0,
-      }}>
-        <div style={{ display: 'flex' }}>
-          {tabs.map(t => {
-            const active = leftTab === t
-            return (
-              <button
-                key={t}
-                onClick={() => setLeftTab(t)}
-                style={{
-                  padding: '7px 14px',
-                  fontSize: 13,
-                  fontWeight: active ? 600 : 400,
-                  color: active ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)',
-                  background: active ? 'var(--color-surface-container-low)' : 'transparent',
-                  border: active ? '1px solid var(--color-outline-faint)' : '1px solid transparent',
-                  borderBottom: active ? '1px solid var(--color-surface-container-low)' : '1px solid transparent',
-                  borderRadius: '8px 8px 0 0',
-                  cursor: 'pointer',
-                  marginBottom: active ? -1 : 0,
-                  fontFamily: 'inherit',
-                  transition: 'color 120ms',
-                }}
-              >
-                {t}
-              </button>
-            )
-          })}
-        </div>
-        {/* Bookmark lives at the right of the left panel header */}
-        <button
-          className="btn btn--ghost"
-          style={{ padding: '5px 10px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 4 }}
-        >
-          <span className="material-symbols-outlined msi-sm">bookmark_border</span>
-        </button>
-      </div>
-
-      {/* Tab content */}
       {leftTab === 'Description' && descriptionPane}
-      {leftTab === 'Editorial' && editorialPane}
       {leftTab === 'Discussions' && discussionsPane}
       {leftTab === 'Submissions' && submissionsPane}
+    </section>
+  )
 
-      {/* Bottom chrome (only on Description) */}
-      {leftTab === 'Description' && (
-        <div style={{
-          flexShrink: 0,
-          borderTop: '1px solid var(--color-outline-faint)',
-          padding: '10px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          background: 'var(--color-surface)',
-          fontSize: 12,
-          color: 'var(--color-on-surface-variant)',
-        }}>
-          <div style={{ display: 'flex', gap: 14 }}>
-            <button className="btn btn--ghost" style={{ padding: '4px 10px', fontSize: 12, gap: 4 }}>
-              <span className="material-symbols-outlined msi-sm">thumb_up</span> 1.1K
+  // Shared top chrome — spans full width so the borderBottom is continuous
+  const topChrome = (
+    <div style={{
+      display: 'flex',
+      alignItems: 'flex-end',
+      borderBottom: '1px solid var(--color-outline-faint)',
+      background: 'var(--color-surface)',
+      flexShrink: 0,
+    }}>
+      {/* Left side: back + tabs — constrained to leftWidth */}
+      <div style={{ width: `${leftWidth}%`, display: 'flex', alignItems: 'flex-end', gap: 2, padding: '6px 8px 0', flexShrink: 0 }}>
+        <button
+          onClick={props.onExit ?? (() => window.history.back())}
+          className="btn btn--ghost"
+          style={{ padding: '6px 8px', fontSize: 12, marginBottom: 4, display: 'inline-flex', alignItems: 'center' }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_back</span>
+        </button>
+        {tabs.map(t => {
+          const active = leftTab === t
+          return (
+            <button
+              key={t}
+              onClick={() => setLeftTab(t)}
+              style={{
+                padding: '7px 14px',
+                fontSize: 13,
+                fontWeight: active ? 600 : 400,
+                color: active ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)',
+                background: active ? 'var(--color-surface-container-low)' : 'transparent',
+                border: active ? '1px solid var(--color-outline-faint)' : '1px solid transparent',
+                borderBottom: active ? '1px solid var(--color-surface-container-low)' : '1px solid transparent',
+                borderRadius: '8px 8px 0 0',
+                cursor: 'pointer',
+                marginBottom: active ? -1 : 0,
+                fontFamily: 'inherit',
+                transition: 'color 120ms',
+              }}
+            >
+              {t === 'Submissions' && sessionHistory.length > 0
+                ? `Submissions (${sessionHistory.length})`
+                : t}
             </button>
-            <button className="btn btn--ghost" style={{ padding: '4px 10px', fontSize: 12, gap: 4 }}>
-              <span className="material-symbols-outlined msi-sm">bookmark_border</span> 342
-            </button>
-            <button className="btn btn--ghost" style={{ padding: '4px 10px', fontSize: 12, gap: 4 }}>
-              <span className="material-symbols-outlined msi-sm">share</span>
-            </button>
-          </div>
+          )
+        })}
+      </div>
+      {/* Drag handle spacer */}
+      <div style={{ width: 6, flexShrink: 0 }} />
+      {/* Right side: FLOW stepper + hint — takes remaining space */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+          <FlowStepper
+            currentStep={currentStep}
+            completedSteps={completedSteps}
+            onStepClick={handleStepClick}
+            questionIdx={questionIdx}
+            questionCount={activeStepData?.questions.length}
+          />
+          <span className="chip" style={{ fontSize: 11, flexShrink: 0 }}>Step {stepIdx + 1} of 4</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          <button
+            className="btn btn--ghost"
+            style={{
+              padding: '6px 10px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4,
+              background: hintOpen ? '#f3e2b9' : undefined,
+              color: hintOpen ? '#5c3a00' : undefined,
+              borderRadius: 8,
+            }}
+            onClick={() => setHintOpen(v => !v)}
+          >
+            <span
+              className="material-symbols-outlined msi-sm"
+              style={{ fontVariationSettings: hintOpen ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" : undefined }}
+            >lightbulb</span> Hint
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+
+  // Shared bottom footer — spans full width so the borderTop is continuous
+  const bottomFooter = currentQuestion ? (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      borderTop: '1px solid var(--color-outline-faint)',
+      background: 'var(--color-surface)',
+      flexShrink: 0,
+    }}>
+      {/* Left side: like/bookmark/share + online count */}
+      <div style={{
+        width: `${leftWidth}%`,
+        flexShrink: 0,
+        padding: '10px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        fontSize: 12,
+        color: 'var(--color-on-surface-variant)',
+      }}>
+        {leftTab === 'Description' ? (
+          <>
+            <div style={{ display: 'flex', gap: 14 }}>
+              <button
+                className="btn btn--ghost"
+                style={{ padding: '4px 10px', fontSize: 12, gap: 4, color: liked ? 'var(--color-primary)' : undefined }}
+                onClick={() => setLiked(v => !v)}
+              >
+                <span
+                  className="material-symbols-outlined msi-sm"
+                  style={{ fontVariationSettings: liked ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" : undefined }}
+                >thumb_up</span> {liked ? '1.1K+' : '1.1K'}
+              </button>
+              <button
+                className="btn btn--ghost"
+                style={{ padding: '4px 10px', fontSize: 12, gap: 4, color: bookmarked ? 'var(--color-primary)' : undefined }}
+                onClick={() => setBookmarked(v => !v)}
+              >
+                <span
+                  className="material-symbols-outlined msi-sm"
+                  style={{ fontVariationSettings: bookmarked ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" : undefined }}
+                >{bookmarked ? 'bookmark' : 'bookmark_border'}</span> {bookmarked ? '343' : '342'}
+              </button>
+              <button
+                className="btn btn--ghost"
+                style={{ padding: '4px 10px', fontSize: 12, gap: 4 }}
+                onClick={() => {
+                  const url = window.location.href
+                  if (navigator.share) {
+                    navigator.share({ url })
+                  } else {
+                    navigator.clipboard.writeText(url).then(() => {
+                      setCopied(true)
+                      setTimeout(() => setCopied(false), 2000)
+                    })
+                  }
+                }}
+              >
+                <span className="material-symbols-outlined msi-sm">share</span>
+                {copied && <span style={{ fontSize: 11 }}>Copied!</span>}
+              </button>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: 999, background: '#4a7c59', display: 'inline-block' }} />
+              3,589 online
+            </div>
+          </>
+        ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ width: 8, height: 8, borderRadius: 999, background: '#4a7c59', display: 'inline-block' }} />
             3,589 online
           </div>
-        </div>
-      )}
-    </section>
-  )
-
-  // Shared sticky header — back + title on left, submit on right
-  const stickyHeader = (
-    <div
-      className="shrink-0"
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '10px 20px',
-        gap: 20,
-        background: 'var(--color-surface)',
-        borderBottom: '1px solid var(--color-outline-faint)',
-      }}
-    >
-      {/* Left: back + title */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button
-          onClick={props.onExit ?? (() => window.history.back())}
-          className="btn btn--ghost"
-          style={{ padding: '6px 10px', fontSize: 12 }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_back</span>
-        </button>
-        <div>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-on-surface-muted, var(--color-on-surface-variant))' }}>
-            Challenge
-          </div>
-          {challengeTitle && (
-            <div style={{ fontFamily: 'var(--font-headline)', fontSize: 15, fontWeight: 600, letterSpacing: '-0.005em', color: 'var(--color-on-surface)', marginTop: 1 }}>
-              {challengeTitle}
-            </div>
-          )}
-        </div>
+        )}
       </div>
-
-      {/* Right: submit */}
-      <button
-        className="btn btn--primary"
-        style={{ padding: '8px 16px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 4 }}
-        disabled={selectedOptionId === null || confidence === null || activeSubmitting}
-        onClick={handleSubmit}
-      >
-        {isLastStep ? 'Finish' : `Next: ${NEXT_LABEL[currentStep]}`}
-        <span className="material-symbols-outlined msi-sm">arrow_forward</span>
-      </button>
+      {/* Drag handle spacer */}
+      <div style={{ width: 6, flexShrink: 0 }} />
+      {/* Right side: prev + submit */}
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px' }}>
+        <button
+          className="btn btn--ghost"
+          style={{ fontSize: 12, padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+          disabled={questionIdx === 0}
+        >
+          <span className="material-symbols-outlined msi-sm">arrow_back</span> Previous
+        </button>
+        <button
+          className="btn btn--primary"
+          style={{ fontSize: 13, padding: '10px 22px', display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--color-primary)', color: 'var(--color-on-primary)', borderRadius: 99, fontWeight: 600, border: 'none' }}
+          disabled={selectedOptionId === null || activeSubmitting}
+          onClick={handleSubmit}
+        >
+          {activeSubmitting ? 'Grading…' : (isLastStep && questionIdx === (activeStepData?.questions.length ?? 1) - 1 ? 'Finish' : 'Submit')}
+          {!activeSubmitting && <span className="material-symbols-outlined msi-sm">arrow_forward</span>}
+          {activeSubmitting && <LumaGlyph size={16} state="reviewing" className="text-on-primary" />}
+        </button>
+      </div>
     </div>
-  )
+  ) : null
 
-  // Shared drag handle
+  // Shared drag handle — sits between left and right panel content rows only
   const dragHandle = (
     <div
       onMouseDown={handleSeparatorMouseDown}
@@ -836,30 +1150,92 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   )
 
-  if (phase === 'reveal') {
+  if (phase === 'reveal' || phase === 'complete' || selectedHistoryIdx !== null) {
+    const historyRecord = selectedHistoryIdx !== null ? sessionHistory[selectedHistoryIdx] : null
+    const showMirror = phase === 'complete' || historyRecord !== null
+
     return (
-      <div className="flex flex-col h-full overflow-hidden">
-        {stickyHeader}
+      <div className="flex flex-col overflow-hidden h-full">
+        {/* Same full-width top chrome as question phase */}
+        {topChrome}
+
+        {/* Middle: resizable two-pane content */}
         <div ref={containerRef} className="flex flex-1 min-h-0 overflow-hidden">
           {leftDescriptionPanel}
           {dragHandle}
-          {/* Right: reveal content */}
-          <div
-            key={`${currentStep}-reveal`}
-            className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter min-w-0"
-          >
-            <StepReveal
-              step={currentStep}
-              stepScore={stepTotalScore ?? stepScore}
-              maxScore={3.0}
-              gradeLabel={stepGrade}
-              roleContext={roleContext}
-              careerSignal={careerSignal}
-              competencySignal={competencySignal}
-              questionRevealHistory={questionRevealHistory}
-              onNext={handleNextStep}
-              isLastStep={isLastStep}
-            />
+
+          {/* Right panel */}
+          <div className="flex-1 flex flex-col overflow-hidden min-w-0" style={{ background: 'var(--color-background)' }}>
+            {/* History back-nav banner */}
+            {historyRecord && (
+              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--color-outline-faint)', background: 'var(--color-surface)' }}>
+                <button
+                  className="btn btn--ghost"
+                  style={{ fontSize: 12, padding: '4px 10px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  onClick={() => setSelectedHistoryIdx(null)}
+                >
+                  <span className="material-symbols-outlined msi-sm">arrow_back</span> Back
+                </button>
+                <span style={{ fontFamily: 'var(--font-label)', fontSize: 12, color: 'var(--color-on-surface-variant)' }}>
+                  Attempt {sessionHistory.length - selectedHistoryIdx!} — {historyRecord.completedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            )}
+
+            {/* Session complete banner */}
+            {phase === 'complete' && !historyRecord && (
+              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--color-outline-faint)', background: 'var(--color-primary-fixed)' }}>
+                <span className="material-symbols-outlined msi-sm" style={{ color: 'var(--color-primary)' }}>check_circle</span>
+                <span style={{ fontFamily: 'var(--font-label)', fontSize: 12, fontWeight: 600, color: 'var(--color-on-surface)' }}>
+                  Session complete — reviewing your results
+                </span>
+              </div>
+            )}
+
+            {showMirror ? (
+              <div className="flex-1 min-h-0 animate-step-enter">
+                <PostSessionMirror
+                  challengeTitle={challengeTitle ?? 'Challenge'}
+                  totalScore={historyRecord ? historyRecord.totalScore : (completionData?.total_score ?? 0)}
+                  maxScore={historyRecord ? historyRecord.maxScore : (completionData?.max_score ?? 3)}
+                  xpAwarded={historyRecord ? historyRecord.xpAwarded : (completionData?.xp_awarded ?? 0)}
+                  stepResults={historyRecord ? historyRecord.stepResults : mirrorStepResults}
+                  competencyDeltas={historyRecord
+                    ? historyRecord.competencyDeltas
+                    : (completionData?.competency_deltas ?? []).map(d => ({
+                        competency: d.competency,
+                        before: d.before,
+                        after: d.after,
+                        direction: d.after > d.before ? 'up' : d.after < d.before ? 'down' : 'flat',
+                      } as MirrorCompetencyDelta))}
+                  onRunAnother={historyRecord ? undefined : handleRunAnother}
+                  onDashboard={props.onExit ?? (() => window.history.back())}
+                  onNextChallenge={nextChallengeSlug && !historyRecord
+                    ? () => { window.location.href = `/workspace/challenges/${nextChallengeSlug}` }
+                    : undefined
+                  }
+                />
+              </div>
+            ) : (
+              /* phase === 'reveal': per-step grading */
+              <div
+                key={`${currentStep}-reveal`}
+                className="flex-1 overflow-y-auto px-6 py-6 space-y-6 animate-step-enter min-w-0"
+              >
+                <StepReveal
+                  step={currentStep}
+                  stepScore={stepTotalScore ?? stepScore}
+                  maxScore={3.0}
+                  gradeLabel={stepGrade}
+                  roleContext={roleContext}
+                  careerSignal={careerSignal}
+                  competencySignal={competencySignal}
+                  questionRevealHistory={questionRevealHistory}
+                  onNext={handleNextStep}
+                  isLastStep={isLastStep}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -868,57 +1244,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // phase === 'question'
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      {stickyHeader}
+    <div className="flex flex-col overflow-hidden h-full">
+      {/* Full-width top chrome: tabs on left, stepper on right — one continuous borderBottom */}
+      {topChrome}
 
-      {/* Main two-pane body */}
+      {/* Middle: resizable two-pane content area */}
       <div ref={containerRef} className="flex flex-1 min-h-0 overflow-hidden">
         {leftDescriptionPanel}
         {dragHandle}
 
-        {/* Right pane: workspace */}
-        <section style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--color-background)', overflow: 'hidden' }}>
-          {/* Workspace sub-header: FLOW stepper + step chip + timer/hint/fullscreen */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '8px 16px',
-            borderBottom: '1px solid var(--color-outline-faint)',
-            background: 'var(--color-surface)',
-            flexShrink: 0,
-            gap: 16,
-          }}>
-            {/* Left: FLOW stepper + step indicator */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
-              <FlowStepper
-                currentStep={currentStep}
-                completedSteps={completedSteps}
-                onStepClick={handleStepClick}
-                questionIdx={questionIdx}
-                questionCount={activeStepData?.questions.length}
-              />
-              <span className="chip" style={{ fontSize: 11, flexShrink: 0 }}>Step {stepIdx + 1} of 4</span>
-            </div>
-            {/* Right: timer, hint, fullscreen */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-              <button className="btn btn--ghost" style={{ padding: '6px 10px', fontSize: 12 }}>
-                <span className="material-symbols-outlined msi-sm">timer</span>
-              </button>
-              <button
-                className="btn btn--ghost"
-                style={{ padding: '6px 10px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                onClick={() => setHintOpen(v => !v)}
-              >
-                <span className="material-symbols-outlined msi-sm">lightbulb</span> Hint
-              </button>
-              <button className="btn btn--ghost" style={{ padding: '6px 10px', fontSize: 12 }}>
-                <span className="material-symbols-outlined msi-sm">fullscreen</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Scrollable workspace content */}
+        {/* Right pane: scrollable workspace content only */}
+        <section style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--color-background)', overflow: 'hidden', minHeight: 0 }}>
           <div
             ref={workspaceRef}
             key={`${currentStep}-question`}
@@ -973,13 +1309,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   onOptionSelect={handleOptionSelect}
                   onElaborationChange={setReasoning}
                   disabled={activeSubmitting}
+                  elaborationRef={reasoningCardRef}
                 />
               </div>
             ) : null}
 
             {/* Confidence card */}
             {currentQuestion && (
-              <div style={{
+              <div ref={confidenceCardRef} style={{
                 background: 'var(--color-surface)',
                 border: '1px solid var(--color-outline-faint)',
                 borderRadius: 14,
@@ -1024,88 +1361,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 </div>
               </div>
             )}
-
-            {/* Scratchpad */}
-            {currentQuestion && (
-              <div style={{
-                background: 'var(--color-surface)',
-                border: '1px solid var(--color-outline-faint)',
-                borderRadius: 14,
-                padding: '14px 16px',
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-on-surface-variant)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                    Scratchpad
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--color-on-surface-variant)', opacity: 0.7 }}>
-                    Not graded. Saved with your answer.
-                  </div>
-                </div>
-                <textarea
-                  value={reasoning}
-                  onChange={e => setReasoning(e.target.value)}
-                  placeholder="What's your reasoning?"
-                  rows={4}
-                  style={{
-                    width: '100%',
-                    resize: 'vertical',
-                    minHeight: 90,
-                    padding: '10px 12px',
-                    border: '1px solid var(--color-outline-variant)',
-                    borderRadius: 10,
-                    background: 'var(--color-surface-container-low)',
-                    fontFamily: 'inherit',
-                    fontSize: 13,
-                    color: 'var(--color-on-surface)',
-                    outline: 'none',
-                    lineHeight: 1.5,
-                  }}
-                />
-              </div>
-            )}
-
           </div>
-
-          {/* Sticky actions footer */}
-          {currentQuestion && (
-            <div style={{
-              flexShrink: 0,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '12px 24px',
-              borderTop: '1px solid var(--color-outline-faint)',
-              background: 'var(--color-surface)',
-            }}>
-              <button
-                className="btn btn--ghost"
-                style={{ fontSize: 12, padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                disabled={questionIdx === 0}
-              >
-                <span className="material-symbols-outlined msi-sm">arrow_back</span> Previous
-              </button>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button
-                  className="btn btn--ghost"
-                  style={{ fontSize: 12, padding: '8px 14px' }}
-                  onClick={props.onExit ?? (() => window.history.back())}
-                >
-                  Save &amp; exit
-                </button>
-                <button
-                  className="btn btn--primary"
-                  style={{ fontSize: 13, padding: '10px 18px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                  disabled={selectedOptionId === null || confidence === null || activeSubmitting}
-                  onClick={handleSubmit}
-                >
-                  {isLastStep ? 'Finish' : `Next: ${NEXT_LABEL[currentStep]}`}
-                  <span className="material-symbols-outlined msi-sm">arrow_forward</span>
-                </button>
-              </div>
-            </div>
-          )}
         </section>
       </div>
+
+      {/* Full-width bottom footer: left actions + submit — one continuous borderTop */}
+      {bottomFooter}
     </div>
   )
 }
