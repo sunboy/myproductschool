@@ -154,31 +154,25 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
       onClick={() => setExpanded(e => !e)}
       style={{
         background: 'var(--color-surface)',
-        border: `1px solid ${expanded ? verdictColor : 'var(--color-outline-faint)'}`,
-        borderLeft: `3px solid ${verdictColor}`,
+        border: '1px solid var(--color-outline-faint)',
         borderRadius: 14,
         padding: '14px 16px 12px',
         display: 'flex', flexDirection: 'column', gap: 10,
         position: 'relative',
-        boxShadow: expanded ? `0 4px 20px -6px ${verdictColor}33` : '0 1px 2px rgba(30,27,20,0.04)',
+        boxShadow: expanded ? '0 4px 20px -6px rgba(30,27,20,0.10)' : '0 1px 2px rgba(30,27,20,0.04)',
         minWidth: 0,
         cursor: 'pointer',
-        transition: 'box-shadow 200ms, border-color 200ms',
+        transition: 'box-shadow 200ms',
       }}
       onMouseEnter={e => {
         if (expanded) return
         const el = e.currentTarget as HTMLDivElement
-        el.style.boxShadow = `0 4px 16px -6px ${verdictColor}44`
-        el.style.borderColor = verdictColor
+        el.style.boxShadow = '0 4px 16px -6px rgba(30,27,20,0.12)'
       }}
       onMouseLeave={e => {
         if (expanded) return
         const el = e.currentTarget as HTMLDivElement
         el.style.boxShadow = '0 1px 2px rgba(30,27,20,0.04)'
-        el.style.borderTopColor = 'var(--color-outline-faint)'
-        el.style.borderRightColor = 'var(--color-outline-faint)'
-        el.style.borderBottomColor = 'var(--color-outline-faint)'
-        el.style.borderLeftColor = verdictColor
       }}
     >
       {/* Diamond badge */}

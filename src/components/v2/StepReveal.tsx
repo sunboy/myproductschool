@@ -68,7 +68,7 @@ function OptionCard({
       display: 'flex', gap: 10, alignItems: 'flex-start',
       padding: '10px 12px',
       borderRadius: 10,
-      border: `1.5px solid ${isSelected ? b.border : 'var(--color-outline-faint)'}`,
+      border: '1px solid var(--color-outline-faint)',
       background: isSelected ? `${b.bg}44` : 'var(--color-surface)',
       fontSize: 13, lineHeight: 1.4,
     }}>
@@ -139,11 +139,9 @@ function QuestionBreakdown({ record, questionNumber }: { record: QuestionRevealR
   return (
     <div style={{
       background: 'var(--color-surface)',
-      border: `1px solid ${open ? b.border : 'var(--color-outline-faint)'}`,
-      borderLeft: `3px solid ${b.border}`,
+      border: '1px solid var(--color-outline-faint)',
       borderRadius: 12,
       overflow: 'hidden',
-      transition: 'border-color 150ms',
     }}>
       <button
         onClick={() => setOpen(v => !v)}
@@ -258,7 +256,6 @@ export function StepReveal({
         style={{
           background: 'var(--color-surface)',
           border: '1px solid var(--color-outline-faint)',
-          borderTop: `3px solid ${verdictColor}`,
           borderRadius: 14,
           padding: '16px 20px',
           boxShadow: '0 1px 2px rgba(30,27,20,0.04)',
@@ -309,7 +306,6 @@ export function StepReveal({
         style={{
           background: 'var(--color-surface)',
           border: '1px solid var(--color-outline-faint)',
-          borderLeft: `3px solid ${verdictColor}`,
           borderRadius: 14,
           padding: '14px 16px',
           boxShadow: '0 1px 2px rgba(30,27,20,0.04)',

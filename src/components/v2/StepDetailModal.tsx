@@ -66,7 +66,7 @@ function QuestionPage({ question, stepResult }: QuestionPageProps) {
                 display: 'flex', gap: 10, alignItems: 'flex-start',
                 padding: '10px 12px',
                 borderRadius: 10,
-                border: `1.5px solid ${isPick ? 'var(--color-primary)' : 'var(--color-outline-faint)'}`,
+                border: '1px solid var(--color-outline-faint)',
                 background: isPick ? 'rgba(74,124,89,0.06)' : 'var(--color-surface)',
                 fontSize: 13, lineHeight: 1.4,
               }}
