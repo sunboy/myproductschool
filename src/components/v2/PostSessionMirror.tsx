@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from 'react'
 import gsap from 'gsap'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { StepDetailModal } from './StepDetailModal'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -146,49 +147,66 @@ function MiniStat({ label, value, color }: { label: string; value: string; color
   )
 }
 
+function buildChoiceChips(result: StepResult): string[] {
+  const questions = result.questions ?? []
+  const multi = questions.length > 1
+  return questions.map((q, i) => {
+    const selectedOpt = q.options.find(
+      o => o.id === q.selectedOptionId || o.option_label === q.selectedOptionId
+    )
+    const letter = selectedOpt?.option_label ?? (q.selectedOptionId ?? '?')
+    return multi ? `Q${i + 1} · Option ${letter}` : `Option ${letter}`
+  })
+}
+
 interface StepCardProps {
   result: StepResult
   index: number
   cardRef: (el: HTMLDivElement | null) => void
   badgeRef: (el: HTMLDivElement | null) => void
+  onOpenModal: (result: StepResult) => void
 }
 
-function StepCard({ result, index, cardRef, badgeRef }: StepCardProps) {
-  const [expanded, setExpanded] = useState(false)
+function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardProps) {
   const verdict = qualityToVerdict(result.quality_label)
   const verdictColor = VERDICT_COLOR[verdict]
-  const rawCoaching = result.lumaSignal ?? result.competency_signal?.signal ?? null
-  const hint = result.frameworkHint ?? result.competency_signal?.framework_hint ?? null
-  const competencyTags = STEP_COMPETENCY_KEYS[result.step] ?? []
-  const pickedLabel = result.selectedOptionId ? result.selectedOptionId.toUpperCase() : null
-
-  const coaching = rawCoaching
-    ? (pickedLabel ? `You picked ${pickedLabel} — ${rawCoaching}` : rawCoaching)
-    : (verdict === 'pass' ? 'Strong reasoning on this move.' : verdict === 'partial' ? 'Partially on track — room to sharpen.' : 'The key move was missed here.')
-
-  const lumaState = verdict === 'pass' ? 'celebrating' : verdict === 'partial' ? 'listening' : 'idle'
+  const coaching = result.lumaSignal ?? result.competency_signal?.signal ?? result.reasoning
+    ?? (verdict === 'pass' ? 'Strong reasoning on this move.' : verdict === 'partial' ? 'Partially on track — room to sharpen.' : 'The key move was missed here.')
+  const competency = result.competency_signal?.primary
+    ? formatCompetencyName(result.competency_signal.primary)
+    : (STEP_COMPETENCY_KEYS[result.step]?.[0] ?? null)
+  const chips = buildChoiceChips(result)
 
   return (
     <div
       ref={cardRef}
-      onClick={() => setExpanded(e => !e)}
+      onClick={() => onOpenModal(result)}
       style={{
         background: 'var(--color-surface)',
         border: '1px solid var(--color-outline-faint)',
         borderLeft: `3px solid ${verdictColor}`,
         borderRadius: 14,
         padding: '12px 12px 10px',
-        display: 'flex', flexDirection: 'column', gap: 7,
+        display: 'flex', flexDirection: 'column', gap: 8,
         position: 'relative',
-        boxShadow: '0 1px 2px rgba(30,27,20,0.04), 0 1px 0 rgba(30,27,20,0.02)',
+        boxShadow: '0 1px 2px rgba(30,27,20,0.04)',
         minWidth: 0,
-        minHeight: 275,
         cursor: 'pointer',
-        transition: 'box-shadow 200ms',
-        ...(expanded ? { boxShadow: `0 8px 24px -8px ${verdictColor}33, 0 1px 2px rgba(30,27,20,0.04)` } : {}),
+        transition: 'box-shadow 200ms, border-color 200ms',
+      }}
+      onMouseEnter={e => {
+        const el = e.currentTarget as HTMLDivElement
+        el.style.boxShadow = `0 4px 16px -6px ${verdictColor}44`
+        el.style.borderColor = verdictColor
+      }}
+      onMouseLeave={e => {
+        const el = e.currentTarget as HTMLDivElement
+        el.style.boxShadow = '0 1px 2px rgba(30,27,20,0.04)'
+        el.style.borderColor = 'var(--color-outline-faint)'
+        el.style.borderLeftColor = verdictColor
       }}
     >
-      {/* Diamond badge — verdict color per reference */}
+      {/* Diamond badge */}
       <div
         ref={badgeRef}
         style={{
@@ -231,61 +249,58 @@ function StepCard({ result, index, cardRef, badgeRef }: StepCardProps) {
         </div>
       </div>
 
-      {/* Competency tags */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-        {competencyTags.map(t => (
-          <span key={t} style={{
-            fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
-            background: 'var(--color-surface-container-low)',
-            color: 'var(--color-on-surface-variant)',
-            border: '1px solid var(--color-outline-faint)',
-          }}>{t}</span>
-        ))}
-      </div>
+      {/* Choice chips */}
+      {chips.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+          {chips.map((chip, i) => (
+            <span
+              key={i}
+              style={{
+                fontSize: 10, fontWeight: 700,
+                padding: '2px 8px', borderRadius: 99,
+                background: 'var(--color-surface-container-high)',
+                color: 'var(--color-on-surface-variant)',
+                border: '1px solid var(--color-outline-faint)',
+              }}
+            >
+              {chip}
+            </span>
+          ))}
+        </div>
+      )}
 
-      {/* Luma coaching */}
+      {/* Luma coaching — 2-line clamp */}
       <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
         <div style={{ flexShrink: 0, marginTop: -2 }}>
-          <LumaGlyph size={22} state={lumaState} className="text-primary" />
+          <LumaGlyph size={20} state={verdict === 'pass' ? 'celebrating' : verdict === 'partial' ? 'listening' : 'idle'} className="text-primary" />
         </div>
         <p style={{
           fontSize: 12, lineHeight: 1.5, color: 'var(--color-on-surface)', margin: 0,
-          ...(!expanded ? {
-            display: '-webkit-box', WebkitLineClamp: 6, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-          } as React.CSSProperties : {}),
-        }}>
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+        } as React.CSSProperties}>
           {coaching}
         </p>
       </div>
 
-      {/* Framework hint — always in dashed box, shown when expanded or when short enough */}
-      {hint && (
-        <div style={{
-          marginTop: 'auto',
-          background: 'var(--color-surface-container-low)',
-          border: '1px dashed var(--color-outline-variant)',
-          borderRadius: 8,
-          padding: '8px 10px',
-          fontSize: 11, lineHeight: 1.45,
-          color: 'var(--color-on-surface-variant)',
-          display: 'flex', gap: 6, alignItems: 'flex-start',
-          overflow: expanded ? 'visible' : 'hidden',
-          maxHeight: expanded ? 'none' : '3em',
+      {/* Footer: competency tag + detail link */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 }}>
+        {competency && (
+          <span style={{
+            fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99,
+            background: 'var(--color-primary-fixed)',
+            color: 'var(--color-primary)',
+          }}>
+            {competency}
+          </span>
+        )}
+        <span style={{
+          fontSize: 11, fontWeight: 600, color: 'var(--color-primary)',
+          display: 'inline-flex', alignItems: 'center', gap: 2, marginLeft: 'auto',
         }}>
-          <span style={{ fontSize: 12, flexShrink: 0 }}>🧠</span>
-          <span>{hint}</span>
-        </div>
-      )}
-
-      {/* Expand/collapse indicator */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
-        <span className="material-symbols-outlined" style={{
-          fontSize: 14, color: 'var(--color-on-surface-variant)', opacity: 0.5,
-          fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",
-          transition: 'transform 200ms',
-          transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-        }}>
-          expand_more
+          Full detail ›
         </span>
       </div>
     </div>
@@ -363,6 +378,7 @@ export function PostSessionMirror({
   const deltaRefs = useRef<(HTMLDivElement | null)[]>([])
   const xpRef = useRef<HTMLDivElement>(null)
   const footerRef = useRef<HTMLDivElement>(null)
+  const [modalStep, setModalStep] = useState<StepResult | null>(null)
 
   const passCount = stepResults.filter(r => qualityToVerdict(r.quality_label) === 'pass').length
   const partialCount = stepResults.filter(r => qualityToVerdict(r.quality_label) === 'partial').length
@@ -501,6 +517,7 @@ export function PostSessionMirror({
                   index={i}
                   cardRef={el => { cardRefs.current[i] = el }}
                   badgeRef={el => { badgeRefs.current[i] = el }}
+                  onOpenModal={setModalStep}
                 />
               ))}
             </div>
@@ -643,6 +660,12 @@ export function PostSessionMirror({
           )}
         </div>
       </div>
+      {modalStep && (
+        <StepDetailModal
+          stepResult={modalStep}
+          onClose={() => setModalStep(null)}
+        />
+      )}
     </section>
   )
 }
