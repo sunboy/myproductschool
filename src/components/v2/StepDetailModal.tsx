@@ -66,7 +66,7 @@ function QuestionPage({ question, stepResult }: QuestionPageProps) {
                 display: 'flex', gap: 10, alignItems: 'flex-start',
                 padding: '10px 12px',
                 borderRadius: 10,
-                border: '1px solid var(--color-outline-faint)',
+                border: '1px solid var(--color-outline-variant)',
                 background: isPick ? 'rgba(74,124,89,0.06)' : 'var(--color-surface)',
                 fontSize: 13, lineHeight: 1.4,
               }}
@@ -202,7 +202,7 @@ export function StepDetailModal({ stepResult, attemptId, onClose }: StepDetailMo
         {/* Header */}
         <div style={{
           padding: '18px 24px 14px',
-          borderBottom: '1px solid var(--color-outline-faint)',
+          borderBottom: '1px solid var(--color-outline-variant)',
           display: 'flex', alignItems: 'center', gap: 10,
         }}>
           <span style={{
@@ -240,7 +240,7 @@ export function StepDetailModal({ stepResult, attemptId, onClose }: StepDetailMo
         {!isOnly && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '8px 24px',
-            borderBottom: '1px solid var(--color-outline-faint)',
+            borderBottom: '1px solid var(--color-outline-variant)',
             background: 'var(--color-surface-container)',
           }}>
             <span style={{
@@ -259,7 +259,7 @@ export function StepDetailModal({ stepResult, attemptId, onClose }: StepDetailMo
                   cursor: 'pointer',
                   color: currentQ === i ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)',
                   background: currentQ === i ? 'var(--color-surface)' : 'none',
-                  border: currentQ === i ? '1px solid var(--color-outline-faint)' : '1px solid transparent',
+                  border: currentQ === i ? '1px solid var(--color-outline-variant)' : '1px solid transparent',
                   boxShadow: currentQ === i ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
                   transition: 'all 0.12s',
                 }}
@@ -284,7 +284,7 @@ export function StepDetailModal({ stepResult, attemptId, onClose }: StepDetailMo
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           padding: '12px 24px 16px',
-          borderTop: '1px solid var(--color-outline-faint)',
+          borderTop: '1px solid var(--color-outline-variant)',
         }}>
           <button
             onClick={() => setCurrentQ(q => q - 1)}
@@ -292,7 +292,7 @@ export function StepDetailModal({ stepResult, attemptId, onClose }: StepDetailMo
             style={{
               fontSize: 13, fontWeight: 600,
               padding: '8px 18px', borderRadius: 99,
-              border: '1.5px solid var(--color-outline-faint)',
+              border: '1.5px solid var(--color-outline-variant)',
               background: 'var(--color-surface)',
               color: 'var(--color-on-surface)',
               cursor: currentQ === 0 ? 'not-allowed' : 'pointer',

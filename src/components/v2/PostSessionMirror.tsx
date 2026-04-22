@@ -107,7 +107,7 @@ function MiniStat({ label, value, color }: { label: string; value: string; color
     <div style={{
       display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
       padding: '4px 10px', borderRadius: 10,
-      background: 'var(--color-surface)', border: '1px solid var(--color-outline-faint)',
+      background: 'var(--color-surface)', border: '1px solid var(--color-outline-variant)',
       minWidth: 52,
     }}>
       <div style={{ fontFamily: 'var(--font-headline)', fontSize: 15, fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
@@ -154,7 +154,7 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
       onClick={() => setExpanded(e => !e)}
       style={{
         background: 'var(--color-surface)',
-        border: '1px solid var(--color-outline-faint)',
+        border: '1px solid var(--color-outline-variant)',
         borderRadius: 14,
         padding: '14px 16px 12px',
         display: 'flex', flexDirection: 'column', gap: 10,
@@ -219,7 +219,7 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
                   padding: '2px 8px', borderRadius: 99,
                   background: 'var(--color-surface-container-high)',
                   color: 'var(--color-on-surface-variant)',
-                  border: '1px solid var(--color-outline-faint)',
+                  border: '1px solid var(--color-outline-variant)',
                 }}>
                   {chip}
                 </span>
@@ -388,7 +388,7 @@ function DeltaChip({ data, refCb }: { data: CompetencyDelta; refCb: (el: HTMLDiv
         display: 'flex', flexDirection: 'column', gap: 4,
         padding: '8px 10px', borderRadius: 10,
         background: 'var(--color-surface-container-low)',
-        border: '1px solid var(--color-outline-faint)',
+        border: '1px solid var(--color-outline-variant)',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
@@ -411,7 +411,7 @@ function DeltaChip({ data, refCb }: { data: CompetencyDelta; refCb: (el: HTMLDiv
           </div>
         )}
       </div>
-      <div style={{ position: 'relative', height: 4, background: 'var(--color-outline-faint)', borderRadius: 999 }}>
+      <div style={{ position: 'relative', height: 4, background: 'var(--color-outline-variant)', borderRadius: 999 }}>
         <div style={{
           position: 'absolute', top: 0, bottom: 0,
           left: up ? `${data.before}%` : `${data.before + delta}%`,
@@ -607,7 +607,7 @@ export function PostSessionMirror({
           })
           return (
             <div style={{
-              background: 'var(--color-surface)', border: '1px solid var(--color-outline-faint)',
+              background: 'var(--color-surface)', border: '1px solid var(--color-outline-variant)',
               borderRadius: 14, padding: '12px 14px', flexShrink: 0,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -646,7 +646,7 @@ export function PostSessionMirror({
           flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '12px 16px',
-          borderTop: '1px solid var(--color-outline-faint)',
+          borderTop: '1px solid var(--color-outline-variant)',
           background: 'var(--color-surface)',
           gap: 12,
         }}

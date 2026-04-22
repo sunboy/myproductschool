@@ -68,7 +68,7 @@ function OptionCard({
       display: 'flex', gap: 10, alignItems: 'flex-start',
       padding: '10px 12px',
       borderRadius: 10,
-      border: '1px solid var(--color-outline-faint)',
+      border: '1px solid var(--color-outline-variant)',
       background: isSelected ? `${b.bg}44` : 'var(--color-surface)',
       fontSize: 13, lineHeight: 1.4,
     }}>
@@ -139,7 +139,7 @@ function QuestionBreakdown({ record, questionNumber }: { record: QuestionRevealR
   return (
     <div style={{
       background: 'var(--color-surface)',
-      border: '1px solid var(--color-outline-faint)',
+      border: '1px solid var(--color-outline-variant)',
       borderRadius: 12,
       overflow: 'hidden',
     }}>
@@ -255,7 +255,7 @@ export function StepReveal({
         ref={headerRef}
         style={{
           background: 'var(--color-surface)',
-          border: '1px solid var(--color-outline-faint)',
+          border: '1px solid var(--color-outline-variant)',
           borderRadius: 14,
           padding: '16px 20px',
           boxShadow: '0 1px 2px rgba(30,27,20,0.04)',
@@ -305,7 +305,7 @@ export function StepReveal({
         ref={coachingRef}
         style={{
           background: 'var(--color-surface)',
-          border: '1px solid var(--color-outline-faint)',
+          border: '1px solid var(--color-outline-variant)',
           borderRadius: 14,
           padding: '14px 16px',
           boxShadow: '0 1px 2px rgba(30,27,20,0.04)',
