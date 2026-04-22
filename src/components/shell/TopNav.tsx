@@ -3,14 +3,16 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
-  { href: '/dashboard',       icon: 'home',           label: 'Home'       },
-  { href: '/explore',         icon: 'explore',        label: 'Explore'    },
-  { href: '/challenges',      icon: 'fitness_center', label: 'Practice'   },
-  { href: '/live-interviews', icon: 'mic',            label: 'Interviews' },
-  { href: '/progress',        icon: 'bar_chart',      label: 'Progress'   },
+  { id: 'home',       href: '/',               icon: 'home',          label: 'Home'       },
+  { id: 'explore',    href: '/explore',         icon: 'explore',       label: 'Explore'    },
+  { id: 'practice',   href: '/challenges',      icon: 'track_changes', label: 'Practice'   },
+  { id: 'interviews', href: '/live-interviews', icon: 'graphic_eq',    label: 'Interviews' },
+  { id: 'progress',   href: '/progress',        icon: 'bar_chart',     label: 'Progress'   },
 ]
+
 
 interface ProfileData {
   streak_days: number
@@ -29,21 +31,51 @@ function getInitials(name: string | null | undefined): string {
     : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
+function LogoMark() {
+  return (
+    <div
+      className="w-8 h-8 flex items-center justify-center shrink-0"
+      style={{
+        borderRadius: '10px',
+        background: 'linear-gradient(135deg, #4a7c59 0%, #264a34 100%)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)',
+      }}
+    >
+      <svg width={22} height={22} viewBox="0 0 22 22" fill="none">
+        <text
+          x="4" y="16"
+          fontFamily="serif"
+          fontSize="13"
+          fontWeight="bold"
+          fill="#f7ede0"
+          stroke="#f7ede0"
+          strokeWidth="0.3"
+        >
+          HP
+        </text>
+        <circle cx="17" cy="6" r="2" fill="#c9933a" />
+      </svg>
+    </div>
+  )
+}
+
 function GoalRing({ done, total }: { done: number; total: number }) {
-  const r = 11
-  const c = 2 * Math.PI * r
-  const pct = total > 0 ? Math.min(done / total, 1) : 0
-  const size = 28
+  const size = 20
   const cx = size / 2
+  const r = (size - 3) / 2
+  const c = 2 * Math.PI * r
+  const pct = Math.min(1, done / Math.max(1, total))
   return (
     <svg width={size} height={size} aria-label={`${done}/${total} daily goal`}>
       <circle cx={cx} cy={cx} r={r} stroke="var(--color-outline-variant)" strokeWidth="2.5" fill="none" />
       <circle
         cx={cx} cy={cx} r={r}
-        stroke="var(--color-primary)" strokeWidth="2.5" fill="none"
-        strokeDasharray={`${c * pct} ${c}`} strokeLinecap="round"
+        stroke="var(--color-primary)"
+        strokeWidth="2.5"
+        fill="none"
+        strokeDasharray={`${c * pct} ${c}`}
+        strokeLinecap="round"
         transform={`rotate(-90 ${cx} ${cx})`}
-        style={{ transition: 'stroke-dasharray 600ms ease' }}
       />
     </svg>
   )
@@ -94,114 +126,148 @@ export function TopNav() {
 
   const dailyDone = profile?.daily_attempts_today ?? 0
   const dailyTotal = 5
+  const streak = profile?.streak_days ?? 0
+  const xp = profile?.xp_total ?? 0
+
+  function isActive(item: typeof NAV_ITEMS[0]) {
+    if (item.id === 'home') return pathname === '/' || pathname === '/dashboard'
+    if (item.id === 'interviews') return pathname.startsWith('/live-interviews')
+    return pathname.startsWith(item.href)
+  }
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-lg border-b border-outline-faint" style={{ background: 'rgba(250, 246, 240, 0.92)' }}>
-      <div className="flex items-center h-14 px-6 gap-4 max-w-[1440px] mx-auto">
+    <header
+      className="sticky top-0 z-40 border-b"
+      style={{
+        background: 'rgba(250,246,240,0.82)',
+        backdropFilter: 'saturate(140%) blur(12px)',
+        WebkitBackdropFilter: 'saturate(140%) blur(12px)',
+        borderColor: 'var(--color-outline-faint)',
+      }}
+    >
+      <div className="mx-auto max-w-[1440px] px-8 py-3 flex items-center gap-8">
 
-        {/* Logo */}
-        <Link href="/dashboard" className="flex items-center gap-2 shrink-0 mr-2">
+        {/* Column 1: Brand */}
+        <Link href="/dashboard" className="flex items-center gap-[10px] no-underline">
+          <LogoMark />
           <div
-            className="w-6 h-6 rounded-md flex items-center justify-center"
-            style={{ background: 'var(--color-primary)' }}
+            className="font-headline font-bold text-[18px] tracking-[-0.01em] hidden sm:block"
+            style={{ color: 'var(--color-on-surface)' }}
           >
-            <span className="material-symbols-outlined text-white text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-              bolt
-            </span>
-          </div>
-          <span className="font-headline text-base font-medium tracking-tight text-on-surface hidden sm:block">
             HackProduct
-          </span>
+          </div>
         </Link>
 
-        {/* Nav pills */}
-        <nav className="hidden md:flex items-center gap-1 flex-1">
+        {/* Column 2: Nav pills (centered) */}
+        <div className="hidden md:flex flex-1 justify-center">
+        <nav
+          className="flex gap-1 p-1 rounded-full border"
+          style={{
+            background: 'var(--color-surface-container-low)',
+            borderColor: 'var(--color-outline-faint)',
+          }}
+        >
           {NAV_ITEMS.map(item => {
-            const active = pathname === item.href || pathname.startsWith(item.href + '/')
+            const active = isActive(item)
+            const href = item.id === 'home' ? '/dashboard' : item.href
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={[
-                  'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-label font-semibold transition-all',
-                  active
-                    ? 'bg-primary-container text-on-primary-container'
-                    : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface',
-                ].join(' ')}
-              >
-                <span
-                  className="material-symbols-outlined text-[18px] leading-none"
-                  style={{ fontVariationSettings: active ? "'FILL' 1, 'wght' 500" : "'FILL' 0, 'wght' 400" }}
+              <Link key={item.id} href={href} className="no-underline">
+                <button
+                  className={cn(
+                    'inline-flex items-center gap-[7px] px-4 py-2 rounded-full border-0 whitespace-nowrap cursor-pointer',
+                    'text-[13px] font-bold transition-[background,color] duration-200',
+                    active
+                      ? 'text-white'
+                      : 'hover:bg-[var(--color-surface-container)]',
+                  )}
+                  style={
+                    active
+                      ? { background: 'var(--color-primary)', color: 'var(--color-on-primary)' }
+                      : { color: 'var(--color-on-surface-variant)' }
+                  }
                 >
-                  {item.icon}
-                </span>
-                <span>{item.label}</span>
+                  <span
+                    className="material-symbols-outlined text-[18px]"
+                    style={{ fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0" }}
+                  >
+                    {item.icon}
+                  </span>
+                  {item.label}
+                </button>
               </Link>
             )
           })}
         </nav>
+        </div>
 
-        {/* Right: goal ring + streak + XP + avatar */}
-        <div className="flex items-center gap-2 shrink-0 ml-auto">
-
-          {/* Goal ring */}
-          <div className="hidden lg:flex items-center gap-1.5" suppressHydrationWarning>
-            <GoalRing done={dailyDone} total={dailyTotal} />
-            <span className="text-xs text-on-surface-variant font-label" suppressHydrationWarning>
-              {dailyDone}/{dailyTotal}
-            </span>
-          </div>
+        {/* Column 3: Right cluster */}
+        <div className="flex items-center gap-4">
 
           {/* Streak */}
-          <div className="flex items-center gap-1 px-2.5 py-1 rounded-full" style={{ background: 'rgba(112, 92, 48, 0.12)' }} suppressHydrationWarning>
-            <span className="material-symbols-outlined text-tertiary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
+          <div
+            className="hidden sm:inline-flex items-center gap-[5px] text-[13px] font-bold"
+            style={{ color: '#c9933a' }}
+            suppressHydrationWarning
+          >
+            <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
               local_fire_department
             </span>
-            <span className="text-xs font-bold text-tertiary font-label" suppressHydrationWarning>
-              {profile?.streak_days ?? 0}
-            </span>
+            {streak}d
           </div>
 
           {/* XP */}
-          <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full" style={{ background: 'rgba(74, 124, 89, 0.12)' }} suppressHydrationWarning>
-            <span className="text-xs font-bold text-primary font-label" suppressHydrationWarning>
-              {(profile?.xp_total ?? 0).toLocaleString()} XP
+          <div
+            className="hidden md:inline-flex items-center gap-[5px] text-[13px] font-bold"
+            style={{ color: 'var(--color-primary)' }}
+            suppressHydrationWarning
+          >
+            <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+              bolt
             </span>
+            {xp.toLocaleString()}
           </div>
 
-          {/* Avatar + dropdown */}
+          {/* Avatar button + dropdown */}
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenuOpen(o => !o)}
-              className="w-8 h-8 rounded-full overflow-hidden bg-primary flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm focus:outline-none"
-              aria-label="Profile menu"
+              aria-label="Account"
+              className="w-9 h-9 rounded-full border-0 inline-flex items-center justify-center text-white font-bold text-[13px] overflow-hidden hover:opacity-90 transition-opacity focus:outline-none"
+              style={{ background: 'linear-gradient(135deg, #4a7c59, #264a34)' }}
             >
               {profile?.avatar_url
                 ? <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
-                : <span className="w-full h-full flex items-center justify-center text-xs font-bold text-on-primary font-label">
-                    {getInitials(profile?.display_name)}
-                  </span>
+                : getInitials(profile?.display_name)
               }
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 top-10 w-48 bg-background border border-outline-variant rounded-xl shadow-lg py-1 z-50">
+              <div
+                className="absolute right-0 top-12 w-48 rounded-xl shadow-lg py-1 z-50 border"
+                style={{
+                  background: 'var(--color-background)',
+                  borderColor: 'var(--color-outline-variant)',
+                }}
+              >
                 {profile?.display_name && (
-                  <div className="px-4 py-2 border-b border-outline-variant/40">
-                    <p className="text-xs font-bold text-on-surface truncate">{profile.display_name}</p>
+                  <div className="px-4 py-2 border-b" style={{ borderColor: 'var(--color-outline-variant)' }}>
+                    <p className="text-xs font-bold truncate" style={{ color: 'var(--color-on-surface)' }}>
+                      {profile.display_name}
+                    </p>
                   </div>
                 )}
                 <Link
                   href="/settings"
                   onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container transition-colors"
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-surface-container"
+                  style={{ color: 'var(--color-on-surface)' }}
                 >
-                  <span className="material-symbols-outlined text-base text-on-surface-variant">settings</span>
+                  <span className="material-symbols-outlined text-base" style={{ color: 'var(--color-on-surface-variant)' }}>settings</span>
                   Settings
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-error hover:bg-surface-container transition-colors"
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-surface-container text-error"
                 >
                   <span className="material-symbols-outlined text-base">logout</span>
                   Log out
@@ -211,6 +277,7 @@ export function TopNav() {
           </div>
         </div>
       </div>
+
     </header>
   )
 }
