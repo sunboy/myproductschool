@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Nunito_Sans, Literata } from "next/font/google";
+import { Raleway, Literata } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
-const nunitoSans = Nunito_Sans({
+const raleway = Raleway({
   variable: "--font-nunito-sans",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800"],
@@ -91,7 +91,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${nunitoSans.variable} ${literata.variable} h-full antialiased`}>
+    <html lang="en" className={`${raleway.variable} ${literata.variable} h-full antialiased`}>
       <head>
         {/* Material Symbols Outlined icon font */}
         <link
