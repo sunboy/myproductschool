@@ -486,3 +486,21 @@ Canonical guide: [`docs/notes/writing-style-guide.md`](./docs/notes/writing-styl
 - Use Tailwind token classes — never raw hex values in JSX className
 - Stitch v2 project ID: `12072135267645366200` (canonical design reference)
 - See "Canonical Stitch Screens" table above for all 24 screen IDs and their file paths
+
+## Parked Work
+
+### Personalised Study Plan — chapter/challenge seeding (parked 2026-04-23)
+
+The 4 move-tagged study plans exist as shells in the DB (migration `061_study_plans_seed.sql`):
+- `frame-like-a-pm` (move_tag: frame)
+- `the-list-move` (move_tag: list)
+- `optimize-under-pressure` (move_tag: optimize)
+- `win-the-room` (move_tag: win)
+
+**What's done:** Calibration submit auto-enrolls users in the plan matching their weakest FLOW move. The explore page shows it in the hero and as the first card in the study plans grid.
+
+**What's missing:** `study_plan_chapters` rows with actual `challenge_ids`. The plans are empty shells — clicking through shows no challenges. To complete this, either:
+1. **Manual curation** — pick challenges from the `challenges` table per move, write a migration with `study_plan_chapters` inserts
+2. **Tag-based** — use challenges that already have `move_tags` set (only ~20 of 184 currently tagged)
+
+Most challenges have empty `move_tags`, so manual curation will give cleaner plans. When resuming, check `challenges` table for candidates: `SELECT id, title, move_tags, difficulty FROM challenges WHERE is_published = true ORDER BY difficulty`.
