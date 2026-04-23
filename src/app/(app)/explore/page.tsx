@@ -290,12 +290,12 @@ export default async function ExplorePage() {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#7ee099', fontVariationSettings: "'FILL' 1" }}>
-                    {MOVE_ICON[personalisedPlan.move_tag ?? ''] ?? 'route'}
+                    auto_awesome
                   </span>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(126,224,153,0.7)', marginBottom: 2 }}>
-                    Your plan · {MOVE_LABEL[personalisedPlan.move_tag ?? ''] ?? personalisedPlan.move_tag}
+                    Your plan, built by Luma
                   </div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: '#f3ede0', lineHeight: 1.2 }}>
                     {personalisedPlan.title}
