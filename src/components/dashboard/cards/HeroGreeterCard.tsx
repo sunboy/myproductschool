@@ -175,7 +175,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
               <span className="material-symbols-outlined text-[15px]">{s.icon}</span>
               {s.k}
             </div>
-            <div className="flex items-baseline gap-1.5">
+            <div className="flex items-baseline gap-1.5" style={{ paddingLeft: '21px' }}>
               <span className="font-headline text-xl font-medium">{s.v}</span>
               <span className="text-[11px]" style={{ color: 'rgba(243,237,224,0.6)' }}>{s.sub}</span>
             </div>
