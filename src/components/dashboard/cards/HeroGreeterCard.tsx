@@ -21,9 +21,12 @@ interface HeroGreeterCardProps {
   displayName: string
   streakDays: number
   xpTotal: number
+  nextMilestoneMove: string
+  nextMilestoneLevel: number
+  dailyDone: number
 }
 
-export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreeterCardProps) {
+export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMilestoneMove, nextMilestoneLevel, dailyDone }: HeroGreeterCardProps) {
   const [idx, setIdx] = useState(0)
 
   useEffect(() => {
@@ -164,8 +167,8 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
             icon: 'local_fire_department',
           },
           { k: 'XP today', v: `${xpTotal}`, sub: 'Total XP Earned', icon: 'bolt' },
-          { k: 'Next milestone', v: 'Lv 4', sub: 'Frame · Keep Practicing', icon: 'flag' },
-          { k: 'Due this week', v: '3', sub: 'Challenges Queued', icon: 'event' },
+          { k: 'Next milestone', v: `Lv ${nextMilestoneLevel}`, sub: `${nextMilestoneMove} · Keep Practicing`, icon: 'flag' },
+          { k: 'Due this week', v: `${dailyDone}/5`, sub: 'Done Today', icon: 'event' },
         ].map((s, i) => (
           <div key={i} className="flex items-baseline gap-1.5">
             <span className="material-symbols-outlined text-[16px]" style={{ color: 'rgba(243,237,224,0.6)', alignSelf: 'center' }}>{s.icon}</span>
