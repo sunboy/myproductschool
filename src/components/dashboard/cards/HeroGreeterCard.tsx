@@ -35,7 +35,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
     <div
       className="relative rounded-3xl overflow-hidden"
       style={{
-        background: 'linear-gradient(135deg, #2d5240 0%, #1e3d2c 55%, #152c1e 100%)',
+        background: 'linear-gradient(to right, #152c1e 0%, #1e3d2c 40%, #2d5240 75%, #3e6a4b 100%)',
         border: '1px solid rgba(255,255,255,0.07)',
         minHeight: 220,
         color: '#f3ede0',
@@ -50,25 +50,16 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
         <rect width="100%" height="100%" filter="url(#hero-noise)" />
       </svg>
 
-      {/* Left amber warmth */}
+      {/* Bottom-left amber warmth */}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(500px 320px at -5% 110%, rgba(201,147,58,0.22), transparent 55%)',
+          background: 'radial-gradient(500px 320px at -5% 110%, rgba(201,147,58,0.18), transparent 55%)',
         }}
       />
 
-      {/* Right mascot spotlight — dark vignette that frames the character */}
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none hidden lg:block"
-        style={{
-          background:
-            'radial-gradient(320px 380px at 92% 50%, rgba(10,26,16,0.55) 0%, transparent 70%)',
-        }}
-      />
-      {/* Mascot halo — bright green bloom behind the character */}
+      {/* Mascot halo — bright green bloom on right where it's lighter */}
       <div
         aria-hidden
         className="absolute pointer-events-none hidden lg:block"
@@ -76,10 +67,10 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
           right: 24,
           top: '50%',
           transform: 'translateY(-50%)',
-          width: 220,
-          height: 220,
-          background: 'radial-gradient(ellipse at center, rgba(126,224,153,0.28) 0%, rgba(74,124,89,0.18) 40%, transparent 70%)',
-          filter: 'blur(18px)',
+          width: 260,
+          height: 260,
+          background: 'radial-gradient(ellipse at center, rgba(142,207,158,0.32) 0%, rgba(74,124,89,0.15) 45%, transparent 70%)',
+          filter: 'blur(24px)',
         }}
       />
 
