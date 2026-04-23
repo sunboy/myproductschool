@@ -357,7 +357,7 @@ export default async function DashboardPage() {
     : []
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 py-7">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7">
 
       <Suspense fallback={null}>
         <UpgradedBanner />
@@ -365,7 +365,7 @@ export default async function DashboardPage() {
 
       {/* State A — Calibrated */}
       {isCalibrated && (
-        <div className="grid gap-7" style={{ gridTemplateColumns: '1fr 340px' }}>
+        <div className="grid gap-7 grid-cols-1 lg:grid-cols-[1fr_340px]">
           {/* Main column */}
           <div className="flex flex-col gap-6 min-w-0">
             <HeroGreeterCard
@@ -412,7 +412,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Right rail */}
-          <aside className="flex flex-col gap-5">
+          <aside className="hidden lg:flex flex-col gap-5">
             {todaysPathSteps.length > 0 && (
               <TodaysPathCard steps={todaysPathSteps} completedCount={todaysPathCompleted} />
             )}

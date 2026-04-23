@@ -116,18 +116,12 @@ export default function ProgressPage() {
   const hasActivity = recentAttempts.length > 0 || recentInterviews.length > 0
 
   return (
-    <div
-      className="animate-fade-in-up"
-      style={{ maxWidth: 1440, margin: '0 auto', padding: '28px 32px 120px' }}
-    >
+    <div className="animate-fade-in-up max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-7 pb-28">
       {/* ── HERO + FLOW (merged) ─────────────────────────────── */}
-      <div style={{
-        background: 'linear-gradient(135deg, #1e3528 0%, #14241c 55%, #0e1a14 100%)',
-        borderRadius: 32,
-        padding: '48px 48px 40px',
-        position: 'relative', overflow: 'hidden',
-        marginBottom: 32,
-      }}>
+      <div
+        className="rounded-[32px] relative overflow-hidden mb-8 p-6 sm:p-9 md:p-12"
+        style={{ background: 'linear-gradient(135deg, #1e3528 0%, #14241c 55%, #0e1a14 100%)' }}
+      >
         {/* Dot grid bg */}
         <div aria-hidden style={{
           position: 'absolute', inset: 0,
@@ -151,7 +145,7 @@ export default function ProgressPage() {
           whiteSpace: 'nowrap', userSelect: 'none', pointerEvents: 'none',
         }}>FLOW</div>
 
-        <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: '1fr 1.1fr', gap: 48, alignItems: 'center' }}>
+        <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start lg:items-center">
           {/* Left — welcome + reflection + CTAs */}
           <div style={{ minWidth: 0 }}>
             <div style={{
@@ -217,7 +211,7 @@ export default function ProgressPage() {
             </div>
 
             {/* Inline stat strip */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 22 }}>
+            <div className="grid grid-cols-3 gap-2.5 mb-5">
               <HeroStat k="Certification" v={`${overallPct}%`} />
               <HeroStat k="Mastered" v={total > 0 ? `${mastered}/${total}` : '—'} />
               <HeroStat
@@ -257,7 +251,7 @@ export default function ProgressPage() {
           </div>
 
           {/* Right — FLOW move grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="grid grid-cols-2 gap-3">
             {flowMoves.map(m => (
               <div key={m.k} style={{
                 background: m.bg, borderRadius: 22, padding: '20px 18px',
@@ -308,17 +302,10 @@ export default function ProgressPage() {
             href="/progress/skill-ladder"
             linkLabel="See how these map to FLOW"
           />
-          <div style={{
-            background: 'var(--color-surface-container)',
-            borderRadius: 24,
-            padding: '32px 36px',
-            border: '1px solid var(--color-outline-variant)',
-            marginBottom: 48,
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: 40,
-            alignItems: 'center',
-          }}>
+          <div
+            className="rounded-3xl p-6 sm:p-8 md:p-9 border border-outline-variant mb-12 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 items-center"
+            style={{ background: 'var(--color-surface-container)' }}
+          >
             <div>
               <LearnerDNASection variant="embedded" />
             </div>
@@ -374,7 +361,7 @@ export default function ProgressPage() {
         marginBottom: 48,
       }}>
         {hasActivity ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Challenges */}
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
@@ -522,13 +509,10 @@ export default function ProgressPage() {
         href="/challenges"
         linkLabel="Browse all"
       />
-      <div style={{
-        background: 'linear-gradient(135deg, #1e3528 0%, #14241c 60%, #0e1a14 100%)',
-        borderRadius: 32,
-        padding: '40px 48px',
-        position: 'relative', overflow: 'hidden',
-        marginBottom: 48,
-      }}>
+      <div
+        className="rounded-[32px] relative overflow-hidden mb-12 p-6 sm:p-9 md:p-12"
+        style={{ background: 'linear-gradient(135deg, #1e3528 0%, #14241c 60%, #0e1a14 100%)' }}
+      >
         <div aria-hidden style={{
           position: 'absolute', right: -40, bottom: -80,
           fontFamily: 'var(--font-headline)', fontSize: 320, fontWeight: 800,
@@ -537,8 +521,8 @@ export default function ProgressPage() {
           whiteSpace: 'nowrap', userSelect: 'none', pointerEvents: 'none',
         }}>{masteredPct}%</div>
 
-        <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: 48, alignItems: 'center' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start lg:items-center">
+          <div className="grid grid-cols-3 gap-3">
             <CoverageStat label="Attempted" value={attempted} accent="#f3ede0" />
             <CoverageStat label="Mastered" value={mastered} accent="#7ee099" />
             <CoverageStat label="In range" value={inRange} accent="#c9e86e" />
@@ -588,7 +572,7 @@ export default function ProgressPage() {
         marginBottom: 48,
       }}>
         {growthSnapshot === null ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[1, 2].map(i => (
               <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div style={{ height: 12, width: 100, background: 'var(--color-surface-container-highest)', borderRadius: 4 }} className="animate-pulse" />
@@ -604,7 +588,7 @@ export default function ProgressPage() {
             </p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <GrowthPane
               eyebrow="First response"
               entry={growthSnapshot.first}
@@ -640,14 +624,10 @@ export default function ProgressPage() {
         href="/challenges"
         linkLabel="What counts"
       />
-      <div style={{
-        background: 'linear-gradient(135deg, #faf6f0 0%, #f0ece4 100%)',
-        borderRadius: 32,
-        padding: '36px 44px',
-        position: 'relative', overflow: 'hidden',
-        border: '1px solid var(--color-outline-variant)',
-        marginBottom: 24,
-      }}>
+      <div
+        className="rounded-[32px] relative overflow-hidden mb-6 p-6 sm:p-8 md:p-11 border border-outline-variant"
+        style={{ background: 'linear-gradient(135deg, #faf6f0 0%, #f0ece4 100%)' }}
+      >
         <div aria-hidden style={{
           position: 'absolute', right: -30, bottom: -60,
           fontFamily: 'var(--font-headline)', fontSize: 260, fontWeight: 800,
@@ -656,7 +636,7 @@ export default function ProgressPage() {
           whiteSpace: 'nowrap', userSelect: 'none', pointerEvents: 'none',
         }}>{overallPct}</div>
 
-        <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: '220px 1fr', gap: 40, alignItems: 'center' }}>
+        <div className="relative grid grid-cols-1 md:grid-cols-[220px_1fr] gap-8 md:gap-10 items-start md:items-center">
           {/* Badge */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
             <div style={{
@@ -691,7 +671,7 @@ export default function ProgressPage() {
 
           {/* Gates */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
               {/* Gate 1 */}
               <GateCard
                 icon="task_alt"
