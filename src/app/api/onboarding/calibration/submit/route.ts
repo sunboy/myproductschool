@@ -4,16 +4,9 @@ import { NextResponse } from 'next/server'
 import type { FlowMove } from '@/lib/types'
 import type { OptionQuality } from '@/lib/types'
 import { QUESTIONS } from '@/lib/calibration/questions'
+import { ARCHETYPE_OBSERVATIONS } from '@/lib/calibration/archetypes'
 import { IS_MOCK } from '@/lib/mock'
 
-interface CalibrationResponses {
-  frame?: string
-  list?: string
-  optimize?: string
-  win?: string
-}
-
-// Tier caps matching option-scorer.ts pattern but inlined for the calibration shape
 const TIER_CAPS: Record<OptionQuality, number> = {
   best: 3.0,
   good_but_incomplete: 2.75,
@@ -21,25 +14,23 @@ const TIER_CAPS: Record<OptionQuality, number> = {
   plausible_wrong: 0.5,
 }
 
-// Parse "Q1: A | Q2: C" → ['A', 'C']
-function parseAnswers(str: string | undefined): string[] {
-  if (!str) return []
-  return str.match(/Q\d+: ([A-D])/g)?.map(m => m.slice(-1)) ?? []
+// 4 questions: index 0=Frame, 1=List, 2=Optimize, 3=Win
+const MOVE_QUESTION_INDEX: Record<string, number> = {
+  frame: 0,
+  list: 1,
+  optimize: 2,
+  win: 3,
 }
 
-// Score a single MCQ answer for a given question index
-function scoreQuestion(questionIdx: number, selectedId: string): number {
-  const question = QUESTIONS[questionIdx]
+function scoreMove(move: string, selectedId: string): number {
+  const idx = MOVE_QUESTION_INDEX[move]
+  if (idx === undefined) return 0
+  const question = QUESTIONS[idx]
   if (!question) return 0
   const option = question.options.find(o => o.id === selectedId)
   if (!option) return 0
-  return TIER_CAPS[option.quality]
-}
-
-// Average 2 question scores and normalise to 0–100
-function scorePair(q1Score: number, q2Score: number): number {
-  const avg = (q1Score + q2Score) / 2
-  return Math.round((avg / 3.0) * 100)
+  const raw = TIER_CAPS[option.quality]
+  return Math.round((raw / 3.0) * 100)
 }
 
 function computePercentile(avg: number): number {
@@ -81,6 +72,7 @@ function scoreToLevel(score: number): number {
   return 1
 }
 
+// answers: { frame: 'A', list: 'C', optimize: 'B', win: 'A' }
 export async function POST(request: Request) {
   if (IS_MOCK) {
     return NextResponse.json({ attempt_id: 'mock-calibration-1' })
@@ -91,97 +83,95 @@ export async function POST(request: Request) {
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { responses, move, answers } = body as { responses?: CalibrationResponses; move?: string; answers?: Record<string, string> }
+  const { answers } = body as { answers: Record<string, string> }
 
-  // Support both full responses object and single-move submission
-  const resolvedResponses: CalibrationResponses = responses ?? {}
-  if (move && answers) {
-    resolvedResponses[move as keyof CalibrationResponses] = Object.values(answers).join('\n\n')
+  if (!answers || !answers.frame) {
+    return NextResponse.json({ error: 'answers object with frame/list/optimize/win is required' }, { status: 400 })
   }
 
-  if (!resolvedResponses.frame && !resolvedResponses.list && !resolvedResponses.optimize && !resolvedResponses.win) {
-    return NextResponse.json({ error: 'At least one FLOW move response is required' }, { status: 400 })
-  }
-
-  // ── Parse selected option IDs from each move string ──────────────────────
-  // Frame = questions 0,1 | List = 2,3 | Optimize = 4,5 | Win = 6,7
-  const frameIds    = parseAnswers(resolvedResponses.frame)
-  const listIds     = parseAnswers(resolvedResponses.list)
-  const optimizeIds = parseAnswers(resolvedResponses.optimize)
-  const winIds      = parseAnswers(resolvedResponses.win)
-
-  // ── Score each move ───────────────────────────────────────────────────────
   const scores = {
-    frame:    scorePair(scoreQuestion(0, frameIds[0]    ?? ''), scoreQuestion(1, frameIds[1]    ?? '')),
-    list:     scorePair(scoreQuestion(2, listIds[0]     ?? ''), scoreQuestion(3, listIds[1]     ?? '')),
-    optimize: scorePair(scoreQuestion(4, optimizeIds[0] ?? ''), scoreQuestion(5, optimizeIds[1] ?? '')),
-    win:      scorePair(scoreQuestion(6, winIds[0]      ?? ''), scoreQuestion(7, winIds[1]      ?? '')),
+    frame:    scoreMove('frame',    answers.frame    ?? ''),
+    list:     scoreMove('list',     answers.list     ?? ''),
+    optimize: scoreMove('optimize', answers.optimize ?? ''),
+    win:      scoreMove('win',      answers.win      ?? ''),
   }
 
   const avg = (scores.frame + scores.list + scores.optimize + scores.win) / 4
   const percentile = computePercentile(avg)
   const archetypeResult = deriveArchetype(scores)
+  const observation = ARCHETYPE_OBSERVATIONS[archetypeResult.name] ?? ''
 
   const adminClient = createAdminClient()
 
-  // ── a. Insert calibration attempt ─────────────────────────────────────────
-  const { data: attempt } = await adminClient
-    .from('calibration_attempts')
-    .insert({
-      user_id: user.id,
-      responses_json: resolvedResponses,
-      status: 'complete',
-      scores_json: scores,
-      percentile,
-    })
-    .select('id')
-    .single()
-
-  // ── b. Update profiles with archetype ────────────────────────────────────
-  await adminClient
-    .from('profiles')
-    .update({ archetype: archetypeResult.name, archetype_description: archetypeResult.description })
-    .eq('id', user.id)
-
-  // ── c. Upsert move_levels with calibration-derived starting levels ────────
-  const moves = ['frame', 'list', 'optimize', 'win'] as const
-  await adminClient
-    .from('move_levels')
-    .upsert(
-      moves.map(m => ({
+  const [attemptRes] = await Promise.all([
+    adminClient
+      .from('calibration_attempts')
+      .insert({
         user_id: user.id,
-        move: m as FlowMove,
-        level: scoreToLevel(scores[m]),
-        progress_pct: 0,
-        xp: 0,
-      })),
-      { onConflict: 'user_id,move' }
-    )
+        responses_json: answers,
+        status: 'complete',
+        scores_json: scores,
+        percentile,
+      })
+      .select('id')
+      .single(),
 
-  // ── d. Seed learner_competencies at neutral 50 ───────────────────────────
-  const ALL_COMPETENCIES = [
-    'motivation_theory', 'cognitive_empathy', 'taste',
-    'strategic_thinking', 'creative_execution', 'domain_expertise',
-  ]
-  await adminClient
-    .from('learner_competencies')
-    .upsert(
-      ALL_COMPETENCIES.map(comp => ({
-        user_id: user.id,
-        competency: comp,
-        score: 50,
-        total_attempts: 0,
-        trend: 'steady',
-        trend_slope: 0,
-        last_updated: new Date().toISOString(),
-      })),
-      { onConflict: 'user_id,competency' }
-    )
+    adminClient
+      .from('profiles')
+      .update({ archetype: archetypeResult.name, archetype_description: archetypeResult.description })
+      .eq('id', user.id),
+
+    adminClient
+      .from('move_levels')
+      .upsert(
+        (['frame', 'list', 'optimize', 'win'] as const).map(m => ({
+          user_id: user.id,
+          move: m as FlowMove,
+          level: scoreToLevel(scores[m]),
+          progress_pct: 0,
+          xp: 0,
+        })),
+        { onConflict: 'user_id,move' }
+      ),
+
+    adminClient
+      .from('learner_competencies')
+      .upsert(
+        ['motivation_theory', 'cognitive_empathy', 'taste', 'strategic_thinking', 'creative_execution', 'domain_expertise'].map(comp => ({
+          user_id: user.id,
+          competency: comp,
+          score: 50,
+          total_attempts: 0,
+          trend: 'steady',
+          trend_slope: 0,
+          last_updated: new Date().toISOString(),
+        })),
+        { onConflict: 'user_id,competency' }
+      ),
+
+    observation
+      ? adminClient.from('luma_context').insert({
+          user_id: user.id,
+          context_type: 'calibration',
+          content: observation,
+          is_active: true,
+          created_at: new Date().toISOString(),
+        })
+      : Promise.resolve(),
+  ])
 
   return NextResponse.json({
-    attempt_id: attempt?.id ?? 'scored',
+    attempt_id: attemptRes.data?.id ?? 'scored',
     scores,
     percentile,
     archetype: archetypeResult.name,
+    archetype_description: archetypeResult.description,
+    starting_levels: {
+      frame: scoreToLevel(scores.frame),
+      list: scoreToLevel(scores.list),
+      optimize: scoreToLevel(scores.optimize),
+      win: scoreToLevel(scores.win),
+    },
+    luma_observation: observation,
   })
 }
