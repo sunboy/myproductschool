@@ -214,17 +214,8 @@ function PersonalisedPlanCard({ plan }: { plan: PersonalisedPlan }) {
           fontSize: 10, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase',
           color: '#7ee099',
         }}>
-          <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#7ee099', flexShrink: 0 }} />
-          Your plan
-        </div>
-
-        {/* Move eyebrow */}
-        <div style={{
-          fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
-          color: 'rgba(126,224,153,0.65)',
-          marginBottom: 5,
-        }}>
-          {moveLabel}
+          <span className="material-symbols-outlined" style={{ fontSize: 11, fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+          Your plan, built by Luma
         </div>
 
         {/* Title */}
