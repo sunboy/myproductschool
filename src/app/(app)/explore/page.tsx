@@ -242,7 +242,7 @@ export default async function ExplorePage() {
             <p style={{ margin: '0 0 22px', fontSize: 15, lineHeight: 1.55, color: 'rgba(243,237,224,0.72)', maxWidth: 520 }}>
               Real scenarios from real companies. Pick a paradigm, follow a structured plan, or let Luma choose for you.
             </p>
-            <div style={{ display: 'flex', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               <Link
                 href="/challenges"
                 style={{
@@ -268,42 +268,23 @@ export default async function ExplorePage() {
                 <span className="material-symbols-outlined" style={{ fontSize: 18 }}>route</span>
                 View study plans
               </Link>
+              {personalisedPlan && (
+                <Link
+                  href={`/explore/plans/${personalisedPlan.slug}`}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                    background: 'rgba(126,224,153,0.12)',
+                    border: '1px solid rgba(126,224,153,0.25)',
+                    padding: '10px 16px', borderRadius: 999,
+                    fontWeight: 700, fontSize: 13, textDecoration: 'none',
+                    color: '#7ee099',
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: 15, fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+                  Your plan, built by Luma
+                </Link>
+              )}
             </div>
-
-            {personalisedPlan && (
-              <Link
-                href={`/explore/plans/${personalisedPlan.slug}`}
-                style={{
-                  marginTop: 20,
-                  display: 'inline-flex', alignItems: 'center', gap: 12,
-                  background: 'rgba(126,224,153,0.10)',
-                  border: '1px solid rgba(126,224,153,0.22)',
-                  borderRadius: 16,
-                  padding: '12px 18px',
-                  textDecoration: 'none',
-                  maxWidth: 460,
-                }}
-              >
-                <div style={{
-                  width: 32, height: 32, borderRadius: 10, flexShrink: 0,
-                  background: 'rgba(126,224,153,0.18)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#7ee099', fontVariationSettings: "'FILL' 1" }}>
-                    auto_awesome
-                  </span>
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(126,224,153,0.7)', marginBottom: 2 }}>
-                    Your plan, built by Luma
-                  </div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#f3ede0', lineHeight: 1.2 }}>
-                    {personalisedPlan.title}
-                  </div>
-                </div>
-                <span className="material-symbols-outlined" style={{ fontSize: 16, color: 'rgba(243,237,224,0.45)', flexShrink: 0 }}>arrow_forward</span>
-              </Link>
-            )}
           </div>
 
         </div>
