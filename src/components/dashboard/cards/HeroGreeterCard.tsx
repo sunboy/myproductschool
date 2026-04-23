@@ -35,7 +35,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
     <div
       className="relative rounded-3xl overflow-hidden"
       style={{
-        background: 'linear-gradient(to right, #152c1e 0%, #1e3d2c 40%, #2d5240 75%, #3e6a4b 100%)',
+        background: 'linear-gradient(to right, #0f2118 0%, #3e6a4b 100%)',
         border: '1px solid rgba(255,255,255,0.07)',
         minHeight: 220,
         color: '#f3ede0',
