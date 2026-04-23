@@ -154,7 +154,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
       {/* Stat strip */}
       <div
         className="relative mx-7 mt-4 pt-4 mb-5 grid grid-cols-4 gap-4"
-        style={{ borderTop: '1px dashed rgba(255,255,255,0.12)' }}
+        style={{}}
       >
         {[
           {
