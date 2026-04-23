@@ -65,7 +65,7 @@ export function StepQuestion({
 
   return (
     <div className="space-y-4">
-      <p className="font-headline text-2xl text-on-surface leading-snug" style={{ letterSpacing: '-0.02em', fontWeight: 800 }}>{question.question_text}</p>
+      <p className="font-label text-2xl text-on-surface leading-snug" style={{ letterSpacing: '-0.02em', fontWeight: 800 }}>{question.question_text}</p>
 
       {showOptions && (
         <div className="space-y-2">
