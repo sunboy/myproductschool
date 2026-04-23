@@ -97,63 +97,63 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
         }}
       />
 
-      <div className="relative grid items-stretch p-7" style={{ gridTemplateColumns: '1fr auto', gap: '1.5rem' }}>
-        <div className="flex flex-col justify-center">
-          {/* Luma badge */}
-          <div
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-label font-semibold tracking-wider uppercase mb-3 w-fit"
+      {/* Mascot — absolutely positioned so it never affects layout flow */}
+      <div className="absolute bottom-0 right-7 hidden lg:block" aria-hidden>
+        <MaskoAvatar size={196} style={{ filter: 'drop-shadow(0 8px 32px rgba(126,224,153,0.35)) drop-shadow(0 2px 8px rgba(0,0,0,0.5))' }} />
+      </div>
+
+      <div className="relative p-7 pb-0" style={{ paddingRight: 'max(1.75rem, 220px)' }}>
+        {/* Luma badge */}
+        <div
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-label font-semibold tracking-wider uppercase mb-3"
+          style={{
+            background: 'rgba(255,255,255,0.08)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            color: '#cfe3d3',
+          }}
+        >
+          <span
+            className="w-1.5 h-1.5 rounded-full animate-pulse"
+            style={{ background: '#7ee099', boxShadow: '0 0 0 4px rgba(126,224,153,0.2)' }}
+          />
+          Luma · Your coach
+        </div>
+        <h1
+          className="font-headline text-[34px] leading-tight font-medium tracking-tight mb-2.5"
+          suppressHydrationWarning
+        >
+          {timeOfDay()}, {displayName}.
+        </h1>
+        <p key={idx} className="animate-fade-up text-[15.5px] opacity-80" style={{ lineHeight: '1.5', height: '1.5em' }}>
+          {lines[idx]}
+        </p>
+        <div className="flex gap-2.5 mt-5">
+          <Link
+            href="/challenges"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-full font-label font-bold text-sm"
+            style={{ background: '#f3ede0', color: '#1e1b14' }}
+          >
+            <span className="material-symbols-outlined text-[18px]">play_arrow</span>
+            Start today&apos;s session
+          </Link>
+          <Link
+            href="/explore"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-full font-label font-bold text-sm"
             style={{
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              color: '#cfe3d3',
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.14)',
+              color: '#f3ede0',
             }}
           >
-            <span
-              className="w-1.5 h-1.5 rounded-full animate-pulse"
-              style={{ background: '#7ee099', boxShadow: '0 0 0 4px rgba(126,224,153,0.2)' }}
-            />
-            Luma · Your coach
-          </div>
-          <h1
-            className="font-headline text-[34px] leading-tight font-medium tracking-tight mb-2.5"
-            suppressHydrationWarning
-          >
-            {timeOfDay()}, {displayName}.
-          </h1>
-          <p key={idx} className="animate-fade-up text-[15.5px] opacity-80" style={{ lineHeight: '1.5', height: '1.5em' }}>
-            {lines[idx]}
-          </p>
-          <div className="flex gap-2.5 mt-5">
-            <Link
-              href="/challenges"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full font-label font-bold text-sm"
-              style={{ background: '#f3ede0', color: '#1e1b14' }}
-            >
-              <span className="material-symbols-outlined text-[18px]">play_arrow</span>
-              Start today&apos;s session
-            </Link>
-            <Link
-              href="/explore"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full font-label font-bold text-sm"
-              style={{
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.14)',
-                color: '#f3ede0',
-              }}
-            >
-              <span className="material-symbols-outlined text-[18px]">menu_book</span>
-              Open study plan
-            </Link>
-          </div>
-        </div>
-        <div className="relative hidden lg:flex items-end justify-center" style={{ width: 200 }}>
-          <MaskoAvatar size={196} className="relative" style={{ filter: 'drop-shadow(0 8px 32px rgba(126,224,153,0.35)) drop-shadow(0 2px 8px rgba(0,0,0,0.5))' }} />
+            <span className="material-symbols-outlined text-[18px]">menu_book</span>
+            Open study plan
+          </Link>
         </div>
       </div>
 
       {/* Stat strip */}
       <div
-        className="relative mt-6 pt-5 grid grid-cols-4 gap-6"
+        className="relative mx-7 mt-6 pt-5 mb-7 grid grid-cols-4 gap-6"
         style={{ borderTop: '1px dashed rgba(255,255,255,0.12)' }}
       >
         {[
