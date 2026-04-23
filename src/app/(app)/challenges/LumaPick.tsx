@@ -43,7 +43,7 @@ export function LumaPick() {
       <LumaGlyph size={40} state="speaking" className="text-primary flex-shrink-0" />
       <div>
         <p className="text-sm font-bold text-primary">Luma&apos;s Pick: {data.challenge.title}</p>
-        <p className="text-xs text-on-surface-variant">{data.tip}</p>
+        <p className="text-xs text-on-surface-variant font-semibold">{data.tip}</p>
       </div>
       <Link
         href={`/workspace/challenges/${data.challenge.slug ?? data.challenge.id}`}

@@ -202,7 +202,7 @@ export function ChallengeCard({
             </p>
           </Link>
           {challenge.prompt_text && (
-            <p className="text-[11px] text-on-surface-variant font-body truncate mt-0.5">
+            <p className="text-[11px] text-on-surface-variant font-body font-semibold truncate mt-0.5">
               {challenge.prompt_text}
             </p>
           )}

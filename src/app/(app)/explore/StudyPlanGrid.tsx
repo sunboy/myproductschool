@@ -124,7 +124,7 @@ function StudyPlanCard({ pl }: { pl: PlanItem }) {
         </div>
 
         {/* Sub label */}
-        <div style={{ fontSize: 12.5, color: 'rgba(0,0,0,0.55)', lineHeight: 1.4 }}>
+        <div style={{ fontSize: 12.5, fontWeight: 600, color: 'rgba(0,0,0,0.55)', lineHeight: 1.4 }}>
           {pl.sub}
         </div>
       </div>
@@ -231,7 +231,7 @@ function PersonalisedPlanCard({ plan }: { plan: PersonalisedPlan }) {
         {/* Description */}
         {plan.description && (
           <div style={{
-            fontSize: 12.5, color: 'rgba(243,237,224,0.55)', lineHeight: 1.4,
+            fontSize: 12.5, fontWeight: 600, color: 'rgba(243,237,224,0.55)', lineHeight: 1.4,
             display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
           }}>
