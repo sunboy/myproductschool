@@ -108,10 +108,22 @@ body {
     radial-gradient(1200px 600px at 15% -10%, rgba(74, 124, 89, 0.06), transparent 60%),
     radial-gradient(1000px 500px at 110% 10%, rgba(201, 147, 58, 0.06), transparent 60%);
   font-family: var(--font-nunito-sans, 'Nunito Sans', sans-serif);
+  font-weight: 500;
   color: #2e3230;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Bump Raleway body/label weights up ~1 step — headlines excluded */
+:not(.font-headline) {
+  &.font-normal, &.font-regular { font-weight: 500; }
+  &.font-medium                 { font-weight: 600; }
+  &.font-semibold               { font-weight: 700; }
+  &.font-bold                   { font-weight: 800; }
+}
+.font-headline {
+  font-weight: revert;
 }
 
 /* Grain overlay — subtle paper feel (from HackProduct redesign handoff) */

@@ -325,7 +325,7 @@ export default async function DashboardPage() {
         icon: 'bolt',
         done: doneQuickTake,
         active: !doneQuickTake,
-        href: undefined,
+        href: quickTakePrompt ? `/workspace/challenges/${quickTakePrompt.slug ?? quickTakePrompt.id}` : '/challenges',
       },
       {
         label: 'Core challenge',
@@ -372,6 +372,9 @@ export default async function DashboardPage() {
               displayName={displayName}
               streakDays={streakDays}
               xpTotal={xpTotal}
+              nextMilestoneMove={capitalize(allMoveLevels[0]?.move ?? 'Frame')}
+              nextMilestoneLevel={(allMoveLevels[0]?.level ?? 1) + 1}
+              dailyDone={dailyDone}
             />
 
             {/* Resume / Quick Take row */}

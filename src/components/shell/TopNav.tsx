@@ -148,14 +148,9 @@ export function TopNav() {
       <div className="mx-auto max-w-[1440px] px-8 py-3 flex items-center gap-8">
 
         {/* Column 1: Brand */}
-        <Link href="/dashboard" className="flex items-center gap-[10px] no-underline">
-          <LogoMark />
-          <div
-            className="font-headline font-bold text-[18px] tracking-[-0.01em] hidden sm:block"
-            style={{ color: 'var(--color-on-surface)' }}
-          >
-            HackProduct
-          </div>
+        <Link href="/dashboard" className="flex items-center no-underline shrink-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/wordmark.png" alt="HackProduct" className="h-[84px]" />
         </Link>
 
         {/* Column 2: Nav pills (centered) */}

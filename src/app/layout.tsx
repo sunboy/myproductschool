@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Nunito_Sans, Literata } from "next/font/google";
+import { Raleway, Literata } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
-const nunitoSans = Nunito_Sans({
+const raleway = Raleway({
   variable: "--font-nunito-sans",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800"],
@@ -48,10 +48,11 @@ export const metadata: Metadata = {
   ],
   icons: {
     icon: [
-      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon-16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/images/logo.png', sizes: '512x512', type: 'image/png' },
+      { url: '/images/logo.png', sizes: '192x192', type: 'image/png' },
+      { url: '/images/logo.png', sizes: '32x32', type: 'image/png' },
     ],
-    apple: '/apple-touch-icon.png',
+    apple: '/images/logo.png',
   },
   openGraph: {
     title: 'HackProduct | Master Product Sense for Tech Careers',
@@ -90,7 +91,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${nunitoSans.variable} ${literata.variable} h-full antialiased`}>
+    <html lang="en" className={`${raleway.variable} ${literata.variable} h-full antialiased`}>
       <head>
         {/* Material Symbols Outlined icon font */}
         <link
