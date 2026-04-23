@@ -16,6 +16,7 @@ interface Results {
   luma_observation: string
   starting_levels: Record<string, number>
   scores: Record<string, number>
+  personalised_plan_slug: string | null
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -290,6 +291,7 @@ export default function CalibrationPage() {
           luma_observation: data.luma_observation,
           starting_levels: data.starting_levels,
           scores: data.scores,
+          personalised_plan_slug: data.personalised_plan_slug ?? null,
         })
       }
     }).catch(() => {})
@@ -346,7 +348,12 @@ export default function CalibrationPage() {
 
   async function handleComplete(path: 'challenge' | 'plan') {
     try { await fetch('/api/onboarding/complete', { method: 'POST' }) } catch {}
-    router.push(path === 'plan' ? '/explore/plans' : '/dashboard')
+    if (path === 'plan') {
+      const slug = results?.personalised_plan_slug
+      router.push(slug ? `/explore/plans/${slug}` : '/explore/plans')
+    } else {
+      router.push('/dashboard')
+    }
   }
 
   return (

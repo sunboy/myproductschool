@@ -33,13 +33,22 @@ function scoreMove(move: string, selectedId: string): number {
   return Math.round((raw / 3.0) * 100)
 }
 
-function computePercentile(avg: number): number {
-  if (avg >= 85) return 92
-  if (avg >= 75) return 78
-  if (avg >= 65) return 61
-  if (avg >= 55) return 44
-  if (avg >= 45) return 28
-  return 15
+async function computeRealPercentile(adminClient: ReturnType<typeof createAdminClient>, userAvg: number): Promise<number> {
+  const { data: attempts } = await adminClient
+    .from('calibration_attempts')
+    .select('scores_json')
+    .eq('status', 'complete')
+
+  if (!attempts || attempts.length === 0) return 50
+
+  const avgs = attempts.map(a => {
+    const s = a.scores_json as Record<string, number>
+    return ((s.frame ?? 0) + (s.list ?? 0) + (s.optimize ?? 0) + (s.win ?? 0)) / 4
+  })
+
+  const belowOrEqual = avgs.filter(avg => avg <= userAvg).length
+  const percentile = Math.round((belowOrEqual / avgs.length) * 100)
+  return Math.max(1, Math.min(99, percentile))
 }
 
 const ARCHETYPES: Record<string, { name: string; description: string }> = {
@@ -72,10 +81,23 @@ function scoreToLevel(score: number): number {
   return 1
 }
 
+function weakestMove(scores: Record<string, number>): FlowMove {
+  return (Object.entries(scores).sort(([, a], [, b]) => a - b)[0][0]) as FlowMove
+}
+
 // answers: { frame: 'A', list: 'C', optimize: 'B', win: 'A' }
 export async function POST(request: Request) {
   if (IS_MOCK) {
-    return NextResponse.json({ attempt_id: 'mock-calibration-1' })
+    return NextResponse.json({
+      attempt_id: 'mock-calibration-1',
+      scores: { frame: 72, list: 65, optimize: 58, win: 81 },
+      percentile: 78,
+      archetype: 'The Strategist',
+      archetype_description: 'You frame problems sharply and land recommendations with conviction.',
+      starting_levels: { frame: 3, list: 2, optimize: 2, win: 3 },
+      luma_observation: "You think in narratives and outcomes first. That's rare.",
+      personalised_plan_slug: 'optimize-under-pressure',
+    })
   }
 
   const supabase = await createClient()
@@ -97,13 +119,14 @@ export async function POST(request: Request) {
   }
 
   const avg = (scores.frame + scores.list + scores.optimize + scores.win) / 4
-  const percentile = computePercentile(avg)
   const archetypeResult = deriveArchetype(scores)
   const observation = ARCHETYPE_OBSERVATIONS[archetypeResult.name] ?? ''
+  const weak = weakestMove(scores)
 
   const adminClient = createAdminClient()
 
-  const [attemptRes] = await Promise.all([
+  // Insert attempt first so it's counted in percentile
+  const [attemptRes, percentile] = await Promise.all([
     adminClient
       .from('calibration_attempts')
       .insert({
@@ -111,10 +134,28 @@ export async function POST(request: Request) {
         responses_json: answers,
         status: 'complete',
         scores_json: scores,
-        percentile,
+        percentile: 50, // placeholder, updated below
       })
       .select('id')
       .single(),
+    computeRealPercentile(adminClient, avg),
+  ])
+
+  // Find personalised plan for weakest move + update percentile in parallel with remaining writes
+  const [personalisedPlanResult] = await Promise.all([
+    adminClient
+      .from('study_plans')
+      .select('id, slug')
+      .eq('move_tag', weak)
+      .eq('is_published', true)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+
+    // Update the attempt with real percentile
+    attemptRes.data?.id
+      ? adminClient.from('calibration_attempts').update({ percentile }).eq('id', attemptRes.data.id)
+      : Promise.resolve(),
 
     adminClient
       .from('profiles')
@@ -160,6 +201,17 @@ export async function POST(request: Request) {
       : Promise.resolve(),
   ])
 
+  // Enroll user in their personalised plan
+  const personalisedPlan = personalisedPlanResult.data
+  if (personalisedPlan) {
+    await adminClient
+      .from('user_study_plan_enrollments')
+      .upsert(
+        { user_id: user.id, plan_id: personalisedPlan.id },
+        { onConflict: 'user_id,plan_id' }
+      )
+  }
+
   return NextResponse.json({
     attempt_id: attemptRes.data?.id ?? 'scored',
     scores,
@@ -173,5 +225,6 @@ export async function POST(request: Request) {
       win: scoreToLevel(scores.win),
     },
     luma_observation: observation,
+    personalised_plan_slug: personalisedPlan?.slug ?? null,
   })
 }
