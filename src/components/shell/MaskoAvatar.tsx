@@ -1,11 +1,14 @@
 'use client'
 
+import type { CSSProperties } from 'react'
+
 interface MaskoAvatarProps {
   size?: number
   className?: string
+  style?: CSSProperties
 }
 
-export function MaskoAvatar({ size = 120, className = '' }: MaskoAvatarProps) {
+export function MaskoAvatar({ size = 120, className = '', style }: MaskoAvatarProps) {
   return (
     <video
       autoPlay
@@ -15,7 +18,7 @@ export function MaskoAvatar({ size = 120, className = '' }: MaskoAvatarProps) {
       width={size}
       height={size}
       className={className}
-      style={{ objectFit: 'contain' }}
+      style={{ objectFit: 'contain', ...style }}
     >
       <source
         src="https://assets.masko.ai/abe42b/gradie-1e03/enthusiastic-wave-c1ee6c4e.webm"

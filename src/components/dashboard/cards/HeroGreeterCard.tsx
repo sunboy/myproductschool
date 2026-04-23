@@ -33,40 +33,84 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
 
   return (
     <div
-      className="relative rounded-3xl p-7 overflow-hidden"
+      className="relative rounded-3xl overflow-hidden"
       style={{
-        background: 'linear-gradient(135deg, #3e6a4b 0%, #264a34 60%, #1d3a26 100%)',
-        border: '1px solid rgba(255,255,255,0.06)',
-        minHeight: 200,
+        background: 'linear-gradient(135deg, #2d5240 0%, #1e3d2c 55%, #152c1e 100%)',
+        border: '1px solid rgba(255,255,255,0.07)',
+        minHeight: 220,
         color: '#f3ede0',
       }}
     >
-      {/* Ambient glow */}
+      {/* Noise texture overlay */}
+      <svg aria-hidden className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.06]" style={{ mixBlendMode: 'soft-light' }}>
+        <filter id="hero-noise">
+          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#hero-noise)" />
+      </svg>
+
+      {/* Left amber warmth */}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
         style={{
-          background:
-            'radial-gradient(420px 260px at 80% 50%, rgba(191,240,199,0.22), transparent 60%), radial-gradient(300px 200px at 20% 90%, rgba(201,147,58,0.18), transparent 60%)',
-        }}
-      />
-      {/* Dot grid */}
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none opacity-70"
-        style={{
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)',
-          backgroundSize: '18px 18px',
-          maskImage: 'linear-gradient(to right, black 30%, transparent 90%)',
-          WebkitMaskImage: 'linear-gradient(to right, black 30%, transparent 90%)',
+          background: 'radial-gradient(500px 320px at -5% 110%, rgba(201,147,58,0.22), transparent 55%)',
         }}
       />
 
-      <div className="relative grid gap-6 items-center" style={{ gridTemplateColumns: '1fr auto' }}>
-        <div>
+      {/* Right mascot spotlight — dark vignette that frames the character */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none hidden lg:block"
+        style={{
+          background:
+            'radial-gradient(320px 380px at 92% 50%, rgba(10,26,16,0.55) 0%, transparent 70%)',
+        }}
+      />
+      {/* Mascot halo — bright green bloom behind the character */}
+      <div
+        aria-hidden
+        className="absolute pointer-events-none hidden lg:block"
+        style={{
+          right: 24,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: 220,
+          height: 220,
+          background: 'radial-gradient(ellipse at center, rgba(126,224,153,0.28) 0%, rgba(74,124,89,0.18) 40%, transparent 70%)',
+          filter: 'blur(18px)',
+        }}
+      />
+
+      {/* Diagonal stripe texture — subtle, right-side only */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none opacity-[0.04] hidden lg:block"
+        style={{
+          backgroundImage: 'repeating-linear-gradient(55deg, rgba(255,255,255,0.8) 0px, rgba(255,255,255,0.8) 1px, transparent 1px, transparent 18px)',
+          maskImage: 'linear-gradient(to left, black 0%, transparent 50%)',
+          WebkitMaskImage: 'linear-gradient(to left, black 0%, transparent 50%)',
+        }}
+      />
+
+      {/* Dot grid — left content area */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none opacity-60"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px)',
+          backgroundSize: '20px 20px',
+          maskImage: 'linear-gradient(to right, black 0%, transparent 55%)',
+          WebkitMaskImage: 'linear-gradient(to right, black 0%, transparent 55%)',
+        }}
+      />
+
+      <div className="relative grid items-stretch p-7" style={{ gridTemplateColumns: '1fr auto', gap: '1.5rem' }}>
+        <div className="flex flex-col justify-center">
           {/* Luma badge */}
           <div
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-label font-semibold tracking-wider uppercase mb-3"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-label font-semibold tracking-wider uppercase mb-3 w-fit"
             style={{
               background: 'rgba(255,255,255,0.08)',
               border: '1px solid rgba(255,255,255,0.12)',
@@ -111,16 +155,8 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
             </Link>
           </div>
         </div>
-        <div className="relative hidden lg:block self-end">
-          <div
-            aria-hidden
-            className="absolute inset-0 pointer-events-none blur-md"
-            style={{
-              background:
-                'radial-gradient(140px 140px at 50% 60%, rgba(191,240,199,0.3), transparent 70%)',
-            }}
-          />
-          <MaskoAvatar size={140} className="relative drop-shadow-xl" />
+        <div className="relative hidden lg:flex items-end justify-center" style={{ width: 200 }}>
+          <MaskoAvatar size={196} className="relative" style={{ filter: 'drop-shadow(0 8px 32px rgba(126,224,153,0.35)) drop-shadow(0 2px 8px rgba(0,0,0,0.5))' }} />
         </div>
       </div>
 
