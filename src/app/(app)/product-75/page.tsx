@@ -199,7 +199,7 @@ export default async function Product75Page() {
                   <h3 className="font-headline font-semibold text-[16px] text-on-surface min-w-[140px] flex-shrink-0">
                     {concept.title}
                   </h3>
-                  <p className="font-body text-[#74796e] text-[14px] truncate">
+                  <p className="font-body text-on-surface-variant text-[14px] truncate">
                     {concept.definition}
                   </p>
                 </div>

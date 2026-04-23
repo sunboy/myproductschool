@@ -42,6 +42,15 @@ const MOCK_METRICS = [
 const GUIDED_MAX_CHARS  = 1200
 const FREEFORM_MAX_CHARS = 2000
 
+const FLOW_STAGES = [
+  { k: 'Frame',    icon: 'center_focus_strong' },
+  { k: 'List',     icon: 'format_list_bulleted' },
+  { k: 'Optimize', icon: 'tune' },
+  { k: 'Win',      icon: 'emoji_events' },
+]
+
+const CONFIDENCE_LEVELS = ['Developing', 'Solid', 'Strong', 'Expert']
+
 const COACHING_PROMPTS: Record<number, { thought: string; tip: string }> = {
   0: {
     thought: 'Don\'t restate the symptom. Dig into what changed and why. What\'s the underlying tension between users and the product?',
@@ -89,6 +98,10 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
   const [inputMode, setInputMode]         = useState<'text' | 'options'>('text')
   const [selectedOptions, setSelectedOptions] = useState<Set<number>>(new Set())
   const [bookmarked, setBookmarked]       = useState(false)
+  const [confidence, setConfidence]       = useState<string | null>(null)
+  const [leftWidth, setLeftWidth]         = useState(40) // percent — matches w-2/5 default
+  const containerRef = useRef<HTMLDivElement>(null)
+  const dragging     = useRef(false)
 
   const { steps } = useSteps(challenge.id)
   const scaffoldOptions = steps[activeStep]?.scaffold_options ?? []
@@ -111,6 +124,31 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
   useEffect(() => {
     const t = setInterval(() => setTick(n => n + 1), 60_000)
     return () => clearInterval(t)
+  }, [])
+
+  // Resizable divider
+  function onDividerMouseDown() {
+    dragging.current = true
+    document.body.style.cursor = 'col-resize'
+  }
+
+  useEffect(() => {
+    function onMove(e: MouseEvent) {
+      if (!dragging.current || !containerRef.current) return
+      const rect = containerRef.current.getBoundingClientRect()
+      const pct = ((e.clientX - rect.left) / rect.width) * 100
+      setLeftWidth(Math.max(28, Math.min(72, pct)))
+    }
+    function onUp() {
+      dragging.current = false
+      document.body.style.cursor = ''
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+    return () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
   }, [])
 
   const currentResponse = mode === 'guided' ? (responses[activeStep] ?? '') : freeformResponse
@@ -323,10 +361,45 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
           onToggleFramework={() => setFrameworkOpen(f => !f)}
         />
       ) : (
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden">
 
-        {/* ── LEFT PANE — Scenario (w-2/5) ─────────────────── */}
-        <section className="w-2/5 bg-surface-container-lowest border-r border-outline-variant flex flex-col overflow-y-auto p-6">
+        {/* FLOW stage tabs — above the two-pane split */}
+        <div className="flex items-center gap-1 px-4 py-2 border-b border-outline-variant bg-surface shrink-0">
+          {FLOW_STAGES.map((s, i) => {
+            const stageIdx = activeStep
+            const done   = i < stageIdx
+            const active = i === stageIdx
+            return (
+              <button
+                key={s.k}
+                onClick={() => setActiveStep(i)}
+                className={[
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-label font-semibold transition-all',
+                  active ? 'bg-primary-container text-on-primary-container' :
+                  done   ? 'text-primary' :
+                           'text-on-surface-variant hover:text-on-surface',
+                ].join(' ')}
+              >
+                <span
+                  className="material-symbols-outlined text-[16px]"
+                  style={{ fontVariationSettings: (active || done) ? "'FILL' 1" : "'FILL' 0" }}
+                >
+                  {done ? 'check_circle' : s.icon}
+                </span>
+                {s.k}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Two-pane split */}
+        <div ref={containerRef} className="flex-1 flex overflow-hidden">
+
+        {/* ── LEFT PANE — Scenario ─────────────────── */}
+        <section
+          className="bg-surface-container-lowest border-r border-outline-variant flex flex-col overflow-y-auto p-6 shrink-0"
+          style={{ width: `${leftWidth}%` }}
+        >
 
           {/* Title + bookmark */}
           <div className="flex items-start justify-between mb-4">
@@ -361,6 +434,12 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
             <div className="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent" />
           </div>
         </section>
+
+        {/* Resizable divider */}
+        <div
+          onMouseDown={onDividerMouseDown}
+          className="w-1 bg-outline-variant hover:bg-primary cursor-col-resize shrink-0 transition-colors"
+        />
 
         {/* ── RIGHT PANE — Answer Workspace (flex-1) ───────── */}
         <section className="flex-1 bg-surface flex flex-col overflow-hidden relative">
@@ -592,6 +671,31 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
             </div>
           </div>
 
+          {/* Confidence dock */}
+          <div className="flex items-center gap-2 flex-wrap p-4 border-t border-outline-variant bg-surface-container-low shrink-0">
+            <span className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant mr-2">Confidence</span>
+            {CONFIDENCE_LEVELS.map((c, i) => (
+              <button
+                key={c}
+                onClick={() => setConfidence(c)}
+                className={[
+                  'px-3 py-1.5 rounded-full text-xs font-label font-semibold transition-all border',
+                  confidence === c
+                    ? 'bg-primary-container text-on-primary-container border-transparent'
+                    : 'text-on-surface-variant border-outline-variant hover:bg-surface-container',
+                ].join(' ')}
+              >
+                {i === 3 && (
+                  <span
+                    className="material-symbols-outlined text-[14px] mr-0.5"
+                    style={{ verticalAlign: 'middle', fontVariationSettings: "'FILL' 1" }}
+                  >verified</span>
+                )}
+                {c}
+              </button>
+            ))}
+          </div>
+
           {/* Luma Coaching Strip (bottom) */}
           <div className="bg-primary-fixed/30 border-t border-primary/10 px-6 py-3 flex items-center gap-4 flex-shrink-0">
             <LumaGlyph size={28} state="speaking" className="text-primary flex-shrink-0" />
@@ -604,6 +708,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
             </Link>
           </div>
         </section>
+        </div>
       </div>
       )}
     </div>

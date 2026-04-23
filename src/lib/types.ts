@@ -175,6 +175,8 @@ export interface ChallengeWithDomain extends ChallengePrompt {
   best_score: number | null
   is_completed: boolean
   is_in_progress?: boolean
+  company_tags?: string[]
+  relevant_roles?: string[]
 }
 
 // ── Failure Pattern Detection ─────────────────────────────
@@ -527,7 +529,7 @@ export interface Challenge {
   difficulty: DifficultyV2; estimated_minutes: number
   primary_competencies: string[]; secondary_competencies: string[]
   frameworks: string[]; relevant_roles: string[]; company_tags: string[]; tags: string[]
-  is_published: boolean; is_calibration: boolean; is_premium: boolean; created_at: string
+  is_published: boolean; is_calibration: boolean; is_premium: boolean; is_featured: boolean; created_at: string
   // Consolidated columns (from challenge_prompts / autopsy_challenges)
   prompt_text: string | null
   domain_id: string | null
@@ -838,6 +840,114 @@ export interface IllustrationConfig {
   animationTrigger: 'onVisible' | 'loop'
 }
 
+export interface AarrrStageMetric { value: string; label: string }
+export interface AarrrWarRoomRow { role: string; insight: string }
+
+// ── AARRR Stage v2 — rich content schema ─────────────────────────────────────
+
+export interface AarrrTransition {
+  text: string
+}
+
+export interface AarrrPhoneMockup {
+  type: 'phone_mockup'
+  label: string
+}
+
+export interface AarrrCallout {
+  text: string
+  label?: string
+}
+
+export interface AarrrDataTable {
+  label: string
+  columns: string[]
+  rows: string[][]
+}
+
+export interface AarrrMetricDefinition {
+  metric: string
+  definition: string
+  how_to_calculate: string
+  healthy_range: string
+}
+
+export interface AarrrSystemDesignComponent {
+  component: string
+  what_it_does: string
+  key_technologies: string
+}
+
+export interface AarrrDeepLink {
+  tag: string
+  label: string
+}
+
+export interface AarrrVisualOverview {
+  label: string
+}
+
+export interface AarrrFailure {
+  name: string
+  what: string
+  lesson: string
+}
+
+export interface AarrrDoDont {
+  dos: string[]
+  donts: string[]
+}
+
+export interface AarrrCompetitorRow {
+  dimension: string
+  values: Array<{ text: string; outcome: 'win' | 'loss' | 'tie' }>
+}
+
+export interface AarrrCompetitorTable {
+  columns: string[]
+  rows: AarrrCompetitorRow[]
+}
+
+export interface AarrrGoDeeper {
+  metric_definitions?: AarrrMetricDefinition[]
+  system_design?: {
+    components: AarrrSystemDesignComponent[]
+    links: AarrrDeepLink[]
+  }
+  visual_overview?: AarrrVisualOverview
+  failures?: AarrrFailure[]
+  do_dont?: AarrrDoDont
+  competitor_table?: AarrrCompetitorTable
+}
+
+export interface AarrrPracticeCard {
+  question: string
+  guidance: string
+  hint: string
+}
+
+export interface AarrrPracticePrompts {
+  on_the_job: AarrrPracticeCard
+  interview_prep: AarrrPracticeCard
+}
+
+export interface AarrrStageContent {
+  stage_number: number
+  stage_name: string
+  question: string
+  narrative_paragraphs: string[]
+  metrics?: AarrrStageMetric[]
+  war_room?: AarrrWarRoomRow[]
+  transition?: AarrrTransition
+  phone_mockup?: AarrrPhoneMockup
+  callout?: AarrrCallout
+  data_tables?: AarrrDataTable[]
+  go_deeper?: AarrrGoDeeper
+  practice_prompts?: AarrrPracticePrompts
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export type StorySection =
   | { id: string; layout: 'fullbleed_cover'; content: { label: string; headline: string; subline: string; meta: string } }
   | { id: string; layout: 'split_panel'; content: { label: string; title: string; paragraphs: string[]; textSide: 'left' | 'right' }; illustration: IllustrationConfig }
@@ -847,6 +957,9 @@ export type StorySection =
   | { id: string; layout: 'fullbleed_cta'; content: { headline: string; subline?: string; buttonText: string; targetPath: string } }
   | { id: string; layout: 'quote'; content: { quote: string; attribution: string; context?: string } }
   | { id: string; layout: 'timeline'; content: { title: string; events: Array<{ date: string; label: string; description: string; type: string }> } }
+  | { id: string; layout: 'aarrr_stage'; content: AarrrStageContent }
+  | { id: string; layout: 'aarrr_hero'; content: { product_name: string; tagline: string; meta: string; accent_color: string } }
+  | { id: string; layout: 'aarrr_closing'; content: { headline: string; summary: string; cta_text: string; cta_path: string } }
 
 export interface AutopsyStory {
   id: string

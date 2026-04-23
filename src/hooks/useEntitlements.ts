@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 
 interface Entitlements {
   isPro: boolean
+  isAdmin: boolean
   canViewModelAnswer: boolean
   canAccessSimulation: boolean
   dailyChallengesRemaining: number
@@ -12,6 +13,7 @@ interface Entitlements {
 
 export function useEntitlements(): Entitlements {
   const [isPro, setIsPro] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
@@ -22,22 +24,25 @@ export function useEntitlements(): Entitlements {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('plan')
+        .select('plan, role')
         .eq('id', user.id)
         .single()
 
       setIsPro(profile?.plan === 'pro')
+      setIsAdmin(profile?.role === 'admin')
       setLoading(false)
     }
 
     checkPlan()
   }, [supabase])
 
+  const unlimited = isPro || isAdmin
   return {
     isPro,
-    canViewModelAnswer: isPro,
-    canAccessSimulation: isPro,
-    dailyChallengesRemaining: isPro ? Infinity : 3,
+    isAdmin,
+    canViewModelAnswer: unlimited,
+    canAccessSimulation: unlimited,
+    dailyChallengesRemaining: unlimited ? Infinity : 3,
     loading,
   }
 }

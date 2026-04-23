@@ -15,6 +15,7 @@ interface ChallengePaywallGateProps {
   limit: number
   challengeTitle?: string
   onUpgrade?: () => void
+  onDismiss?: () => void
 }
 
 export function ChallengePaywallGate({
@@ -22,6 +23,7 @@ export function ChallengePaywallGate({
   limit,
   challengeTitle = 'this challenge',
   onUpgrade,
+  onDismiss,
 }: ChallengePaywallGateProps) {
 
   const progressPct = Math.min((used / limit) * 100, 100)
@@ -29,12 +31,13 @@ export function ChallengePaywallGate({
   return (
     <div className="fixed inset-0 z-50">
       <div
-        className="fixed inset-0 animate-in fade-in duration-300"
+        className="fixed inset-0 animate-in fade-in duration-300 cursor-pointer"
         style={{
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
           background: 'rgba(250,246,240,0.65)',
         }}
+        onClick={onDismiss}
       />
       <div className="fixed inset-0 z-10 flex items-center justify-center p-4">
         <div
@@ -119,6 +122,14 @@ export function ChallengePaywallGate({
             <p className="text-center font-body text-[11px] text-on-surface-variant">
               Secure checkout via Stripe. Cancel any time.
             </p>
+            {onDismiss && (
+              <button
+                onClick={onDismiss}
+                className="w-full text-center font-body text-xs text-on-surface-variant hover:text-on-surface transition-colors"
+              >
+                ← Back to dashboard
+              </button>
+            )}
           </div>
         </div>
       </div>

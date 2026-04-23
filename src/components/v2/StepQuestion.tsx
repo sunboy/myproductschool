@@ -1,5 +1,6 @@
 'use client'
 
+import { type RefObject } from 'react'
 import type { ResponseType } from '@/lib/types'
 import { OptionCard } from './OptionCard'
 
@@ -30,6 +31,7 @@ interface StepQuestionProps {
   onOptionSelect: (id: string) => void
   onElaborationChange: (text: string) => void
   disabled: boolean
+  elaborationRef?: RefObject<HTMLTextAreaElement | null>
 }
 
 const ELABORATION_LABELS: Partial<Record<ResponseType, string>> = {
@@ -54,6 +56,7 @@ export function StepQuestion({
   onOptionSelect,
   onElaborationChange,
   disabled,
+  elaborationRef,
 }: StepQuestionProps) {
   const showOptions = responseType !== 'freeform'
   const showElaboration = responseType !== 'pure_mcq'
@@ -66,7 +69,7 @@ export function StepQuestion({
 
       {showOptions && (
         <div className="space-y-2">
-          {question.options.map((opt) => {
+          {[...question.options].sort((a, b) => a.option_label.localeCompare(b.option_label)).map((opt) => {
             const revealData = revealedOptions?.find((r) => r.id === opt.id)
             return (
               <OptionCard
@@ -87,6 +90,7 @@ export function StepQuestion({
         <div className="space-y-1.5">
           <label className="font-label text-sm text-on-surface-variant">{elaborationLabel}</label>
           <textarea
+            ref={elaborationRef}
             value={elaboration}
             onChange={(e) => onElaborationChange(e.target.value)}
             disabled={disabled}

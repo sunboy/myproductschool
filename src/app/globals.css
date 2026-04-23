@@ -80,17 +80,49 @@
   --radius:    0.5rem;
   --radius-lg: 1rem;
   --radius-xl: 1.5rem;
+
+  /* Redesign additions */
+  --color-outline-faint:            #e7dfc9;
+  --color-on-surface-muted:         #78715f;
+  --color-amber:                    #c9933a;
+  --color-amber-soft:               #f3e2b9;
+  --color-ai-assisted-soft:         #e1ecff;
+  --color-ai-native-soft:           #fbe1d0;
+  --color-agentic-soft:             #ecdeff;
+  --color-traditional-soft:         #dfe7e1;
+  --color-success:                  #2f7a4a;
+
+  /* Extended radius scale */
+  --radius-xs:  0.5rem;
+  --radius-sm:  0.75rem;
+  --radius-md:  1.125rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
 }
 
 /* ── Base ─────────────────────────────────────────────────────── */
 
 body {
   background-color: #faf6f0;
+  background-image:
+    radial-gradient(1200px 600px at 15% -10%, rgba(74, 124, 89, 0.06), transparent 60%),
+    radial-gradient(1000px 500px at 110% 10%, rgba(201, 147, 58, 0.06), transparent 60%);
   font-family: var(--font-nunito-sans, 'Nunito Sans', sans-serif);
   color: #2e3230;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Grain overlay — subtle paper feel (from HackProduct redesign handoff) */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='1' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.35 0 0 0 0 0.25 0 0 0 0.04 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
 /* ── Material Symbols ─────────────────────────────────────────── */
@@ -398,4 +430,25 @@ body {
 }
 @media (prefers-reduced-motion: reduce) {
   .section-visible { animation: none; opacity: 1; transform: none; }
+}
+
+/* ── Redesign animations ─────────────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes luma-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(74, 124, 89, 0.4); }
+  50%      { box-shadow: 0 0 0 8px rgba(74, 124, 89, 0); }
+}
+.animate-fade-up    { animation: fade-up 420ms cubic-bezier(.2,.8,.2,1) both; }
+.animate-luma-float { animation: luma-float 4.5s ease-in-out infinite; }
+.animate-pulse-dot  { animation: pulse-dot 2s ease-in-out infinite; }
+@keyframes lumaAntenna {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }

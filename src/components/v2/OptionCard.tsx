@@ -78,14 +78,6 @@ export function OptionCard({ option, selected, revealed, revealData, disabled, o
             </div>
           )}
         </div>
-        {selected && !revealed && (
-          <span
-            className="material-symbols-outlined text-primary text-[20px] shrink-0"
-            style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-          >
-            radio_button_checked
-          </span>
-        )}
       </div>
     </button>
   )

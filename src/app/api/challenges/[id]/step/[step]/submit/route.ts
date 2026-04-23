@@ -133,11 +133,12 @@ export async function POST(
 
     // Generate competency_signal from option metadata
     const selectedOption = options.find(o => o.id === selected_option_id)
-    competency_signal = {
+    const hint = selectedOption?.framework_hint?.trim() ?? ''
+    competency_signal = hint ? {
       primary: STEP_PRIMARY_COMPETENCIES[step]?.[0] ?? 'strategic_thinking',
-      signal: `Selected ${selectedOption?.quality ?? 'unknown'} option demonstrating ${(selectedOption?.competencies ?? []).join(', ') || 'general product thinking'}`,
-      framework_hint: selectedOption?.framework_hint ?? '',
-    }
+      signal: hint,
+      framework_hint: hint,
+    } : null
 
   } else if (path === 'hybrid') {
     // mcq_plus_elaboration — base score + AI elaboration adjustment
@@ -169,11 +170,12 @@ export async function POST(
     }
 
     // Generate competency_signal from selected option metadata
-    competency_signal = {
+    const baseHint = baseOption.framework_hint?.trim() ?? ''
+    competency_signal = baseHint ? {
       primary: STEP_PRIMARY_COMPETENCIES[step]?.[0] ?? 'strategic_thinking',
-      signal: `Selected ${baseOption.quality} option demonstrating ${(baseOption.competencies ?? []).join(', ') || 'general product thinking'}`,
-      framework_hint: baseOption.framework_hint ?? '',
-    }
+      signal: baseHint,
+      framework_hint: baseHint,
+    } : null
 
   } else {
     // modified_option or freeform — full AI evaluation

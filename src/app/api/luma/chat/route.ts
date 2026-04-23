@@ -29,6 +29,66 @@ interface PageContext {
   pathname: string
 }
 
+/** Fetch 3 recommended challenges for the user based on their weakest competency/move. */
+async function buildRecommendedChallengesBlock(userId: string): Promise<string> {
+  try {
+    const admin = createAdminClient()
+
+    // Find their weakest FLOW move (lowest level)
+    const { data: moveLevels } = await admin
+      .from('move_levels')
+      .select('move, level')
+      .eq('user_id', userId)
+      .order('level', { ascending: true })
+      .limit(1)
+
+    const weakestMove: string | null = moveLevels?.[0]?.move ?? null
+
+    // Find challenges they've already completed
+    const { data: completedAttempts } = await admin
+      .from('challenge_attempts')
+      .select('challenge_id')
+      .eq('user_id', userId)
+      .eq('status', 'completed')
+
+    const completedIds = new Set((completedAttempts ?? []).map(a => a.challenge_id as string))
+
+    // Fetch published challenges, preferring weakest move tag
+    let query = admin
+      .from('challenges')
+      .select('id, slug, title, difficulty, move_tags, challenge_type')
+      .eq('is_published', true)
+      .neq('challenge_type', 'quick_take')
+      .limit(20)
+
+    if (weakestMove) {
+      query = query.contains('move_tags', [weakestMove])
+    }
+
+    const { data: candidates } = await query
+
+    // Filter out completed, pick up to 3
+    const picks = (candidates ?? [])
+      .filter(c => !completedIds.has(c.id))
+      .slice(0, 3)
+
+    if (!picks.length) return ''
+
+    const lines = ['## Recommended Challenges', `Based on the learner's progress, suggest these specific challenges (use exact titles and URLs — do not make up other challenges):`]
+    for (const c of picks) {
+      const url = `/workspace/challenges/${c.slug ?? c.id}`
+      const tags = (c.move_tags as string[] | null)?.join(', ') ?? 'general'
+      lines.push(`- **${c.title}** (${c.difficulty ?? 'standard'}, FLOW: ${tags}) → ${url}`)
+    }
+    if (weakestMove) lines.push(`\nThese are selected because the learner's weakest FLOW move is **${weakestMove}**.`)
+    lines.push(`\nWhen recommending challenges, always format the link as a markdown link: [Challenge Title](url)`)
+
+    return lines.join('\n')
+  } catch {
+    return ''
+  }
+}
+
 /** Fetch DB content relevant to the current page and return a formatted block. */
 async function buildPageContextBlock(pageContext: PageContext): Promise<string> {
   const { pageType, entityId } = pageContext
@@ -143,17 +203,21 @@ export async function POST(req: NextRequest) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    // Build user context string
-    const contextBlock = user ? buildLumaContextString(await getLumaContext(user.id), 'chat') : ''
+    // Build all context blocks in parallel
+    const [lumaCtx, pageContextBlock, recommendedBlock] = await Promise.all([
+      user ? getLumaContext(user.id) : Promise.resolve(null),
+      pageContext ? buildPageContextBlock(pageContext as PageContext) : Promise.resolve(''),
+      user ? buildRecommendedChallengesBlock(user.id) : Promise.resolve(''),
+    ])
 
-    // Build page context block (parallel with user context when possible)
-    const pageContextBlock = pageContext ? await buildPageContextBlock(pageContext as PageContext) : ''
+    const contextBlock = lumaCtx ? buildLumaContextString(lumaCtx, 'chat') : ''
 
     const basePrompt = challengeId ? LUMA_CHAT_SYSTEM_PROMPT : LUMA_GLOBAL_CHAT_SYSTEM_PROMPT
 
     let systemPrompt = basePrompt
     if (contextBlock) systemPrompt += '\n\n## Learner Context\n' + contextBlock
     if (pageContextBlock) systemPrompt += '\n\n' + pageContextBlock
+    if (recommendedBlock) systemPrompt += '\n\n' + recommendedBlock
 
     // Build message history
     const messages: Anthropic.MessageParam[] = []

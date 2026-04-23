@@ -10,22 +10,50 @@ import {
   getLeaderboardPeek,
   getMoveLevel,
 } from '@/lib/data/dashboard'
-import { getLumaContext } from '@/lib/luma-context'
 import { getEnrolledPlans } from '@/lib/data/study-plans'
 import { QuickTakeCard } from '@/components/dashboard/cards/QuickTakeCard'
 import { NextChallengeCard } from '@/components/dashboard/cards/NextChallengeCard'
-import { MoveLevelsCard } from '@/components/dashboard/cards/MoveLevelsCard'
+import { HeroGreeterCard } from '@/components/dashboard/cards/HeroGreeterCard'
+import { FlowMoveLevelsCard } from '@/components/dashboard/cards/FlowMoveLevelsCard'
 import { HotChallengesCard } from '@/components/dashboard/cards/HotChallengesCard'
 import { LeaderboardPeekCard } from '@/components/dashboard/cards/LeaderboardPeekCard'
 import { InterviewCountdownCard } from '@/components/dashboard/cards/InterviewCountdownCard'
 import { EnrolledPlansCard } from '@/components/dashboard/cards/EnrolledPlansCard'
+import { TodaysPathCard } from '@/components/dashboard/cards/TodaysPathCard'
+import { AchievementsCard, ICON_COLOR_MAP, ICON_MAP } from '@/components/dashboard/cards/AchievementsCard'
+import { StreakCalendarCard } from '@/components/dashboard/cards/StreakCalendarCard'
 import type { UserInterview } from '@/lib/data/dashboard'
+import { difficultyLabel } from '@/lib/utils'
 
 function getGreeting(): string {
   const hour = new Date().getHours()
   if (hour < 12) return 'Good morning'
   if (hour < 17) return 'Good afternoon'
   return 'Good evening'
+}
+
+function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1) }
+
+function moveLumaInsight(move: string, level: number): string {
+  if (level <= 2) return `You're building your ${move} foundation — this challenge is the right next rep.`
+  if (level <= 5) return `Your ${move} move needs reps at this difficulty — push through it.`
+  return `Strong overall. This sharpens your ${move} edge.`
+}
+
+function targetDifficulties(avgXp: number): string[] {
+  if (avgXp < 100) return ['warmup', 'standard']
+  if (avgXp < 300) return ['standard', 'advanced']
+  return ['advanced', 'staff_plus']
+}
+
+type RawChallenge = { id: string; slug?: string | null; title: string; difficulty: string; domain?: { title: string }[] | { title: string } | null }
+type NextChallenge = { id: string; slug?: string | null; title: string; difficulty: string; domainName?: string | null; luma_insight?: string | null }
+
+function normalizeChallenge(raw: RawChallenge | null): NextChallenge | null {
+  if (!raw) return null
+  const d = raw.domain
+  const domainName = Array.isArray(d) ? (d[0]?.title ?? null) : (d?.title ?? null)
+  return { id: raw.id, slug: raw.slug, title: raw.title, difficulty: raw.difficulty, domainName }
 }
 
 function getPersonalizedGreeting(displayName: string, streakDays: number, lastAttemptDate: string | null, isCalibrated: boolean): string {
@@ -52,7 +80,7 @@ function LockedMoveLevels() {
   return (
     <div className="bg-surface-container-low rounded-2xl p-5 border border-outline-variant/30">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-headline font-semibold text-sm text-on-surface">FLOW Move Levels</h3>
+        <h3 className="font-headline font-semibold text-sm text-on-surface">FLOW Levels</h3>
         <div className="flex items-center gap-1 text-[11px] text-on-surface-variant font-label">
           <span className="material-symbols-outlined text-[13px]">lock</span>
           Unlocks after calibration
@@ -118,6 +146,8 @@ export default async function DashboardPage() {
   }
 
   const userId = user?.id ?? ''
+  const adminClient = createAdminClient()
+
   const [hotChallenges, leaderboard, moveLevels, enrolledPlans] = await Promise.all([
     getHotChallenges(),
     userId ? getLeaderboardPeek(userId) : [],
@@ -125,97 +155,198 @@ export default async function DashboardPage() {
     userId ? getEnrolledPlans(userId) : [],
   ])
 
-  // Fetch personalized Quick Take and Next Challenge via admin client
-  // (mirrors the logic in /api/challenges/quick-take and /api/challenges/next)
-  const adminClient = createAdminClient()
+  // ── Right-rail data: achievements + streak (fetched early, path built after challenges) ──
+  let achievementData: { id: string; name: string; icon: string; unlocked: boolean; color: string }[] = []
+  let weekDates: { dayLabel: string; dateLabel: string; completed: boolean; isToday: boolean }[] = []
+  type AttemptRow = { challenge_id: string; created_at: string; challenges: { title: string; slug: string | null; challenge_type: string | null } | null }
+  let todayAttempts: AttemptRow[] = []
 
-  // Quick Take: query challenges table with challenge_type = 'quick_take'
-  const todayStr = new Date().toISOString().split('T')[0]
-  const { data: todayQuickTake } = await adminClient
-    .from('challenges')
-    .select('id, slug, prompt_text, move_tags')
-    .eq('challenge_type', 'quick_take')
-    .gte('created_at', todayStr)
-    .eq('is_published', true)
-    .limit(1)
-    .maybeSingle()
+  if (userId && isCalibrated) {
+    const now = new Date()
+    const todayStr = now.toISOString().split('T')[0]
+    const dayOfWeek = now.getDay()
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+    const weekStart = new Date(now)
+    weekStart.setDate(now.getDate() + mondayOffset)
+    weekStart.setHours(0, 0, 0, 0)
 
-  let quickTakePrompt = todayQuickTake
+    const weekDateStrings: string[] = []
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(weekStart)
+      d.setDate(weekStart.getDate() + i)
+      weekDateStrings.push(d.toISOString().split('T')[0])
+    }
 
-  if (!quickTakePrompt) {
-    // Fall back to any published quick take
-    const { data: anyQuickTake } = await adminClient
-      .from('challenges')
-      .select('id, slug, prompt_text, move_tags')
-      .eq('challenge_type', 'quick_take')
-      .eq('is_published', true)
-      .limit(1)
-      .maybeSingle()
-    quickTakePrompt = anyQuickTake ?? null
+    const [achievementsResult, streakResult, todayAttemptsResult, userAchievements] = await Promise.all([
+      adminClient.from('achievement_definitions').select('id, name, icon, xp_reward, criteria_type, criteria_value'),
+      adminClient.from('user_streaks').select('date, completed').eq('user_id', userId).gte('date', weekDateStrings[0]).lte('date', weekDateStrings[6]),
+      adminClient.from('challenge_attempts').select('challenge_id, created_at, challenges(title, slug, challenge_type)').eq('user_id', userId).eq('status', 'completed').gte('created_at', todayStr).order('created_at', { ascending: true }).limit(10),
+      adminClient.from('user_achievements').select('achievement_id').eq('user_id', userId),
+    ])
+
+    const unlockedIds = new Set((userAchievements.data ?? []).map(a => a.achievement_id as string))
+    achievementData = (achievementsResult.data ?? []).map(def => ({
+      id: def.id,
+      name: def.name,
+      icon: ICON_MAP[def.id] ?? def.icon ?? 'star',
+      unlocked: unlockedIds.has(def.id),
+      color: ICON_COLOR_MAP[def.id] ?? '#4a7c59',
+    }))
+
+    const streakDates = new Set((streakResult.data ?? []).filter(r => r.completed).map(r => r.date as string))
+    const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+    weekDates = weekDateStrings.map((d, i) => ({
+      dayLabel: DAY_LABELS[i],
+      dateLabel: d,
+      completed: streakDates.has(d),
+      isToday: d === todayStr,
+    }))
+
+    todayAttempts = (todayAttemptsResult.data ?? []) as unknown as AttemptRow[]
   }
 
-  // Next Challenge: use /api/challenges/next logic — weakest move targeting
-  // Get user's weakest move, completed challenge IDs, and pick a personalized challenge
-  let nextChallenge: { id: string; slug?: string | null; title: string; difficulty: string; domain_id?: string | null; luma_insight?: string | null } | null = null
+  let nextChallenge: NextChallenge | null = null
+  let allMoveLevels: { move: string; xp: number; level: number; progress_pct: number }[] = []
+  let weakestMove = 'frame'
+  let quickTakePrompt: { id: string; slug?: string | null; prompt_text: string | null; move_tags: string[] | null } | null = null
 
   if (userId) {
-    const [{ data: moveLevelsForNext }, { data: completedAttempts }] = await Promise.all([
+    const [{ data: moveLevelsData }, { data: completedAttempts }, { data: allQuickTakes }] = await Promise.all([
       adminClient
         .from('move_levels')
-        .select('move, xp')
+        .select('move, xp, level, progress_pct')
         .eq('user_id', userId)
-        .order('xp', { ascending: true })
-        .limit(1),
+        .order('xp', { ascending: true }),
       adminClient
         .from('challenge_attempts')
         .select('challenge_id')
         .eq('user_id', userId)
         .eq('status', 'completed'),
+      adminClient
+        .from('challenges')
+        .select('id, slug, prompt_text, move_tags')
+        .eq('challenge_type', 'quick_take')
+        .eq('is_published', true)
+        .order('created_at', { ascending: true }),
     ])
 
-    const weakestMove = (moveLevelsForNext?.[0]?.move as string) ?? 'frame'
-    const completedIds = (completedAttempts ?? []).map((a: { challenge_id: string }) => a.challenge_id)
+    allMoveLevels = (moveLevelsData ?? []) as { move: string; xp: number; level: number; progress_pct: number }[]
+    weakestMove = allMoveLevels[0]?.move ?? 'frame'
 
+    const avgXp = allMoveLevels.length > 0
+      ? allMoveLevels.reduce((s, m) => s + m.xp, 0) / allMoveLevels.length
+      : 0
+    const difficulties = targetDifficulties(avgXp)
+    const completedIds = new Set((completedAttempts ?? []).map((a: { challenge_id: string }) => a.challenge_id))
+
+    quickTakePrompt =
+      (allQuickTakes ?? []).find(c => !completedIds.has(c.id)) ??
+      allQuickTakes?.[0] ??
+      null
+
+    const completedIdsArr = Array.from(completedIds)
+
+    // 1. Same move + right difficulty band
     let nextQuery = adminClient
       .from('challenges')
-      .select('id, slug, title, difficulty, domain_id')
+      .select('id, slug, title, difficulty, domain:domains(title)')
       .eq('is_published', true)
+      .neq('challenge_type', 'quick_take')
       .contains('move_tags', [weakestMove])
+      .in('difficulty', difficulties)
 
-    if (completedIds.length > 0) {
-      nextQuery = nextQuery.not('id', 'in', `(${completedIds.join(',')})`)
+    if (completedIdsArr.length > 0) {
+      nextQuery = nextQuery.not('id', 'in', `(${completedIdsArr.join(',')})`)
     }
 
     const { data: personalizedNext } = await nextQuery.limit(1).maybeSingle()
-    nextChallenge = personalizedNext ?? null
+    nextChallenge = normalizeChallenge(personalizedNext ?? null)
+
+    // 2. Fallback: same move, any difficulty
+    if (!nextChallenge) {
+      let fallbackMoveQuery = adminClient
+        .from('challenges')
+        .select('id, slug, title, difficulty, domain:domains(title)')
+        .eq('is_published', true)
+        .neq('challenge_type', 'quick_take')
+        .contains('move_tags', [weakestMove])
+
+      if (completedIdsArr.length > 0) {
+        fallbackMoveQuery = fallbackMoveQuery.not('id', 'in', `(${completedIdsArr.join(',')})`)
+      }
+      const { data: fallbackMove } = await fallbackMoveQuery.limit(1).maybeSingle()
+      nextChallenge = normalizeChallenge(fallbackMove ?? null)
+    }
+
+    // 3. Fallback: any uncompleted challenge
+    if (!nextChallenge && completedIdsArr.length > 0) {
+      const anyQuery = adminClient
+        .from('challenges')
+        .select('id, slug, title, difficulty, domain:domains(title)')
+        .eq('is_published', true)
+        .neq('challenge_type', 'quick_take')
+        .not('id', 'in', `(${completedIdsArr.join(',')})`)
+
+      const { data: anyUncompleted } = await anyQuery.limit(1).maybeSingle()
+      nextChallenge = normalizeChallenge(anyUncompleted ?? null)
+    }
   }
 
+  // 4. Final fallback: any published challenge
   if (!nextChallenge) {
-    // Final fallback: any published challenge
     const { data: fallbackChallenge } = await adminClient
       .from('challenges')
-      .select('id, slug, title, difficulty, domain_id')
+      .select('id, slug, title, difficulty, domain:domains(title)')
       .eq('is_published', true)
+      .neq('challenge_type', 'quick_take')
       .limit(1)
       .maybeSingle()
-    nextChallenge = fallbackChallenge ?? null
+    nextChallenge = normalizeChallenge(fallbackChallenge ?? null)
   }
 
-  if (userId && isCalibrated) {
-    const lumaCtx = await getLumaContext(userId)
+  // Attach rule-based insight from move level data — no AI call
+  if (nextChallenge && allMoveLevels.length > 0) {
+    const weakestLevel = allMoveLevels[0].level ?? 1
+    nextChallenge = { ...nextChallenge, luma_insight: moveLumaInsight(weakestMove, weakestLevel) }
+  }
 
-    // Attach luma_insight to nextChallenge from weakest FLOW move
-    if (nextChallenge && lumaCtx.moveLevels.length > 0) {
-      const weakestFlowMove = [...lumaCtx.moveLevels].sort((a, b) => a.level - b.level)[0]
-      const moveLabels: Record<string, string> = {
-        frame: 'frame',
-        list: 'list',
-        weigh: 'weigh',
-        sell: 'sell',
-      }
-      const label = moveLabels[weakestFlowMove.move] ?? weakestFlowMove.move
-      nextChallenge = { ...nextChallenge, luma_insight: `Your ${label} move is at Level ${weakestFlowMove.level} — this challenge drills exactly that.` }
-    }
+  // ── Build Today's Path (depends on quickTakePrompt + nextChallenge) ──
+  let todaysPathSteps: { label: string; sub: string; icon: string; done: boolean; active: boolean; href?: string }[] = []
+  let todaysPathCompleted = 0
+
+  if (userId && isCalibrated) {
+    const doneQuickTake = todayAttempts.some(a => a.challenges?.challenge_type === 'quick_take')
+    const doneFlowChallenge = todayAttempts.some(a => a.challenges?.challenge_type !== 'quick_take')
+
+    todaysPathSteps = [
+      {
+        label: 'Quick Take',
+        sub: '1-min warm-up',
+        icon: 'bolt',
+        done: doneQuickTake,
+        active: !doneQuickTake,
+        href: undefined,
+      },
+      {
+        label: 'Core challenge',
+        sub: nextChallenge
+          ? `${capitalize(weakestMove)} · ${difficultyLabel(nextChallenge.difficulty)}`
+          : 'Pick a challenge',
+        icon: 'track_changes',
+        done: doneFlowChallenge,
+        active: doneQuickTake && !doneFlowChallenge,
+        href: nextChallenge ? `/workspace/challenges/${nextChallenge.slug ?? nextChallenge.id}` : '/challenges',
+      },
+      {
+        label: 'Reflect',
+        sub: "Review Luma's feedback",
+        icon: 'edit_note',
+        done: false,
+        active: doneFlowChallenge,
+        href: '/progress',
+      },
+    ]
+    todaysPathCompleted = todaysPathSteps.filter(s => s.done).length
   }
 
   const userEntry = (leaderboard as { rank: number; isCurrentUser?: boolean }[]).find(e => e.isCurrentUser)
@@ -226,84 +357,96 @@ export default async function DashboardPage() {
     : []
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-6 space-y-4">
+    <div className="max-w-[1440px] mx-auto px-6 py-7">
 
       <Suspense fallback={null}>
         <UpgradedBanner />
       </Suspense>
 
-      {/* Luma Greeting Bar */}
-      <div className="bg-primary-fixed rounded-2xl p-5 flex flex-wrap items-center gap-4 animate-luma-card relative overflow-hidden">
-        {/* Soft radial highlight */}
-        <div className="absolute top-0 right-0 w-48 h-full opacity-30" style={{ background: 'radial-gradient(ellipse at 100% 50%, rgba(74,124,89,0.3) 0%, transparent 70%)' }} />
-        <LumaGlyph size={48} state={isCalibrated ? 'idle' : 'celebrating'} className="flex-shrink-0 relative" />
-        <div className="flex-1 min-w-0 relative">
-          <p className="font-headline font-bold text-[17px] text-on-surface leading-tight">
-            {getPersonalizedGreeting(displayName, streakDays, lastAttemptDate, isCalibrated)}
-          </p>
-          <p className="text-sm text-on-surface-variant mt-0.5">
-            {isCalibrated ? getDailyGoalMessage(dailyDone) : "I'm Luma, your product thinking coach. Let's find your starting point."}
-          </p>
-        </div>
-        {isCalibrated && (
-          <div className="flex gap-1.5 flex-shrink-0 relative">
-            <span className="flex items-center gap-1 px-2.5 py-1.5 bg-white/50 rounded-full text-[11px] font-label font-bold text-on-surface">
-              <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 1", color: '#c94b1b' }}>local_fire_department</span>
-              {streakDays}d
-            </span>
-            <span className="flex items-center gap-1 px-2.5 py-1.5 bg-white/50 rounded-full text-[11px] font-label font-bold text-on-surface tabular-nums">
-              <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 1", color: '#4a7c59' }}>bolt</span>
-              {xpTotal.toLocaleString()} XP
-            </span>
-          </div>
-        )}
-      </div>
-
       {/* State A — Calibrated */}
       {isCalibrated && (
-        <>
-          {/* Hero row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <QuickTakeCard
-              prompt={quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
-              challengeId={quickTakePrompt?.slug ?? quickTakePrompt?.id ?? 'orientation'}
-              lumaContext={null}
+        <div className="grid gap-7" style={{ gridTemplateColumns: '1fr 340px' }}>
+          {/* Main column */}
+          <div className="flex flex-col gap-6 min-w-0">
+            <HeroGreeterCard
+              displayName={displayName}
+              streakDays={streakDays}
+              xpTotal={xpTotal}
             />
-            <NextChallengeCard
-              title={nextChallenge?.title ?? 'Designing a Metric Dashboard for a B2B SaaS Tool'}
-              domain="Product Strategy"
-              difficulty={nextChallenge?.difficulty ?? 'Medium'}
-              challengeId={nextChallenge?.slug ?? nextChallenge?.id ?? 'orientation'}
-              lumaInsight={nextChallenge?.luma_insight ?? null}
-            />
+
+            {/* Resume / Quick Take row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <QuickTakeCard
+                prompt={quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
+                challengeId={quickTakePrompt?.id ?? 'orientation'}
+                lumaContext={null}
+              />
+              <NextChallengeCard
+                title={nextChallenge?.title ?? 'Designing a Metric Dashboard for a B2B SaaS Tool'}
+                domain={nextChallenge?.domainName ?? 'Product Strategy'}
+                difficulty={nextChallenge?.difficulty ?? 'standard'}
+                challengeId={nextChallenge?.slug ?? nextChallenge?.id ?? 'orientation'}
+                lumaInsight={nextChallenge?.luma_insight ?? null}
+              />
+            </div>
+
+            {/* FLOW Move Levels */}
+            <FlowMoveLevelsCard levels={allMoveLevels} />
+
+            {/* Enrolled Study Plans */}
+            {enrolledPlans.length > 0 && <EnrolledPlansCard plans={enrolledPlans} />}
+
+            {/* Secondary row */}
+            <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
+              <HotChallengesCard challenges={hotChallenges} />
+              <LeaderboardPeekCard entries={leaderboard} userRank={userRank} />
+            </div>
+
+            {/* Interview Countdown — conditional */}
+            {interviewDate && (
+              <InterviewCountdownCard interviews={interviews} />
+            )}
           </div>
 
-          {/* FLOW Move Levels */}
-          <MoveLevelsCard levels={moveLevels} />
-
-          {/* Enrolled Study Plans */}
-          {enrolledPlans.length > 0 && <EnrolledPlansCard plans={enrolledPlans} />}
-
-          {/* Secondary row */}
-          <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
-            <HotChallengesCard challenges={hotChallenges} />
-            <LeaderboardPeekCard entries={leaderboard} userRank={userRank} />
-          </div>
-
-          {/* Interview Countdown — conditional */}
-          {interviewDate && (
-            <InterviewCountdownCard interviews={interviews} />
-          )}
-        </>
+          {/* Right rail */}
+          <aside className="flex flex-col gap-5">
+            {todaysPathSteps.length > 0 && (
+              <TodaysPathCard steps={todaysPathSteps} completedCount={todaysPathCompleted} />
+            )}
+            {achievementData.length > 0 && (
+              <AchievementsCard
+                achievements={achievementData}
+                unlockedCount={achievementData.filter(a => a.unlocked).length}
+                totalCount={achievementData.length}
+              />
+            )}
+            {weekDates.length > 0 && (
+              <StreakCalendarCard streakDays={streakDays} weekDates={weekDates} />
+            )}
+          </aside>
+        </div>
       )}
 
       {/* State B — Uncalibrated */}
       {!isCalibrated && (
-        <>
+        <div className="space-y-4">
+          {/* Luma Greeting Bar */}
+          <div className="bg-primary-fixed rounded-2xl p-5 flex flex-wrap items-center gap-4 animate-luma-card relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-48 h-full opacity-30" style={{ background: 'radial-gradient(ellipse at 100% 50%, rgba(74,124,89,0.3) 0%, transparent 70%)' }} />
+            <LumaGlyph size={48} state="celebrating" className="flex-shrink-0 relative" />
+            <div className="flex-1 min-w-0 relative">
+              <p className="font-headline font-bold text-[17px] text-on-surface leading-tight">
+                {getPersonalizedGreeting(displayName, streakDays, lastAttemptDate, false)}
+              </p>
+              <p className="text-sm text-on-surface-variant mt-0.5">
+                {"I'm Luma, your product thinking coach. Let's find your starting point."}
+              </p>
+            </div>
+          </div>
           <CalibrationHero />
           <LockedMoveLevels />
           <HotChallengesCard challenges={hotChallenges} />
-        </>
+        </div>
       )}
     </div>
   )

@@ -53,6 +53,7 @@ export async function GET(
       is_published: true,
       is_calibration: false,
       is_premium: false,
+      is_featured: false,
       created_at: '2024-01-01T00:00:00Z',
       challenge_type: 'flow' as const,
       prompt_text: null,
@@ -90,11 +91,14 @@ export async function GET(
     return NextResponse.json({ error: 'Challenge not found' }, { status: 404 })
   }
 
+  // Use the resolved challenge ID (not the raw param which may be a slug)
+  const resolvedId = challenge.id
+
   // Fetch flow steps ordered by step_order
   const { data: flowSteps, error: stepsError } = await supabase
     .from('flow_steps')
     .select('id, step, step_order, step_nudge, grading_weight, challenge_id')
-    .eq('challenge_id', id)
+    .eq('challenge_id', resolvedId)
     .order('step_order', { ascending: true })
 
   if (stepsError) {
@@ -128,7 +132,7 @@ export async function GET(
     .from('challenge_attempts')
     .select('*')
     .eq('user_id', userId)
-    .eq('challenge_id', id)
+    .eq('challenge_id', resolvedId)
     .eq('status', 'in_progress')
     .order('started_at', { ascending: false })
     .limit(1)

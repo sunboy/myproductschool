@@ -20,3 +20,7 @@ export function getTopDimension(dimensions: Record<string, { score: number }>): 
 export function isMockMode(): boolean {
   return IS_MOCK
 }
+
+export function difficultyLabel(d: string): string {
+  return ({ warmup: 'Warm-up', standard: 'Intermediate', advanced: 'Advanced', staff_plus: 'Staff+' } as Record<string, string>)[d] ?? d
+}

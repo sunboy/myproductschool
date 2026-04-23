@@ -1,9 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import gsap from 'gsap'
 import type { FlowStep } from '@/lib/types'
 import type { QuestionRevealRecord } from './FlowWorkspace'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import {
+  type Verdict,
+  VERDICT_COLOR, VERDICT_BG, VERDICT_LABEL, VERDICT_ICON,
+  QUALITY_ORDER, QUALITY_BADGE, STEP_ICONS,
+  gradeToVerdict,
+} from './flow-constants'
 
 interface StepRevealProps {
   step: FlowStep
@@ -36,52 +43,8 @@ const NEXT_STEP: Record<FlowStep, FlowStep | null> = {
   win:      null,
 }
 
-const GRADE_BADGE: Record<string, string> = {
-  Outstanding:      'bg-primary text-on-primary',
-  Strong:           'bg-tertiary-container text-on-surface',
-  Developing:       'bg-secondary-container text-on-secondary-container',
-  'Needs Practice': 'bg-surface-container-highest text-on-surface-variant',
-}
 
-// Maps quality string → visual treatment
-const QUALITY_CONFIG: Record<string, {
-  border: string
-  bg: string
-  badge: string
-  badgeText: string
-  icon: string
-}> = {
-  best: {
-    border: '#4a7c59',
-    bg: 'rgba(74,124,89,0.06)',
-    badge: 'bg-primary text-on-primary',
-    badgeText: 'Best',
-    icon: 'check_circle',
-  },
-  good_but_incomplete: {
-    border: '#705c30',
-    bg: 'rgba(112,92,48,0.05)',
-    badge: 'bg-tertiary-container text-on-surface',
-    badgeText: 'Good',
-    icon: 'check_circle',
-  },
-  surface: {
-    border: '#74796e',
-    bg: 'rgba(116,121,110,0.05)',
-    badge: 'bg-surface-container-high text-on-surface-variant',
-    badgeText: 'Surface',
-    icon: 'remove_circle',
-  },
-  plausible_wrong: {
-    border: '#b83230',
-    bg: 'rgba(184,50,48,0.04)',
-    badge: 'bg-error/10 text-error',
-    badgeText: 'Misleading',
-    icon: 'cancel',
-  },
-}
-
-const TERRA_PRIMARY = '#4a7c59'
+// ── Option card ───────────────────────────────────────────────────────────────
 
 function OptionCard({
   optionLabel,
@@ -98,112 +61,131 @@ function OptionCard({
   frameworkHint?: string
   isSelected: boolean
 }) {
-  const cfg = QUALITY_CONFIG[quality] ?? QUALITY_CONFIG['surface']
+  const b = QUALITY_BADGE[quality] ?? QUALITY_BADGE.plausible_wrong
 
   return (
-    <div
-      className="rounded-xl p-4 space-y-2.5"
-      style={{
-        background: isSelected ? cfg.bg : 'transparent',
-        border: `1.5px solid ${isSelected ? cfg.border : 'rgba(116,121,110,0.2)'}`,
-        opacity: isSelected ? 1 : 0.8,
-      }}
-    >
-      {/* Option header */}
-      <div className="flex items-start gap-2.5">
-        <span
-          className="material-symbols-outlined shrink-0 text-[18px] mt-0.5"
-          style={{
-            color: isSelected ? cfg.border : 'rgba(116,121,110,0.5)',
-            fontVariationSettings: `'FILL' ${quality === 'best' || quality === 'good_but_incomplete' ? 1 : 0}, 'wght' 400`,
-          }}
-        >
-          {cfg.icon}
-        </span>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-label text-xs font-semibold text-on-surface-variant">
-              {optionLabel}
-            </span>
-            <span className={`rounded-full px-2 py-0.5 font-label text-[10px] font-semibold ${cfg.badge}`}>
-              {cfg.badgeText}
-            </span>
+    <div style={{
+      display: 'flex', gap: 10, alignItems: 'flex-start',
+      padding: '10px 12px',
+      borderRadius: 10,
+      border: '1px solid var(--color-outline-variant)',
+      background: isSelected ? `${b.bg}44` : 'var(--color-surface)',
+      fontSize: 13, lineHeight: 1.4,
+    }}>
+      <span style={{
+        fontSize: 11, fontWeight: 700,
+        color: 'var(--color-on-surface-variant)',
+        minWidth: 18, flexShrink: 0, paddingTop: 1,
+      }}>
+        {optionLabel}
+      </span>
+      <div style={{ flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+          <span style={{ flex: 1, color: 'var(--color-on-surface)' }}>{optionText}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
             {isSelected && (
-              <span className="rounded-full px-2 py-0.5 font-label text-[10px] font-semibold bg-inverse-surface text-inverse-on-surface">
-                Your pick
+              <span style={{
+                fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 99,
+                background: 'var(--color-inverse-surface)', color: 'var(--color-inverse-on-surface)',
+              }}>
+                YOUR PICK
               </span>
             )}
+            <span style={{
+              fontSize: 10, fontWeight: 700,
+              padding: '2px 7px', borderRadius: 99,
+              background: b.bg, color: b.color,
+            }}>
+              {b.label}
+            </span>
           </div>
-          <p className="font-body text-sm text-on-surface mt-1 leading-snug">{optionText}</p>
         </div>
+        {explanation && (
+          <p style={{ fontSize: 11, color: 'var(--color-on-surface-variant)', margin: '6px 0 0', lineHeight: 1.5 }}>
+            {explanation}
+          </p>
+        )}
+        {frameworkHint && (
+          <div style={{
+            marginTop: 8,
+            background: 'rgba(112,92,48,0.07)',
+            border: '1px dashed rgba(112,92,48,0.3)',
+            borderRadius: 8, padding: '7px 10px',
+            fontSize: 11, color: '#705c30', lineHeight: 1.5,
+            display: 'flex', gap: 6,
+          }}>
+            <span style={{ flexShrink: 0 }}>🧠</span>
+            <span>{frameworkHint}</span>
+          </div>
+        )}
       </div>
-
-      {/* Explanation — always shown */}
-      <p className="font-body text-xs text-on-surface-variant leading-relaxed pl-7">{explanation}</p>
-      {frameworkHint && (
-        <p className="font-body text-xs italic pl-7" style={{ color: TERRA_PRIMARY }}>{frameworkHint}</p>
-      )}
     </div>
   )
 }
 
+// ── Question breakdown ────────────────────────────────────────────────────────
+
 function QuestionBreakdown({ record, questionNumber }: { record: QuestionRevealRecord; questionNumber: number }) {
   const [open, setOpen] = useState(false)
 
-  // Sort options: best first, then good, surface, plausible_wrong
-  const QUALITY_ORDER = ['best', 'good_but_incomplete', 'surface', 'plausible_wrong']
-  const sorted = [...record.revealedOptions].sort((a, b) => {
-    const ai = QUALITY_ORDER.indexOf(a.quality ?? '')
-    const bi = QUALITY_ORDER.indexOf(b.quality ?? '')
-    return ai - bi
-  })
+  const sorted = [...record.revealedOptions].sort((a, b) =>
+    QUALITY_ORDER.indexOf(a.quality ?? '') - QUALITY_ORDER.indexOf(b.quality ?? '')
+  )
 
   const selectedOption = record.revealedOptions.find(o => o.id === record.selectedOptionId)
   const selectedQuality = selectedOption?.quality ?? 'surface'
-  const isCorrect = selectedQuality === 'best' || selectedQuality === 'good_but_incomplete'
-  const selectedCfg = QUALITY_CONFIG[selectedQuality] ?? QUALITY_CONFIG['surface']
+  const b = QUALITY_BADGE[selectedQuality] ?? QUALITY_BADGE.plausible_wrong
 
   return (
-    <div className="space-y-2">
-      {/* Clickable question header row */}
+    <div style={{
+      background: 'var(--color-surface)',
+      border: '1px solid var(--color-outline-variant)',
+      borderRadius: 12,
+      overflow: 'hidden',
+    }}>
       <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-start gap-3 text-left group"
+        onClick={() => setOpen(v => !v)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'flex-start', gap: 10,
+          padding: '12px 14px', textAlign: 'left', cursor: 'pointer',
+          background: 'none', border: 'none',
+        }}
       >
-        {/* Number bubble */}
-        <div
-          className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center font-label text-xs font-bold mt-0.5"
-          style={{ background: isCorrect ? 'rgba(74,124,89,0.12)' : 'rgba(116,121,110,0.12)', color: isCorrect ? TERRA_PRIMARY : '#74796e' }}
-        >
+        <div style={{
+          width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 11, fontWeight: 700,
+          background: `${b.bg}88`, color: b.color,
+          marginTop: 1,
+        }}>
           {questionNumber}
         </div>
-
-        {/* Question text + your-pick badge inline */}
-        <div className="flex-1 min-w-0 flex items-start justify-between gap-3">
-          <p className="font-body text-sm font-medium text-on-surface leading-snug">{record.questionText}</p>
-          <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
-            {/* Selected answer quality pill — visible even when collapsed */}
-            <span className={`rounded-full px-2 py-0.5 font-label text-[10px] font-semibold ${selectedCfg.badge}`}>
-              {selectedCfg.badgeText}
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+          <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-on-surface)', lineHeight: 1.4, margin: 0 }}>
+            {record.questionText}
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginTop: 1 }}>
+            <span style={{
+              fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 99,
+              background: b.bg, color: b.color,
+            }}>
+              {b.label}
             </span>
-            {/* Chevron */}
-            <span
-              className="material-symbols-outlined text-on-surface-variant text-[16px] transition-transform duration-200"
-              style={{
-                fontVariationSettings: "'FILL' 0, 'wght' 400",
-                transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-              }}
-            >
+            <span className="material-symbols-outlined" style={{
+              fontSize: 16, color: 'var(--color-on-surface-variant)',
+              transition: 'transform 200ms',
+              transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+              fontVariationSettings: "'FILL' 0, 'wght' 400",
+            }}>
               expand_more
             </span>
           </div>
         </div>
       </button>
 
-      {/* Collapsible options list */}
       {open && (
-        <div className="pl-9 space-y-2">
-          {sorted.map((opt) => (
+        <div style={{ padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {sorted.map(opt => (
             <OptionCard
               key={opt.id}
               optionLabel={opt.option_label ?? ''}
@@ -220,6 +202,8 @@ function QuestionBreakdown({ record, questionNumber }: { record: QuestionRevealR
   )
 }
 
+// ── Main component ────────────────────────────────────────────────────────────
+
 export function StepReveal({
   step,
   stepScore,
@@ -232,124 +216,182 @@ export function StepReveal({
   onNext,
   isLastStep,
 }: StepRevealProps) {
-  const badgeClass = GRADE_BADGE[gradeLabel] ?? GRADE_BADGE['Needs Practice']
+  const verdict = gradeToVerdict(gradeLabel)
+  const verdictColor = VERDICT_COLOR[verdict]
   const nextStep = NEXT_STEP[step]
 
+  const headerRef = useRef<HTMLDivElement>(null)
+  const coachingRef = useRef<HTMLDivElement>(null)
+  const breakdownRef = useRef<HTMLDivElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const targets = [headerRef.current, coachingRef.current, breakdownRef.current, bottomRef.current].filter(Boolean)
+    if (prefersReduced) {
+      gsap.set(targets, { opacity: 1, y: 0 })
+      return
+    }
+
+    gsap.set(headerRef.current, { opacity: 0, y: -6 })
+    gsap.set(coachingRef.current, { opacity: 0, y: 10 })
+    gsap.set(breakdownRef.current, { opacity: 0, y: 10 })
+    gsap.set(bottomRef.current, { opacity: 0, y: 8 })
+
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
+    tl.to(headerRef.current, { opacity: 1, y: 0, duration: 0.4 })
+    tl.to(coachingRef.current, { opacity: 1, y: 0, duration: 0.38 }, '-=0.2')
+    tl.to(breakdownRef.current, { opacity: 1, y: 0, duration: 0.38 }, '-=0.2')
+    tl.to(bottomRef.current, { opacity: 1, y: 0, duration: 0.32 }, '-=0.15')
+
+    return () => { tl.kill() }
+  }, [step])
+
   return (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
       {/* ── Step score header ── */}
       <div
-        className="rounded-xl p-5 border-t-4 flex items-center justify-between"
+        ref={headerRef}
         style={{
-          borderTopColor: TERRA_PRIMARY,
-          background: 'rgba(255,255,255,0.72)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          border: `1px solid rgba(74,124,89,0.12)`,
-          borderTop: `4px solid ${TERRA_PRIMARY}`,
-          boxShadow: '0 2px 8px rgba(46,50,48,0.06)',
+          background: 'var(--color-surface)',
+          border: '1px solid var(--color-outline-variant)',
+          borderRadius: 14,
+          padding: '16px 20px',
+          boxShadow: '0 1px 2px rgba(30,27,20,0.04)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
         }}
       >
-        <div>
-          <p className="font-label text-xs text-on-surface-variant uppercase tracking-widest mb-0.5">
-            {STEP_NAMES[step]} step
-          </p>
-          <p className="font-headline text-3xl text-primary">
-            {stepScore.toFixed(1)}{' '}
-            <span className="text-on-surface-variant text-xl">/ {maxScore.toFixed(1)}</span>
-          </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* Step pill */}
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '4px 12px', borderRadius: 999,
+            background: VERDICT_BG[verdict], color: verdictColor,
+            fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase',
+          }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 13, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>
+              {STEP_ICONS[step]}
+            </span>
+            {STEP_NAMES[step]}
+          </div>
+          {/* Score */}
+          <div>
+            <span style={{ fontFamily: 'var(--font-headline)', fontSize: 26, fontWeight: 700, color: verdictColor, lineHeight: 1 }}>
+              {stepScore.toFixed(1)}
+            </span>
+            <span style={{ fontFamily: 'var(--font-headline)', fontSize: 16, color: 'var(--color-on-surface-variant)', marginLeft: 4 }}>
+              / {maxScore.toFixed(1)}
+            </span>
+          </div>
         </div>
-        <span className={`rounded-full px-4 py-1.5 font-label text-sm font-semibold shadow-sm ${badgeClass}`}>
-          {gradeLabel}
-        </span>
+
+        {/* Verdict chip */}
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 5,
+          padding: '6px 14px', borderRadius: 999,
+          background: VERDICT_BG[verdict], color: verdictColor,
+          fontSize: 11, fontWeight: 800, letterSpacing: '0.06em',
+        }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 15, fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>
+            {VERDICT_ICON[verdict]}
+          </span>
+          {VERDICT_LABEL[verdict]}
+        </div>
       </div>
 
       {/* ── Luma coaching ── */}
-      {roleContext ? (
-        <div
-          className="flex items-start gap-3 rounded-xl p-4"
-          style={{
-            background: 'rgba(255,255,255,0.70)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            border: '1px solid rgba(74,124,89,0.12)',
-            boxShadow: '0 2px 8px rgba(46,50,48,0.06)',
-          }}
-        >
-          <LumaGlyph size={40} state="speaking" className="text-primary shrink-0" />
-          <div className="flex-1 min-w-0 space-y-1">
-            <p className="font-body text-sm text-on-surface">{roleContext}</p>
+      <div
+        ref={coachingRef}
+        style={{
+          background: 'var(--color-surface)',
+          border: '1px solid var(--color-outline-variant)',
+          borderRadius: 14,
+          padding: '14px 16px',
+          boxShadow: '0 1px 2px rgba(30,27,20,0.04)',
+          display: 'flex', alignItems: 'flex-start', gap: 12,
+        }}
+      >
+        <div style={{ flexShrink: 0 }}>
+          <LumaGlyph size={36} state={roleContext ? 'speaking' : 'reviewing'} className="text-primary" />
+        </div>
+        {roleContext ? (
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-primary)', marginBottom: 4 }}>
+              Luma's Take
+            </div>
+            <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--color-on-surface)', margin: 0 }}>{roleContext}</p>
             {careerSignal && (
-              <p className="font-body text-xs text-on-surface-variant italic">{careerSignal}</p>
+              <p style={{ fontSize: 11, color: 'var(--color-on-surface-variant)', margin: '4px 0 0', fontStyle: 'italic', lineHeight: 1.5 }}>
+                {careerSignal}
+              </p>
             )}
           </div>
-        </div>
-      ) : (
-        /* Coaching loading skeleton */
-        <div
-          className="flex items-start gap-3 rounded-xl p-4"
-          style={{
-            background: 'rgba(255,255,255,0.70)',
-            border: '1px solid rgba(74,124,89,0.08)',
-          }}
-        >
-          <LumaGlyph size={40} state="reviewing" className="text-primary shrink-0" />
-          <div className="flex-1 space-y-2 pt-1">
-            <div className="h-3 rounded bg-surface-container-high animate-pulse w-4/5" />
-            <div className="h-3 rounded bg-surface-container-high animate-pulse w-3/5" />
+        ) : (
+          <div style={{ flex: 1, paddingTop: 4, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div className="animate-pulse" style={{ height: 10, borderRadius: 6, background: 'var(--color-surface-container-high)', width: '80%' }} />
+            <div className="animate-pulse" style={{ height: 10, borderRadius: 6, background: 'var(--color-surface-container-high)', width: '60%' }} />
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* ── Question-by-question rubric breakdown ── */}
+      {/* ── Question breakdown ── */}
       {questionRevealHistory.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-on-surface-variant text-[16px]"
-              style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>
+        <div ref={breakdownRef} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 2px' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 14, color: 'var(--color-on-surface-variant)', fontVariationSettings: "'FILL' 0, 'wght' 400" }}>
               fact_check
             </span>
-            <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">
+            <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)' }}>
               Question breakdown
-            </p>
-          </div>
-
-          <div className="space-y-6">
-            {questionRevealHistory.map((record, idx) => (
-              <QuestionBreakdown key={idx} record={record} questionNumber={idx + 1} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Reasoning Move ── */}
-      {competencySignal && (
-        <div
-          className="rounded-lg bg-surface-container p-4 border-l-4"
-          style={{ borderLeftColor: TERRA_PRIMARY }}
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <span className="material-symbols-outlined text-tertiary text-lg">neurology</span>
-            <span className="text-xs font-label font-semibold text-on-surface-variant uppercase tracking-wide">
-              Reasoning Move
             </span>
           </div>
-          <p className="text-sm font-body text-on-surface">{competencySignal.signal}</p>
-          {competencySignal.framework_hint && (
-            <p className="text-xs text-on-surface-variant mt-1 italic">{competencySignal.framework_hint}</p>
-          )}
+          {questionRevealHistory.map((record, idx) => (
+            <QuestionBreakdown key={idx} record={record} questionNumber={idx + 1} />
+          ))}
         </div>
       )}
 
-      {/* ── CTA ── */}
-      <div className="flex justify-end pb-4">
-        <button
-          onClick={onNext}
-          className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm shadow-sm hover:opacity-90 active:scale-[0.98] transition-all duration-150"
-        >
-          {isLastStep ? 'See Final Results' : `Next: ${nextStep ? STEP_NAMES[nextStep] : ''}`}
-        </button>
+      {/* ── Reasoning Move + CTA ── */}
+      <div ref={bottomRef} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+        {competencySignal && (
+          <div style={{
+            background: 'rgba(112,92,48,0.07)',
+            border: '1px dashed rgba(112,92,48,0.3)',
+            borderRadius: 12, padding: '12px 16px',
+            display: 'flex', flexDirection: 'column', gap: 6,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 16 }}>🧠</span>
+              <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#705c30' }}>
+                Reasoning Move
+              </span>
+            </div>
+            <p style={{ fontSize: 13, color: 'var(--color-on-surface)', margin: 0, lineHeight: 1.55 }}>
+              {competencySignal.signal}
+            </p>
+          </div>
+        )}
+
+        {/* CTA */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: 8 }}>
+          <button
+            onClick={onNext}
+            style={{
+              background: 'var(--color-primary)', color: '#fff',
+              borderRadius: 99, padding: '10px 22px',
+              fontWeight: 700, fontSize: 13, border: 'none', cursor: 'pointer',
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              boxShadow: '0 4px 14px -4px rgba(74,124,89,0.45)',
+            }}
+          >
+            {isLastStep ? 'See Final Results' : `Next: ${nextStep ? STEP_NAMES[nextStep] : ''}`}
+            <span className="material-symbols-outlined" style={{ fontSize: 16, fontVariationSettings: "'FILL' 0, 'wght' 400" }}>
+              arrow_forward
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   )

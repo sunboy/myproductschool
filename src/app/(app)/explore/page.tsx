@@ -1,354 +1,606 @@
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
-import type { StudyPlan, AutopsyProduct, DomainWithProgress, LearnModule } from '@/lib/types'
-import { getShowcaseProducts } from '@/lib/data/showcase'
+import type { StudyPlan, AutopsyProduct, LearnModule, DomainWithProgress } from '@/lib/types'
 import { getStudyPlanSummaries } from '@/lib/data/study-plans'
+import { getShowcaseProducts } from '@/lib/data/showcase'
 import { getLearnModuleSummaries } from '@/lib/data/learn-modules'
 import { getDomainsWithProgress } from '@/lib/data/domains'
+import { ParadigmGrid } from './ParadigmGrid'
+import { StudyPlanGrid } from './StudyPlanGrid'
 
-const PARADIGMS = [
-  {
-    name: 'Traditional',
-    description: 'Metrics, trade-offs, and prioritization — the core toolkit for senior and Staff roles.',
-    exampleChallenge: 'DAU/MAU looks great but revenue is flat. What\'s going on?',
-    challengeCount: 'Core collection',
-    icon: 'architecture',
-    borderClass: 'border-t-4 border-lens',
-    bgClass: 'bg-lens-tint/40',
-    iconClass: 'text-lens',
-    quoteClass: 'border-l-2 border-lens pl-2',
-  },
-  {
-    name: 'AI-Assisted',
-    description: 'When to trust AI output, how to validate, and keeping human judgment sharp.',
-    exampleChallenge: 'Your Copilot code passes tests but introduces a subtle security flaw.',
-    challengeCount: 'Growing',
-    icon: 'smart_toy',
-    borderClass: 'border-t-4 border-frame',
-    bgClass: 'bg-frame-tint/40',
-    iconClass: 'text-frame',
-    quoteClass: 'border-l-2 border-frame pl-2',
-  },
-  {
-    name: 'Agentic',
-    description: 'Design multi-step AI systems — agents, evals, failure modes, and trust boundaries.',
-    exampleChallenge: 'Your agent auto-approved 40 refunds overnight. 3 were fraudulent.',
-    challengeCount: 'Growing',
-    icon: 'hub',
-    borderClass: 'border-t-4 border-win',
-    bgClass: 'bg-win-tint/40',
-    iconClass: 'text-win',
-    quoteClass: 'border-l-2 border-win pl-2',
-  },
-  {
-    name: 'AI-Native',
-    description: "Products that couldn't exist without AI — entirely new interaction models and risks.",
-    exampleChallenge: 'Your AI tutor is great at math but hallucinates history. Ship or hold?',
-    challengeCount: 'Growing',
-    icon: 'neurology',
-    borderClass: 'border-t-4 border-optimize',
-    bgClass: 'bg-optimize-tint/40',
-    iconClass: 'text-optimize',
-    quoteClass: 'border-l-2 border-optimize pl-2',
-  },
-] as const
+/* ── Static data ────────────────────────────────────────────────── */
 
-const STUDY_PLANS_MOCK = [
-  {
-    title: 'Staff Engineer Path',
-    roles: ['SWE'],
-    duration: '6 weeks',
-    description: 'Strategic technical leadership and high-stakes decision making.',
-    slug: 'staff-engineer-path',
-    participantCount: '',
-  },
-  {
-    title: '7-Day Prep',
-    roles: ['SWE', 'Data', 'ML'],
-    duration: '7 days',
-    description: 'Intensive crash course for top-tier system design rounds.',
-    slug: '7-day-prep',
-    participantCount: '',
-  },
-  {
-    title: 'AI Product Fluency',
-    roles: ['SWE', 'ML', 'Founding'],
-    duration: '4 weeks',
-    description: 'Bridge the gap between engineering and AI product strategy.',
-    slug: 'ai-product-fluency',
-    participantCount: '',
-  },
+interface PlanItem {
+  title: string
+  sub: string
+  diff: string
+  color: string
+  bg: string
+  enrolled: number
+  icon: string
+  slug: string
+}
+
+const PLANS_STATIC: PlanItem[] = [
+  { title: 'Staff Engineer Path',            sub: '6 weeks · All paradigms',        diff: 'Intermediate', color: '#4a7c59', bg: '#cfe3d3', enrolled: 1243,  icon: 'route',       slug: 'staff-engineer-path' },
+  { title: 'AI Product Foundations',         sub: '3 weeks · AI-Assisted + Native', diff: 'Beginner',     color: '#3b6ed4', bg: '#e1ecff', enrolled: 892,   icon: 'smart_toy',   slug: 'ai-product-foundations' },
+  { title: 'Decision-Making Under Pressure', sub: '4 weeks · Traditional',          diff: 'Advanced',     color: '#8b46d4', bg: '#ecdeff', enrolled: 441,   icon: 'bolt',        slug: 'decision-making-under-pressure' },
+  { title: 'From Engineer to PM',            sub: '8 weeks · All',                  diff: 'Beginner',     color: '#c9602a', bg: '#fbe1d0', enrolled: 2104,  icon: 'trending_up', slug: 'from-engineer-to-pm' },
 ]
 
+/* ── FLOW moves ─────────────────────────────────────────────────── */
+
+const FLOW_MOVES = [
+  { k: 'Frame',    sub: 'Define the right problem',  color: '#4a7c59', bg: '#cfe3d3', icon: 'center_focus_strong' },
+  { k: 'List',     sub: 'Generate quality options',  color: '#6b8275', bg: '#dfe7e1', icon: 'format_list_bulleted' },
+  { k: 'Optimize', sub: 'Pick and sharpen the best', color: '#c9933a', bg: '#f3e2b9', icon: 'tune' },
+  { k: 'Win',      sub: 'Drive durable outcomes',    color: '#a878d6', bg: '#ecdeff', icon: 'emoji_events' },
+] as const
+
+/* ── Module static fallback ─────────────────────────────────────── */
+
+const MODULES_STATIC = [
+  { slug: 'flow-framework',     name: 'The FLOW Framework',     tagline: 'How product decisions get made.',            cover_color: '#1e3528', accent_color: '#7ee099', chapter_count: 8,  est_minutes: 90,  difficulty: 'beginner'     },
+  { slug: 'product-sense',      name: 'Product Sense',          tagline: 'Developing taste and judgment.',             cover_color: '#172240', accent_color: '#7aa7ff', chapter_count: 7,  est_minutes: 75,  difficulty: 'intermediate' },
+  { slug: 'agentic-pm',         name: 'Agentic PM',             tagline: 'Managing AI systems end-to-end.',            cover_color: '#25143a', accent_color: '#c89df5', chapter_count: 6,  est_minutes: 80,  difficulty: 'advanced'     },
+  { slug: 'metrics-tradeoffs',  name: 'Metrics & Trade-offs',   tagline: 'The numbers that drive real decisions.',     cover_color: '#301a0a', accent_color: '#f5a76c', chapter_count: 5,  est_minutes: 60,  difficulty: 'intermediate' },
+  { slug: 'stakeholder-comms',  name: 'Stakeholder Comms',      tagline: 'Making decisions land with the right people.', cover_color: '#1a2034', accent_color: '#85c1e9', chapter_count: 4,  est_minutes: 45,  difficulty: 'beginner'     },
+  { slug: 'strategy-execution', name: 'Strategy & Execution',   tagline: 'Closing the gap between plans and outcomes.', cover_color: '#1a1a1a', accent_color: '#a8d8a8', chapter_count: 6,  est_minutes: 70,  difficulty: 'advanced'     },
+] as const
+
+/* ── Domain card palettes & SVG art ─────────────────────────────── */
+
+const DOMAIN_PALETTES = [
+  { bg: '#cfe3d3', accent: '#4a7c59', fg: '#1a2e20' },
+  { bg: '#f3e2b9', accent: '#c9933a', fg: '#3a2a0a' },
+  { bg: '#ecdeff', accent: '#8b46d4', fg: '#2e1458' },
+  { bg: '#e1ecff', accent: '#3b6ed4', fg: '#1a2e58' },
+  { bg: '#fbe1d0', accent: '#c9602a', fg: '#3a1a0a' },
+  { bg: '#dfe7e1', accent: '#6b8275', fg: '#1e2e28' },
+]
+
+function DomainArtWaves({ color }: { color: string }) {
+  return (
+    <svg viewBox="0 0 220 140" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} aria-hidden>
+      {[30, 50, 70, 90, 110, 130].map((y, i) => (
+        <path key={i}
+          d={`M-10 ${y} C 30 ${y - 12}, 80 ${y + 12}, 130 ${y} C 180 ${y - 12}, 210 ${y + 8}, 230 ${y}`}
+          stroke={color} strokeWidth="1.6" fill="none" opacity={0.09 + i * 0.03}
+        />
+      ))}
+    </svg>
+  )
+}
+
+function DomainArtDots({ color }: { color: string }) {
+  const dots: { cx: number; cy: number; r: number; op: number }[] = []
+  for (let r = 0; r < 6; r++) for (let c = 0; c < 8; c++) {
+    const t = (r * 8 + c) / 47
+    dots.push({ cx: 16 + c * 28, cy: 14 + r * 22, r: 1.5 + t * 3, op: 0.07 + t * 0.15 })
+  }
+  return (
+    <svg viewBox="0 0 240 140" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} aria-hidden>
+      {dots.map((d, i) => <circle key={i} cx={d.cx} cy={d.cy} r={d.r} fill={color} opacity={d.op} />)}
+    </svg>
+  )
+}
+
+function DomainArtChevrons({ color }: { color: string }) {
+  return (
+    <svg viewBox="0 0 220 140" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} aria-hidden>
+      {[0, 1, 2, 3].map(i => (
+        <path key={i}
+          d={`M ${40 + i * 36} 130 L ${90 + i * 36} 60 L ${140 + i * 36} 130`}
+          stroke={color} strokeWidth="10" fill="none" strokeLinecap="round"
+          opacity={0.10 + i * 0.03}
+        />
+      ))}
+    </svg>
+  )
+}
+
+function DomainArtCircles({ color }: { color: string }) {
+  return (
+    <svg viewBox="0 0 220 140" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} aria-hidden>
+      {[25, 50, 75, 100, 125].map((r, i) => (
+        <circle key={i} cx={200} cy={20} r={r} stroke={color} strokeWidth="1.2" fill="none" opacity={0.08 + i * 0.03} />
+      ))}
+    </svg>
+  )
+}
+
+const DOMAIN_ARTS = [DomainArtWaves, DomainArtDots, DomainArtChevrons, DomainArtCircles]
+
+/* ── Page ────────────────────────────────────────────────────────── */
+
 export default async function ExplorePage() {
-  const [studyPlansRaw, showcaseProducts, modules, domains] = await Promise.all([
-    getStudyPlanSummaries(3).catch(() => [] as StudyPlan[]),
+  const [studyPlansRaw, showcaseProducts, modulesRaw, domains, challengeCount] = await Promise.all([
+    getStudyPlanSummaries(4).catch(() => [] as StudyPlan[]),
     getShowcaseProducts().catch(() => [] as AutopsyProduct[]),
-    getLearnModuleSummaries(8).catch(() => [] as LearnModule[]),
+    getLearnModuleSummaries(6).catch(() => [] as LearnModule[]),
     getDomainsWithProgress().catch(() => [] as DomainWithProgress[]),
+    (async () => {
+      try {
+        const { createClient } = await import('@/lib/supabase/server')
+        const supabase = await createClient()
+        const { count } = await supabase
+          .from('challenges')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_published', true)
+        return count ?? 0
+      } catch { return 0 }
+    })(),
   ])
 
-  const studyPlans = studyPlansRaw.length > 0
-    ? studyPlansRaw.map(p => ({
+  const plans: PlanItem[] = studyPlansRaw.length > 0
+    ? studyPlansRaw.map((p, i) => ({
         title: p.title,
-        roles: p.role_tags ?? [],
-        duration: `${p.estimated_hours} hrs`,
-        description: p.description ?? '',
+        sub: `${p.estimated_hours} hrs`,
+        diff: (p as unknown as { difficulty?: string }).difficulty ?? 'Intermediate',
+        color: PLANS_STATIC[i % PLANS_STATIC.length].color,
+        bg: PLANS_STATIC[i % PLANS_STATIC.length].bg,
+        enrolled: (p as unknown as { participant_count?: number }).participant_count ?? 0,
+        icon: PLANS_STATIC[i % PLANS_STATIC.length].icon,
         slug: p.slug,
-        participantCount: (p as unknown as { participant_count?: number }).participant_count
-          ? `+${(p as unknown as { participant_count: number }).participant_count}`
-          : '',
       }))
-    : STUDY_PLANS_MOCK
+    : PLANS_STATIC
 
-  const buildParadigmHref = (name: string) => {
-    const params = new URLSearchParams()
-    params.set('paradigm', name.toLowerCase().replace(' ', '-'))
-    return `/challenges?${params.toString()}`
-  }
+  const modules = modulesRaw.length > 0 ? modulesRaw : MODULES_STATIC
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6 animate-fade-in-up">
+    <div
+      className="animate-fade-in-up"
+      style={{ maxWidth: 1440, margin: '0 auto', padding: '28px 32px 120px' }}
+    >
 
-      {/* Header */}
-      <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="font-headline text-2xl font-extrabold text-on-surface leading-tight">Explore</h1>
-          <p className="text-sm text-on-surface-variant mt-0.5">Real scenarios from real companies. Pick a paradigm or follow a structured plan.</p>
-        </div>
-      </section>
+      {/* ── HERO ─────────────────────────────────────────────── */}
+      <div style={{
+        background: 'linear-gradient(135deg, #1e3528 0%, #14241c 55%, #0e1a14 100%)',
+        borderRadius: 32,
+        padding: '36px 40px 32px',
+        position: 'relative', overflow: 'hidden',
+        marginBottom: 48,
+      }}>
+        {/* Dot grid bg */}
+        <div aria-hidden style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)',
+          backgroundSize: '22px 22px',
+          maskImage: 'radial-gradient(ellipse 70% 100% at 70% 50%, black 40%, transparent 80%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 70% 100% at 70% 50%, black 40%, transparent 80%)',
+        }} />
+        {/* Green glow */}
+        <div aria-hidden style={{
+          position: 'absolute', inset: 0,
+          background: 'radial-gradient(600px 500px at 80% 50%, rgba(78,180,120,0.18), transparent 60%)',
+        }} />
+        <SpiralSVG color="#7ee099" />
 
-      {/* Luma Recommendation Banner */}
-      <section className="bg-primary-fixed/60 rounded-2xl p-4 flex items-center gap-4 border-l-4 border-primary/40">
-        <LumaGlyph size={36} state="speaking" className="text-primary shrink-0" />
-        <p className="text-sm text-on-surface leading-relaxed">
-          New here? Start with a <strong>Traditional</strong> challenge to baseline your thinking, then explore AI paradigms once you have your skill radar.
-        </p>
-      </section>
-
-      {/* Paradigms — 4-column strip */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {PARADIGMS.map(p => (
-          <Link
-            key={p.name}
-            href={buildParadigmHref(p.name)}
-            className={`rounded-xl ${p.borderClass} ${p.bgClass} bg-surface-container-low hover:bg-surface-container hover:shadow-sm active:scale-[0.98] transition-all duration-150 group relative flex flex-col gap-2.5 p-4 overflow-hidden`}
-          >
-            <div className="flex items-center gap-2">
-              <span className={`material-symbols-outlined text-[18px] ${p.iconClass}`}
-                style={{ fontVariationSettings: "'FILL' 0" }}>
-                {p.icon}
-              </span>
-              <h3 className="font-headline text-sm font-bold leading-tight flex-1">{p.name}</h3>
-              <span className="material-symbols-outlined text-on-surface-variant text-sm opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all">arrow_forward</span>
+        <div style={{ position: 'relative' }}>
+          <div>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 12,
+              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)',
+              padding: '5px 14px', borderRadius: 999,
+              fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
+              color: '#9ee0b8',
+            }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#7ee099', flexShrink: 0 }} />
+              {challengeCount} challenges · 4 paradigms
             </div>
-            <p className="text-xs text-on-surface-variant leading-snug">{p.description}</p>
-            <p className={`text-[11px] text-on-surface-variant/80 italic leading-snug ${p.quoteClass}`}>
-              &ldquo;{p.exampleChallenge}&rdquo;
+            <h1 style={{
+              margin: '0 0 10px',
+              fontFamily: 'var(--font-headline)', fontWeight: 700,
+              fontSize: 40, lineHeight: 1.05, letterSpacing: '-0.025em',
+              color: '#f3ede0',
+            }}>
+              Explore the full<br />
+              <span style={{
+                background: 'linear-gradient(90deg, #7ee099, #c9e86e)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+              }}>challenge library.</span>
+            </h1>
+            <p style={{ margin: '0 0 22px', fontSize: 15, lineHeight: 1.55, color: 'rgba(243,237,224,0.72)', maxWidth: 520 }}>
+              Real scenarios from real companies. Pick a paradigm, follow a structured plan, or let Luma choose for you.
             </p>
-            <div className="flex justify-end mt-auto">
-              <span className="text-[11px] font-bold text-on-surface-variant/60 bg-surface-container-highest/60 px-2 py-0.5 rounded-full">
-                {p.challengeCount}
-              </span>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <Link
+                href="/challenges"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  background: '#f3ede0', color: '#1e1b14',
+                  padding: '10px 20px', borderRadius: 999,
+                  fontWeight: 700, fontSize: 13, textDecoration: 'none',
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>explore</span>
+                Browse all {challengeCount}
+              </Link>
+              <Link
+                href="/explore/plans"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  background: 'rgba(255,255,255,0.08)', color: '#f3ede0',
+                  border: '1px solid rgba(255,255,255,0.14)',
+                  padding: '10px 20px', borderRadius: 999,
+                  fontWeight: 700, fontSize: 13, textDecoration: 'none',
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>route</span>
+                View study plans
+              </Link>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* ── PARADIGMS ─────────────────────────────────────────── */}
+      <SectionHeading eyebrow="The four formats" title="Formats." href="/challenges" linkLabel="View all challenges" />
+      <ParadigmGrid />
+
+      {/* ── FLOW FRAMEWORK STRIP ─────────────────────────────── */}
+      <div style={{
+        background: '#1e1b14',
+        borderRadius: 32,
+        padding: '44px 48px',
+        position: 'relative', overflow: 'hidden',
+        marginBottom: 48,
+      }}>
+        <div aria-hidden style={{
+          position: 'absolute', top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          fontFamily: 'var(--font-headline)', fontSize: 200, fontWeight: 800,
+          letterSpacing: '-0.04em', lineHeight: 1,
+          color: '#fff', opacity: 0.03,
+          whiteSpace: 'nowrap', userSelect: 'none', pointerEvents: 'none',
+        }}>FLOW</div>
+
+        <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: '360px 1fr', gap: 48, alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(243,237,224,0.45)', marginBottom: 10 }}>
+              The reasoning framework
+            </div>
+            <h2 style={{ margin: '0 0 14px', fontFamily: 'var(--font-headline)', fontSize: 42, fontWeight: 700, letterSpacing: '-0.025em', color: '#f3ede0', lineHeight: 1.05 }}>
+              The FLOW<br />Framework
+            </h2>
+            <p style={{ margin: '0 0 24px', fontSize: 15, lineHeight: 1.6, color: 'rgba(243,237,224,0.65)' }}>
+              Every HackProduct challenge is structured around four moves that compound into product judgment. The more you practice, the more automatic they become.
+            </p>
+            <Link
+              href="/explore/flow"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                background: '#f3ede0', color: '#1e1b14',
+                padding: '14px 24px', borderRadius: 999,
+                fontWeight: 700, fontSize: 15, textDecoration: 'none',
+              }}
+            >
+              Learn how FLOW works
+              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_forward</span>
+            </Link>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            {FLOW_MOVES.map(m => (
+              <div key={m.k} style={{
+                background: m.bg, borderRadius: 24, padding: '22px 20px',
+                position: 'relative', overflow: 'hidden',
+                border: '1px solid rgba(0,0,0,0.04)',
+              }}>
+                <div aria-hidden style={{
+                  position: 'absolute', right: -4, bottom: -8,
+                  fontFamily: 'var(--font-headline)', fontSize: 86, fontWeight: 800,
+                  color: m.color, opacity: 0.10, lineHeight: 1, userSelect: 'none',
+                  letterSpacing: '-0.04em', pointerEvents: 'none',
+                }}>{m.k[0]}</div>
+                <div style={{ position: 'relative' }}>
+                  <div style={{
+                    width: 34, height: 34, borderRadius: 10, background: m.color,
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10,
+                  }}>
+                    <span className="material-symbols-outlined" style={{ color: '#fff', fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 500" }}>{m.icon}</span>
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-headline)', fontSize: 20, fontWeight: 700, letterSpacing: '-0.01em' }}>{m.k}</div>
+                  <div style={{ fontSize: 12.5, color: 'rgba(0,0,0,0.65)', marginTop: 2 }}>{m.sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── COURSE MODULES ───────────────────────────────────── */}
+      <SectionHeading eyebrow="Deep learning" title="Guides." href="/explore/modules" linkLabel="All guides" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 48 }}>
+        {modules.map(m => (
+          <Link
+            key={m.slug}
+            href={`/explore/modules/${m.slug}`}
+            style={{
+              display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+              background: m.cover_color,
+              borderRadius: 24,
+              padding: '28px 24px 22px',
+              minHeight: 200,
+              position: 'relative', overflow: 'hidden',
+              textDecoration: 'none',
+              border: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            {/* Faint dot grid */}
+            <div aria-hidden style={{
+              position: 'absolute', inset: 0,
+              backgroundImage: 'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)',
+              backgroundSize: '18px 18px',
+              maskImage: 'radial-gradient(ellipse 80% 80% at 80% 80%, black, transparent)',
+              WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 80% 80%, black, transparent)',
+            }} />
+
+            {/* Chapter count watermark */}
+            <div aria-hidden style={{
+              position: 'absolute', right: -6, bottom: -10,
+              fontFamily: 'var(--font-headline)', fontSize: 100, fontWeight: 800,
+              color: m.accent_color, opacity: 0.07, lineHeight: 1,
+              userSelect: 'none', pointerEvents: 'none', letterSpacing: '-0.04em',
+            }}>{m.chapter_count}</div>
+
+            <div style={{ position: 'relative' }}>
+              {/* Difficulty chip */}
+              <div style={{
+                display: 'inline-flex', alignItems: 'center',
+                background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.12)',
+                padding: '3px 10px', borderRadius: 999, marginBottom: 14,
+                fontSize: 10, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
+                color: m.accent_color,
+              }}>
+                {m.difficulty}
+              </div>
+              <div style={{
+                fontFamily: 'var(--font-headline)', fontSize: 22, fontWeight: 700,
+                letterSpacing: '-0.015em', lineHeight: 1.15, color: '#f3ede0',
+                marginBottom: 6,
+              }}>
+                {m.name}
+              </div>
+              <div style={{ fontSize: 13, lineHeight: 1.5, color: 'rgba(243,237,224,0.6)' }}>
+                {m.tagline}
+              </div>
+            </div>
+
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 18 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(243,237,224,0.55)' }}>
+                {m.chapter_count} chapters · {m.est_minutes} min
+              </div>
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)',
+                color: '#f3ede0', padding: '7px 14px', borderRadius: 999,
+                fontWeight: 700, fontSize: 12.5,
+              }}>
+                Start
+                <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward</span>
+              </div>
             </div>
           </Link>
         ))}
       </div>
 
-      {/* FLOW Framework */}
-      <Link
-        href="/explore/flow"
-        className="flex flex-col gap-3 bg-primary-fixed rounded-2xl p-5 border border-primary-fixed-dim/40 editorial-shadow hover:brightness-95 active:scale-[0.99] transition-all group"
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <LumaGlyph size={28} state="speaking" className="text-primary shrink-0" />
-            <div>
-              <div className="font-headline font-bold text-base text-on-surface">The FLOW Framework</div>
-              <div className="font-label text-xs text-on-surface-variant">How HackProduct challenges are structured</div>
-            </div>
-          </div>
-          <span className="material-symbols-outlined text-base text-primary opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          {[
-            { symbol: '◇', label: 'Frame', color: '#2e7d32', bg: '#e8f5e9' },
-            { symbol: '◈', label: 'List', color: '#1565c0', bg: '#e3f2fd' },
-            { symbol: '◆', label: 'Optimize', color: '#ad1457', bg: '#fce4ec' },
-            { symbol: '◎', label: 'Win', color: '#f57f17', bg: '#fff8e1' },
-          ].map(m => (
-            <span
-              key={m.label}
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-label font-bold"
-              style={{ background: m.bg, color: m.color }}
-            >
-              {m.symbol} {m.label}
-            </span>
-          ))}
-        </div>
-        <p className="font-label text-xs font-bold text-primary">Learn how FLOW works →</p>
-      </Link>
-
-      {/* Course Modules */}
-      {modules.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant">Course Modules</h2>
-            <Link href="/explore/modules" className="font-label text-xs font-bold text-primary hover:underline">View all →</Link>
-          </div>
-          <div
-            className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            style={{ maskImage: 'linear-gradient(to right, transparent, black 4%, black 94%, transparent)' }}
-          >
-            {modules.map(m => (
-              <Link
-                key={m.id}
-                href={`/explore/modules/${m.slug}`}
-                className="flex flex-col gap-2 bg-surface-container rounded-xl p-4 shrink-0 w-48 hover:bg-surface-container-high card-interactive transition-colors"
-              >
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: (m.cover_color ?? '#4a7c59') + '25' }}>
-                  <span className="material-symbols-outlined text-base" style={{ color: m.cover_color ?? '#4a7c59', fontVariationSettings: "'FILL' 0" }}>auto_stories</span>
-                </div>
-                <div className="font-label text-sm font-bold text-on-surface leading-snug line-clamp-2">{m.name}</div>
-                <div className="font-body text-xs text-on-surface-variant line-clamp-1">{m.tagline}</div>
-                <div className="font-label text-[11px] text-on-surface-variant mt-auto">~{m.est_minutes} min</div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Domains */}
-      {domains.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant">Domains</h2>
-            <Link href="/explore/domains" className="font-label text-xs font-bold text-primary hover:underline">View all →</Link>
-          </div>
-          <div
-            className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            style={{ maskImage: 'linear-gradient(to right, transparent, black 4%, black 94%, transparent)' }}
-          >
-            {domains.slice(0, 10).map(d => (
-              <Link
-                key={d.id}
-                href={`/explore/domains/${d.slug}`}
-                className="flex flex-col items-center gap-1.5 shrink-0 w-24 py-3 px-2 rounded-xl hover:bg-surface-container transition-colors text-center group"
-              >
-                <div className="relative w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center">
-                  <span className="material-symbols-outlined text-xl text-primary" style={{ fontVariationSettings: "'FILL' 0" }}>{d.icon ?? 'category'}</span>
-                  {(d.progress_percentage ?? 0) > 0 && (
-                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-primary border-2 border-background" />
-                  )}
-                </div>
-                <span className="font-label text-xs font-bold text-on-surface leading-tight line-clamp-2">{d.title}</span>
-                <span className="font-label text-[11px] text-on-surface-variant">{d.challenge_count} challenges</span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Product Autopsies */}
+      {/* ── PRODUCT AUTOPSIES ─────────────────────────────────── */}
       {showcaseProducts.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h2 className="font-headline text-xl text-on-surface">Product Autopsies</h2>
-              <p className="text-xs text-on-surface-variant mt-0.5">
-                Trace the real decisions behind products you use every day.
-              </p>
-            </div>
-            <Link
-              href="/explore/showcase"
-              className="text-xs text-primary font-label font-semibold flex items-center gap-1 hover:underline"
-            >
-              View all
-              <span className="material-symbols-outlined text-sm">arrow_forward</span>
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {showcaseProducts.slice(0, 3).map(product => (
-              <Link
-                key={product.id}
-                href={`/explore/showcase/${product.slug}`}
-                className="flex items-center gap-3 bg-surface-container rounded-xl p-3 border-l-4 card-interactive hover:bg-surface-container-high transition-colors"
-                style={{ borderLeftColor: product.cover_color ?? '#4a7c59' }}
-              >
-                {/* Letter avatar — no emoji */}
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold text-white"
-                  style={{ backgroundColor: product.cover_color ?? '#4a7c59' }}
+        <>
+          <SectionHeading eyebrow="Case studies" title="Product autopsies." href="/explore/showcase" linkLabel="View all" />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 48 }}>
+            {showcaseProducts.slice(0, 4).map(product => {
+              const bg = product.cover_color ?? '#1e1b14'
+              return (
+                <Link
+                  key={product.slug}
+                  href={`/explore/showcase/${product.slug}`}
+                  style={{
+                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                    background: bg, borderRadius: 24, padding: '22px 20px',
+                    minHeight: 180, textDecoration: 'none',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                    position: 'relative', overflow: 'hidden',
+                  }}
                 >
-                  {product.name.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-label text-sm font-bold text-on-surface truncate">{product.name}</p>
-                  <p className="text-xs text-on-surface-variant truncate">{product.tagline}</p>
-                </div>
-                <span className="shrink-0 bg-secondary-container text-on-secondary-container rounded-full px-2 py-0.5 text-[11px] font-bold">
-                  {product.decision_count}
-                </span>
-              </Link>
-            ))}
+                  {/* Dark overlay to tame vivid cover colors */}
+                  <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.32)', borderRadius: 24, pointerEvents: 'none' }} />
+
+                  {/* Giant emoji watermark */}
+                  {product.logo_emoji && (
+                    <div aria-hidden style={{
+                      position: 'absolute', right: -4, bottom: -8,
+                      fontSize: 90, lineHeight: 1, opacity: 0.12,
+                      userSelect: 'none', pointerEvents: 'none',
+                    }}>{product.logo_emoji}</div>
+                  )}
+
+                  <div style={{ position: 'relative' }}>
+                    {/* Emoji + industry */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                      {product.logo_emoji && (
+                        <div style={{
+                          width: 40, height: 40, borderRadius: 12,
+                          background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.20)',
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 22,
+                        }}>{product.logo_emoji}</div>
+                      )}
+                      {product.industry && (
+                        <div style={{
+                          fontSize: 10, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
+                          color: 'rgba(255,255,255,0.80)',
+                        }}>{product.industry}</div>
+                      )}
+                    </div>
+                    <div style={{
+                      fontFamily: 'var(--font-headline)', fontSize: 20, fontWeight: 700,
+                      letterSpacing: '-0.01em', color: '#ffffff', marginBottom: 4,
+                    }}>{product.name}</div>
+                    <div style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.82)', lineHeight: 1.45 }}>
+                      {product.tagline}
+                    </div>
+                  </div>
+
+                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.70)' }}>
+                      {product.decision_count} decisions
+                    </div>
+                    <div style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 5,
+                      background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.28)',
+                      color: '#ffffff', padding: '6px 12px', borderRadius: 999,
+                      fontWeight: 700, fontSize: 12,
+                    }}>
+                      Explore
+                      <span className="material-symbols-outlined" style={{ fontSize: 13 }}>arrow_forward</span>
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
           </div>
-        </section>
+        </>
       )}
 
-      {/* Study Plans */}
-      <section className="space-y-4 pt-2">
-        <div className="flex items-center justify-between">
-          <h2 className="font-headline text-lg font-bold text-on-surface">Study Plans</h2>
-          <Link href="/explore/plans" className="text-xs font-bold text-primary hover:underline">
-            View all
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
-          {studyPlans.map(plan => (
-            <Link
-              key={plan.slug}
-              href={`/explore/plans/${plan.slug}`}
-              className="bg-surface-container-low rounded-xl p-4 border border-outline-variant/30 flex flex-col justify-between card-interactive hover:shadow-sm transition-shadow"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex gap-1 flex-wrap">
-                    {plan.roles.map(r => (
-                      <span
-                        key={r}
-                        className="bg-secondary-container text-secondary text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider"
-                      >
-                        {r}
-                      </span>
-                    ))}
+      {/* ── DOMAINS ───────────────────────────────────────────── */}
+      {domains.length > 0 && (
+        <>
+          <SectionHeading eyebrow="Topic areas" title="Explore by domain." href="/domains" linkLabel="All domains" />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 48 }}>
+            {domains.slice(0, 8).map((d, i) => {
+              const palette = DOMAIN_PALETTES[i % DOMAIN_PALETTES.length]
+              const DomainArt = DOMAIN_ARTS[i % DOMAIN_ARTS.length]
+              return (
+                <Link
+                  key={d.slug}
+                  href={`/domains/${d.slug}`}
+                  style={{
+                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                    background: palette.bg,
+                    borderRadius: 20,
+                    padding: '18px 18px 16px',
+                    minHeight: 140,
+                    textDecoration: 'none',
+                    border: '1px solid rgba(0,0,0,0.05)',
+                    position: 'relative', overflow: 'hidden',
+                  }}
+                >
+                  {/* SVG art background */}
+                  <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                    <DomainArt color={palette.accent} />
                   </div>
-                  <span className="text-xs text-on-surface-variant font-medium tabular-nums">{plan.duration}</span>
-                </div>
-                <h4 className="font-headline text-base font-bold mb-1.5">{plan.title}</h4>
-                <p className="text-xs text-on-surface-variant leading-snug">{plan.description}</p>
-              </div>
-              <div className="mt-4 pt-4 border-t border-outline-variant/20 flex items-center justify-between">
-                {plan.participantCount ? (
-                  <div className="flex items-center gap-2">
-                    <div className="flex gap-1">
-                      <span className="w-2 h-2 rounded-full bg-primary" />
-                      <span className="w-2 h-2 rounded-full bg-tertiary" />
-                      <span className="w-2 h-2 rounded-full bg-secondary" />
+
+                  {/* Progress bar at bottom */}
+                  {d.progress_percentage > 0 && (
+                    <div style={{
+                      position: 'absolute', bottom: 0, left: 0,
+                      height: 3, background: palette.accent,
+                      width: `${d.progress_percentage}%`,
+                      borderRadius: '0 0 0 999px',
+                    }} />
+                  )}
+
+                  <div style={{ position: 'relative' }}>
+                    {d.icon && (
+                      <div style={{
+                        width: 34, height: 34, borderRadius: 10,
+                        background: palette.accent,
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        marginBottom: 10,
+                        boxShadow: `0 3px 10px -3px ${palette.accent}66`,
+                      }}>
+                        <span className="material-symbols-outlined" style={{
+                          fontSize: 18, color: '#fff',
+                          fontVariationSettings: "'FILL' 1, 'wght' 500",
+                        }}>{d.icon}</span>
+                      </div>
+                    )}
+                    <div style={{
+                      fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700,
+                      letterSpacing: '-0.01em', color: palette.fg,
+                      marginBottom: 3,
+                    }}>{d.title}</div>
+                    {d.description && (
+                      <div style={{
+                        fontSize: 12, color: palette.fg, opacity: 0.65,
+                        lineHeight: 1.45,
+                        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}>{d.description}</div>
+                    )}
+                  </div>
+
+                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 600, color: palette.fg, opacity: 0.55 }}>
+                      {d.challenge_count} challenges
                     </div>
-                    <span className="text-xs font-bold text-on-surface">{plan.participantCount} enrolled</span>
+                    {d.progress_percentage > 0 && (
+                      <div style={{ fontSize: 11.5, fontWeight: 700, color: palette.accent }}>
+                        {Math.round(d.progress_percentage)}%
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <span className="text-xs text-on-surface-variant">Structured learning path</span>
-                )}
-                <span className="text-xs font-bold text-on-primary bg-primary px-3 py-1.5 rounded-full">
-                  Start
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+                </Link>
+              )
+            })}
+          </div>
+        </>
+      )}
+
+      {/* ── STUDY PLANS ──────────────────────────────────────── */}
+      <SectionHeading eyebrow="Structured learning" title="Study Plans." href="/explore/plans" linkLabel="All plans" />
+      <StudyPlanGrid plans={plans} />
     </div>
+  )
+}
+
+/* ── Shared section heading ─────────────────────────────────────── */
+
+function SectionHeading({ eyebrow, title, href, linkLabel }: {
+  eyebrow: string
+  title: string
+  href: string
+  linkLabel: string
+}) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 20 }}>
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--color-on-surface-muted)', marginBottom: 6 }}>
+          {eyebrow}
+        </div>
+        <h2 style={{ margin: 0, fontFamily: 'var(--font-headline)', fontSize: 38, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1 }}>
+          {title}
+        </h2>
+      </div>
+      <Link
+        href={href}
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          color: 'var(--color-primary)', fontWeight: 700, fontSize: 13,
+          background: 'transparent', border: 'none', textDecoration: 'none',
+          letterSpacing: '0.04em',
+        }}
+      >
+        {linkLabel}{' '}
+        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_forward</span>
+      </Link>
+    </div>
+  )
+}
+
+/* ── Static SVG (server-renderable) ────────────────────────────── */
+
+function SpiralSVG({ color }: { color: string }) {
+  const pts: string[] = []
+  for (let t = 0; t < 8 * Math.PI; t += 0.08) {
+    const r = 6 + t * 5
+    pts.push(`${130 + r * Math.cos(t)},${100 + r * Math.sin(t)}`)
+  }
+  return (
+    <svg viewBox="0 0 260 200" style={{ position: 'absolute', bottom: -20, right: -20, width: '80%', height: '80%', pointerEvents: 'none', zIndex: 0 }}>
+      <polyline points={pts.join(' ')} stroke={color} strokeWidth="1.8" fill="none" opacity={0.14} />
+    </svg>
   )
 }

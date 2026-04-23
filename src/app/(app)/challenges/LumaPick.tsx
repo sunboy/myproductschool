@@ -36,7 +36,10 @@ export function LumaPick() {
   if (!data) return null
 
   return (
-    <div className="bg-primary-container/20 border border-primary-container/30 rounded-xl p-4 mb-6 flex items-center gap-4">
+    <div
+      className="rounded-xl p-4 mb-6 flex items-center gap-4"
+      style={{ background: 'linear-gradient(90deg, #cfe3d3 0%, #d8ead9 100%)', border: '1px solid rgba(74,124,89,0.15)' }}
+    >
       <LumaGlyph size={40} state="speaking" className="text-primary flex-shrink-0" />
       <div>
         <p className="text-sm font-bold text-primary">Luma&apos;s Pick: {data.challenge.title}</p>
@@ -44,7 +47,10 @@ export function LumaPick() {
       </div>
       <Link
         href={`/workspace/challenges/${data.challenge.slug ?? data.challenge.id}`}
-        className="ml-auto bg-primary text-on-primary text-xs font-bold px-4 py-2 rounded-full hover:opacity-90 transition-colors whitespace-nowrap"
+        className="ml-auto text-xs font-bold px-4 py-2 rounded-full transition-colors whitespace-nowrap hover:-translate-y-px active:translate-y-0 duration-[120ms]"
+        style={{ backgroundColor: '#1f2421', color: '#f0ede4' }}
+        onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#111614')}
+        onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1f2421')}
       >
         Try Now
       </Link>
