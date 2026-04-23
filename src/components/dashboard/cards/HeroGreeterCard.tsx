@@ -167,18 +167,10 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
           { k: 'Next milestone', v: 'Lv 4', sub: 'Frame · keep practicing', icon: 'flag' },
           { k: 'Due this week', v: '3', sub: 'challenges queued', icon: 'event' },
         ].map((s, i) => (
-          <div key={i} className="flex flex-col gap-0.5">
-            <div
-              className="flex items-center gap-1.5 text-[10px] font-label font-bold tracking-widest uppercase"
-              style={{ color: 'rgba(243,237,224,0.55)' }}
-            >
-              <span className="material-symbols-outlined text-[15px]">{s.icon}</span>
-              {s.k}
-            </div>
-            <div className="flex items-baseline gap-1.5" style={{ paddingLeft: '21px' }}>
-              <span className="font-headline text-xl font-medium">{s.v}</span>
-              <span className="text-[11px]" style={{ color: 'rgba(243,237,224,0.6)' }}>{s.sub}</span>
-            </div>
+          <div key={i} className="flex items-baseline gap-1.5">
+            <span className="material-symbols-outlined text-[16px]" style={{ color: 'rgba(243,237,224,0.6)', alignSelf: 'center' }}>{s.icon}</span>
+            <span className="font-headline text-xl font-medium">{s.v}</span>
+            <span className="text-[11px]" style={{ color: 'rgba(243,237,224,0.6)' }}>{s.sub}</span>
           </div>
         ))}
       </div>
