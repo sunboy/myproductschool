@@ -4,8 +4,31 @@ import { getStudyPlanSummaries } from '@/lib/data/study-plans'
 import { getShowcaseProducts } from '@/lib/data/showcase'
 import { getLearnModuleSummaries } from '@/lib/data/learn-modules'
 import { getDomainsWithProgress } from '@/lib/data/domains'
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { ParadigmGrid } from './ParadigmGrid'
 import { StudyPlanGrid } from './StudyPlanGrid'
+
+interface PersonalisedPlan {
+  slug: string
+  title: string
+  description: string | null
+  move_tag: string | null
+}
+
+const MOVE_ICON: Record<string, string> = {
+  frame: 'center_focus_strong',
+  list: 'format_list_bulleted',
+  optimize: 'tune',
+  win: 'emoji_events',
+}
+
+const MOVE_LABEL: Record<string, string> = {
+  frame: 'Frame',
+  list: 'List',
+  optimize: 'Optimize',
+  win: 'Win',
+}
 
 /* ── Static data ────────────────────────────────────────────────── */
 
@@ -113,21 +136,38 @@ const DOMAIN_ARTS = [DomainArtWaves, DomainArtDots, DomainArtChevrons, DomainArt
 /* ── Page ────────────────────────────────────────────────────────── */
 
 export default async function ExplorePage() {
-  const [studyPlansRaw, showcaseProducts, modulesRaw, domains, challengeCount] = await Promise.all([
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const [studyPlansRaw, showcaseProducts, modulesRaw, domains, challengeCount, personalisedPlan] = await Promise.all([
     getStudyPlanSummaries(4).catch(() => [] as StudyPlan[]),
     getShowcaseProducts().catch(() => [] as AutopsyProduct[]),
     getLearnModuleSummaries(6).catch(() => [] as LearnModule[]),
     getDomainsWithProgress().catch(() => [] as DomainWithProgress[]),
     (async () => {
       try {
-        const { createClient } = await import('@/lib/supabase/server')
-        const supabase = await createClient()
         const { count } = await supabase
           .from('challenges')
           .select('id', { count: 'exact', head: true })
           .eq('is_published', true)
         return count ?? 0
       } catch { return 0 }
+    })(),
+    (async (): Promise<PersonalisedPlan | null> => {
+      if (!user) return null
+      try {
+        const admin = createAdminClient()
+        const { data } = await admin
+          .from('user_study_plan_enrollments')
+          .select('plan_id, study_plans(id, slug, title, description, move_tag)')
+          .eq('user_id', user.id)
+          .order('enrolled_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        if (!data) return null
+        const plan = (data as unknown as { study_plans: PersonalisedPlan | null }).study_plans
+        return plan
+      } catch { return null }
     })(),
   ])
 
@@ -229,6 +269,41 @@ export default async function ExplorePage() {
                 View study plans
               </Link>
             </div>
+
+            {personalisedPlan && (
+              <Link
+                href={`/explore/plans/${personalisedPlan.slug}`}
+                style={{
+                  marginTop: 20,
+                  display: 'inline-flex', alignItems: 'center', gap: 12,
+                  background: 'rgba(126,224,153,0.10)',
+                  border: '1px solid rgba(126,224,153,0.22)',
+                  borderRadius: 16,
+                  padding: '12px 18px',
+                  textDecoration: 'none',
+                  maxWidth: 460,
+                }}
+              >
+                <div style={{
+                  width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+                  background: 'rgba(126,224,153,0.18)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#7ee099', fontVariationSettings: "'FILL' 1" }}>
+                    {MOVE_ICON[personalisedPlan.move_tag ?? ''] ?? 'route'}
+                  </span>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(126,224,153,0.7)', marginBottom: 2 }}>
+                    Your plan · {MOVE_LABEL[personalisedPlan.move_tag ?? ''] ?? personalisedPlan.move_tag}
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#f3ede0', lineHeight: 1.2 }}>
+                    {personalisedPlan.title}
+                  </div>
+                </div>
+                <span className="material-symbols-outlined" style={{ fontSize: 16, color: 'rgba(243,237,224,0.45)', flexShrink: 0 }}>arrow_forward</span>
+              </Link>
+            )}
           </div>
 
         </div>
@@ -551,7 +626,7 @@ export default async function ExplorePage() {
 
       {/* ── STUDY PLANS ──────────────────────────────────────── */}
       <SectionHeading eyebrow="Structured learning" title="Study Plans." href="/explore/plans" linkLabel="All plans" />
-      <StudyPlanGrid plans={plans} />
+      <StudyPlanGrid plans={plans} personalisedPlan={personalisedPlan} />
     </div>
   )
 }
