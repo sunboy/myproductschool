@@ -97,9 +97,9 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
         }}
       />
 
-      {/* Mascot — absolutely positioned, full card height, right-anchored */}
-      <div className="absolute top-0 bottom-0 right-8 hidden lg:flex items-center" aria-hidden>
-        <MaskoAvatar size={240} style={{ filter: 'drop-shadow(0 8px 32px rgba(126,224,153,0.35)) drop-shadow(0 2px 8px rgba(0,0,0,0.5))' }} />
+      {/* Mascot — top-anchored, right side */}
+      <div className="absolute top-4 right-8 hidden lg:block" aria-hidden>
+        <MaskoAvatar size={200} style={{ filter: 'drop-shadow(0 8px 32px rgba(126,224,153,0.35)) drop-shadow(0 2px 8px rgba(0,0,0,0.5))' }} />
       </div>
 
       <div className="relative p-7 pb-0" style={{ paddingRight: 'max(1.75rem, 280px)' }}>
@@ -153,8 +153,8 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
 
       {/* Stat strip */}
       <div
-        className="relative mt-6 pt-5 mb-7 grid grid-cols-4 gap-6"
-        style={{ borderTop: '1px dashed rgba(255,255,255,0.12)', marginLeft: '1.75rem', marginRight: 'max(1.75rem, 280px)' }}
+        className="relative mx-7 mt-6 pt-5 mb-7 grid grid-cols-4 gap-6"
+        style={{ borderTop: '1px dashed rgba(255,255,255,0.12)' }}
       >
         {[
           {
