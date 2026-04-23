@@ -418,7 +418,7 @@ export default async function ExplorePage() {
               }}>
                 {m.name}
               </div>
-              <div style={{ fontSize: 13, lineHeight: 1.5, color: 'rgba(243,237,224,0.6)' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.5, color: 'rgba(243,237,224,0.6)' }}>
                 {m.tagline}
               </div>
             </div>
@@ -494,7 +494,7 @@ export default async function ExplorePage() {
                       fontFamily: 'var(--font-headline)', fontSize: 20, fontWeight: 700,
                       letterSpacing: '-0.01em', color: '#ffffff', marginBottom: 4,
                     }}>{product.name}</div>
-                    <div style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.82)', lineHeight: 1.45 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 600, color: 'rgba(255,255,255,0.82)', lineHeight: 1.45 }}>
                       {product.tagline}
                     </div>
                   </div>
@@ -580,7 +580,7 @@ export default async function ExplorePage() {
                     }}>{d.title}</div>
                     {d.description && (
                       <div style={{
-                        fontSize: 12, color: palette.fg, opacity: 0.65,
+                        fontSize: 12, fontWeight: 600, color: palette.fg, opacity: 0.65,
                         lineHeight: 1.45,
                         display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',

@@ -182,12 +182,12 @@ function ParadigmCard({
         }}>{p.key}</h3>
 
         {!wide && (
-          <p style={{ margin: '0 0 12px', fontSize: big ? 13 : 12, lineHeight: 1.55, opacity: 0.8, maxWidth: 340 }}>
+          <p style={{ margin: '0 0 12px', fontSize: big ? 13 : 12, fontWeight: 600, lineHeight: 1.55, opacity: 0.8, maxWidth: 340 }}>
             {p.desc}
           </p>
         )}
         {wide && (
-          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, opacity: 0.8, maxWidth: 600 }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 600, lineHeight: 1.55, opacity: 0.8, maxWidth: 600 }}>
             {p.desc}
           </p>
         )}
