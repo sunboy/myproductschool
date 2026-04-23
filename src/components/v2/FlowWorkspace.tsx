@@ -1066,7 +1066,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           <button
             className="btn btn--ghost"
             style={{
-              padding: '6px 10px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4,
+              padding: '6px 10px', fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4,
               background: hintOpen ? '#f3e2b9' : undefined,
               color: hintOpen ? '#5c3a00' : undefined,
               borderRadius: 8,
@@ -1323,7 +1323,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 </span>
                 <div style={{ flex: 1 }}>
                   <span style={{ fontWeight: 700, fontSize: 13, color: '#5c3a00' }}>Hint · {STEP_LABEL[currentStep]} move: </span>
-                  <span style={{ fontSize: 13, color: '#5c3a00', lineHeight: 1.6 }}>{activeStepData.nudge}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#5c3a00', lineHeight: 1.6 }}>{activeStepData.nudge}</span>
                 </div>
                 <button
                   onClick={() => setHintOpen(false)}
