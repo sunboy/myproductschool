@@ -325,7 +325,7 @@ export default async function DashboardPage() {
         icon: 'bolt',
         done: doneQuickTake,
         active: !doneQuickTake,
-        href: undefined,
+        href: quickTakePrompt ? `/workspace/challenges/${quickTakePrompt.slug ?? quickTakePrompt.id}` : '/challenges',
       },
       {
         label: 'Core challenge',
