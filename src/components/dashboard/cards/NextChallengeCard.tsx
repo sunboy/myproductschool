@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { difficultyLabel } from '@/lib/utils'
 
 interface NextChallengeCardProps {
   title: string
@@ -21,7 +22,7 @@ export function NextChallengeCard({ title, domain, difficulty, challengeId, luma
         <h3 className="font-headline font-semibold text-[15px] text-on-surface leading-snug">{title}</h3>
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="bg-tertiary-fixed/80 text-on-tertiary-fixed-variant rounded-full text-[11px] px-2.5 py-0.5 font-label font-semibold">
-            {difficulty}
+            {difficultyLabel(difficulty)}
           </span>
           <span className="bg-secondary-container text-on-secondary-container rounded-full text-[11px] px-2.5 py-0.5 font-label">
             {domain}
