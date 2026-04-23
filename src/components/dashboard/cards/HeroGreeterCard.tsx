@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { MaskoAvatar } from '@/components/shell/MaskoAvatar'
 
 const lines = [
   "I lined up challenges that build on where you left off.",
@@ -111,18 +111,16 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
             </Link>
           </div>
         </div>
-        <div className="relative hidden lg:block">
+        <div className="relative hidden lg:block self-end">
           <div
             aria-hidden
             className="absolute inset-0 pointer-events-none blur-md"
             style={{
               background:
-                'radial-gradient(120px 120px at 50% 50%, rgba(191,240,199,0.35), transparent 70%)',
+                'radial-gradient(140px 140px at 50% 60%, rgba(191,240,199,0.3), transparent 70%)',
             }}
           />
-          <div className="animate-luma-float">
-            <LumaGlyph size={96} state="idle" className="text-white" />
-          </div>
+          <MaskoAvatar size={140} className="relative drop-shadow-xl" />
         </div>
       </div>
 
