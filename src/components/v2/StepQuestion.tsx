@@ -41,7 +41,7 @@ const ELABORATION_LABELS: Partial<Record<ResponseType, string>> = {
 }
 
 const ELABORATION_PLACEHOLDERS: Partial<Record<ResponseType, string>> = {
-  mcq_plus_elaboration: 'Add your reasoning…',
+  mcq_plus_elaboration: 'Add your reasoning (Optional)',
   modified_option: 'Describe how you\'d change or extend this option…',
   freeform: 'Write your full answer here…',
 }
@@ -88,7 +88,6 @@ export function StepQuestion({
 
       {showElaboration && (
         <div className="space-y-1.5">
-          <label className="font-label text-sm text-on-surface-variant">{elaborationLabel}</label>
           <textarea
             ref={elaborationRef}
             value={elaboration}
