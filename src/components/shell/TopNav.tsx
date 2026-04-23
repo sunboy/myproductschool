@@ -150,7 +150,7 @@ export function TopNav() {
         {/* Column 1: Brand */}
         <Link href="/dashboard" className="flex items-center no-underline shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/wordmark.png" alt="HackProduct" className="h-7" />
+          <img src="/images/wordmark.png" alt="HackProduct" className="h-[84px]" />
         </Link>
 
         {/* Column 2: Nav pills (centered) */}
