@@ -102,7 +102,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
         <MaskoAvatar size={200} style={{ filter: 'drop-shadow(0 8px 32px rgba(126,224,153,0.35)) drop-shadow(0 2px 8px rgba(0,0,0,0.5))' }} />
       </div>
 
-      <div className="relative p-7 pb-0" style={{ paddingRight: 'max(1.75rem, 280px)' }}>
+      <div className="relative p-7 pb-2" style={{ paddingRight: 'max(1.75rem, 280px)' }}>
         {/* Luma badge */}
         <div
           className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-label font-semibold tracking-wider uppercase mb-3"
@@ -153,7 +153,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
 
       {/* Stat strip */}
       <div
-        className="relative mx-7 mt-6 pt-5 mb-7 grid grid-cols-4 gap-6"
+        className="relative mx-7 mt-4 pt-4 mb-5 grid grid-cols-4 gap-4"
         style={{ borderTop: '1px dashed rgba(255,255,255,0.12)' }}
       >
         {[
@@ -169,15 +169,15 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
         ].map((s, i) => (
           <div key={i}>
             <div
-              className="flex items-center gap-2 text-[11px] font-label font-bold tracking-widest uppercase mb-1"
+              className="flex items-center gap-1.5 text-[10px] font-label font-bold tracking-widest uppercase mb-0.5"
               style={{ color: 'rgba(243,237,224,0.55)' }}
             >
-              <span className="material-symbols-outlined text-[18px]">{s.icon}</span>
+              <span className="material-symbols-outlined text-[15px]">{s.icon}</span>
               {s.k}
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="font-headline text-2xl font-medium">{s.v}</span>
-              <span className="text-xs" style={{ color: 'rgba(243,237,224,0.6)' }}>
+            <div className="flex items-baseline gap-1.5">
+              <span className="font-headline text-xl font-medium">{s.v}</span>
+              <span className="text-[11px]" style={{ color: 'rgba(243,237,224,0.6)' }}>
                 {s.sub}
               </span>
             </div>
