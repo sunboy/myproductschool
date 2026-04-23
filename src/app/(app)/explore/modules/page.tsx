@@ -355,7 +355,7 @@ export default function ModulesPage() {
                 textDecoration: 'none',
               }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 18 }}>school</span>
-                Study plans
+                Study Plans
               </Link>
             </div>
           </div>

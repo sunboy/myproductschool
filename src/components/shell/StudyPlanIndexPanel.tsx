@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import { useEffect } from 'react'
 import { useStudyPlan } from '@/hooks/useStudyPlan'
 
 interface Props {
@@ -8,10 +9,19 @@ interface Props {
 }
 
 export function StudyPlanIndexPanel({ planSlug, activeChallengeId }: Props) {
-  const { plan, chapters, userProgress, isLoading } = useStudyPlan(planSlug)
+  const { plan, chapters, userProgress, inProgressChallengeIds, isLoading, refetch } = useStudyPlan(planSlug)
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { fromPlan } = (e as CustomEvent).detail ?? {}
+      if (fromPlan === planSlug) refetch()
+    }
+    window.addEventListener('challenge-completed', handler)
+    return () => window.removeEventListener('challenge-completed', handler)
+  }, [planSlug, refetch])
 
   return (
-    <aside className="hidden md:flex flex-col h-screen sticky top-0 w-64 shrink-0 bg-surface-container-low border-r border-outline-variant/40 overflow-y-auto">
+    <aside className="hidden md:flex flex-col h-full w-64 shrink-0 bg-surface-container-low border-r border-outline-variant/40 overflow-y-auto">
 
       {/* ── Header ── */}
       <div className="px-4 pt-4 pb-3 border-b border-outline-variant/30">
@@ -72,7 +82,25 @@ export function StudyPlanIndexPanel({ planSlug, activeChallengeId }: Props) {
                   challenge.id === activeChallengeId ||
                   challengeSlug === activeChallengeId
                 const isDone = userProgress?.completed_challenges?.includes(challenge.id) ?? false
+                const isInProgress = !isDone && inProgressChallengeIds.includes(challenge.id)
                 const href = `/workspace/challenges/${challengeSlug ?? challenge.id}?from_plan=${planSlug}&cid=${challenge.id}`
+
+                let iconName = 'radio_button_unchecked'
+                let iconColor: string | undefined
+                let iconFill = "'FILL' 0, 'wght' 400"
+                if (isDone) {
+                  iconName = 'check_circle'
+                  iconColor = '#4a7c59'
+                  iconFill = "'FILL' 1, 'wght' 400"
+                } else if (isActive) {
+                  iconName = 'play_circle'
+                  iconColor = '#4a7c59'
+                  iconFill = "'FILL' 1, 'wght' 400"
+                } else if (isInProgress) {
+                  iconName = 'pending'
+                  iconColor = '#705c30'
+                  iconFill = "'FILL' 1, 'wght' 400"
+                }
 
                 return (
                   <Link
@@ -87,12 +115,9 @@ export function StudyPlanIndexPanel({ planSlug, activeChallengeId }: Props) {
                   >
                     <span
                       className="material-symbols-outlined text-[14px] shrink-0 mt-[1px]"
-                      style={{
-                        fontVariationSettings: isDone ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400",
-                        color: isDone ? '#4a7c59' : isActive ? '#4a7c59' : undefined,
-                      }}
+                      style={{ fontVariationSettings: iconFill, color: iconColor }}
                     >
-                      {isDone ? 'check_circle' : isActive ? 'play_circle' : 'radio_button_unchecked'}
+                      {iconName}
                     </span>
                     <span className="flex-1 leading-snug line-clamp-2">{challenge.title}</span>
                   </Link>

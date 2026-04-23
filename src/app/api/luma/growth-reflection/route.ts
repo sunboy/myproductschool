@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { IS_MOCK } from '@/lib/mock'
 import { getLumaContext, buildLumaContextString } from '@/lib/luma-context'
+import { LUMA_VOICE } from '@/lib/luma/system-prompt'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -72,13 +73,13 @@ export async function POST(_req: NextRequest) {
       const contextString = buildLumaContextString(lumaCtx, 'coaching')
       const userPrompt =
         contextString +
-        '\n\nWrite a 2–3 sentence growth reflection for this learner. Lead with a strength, then name their specific growth area and next unlock. Be warm, direct, and specific. Return JSON: {"reflection": "..."}'
+        '\n\nWrite a growth reflection for this learner. Use 2 short paragraphs: one naming a specific strength, one naming the specific growth area and what to do next. Keep each paragraph to 2 sentences. Use the learner\'s first name if known. Be direct and specific. No filler. Return JSON: {"reflection": "..."}'
 
       const message = await anthropic.messages.create({
         model: 'claude-sonnet-4-6',
         max_tokens: 300,
         system:
-          'You are Luma, a warm and direct product thinking coach. Respond only with a JSON object like: {"reflection": "..."} — no markdown, no extra text.',
+          `You are Luma, a product thinking coach at HackProduct.\n\n${LUMA_VOICE}\n\nRespond only with a JSON object like: {"reflection": "..."} — no markdown, no extra text. The reflection value must use "\\n\\n" between the two paragraphs.`,
         messages: [{ role: 'user', content: userPrompt }],
       })
 

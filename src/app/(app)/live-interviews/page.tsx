@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { MOCK_LIVE_INTERVIEW_PERSONAS } from '@/lib/mock-live-interviews'
 import FilteredPersonaGrid from './FilteredPersonaGrid'
 import PastInterviews from './PastInterviews'
-import { GuidedTab } from '../challenges/GuidedTab'
 import { UsageProvider } from '@/context/UsageContext'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
@@ -75,14 +74,7 @@ async function getScenarios(): Promise<ScenarioBrief[]> {
   }))
 }
 
-export default async function LiveInterviewsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ tab?: string }>
-}) {
-  const { tab } = await searchParams
-  const activeTab = tab === 'prep' ? 'prep' : 'mock'
-
+export default async function LiveInterviewsPage() {
   const [personas, scenarios] = await Promise.all([getPersonas(), getScenarios()])
 
   return (
@@ -123,38 +115,8 @@ export default async function LiveInterviewsPage({
           </p>
         </section>
 
-        {/* Tab Toggle */}
-        <div className="flex items-center gap-1 bg-surface-container rounded-xl p-1 w-fit">
-          <a
-            href="/live-interviews"
-            className={`px-5 py-2 rounded-lg text-sm font-bold transition-colors ${
-              activeTab === 'mock'
-                ? 'bg-primary text-on-primary shadow-sm'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            Mock Interviews
-          </a>
-          <a
-            href="/live-interviews?tab=prep"
-            className={`px-5 py-2 rounded-lg text-sm font-bold transition-colors ${
-              activeTab === 'prep'
-                ? 'bg-primary text-on-primary shadow-sm'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            Study Plans
-          </a>
-        </div>
-
-        {activeTab === 'mock' ? (
-          <>
-            <FilteredPersonaGrid personas={personas} scenarios={scenarios} />
-            <PastInterviews />
-          </>
-        ) : (
-          <GuidedTab />
-        )}
+        <FilteredPersonaGrid personas={personas} scenarios={scenarios} />
+        <PastInterviews />
       </div>
     </UsageProvider>
   )

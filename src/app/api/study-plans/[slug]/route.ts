@@ -59,9 +59,24 @@ export async function GET(
       .maybeSingle(),
   ])
 
+  // Fetch in_progress attempts for all challenges in this plan (to show started state)
+  const allChallengeIdsForAttempts = (chaptersResult.data ?? []).flatMap(
+    (ch: { challenge_ids: string[] }) => ch.challenge_ids ?? []
+  )
+  let inProgressChallengeIds: string[] = []
+  if (allChallengeIdsForAttempts.length > 0) {
+    const { data: attemptsData } = await adminClient
+      .from('challenge_attempts')
+      .select('challenge_id')
+      .eq('user_id', user.id)
+      .eq('status', 'in_progress')
+      .in('challenge_id', allChallengeIdsForAttempts)
+    inProgressChallengeIds = (attemptsData ?? []).map((a: { challenge_id: string }) => a.challenge_id)
+  }
+
   const chapters = chaptersResult.data ?? []
 
-  // Collect all challenge IDs across all chapters
+  // Collect all challenge IDs across all chapters (chapters are now fetched above)
   const allChallengeIds = chapters.flatMap((ch: { challenge_ids: string[] }) => ch.challenge_ids ?? [])
 
   let challengeMap: Record<string, { id: string; slug?: string; title: string; difficulty: string; paradigm?: string | null }> = {}
@@ -85,5 +100,6 @@ export async function GET(
     plan,
     chapters: enrichedChapters,
     user_progress: progressResult.data ?? null,
+    in_progress_challenge_ids: inProgressChallengeIds,
   })
 }

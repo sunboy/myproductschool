@@ -7,6 +7,7 @@ import { aggregateChallenge } from '@/lib/v2/skills/score-aggregator'
 import { updateCompetencies } from '@/lib/v2/skills/competency-updater'
 import { analyzeTrend } from '@/lib/v2/skills/trend-analyzer'
 import type { FlowStep, LearnerCompetency, RoleLens } from '@/lib/types'
+import { applyMoveLevelXp } from '@/lib/data/move-levels-update'
 
 export async function POST(
   req: NextRequest,
@@ -200,17 +201,12 @@ export async function POST(
   // Fire-and-forget streak RPC — do NOT await
   admin.rpc('update_user_streak', { p_user_id: userId }).then(() => {}, () => {})
 
-  // Update FLOW skill levels based on per-step scores (fire and forget)
+  // Update FLOW move levels based on per-step scores (awaited — direct DB call)
   const moveScores: Record<string, number> = {}
   for (const s of stepResults) {
-    // step_score is 0–1; scale to 0–10 for the update route
     moveScores[s.step] = Math.round(s.step_score * 10)
   }
-  fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/move-levels/update`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, scores: moveScores }),
-  }).catch(() => {})
+  await applyMoveLevelXp(userId, moveScores, 'challenge')
 
   const step_breakdown = stepResults.map((s) => ({
     step: s.step,

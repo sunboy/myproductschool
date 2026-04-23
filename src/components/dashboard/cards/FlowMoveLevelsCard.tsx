@@ -1,50 +1,45 @@
 import Link from 'next/link'
 
-const moves = [
-  {
-    key: 'Frame',
-    icon: 'center_focus_strong',
-    tint: '#cfe3d3',
-    iconBg: '#4a7c59',
-    desc: 'Find the right problem',
-    level: 3,
-    pct: 0.72,
-  },
-  {
-    key: 'List',
-    icon: 'format_list_bulleted',
-    tint: '#dfe7e1',
-    iconBg: '#6b8275',
-    desc: 'Generate options',
-    level: 3,
-    pct: 0.48,
-  },
-  {
-    key: 'Optimize',
-    icon: 'tune',
-    tint: '#f3e2b9',
-    iconBg: '#c9933a',
-    desc: 'Pick & refine',
-    level: 3,
-    pct: 0.3,
-  },
-  {
-    key: 'Win',
-    icon: 'emoji_events',
-    tint: '#ecdeff',
-    iconBg: '#a878d6',
-    desc: 'Drive outcomes',
-    level: 3,
-    pct: 0.1,
-  },
-]
+const MOVE_META: Record<string, { icon: string; tint: string; iconBg: string; desc: string }> = {
+  frame:    { icon: 'center_focus_strong', tint: '#cfe3d3', iconBg: '#4a7c59', desc: 'Find the right problem' },
+  list:     { icon: 'format_list_bulleted', tint: '#dfe7e1', iconBg: '#6b8275', desc: 'Generate options' },
+  optimize: { icon: 'tune',                tint: '#f3e2b9', iconBg: '#c9933a', desc: 'Pick & refine' },
+  win:      { icon: 'emoji_events',        tint: '#ecdeff', iconBg: '#a878d6', desc: 'Drive outcomes' },
+}
 
-export function FlowMoveLevelsCard() {
+const MOVE_ORDER = ['frame', 'list', 'optimize', 'win']
+
+interface MoveLevel {
+  move: string
+  xp: number
+  level: number
+  progress_pct: number
+}
+
+interface FlowMoveLevelsCardProps {
+  levels?: MoveLevel[]
+}
+
+export function FlowMoveLevelsCard({ levels = [] }: FlowMoveLevelsCardProps) {
+  const moves = MOVE_ORDER.map(key => {
+    const meta = MOVE_META[key]
+    const live = levels.find(l => l.move === key)
+    return {
+      key: key.charAt(0).toUpperCase() + key.slice(1),
+      icon: meta.icon,
+      tint: meta.tint,
+      iconBg: meta.iconBg,
+      desc: meta.desc,
+      level: live?.level ?? 1,
+      pct: live ? live.progress_pct / 100 : 0,
+    }
+  })
+
   return (
     <div className="rounded-2xl p-6 bg-surface border border-outline-variant/30">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="font-headline text-xl font-medium tracking-tight">FLOW Move Levels</h3>
+          <h3 className="font-headline text-xl font-medium tracking-tight">FLOW Levels</h3>
           <p className="text-sm text-on-surface-variant mt-0.5">
             The four moves that compound into product judgment.
           </p>

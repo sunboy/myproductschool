@@ -47,6 +47,69 @@ const MODULES_STATIC = [
   { slug: 'strategy-execution', name: 'Strategy & Execution',   tagline: 'Closing the gap between plans and outcomes.', cover_color: '#1a1a1a', accent_color: '#a8d8a8', chapter_count: 6,  est_minutes: 70,  difficulty: 'advanced'     },
 ] as const
 
+/* ── Domain card palettes & SVG art ─────────────────────────────── */
+
+const DOMAIN_PALETTES = [
+  { bg: '#cfe3d3', accent: '#4a7c59', fg: '#1a2e20' },
+  { bg: '#f3e2b9', accent: '#c9933a', fg: '#3a2a0a' },
+  { bg: '#ecdeff', accent: '#8b46d4', fg: '#2e1458' },
+  { bg: '#e1ecff', accent: '#3b6ed4', fg: '#1a2e58' },
+  { bg: '#fbe1d0', accent: '#c9602a', fg: '#3a1a0a' },
+  { bg: '#dfe7e1', accent: '#6b8275', fg: '#1e2e28' },
+]
+
+function DomainArtWaves({ color }: { color: string }) {
+  return (
+    <svg viewBox="0 0 220 140" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} aria-hidden>
+      {[30, 50, 70, 90, 110, 130].map((y, i) => (
+        <path key={i}
+          d={`M-10 ${y} C 30 ${y - 12}, 80 ${y + 12}, 130 ${y} C 180 ${y - 12}, 210 ${y + 8}, 230 ${y}`}
+          stroke={color} strokeWidth="1.6" fill="none" opacity={0.09 + i * 0.03}
+        />
+      ))}
+    </svg>
+  )
+}
+
+function DomainArtDots({ color }: { color: string }) {
+  const dots: { cx: number; cy: number; r: number; op: number }[] = []
+  for (let r = 0; r < 6; r++) for (let c = 0; c < 8; c++) {
+    const t = (r * 8 + c) / 47
+    dots.push({ cx: 16 + c * 28, cy: 14 + r * 22, r: 1.5 + t * 3, op: 0.07 + t * 0.15 })
+  }
+  return (
+    <svg viewBox="0 0 240 140" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} aria-hidden>
+      {dots.map((d, i) => <circle key={i} cx={d.cx} cy={d.cy} r={d.r} fill={color} opacity={d.op} />)}
+    </svg>
+  )
+}
+
+function DomainArtChevrons({ color }: { color: string }) {
+  return (
+    <svg viewBox="0 0 220 140" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} aria-hidden>
+      {[0, 1, 2, 3].map(i => (
+        <path key={i}
+          d={`M ${40 + i * 36} 130 L ${90 + i * 36} 60 L ${140 + i * 36} 130`}
+          stroke={color} strokeWidth="10" fill="none" strokeLinecap="round"
+          opacity={0.10 + i * 0.03}
+        />
+      ))}
+    </svg>
+  )
+}
+
+function DomainArtCircles({ color }: { color: string }) {
+  return (
+    <svg viewBox="0 0 220 140" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} aria-hidden>
+      {[25, 50, 75, 100, 125].map((r, i) => (
+        <circle key={i} cx={200} cy={20} r={r} stroke={color} strokeWidth="1.2" fill="none" opacity={0.08 + i * 0.03} />
+      ))}
+    </svg>
+  )
+}
+
+const DOMAIN_ARTS = [DomainArtWaves, DomainArtDots, DomainArtChevrons, DomainArtCircles]
+
 /* ── Page ────────────────────────────────────────────────────────── */
 
 export default async function ExplorePage() {
@@ -93,7 +156,7 @@ export default async function ExplorePage() {
       <div style={{
         background: 'linear-gradient(135deg, #1e3528 0%, #14241c 55%, #0e1a14 100%)',
         borderRadius: 32,
-        padding: '56px 52px 44px',
+        padding: '36px 40px 32px',
         position: 'relative', overflow: 'hidden',
         marginBottom: 48,
       }}>
@@ -112,10 +175,10 @@ export default async function ExplorePage() {
         }} />
         <SpiralSVG color="#7ee099" />
 
-        <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: '1fr auto', gap: 40, alignItems: 'center' }}>
+        <div style={{ position: 'relative' }}>
           <div>
             <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 18,
+              display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 12,
               background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)',
               padding: '5px 14px', borderRadius: 999,
               fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
@@ -125,9 +188,9 @@ export default async function ExplorePage() {
               {challengeCount} challenges · 4 paradigms
             </div>
             <h1 style={{
-              margin: '0 0 12px',
+              margin: '0 0 10px',
               fontFamily: 'var(--font-headline)', fontWeight: 700,
-              fontSize: 56, lineHeight: 1.05, letterSpacing: '-0.025em',
+              fontSize: 40, lineHeight: 1.05, letterSpacing: '-0.025em',
               color: '#f3ede0',
             }}>
               Explore the full<br />
@@ -136,7 +199,7 @@ export default async function ExplorePage() {
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
               }}>challenge library.</span>
             </h1>
-            <p style={{ margin: '0 0 28px', fontSize: 17, lineHeight: 1.55, color: 'rgba(243,237,224,0.72)', maxWidth: 520 }}>
+            <p style={{ margin: '0 0 22px', fontSize: 15, lineHeight: 1.55, color: 'rgba(243,237,224,0.72)', maxWidth: 520 }}>
               Real scenarios from real companies. Pick a paradigm, follow a structured plan, or let Luma choose for you.
             </p>
             <div style={{ display: 'flex', gap: 12 }}>
@@ -145,11 +208,11 @@ export default async function ExplorePage() {
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 8,
                   background: '#f3ede0', color: '#1e1b14',
-                  padding: '14px 24px', borderRadius: 999,
-                  fontWeight: 700, fontSize: 15, textDecoration: 'none',
+                  padding: '10px 20px', borderRadius: 999,
+                  fontWeight: 700, fontSize: 13, textDecoration: 'none',
                 }}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>explore</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>explore</span>
                 Browse all {challengeCount}
               </Link>
               <Link
@@ -158,8 +221,8 @@ export default async function ExplorePage() {
                   display: 'inline-flex', alignItems: 'center', gap: 8,
                   background: 'rgba(255,255,255,0.08)', color: '#f3ede0',
                   border: '1px solid rgba(255,255,255,0.14)',
-                  padding: '14px 24px', borderRadius: 999,
-                  fontWeight: 700, fontSize: 15, textDecoration: 'none',
+                  padding: '10px 20px', borderRadius: 999,
+                  fontWeight: 700, fontSize: 13, textDecoration: 'none',
                 }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: 18 }}>route</span>
@@ -168,29 +231,11 @@ export default async function ExplorePage() {
             </div>
           </div>
 
-          {/* Right — stat pills */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-end' }}>
-            {[
-              { k: 'Top solvers this week', v: '1,240' },
-              { k: 'Challenges added', v: '+8 new' },
-              { k: 'Your next milestone', v: 'Lv 4 Frame' },
-            ].map(s => (
-              <div key={s.k} style={{
-                background: 'rgba(255,255,255,0.07)',
-                border: '1px solid rgba(255,255,255,0.10)',
-                borderRadius: 18, padding: '14px 20px', minWidth: 200,
-                backdropFilter: 'blur(8px)',
-              }}>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(243,237,224,0.5)', marginBottom: 4 }}>{s.k}</div>
-                <div style={{ fontFamily: 'var(--font-headline)', fontSize: 22, fontWeight: 600, color: '#f3ede0' }}>{s.v}</div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
       {/* ── PARADIGMS ─────────────────────────────────────────── */}
-      <SectionHeading eyebrow="The four paradigms" title="Challenge Types." href="/challenges" linkLabel="View all challenges" />
+      <SectionHeading eyebrow="The four formats" title="Formats." href="/challenges" linkLabel="View all challenges" />
       <ParadigmGrid />
 
       {/* ── FLOW FRAMEWORK STRIP ─────────────────────────────── */}
@@ -359,11 +404,14 @@ export default async function ExplorePage() {
                     position: 'relative', overflow: 'hidden',
                   }}
                 >
+                  {/* Dark overlay to tame vivid cover colors */}
+                  <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.32)', borderRadius: 24, pointerEvents: 'none' }} />
+
                   {/* Giant emoji watermark */}
                   {product.logo_emoji && (
                     <div aria-hidden style={{
                       position: 'absolute', right: -4, bottom: -8,
-                      fontSize: 90, lineHeight: 1, opacity: 0.10,
+                      fontSize: 90, lineHeight: 1, opacity: 0.12,
                       userSelect: 'none', pointerEvents: 'none',
                     }}>{product.logo_emoji}</div>
                   )}
@@ -374,7 +422,7 @@ export default async function ExplorePage() {
                       {product.logo_emoji && (
                         <div style={{
                           width: 40, height: 40, borderRadius: 12,
-                          background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.14)',
+                          background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.20)',
                           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: 22,
                         }}>{product.logo_emoji}</div>
@@ -382,27 +430,27 @@ export default async function ExplorePage() {
                       {product.industry && (
                         <div style={{
                           fontSize: 10, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
-                          color: 'rgba(255,255,255,0.45)',
+                          color: 'rgba(255,255,255,0.80)',
                         }}>{product.industry}</div>
                       )}
                     </div>
                     <div style={{
                       fontFamily: 'var(--font-headline)', fontSize: 20, fontWeight: 700,
-                      letterSpacing: '-0.01em', color: '#f3ede0', marginBottom: 4,
+                      letterSpacing: '-0.01em', color: '#ffffff', marginBottom: 4,
                     }}>{product.name}</div>
-                    <div style={{ fontSize: 12.5, color: 'rgba(243,237,224,0.55)', lineHeight: 1.45 }}>
+                    <div style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.82)', lineHeight: 1.45 }}>
                       {product.tagline}
                     </div>
                   </div>
 
                   <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(243,237,224,0.45)' }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.70)' }}>
                       {product.decision_count} decisions
                     </div>
                     <div style={{
                       display: 'inline-flex', alignItems: 'center', gap: 5,
-                      background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)',
-                      color: '#f3ede0', padding: '6px 12px', borderRadius: 999,
+                      background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.28)',
+                      color: '#ffffff', padding: '6px 12px', borderRadius: 999,
                       fontWeight: 700, fontSize: 12,
                     }}>
                       Explore
@@ -421,72 +469,88 @@ export default async function ExplorePage() {
         <>
           <SectionHeading eyebrow="Topic areas" title="Explore by domain." href="/domains" linkLabel="All domains" />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 48 }}>
-            {domains.slice(0, 8).map(d => (
-              <Link
-                key={d.slug}
-                href={`/domains/${d.slug}`}
-                style={{
-                  display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                  background: 'var(--color-surface-container)',
-                  borderRadius: 20,
-                  padding: '18px 18px 16px',
-                  minHeight: 130,
-                  textDecoration: 'none',
-                  border: '1px solid var(--color-outline-variant)',
-                  position: 'relative', overflow: 'hidden',
-                }}
-              >
-                {/* Progress bar at bottom */}
-                {d.progress_percentage > 0 && (
-                  <div style={{
-                    position: 'absolute', bottom: 0, left: 0,
-                    height: 3, background: 'var(--color-primary)',
-                    width: `${d.progress_percentage}%`,
-                    borderRadius: '0 0 0 999px',
-                  }} />
-                )}
-
-                <div>
-                  {d.icon && (
-                    <span className="material-symbols-outlined" style={{
-                      fontSize: 24, color: 'var(--color-primary)',
-                      fontVariationSettings: "'FILL' 1, 'wght' 400",
-                      display: 'block', marginBottom: 10,
-                    }}>{d.icon}</span>
-                  )}
-                  <div style={{
-                    fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700,
-                    letterSpacing: '-0.01em', color: 'var(--color-on-surface)',
-                    marginBottom: 3,
-                  }}>{d.title}</div>
-                  {d.description && (
-                    <div style={{
-                      fontSize: 12, color: 'var(--color-on-surface-variant)',
-                      lineHeight: 1.45,
-                      display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                    }}>{d.description}</div>
-                  )}
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
-                  <div style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-on-surface-muted)' }}>
-                    {d.challenge_count} challenges
+            {domains.slice(0, 8).map((d, i) => {
+              const palette = DOMAIN_PALETTES[i % DOMAIN_PALETTES.length]
+              const DomainArt = DOMAIN_ARTS[i % DOMAIN_ARTS.length]
+              return (
+                <Link
+                  key={d.slug}
+                  href={`/domains/${d.slug}`}
+                  style={{
+                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                    background: palette.bg,
+                    borderRadius: 20,
+                    padding: '18px 18px 16px',
+                    minHeight: 140,
+                    textDecoration: 'none',
+                    border: '1px solid rgba(0,0,0,0.05)',
+                    position: 'relative', overflow: 'hidden',
+                  }}
+                >
+                  {/* SVG art background */}
+                  <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                    <DomainArt color={palette.accent} />
                   </div>
+
+                  {/* Progress bar at bottom */}
                   {d.progress_percentage > 0 && (
-                    <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--color-primary)' }}>
-                      {Math.round(d.progress_percentage)}%
-                    </div>
+                    <div style={{
+                      position: 'absolute', bottom: 0, left: 0,
+                      height: 3, background: palette.accent,
+                      width: `${d.progress_percentage}%`,
+                      borderRadius: '0 0 0 999px',
+                    }} />
                   )}
-                </div>
-              </Link>
-            ))}
+
+                  <div style={{ position: 'relative' }}>
+                    {d.icon && (
+                      <div style={{
+                        width: 34, height: 34, borderRadius: 10,
+                        background: palette.accent,
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        marginBottom: 10,
+                        boxShadow: `0 3px 10px -3px ${palette.accent}66`,
+                      }}>
+                        <span className="material-symbols-outlined" style={{
+                          fontSize: 18, color: '#fff',
+                          fontVariationSettings: "'FILL' 1, 'wght' 500",
+                        }}>{d.icon}</span>
+                      </div>
+                    )}
+                    <div style={{
+                      fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700,
+                      letterSpacing: '-0.01em', color: palette.fg,
+                      marginBottom: 3,
+                    }}>{d.title}</div>
+                    {d.description && (
+                      <div style={{
+                        fontSize: 12, color: palette.fg, opacity: 0.65,
+                        lineHeight: 1.45,
+                        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}>{d.description}</div>
+                    )}
+                  </div>
+
+                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 600, color: palette.fg, opacity: 0.55 }}>
+                      {d.challenge_count} challenges
+                    </div>
+                    {d.progress_percentage > 0 && (
+                      <div style={{ fontSize: 11.5, fontWeight: 700, color: palette.accent }}>
+                        {Math.round(d.progress_percentage)}%
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              )
+            })}
           </div>
         </>
       )}
 
       {/* ── STUDY PLANS ──────────────────────────────────────── */}
-      <SectionHeading eyebrow="Structured learning" title="Study plans." href="/explore/plans" linkLabel="All plans" />
+      <SectionHeading eyebrow="Structured learning" title="Study Plans." href="/explore/plans" linkLabel="All plans" />
       <StudyPlanGrid plans={plans} />
     </div>
   )

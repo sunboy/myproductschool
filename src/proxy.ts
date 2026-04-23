@@ -28,6 +28,11 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Hide unimplemented routes
+  if (pathname.startsWith('/cohort')) {
+    return NextResponse.redirect(new URL('/challenges', request.url))
+  }
+
   // ── Pre-launch: only waitlist + its API are accessible ──
   if (PRE_LAUNCH) {
     const isAllowed = LAUNCH_ALLOWED.some(r => pathname === r || pathname.startsWith(r + '/'))

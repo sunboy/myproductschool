@@ -9,6 +9,9 @@ import StartInterviewButton from './StartInterviewButton'
 const FILTER_ROLES = ['All', 'PM', 'SWE', 'Data Eng', 'ML Eng'] as const
 type FilterRole = typeof FILTER_ROLES[number]
 
+const LEFT_PAGE_SIZE = 15
+const RIGHT_PAGE_SIZE = 10
+
 function matchesFilter(persona: LiveInterviewPersona, filter: FilterRole): boolean {
   if (filter === 'All') return true
   if (filter === 'Data Eng') return persona.role === 'Data Engineer'
@@ -20,18 +23,6 @@ const DIFFICULTY_DOT: Record<LiveInterviewPersona['difficulty'], string> = {
   standard: '#4a7c59',
   advanced: '#f59e0b',
   staff_plus: '#ef4444',
-}
-
-const DIFFICULTY_LABEL: Record<LiveInterviewPersona['difficulty'], string> = {
-  standard: 'Standard',
-  advanced: 'Advanced',
-  staff_plus: 'Staff+',
-}
-
-const DIFFICULTY_CHIP: Record<LiveInterviewPersona['difficulty'], string> = {
-  standard: 'bg-primary-fixed text-on-primary-container',
-  advanced: 'bg-tertiary-container text-on-tertiary-container',
-  staff_plus: 'bg-error/10 text-error',
 }
 
 const SCENARIO_DIFFICULTY_DOT: Record<string, string> = {
@@ -46,13 +37,72 @@ interface FilteredPersonaGridProps {
   scenarios?: ScenarioBrief[]
 }
 
-export default function FilteredPersonaGrid({ personas, scenarios = [] }: FilteredPersonaGridProps) {
-  const [activeFilter, setActiveFilter] = useState<FilterRole>('All')
-  const [selected, setSelected] = useState<LiveInterviewPersona>(personas[0])
-  const [showScenarios, setShowScenarios] = useState(false)
+function PaginationBar({
+  page,
+  pageSize,
+  total,
+  onPrev,
+  onNext,
+}: {
+  page: number
+  pageSize: number
+  total: number
+  onPrev: () => void
+  onNext: () => void
+}) {
+  const start = page * pageSize + 1
+  const end = Math.min((page + 1) * pageSize, total)
+  const isFirst = page === 0
+  const isLast = end >= total
 
-  const filtered = personas.filter(p => matchesFilter(p, activeFilter))
-  const activePersona = selected ?? filtered[0]
+  if (total <= pageSize) return null
+
+  return (
+    <div className="flex items-center justify-between px-3 py-2 border-t border-outline-variant/20 shrink-0">
+      <button
+        onClick={onPrev}
+        disabled={isFirst}
+        className="p-1 rounded-lg disabled:opacity-30 hover:bg-surface-container transition-colors"
+        aria-label="Previous page"
+      >
+        <span className="material-symbols-outlined text-[16px] text-on-surface-variant" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>
+          chevron_left
+        </span>
+      </button>
+      <span className="text-xs text-on-surface-variant font-label">
+        {start}–{end} of {total}
+      </span>
+      <button
+        onClick={onNext}
+        disabled={isLast}
+        className="p-1 rounded-lg disabled:opacity-30 hover:bg-surface-container transition-colors"
+        aria-label="Next page"
+      >
+        <span className="material-symbols-outlined text-[16px] text-on-surface-variant" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>
+          chevron_right
+        </span>
+      </button>
+    </div>
+  )
+}
+
+export default function FilteredPersonaGrid({ personas, scenarios = [] }: FilteredPersonaGridProps) {
+  const [rightFilter, setRightFilter] = useState<FilterRole>('All')
+  const [selected, setSelected] = useState<LiveInterviewPersona>(personas[0])
+  const [leftPage, setLeftPage] = useState(0)
+  const [rightPage, setRightPage] = useState(0)
+
+  // Deduplicate by companyId — one entry per company, left panel shows all
+  const seen = new Set<string>()
+  const deduped = personas.filter(p => {
+    if (seen.has(p.companyId)) return false
+    seen.add(p.companyId)
+    return true
+  })
+
+  const activePersona = selected ?? deduped[0]
+
+  const leftPagedItems = deduped.slice(leftPage * LEFT_PAGE_SIZE, (leftPage + 1) * LEFT_PAGE_SIZE)
 
   const relevantScenarios = scenarios.filter(s => {
     if (!activePersona) return false
@@ -64,82 +114,87 @@ export default function FilteredPersonaGrid({ personas, scenarios = [] }: Filter
     )
   })
 
+  const filteredScenarios = relevantScenarios.filter(s =>
+    rightFilter === 'All' ? true : s.relevantRoles.some(r => matchesFilter({ role: r } as LiveInterviewPersona, rightFilter))
+  )
+
+  const rightPagedScenarios = filteredScenarios.slice(rightPage * RIGHT_PAGE_SIZE, (rightPage + 1) * RIGHT_PAGE_SIZE)
+
   function selectPersona(p: LiveInterviewPersona) {
     setSelected(p)
-    setShowScenarios(false)
+    setRightPage(0)
+  }
+
+  function handleRightFilterChange(f: FilterRole) {
+    setRightFilter(f)
+    setRightPage(0)
   }
 
   if (!activePersona) return null
 
   return (
-    <div className="flex flex-row gap-0 rounded-2xl overflow-hidden border border-outline-variant/40 bg-surface-container-low min-h-[480px]">
+    <div className="flex flex-row gap-0 rounded-2xl overflow-hidden border border-outline-variant/40 bg-surface-container-low">
 
-      {/* ── Left: Roster Strip ───────────────────────────── */}
-      <div className="shrink-0 flex flex-col min-h-0 border-r border-outline-variant/30" style={{ width: '260px' }}>
-
-        {/* Role filter */}
-        <div className="px-4 pt-4 pb-3 flex flex-wrap gap-1.5 shrink-0">
-          {FILTER_ROLES.map(role => (
-            <button
-              key={role}
-              onClick={() => setActiveFilter(role)}
-              className={cn(
-                'px-3 py-1 rounded-lg text-xs font-label font-semibold transition-all',
-                activeFilter === role
-                  ? 'bg-on-surface text-inverse-on-surface'
-                  : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
-              )}
-            >
-              {role}
-            </button>
-          ))}
-        </div>
-
-        {/* Roster list */}
-        <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-0.5">
-          {filtered.map(persona => {
-            const isActive = activePersona.slug === persona.slug
+      {/* ── Left: Company Roster ───────────────────────────── */}
+      <div className="shrink-0 flex flex-col border-r border-outline-variant/30" style={{ width: '260px' }}>
+        <div className="overflow-y-auto px-3 py-3 space-y-1.5">
+          {leftPagedItems.map(persona => {
+            const isActive = activePersona.companyId === persona.companyId
             const dotColor = DIFFICULTY_DOT[persona.difficulty]
             return (
               <button
-                key={persona.slug}
+                key={persona.companyId}
                 onClick={() => selectPersona(persona)}
+                style={{
+                  background: isActive ? 'var(--color-surface-container-high)' : 'var(--color-surface-container)',
+                  borderRadius: 12,
+                  border: isActive ? '1px solid var(--color-primary)' : '1px solid var(--color-outline-variant)',
+                  transition: 'transform 200ms cubic-bezier(0.2,0.8,0.2,1), box-shadow 200ms cubic-bezier(0.2,0.8,0.2,1), border-color 150ms',
+                  transform: isActive ? 'none' : undefined,
+                  width: '100%',
+                }}
                 className={cn(
-                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all',
-                  isActive
-                    ? 'bg-surface-container border-r-2 border-primary'
-                    : 'hover:bg-surface-container/60 border-r-2 border-transparent'
+                  'flex items-center gap-3 px-3 py-2.5 text-left group',
+                  !isActive && 'hover:-translate-y-0.5 hover:shadow-[0_4px_12px_-4px_rgba(30,27,20,0.15)]'
                 )}
               >
                 <span
                   className={cn(
                     'material-symbols-outlined text-[18px] shrink-0 transition-colors',
-                    isActive ? 'text-primary' : 'text-on-surface-variant'
+                    isActive ? 'text-primary' : 'text-on-surface-variant group-hover:text-on-surface'
                   )}
                   style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}
                 >
                   {persona.icon}
                 </span>
-                <div className="flex-1 min-w-0">
-                  <p className={cn('text-sm font-semibold truncate', isActive ? 'text-on-surface' : 'text-on-surface-variant')}>
-                    {persona.companyName}
-                  </p>
-                  <p className="text-[11px] text-on-surface-variant truncate font-label">{persona.role}</p>
-                </div>
+                <p className={cn(
+                  'flex-1 min-w-0 text-sm font-semibold truncate transition-colors',
+                  isActive ? 'text-on-surface' : 'text-on-surface-variant group-hover:text-on-surface'
+                )}>
+                  {persona.companyName}
+                </p>
                 <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
               </button>
             )
           })}
 
-          {filtered.length === 0 && (
+          {deduped.length === 0 && (
             <p className="text-xs text-on-surface-variant text-center py-10 font-label">
               No interviewers for this role yet.
             </p>
           )}
         </div>
+
+        <PaginationBar
+          page={leftPage}
+          pageSize={LEFT_PAGE_SIZE}
+          total={deduped.length}
+          onPrev={() => setLeftPage(p => Math.max(0, p - 1))}
+          onNext={() => setLeftPage(p => p + 1)}
+        />
       </div>
 
-      {/* ── Right: Detail Pane ─────────────────────────────────── */}
+      {/* ── Right: Scenarios Pane ─────────────────────────────────── */}
       <div className="relative flex-1 flex flex-col overflow-hidden">
 
         {/* Ambient icon backdrop */}
@@ -156,111 +211,76 @@ export default function FilteredPersonaGrid({ personas, scenarios = [] }: Filter
         </div>
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col gap-4 p-7 flex-1 min-h-0">
+        <div className="relative z-10 flex flex-col">
 
-          {/* Company + role */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2.5">
-              <span
-                className="material-symbols-outlined text-primary text-[22px]"
-                style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}
+          {/* Role filter pills — filters the scenario list */}
+          <div className="px-5 pt-4 pb-3 flex flex-wrap gap-1.5 shrink-0">
+            {FILTER_ROLES.map(role => (
+              <button
+                key={role}
+                onClick={() => handleRightFilterChange(role)}
+                className={cn(
+                  'px-3 py-1 rounded-lg text-xs font-label font-semibold transition-all',
+                  rightFilter === role
+                    ? 'bg-on-surface text-inverse-on-surface'
+                    : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
+                )}
               >
-                {activePersona.icon}
-              </span>
-              <span className="font-label text-sm font-bold text-on-surface-variant">{activePersona.companyName}</span>
-            </div>
-
-            <h2 className="font-headline text-3xl font-extrabold text-on-surface leading-tight" style={{ textWrap: 'balance' } as React.CSSProperties}>
-              {activePersona.role} round
-            </h2>
-
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className={cn('text-xs font-label font-bold px-3 py-1 rounded-full', DIFFICULTY_CHIP[activePersona.difficulty])}>
-                {DIFFICULTY_LABEL[activePersona.difficulty]}
-              </span>
-              <span className="text-xs text-on-surface-variant font-label flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 0" }}>schedule</span>
-                ~{activePersona.estimatedMins} min
-              </span>
-            </div>
+                {role}
+              </button>
+            ))}
           </div>
 
-          {/* CTA section — near the top */}
-          {!showScenarios ? (
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between p-4 rounded-xl bg-surface-container border border-outline-variant/20">
-                <div>
-                  <p className="text-sm font-label font-bold text-on-surface">Free-form interview</p>
-                  <p className="text-xs text-on-surface-variant mt-0.5">Luma picks the scenario</p>
-                </div>
-                <StartInterviewButton companyId={activePersona.companyId} roleId={activePersona.role} />
-              </div>
+          {/* Scenario list — capped to RIGHT_PAGE_SIZE rows */}
+          <div className="px-5 pb-3 space-y-1.5">
 
-              {relevantScenarios.length > 0 && (
-                <button
-                  onClick={() => setShowScenarios(true)}
-                  className="w-full text-sm text-primary font-label font-semibold py-2 hover:opacity-80 transition-opacity flex items-center justify-center gap-1"
-                >
-                  Or pick a specific scenario
-                  <span className="material-symbols-outlined text-[16px]">expand_more</span>
-                </button>
-              )}
+            {/* Free-form card — always at top, color-coded */}
+            <div className="flex items-center justify-between p-4 rounded-xl bg-primary-fixed/50 border border-primary/20">
+              <div>
+                <p className="text-sm font-label font-bold text-on-surface">Free-form interview</p>
+                <p className="text-xs text-on-surface-variant mt-0.5">Luma picks the scenario</p>
+              </div>
+              <StartInterviewButton companyId={activePersona.companyId} roleId={activePersona.role} companyName={activePersona.companyName} />
             </div>
-          ) : (
-            <div className="flex flex-col flex-1 gap-2 min-h-0">
-              <div className="flex items-center justify-between shrink-0">
-                <span className="text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest">Pick a scenario</span>
-                <button
-                  onClick={() => setShowScenarios(false)}
-                  className="text-xs text-on-surface-variant hover:text-on-surface transition-colors font-label"
+
+            {/* Paginated scenario rows */}
+            {rightPagedScenarios.map(scenario => {
+              const dot = SCENARIO_DIFFICULTY_DOT[scenario.difficulty] ?? '#4a7c59'
+              const diffLabel = scenario.difficulty === 'staff_plus' ? 'Staff+' : scenario.difficulty.charAt(0).toUpperCase() + scenario.difficulty.slice(1)
+              return (
+                <div
+                  key={scenario.id}
+                  className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl hover:bg-surface-container transition-colors"
                 >
-                  Cancel
-                </button>
-              </div>
-
-              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-primary-fixed/40 border border-primary/15 shrink-0">
-                <div>
-                  <p className="text-sm font-label font-semibold text-on-surface">Free-form</p>
-                  <p className="text-[11px] text-on-surface-variant">Luma picks</p>
-                </div>
-                <StartInterviewButton companyId={activePersona.companyId} roleId={activePersona.role} />
-              </div>
-
-              <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 min-h-0">
-                {relevantScenarios.map(scenario => {
-                  const dot = SCENARIO_DIFFICULTY_DOT[scenario.difficulty] ?? '#4a7c59'
-                  const diffLabel = scenario.difficulty === 'staff_plus' ? 'Staff+' : scenario.difficulty.charAt(0).toUpperCase() + scenario.difficulty.slice(1)
-                  return (
-                    <div
-                      key={scenario.id}
-                      className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl hover:bg-surface-container transition-colors"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: dot }} />
-                          <span className="text-[11px] font-label text-on-surface-variant">{diffLabel} · ~{scenario.estimatedMinutes} min</span>
-                        </div>
-                        <p className="text-sm font-label font-semibold text-on-surface truncate">{scenario.title}</p>
-                        <p className="text-[11px] text-on-surface-variant line-clamp-1 mt-0.5">{scenario.scenarioQuestion}</p>
-                      </div>
-                      <div className="shrink-0">
-                        <StartInterviewButton companyId={activePersona.companyId} roleId={activePersona.role} challengeId={scenario.id} />
-                      </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: dot }} />
+                      <span className="text-[11px] font-label text-on-surface-variant">{diffLabel} · ~{scenario.estimatedMinutes} min</span>
                     </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
+                    <p className="text-sm font-label font-semibold text-on-surface truncate">{scenario.title}</p>
+                    <p className="text-[11px] text-on-surface-variant line-clamp-1 mt-0.5">{scenario.scenarioQuestion}</p>
+                  </div>
+                  <div className="shrink-0">
+                    <StartInterviewButton companyId={activePersona.companyId} roleId={activePersona.role} challengeId={scenario.id} companyName={activePersona.companyName} />
+                  </div>
+                </div>
+              )
+            })}
 
-          {/* Interview style quote — below CTAs */}
-          {activePersona.interviewStyle && (
-            <blockquote className="border-l-2 border-primary/30 pl-3 mt-auto">
-              <p className="text-sm text-on-surface-variant italic leading-relaxed">
-                {activePersona.interviewStyle}
+            {filteredScenarios.length === 0 && (
+              <p className="text-xs text-on-surface-variant text-center py-6 font-label">
+                No specific scenarios for this role yet.
               </p>
-            </blockquote>
-          )}
+            )}
+          </div>
+
+          <PaginationBar
+            page={rightPage}
+            pageSize={RIGHT_PAGE_SIZE}
+            total={filteredScenarios.length}
+            onPrev={() => setRightPage(p => Math.max(0, p - 1))}
+            onNext={() => setRightPage(p => p + 1)}
+          />
         </div>
       </div>
     </div>

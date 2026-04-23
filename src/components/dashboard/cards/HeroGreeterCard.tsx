@@ -5,9 +5,9 @@ import Link from 'next/link'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
 
 const lines = [
-  "Ready for today's session? I lined up challenges that build on where you left off.",
-  'Your Frame move is leveling up — keep going.',
-  "Consistent practice compounds. You're on a streak — let's extend it.",
+  "I lined up challenges that build on where you left off.",
+  'Your Frame move is leveling up. Keep going.',
+  "Consistent practice compounds. Keep the streak alive.",
 ]
 
 function timeOfDay(): string {
@@ -85,7 +85,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal }: HeroGreete
           >
             {timeOfDay()}, {displayName}.
           </h1>
-          <p key={idx} className="animate-fade-up text-[15.5px] leading-relaxed opacity-80 max-w-lg">
+          <p key={idx} className="animate-fade-up text-[15.5px] opacity-80" style={{ lineHeight: '1.5', height: '1.5em' }}>
             {lines[idx]}
           </p>
           <div className="flex gap-2.5 mt-5">

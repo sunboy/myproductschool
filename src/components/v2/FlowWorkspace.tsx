@@ -12,6 +12,7 @@ import { StepReveal } from './StepReveal'
 import { PostSessionMirror, type StepResult as MirrorStepResult, type CompetencyDelta as MirrorCompetencyDelta } from './PostSessionMirror'
 import type { StepCalibration } from './CalibrationPreview'
 import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { useLumaContext } from '@/context/LumaContext'
 
 const FLOW_STEPS: FlowStep[] = ['frame', 'list', 'optimize', 'win']
 const CONF_LABELS = ['Guessing', 'Not sure', 'Fairly sure', 'Rock solid']
@@ -122,6 +123,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Luma message state
   const [lumaMessage, setLumaMessage] = useState('Ready when you are. Pick the option that fits best.')
   const [lumaState, setLumaState] = useState<'idle' | 'listening' | 'reviewing' | 'speaking'>('idle')
+  const lumaCtx = useLumaContext()
+
+  // Sync local luma state to FloatingLuma context
+  const setLuma = useCallback((msg: string, s: 'idle' | 'listening' | 'reviewing' | 'speaking') => {
+    setLumaMessage(msg)
+    setLumaState(s)
+    lumaCtx?.setLuma(msg, s)
+  }, [lumaCtx])
 
   // GSAP workspace ref for session-start animation
   const workspaceRef = useRef<HTMLDivElement>(null)
@@ -325,8 +334,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Update Luma message when step loads
   useEffect(() => {
     if (phase !== 'question' || !activeStepData) return
-    setLumaMessage(activeStepData.nudge ?? 'Pick the best option.')
-    setLumaState('listening')
+    setLuma(activeStepData.nudge ?? 'Pick the best option.', 'listening')
   }, [phase, activeStepData])
 
   // GSAP session-start animation — fires once when phase first becomes 'question'
@@ -417,8 +425,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (handlingSubmitRef.current) return
     handlingSubmitRef.current = true
 
-    setLumaMessage('Reviewing your answer…')
-    setLumaState('reviewing')
+    setLuma('Reviewing your answer…', 'reviewing')
 
     try {
       if (isApiMode) {
@@ -460,8 +467,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         else if (confidence === 3) lumaMsg = 'Rock solid — but missed. High-value learning moment.'
         else if (hasReasoning) lumaMsg = 'Worth looking at. Your reasoning shows the gap.'
         else lumaMsg = 'One to revisit. Think about why the best option works.'
-        setLumaMessage(lumaMsg)
-        setLumaState('speaking')
+        setLuma(lumaMsg, 'speaking')
 
         // Fetch coaching in parallel — don't block step advancement on it
         fetchCoaching({
@@ -522,8 +528,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           else if (confidence === 3) lumaMsg = 'Rock solid — but missed. High-value learning moment.'
           else if (hasReasoning) lumaMsg = 'Worth looking at. Your reasoning shows the gap.'
           else lumaMsg = 'One to revisit. Think about why the best option works.'
-          setLumaMessage(lumaMsg)
-          setLumaState('speaking')
+          setLuma(lumaMsg, 'speaking')
 
           // Fetch coaching without blocking step advancement
           adapter.fetchCoaching({
@@ -553,7 +558,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     } finally {
       handlingSubmitRef.current = false
     }
-  }, [isApiMode, currentQuestion, attemptId, selectedOptionId, reasoning, confidence, submitAnswer, fetchCoaching, initialRoleId, currentStep, props])
+  }, [isApiMode, currentQuestion, attemptId, selectedOptionId, reasoning, confidence, submitAnswer, fetchCoaching, initialRoleId, currentStep, props, setLuma])
 
   const handleStepClick = useCallback((step: FlowStep) => {
     if (!completedSteps.includes(step)) return
@@ -712,9 +717,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Handle option select — update Luma message
   const handleOptionSelect = useCallback((id: string) => {
     setSelectedOptionId(id)
-    setLumaMessage('Good. Now rate your confidence.')
-    setLumaState('listening')
-  }, [])
+    setLuma('Good. Now rate your confidence.', 'listening')
+  }, [setLuma])
 
   // ── Render states ──────────────────────────────────────────────
 
@@ -797,18 +801,56 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const descriptionPane = (
     <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px' }}>
       {/* Chips */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
-        <span className="chip" style={{ background: 'var(--color-primary-container)', color: 'var(--color-on-primary-container)', fontSize: 11 }}>Intermediate</span>
-        <span className="chip" style={{ fontSize: 11 }}>
-          <span className="material-symbols-outlined msi-sm">local_offer</span> Topics
-        </span>
-        <span className="chip" style={{ fontSize: 11 }}>
-          <span className="material-symbols-outlined msi-sm">domain</span> Companies
-        </span>
-        <span className="chip" style={{ background: 'var(--color-amber-soft, #f3e2b9)', color: '#8a5c00', border: '1px solid #e8d09a', fontSize: 11 }}>
-          <span className="material-symbols-outlined msi-sm">lightbulb</span> Hint available
-        </span>
-      </div>
+      {(() => {
+        const ch = isApiMode ? detail?.challenge : adapterChallenge
+        const diff = ch?.difficulty
+        const companyTags: string[] = (ch as { company_tags?: string[] })?.company_tags ?? []
+        const topicTags: string[] = (ch as { tags?: string[] })?.tags ?? []
+        const DIFF_LABEL: Record<string, string> = {
+          warmup: 'Warm-up', standard: 'Standard', advanced: 'Advanced',
+          staff_plus: 'Staff+', beginner: 'Easy', intermediate: 'Intermediate', hard: 'Hard',
+        }
+        return (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 16 }}>
+            {diff && (
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 4,
+                background: 'var(--color-primary)', color: '#fff',
+                fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+                padding: '3px 9px', borderRadius: 999,
+                fontFamily: 'var(--font-label)',
+              }}>
+                {DIFF_LABEL[diff] ?? diff}
+              </span>
+            )}
+            {companyTags.map(tag => (
+              <span key={tag} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 4,
+                background: '#1e3528', color: '#9ee0b8',
+                fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em',
+                padding: '3px 9px', borderRadius: 999,
+                fontFamily: 'var(--font-label)',
+              }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 11, fontVariationSettings: "'FILL' 1" }}>apartment</span>
+                {tag}
+              </span>
+            ))}
+            {topicTags.map(tag => (
+              <span key={tag} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 4,
+                background: 'var(--color-surface-container-high)',
+                color: 'var(--color-on-surface-variant)',
+                fontSize: 10.5, fontWeight: 600,
+                padding: '3px 9px', borderRadius: 999,
+                border: '1px solid var(--color-outline-variant)',
+                fontFamily: 'var(--font-label)',
+              }}>
+                {tag}
+              </span>
+            ))}
+          </div>
+        )
+      })()}
 
       {/* Title */}
       {challengeTitle && (
@@ -1010,7 +1052,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       <div style={{ width: 6, flexShrink: 0 }} />
       {/* Right side: FLOW stepper + hint — takes remaining space */}
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', gap: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+        {/* Stepper centered in the right panel */}
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 0 }}>
           <FlowStepper
             currentStep={currentStep}
             completedSteps={completedSteps}
@@ -1018,7 +1061,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             questionIdx={questionIdx}
             questionCount={activeStepData?.questions.length}
           />
-          <span className="chip" style={{ fontSize: 11, flexShrink: 0 }}>Step {stepIdx + 1} of 4</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
           <button

@@ -448,3 +448,7 @@ body::before {
 .animate-fade-up    { animation: fade-up 420ms cubic-bezier(.2,.8,.2,1) both; }
 .animate-luma-float { animation: luma-float 4.5s ease-in-out infinite; }
 .animate-pulse-dot  { animation: pulse-dot 2s ease-in-out infinite; }
+@keyframes lumaAntenna {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
