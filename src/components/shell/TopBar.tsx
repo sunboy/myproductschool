@@ -62,13 +62,12 @@ export function TopBar() {
     <header className="sticky top-0 z-40 w-full bg-background/90 backdrop-blur-lg border-b border-surface-container-high">
       <div className="flex items-center justify-between gap-3 px-4 h-13 w-full">
 
-        {/* Mobile: logo (hidden on desktop where NavRail shows branding) */}
-        <div className="md:hidden shrink-0">
-          <LumaGlyph size={22} className="text-primary animate-luma-glow" state="idle" />
-        </div>
+        {/* Wordmark — mobile and desktop */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/wordmark.png" alt="HackProduct" className="h-5 shrink-0" />
 
-        {/* Spacer — pushes badges to right on desktop */}
-        <div className="hidden md:block flex-1" />
+        {/* Spacer — pushes badges to right */}
+        <div className="flex-1" />
 
         {/* Right badges + avatar */}
         <div className="flex items-center gap-2 shrink-0">
