@@ -33,7 +33,7 @@ export function NextChallengeCard({ title, domain, difficulty, challengeId, luma
       {lumaInsight && (
         <div className="flex items-start gap-2 bg-primary-fixed/60 rounded-xl p-3">
           <span className="material-symbols-outlined text-primary text-[14px] mt-0.5 shrink-0">auto_awesome</span>
-          <p className="text-[11px] text-on-surface font-label leading-relaxed">{lumaInsight}</p>
+          <p className="text-[12px] text-on-surface font-label font-semibold leading-relaxed">{lumaInsight}</p>
         </div>
       )}
 
