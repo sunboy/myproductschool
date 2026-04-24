@@ -58,14 +58,18 @@ export async function getStudyPlans(userId?: string): Promise<StudyPlanWithItems
     .select('plan_id, id')
     .in('plan_id', plans.map(p => p.id))
 
-  // Fetch enrollment state if user is provided
+  // Fetch enrollment state and progress if user is provided
   let enrolledPlanIds = new Set<string>()
+  const progressByPlan = new Map<string, number>()
   if (userId) {
     const { data: enrollments } = await supabase
       .from('user_study_plan_enrollments')
-      .select('plan_id')
+      .select('plan_id, progress_pct')
       .eq('user_id', userId)
-    for (const e of enrollments ?? []) enrolledPlanIds.add(e.plan_id)
+    for (const e of enrollments ?? []) {
+      enrolledPlanIds.add(e.plan_id)
+      progressByPlan.set(e.plan_id, e.progress_pct ?? 0)
+    }
   }
 
   // Group chapters by plan
@@ -80,7 +84,7 @@ export async function getStudyPlans(userId?: string): Promise<StudyPlanWithItems
     item_count: plan.challenge_count ?? 0,
     chapter_count: chaptersByPlan.get(plan.id) ?? 0,
     completed_count: 0,
-    progress_percentage: 0,
+    progress_percentage: progressByPlan.get(plan.id) ?? 0,
     is_enrolled: enrolledPlanIds.has(plan.id),
   }))
 }

@@ -230,23 +230,35 @@ export async function POST(
         .eq('plan_id', plan.id)
         .maybeSingle()
 
+      const completedSet = new Set<string>(userPlan?.completed_challenges ?? [])
+      completedSet.add(challengeId)
+      const completed = Array.from(completedSet)
+
+      // Compute progress_pct from total challenges in the plan's chapters
+      const { data: chapters } = await admin
+        .from('study_plan_chapters')
+        .select('challenge_ids')
+        .eq('plan_id', plan.id)
+      const totalIds = (chapters ?? []).flatMap((ch: { challenge_ids: string[] }) => ch.challenge_ids ?? [])
+      const progress_pct = totalIds.length > 0 ? Math.round((completed.length / totalIds.length) * 100) : 0
+
       if (userPlan) {
-        const completedSet = new Set<string>(userPlan.completed_challenges ?? [])
-        completedSet.add(challengeId)
-        const completed = Array.from(completedSet)
-
-        // Compute progress_pct from total challenges in the plan's chapters
-        const { data: chapters } = await admin
-          .from('study_plan_chapters')
-          .select('challenge_ids')
-          .eq('plan_id', plan.id)
-        const totalIds = (chapters ?? []).flatMap((ch: { challenge_ids: string[] }) => ch.challenge_ids ?? [])
-        const progress_pct = totalIds.length > 0 ? Math.round((completed.length / totalIds.length) * 100) : 0
-
         await admin
           .from('user_study_plans')
           .update({ completed_challenges: completed, progress_pct })
           .eq('id', userPlan.id)
+      } else {
+        // No user_study_plans row yet (user enrolled but never explicitly activated)
+        await admin
+          .from('user_study_plans')
+          .upsert({
+            user_id: userId,
+            plan_id: plan.id,
+            started_at: new Date().toISOString(),
+            is_active: true,
+            completed_challenges: completed,
+            progress_pct,
+          }, { onConflict: 'user_id,plan_id' })
       }
     }
   }
