@@ -13,6 +13,7 @@ export async function GET() {
     .from('challenges')
     .select('id, title, difficulty, move_tags, relevant_roles, domain_id, domains(slug, title)')
     .eq('is_published', true)
+    .neq('challenge_type', 'freeform')
     .order('difficulty', { ascending: true })
     .order('created_at', { ascending: true })
     .limit(20)
