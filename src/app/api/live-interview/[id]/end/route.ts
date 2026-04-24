@@ -52,7 +52,7 @@ export async function POST(
 
   const session = sessionResult.data
   const turns = (turnsResult.data ?? []).map((t) => ({
-    role: t.role as 'luma' | 'user',
+    role: t.role as 'hatch' | 'user',
     content: t.content,
     turnIndex: t.turn_index,
   }))

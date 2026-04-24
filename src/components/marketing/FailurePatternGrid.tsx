@@ -1,4 +1,4 @@
-import { FAILURE_PATTERNS } from '@/lib/luma/system-prompt'
+import { FAILURE_PATTERNS } from '@/lib/hatch/system-prompt'
 
 export function FailurePatternGrid() {
   return (
@@ -7,12 +7,12 @@ export function FailurePatternGrid() {
         <h2 className="font-headline text-3xl md:text-4xl font-bold text-on-surface">
           Most PMs repeat the same 3 mistakes.{' '}
           <span className="bg-gradient-to-r from-primary to-tertiary bg-clip-text text-transparent">
-            Luma finds yours.
+            Hatch finds yours.
           </span>
         </h2>
         <p className="text-on-surface-variant mt-4 max-w-xl mx-auto">
           14 failure patterns, identified from thousands of product responses.
-          Luma tracks which ones you hit so you can break the cycle.
+          Hatch tracks which ones you hit so you can break the cycle.
         </p>
       </div>
 

@@ -63,15 +63,15 @@ To fetch a screen's HTML for reference: use `mcp__stitch__get_screen` with `name
 
 It's a practice gym for product thinking, not a course. Not exclusively for PM-track people.
 
-**AI Coach "Luma"**: Non-human, non-gendered. Always use "it" — never "she/he". Write "Luma reviewed your answer" not "she reviewed."
+**AI Coach "Hatch"**: Non-human, non-gendered. Always use "it" — never "she/he". Write "Hatch reviewed your answer" not "she reviewed."
 
-**Luma mascot — `src/components/shell/LumaGlyph.tsx`**:
-Luma is a friendly robot with a graduation cap and a growth arrow (top-right). It is rendered as an inline SVG component — NOT a generic glyph or emoji.
+**Hatch mascot — `src/components/shell/HatchGlyph.tsx`**:
+Hatch is a friendly robot with a graduation cap and a growth arrow (top-right). It is rendered as an inline SVG component — NOT a generic glyph or emoji.
 
 ```tsx
-import { LumaGlyph, LumaState } from '@/components/shell/LumaGlyph'
+import { HatchGlyph, HatchState } from '@/components/shell/HatchGlyph'
 
-<LumaGlyph size={48} state="idle" className="text-primary" />
+<HatchGlyph size={48} state="idle" className="text-primary" />
 ```
 
 Available `state` values — always use the contextually correct one:
@@ -79,12 +79,12 @@ Available `state` values — always use the contextually correct one:
 |---|---|---|
 | `none` | Static, decorative (no animation) | None |
 | `idle` | Dashboard greeting, nav brand, auth forms | Floating cap, blinking eyes, rising ZZZs |
-| `listening` | Calibration steps, challenge workspace tips, anywhere Luma is reading user input | Headphones on, notepad, pulsing eyes |
-| `reviewing` | Grading interstitial, diagnosis, anywhere Luma is processing | Scanning eyes, thought bubble, glow aura |
-| `speaking` | Luma tips, coaching panels, simulation | Animated mouth |
+| `listening` | Calibration steps, challenge workspace tips, anywhere Hatch is reading user input | Headphones on, notepad, pulsing eyes |
+| `reviewing` | Grading interstitial, diagnosis, anywhere Hatch is processing | Scanning eyes, thought bubble, glow aura |
+| `speaking` | Hatch tips, coaching panels, simulation | Animated mouth |
 | `celebrating` | Results page, high scores, feedback reveal | Sparkles, cap toss, wide smile |
 
-**Do NOT** use the deprecated `animated` boolean prop — always use `state`. **Do NOT** replace LumaGlyph with a Material Symbol icon, emoji, or any other element. When in doubt about which state to use, `idle` is a safe default.
+**Do NOT** use the deprecated `animated` boolean prop — always use `state`. **Do NOT** replace HatchGlyph with a Material Symbol icon, emoji, or any other element. When in doubt about which state to use, `idle` is a safe default.
 
 ## Architecture
 
@@ -204,7 +204,7 @@ npx tsc --noEmit 2>&1 | head -20
 - **NO raw hex in className** — use Tailwind tokens. Raw hex OK in `style={{}}` for SVG
 - **Copy ALL text** — every heading, label, badge, placeholder verbatim
 - **Copy ALL icons** — exact Material Symbols name from Stitch
-- **LumaGlyph** replaces Stitch's `<img>` mascot images — use the right `state` prop
+- **HatchGlyph** replaces Stitch's `<img>` mascot images — use the right `state` prop
 
 ## Agent Team Configuration
 
@@ -235,9 +235,9 @@ Use this pattern for any significant build task (3+ files, multiple concerns):
 ### Example spawn message to a dev agent
 > "You are devN on the [team] team. You have ONE task: [Task #N — Title]. Working dir: [...]. Read [...] first. Implement [...]. After implementing: run tsc, send full output to opus saying 'Task N proof: [output]'. Wait for APPROVED from opus before marking task completed."
 
-## Mental Models Framework — Luma's Grading Intelligence
+## Mental Models Framework — Hatch's Grading Intelligence
 
-This is the conceptual foundation for everything Luma does: grading, per-MCQ feedback, in-context nudges, step coaching, post-challenge breakdowns, analytics, and competency routing. All Luma output should be rooted in these mental models.
+This is the conceptual foundation for everything Hatch does: grading, per-MCQ feedback, in-context nudges, step coaching, post-challenge breakdowns, analytics, and competency routing. All Hatch output should be rooted in these mental models.
 
 Full document: `../myproductschool-content/content/MENTAL_MODELS_FRAMEWORK.md`
 
@@ -256,7 +256,7 @@ These map to the `learner_competencies` table. They are never self-reported — 
 
 ### Competency × FLOW Step — The 10 Active Mappings
 
-Every piece of Luma feedback connects to one of these mappings. When writing grading output, coaching copy, or nudge text, ground it in the reasoning move being built.
+Every piece of Hatch feedback connects to one of these mappings. When writing grading output, coaching copy, or nudge text, ground it in the reasoning move being built.
 
 | FLOW Step | Competency | The reasoning move being built |
 |---|---|---|
@@ -284,7 +284,7 @@ Example framework_hint for a correct Frame answer:
 Example framework_hint for a wrong Optimize answer:
 > 🧠 Taste failure: This is a preference ("cleaner feels better"), not a tradeoff. Taste is knowing which quality signal actually predicts user behavior.
 
-**2. Per-step grading output** (Luma API response)
+**2. Per-step grading output** (Hatch API response)
 Alongside `detected` / `missed` / `coaching`, include a `competency_signal` block:
 ```json
 {
@@ -304,7 +304,7 @@ After all 4 FLOW steps, show a table mapping each step to the competency being b
 **4. Analytics / Skill Ladder**
 The `learner_competencies` table tracks score (0-100), trend, and total_attempts per competency. Surface this as a radar/hexagon chart. Label axes with competency names, not rubric criterion codes.
 
-**5. Luma nudges (in-challenge)**
+**5. Hatch nudges (in-challenge)**
 Step nudges (`flow_steps.step_nudge`) and question nudges (`step_questions.question_nudge`) should reference the reasoning move being practiced, not just the question topic. E.g. for a Frame step nudge: "You're about to practice the upstream move — finding the problem behind the problem."
 
 ### Design Principle: No Author Attribution in the Product
@@ -324,7 +324,7 @@ Located in `../myproductschool-content/content/grading_rubrics/`:
 
 Scoring: strong (≥0.75), partial (≥0.45), needs_work (<0.45). Each criterion scores 1.0 / 0.5 / 0.0.
 
-Canonical reasoning structures Luma grades against:
+Canonical reasoning structures Hatch grades against:
 - **Frame/F3**: "[Person] is trying to [accomplish X]. [Blocker] is preventing them. If unresolved, [business consequence]."
 - **Optimize/O2**: "We get [gain]. We give up [sacrifice]. [Sacrifice] is acceptable because [reason]."
 - **Win/W3**: "We will know this worked if [metric] reaches [threshold] by [timeline]. We will know it failed if [counter-signal]."
@@ -371,7 +371,7 @@ Fallback to word-count heuristic if AI call fails.
 
 ## Token Optimization & Caching
 
-All Luma AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropic prompt caching (`cache_control: { type: 'ephemeral' }`). System prompts are cached, reducing input token costs by ~90% on cache hits.
+All Hatch AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropic prompt caching (`cache_control: { type: 'ephemeral' }`). System prompts are cached, reducing input token costs by ~90% on cache hits.
 
 ### Model Selection
 | Endpoint | Model | Rationale |
@@ -392,7 +392,7 @@ All Luma AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropic
 
 ## Claude Code Skills for AI Interactions
 
-4 skills define deterministic behavior for all Luma AI interactions:
+4 skills define deterministic behavior for all Hatch AI interactions:
 
 | Skill | Path | Trigger |
 |---|---|---|

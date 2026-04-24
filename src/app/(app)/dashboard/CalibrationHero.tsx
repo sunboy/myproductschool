@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const CAL_STORAGE_KEY = 'hp_cal_progress'
 
@@ -24,20 +24,20 @@ export function CalibrationHero() {
       {/* Top accent strip */}
       <div className="h-1 bg-gradient-to-r from-primary via-tertiary to-primary opacity-60" />
       <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5">
-        <LumaGlyph size={72} state="celebrating" className="text-primary flex-shrink-0 self-center sm:self-auto" />
+        <HatchGlyph size={72} state="celebrating" className="text-primary flex-shrink-0 self-center sm:self-auto" />
         <div className="flex-1 min-w-0">
           {inProgress ? (
             <>
               <h2 className="font-headline text-xl font-bold text-on-surface mb-1">Finish your calibration</h2>
               <p className="text-on-surface-variant text-sm leading-relaxed mb-3">
-                You started but didn&apos;t finish. Pick up where you left off — Luma saved your progress.
+                You started but didn&apos;t finish. Pick up where you left off — Hatch saved your progress.
               </p>
             </>
           ) : (
             <>
               <h2 className="font-headline text-xl font-bold text-on-surface mb-1">Unlock your skill radar</h2>
               <p className="text-on-surface-variant text-sm leading-relaxed mb-3">
-                8 questions. ~5 minutes. No typing — just choices. Luma will set your baseline and route you to the right challenges.
+                8 questions. ~5 minutes. No typing — just choices. Hatch will set your baseline and route you to the right challenges.
               </p>
             </>
           )}

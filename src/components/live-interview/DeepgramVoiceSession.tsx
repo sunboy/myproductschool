@@ -10,7 +10,7 @@ interface DeepgramVoiceSessionProps {
   sessionId: string
   systemPrompt: string
   isMuted?: boolean
-  onTranscript: (text: string, role: 'luma' | 'user') => void
+  onTranscript: (text: string, role: 'hatch' | 'user') => void
   onAgentSpeaking?: () => void
   onAgentDoneSpeaking?: () => void
   onConnected: () => void
@@ -130,7 +130,7 @@ export default function DeepgramVoiceSession(props: DeepgramVoiceSessionProps): 
       try {
         const payload = JSON.parse(event.data as string)
         if (payload.type === 'ConversationText') {
-          onTranscript(payload.content, payload.role === 'agent' ? 'luma' : 'user')
+          onTranscript(payload.content, payload.role === 'agent' ? 'hatch' : 'user')
         } else if (payload.type === 'AgentStartedSpeaking') {
           ttsStartTimeRef.current = 0
           onAgentSpeaking?.()

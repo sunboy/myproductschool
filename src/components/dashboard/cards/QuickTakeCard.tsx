@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 interface QuickTakeCardProps {
   prompt: string
   challengeId: string
-  lumaContext?: string | null
+  hatchContext?: string | null
 }
 
 type State = 'idle' | 'writing' | 'submitting' | 'done' | 'loading-next'
@@ -30,7 +30,7 @@ function gradeLabel(score: number): { label: string; color: string } {
   return { label: 'Weak', color: '#b83230' }
 }
 
-export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChallengeId, lumaContext }: QuickTakeCardProps) {
+export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChallengeId, hatchContext }: QuickTakeCardProps) {
   const [state, setState] = useState<State>('idle')
   const [prompt, setPrompt] = useState(initialPrompt)
   const [challengeId, setChallengeId] = useState(initialChallengeId)
@@ -87,7 +87,7 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
       <div className="bg-primary rounded-2xl p-5 text-on-primary flex flex-col gap-4 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
         <div className="flex items-center gap-3 relative">
-          <LumaGlyph size={36} state="celebrating" className="text-on-primary shrink-0" />
+          <HatchGlyph size={36} state="celebrating" className="text-on-primary shrink-0" />
           <div>
             <h3 className="font-headline font-bold text-base leading-tight">Quick Take — graded</h3>
             <p className="text-on-primary/70 text-[11px] font-label mt-0.5">+{result.xp_earned} XP earned</p>
@@ -124,7 +124,7 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
       <div className="bg-primary rounded-2xl p-5 text-on-primary flex flex-col gap-4 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
         <div className="flex items-center gap-3 relative">
-          <LumaGlyph size={36} state="reviewing" className="text-on-primary shrink-0" />
+          <HatchGlyph size={36} state="reviewing" className="text-on-primary shrink-0" />
           <div>
             <h3 className="font-headline font-bold text-base leading-tight">Loading next question…</h3>
           </div>
@@ -138,7 +138,7 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
       <div className="bg-primary rounded-2xl p-5 text-on-primary flex flex-col gap-4 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
         <div className="flex items-start gap-3 relative">
-          <LumaGlyph size={36} state="listening" className="text-on-primary shrink-0 mt-0.5" />
+          <HatchGlyph size={36} state="listening" className="text-on-primary shrink-0 mt-0.5" />
           <div>
             <h3 className="font-headline font-bold text-base leading-tight">Quick Take</h3>
             <p className="text-on-primary/70 text-[11px] font-label mt-0.5">90 seconds · instant grade</p>
@@ -181,7 +181,7 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
     <div className="bg-primary rounded-2xl p-5 text-on-primary flex flex-col gap-4 relative overflow-hidden">
       <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
       <div className="flex items-start gap-3 relative">
-        <LumaGlyph size={36} state="speaking" className="text-on-primary shrink-0 mt-0.5" />
+        <HatchGlyph size={36} state="speaking" className="text-on-primary shrink-0 mt-0.5" />
         <div>
           <h3 className="font-headline font-bold text-base leading-tight">Quick Take</h3>
           <p className="text-on-primary/70 text-[11px] font-label mt-0.5">90 seconds · instant grade</p>
@@ -190,10 +190,10 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
       <div className="bg-black/20 rounded-xl p-4 relative">
         <p className="text-on-primary/90 text-sm leading-relaxed">&ldquo;{prompt}&rdquo;</p>
       </div>
-      {lumaContext && (
+      {hatchContext && (
         <p className="text-xs text-on-primary/65 font-label flex items-start gap-1.5">
           <span className="material-symbols-outlined text-[13px] mt-0.5 shrink-0">auto_awesome</span>
-          {lumaContext}
+          {hatchContext}
         </p>
       )}
       <button

@@ -15,7 +15,7 @@ export const CARD_CATALOG: CardCatalogEntry[] = [
   {
     id: 'next_challenge',
     label: 'Next Challenge',
-    description: 'Personalized challenge recommendation from Luma',
+    description: 'Personalized challenge recommendation from Hatch',
     icon: 'auto_awesome',
   },
   {

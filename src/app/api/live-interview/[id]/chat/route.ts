@@ -54,7 +54,7 @@ export async function POST(
   // Build conversation messages
   const conversationMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [
     ...(turnsData ?? []).map((t) => ({
-      role: (t.role === 'luma' ? 'assistant' : 'user') as 'user' | 'assistant',
+      role: (t.role === 'hatch' ? 'assistant' : 'user') as 'user' | 'assistant',
       content: t.content,
     })),
     { role: 'user' as const, content: message.trim() },
@@ -90,7 +90,7 @@ export async function POST(
     ...dynamicContext,
   ].join('\n\n')
 
-  // Generate Luma's response — no grading signals, pure conversation
+  // Generate Hatch's response — no grading signals, pure conversation
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 600,
@@ -111,7 +111,7 @@ export async function POST(
     {
       session_id: id,
       turn_index: nextIndex + 1,
-      role: 'luma',
+      role: 'hatch',
       content: reply,
     },
   ])
@@ -131,11 +131,11 @@ export async function POST(
   const recentTurns = [
     // Include last 2 existing turns for context + the new exchange
     ...(turnsData ?? []).slice(-2).map((t) => ({
-      role: t.role as 'user' | 'luma',
+      role: t.role as 'user' | 'hatch',
       content: t.content,
     })),
     { role: 'user' as const, content: message.trim() },
-    { role: 'luma' as const, content: reply },
+    { role: 'hatch' as const, content: reply },
   ]
 
   const origin = request.headers.get('origin') ?? request.headers.get('host') ?? ''

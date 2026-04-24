@@ -10,7 +10,7 @@ export interface CoachingSignal {
 
 export interface TranscriptTurn {
   id: string
-  role: 'luma' | 'user'
+  role: 'hatch' | 'user'
   content: string
   source?: 'voice' | 'chat'
   coachingSignal?: CoachingSignal
@@ -19,7 +19,7 @@ export interface TranscriptTurn {
 interface TranscriptPanelProps {
   turns: TranscriptTurn[]
   className?: string
-  /** Show FLOW move coaching chips below Luma turns. Default false — only enable on debrief/review pages. */
+  /** Show FLOW move coaching chips below Hatch turns. Default false — only enable on debrief/review pages. */
   showCoachingChips?: boolean
 }
 
@@ -91,18 +91,18 @@ export default function TranscriptPanel({ turns, className, showCoachingChips = 
             className={`flex flex-col ${turn.role === 'user' ? 'items-end' : 'items-start'}`}
           >
             <span className="text-xs text-on-surface-variant mb-1 font-label">
-              {turn.role === 'luma' ? 'Luma' : 'You'}
+              {turn.role === 'hatch' ? 'Hatch' : 'You'}
             </span>
             <div
               className={
-                turn.role === 'luma'
+                turn.role === 'hatch'
                   ? 'bg-primary-container text-on-primary-container rounded-xl rounded-tl-sm p-3 max-w-[85%] font-body text-sm'
                   : 'bg-surface-container-high text-on-surface rounded-xl rounded-tr-sm p-3 max-w-[85%] ml-auto font-body text-sm'
               }
             >
               {turn.content}
             </div>
-            {showCoachingChips && turn.role === 'luma' && turn.coachingSignal && (
+            {showCoachingChips && turn.role === 'hatch' && turn.coachingSignal && (
               <CoachingChip signal={turn.coachingSignal} />
             )}
           </div>

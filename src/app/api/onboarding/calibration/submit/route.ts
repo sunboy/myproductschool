@@ -59,7 +59,7 @@ const ARCHETYPES: Record<string, { name: string; description: string }> = {
   problem_framer:   { name: 'The Problem Framer',     description: 'You ask the right questions before jumping to answers. Developing your ability to deliver those insights with executive presence is your next move.' },
   operator:         { name: 'The Operator',           description: 'You excel at scoping, prioritising, and shipping under constraints. Strengthening your problem framing will make your solutions harder to second-guess.' },
   well_rounded:     { name: 'The Well-Rounded',       description: 'You show solid instincts across all four FLOW moves. The path forward is deepening each one from competent to exceptional.' },
-  emerging_thinker: { name: 'The Emerging Thinker',  description: 'You have the raw instincts — Luma will help you build the frameworks to sharpen them into consistent, high-impact product thinking.' },
+  emerging_thinker: { name: 'The Emerging Thinker',  description: 'You have the raw instincts — Hatch will help you build the frameworks to sharpen them into consistent, high-impact product thinking.' },
 }
 
 function deriveArchetype(s: { frame: number; list: number; optimize: number; win: number }) {
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
       archetype: 'The Strategist',
       archetype_description: 'You frame problems sharply and land recommendations with conviction.',
       starting_levels: { frame: 3, list: 2, optimize: 2, win: 3 },
-      luma_observation: "You think in narratives and outcomes first. That's rare.",
+      hatch_observation: "You think in narratives and outcomes first. That's rare.",
       personalised_plan_slug: 'optimize-under-pressure',
     })
   }
@@ -191,7 +191,7 @@ export async function POST(request: Request) {
       ),
 
     observation
-      ? adminClient.from('luma_context').insert({
+      ? adminClient.from('hatch_context').insert({
           user_id: user.id,
           context_type: 'calibration',
           content: observation,
@@ -224,7 +224,7 @@ export async function POST(request: Request) {
       optimize: scoreToLevel(scores.optimize),
       win: scoreToLevel(scores.win),
     },
-    luma_observation: observation,
+    hatch_observation: observation,
     personalised_plan_slug: personalisedPlan?.slug ?? null,
   })
 }

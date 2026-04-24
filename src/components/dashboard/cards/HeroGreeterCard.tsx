@@ -106,7 +106,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
       </div>
 
       <div className="relative p-7 pb-2" style={{ paddingRight: 'max(1.75rem, 280px)' }}>
-        {/* Luma badge */}
+        {/* Hatch badge */}
         <div
           className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-label font-semibold tracking-wider uppercase mb-3"
           style={{
@@ -119,7 +119,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
             className="w-1.5 h-1.5 rounded-full animate-pulse"
             style={{ background: '#7ee099', boxShadow: '0 0 0 4px rgba(126,224,153,0.2)' }}
           />
-          Luma · Your coach
+          Hatch · Your coach
         </div>
         <h1
           className="font-headline text-[34px] leading-tight font-medium tracking-tight mb-2.5"

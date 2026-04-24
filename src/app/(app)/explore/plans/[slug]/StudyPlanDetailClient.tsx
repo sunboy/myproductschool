@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import type { StudyPlanItem, StudyPlanWithItems } from '@/lib/types'
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -491,17 +491,17 @@ export function StudyPlanDetailClient({ plan, slug }: { plan: StudyPlanWithItems
             </Link>
           </div>
 
-          {/* Luma's Coaching */}
+          {/* Hatch's Coaching */}
           <div style={{ background: '#cfe3d3', borderRadius: 24, padding: 18, border: '1px solid rgba(0,0,0,0.04)' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-              <LumaGlyph size={36} state="speaking" className="flex-shrink-0" />
+              <HatchGlyph size={36} state="speaking" className="flex-shrink-0" />
               <div>
                 <div style={{
                   fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 800,
                   letterSpacing: '0.06em', textTransform: 'uppercase' as const,
                   color: '#0f3d1f', opacity: 0.7, marginBottom: 5,
                 }}>
-                  Luma&rsquo;s Coaching
+                  Hatch&rsquo;s Coaching
                 </div>
                 <p style={{ fontFamily: 'var(--font-label)', fontSize: 13, lineHeight: 1.55, color: '#0f3d1f', margin: 0 }}>
                   This plan is designed for engineers who want to build genuine product intuition. Don&rsquo;t rush — depth beats breadth. Complete each challenge before choosing the model answer.

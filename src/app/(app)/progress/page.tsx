@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
 import { LearnerDNASection, useLearnerDNAData } from './LearnerDNASection'
@@ -79,7 +79,7 @@ export default function ProgressPage() {
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setGrowthSnapshot(data) })
       .catch(() => {})
-    fetch('/api/luma/growth-reflection', { method: 'POST' })
+    fetch('/api/hatch/growth-reflection', { method: 'POST' })
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data?.reflection) setReflection(data.reflection) })
       .catch(() => {})
@@ -179,20 +179,20 @@ export default function ProgressPage() {
               }}>moving.</span>
             </h1>
 
-            {/* Luma reflection */}
+            {/* Hatch reflection */}
             <div style={{
               display: 'flex', gap: 14, alignItems: 'flex-start',
               background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)',
               borderRadius: 18, padding: '16px 18px',
               marginBottom: 20,
             }}>
-              <LumaGlyph size={40} state="speaking" className="shrink-0" />
+              <HatchGlyph size={40} state="speaking" className="shrink-0" />
               <div style={{ minWidth: 0 }}>
                 <div style={{
                   fontSize: 11, fontWeight: 800, letterSpacing: '0.10em', textTransform: 'uppercase',
                   color: 'rgba(158,224,184,0.85)', marginBottom: 5,
                 }}>
-                  Luma&rsquo;s reflection
+                  Hatch&rsquo;s reflection
                 </div>
                 {reflectionLoading ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -343,10 +343,10 @@ export default function ProgressPage() {
                   borderRadius: 16, padding: '14px 18px',
                   border: '1px solid rgba(74,124,89,0.18)',
                 }}>
-                  <LumaGlyph size={32} state="idle" className="text-primary shrink-0" />
+                  <HatchGlyph size={32} state="idle" className="text-primary shrink-0" />
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-primary)', marginBottom: 4 }}>
-                      Luma&rsquo;s nudge
+                      Hatch&rsquo;s nudge
                     </div>
                     <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55, color: 'var(--color-on-surface)' }}>
                       Focus your next reps on <strong>{dnaData.weakest_link_label}</strong> — it&rsquo;s the fastest way to round out your profile.
@@ -490,7 +490,7 @@ export default function ProgressPage() {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '32px 0' }}>
-            <LumaGlyph size={48} state="idle" className="text-primary" />
+            <HatchGlyph size={48} state="idle" className="text-primary" />
             <div style={{ textAlign: 'center' }}>
               <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: 'var(--color-on-surface)' }}>
                 No activity yet.
@@ -763,7 +763,7 @@ export default function ProgressPage() {
                   <div style={{ height: '100%', background: 'var(--color-primary)', width: `${overallPct}%`, borderRadius: 999, transition: 'width 700ms cubic-bezier(0.2,0.8,0.2,1)' }} />
                 </div>
               </div>
-              <LumaGlyph size={44} state={isCertified ? 'celebrating' : 'idle'} className="text-primary shrink-0" />
+              <HatchGlyph size={44} state={isCertified ? 'celebrating' : 'idle'} className="text-primary shrink-0" />
             </div>
           </div>
         </div>

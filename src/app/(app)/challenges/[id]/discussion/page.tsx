@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { DiscussionThread } from '@/components/challenge/DiscussionThread'
 import { DiscussionInput } from '@/components/challenge/DiscussionInput'
 import { CommunityStatsPanel } from '@/components/challenge/CommunityStatsPanel'
@@ -133,7 +133,7 @@ export default function ChallengeDiscussionPage() {
             </div>
           ) : (
             <div className="bg-surface-container-low rounded-xl p-12 text-center border border-outline-variant/30">
-              <LumaGlyph size={48} state="idle" className="text-primary mx-auto mb-4" />
+              <HatchGlyph size={48} state="idle" className="text-primary mx-auto mb-4" />
               <p className="font-bold text-on-surface mb-1">Be the first to share your approach.</p>
               <p className="text-sm text-on-surface-variant">Others learn from your thinking — and you learn by explaining.</p>
             </div>

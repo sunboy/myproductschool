@@ -1,4 +1,4 @@
-import { getLumaPersonality } from '@/lib/luma/personality'
+import { getHatchPersonality } from '@/lib/hatch/personality'
 
 export interface ScenarioParams {
   question: string
@@ -35,7 +35,7 @@ export interface SystemPromptParams {
   moveLevels: { frame: number; list: number; optimize: number; win: number }
   failurePatterns: Array<{ pattern_name: string }>
   competencies: Array<{ competency: string; score: number }>
-  lumaContext: string
+  hatchContext: string
   companyName?: string
   roleId?: string
   personaPrompt?: string
@@ -190,7 +190,7 @@ export function buildLiveInterviewSystemPrompt(
     personaPrompt,
     relevantNotes,
     learnerName,
-    lumaContext,
+    hatchContext,
     scenario,
     roleLens,
   } = params
@@ -198,7 +198,7 @@ export function buildLiveInterviewSystemPrompt(
   const sections: string[] = []
 
   // ── Personality (identity + voice examples + emotional range + tics + anti-patterns)
-  sections.push(getLumaPersonality())
+  sections.push(getHatchPersonality())
 
   // ── Opening & Conversation Phases
   const name = learnerName ?? 'there'
@@ -287,8 +287,8 @@ This scenario is context, not a script. When presenting it, break it into digest
   sections.push(`[WHAT YOU KNOW ABOUT THIS CANDIDATE]\n${buildCandidateNarrative(params)}`)
 
   // ── Additional coaching context
-  if (lumaContext) {
-    sections.push(`[COACHING CONTEXT]\n${lumaContext}`)
+  if (hatchContext) {
+    sections.push(`[COACHING CONTEXT]\n${hatchContext}`)
   }
 
   // ── User notes

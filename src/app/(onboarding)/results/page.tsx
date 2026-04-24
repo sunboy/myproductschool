@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import type { CalibrationResults } from '@/lib/types'
 
 const STARTING_LEVELS_MOCK = [
@@ -77,7 +77,7 @@ export default function ResultsPage() {
           <span className="font-headline text-2xl font-bold text-primary">HackProduct</span>
         </div>
         <div className="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden">
-          <LumaGlyph size={28} state="idle" className="text-primary" />
+          <HatchGlyph size={28} state="idle" className="text-primary" />
         </div>
       </header>
 
@@ -87,10 +87,10 @@ export default function ResultsPage() {
           <h1 className="font-headline text-2xl font-extrabold text-on-surface">Your Baseline Results</h1>
         </div>
 
-        {/* Section 1: Luma Speaking Card */}
+        {/* Section 1: Hatch Speaking Card */}
         <section className="bg-surface-container rounded-xl p-4 flex gap-4 items-start relative">
           <div className="shrink-0">
-            <LumaGlyph size={64} state="speaking" className="text-primary rounded-lg bg-white/50 p-1" />
+            <HatchGlyph size={64} state="speaking" className="text-primary rounded-lg bg-white/50 p-1" />
           </div>
           <div className="relative bg-white p-3 rounded-lg rounded-tl-none border border-outline-variant shadow-sm text-sm">
             <p className="text-on-surface-variant leading-relaxed">
@@ -158,12 +158,12 @@ export default function ResultsPage() {
         </section>
 
         {/* Section 4: Answer Callout — only show when real feedback from API */}
-        {results?.luma_observation && (
+        {results?.hatch_observation && (
           <section className="bg-white rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
             <div className="p-5 border-l-4 border-primary">
-              <h3 className="text-xs font-bold text-secondary uppercase tracking-wider mb-3">What Luma noticed in your answer</h3>
+              <h3 className="text-xs font-bold text-secondary uppercase tracking-wider mb-3">What Hatch noticed in your answer</h3>
               <blockquote className="text-on-surface-variant italic text-sm leading-relaxed mb-4">
-                &ldquo;{results.luma_observation}&rdquo;
+                &ldquo;{results.hatch_observation}&rdquo;
               </blockquote>
               {results.strengths && results.strengths.length > 0 && (
                 <div className="flex flex-wrap gap-2">

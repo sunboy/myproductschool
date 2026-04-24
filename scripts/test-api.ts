@@ -202,8 +202,8 @@ async function journey2(): Promise<void> {
 async function journey3(): Promise<void> {
   console.log('\n=== Journey 3: Luma Interactions ===')
 
-  await test('POST /api/luma/feedback — returns feedback', async () => {
-    const { status, body } = await request('POST', '/api/luma/feedback', {
+  await test('POST /api/hatch/feedback — returns feedback', async () => {
+    const { status, body } = await request('POST', '/api/hatch/feedback', {
       ...LUMA_FEEDBACK_PAYLOAD,
       challengeId,
       attemptId: completedAttemptId,
@@ -217,8 +217,8 @@ async function journey3(): Promise<void> {
     assert(hasImprovements, 'feedback response should have improvements or what_to_fix')
   })
 
-  await test('POST /api/luma/nudge — returns nudge', async () => {
-    const { status, body } = await request('POST', '/api/luma/nudge', {
+  await test('POST /api/hatch/nudge — returns nudge', async () => {
+    const { status, body } = await request('POST', '/api/hatch/nudge', {
       ...LUMA_NUDGE_PAYLOAD,
       challengeId,
     })
@@ -228,8 +228,8 @@ async function journey3(): Promise<void> {
     assert('nudge' in b, 'body should have nudge key')
   })
 
-  await test('POST /api/luma/chat — returns reply', async () => {
-    const { status, body } = await request('POST', '/api/luma/chat', {
+  await test('POST /api/hatch/chat — returns reply', async () => {
+    const { status, body } = await request('POST', '/api/hatch/chat', {
       ...LUMA_CHAT_PAYLOAD,
       challengeId,
     })

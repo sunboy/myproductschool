@@ -11,14 +11,14 @@ const MODES = [
     title: 'Workshop',
     subtitle: 'Guided practice',
     description:
-      'Luma nudges you every 3 minutes. Learn while you write.',
+      'Hatch nudges you every 3 minutes. Learn while you write.',
   },
   {
     icon: 'chat',
     title: 'Live',
     subtitle: 'Mock interview',
     description:
-      'Back-and-forth dialogue with Luma. Practice thinking on your feet.',
+      'Back-and-forth dialogue with Hatch. Practice thinking on your feet.',
   },
   {
     icon: 'self_improvement',

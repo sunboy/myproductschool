@@ -71,7 +71,7 @@ export default function ScenarioPickerSheet({
             <div className="flex-1 min-w-0 mr-3">
               <p className="font-label font-semibold text-sm text-on-surface">Free-form Interview</p>
               <p className="text-xs text-on-surface-variant mt-0.5">
-                Luma picks the scenario. No predefined case.
+                Hatch picks the scenario. No predefined case.
               </p>
             </div>
             <StartInterviewButton companyId={companyId} roleId={role} />

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Challenge } from '@/lib/types'
 import { ChallengeCardV2 } from '@/components/v2/ChallengeCardV2'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 interface V2ChallengeWithMeta extends Challenge {
   attempt_count?: number
@@ -46,11 +46,11 @@ export function V2ChallengesSection({ paradigm, difficulty, role }: V2Challenges
         <span className="bg-primary text-on-primary rounded-full px-2.5 py-0.5 text-xs font-label font-semibold">New</span>
       </div>
       <p className="font-body text-sm text-on-surface-variant -mt-2">
-        Frame → List → Optimize → Win. Structured 4-step challenges with role-lens coaching from Luma.
+        Frame → List → Optimize → Win. Structured 4-step challenges with role-lens coaching from Hatch.
       </p>
       {loading ? (
         <div className="flex justify-center py-8">
-          <LumaGlyph size={40} state="reviewing" className="text-primary" />
+          <HatchGlyph size={40} state="reviewing" className="text-primary" />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

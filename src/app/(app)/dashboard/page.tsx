@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Suspense } from 'react'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { CalibrationHero } from './CalibrationHero'
 import { UpgradedBanner } from '@/components/dashboard/UpgradedBanner'
 import { createClient } from '@/lib/supabase/server'
@@ -34,7 +34,7 @@ function getGreeting(): string {
 
 function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1) }
 
-function moveLumaInsight(move: string, level: number): string {
+function moveHatchInsight(move: string, level: number): string {
   if (level <= 2) return `You're building your ${move} foundation — this challenge is the right next rep.`
   if (level <= 5) return `Your ${move} move needs reps at this difficulty — push through it.`
   return `Strong overall. This sharpens your ${move} edge.`
@@ -47,7 +47,7 @@ function targetDifficulties(avgXp: number): string[] {
 }
 
 type RawChallenge = { id: string; slug?: string | null; title: string; difficulty: string; domain?: { title: string }[] | { title: string } | null }
-type NextChallenge = { id: string; slug?: string | null; title: string; difficulty: string; domainName?: string | null; luma_insight?: string | null }
+type NextChallenge = { id: string; slug?: string | null; title: string; difficulty: string; domainName?: string | null; hatch_insight?: string | null }
 
 function normalizeChallenge(raw: RawChallenge | null): NextChallenge | null {
   if (!raw) return null
@@ -307,7 +307,7 @@ export default async function DashboardPage() {
   // Attach rule-based insight from move level data — no AI call
   if (nextChallenge && allMoveLevels.length > 0) {
     const weakestLevel = allMoveLevels[0].level ?? 1
-    nextChallenge = { ...nextChallenge, luma_insight: moveLumaInsight(weakestMove, weakestLevel) }
+    nextChallenge = { ...nextChallenge, hatch_insight: moveHatchInsight(weakestMove, weakestLevel) }
   }
 
   // ── Build Today's Path (depends on quickTakePrompt + nextChallenge) ──
@@ -339,7 +339,7 @@ export default async function DashboardPage() {
       },
       {
         label: 'Reflect',
-        sub: "Review Luma's feedback",
+        sub: "Review Hatch's feedback",
         icon: 'edit_note',
         done: false,
         active: doneFlowChallenge,
@@ -382,14 +382,14 @@ export default async function DashboardPage() {
               <QuickTakeCard
                 prompt={quickTakePrompt?.prompt_text ?? 'Your PM says DAU dropped 15% overnight. Walk me through how you would diagnose this.'}
                 challengeId={quickTakePrompt?.id ?? 'orientation'}
-                lumaContext={null}
+                hatchContext={null}
               />
               <NextChallengeCard
                 title={nextChallenge?.title ?? 'Designing a Metric Dashboard for a B2B SaaS Tool'}
                 domain={nextChallenge?.domainName ?? 'Product Strategy'}
                 difficulty={nextChallenge?.difficulty ?? 'standard'}
                 challengeId={nextChallenge?.slug ?? nextChallenge?.id ?? 'orientation'}
-                lumaInsight={nextChallenge?.luma_insight ?? null}
+                hatchInsight={nextChallenge?.hatch_insight ?? null}
               />
             </div>
 
@@ -433,16 +433,16 @@ export default async function DashboardPage() {
       {/* State B — Uncalibrated */}
       {!isCalibrated && (
         <div className="space-y-4">
-          {/* Luma Greeting Bar */}
-          <div className="bg-primary-fixed rounded-2xl p-5 flex flex-wrap items-center gap-4 animate-luma-card relative overflow-hidden">
+          {/* Hatch Greeting Bar */}
+          <div className="bg-primary-fixed rounded-2xl p-5 flex flex-wrap items-center gap-4 animate-hatch-card relative overflow-hidden">
             <div className="absolute top-0 right-0 w-48 h-full opacity-30" style={{ background: 'radial-gradient(ellipse at 100% 50%, rgba(74,124,89,0.3) 0%, transparent 70%)' }} />
-            <LumaGlyph size={48} state="celebrating" className="flex-shrink-0 relative" />
+            <HatchGlyph size={48} state="celebrating" className="flex-shrink-0 relative" />
             <div className="flex-1 min-w-0 relative">
               <p className="font-headline font-bold text-[17px] text-on-surface leading-tight">
                 {getPersonalizedGreeting(displayName, streakDays, lastAttemptDate, false)}
               </p>
               <p className="text-sm text-on-surface-variant mt-0.5">
-                {"I'm Luma, your product thinking coach. Let's find your starting point."}
+                {"I'm Hatch, your product thinking coach. Let's find your starting point."}
               </p>
             </div>
           </div>

@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
-import { LumaInsightBlock } from '@/components/learning/LumaInsightBlock'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchInsightBlock } from '@/components/learning/HatchInsightBlock'
 import { OptionCard } from '@/components/v2/OptionCard'
 import type { AutopsyDecision, AutopsyChallenge } from '@/lib/types'
 
@@ -198,7 +198,7 @@ export function ChallengeViewer({ decision, challenge, productName }: ChallengeV
             </div>
           )}
 
-          {/* Step 3 — Win: MCQ options + Luma's insight */}
+          {/* Step 3 — Win: MCQ options + Hatch's insight */}
           {activeStep === 3 && (
             <div className="space-y-4">
               <p className="text-xs text-on-surface-variant font-label mb-4">
@@ -224,26 +224,26 @@ export function ChallengeViewer({ decision, challenge, productName }: ChallengeV
 
               {/* Coming soon nudge */}
               <div className="flex items-center gap-2 bg-primary-container/30 rounded-xl p-3 mt-2">
-                <LumaGlyph state="idle" size={22} className="text-primary shrink-0" />
+                <HatchGlyph state="idle" size={22} className="text-primary shrink-0" />
                 <p className="text-xs text-on-surface-variant">
                   Answer these in Practice Mode — graded FLOW challenges coming soon.
                 </p>
               </div>
 
-              {/* Luma's Take — most prominent moment */}
+              {/* Hatch's Take — most prominent moment */}
               <div className="mt-6">
-                <LumaInsightBlock insight={challenge.insight} />
+                <HatchInsightBlock insight={challenge.insight} />
               </div>
             </div>
           )}
 
-          {/* Luma thought starter — shown on all steps */}
+          {/* Hatch thought starter — shown on all steps */}
           <div className="mt-10 grid grid-cols-2 gap-4">
             <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30">
               <div className="flex items-center gap-2 mb-3">
-                <LumaGlyph size={22} state="speaking" className="text-primary" />
+                <HatchGlyph size={22} state="speaking" className="text-primary" />
                 <span className="text-[10px] font-bold uppercase text-on-surface-variant tracking-widest">
-                  Luma's Thought Starter
+                  Hatch's Thought Starter
                 </span>
               </div>
               <p className="text-xs italic text-on-surface-variant leading-relaxed">
@@ -278,9 +278,9 @@ export function ChallengeViewer({ decision, challenge, productName }: ChallengeV
         </div>
       </div>
 
-      {/* ── Luma coaching strip — pinned to bottom ── */}
+      {/* ── Hatch coaching strip — pinned to bottom ── */}
       <div className="bg-primary-fixed/30 border-t border-primary/10 px-6 py-3 flex items-center gap-4 flex-shrink-0">
-        <LumaGlyph size={28} state="speaking" className="text-primary flex-shrink-0" />
+        <HatchGlyph size={28} state="speaking" className="text-primary flex-shrink-0" />
         <div className="flex-1 text-sm text-on-primary-container font-medium">
           <span className="font-bold">Pro tip:</span> {coaching.tip}
         </div>

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const ROLES = [
   {
@@ -122,7 +122,7 @@ export default function RoleSelectionPage() {
       <header className="bg-background border-b border-outline-variant fixed top-0 w-full z-50 h-12 flex items-center">
         <div className="flex justify-between items-center px-4 w-full max-w-7xl mx-auto">
           <Link href="/welcome" className="flex items-center gap-2 text-primary font-headline font-bold text-xl">
-            <LumaGlyph size={32} state="idle" className="text-primary" />
+            <HatchGlyph size={32} state="idle" className="text-primary" />
             <span className="tracking-tight">HackProduct</span>
           </Link>
           <div className="flex items-center gap-4 text-secondary">
@@ -173,7 +173,7 @@ export default function RoleSelectionPage() {
           {/* Header Section */}
           <section className="flex flex-col md:flex-row items-start gap-6 max-w-3xl">
             <div className="shrink-0">
-              <LumaGlyph size={96} className="text-primary" state="idle" />
+              <HatchGlyph size={96} className="text-primary" state="idle" />
             </div>
             <div className="space-y-2">
               <h1 className="font-headline text-3xl font-bold text-primary">

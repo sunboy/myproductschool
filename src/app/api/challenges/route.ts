@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
     .from('challenges')
     .select('*', { count: 'exact' })
     .eq('is_published', true)
+    .neq('challenge_type', 'freeform')
     .range(offset, offset + limit - 1)
 
   if (paradigm) query = query.eq('paradigm', paradigm)

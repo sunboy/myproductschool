@@ -215,7 +215,7 @@ function PersonalisedPlanCard({ plan }: { plan: PersonalisedPlan }) {
           color: '#7ee099',
         }}>
           <span className="material-symbols-outlined" style={{ fontSize: 11, fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-          Your plan, built by Luma
+          Your plan, built by Hatch
         </div>
 
         {/* Title */}

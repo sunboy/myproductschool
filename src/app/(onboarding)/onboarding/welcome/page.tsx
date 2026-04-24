@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const FLOW_STEPS = [
   {
@@ -53,7 +53,7 @@ export default function WelcomePage() {
       {/* Hero */}
       <section className="px-6 pt-16 pb-12 text-center max-w-3xl mx-auto">
         <div className="flex justify-center mb-6">
-          <LumaGlyph size={48} className="text-primary" state="idle" />
+          <HatchGlyph size={48} className="text-primary" state="idle" />
         </div>
         <h1 className="font-headline text-4xl md:text-5xl font-bold text-on-surface mb-4">
           Think like a great PM

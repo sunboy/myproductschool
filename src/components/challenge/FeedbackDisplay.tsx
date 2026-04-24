@@ -1,15 +1,15 @@
 'use client'
 import { useState } from 'react'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { WhatWorkedSection } from '@/components/challenge/WhatWorkedSection'
 import { PercentileContext } from '@/components/challenge/PercentileContext'
 import { MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
-import type { LumaFeedbackItem } from '@/lib/types'
+import type { HatchFeedbackItem } from '@/lib/types'
 
 type FeedbackFull = typeof MOCK_FEEDBACK_FULL
 
 interface FeedbackDisplayProps {
-  feedback: LumaFeedbackItem[] | null
+  feedback: HatchFeedbackItem[] | null
   loading: boolean
   feedbackFull?: FeedbackFull
 }
@@ -55,9 +55,9 @@ export function FeedbackDisplay({ feedback, loading, feedbackFull }: FeedbackDis
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3 p-4 bg-primary-container rounded-2xl">
-          <LumaGlyph size={32} className="text-primary" state="celebrating" />
+          <HatchGlyph size={32} className="text-primary" state="celebrating" />
           <div>
-            <p className="font-label font-medium text-on-primary-container">Luma is reviewing your response...</p>
+            <p className="font-label font-medium text-on-primary-container">Hatch is reviewing your response...</p>
             <p className="text-sm text-primary">This usually takes 10–15 seconds.</p>
           </div>
         </div>
@@ -74,7 +74,7 @@ export function FeedbackDisplay({ feedback, loading, feedbackFull }: FeedbackDis
   }
 
   const full = feedbackFull ?? MOCK_FEEDBACK_FULL
-  const items = feedback ?? full.dimensions as LumaFeedbackItem[]
+  const items = feedback ?? full.dimensions as HatchFeedbackItem[]
 
   const overallScore = items.length > 0
     ? items.reduce((sum, f) => sum + f.score, 0) / items.length
@@ -103,9 +103,9 @@ export function FeedbackDisplay({ feedback, loading, feedbackFull }: FeedbackDis
         <>
           {/* Overall Assessment */}
           <div className="flex items-start gap-3 p-4 bg-primary-container rounded-2xl">
-            <LumaGlyph size={32} className="text-primary flex-shrink-0 mt-0.5" />
+            <HatchGlyph size={32} className="text-primary flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-label font-medium text-on-primary-container mb-1">Luma&apos;s Assessment</p>
+              <p className="text-sm font-label font-medium text-on-primary-container mb-1">Hatch&apos;s Assessment</p>
               <p className="text-sm text-on-primary-container leading-relaxed">{full.overall}</p>
             </div>
           </div>

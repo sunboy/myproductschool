@@ -12,7 +12,7 @@ export async function GET() {
       archetype_description: 'You frame problems sharply and land recommendations with conviction. Your instinct is to define the question before answering it.',
       starting_levels: { frame: 3, list: 2, optimize: 2, win: 3 },
       percentile: 78,
-      luma_observation: "You think in narratives and outcomes first. That's rare. Your blind spot: you may skip the diagnosis before declaring the answer.",
+      hatch_observation: "You think in narratives and outcomes first. That's rare. Your blind spot: you may skip the diagnosis before declaring the answer.",
     })
   }
 
@@ -46,6 +46,6 @@ export async function GET() {
     archetype_description: profileResult.data?.archetype_description ?? '',
     starting_levels: startingLevels,
     percentile: attemptResult.data?.percentile ?? 50,
-    luma_observation: observation,
+    hatch_observation: observation,
   })
 }

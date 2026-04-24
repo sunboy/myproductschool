@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useLearnModule } from '@/hooks/useLearnModule'
 import { useLearnChapter } from '@/hooks/useLearnChapter'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { LEARN_MODULES_SEED } from '@/lib/learn-seed'
 import { ChapterBody } from '@/components/learning/ChapterBody'
 import type { LearnModule, LearnChapterWithProgress, LearnDifficulty } from '@/lib/types'
@@ -355,11 +355,11 @@ function ModulePageInner({ slug }: { slug: string }) {
 
         {/* RIGHT: Sidebar */}
         <div className="w-[240px] flex-shrink-0 border-l border-outline-variant overflow-y-auto p-3 space-y-3">
-          {/* Luma tip */}
+          {/* Hatch tip */}
           <div className="flex items-start gap-2.5 bg-primary-fixed rounded-xl p-3">
-            <LumaGlyph size={28} state="speaking" className="text-primary flex-shrink-0" />
+            <HatchGlyph size={28} state="speaking" className="text-primary flex-shrink-0" />
             <p className="text-[11px] text-on-surface leading-relaxed">
-              <span className="font-bold">Luma tip:</span> Complete chapters in order — each builds on the last.
+              <span className="font-bold">Hatch tip:</span> Complete chapters in order — each builds on the last.
             </p>
           </div>
 

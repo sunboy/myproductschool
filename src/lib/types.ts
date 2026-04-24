@@ -100,11 +100,11 @@ export interface ChallengeAttempt {
   started_at: string
   submitted_at: string | null
   score: number | null
-  feedback_json: LumaFeedbackItem[] | null
+  feedback_json: HatchFeedbackItem[] | null
   created_at: string
 }
 
-export interface LumaFeedbackItem {
+export interface HatchFeedbackItem {
   dimension: FeedbackDimension
   score: number
   commentary: string
@@ -438,8 +438,8 @@ export interface CalibrationResults {
   archetype_description: string
   starting_levels: Record<FlowMove, number>
   percentile: number
-  // Optional fields returned when Luma provides richer feedback
-  luma_observation?: string
+  // Optional fields returned when Hatch provides richer feedback
+  hatch_observation?: string
   strengths?: string[]
   focus_area?: string
 }
@@ -461,7 +461,7 @@ export interface ShareCardData {
 export interface CareerBenchmark {
   levels: { title: string; percentile: number }[]
   user_level: string
-  luma_message?: string
+  hatch_message?: string
 }
 
 /* ── v2 Challenge Steps ───────────────────────────────────── */

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { ChallengeDiscussion } from '@/lib/types'
 
 export interface DiscussionReply {
@@ -158,11 +158,11 @@ export function DiscussionThread({
     <div className="mt-3 ml-4 border-l-2 border-outline-variant/20 pl-4 space-y-3">
       {replies.map(r => {
         const replyName = r.display_name || r.username || 'Anonymous'
-        const isLumaReply = r.display_name?.startsWith('Luma')
+        const isHatchReply = r.display_name?.startsWith('Hatch')
         return (
           <div key={r.id} className="flex items-start gap-2">
-            {isLumaReply ? (
-              <LumaGlyph size={28} state="speaking" className="text-primary shrink-0" />
+            {isHatchReply ? (
+              <HatchGlyph size={28} state="speaking" className="text-primary shrink-0" />
             ) : (
               <div className="w-7 h-7 rounded-full bg-surface-container-high flex items-center justify-center flex-shrink-0">
                 <span className="text-on-surface-variant text-[10px] font-bold">
@@ -209,15 +209,15 @@ export function DiscussionThread({
     )
   }
 
-  // Expert pick variant — amber/tertiary left border with Luma branding
+  // Expert pick variant — amber/tertiary left border with Hatch branding
   if (discussion.is_expert_pick) {
     return (
       <div className="bg-white rounded-xl p-5 shadow-sm border border-outline-variant/20 border-l-4 border-l-tertiary">
         <div className="flex items-start gap-3">
-          <LumaGlyph size={36} state="speaking" className="text-primary shrink-0" />
+          <HatchGlyph size={36} state="speaking" className="text-primary shrink-0" />
           <div className="flex-grow min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-2">
-              <span className="font-bold text-on-surface text-sm">Luma&apos;s Team</span>
+              <span className="font-bold text-on-surface text-sm">Hatch&apos;s Team</span>
               <span className="bg-tertiary-container text-tertiary text-[10px] px-2 py-0.5 rounded-full uppercase font-bold">
                 Expert Pick
               </span>

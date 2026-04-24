@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
-import { getLumaContext } from '@/lib/luma-context'
+import { getHatchContext } from '@/lib/hatch-context'
 
 const BENCHMARK_LEVELS = [
   { title: 'Junior Engineer', percentile: 25 },
@@ -12,7 +12,7 @@ const BENCHMARK_LEVELS = [
   { title: 'Principal / Lead', percentile: 95 },
 ]
 
-function buildLumaMessage(
+function buildHatchMessage(
   userPercentile: number,
   strongestCompetency: string | null,
   weakestCompetency: string | null,
@@ -35,7 +35,7 @@ export async function GET() {
     return NextResponse.json({
       levels: BENCHMARK_LEVELS,
       user_level: 'Senior Engineer',
-      luma_message: "You're in the top 20% of product thinkers — strong work so far.",
+      hatch_message: "You're in the top 20% of product thinkers — strong work so far.",
     })
   }
 
@@ -62,22 +62,22 @@ export async function GET() {
   const userLevel = [...BENCHMARK_LEVELS].reverse().find(l => userPercentile >= l.percentile)?.title
     ?? BENCHMARK_LEVELS[0].title
 
-  // Fetch luma context to derive strongest/weakest competency for message
-  let lumaCtx: Awaited<ReturnType<typeof getLumaContext>> | null = null
+  // Fetch hatch context to derive strongest/weakest competency for message
+  let hatchCtx: Awaited<ReturnType<typeof getHatchContext>> | null = null
   try {
-    lumaCtx = await getLumaContext(user.id)
+    hatchCtx = await getHatchContext(user.id)
   } catch {
     // non-fatal — fall back to no-competency message
   }
-  const competencies = lumaCtx?.competencies ?? []
+  const competencies = hatchCtx?.competencies ?? []
   const strongestCompetency = competencies.length > 0
     ? [...competencies].sort((a, b) => b.score - a.score)[0].competency
     : null
-  const lumaMessage = buildLumaMessage(userPercentile, strongestCompetency, lumaCtx?.weakestCompetency ?? null)
+  const hatchMessage = buildHatchMessage(userPercentile, strongestCompetency, hatchCtx?.weakestCompetency ?? null)
 
   return NextResponse.json({
     levels: BENCHMARK_LEVELS,
     user_level: userLevel,
-    luma_message: lumaMessage,
+    hatch_message: hatchMessage,
   })
 }

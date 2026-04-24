@@ -7,13 +7,13 @@ import { IS_MOCK } from '@/lib/mock'
 // Flip to false (or remove the block) when ready to launch.
 const PRE_LAUNCH = false
 
-const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist', '/luma-preview']
+const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist', '/hatch-preview']
 
 // ── Post-launch route config ─────────────────────────────────
 // Marketing / auth pages — accessible without any session.
 // These short-circuit BEFORE we talk to Supabase so they can
 // never be blocked by an auth-service hiccup.
-const MARKETING_ROUTES = ['/', '/waitlist', '/waitlist-quick', '/waitlist-flow', '/pricing', '/flow', '/luma-preview']
+const MARKETING_ROUTES = ['/', '/waitlist', '/waitlist-quick', '/waitlist-flow', '/pricing', '/flow', '/hatch-preview']
 const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-password']
 
 // Routes that require a user but NOT a completed profile/onboarding

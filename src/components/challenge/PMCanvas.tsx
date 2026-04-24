@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import type { ChallengeMode } from '@/lib/types'
 import { getWordCount } from '@/lib/utils'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { CanvasSection } from './CanvasSection'
 import { ConfidenceSlider } from './ConfidenceSlider'
 
@@ -153,11 +153,11 @@ export function PMCanvas({
       >
         {submitting ? (
           <span className="flex items-center justify-center gap-2">
-            <LumaGlyph size={16} className="animate-luma-glow" />
-            Luma is thinking...
+            <HatchGlyph size={16} className="animate-hatch-glow" />
+            Hatch is thinking...
           </span>
         ) : (
-          'Submit for Luma feedback'
+          'Submit for Hatch feedback'
         )}
       </button>
     </div>

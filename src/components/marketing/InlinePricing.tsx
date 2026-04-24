@@ -4,7 +4,7 @@ const FREE_FEATURES = [
   '3 challenges per day',
   'All 5 domains',
   'Vocabulary + flashcards',
-  'Basic Luma feedback',
+  'Basic Hatch feedback',
   'Progress tracking',
 ]
 

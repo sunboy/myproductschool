@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import Anthropic from '@anthropic-ai/sdk'
-import { LUMA_SIMULATION_DEBRIEF_PROMPT } from '@/lib/luma/system-prompt'
-import { LumaFeedbackSchema, clampFeedbackScores } from '@/lib/luma/feedback-schema'
+import { HATCH_SIMULATION_DEBRIEF_PROMPT } from '@/lib/hatch/system-prompt'
+import { HatchFeedbackSchema, clampFeedbackScores } from '@/lib/hatch/feedback-schema'
 import { NextResponse } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
 
@@ -27,7 +27,7 @@ export async function POST(
   if (sessionResult.error || !sessionResult.data) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
   if (sessionResult.data.status === 'completed') return NextResponse.json(sessionResult.data.debrief_json)
 
-  const transcript = (turnsResult.data ?? []).map(t => `${t.role === 'luma' ? 'Interviewer' : 'Candidate'}: ${t.content}`).join('\n\n')
+  const transcript = (turnsResult.data ?? []).map(t => `${t.role === 'hatch' ? 'Interviewer' : 'Candidate'}: ${t.content}`).join('\n\n')
 
   let debrief: object
   if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
@@ -36,12 +36,12 @@ export async function POST(
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 1000,
-      system: LUMA_SIMULATION_DEBRIEF_PROMPT,
+      system: HATCH_SIMULATION_DEBRIEF_PROMPT,
       messages: [{ role: 'user', content: `Interview transcript:\n\n${transcript}` }],
     })
     const raw = response.content[0].type === 'text' ? response.content[0].text : '{}'
     const parsed = JSON.parse(raw)
-    const validated = LumaFeedbackSchema.safeParse(parsed)
+    const validated = HatchFeedbackSchema.safeParse(parsed)
     debrief = validated.success ? clampFeedbackScores(validated.data) : parsed
   }
 
@@ -51,7 +51,7 @@ export async function POST(
     completed_at: new Date().toISOString(),
   }).eq('id', id)
 
-  // Insert luma_context challenge_insight (fire-and-forget, non-mock only)
+  // Insert hatch_context challenge_insight (fire-and-forget, non-mock only)
   if (!IS_MOCK && process.env.ANTHROPIC_API_KEY) {
     const debriefAny = debrief as { dimensions?: Array<{ dimension: string; score: number }> }
     const dimensions = debriefAny.dimensions ?? []
@@ -71,7 +71,7 @@ export async function POST(
     const contentStr = strongestDimension
       ? `Completed simulation${companyName ? ' "' + companyName + '"' : ''}. Strongest dimension: ${strongestDimension}. Growth area: ${weakestDimension ?? 'keep practising'}.`
       : `Completed simulation${companyName ? ' "' + companyName + '"' : ''}.`
-    adminClient.from('luma_context').insert({
+    adminClient.from('hatch_context').insert({
       user_id: user.id,
       context_type: 'challenge_insight',
       content: contentStr,

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { MOCK_ORIENTATION_CHALLENGE } from '@/lib/mock-data'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const MAX_CHARS = 1200
 
@@ -36,7 +36,7 @@ export default function OrientationPage() {
           <h2 className="font-headline font-bold text-on-surface text-lg">Welcome to HackProduct</h2>
           <p className="text-sm text-on-surface-variant mt-1">
             This is your orientation challenge — a quick 5-minute exercise to establish your baseline.
-            Don&apos;t worry about being perfect. The point is to see how Luma&apos;s feedback works.
+            Don&apos;t worry about being perfect. The point is to see how Hatch&apos;s feedback works.
           </p>
         </div>
       </div>
@@ -58,11 +58,11 @@ export default function OrientationPage() {
         </p>
       </div>
 
-      {/* Luma coaching tip */}
+      {/* Hatch coaching tip */}
       <div className="flex items-start gap-3 p-4 bg-surface-container-low rounded-xl border border-outline-variant/50">
-        <LumaGlyph size={32} state="speaking" className="text-primary shrink-0 mt-0.5" />
+        <HatchGlyph size={32} state="speaking" className="text-primary shrink-0 mt-0.5" />
         <div>
-          <p className="text-xs font-label font-semibold text-primary mb-1">Luma&apos;s tip</p>
+          <p className="text-xs font-label font-semibold text-primary mb-1">Hatch&apos;s tip</p>
           <p className="text-sm text-on-surface-variant">
             Don&apos;t restate the symptom — dig into what changed and why. Name at least 3 hypotheses before picking your priority order.
           </p>

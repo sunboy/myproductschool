@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import type { StorySection } from '@/lib/types'
 
 interface Props {
@@ -53,7 +53,7 @@ export function FullbleedCTASection({ section, hasBeenVisible }: Props) {
       />
 
       <div className="relative z-10 px-10 py-20 md:px-20 md:py-28">
-        {/* Luma avatar */}
+        {/* Hatch avatar */}
         <div
           style={{
             opacity: entered ? 1 : 0,
@@ -62,7 +62,7 @@ export function FullbleedCTASection({ section, hasBeenVisible }: Props) {
             marginBottom: 32,
           }}
         >
-          <LumaGlyph size={52} state="idle" className="text-primary" />
+          <HatchGlyph size={52} state="idle" className="text-primary" />
         </div>
 
         {/* Label */}

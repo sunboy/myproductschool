@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import type { Challenge, FlowStep } from '@/lib/types'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { CompetencyDelta } from './CompetencyDelta'
 
 interface StepBreakdownItem {
@@ -106,7 +106,7 @@ export function ChallengeComplete({
 
         {/* Score hero */}
         <div className="flex flex-col items-center text-center gap-3 py-4">
-          <LumaGlyph
+          <HatchGlyph
             size={72}
             state={isHighScore ? 'celebrating' : 'reviewing'}
             className="text-primary"

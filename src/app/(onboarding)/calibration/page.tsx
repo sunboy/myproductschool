@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { LumaGlyph, type LumaState } from '@/components/shell/LumaGlyph'
+import { HatchGlyph, type HatchState } from '@/components/shell/HatchGlyph'
 import { QUESTIONS } from '@/lib/calibration/questions'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -13,7 +13,7 @@ interface Results {
   archetype: string
   archetype_description: string
   percentile: number
-  luma_observation: string
+  hatch_observation: string
   starting_levels: Record<string, number>
   scores: Record<string, number>
   personalised_plan_slug: string | null
@@ -243,7 +243,7 @@ function ResultsBar({ move, level, score, revealDelay }: { move: typeof FLOW_MOV
 export default function CalibrationPage() {
   const router = useRouter()
   const [screen, setScreen] = useState<CalScreen>('intro')
-  const [lumaState, setLumaState] = useState<LumaState>('celebrating')
+  const [hatchState, setHatchState] = useState<HatchState>('celebrating')
   const [visible, setVisible] = useState(true)
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
   const [showFan, setShowFan] = useState(false)
@@ -259,10 +259,10 @@ export default function CalibrationPage() {
   const currentMove = questionIdx >= 0 ? FLOW_MOVES[questionIdx] : null
   const completedSet = new Set(QUESTION_SCREENS.slice(0, questionIdx).map((_, i) => i))
 
-  // Intro: Luma celebrates → speaking
+  // Intro: Hatch celebrates → speaking
   useEffect(() => {
     if (screen !== 'intro') return
-    const t = setTimeout(() => setLumaState('speaking'), 1200)
+    const t = setTimeout(() => setHatchState('speaking'), 1200)
     return () => clearTimeout(t)
   }, [screen])
 
@@ -288,7 +288,7 @@ export default function CalibrationPage() {
           archetype: data.archetype,
           archetype_description: data.archetype_description,
           percentile: data.percentile,
-          luma_observation: data.luma_observation,
+          hatch_observation: data.hatch_observation,
           starting_levels: data.starting_levels,
           scores: data.scores,
           personalised_plan_slug: data.personalised_plan_slug ?? null,
@@ -314,10 +314,10 @@ export default function CalibrationPage() {
       setScreen(next)
       setSelectedOption(null)
       setVisible(true)
-      if (next === 'role') setLumaState('listening')
-      if (next.startsWith('q')) setLumaState('listening')
-      if (next === 'reading') setLumaState('reviewing')
-      if (next === 'results') setLumaState('celebrating')
+      if (next === 'role') setHatchState('listening')
+      if (next.startsWith('q')) setHatchState('listening')
+      if (next === 'reading') setHatchState('reviewing')
+      if (next === 'results') setHatchState('celebrating')
     }, 240)
   }
 
@@ -336,7 +336,7 @@ export default function CalibrationPage() {
   function handleOptionSelect(optionId: string) {
     if (selectedOption || !currentQuestion) return
     setSelectedOption(optionId)
-    setLumaState('reviewing')
+    setHatchState('reviewing')
     const newAnswers = { ...answers, [currentQuestion.move]: optionId }
     setAnswers(newAnswers)
     const NEXT: Record<CalScreen, CalScreen> = {
@@ -383,7 +383,7 @@ export default function CalibrationPage() {
         {/* ── INTRO ─────────────────────────────────────────────────────────── */}
         {screen === 'intro' && (
           <div className="flex flex-col items-center gap-5 text-center">
-            <LumaGlyph size={96} state={lumaState} className="text-primary" />
+            <HatchGlyph size={96} state={hatchState} className="text-primary" />
             <div className="space-y-2.5">
               <h1 className="font-headline font-bold text-[28px] text-inverse-on-surface leading-tight">
                 Let me figure out where you are.
@@ -409,7 +409,7 @@ export default function CalibrationPage() {
         {screen === 'role' && (
           <div className="w-full flex flex-col gap-4">
             <div className="flex items-center gap-3">
-              <LumaGlyph size={42} state={lumaState} className="text-primary flex-shrink-0" />
+              <HatchGlyph size={42} state={hatchState} className="text-primary flex-shrink-0" />
               <h2 className="font-headline font-bold text-[20px] text-inverse-on-surface leading-snug">
                 What&apos;s your primary role?
               </h2>
@@ -450,13 +450,13 @@ export default function CalibrationPage() {
             <FlowMoveStrip activeIdx={questionIdx} completedSet={completedSet} />
 
             <div className="flex items-start gap-3">
-              <LumaGlyph size={40} state={lumaState} className="text-primary flex-shrink-0 mt-0.5" />
+              <HatchGlyph size={40} state={hatchState} className="text-primary flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-[10px] font-label font-bold uppercase tracking-widest mb-0.5" style={{ color: currentMove.color }}>
                   {currentMove.label} move
                 </p>
                 <p className="text-[12px] text-inverse-on-surface/55 font-body italic leading-snug">
-                  {currentQuestion.luma}
+                  {currentQuestion.hatch}
                 </p>
               </div>
             </div>
@@ -512,7 +512,7 @@ export default function CalibrationPage() {
         {/* ── READING ───────────────────────────────────────────────────────── */}
         {screen === 'reading' && (
           <div className="flex flex-col items-center gap-8 text-center py-10">
-            <LumaGlyph size={112} state="reviewing" className="text-primary" />
+            <HatchGlyph size={112} state="reviewing" className="text-primary" />
             <div className="space-y-2">
               <p
                 key={readingPhraseIdx}
@@ -532,7 +532,7 @@ export default function CalibrationPage() {
         {screen === 'results' && (
           <div className="w-full flex flex-col gap-5">
             <div className="flex flex-col items-center gap-3 pt-3">
-              <LumaGlyph size={76} state="celebrating" className="text-primary" />
+              <HatchGlyph size={76} state="celebrating" className="text-primary" />
 
               <div
                 className="text-center transition-all duration-500"
@@ -575,8 +575,8 @@ export default function CalibrationPage() {
               ))}
             </div>
 
-            {/* Luma observation */}
-            {results?.luma_observation && (
+            {/* Hatch observation */}
+            {results?.hatch_observation && (
               <div
                 className="rounded-2xl p-4 transition-all duration-500"
                 style={{
@@ -591,7 +591,7 @@ export default function CalibrationPage() {
                     auto_awesome
                   </span>
                   <p className="text-[13px] text-inverse-on-surface font-body leading-relaxed italic">
-                    {results.luma_observation}
+                    {results.hatch_observation}
                   </p>
                 </div>
               </div>

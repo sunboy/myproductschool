@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { difficultyLabel } from '@/lib/utils'
 
 interface NextChallengeCardProps {
@@ -7,14 +7,14 @@ interface NextChallengeCardProps {
   domain: string
   difficulty: string
   challengeId: string
-  lumaInsight?: string | null
+  hatchInsight?: string | null
 }
 
-export function NextChallengeCard({ title, domain, difficulty, challengeId, lumaInsight }: NextChallengeCardProps) {
+export function NextChallengeCard({ title, domain, difficulty, challengeId, hatchInsight }: NextChallengeCardProps) {
   return (
     <div className="bg-surface-container-low rounded-2xl p-5 flex flex-col gap-3 border border-outline-variant/30">
       <div className="flex items-center gap-2">
-        <LumaGlyph size={22} state="idle" />
+        <HatchGlyph size={22} state="idle" />
         <span className="text-[10px] font-bold text-primary uppercase tracking-widest font-label">For you</span>
       </div>
 
@@ -30,10 +30,10 @@ export function NextChallengeCard({ title, domain, difficulty, challengeId, luma
         </div>
       </div>
 
-      {lumaInsight && (
+      {hatchInsight && (
         <div className="flex items-start gap-2 bg-primary-fixed/60 rounded-xl p-3">
           <span className="material-symbols-outlined text-primary text-[14px] mt-0.5 shrink-0">auto_awesome</span>
-          <p className="text-[12px] text-on-surface font-label font-semibold leading-relaxed">{lumaInsight}</p>
+          <p className="text-[12px] text-on-surface font-label font-semibold leading-relaxed">{hatchInsight}</p>
         </div>
       )}
 

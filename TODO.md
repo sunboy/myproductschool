@@ -15,9 +15,9 @@ See `stripe.md` for full setup details.
 
 ---
 
-## Luma Brain — Personalized Context Architecture
+## Hatch Brain — Personalized Context Architecture
 
-**Status:** Stubbed in `src/lib/v2/luma-context.ts`
+**Status:** Stubbed in `src/lib/v2/hatch-context.ts`
 **Why deferred:** Full implementation requires architectural decisions not yet made.
 
 ### What the stub does now
@@ -39,13 +39,13 @@ See `stripe.md` for full setup details.
 **Status:** Not started
 **Why deferred:** Deprioritized in autopsy v1 to focus on Hack Stories.
 
-After answering an autopsy challenge, offer a 3-turn Luma coaching exchange via Claude API.
+After answering an autopsy challenge, offer a 3-turn Hatch coaching exchange via Claude API.
 
 ### What to build
 - Edge function `autopsy-deeper` (POST): takes challengeId, userAnswer, gradingResult, conversationHistory
 - System prompt per challenge seeded alongside challenge content
 - Conversation state machine: COMPLETE → CONVERSATION (max 3 turns) → SYNTHESIS
-- UI: Luma insight card expands with a chat input below
+- UI: Hatch insight card expands with a chat input below
 - Model: claude-sonnet-4-6 (same as coaching endpoints)
 
 See original spec section 10 for full system prompt template and API response schema.

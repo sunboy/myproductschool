@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 import { TopNav } from '@/components/shell/TopNav'
 import { BottomTabs } from '@/components/shell/BottomTabs'
-import { FloatingLuma } from '@/components/shell/FloatingLuma'
+import { FloatingHatch } from '@/components/shell/FloatingHatch'
 import { UpgradeModal } from '@/components/shell/UpgradeModal'
-import { LumaProvider } from '@/context/LumaContext'
+import { HatchProvider } from '@/context/HatchContext'
 import { createClient } from '@/lib/supabase/client'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -27,20 +27,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <LumaProvider>
+    <HatchProvider>
       <div className="min-h-screen bg-background">
         <TopNav />
         <main className="pb-20 md:pb-8">
           {children}
         </main>
         <BottomTabs />
-        <FloatingLuma />
+        <FloatingHatch />
         <UpgradeModal
           open={upgradeOpen}
           onClose={() => setUpgradeOpen(false)}
           userId={userId}
         />
       </div>
-    </LumaProvider>
+    </HatchProvider>
   )
 }

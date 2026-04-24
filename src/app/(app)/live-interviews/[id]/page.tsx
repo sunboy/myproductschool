@@ -4,7 +4,7 @@ import { Component, use, useCallback, useEffect, useRef, useState } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import LumaAvatar, { type LumaAvatarState } from '@/components/live-interview/LumaAvatar'
+import HatchAvatar, { type HatchAvatarState } from '@/components/live-interview/HatchAvatar'
 import dynamic from 'next/dynamic'
 import DeepgramVoiceSession from '@/components/live-interview/DeepgramVoiceSession'
 import type { TalkingHeadHandle } from '@/components/live-interview/TalkingHeadAvatar'
@@ -14,7 +14,7 @@ const TalkingHeadAvatar = dynamic(
   { ssr: false }
 )
 
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useInterviewTimer } from '@/hooks/useInterviewTimer'
 import { InterviewLimitModal } from '@/components/paywalls/InterviewLimitModal'
 import { useUpgrade } from '@/hooks/useUpgrade'
@@ -52,7 +52,7 @@ interface CoachingSignal {
 
 interface TranscriptTurn {
   id: string
-  role: 'luma' | 'user'
+  role: 'hatch' | 'user'
   content: string
   source: 'voice' | 'chat'
   coachingSignal?: CoachingSignal
@@ -116,8 +116,8 @@ function SignalCard({ signal, index }: { signal: CoachingSignal; index: number }
   )
 }
 
-// ─── Luma Orb ───
-function LumaOrb({ state }: { state: LumaAvatarState }) {
+// ─── Hatch Orb ───
+function HatchOrb({ state }: { state: HatchAvatarState }) {
   const isActive = state === 'speaking' || state === 'listening'
   const isSpeaking = state === 'speaking'
 
@@ -155,7 +155,7 @@ function LumaOrb({ state }: { state: LumaAvatarState }) {
             : isActive
             ? '0 0 30px rgba(74,124,89,0.25)'
             : '0 0 20px rgba(74,124,89,0.1)',
-          animation: 'floatLuma 5s ease-in-out infinite',
+          animation: 'floatHatch 5s ease-in-out infinite',
           transition: 'box-shadow 0.5s ease',
         }}
       >
@@ -177,7 +177,7 @@ function LumaOrb({ state }: { state: LumaAvatarState }) {
           </div>
         )}
 
-        {/* Luma face — simple glowing eyes */}
+        {/* Hatch face — simple glowing eyes */}
         {!isSpeaking && (
           <div className="flex flex-col items-center gap-3">
             <div className="flex gap-4">
@@ -209,7 +209,7 @@ function LumaOrb({ state }: { state: LumaAvatarState }) {
           0% { transform: scaleY(0.4); }
           100% { transform: scaleY(1); }
         }
-        @keyframes floatLuma {
+        @keyframes floatHatch {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-8px); }
         }
@@ -224,12 +224,12 @@ function LumaOrb({ state }: { state: LumaAvatarState }) {
 
 // ─── Transcript Turn Bubble ───
 function TurnBubble({ turn }: { turn: TranscriptTurn }) {
-  const isLuma = turn.role === 'luma'
+  const isHatch = turn.role === 'hatch'
 
   return (
-    <div className={cn('flex flex-col mb-3', isLuma ? 'items-start' : 'items-end')}>
+    <div className={cn('flex flex-col mb-3', isHatch ? 'items-start' : 'items-end')}>
       {/* Coaching signal pill above user bubble */}
-      {!isLuma && turn.coachingSignal && (
+      {!isHatch && turn.coachingSignal && (
         <div
           className="flex items-center gap-1.5 rounded-full px-2.5 py-0.5 mb-1.5 font-label text-[10.5px] font-semibold"
           style={{
@@ -252,8 +252,8 @@ function TurnBubble({ turn }: { turn: TranscriptTurn }) {
       )}
 
       <div className="flex items-end gap-2 max-w-[90%]">
-        {/* Luma avatar dot */}
-        {isLuma && (
+        {/* Hatch avatar dot */}
+        {isHatch && (
           <div
             className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center"
             style={{
@@ -268,7 +268,7 @@ function TurnBubble({ turn }: { turn: TranscriptTurn }) {
         <div
           className="px-3 py-2 font-body text-[13.5px] leading-[1.55]"
           style={
-            isLuma
+            isHatch
               ? {
                   background: 'rgba(74,124,89,0.2)',
                   border: '1px solid rgba(74,124,89,0.25)',
@@ -287,7 +287,7 @@ function TurnBubble({ turn }: { turn: TranscriptTurn }) {
         </div>
 
         {/* User initials */}
-        {!isLuma && (
+        {!isHatch && (
           <div
             className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center font-label font-bold text-[10px]"
             style={{
@@ -416,7 +416,7 @@ export default function SessionPage({
       : []
   )
 
-  const [lumaState, setLumaState] = useState<LumaAvatarState>('idle')
+  const [hatchState, setHatchState] = useState<HatchAvatarState>('idle')
   const [isThinking, setIsThinking] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [isVoiceActive, setIsVoiceActive] = useState(false)
@@ -474,10 +474,10 @@ export default function SessionPage({
       setCompanyName(company ?? '')
       setRoleName(roleParam ?? '')
       // Recover systemPrompt stashed by StartInterviewButton before navigation
-      const stored = sessionStorage.getItem(`luma_prompt_${id}`)
+      const stored = sessionStorage.getItem(`hatch_prompt_${id}`)
       if (stored) {
         setSystemPrompt(stored)
-        sessionStorage.removeItem(`luma_prompt_${id}`)
+        sessionStorage.removeItem(`hatch_prompt_${id}`)
       }
       setInterviewPhase('active')
       setInterviewStartedAt(Date.now())
@@ -539,7 +539,7 @@ export default function SessionPage({
         if (data.flowCoverage) setFlowCoverage(data.flowCoverage)
         if (data.totalTurns != null) setTotalTurns(data.totalTurns)
         if (data.emotionalBeat && data.emotionalBeat !== 'neutral') {
-          const beatToState: Record<string, LumaAvatarState> = {
+          const beatToState: Record<string, HatchAvatarState> = {
             intrigued: 'intrigued',
             challenging: 'challenging',
             delighted: 'delighted',
@@ -547,8 +547,8 @@ export default function SessionPage({
           }
           const mappedState = beatToState[data.emotionalBeat]
           if (mappedState) {
-            setLumaState(mappedState)
-            setTimeout(() => setLumaState('listening'), 3000)
+            setHatchState(mappedState)
+            setTimeout(() => setHatchState('listening'), 3000)
           }
         }
         if (data.latestSignal?.flowMove && data.latestSignal.turnIndex != null) {
@@ -561,12 +561,12 @@ export default function SessionPage({
               ...prev.slice(0, 9),
             ])
             setTurns((prev) => {
-              const lastLumaIdx = prev.findLastIndex((t) => t.role === 'luma' && t.source === 'voice')
-              if (lastLumaIdx === -1) return prev
-              const turn = prev[lastLumaIdx]
+              const lastHatchIdx = prev.findLastIndex((t) => t.role === 'hatch' && t.source === 'voice')
+              if (lastHatchIdx === -1) return prev
+              const turn = prev[lastHatchIdx]
               if (turn.coachingSignal) return prev
               const updated = [...prev]
-              updated[lastLumaIdx] = { ...turn, coachingSignal: signalData }
+              updated[lastHatchIdx] = { ...turn, coachingSignal: signalData }
               return updated
             })
           }
@@ -607,12 +607,12 @@ export default function SessionPage({
     }
   }, [isLimitReached, interviewPhase, showLimitModal])
 
-  const handleTranscript = useCallback((text: string, role: 'luma' | 'user') => {
+  const handleTranscript = useCallback((text: string, role: 'hatch' | 'user') => {
     const { cleanContent, signal } = parseGradingSignal(text)
     if (!cleanContent) return
 
-    // Update caption for luma
-    if (role === 'luma') setCurrentCaption(cleanContent)
+    // Update caption for hatch
+    if (role === 'hatch') setCurrentCaption(cleanContent)
 
     let coachingSignal: CoachingSignal | undefined
     if (signal && signal.flowMove) coachingSignal = signal
@@ -633,11 +633,11 @@ export default function SessionPage({
     }
     setTurns((prev) => [...prev, turn])
     setTotalTurns((prev) => prev + 1)
-    if (role === 'luma') setLumaState('idle')
+    if (role === 'hatch') setHatchState('idle')
 
     const CLOSING_PHRASES = ["wrap up", "stop here", "covered good ground", "have what i need", "call it", "good session", "shall we stop", "want to stop"]
     const lower = cleanContent.toLowerCase()
-    if (role === 'luma' && CLOSING_PHRASES.some((phrase) => lower.includes(phrase))) {
+    if (role === 'hatch' && CLOSING_PHRASES.some((phrase) => lower.includes(phrase))) {
       setTimeout(() => {
         setIsEnding(true)
         setInterviewPhase('ended')
@@ -665,19 +665,19 @@ export default function SessionPage({
   }, [sessionId, router])
 
   const handleAgentSpeaking = useCallback(() => {
-    setLumaState('speaking')
+    setHatchState('speaking')
     setCurrentCaption('')
   }, [])
 
   const handleAgentDoneSpeaking = useCallback(() => {
-    setLumaState('listening')
+    setHatchState('listening')
     setTimeout(() => setCurrentCaption(''), 2000)
   }, [])
 
   const handleConnected = useCallback(() => {
     setIsVoiceActive(true)
     setIsVoiceAvailable(true)
-    setLumaState('listening')
+    setHatchState('listening')
   }, [])
 
   const [voiceError, setVoiceError] = useState<string | null>(null)
@@ -693,20 +693,20 @@ export default function SessionPage({
     const userTurn: TranscriptTurn = { id: crypto.randomUUID(), role: 'user', content: text, source: 'chat' }
     setTurns((prev) => [...prev, userTurn])
     setTotalTurns((prev) => prev + 1)
-    setLumaState('thinking')
+    setHatchState('thinking')
     setIsThinking(true)
 
     if (IS_MOCK) {
       setTimeout(() => {
-        const lumaReply: TranscriptTurn = {
+        const hatchReply: TranscriptTurn = {
           id: crypto.randomUUID(),
-          role: 'luma',
+          role: 'hatch',
           content: "Hold on — you jumped straight to a solution. What's the actual problem here?",
           source: 'chat',
         }
-        setTurns((prev) => [...prev, lumaReply])
+        setTurns((prev) => [...prev, hatchReply])
         setTotalTurns((prev) => prev + 1)
-        setLumaState('idle')
+        setHatchState('idle')
         setIsThinking(false)
       }, 800)
       return
@@ -720,13 +720,13 @@ export default function SessionPage({
       })
       if (res.ok) {
         const { reply } = await res.json()
-        const lumaTurn: TranscriptTurn = {
+        const hatchTurn: TranscriptTurn = {
           id: crypto.randomUUID(),
-          role: 'luma',
+          role: 'hatch',
           content: reply,
           source: 'chat',
         }
-        setTurns((prev) => [...prev, lumaTurn])
+        setTurns((prev) => [...prev, hatchTurn])
         setTotalTurns((prev) => prev + 1)
       } else if (res.status === 410) {
         setError('This session has ended.')
@@ -736,7 +736,7 @@ export default function SessionPage({
     } catch {
       setError('Network error — check your connection.')
     } finally {
-      setLumaState('idle')
+      setHatchState('idle')
       setIsThinking(false)
     }
   }, [sessionId])
@@ -802,7 +802,7 @@ export default function SessionPage({
     return (
       <div className="fixed inset-0 flex items-center justify-center" style={{ background: '#0d1410', zIndex: 200 }}>
         <div className="flex flex-col items-center gap-6 max-w-sm text-center px-6">
-          <LumaGlyph size={80} state="reviewing" className="text-primary" />
+          <HatchGlyph size={80} state="reviewing" className="text-primary" />
           <div className="space-y-2">
             <h2
               className="font-headline text-2xl font-bold"
@@ -811,7 +811,7 @@ export default function SessionPage({
               Generating your debrief
             </h2>
             <p className="font-body text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              Luma is analyzing your interview across all four FLOW moves. Just a moment.
+              Hatch is analyzing your interview across all four FLOW moves. Just a moment.
             </p>
           </div>
           <div className="w-64 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
@@ -885,7 +885,7 @@ export default function SessionPage({
             <span className="material-symbols-outlined text-[18px]" style={{ color: 'rgba(255,255,255,0.5)' }}>close</span>
           </button>
 
-          <LumaGlyph size={64} state="idle" className="text-primary" />
+          <HatchGlyph size={64} state="idle" className="text-primary" />
 
           {/* Company / role tags */}
           <div className="flex items-center gap-2 flex-wrap justify-center">
@@ -909,7 +909,7 @@ export default function SessionPage({
               Ready to begin?
             </h2>
             <p className="font-body text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              Luma will play the role of your interviewer. Speak naturally — your microphone
+              Hatch will play the role of your interviewer. Speak naturally — your microphone
               activates when you start. Cover all four FLOW moves: Frame, List, Optimize, Win.
             </p>
           </div>
@@ -973,25 +973,25 @@ export default function SessionPage({
     { key: 'win' as const, label: 'W', name: 'Win' },
   ]
 
-  const lumaStateLabel =
-    lumaState === 'speaking'
-      ? 'Luma is speaking'
-      : lumaState === 'listening'
+  const hatchStateLabel =
+    hatchState === 'speaking'
+      ? 'Hatch is speaking'
+      : hatchState === 'listening'
       ? 'Listening'
       : isThinking
-      ? 'Luma is thinking…'
+      ? 'Hatch is thinking…'
       : 'Interview active'
 
   const captionText =
-    lumaState === 'speaking'
+    hatchState === 'speaking'
       ? currentCaption || '...'
       : isThinking
       ? 'processing your response…'
-      : lumaState === 'listening'
+      : hatchState === 'listening'
       ? 'speak when ready'
       : ''
 
-  const captionIsItalic = lumaState !== 'speaking'
+  const captionIsItalic = hatchState !== 'speaking'
 
   return (
     <div
@@ -1007,7 +1007,7 @@ export default function SessionPage({
           0% { transform: scaleY(0.4); }
           100% { transform: scaleY(1); }
         }
-        @keyframes floatLumaAnim {
+        @keyframes floatHatchAnim {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-8px); }
         }
@@ -1224,7 +1224,7 @@ export default function SessionPage({
           </div>
         </div>
 
-        {/* CENTER: Luma orb + captions */}
+        {/* CENTER: Hatch orb + captions */}
         <div
           className="flex-1 flex flex-col items-center justify-center relative overflow-hidden"
           style={{ minWidth: 0 }}
@@ -1259,10 +1259,10 @@ export default function SessionPage({
             </span>
           </div>
 
-          {/* Luma Orb */}
+          {/* Hatch Orb */}
           <div className="relative z-10 flex flex-col items-center gap-4">
-            <div style={{ animation: 'floatLumaAnim 5s ease-in-out infinite' }}>
-              <LumaOrb state={lumaState} />
+            <div style={{ animation: 'floatHatchAnim 5s ease-in-out infinite' }}>
+              <HatchOrb state={hatchState} />
             </div>
 
             {/* State label */}
@@ -1270,7 +1270,7 @@ export default function SessionPage({
               className="font-label uppercase tracking-widest text-[12px]"
               style={{ color: 'rgba(255,255,255,0.4)' }}
             >
-              {lumaStateLabel}
+              {hatchStateLabel}
             </span>
 
             {/* Live captions */}
@@ -1550,7 +1550,7 @@ export default function SessionPage({
               className="font-body text-sm text-center mt-8"
               style={{ color: 'rgba(255,255,255,0.25)' }}
             >
-              Type to respond to Luma instead of speaking.
+              Type to respond to Hatch instead of speaking.
             </p>
           ) : (
             <>
@@ -1560,12 +1560,12 @@ export default function SessionPage({
                   className={cn('flex flex-col mb-3', turn.role === 'user' ? 'items-end' : 'items-start')}
                 >
                   <span className="font-label text-[10.5px] mb-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                    {turn.role === 'luma' ? 'Luma' : 'You'}
+                    {turn.role === 'hatch' ? 'Hatch' : 'You'}
                   </span>
                   <div
                     className="px-3 py-2 font-body text-sm leading-relaxed max-w-[85%]"
                     style={
-                      turn.role === 'luma'
+                      turn.role === 'hatch'
                         ? {
                             background: 'rgba(74,124,89,0.18)',
                             border: '1px solid rgba(74,124,89,0.22)',
@@ -1586,7 +1586,7 @@ export default function SessionPage({
               ))}
               {isThinking && (
                 <div className="flex flex-col items-start mb-3">
-                  <span className="font-label text-[10.5px] mb-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Luma</span>
+                  <span className="font-label text-[10.5px] mb-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Hatch</span>
                   <div
                     className="px-3 py-2"
                     style={{
@@ -1720,13 +1720,13 @@ export default function SessionPage({
               animation: 'fadeUp 0.25s ease-out',
             }}
           >
-            <LumaGlyph size={56} state="reviewing" className="text-primary" />
+            <HatchGlyph size={56} state="reviewing" className="text-primary" />
             <div>
               <h3 className="font-headline text-lg font-bold" style={{ color: 'rgba(243,237,224,0.95)' }}>
                 End this interview?
               </h3>
               <p className="font-body text-sm mt-1 leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                Luma will analyze your performance and generate a detailed debrief.
+                Hatch will analyze your performance and generate a detailed debrief.
               </p>
             </div>
             <div className="flex gap-3 w-full">

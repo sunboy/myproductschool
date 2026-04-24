@@ -238,7 +238,7 @@ export default function FilteredPersonaGrid({ personas, scenarios = [] }: Filter
             <div className="flex items-center justify-between p-4 rounded-xl bg-primary-fixed/50 border border-primary/20">
               <div>
                 <p className="text-sm font-label font-bold text-on-surface">Free-form interview</p>
-                <p className="text-xs text-on-surface-variant mt-0.5">Luma picks the scenario</p>
+                <p className="text-xs text-on-surface-variant mt-0.5">Hatch picks the scenario</p>
               </div>
               <StartInterviewButton companyId={activePersona.companyId} roleId={activePersona.role} companyName={activePersona.companyName} />
             </div>

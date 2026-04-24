@@ -32,24 +32,24 @@ export async function GET(
             break
           }
 
-          // Fetch latest luma turn's signal
-          const { data: latestLumaTurn } = await adminClient
+          // Fetch latest hatch turn's signal
+          const { data: latestHatchTurn } = await adminClient
             .from('live_interview_turns')
             .select('turn_index, flow_move_detected, competency_signals')
             .eq('session_id', id)
-            .eq('role', 'luma')
+            .eq('role', 'hatch')
             .order('turn_index', { ascending: false })
             .limit(1)
             .maybeSingle()
 
           let latestSignal = null
-          if (latestLumaTurn?.flow_move_detected || latestLumaTurn?.competency_signals) {
-            const signals = latestLumaTurn.competency_signals as Record<string, string> | null
+          if (latestHatchTurn?.flow_move_detected || latestHatchTurn?.competency_signals) {
+            const signals = latestHatchTurn.competency_signals as Record<string, string> | null
             latestSignal = {
-              flowMove: latestLumaTurn.flow_move_detected ?? '',
+              flowMove: latestHatchTurn.flow_move_detected ?? '',
               competency: signals?.competency ?? '',
               signal: signals?.signal ?? '',
-              turnIndex: latestLumaTurn.turn_index as number,
+              turnIndex: latestHatchTurn.turn_index as number,
             }
           }
 

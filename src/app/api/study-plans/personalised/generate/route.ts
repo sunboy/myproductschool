@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { IS_MOCK } from '@/lib/mock'
-import { getLumaContext, buildLumaContextString } from '@/lib/luma-context'
+import { getHatchContext, buildHatchContextString } from '@/lib/hatch-context'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -16,7 +16,7 @@ interface MoveWeek {
 
 interface StudyPlanShape {
   title: string
-  luma_rationale: string
+  hatch_rationale: string
   move_sequence: MoveWeek[]
 }
 
@@ -25,7 +25,7 @@ interface StudyPlanShape {
 const MOCK_PLAN = {
   id: 'mock-plan-001',
   title: '4-Week List Move Bootcamp',
-  luma_rationale:
+  hatch_rationale:
     'Your list move is at Level 1 — the weakest in your FLOW. This plan sequences 4 challenges that drill breakdown thinking, from structured decomposition to user segmentation.',
   move_sequence: [
     {
@@ -73,7 +73,7 @@ function buildFallbackPlan(
 
   return {
     title: `4-Week ${weakestMove.charAt(0).toUpperCase() + weakestMove.slice(1)} Move Bootcamp`,
-    luma_rationale: `Your ${weakestMove} move needs the most work right now. This plan sequences challenges to build that specific skill progressively.`,
+    hatch_rationale: `Your ${weakestMove} move needs the most work right now. This plan sequences challenges to build that specific skill progressively.`,
     move_sequence: themes.slice(0, 4).map((theme, i) => ({
       week: i + 1,
       focus_move: weakestMove,
@@ -90,7 +90,7 @@ function isValidPlan(obj: unknown): obj is StudyPlanShape {
   const p = obj as Record<string, unknown>
   return (
     typeof p.title === 'string' &&
-    typeof p.luma_rationale === 'string' &&
+    typeof p.hatch_rationale === 'string' &&
     Array.isArray(p.move_sequence) &&
     p.move_sequence.every(
       (w: unknown) =>
@@ -171,9 +171,9 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── Fetch Luma context + available challenges ─────────────
-  const [lumaCtx, challengesResult] = await Promise.all([
-    getLumaContext(userId),
+  // ── Fetch Hatch context + available challenges ────────────
+  const [hatchCtx, challengesResult] = await Promise.all([
+    getHatchContext(userId),
     admin
       .from('challenges')
       .select('id, title, tags')
@@ -190,8 +190,8 @@ export async function POST(req: NextRequest) {
 
   // Derive weakest FLOW move
   const weakestFlowMove =
-    lumaCtx.moveLevels.length > 0
-      ? [...lumaCtx.moveLevels].sort((a, b) => a.level - b.level)[0].move
+    hatchCtx.moveLevels.length > 0
+      ? [...hatchCtx.moveLevels].sort((a, b) => a.level - b.level)[0].move
       : 'frame'
 
   // ── Generate plan via Claude ──────────────────────────────
@@ -201,7 +201,7 @@ export async function POST(req: NextRequest) {
     try {
       const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-      const contextString = buildLumaContextString(lumaCtx, 'coaching')
+      const contextString = buildHatchContextString(hatchCtx, 'coaching')
       const challengeList = availableChallenges
         .map((c) => `${c.id} — "${c.title}" [tags: ${(c.tags ?? []).join(', ')}]`)
         .join('\n')
@@ -213,14 +213,14 @@ export async function POST(req: NextRequest) {
         challengeList,
         '',
         'Generate a personalised 4-week study plan for this learner based on their FLOW move levels and competency scores.',
-        'Return JSON only: { "title": string, "luma_rationale": string, "move_sequence": [{ "week": number, "focus_move": string, "challenge_ids": string[], "theme": string }] }',
+        'Return JSON only: { "title": string, "hatch_rationale": string, "move_sequence": [{ "week": number, "focus_move": string, "challenge_ids": string[], "theme": string }] }',
         'Use only challenge_ids from the list above. Each week should have 1-2 challenge_ids.',
       ].join('\n')
 
       const message = await anthropic.messages.create({
         model: 'claude-sonnet-4-6',
         max_tokens: 800,
-        system: 'You are Luma. Respond only with a JSON object, no markdown.',
+        system: 'You are Hatch. Respond only with a JSON object, no markdown.',
         messages: [{ role: 'user', content: userPrompt }],
       })
 
@@ -242,10 +242,10 @@ export async function POST(req: NextRequest) {
 
   // ── Insert into user_study_plans ──────────────────────────
   const contextSnapshot = {
-    overallLevel: lumaCtx.overallLevel,
-    weakestCompetency: lumaCtx.weakestCompetency,
-    moveLevels: lumaCtx.moveLevels,
-    preferredRole: lumaCtx.preferredRole,
+    overallLevel: hatchCtx.overallLevel,
+    weakestCompetency: hatchCtx.weakestCompetency,
+    moveLevels: hatchCtx.moveLevels,
+    preferredRole: hatchCtx.preferredRole,
   }
 
   const { data: inserted, error: insertError } = await admin
@@ -253,7 +253,7 @@ export async function POST(req: NextRequest) {
     .insert({
       user_id: userId,
       title: generatedPlan.title,
-      luma_rationale: generatedPlan.luma_rationale,
+      hatch_rationale: generatedPlan.hatch_rationale,
       move_sequence: generatedPlan.move_sequence,
       status: 'active',
       context_snapshot: contextSnapshot,
@@ -268,9 +268,9 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // ── Persist plan_progress to luma_context (fire-and-forget) ──
+  // ── Persist plan_progress to hatch_context (fire-and-forget) ──
   admin
-    .from('luma_context')
+    .from('hatch_context')
     .insert({
       user_id: userId,
       context_type: 'plan_progress',

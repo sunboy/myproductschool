@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react'
 import gsap from 'gsap'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { StepDetailModal } from './StepDetailModal'
 import {
   type Verdict,
@@ -37,7 +37,7 @@ export interface StepResult {
     signal: string
     framework_hint: string
   }
-  lumaSignal?: string | null
+  hatchSignal?: string | null
   frameworkHint?: string | null
   selectedOptionId?: string | null
   questions?: StepResultQuestion[]
@@ -140,7 +140,7 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
   const [expanded, setExpanded] = useState(false)
   const verdict = qualityToVerdict(result.quality_label)
   const verdictColor = VERDICT_COLOR[verdict]
-  const coaching = result.lumaSignal ?? result.competency_signal?.signal
+  const coaching = result.hatchSignal ?? result.competency_signal?.signal
     ?? (verdict === 'pass' ? 'Strong reasoning on this move.' : verdict === 'partial' ? 'Partially on track — room to sharpen.' : 'The key move was missed here.')
   const competency = result.competency_signal?.primary
     ? formatCompetencyName(result.competency_signal.primary)
@@ -244,10 +244,10 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
         </div>
       </div>
 
-      {/* Luma coaching — always visible, clamp when collapsed */}
+      {/* Hatch coaching — always visible, clamp when collapsed */}
       <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
         <div style={{ flexShrink: 0, marginTop: 1 }}>
-          <LumaGlyph size={22} state={verdict === 'pass' ? 'celebrating' : verdict === 'partial' ? 'listening' : 'idle'} className="text-primary" />
+          <HatchGlyph size={22} state={verdict === 'pass' ? 'celebrating' : verdict === 'partial' ? 'listening' : 'idle'} className="text-primary" />
         </div>
         <p style={{
           fontSize: 13, lineHeight: 1.6, color: 'var(--color-on-surface)', margin: 0,
@@ -516,10 +516,10 @@ export function PostSessionMirror({
           style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}
         >
           <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-            <LumaGlyph size={48} state="celebrating" className="text-primary" />
+            <HatchGlyph size={48} state="celebrating" className="text-primary" />
             <div>
               <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-primary)' }}>
-                Luma's Debrief
+                Hatch's Debrief
               </div>
               <div style={{ fontFamily: 'var(--font-headline)', fontSize: 18, fontWeight: 600, letterSpacing: '-0.01em', marginTop: 2, lineHeight: 1.3 }}>
                 {summaryLine}
@@ -667,7 +667,7 @@ export function PostSessionMirror({
             <div style={{
               position: 'absolute', inset: -4, borderRadius: '50%',
               border: '2px dashed rgba(201,147,58,0.4)',
-              animation: 'lumaAntenna 9s linear infinite',
+              animation: 'hatchAntenna 9s linear infinite',
             }} />
           </div>
           <div>

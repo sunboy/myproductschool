@@ -4,7 +4,7 @@ import { getChallengeById } from '@/lib/data/challenges'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { FailurePattern } from '@/lib/types'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { DiagnosisCard } from '@/components/challenge/DiagnosisCard'
 import { SkillMovementRow } from '@/components/challenge/SkillMovementRow'
 import { PrescriptionCard } from '@/components/challenge/PrescriptionCard'
@@ -155,7 +155,7 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
       {!hasPatterns ? (
         /* Empty state — strong submission */
         <div className="flex flex-col items-center text-center py-10 space-y-4 max-w-lg mx-auto">
-          <LumaGlyph size={48} className="text-primary" animated />
+          <HatchGlyph size={48} className="text-primary" animated />
           <div>
             <h2 className="font-headline text-2xl text-on-surface mb-2">Strong session.</h2>
             <p className="text-on-surface-variant text-sm">No failure patterns detected this session. Keep building.</p>
@@ -171,9 +171,9 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
           <div className="lg:col-span-5 space-y-6">
             {/* 1. One-line diagnosis */}
             <div className="bg-primary-container rounded-2xl p-5 flex gap-3 items-start">
-              <LumaGlyph size={28} className="text-primary shrink-0 mt-0.5" />
+              <HatchGlyph size={28} className="text-primary shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-label font-semibold text-on-primary-container uppercase tracking-widest mb-1">Luma&apos;s diagnosis</p>
+                <p className="text-xs font-label font-semibold text-on-primary-container uppercase tracking-widest mb-1">Hatch&apos;s diagnosis</p>
                 <p className="text-on-primary-container text-base font-medium">
                   {primaryPattern.pattern_id === 'FP-09'
                     ? "You recognized the right area quickly, but failed to prioritize the first move."

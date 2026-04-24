@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 // ── Types ──────────────────────────────────────────────────────
 type FlowMove = 'frame' | 'list' | 'optimize' | 'win'
@@ -20,7 +20,7 @@ interface MoveData {
   accentDeep: string
   expert: { initials: string; name: string; role: string; quote: string }
   scenario: { label: string; text: string }
-  lumaMessage: string
+  hatchMessage: string
   panelBefore: string
   panelMove: string
   panelAfter: string
@@ -48,7 +48,7 @@ const MOVES: MoveData[] = [
       label: 'Applied · B2B SaaS notifications',
       text: "PM says: add real-time push notifications. Framed correctly, the job isn't to notify — it's to keep teams in sync without breaking focus. That's a completely different problem to solve.",
     },
-    lumaMessage: "Before jumping to solutions, great product thinkers ask one question: what job is this person actually trying to do? The answer is almost never what was stated.",
+    hatchMessage: "Before jumping to solutions, great product thinkers ask one question: what job is this person actually trying to do? The answer is almost never what was stated.",
     panelBefore: 'Three solutions in three seconds. None answer the actual question — because nobody asked the actual question yet.',
     panelMove: 'Ask what job this person is really trying to do. The spinner hides latency. It doesn\'t fix the anxiety of not knowing if the action worked.',
     panelAfter: '"Slow load times" becomes a trust problem. Now you\'re solving something real — and the solution set gets far more interesting.',
@@ -74,7 +74,7 @@ const MOVES: MoveData[] = [
       label: 'Applied · B2B SaaS notifications',
       text: 'Listed: push notifs, Slack/Teams integration, daily digest, in-app feed, @mention threads, smart batching. The Slack integration — which nobody asked for — turns out to be the highest-leverage option by far.',
     },
-    lumaMessage: "The first solution you think of is almost never the best one. Generate until you surprise yourself — that's when you know you've actually opened the space.",
+    hatchMessage: "The first solution you think of is almost never the best one. Generate until you surprise yourself — that's when you know you've actually opened the space.",
     panelBefore: 'One problem, one solution, shipped by Thursday. This is feature thinking at its most efficient — and most dangerous.',
     panelMove: "Teresa Torres' Opportunity Solution Tree: branch every possibility before scoring any of them. Generate five. Then generate two more.",
     panelAfter: 'Four distinct options. Each solves the same underlying problem differently. Now you can have an intelligent conversation about tradeoffs.',
@@ -100,7 +100,7 @@ const MOVES: MoveData[] = [
       label: 'Applied · B2B SaaS notifications',
       text: 'RICE scores: Push notifs = 42. Daily digest = 31. Slack bot = 118. The number makes the decision obvious — and gives you something concrete to bring into the planning meeting instead of a preference.',
     },
-    lumaMessage: "A number beats an opinion every time. Even a rough RICE score converts a preference argument into a tradeoff conversation — and that's a much better meeting.",
+    hatchMessage: "A number beats an opinion every time. Even a rough RICE score converts a preference argument into a tradeoff conversation — and that's a much better meeting.",
     panelBefore: 'All three look reasonable. The loudest voice wins. This is how roadmaps become wish lists.',
     panelMove: 'RICE scoring: score every option on Reach, Impact, Confidence, Effort. Force the conversation from opinion to evidence.',
     panelAfter: 'Slack integration wins at RICE 118. Push notifs score 42. The number makes the decision obvious — and gives you something to defend.',
@@ -126,7 +126,7 @@ const MOVES: MoveData[] = [
       label: 'Applied · B2B SaaS notifications',
       text: 'Instead of "we should build a Slack bot (RICE: 118)," you say: "For enterprise users who run operations in Slack, this replaces their current workflow of switching back to our app — and we can validate it in one sprint." Approved in the meeting.',
     },
-    lumaMessage: "Engineers think the win is building the right thing. Product thinkers know the win is getting the right thing built. Those are different skills.",
+    hatchMessage: "Engineers think the win is building the right thing. Product thinkers know the win is getting the right thing built. Those are different skills.",
     panelBefore: "You've got the data. You share the RICE scores. You get 'interesting, let's think about it.' Which means no.",
     panelMove: "April Dunford's positioning: who is it for, what's the alternative they live with now, and what's your unique advantage?",
     panelAfter: '"For Slack-native teams, this replaces the copy-paste habit they currently hate." They get it immediately. Approved.',
@@ -428,7 +428,7 @@ export default function LearnFlowPage() {
         .sb-panel-hover { transition: transform 0.25s, box-shadow 0.25s; }
         .wk-body-expand { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.4s ease, opacity 0.3s; }
         .wk-body-expand.open { max-height: 500px; opacity: 1; }
-        @keyframes lumaFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @keyframes hatchFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         @keyframes liveGlow { 0% { box-shadow: 0 0 0 0 rgba(196,166,106,0.5); } 70% { box-shadow: 0 0 0 10px rgba(196,166,106,0); } 100% { box-shadow: 0 0 0 0 rgba(196,166,106,0); } }
       `}</style>
 
@@ -819,7 +819,7 @@ export default function LearnFlowPage() {
                 </div>
               </div>
 
-              {/* Right: Luma rail */}
+              {/* Right: Hatch rail */}
               <div style={{ position: 'sticky', top: 88, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
                 <div style={{
                   background: '#1e1b14', color: '#faf6f0',
@@ -836,12 +836,12 @@ export default function LearnFlowPage() {
                       background: '#c4a66a', display: 'inline-block',
                       animation: 'liveGlow 2s infinite',
                     }} />
-                    LUMA · YOUR COACH
+                    HATCH · YOUR COACH
                   </div>
-                  <p style={{ fontSize: 13.5, lineHeight: 1.55, margin: 0 }}>{move.lumaMessage}</p>
+                  <p style={{ fontSize: 13.5, lineHeight: 1.55, margin: 0 }}>{move.hatchMessage}</p>
                 </div>
-                <div style={{ animation: 'lumaFloat 3.5s ease-in-out infinite' }}>
-                  <LumaGlyph size={72} state="speaking" className="text-primary" />
+                <div style={{ animation: 'hatchFloat 3.5s ease-in-out infinite' }}>
+                  <HatchGlyph size={72} state="speaking" className="text-primary" />
                 </div>
               </div>
             </div>
@@ -962,7 +962,7 @@ export default function LearnFlowPage() {
             fontFamily: 'var(--font-headline, Literata, Georgia, serif)',
             fontSize: 19, lineHeight: 1.55, color: '#3d392e', marginBottom: 36,
           }}>
-            FLOW isn&apos;t a template — it&apos;s how product thinkers think. Practice it on real challenges, get Luma&apos;s feedback on every move, and watch your recommendations start landing.
+            FLOW isn&apos;t a template — it&apos;s how product thinkers think. Practice it on real challenges, get Hatch&apos;s feedback on every move, and watch your recommendations start landing.
           </p>
           <div className="flow-reveal d2" style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
             <Link

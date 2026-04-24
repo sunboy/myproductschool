@@ -1,6 +1,6 @@
 'use client'
 
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 interface InterviewPaywallGateProps {
   used: number
@@ -40,7 +40,7 @@ export function InterviewPaywallGate({
           style={{ background: 'linear-gradient(145deg, #2d5a3d 0%, #4a7c59 60%, #3a6b4a 100%)' }}
         >
           <div className="flex items-center gap-3 mb-4">
-            <LumaGlyph size={40} state="idle" className="text-white shrink-0" />
+            <HatchGlyph size={40} state="idle" className="text-white shrink-0" />
             <div>
               <p className="font-label text-[11px] uppercase tracking-[0.18em] font-bold text-white/60">Interview Sessions</p>
               <p className="font-headline font-bold text-white text-lg leading-tight" style={{ letterSpacing: '-0.02em' }}>
@@ -55,7 +55,7 @@ export function InterviewPaywallGate({
         </div>
         <div className="px-7 pt-5 pb-7 space-y-4">
           <p className="font-body text-sm text-on-surface-variant leading-relaxed">
-            Pro gives you unlimited live interview sessions with Luma, full post-session analysis, and access to all company personas.
+            Pro gives you unlimited live interview sessions with Hatch, full post-session analysis, and access to all company personas.
           </p>
           <div
             className="rounded-xl px-4 py-3.5 flex items-center justify-between"

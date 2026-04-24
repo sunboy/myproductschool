@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import { InterviewPaywallGate } from '@/components/paywalls/InterviewPaywallGate'
 import { useIsAtLimit, useUsage } from '@/context/UsageContext'
 import { useUpgrade } from '@/hooks/useUpgrade'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 interface StartInterviewButtonProps {
   companyId: string
@@ -58,7 +58,7 @@ export default function StartInterviewButton({ companyId, roleId, challengeId, c
       setSessionId(data.sessionId)
       // Stash systemPrompt so the interview page can read it in autostart mode
       if (data.sessionId && data.systemPrompt) {
-        sessionStorage.setItem(`luma_prompt_${data.sessionId}`, data.systemPrompt)
+        sessionStorage.setItem(`hatch_prompt_${data.sessionId}`, data.systemPrompt)
       }
       // Cache company/role for modal display and URL params
       if (data.companyName) setModalCompany(data.companyName)
@@ -129,7 +129,7 @@ export default function StartInterviewButton({ companyId, roleId, challengeId, c
               <span className="material-symbols-outlined text-[18px]" style={{ color: 'rgba(255,255,255,0.5)' }}>close</span>
             </button>
 
-            <LumaGlyph size={64} state="idle" className="text-primary" />
+            <HatchGlyph size={64} state="idle" className="text-primary" />
 
             {/* Tags */}
             <div className="flex items-center gap-2 flex-wrap justify-center">
@@ -151,7 +151,7 @@ export default function StartInterviewButton({ companyId, roleId, challengeId, c
                 Ready to begin?
               </h2>
               <p className="font-body text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                Luma will play the role of your interviewer. Speak naturally — your microphone
+                Hatch will play the role of your interviewer. Speak naturally — your microphone
                 activates when you start. Cover all four FLOW moves: Frame, List, Optimize, Win.
               </p>
             </div>

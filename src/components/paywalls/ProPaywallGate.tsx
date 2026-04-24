@@ -1,8 +1,8 @@
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const FEATURES = [
   { icon: 'all_inclusive',  text: 'Unlimited challenge attempts' },
-  { icon: 'psychology',     text: 'Full Luma coaching on every step' },
+  { icon: 'psychology',     text: 'Full Hatch coaching on every step' },
   { icon: 'analytics',      text: 'Learner DNA — competency radar' },
   { icon: 'school',         text: 'All study plans, unlocked' },
   { icon: 'mic',            text: 'Live AI interview sessions' },
@@ -26,7 +26,7 @@ export function ProPaywallGate({
       <div className="fixed inset-0 z-0 flex select-none grayscale-[20%] opacity-40 pointer-events-none">
         <aside className="fixed left-0 top-0 h-screen w-[220px] bg-primary flex flex-col pb-4">
           <div className="p-4 flex items-center gap-2 pt-5">
-            <LumaGlyph size={24} className="text-white" state="none" />
+            <HatchGlyph size={24} className="text-white" state="none" />
             <span className="font-headline text-base font-bold text-white">HackProduct</span>
           </div>
           <nav className="flex-1 px-2 space-y-px pt-2">
@@ -89,7 +89,7 @@ export function ProPaywallGate({
             style={{ background: 'linear-gradient(145deg, #2d5a3d 0%, #4a7c59 60%, #3a6b4a 100%)' }}
           >
             <div className="flex items-center gap-3 mb-4">
-              <LumaGlyph size={40} state="idle" className="text-white shrink-0" />
+              <HatchGlyph size={40} state="idle" className="text-white shrink-0" />
               <div>
                 <p className="font-label text-[11px] uppercase tracking-[0.18em] font-bold text-white/60">
                   HackProduct Pro

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { LumaGlyph } from './LumaGlyph'
+import { HatchGlyph } from './HatchGlyph'
 
 interface ProfileBadge {
   streak_days: number

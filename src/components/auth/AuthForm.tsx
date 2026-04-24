@@ -3,14 +3,14 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 interface AuthFormProps {
   mode: 'login' | 'signup'
 }
 
-// Luma mascot as giant outline-only line art — no fills, strokes only
-function LumaLineArt() {
+// Hatch mascot as giant outline-only line art — no fills, strokes only
+function HatchLineArt() {
   // viewBox="0 0 64 72", scaled ~10.5x, centered in left half
   const s = 10.5
   const ox = 82
@@ -55,19 +55,19 @@ function LumaLineArt() {
       {/* Ambient wobbly lines */}
       <path d="M -40 80 C 120 60, 200 200, 300 260 C 420 330, 340 480, 460 560 C 580 640, 720 620, 840 700"
         stroke="rgba(142,207,158,0.06)" strokeWidth="1.5" fill="none" strokeLinecap="round"
-        style={{ strokeDasharray: 1800, strokeDashoffset: 1800, animationName: 'lumaDrawA', animationDuration: '70s', animationTimingFunction: 'linear', animationIterationCount: 'infinite' }} />
+        style={{ strokeDasharray: 1800, strokeDashoffset: 1800, animationName: 'hatchDrawA', animationDuration: '70s', animationTimingFunction: 'linear', animationIterationCount: 'infinite' }} />
       <path d="M -60 600 C 80 570, 160 630, 260 600 C 360 570, 400 640, 500 610 C 600 580, 680 630, 760 605"
         stroke="rgba(142,207,158,0.05)" strokeWidth="1" fill="none" strokeLinecap="round"
-        style={{ strokeDasharray: 1200, strokeDashoffset: 1200, animationName: 'lumaDrawB', animationDuration: '90s', animationTimingFunction: 'linear', animationIterationCount: 'infinite', animationDelay: '-20s' }} />
+        style={{ strokeDasharray: 1200, strokeDashoffset: 1200, animationName: 'hatchDrawB', animationDuration: '90s', animationTimingFunction: 'linear', animationIterationCount: 'infinite', animationDelay: '-20s' }} />
 
       <style>{`
-        @keyframes lumaDrawA {
+        @keyframes hatchDrawA {
           0%   { stroke-dashoffset: 1800; opacity: 0; }
           5%   { opacity: 1; }
           90%  { opacity: 1; }
           100% { stroke-dashoffset: 0; opacity: 0; }
         }
-        @keyframes lumaDrawB {
+        @keyframes hatchDrawB {
           0%   { stroke-dashoffset: 1200; opacity: 0; }
           5%   { opacity: 1; }
           90%  { opacity: 1; }
@@ -151,7 +151,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         router.push('/onboarding/welcome')
         router.refresh()
       } else {
-        setSuccess('Check your email to confirm your account. You\'ll start with Luma next.')
+        setSuccess('Check your email to confirm your account. You\'ll start with Hatch next.')
       }
     }
     setLoading(false)
@@ -196,9 +196,9 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         aria-hidden
       />
 
-      {/* Luma line art — left half only */}
+      {/* Hatch line art — left half only */}
       <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
-        <LumaLineArt />
+        <HatchLineArt />
       </div>
 
       {/* Radial glow — top left */}
@@ -219,7 +219,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         <div className="flex flex-col justify-center px-10 py-12 md:px-16 md:py-0 md:flex-1">
           {/* Brand mark */}
           <div className="flex items-center gap-2 mb-10 md:mb-12">
-            <LumaGlyph size={30} state="idle" className="text-primary" />
+            <HatchGlyph size={30} state="idle" className="text-primary" />
             <span
               className="font-headline font-bold text-white"
               style={{ fontSize: 19, letterSpacing: '-0.01em' }}
@@ -251,7 +251,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
           <ul className="hidden md:flex flex-col gap-3 mt-10">
             {[
               'Scenario-based interview practice',
-              'Real-time coaching from Luma',
+              'Real-time coaching from Hatch',
               'Daily product thinking drills',
             ].map(item => (
               <li key={item} className="flex items-center gap-3">
@@ -414,7 +414,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
 
                   {activeMode === 'signup' && (
                     <p className="text-xs text-center font-label" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                      You&apos;ll meet Luma right after.
+                      You&apos;ll meet Hatch right after.
                     </p>
                   )}
                 </form>

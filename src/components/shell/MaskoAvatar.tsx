@@ -27,7 +27,7 @@ export function MaskoAvatar({ size = 120, className = '', style }: MaskoAvatarPr
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="https://assets.masko.ai/abe42b/gradie-1e03/enthusiastic-wave-08bacd74.png"
-        alt="Luma mascot"
+        alt="Hatch mascot"
         width={size}
         height={size}
         style={{ objectFit: 'contain' }}
