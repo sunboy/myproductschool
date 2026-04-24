@@ -2,7 +2,7 @@ import { Challenge, ChallengeWithDomain } from '@/lib/types'
 import { MOCK_CHALLENGES, MOCK_DOMAINS } from '@/lib/mock-data'
 import { IS_MOCK } from '@/lib/mock'
 
-export async function getChallenges(filters?: { domainId?: string; difficulty?: string; paradigm?: string; role?: string; company?: string; q?: string }): Promise<ChallengeWithDomain[]> {
+export async function getChallenges(filters?: { domainId?: string; difficulty?: string; paradigm?: string; role?: string; company?: string; q?: string; type?: string }): Promise<ChallengeWithDomain[]> {
   if (IS_MOCK) {
     let challenges = MOCK_CHALLENGES
     if (filters?.domainId) challenges = challenges.filter(c => c.domain_id === filters.domainId)
@@ -34,6 +34,7 @@ export async function getChallenges(filters?: { domainId?: string; difficulty?: 
   if (filters?.role && filters.role !== 'all') query = query.contains('relevant_roles', [filters.role])
   if (filters?.company) query = query.contains('company_tags', [filters.company])
   if (filters?.q) query = query.ilike('title', `%${filters.q}%`)
+  if (filters?.type && filters.type !== 'all') query = query.eq('challenge_type', filters.type)
   const { data } = await query.order('created_at', { ascending: false })
 
   return (data ?? []).map(c => ({

@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
+import dynamic from 'next/dynamic'
 import gsap from 'gsap'
-import type { FlowStep, UserRoleV2 } from '@/lib/types'
+import type { FlowStep, UserRoleV2, InterviewGrade } from '@/lib/types'
 import type { ChallengeAdapter, AdapterCompletionData, AdapterStepData, SyntheticChallenge } from '@/lib/showcase/adapters/autopsyAdapter'
 import { useChallengeV2 } from '@/lib/v2/hooks/useChallengeV2'
 import { useFlowStep } from '@/lib/v2/hooks/useFlowStep'
@@ -13,6 +14,14 @@ import { PostSessionMirror, type StepResult as MirrorStepResult, type Competency
 import type { StepCalibration } from './CalibrationPreview'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useHatchContext } from '@/context/HatchContext'
+import { CanvasChatPanel } from '@/components/challenge/CanvasChatPanel'
+import { CanvasHintCard } from '@/components/challenge/CanvasHintCard'
+import { summarizeScene, type CanvasScene } from '@/lib/hatch/canvas-scene'
+import { executeActions } from '@/components/challenge/canvasActionExecutor'
+import type { CanvasAction } from '@/lib/types'
+import { InterviewFeedback } from '@/components/v2/InterviewFeedback'
+
+const ExcalidrawCanvas = dynamic(() => import('@/components/challenge/ExcalidrawCanvas'), { ssr: false })
 
 const FLOW_STEPS: FlowStep[] = ['frame', 'list', 'optimize', 'win']
 const CONF_LABELS = ['Guessing', 'Not sure', 'Fairly sure', 'Rock solid']
@@ -98,6 +107,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Confidence state
   const [confidence, setConfidence] = useState<number | null>(null)
 
+  // Canvas / interview challenge state
+  const [canvasMaximised, setCanvasMaximised] = useState(false)
+  const [chatPanelOpen, setChatPanelOpen] = useState(false)
+  const [hintForceOpen, setHintForceOpen] = useState(false)
+  const [interviewGrade, setInterviewGrade] = useState<InterviewGrade | null>(null)
+  const [historyInterviewGrade, setHistoryInterviewGrade] = useState<InterviewGrade | null>(null)
+  const [historyGradeLoading, setHistoryGradeLoading] = useState(false)
+  const [canvasScene, setCanvasScene] = useState<{ elements: unknown[]; appState: unknown } | null>(null)
+  const [isSubmittingInterview, setIsSubmittingInterview] = useState(false)
+  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   // Derived: dock fade-out fires when answer has been submitted (phase leaves 'question')
   const dockSubmitted = phase === 'reveal' || phase === 'complete'
 
@@ -150,6 +170,25 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Session history for Submissions tab
   const [sessionHistory, setSessionHistory] = useState<SessionRecord[]>([])
   const [selectedHistoryIdx, setSelectedHistoryIdx] = useState<number | null>(null)
+
+  // For canvas challenges, load the persisted grade when a history record is selected.
+  useEffect(() => {
+    if (selectedHistoryIdx === null) {
+      setHistoryInterviewGrade(null)
+      return
+    }
+    const record = sessionHistory[selectedHistoryIdx]
+    if (!record?.attemptId) return
+    setHistoryGradeLoading(true)
+    setHistoryInterviewGrade(null)
+    fetch(`/api/attempts/${record.attemptId}/grade`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { grade?: InterviewGrade } | null) => {
+        if (data?.grade) setHistoryInterviewGrade(data.grade)
+      })
+      .catch(() => { /* leave null — render handles empty state */ })
+      .finally(() => setHistoryGradeLoading(false))
+  }, [selectedHistoryIdx, sessionHistory])
 
   // Load past completed attempts for this challenge from the DB on mount
   useEffect(() => {
@@ -251,6 +290,105 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     return () => { dragCleanupRef.current?.() }
   }, [])
 
+  // Helper: true for interview challenge types that use canvas+chat instead of MCQ
+  // Canvas challenges are only supported in API mode; adapter mode always returns false
+  const apiChallengeType = isApiMode ? detail?.challenge?.challenge_type : undefined
+  const isCanvasChallenge = apiChallengeType === 'system_design' || apiChallengeType === 'data_modeling'
+
+  // Structured scene for the chat panel + nudge endpoint + grader
+  const scene: CanvasScene = useMemo(
+    () => summarizeScene(canvasScene?.elements ?? []),
+    [canvasScene]
+  )
+
+  // Excalidraw API + library refs (for canvas action execution)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const excalidrawApiRef = useRef<any>(null)
+  const libraryItemsRef = useRef<Array<{ id: string; name?: string; elements: unknown[] }>>([])
+
+  const handleCanvasActions = useCallback((response: { message: string; actions: unknown[] }) => {
+    if (!excalidrawApiRef.current) return
+    void executeActions(
+      response.actions as CanvasAction[],
+      excalidrawApiRef.current,
+      libraryItemsRef.current
+    )
+  }, [])
+
+  // Load library once API is ready, capture items for the executor
+  useEffect(() => {
+    if (!excalidrawApiRef.current) return
+    fetch('/excalidraw-libraries/bundled-library.json')
+      .then((r) => r.json())
+      .then((lib) => {
+        libraryItemsRef.current = lib.libraryItems ?? []
+      })
+      .catch(() => { /* non-fatal */ })
+  }, [])
+
+  // Proactive nudge state
+  const [proactiveNudge, setProactiveNudge] = useState<{ id: string; text: string } | null>(null)
+  const lastNudgeAtRef = useRef<number>(0)
+  const nudgeCountRef = useRef<number>(0)
+  const pendingDeltaRef = useRef<number>(0)
+  const nudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const requestNudge = useCallback(async (added: number) => {
+    if (!isCanvasChallenge || !attemptId) return
+    pendingDeltaRef.current += added
+    if (nudgeTimerRef.current) clearTimeout(nudgeTimerRef.current)
+    // Wait 4s after the last add — if user keeps drawing, we keep waiting.
+    nudgeTimerRef.current = setTimeout(async () => {
+      const delta = pendingDeltaRef.current
+      pendingDeltaRef.current = 0
+      try {
+        const res = await fetch('/api/hatch/canvas/nudge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            scene,
+            recentDelta: { added: delta },
+            challengeId: isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : '',
+            challengeType: apiChallengeType,
+            attemptId,
+            lastNudgeAt: lastNudgeAtRef.current || undefined,
+            nudgeCount: nudgeCountRef.current,
+          }),
+        })
+        if (!res.ok) return
+        const data = (await res.json()) as { nudge: string | null }
+        if (data.nudge) {
+          lastNudgeAtRef.current = Date.now()
+          nudgeCountRef.current += 1
+          setProactiveNudge({ id: `n-${Date.now()}`, text: data.nudge })
+          if (!chatPanelOpen) setChatPanelOpen(true)
+        }
+      } catch { /* swallow */ }
+    }, 4000)
+  // chatPanelOpen intentionally excluded — we only want the snapshot at fire time, not retriggers
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCanvasChallenge, attemptId, scene, apiChallengeType, isApiMode, props])
+
+  // Autosave canvas snapshot every 10s when changed
+  useEffect(() => {
+    if (!isCanvasChallenge || !attemptId || !canvasScene) return
+    if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current)
+    autosaveTimerRef.current = setTimeout(async () => {
+      try {
+        await fetch('/api/hatch/session/autosave', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            attemptId,
+            draftSnapshot: { type: 'canvas', ...canvasScene },
+            updatedAt: new Date().toISOString(),
+          }),
+        })
+      } catch { /* fire and forget */ }
+    }, 10000)
+    return () => { if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current) }
+  }, [canvasScene, isCanvasChallenge, attemptId])
+
   const startTimeRef = useRef<number>(Date.now())
   // Prevents double-submit: locks for the full duration of submitAnswer + fetchCoaching
   const handlingSubmitRef = useRef(false)
@@ -319,11 +457,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     setCompetencySignal(null)
     if (isApiMode) {
       clearStepData()
-      if (attemptId) void loadStep(attemptId)
+      if (attemptId && !isCanvasChallenge) void loadStep(attemptId)
     } else {
       setAdapterStepData(null)
       const adapter = (props as Extract<FlowWorkspaceProps, { mode: 'adapter' }>).adapter
-      adapter.loadStep(currentStep).then(setAdapterStepData)
+      if (!isCanvasChallenge) adapter.loadStep(currentStep).then(setAdapterStepData)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep, attemptId, phase, isApiMode])
@@ -561,6 +699,31 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       handlingSubmitRef.current = false
     }
   }, [isApiMode, currentQuestion, attemptId, selectedOptionId, reasoning, confidence, submitAnswer, fetchCoaching, initialRoleId, currentStep, props, setHatch])
+
+  // Submit handler for canvas / interview challenge types (does NOT touch FLOW submit logic)
+  const handleInterviewSubmit = useCallback(async () => {
+    const challengeId = isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''
+    if (!challengeId || !attemptId || isSubmittingInterview) return
+    setIsSubmittingInterview(true)
+    try {
+      const res = await fetch(`/api/challenges/${challengeId}/interview-submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          attemptId,
+          canvasFinalSnapshot: canvasScene,
+        }),
+      })
+      if (!res.ok) throw new Error('Submit failed')
+      const data = await res.json()
+      setInterviewGrade(data.grade)
+      setPhase('complete')
+    } catch (err) {
+      console.error('Interview submit error:', err)
+    } finally {
+      setIsSubmittingInterview(false)
+    }
+  }, [isApiMode, props, attemptId, canvasScene, isSubmittingInterview])
 
   const handleStepClick = useCallback((step: FlowStep) => {
     if (!completedSteps.includes(step)) return
@@ -1056,35 +1219,71 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       </div>
       {/* Drag handle spacer */}
       <div style={{ width: 6, flexShrink: 0 }} />
-      {/* Right side: FLOW stepper + hint — takes remaining space */}
+      {/* Right side: FLOW stepper + hint (FLOW challenges) OR challenge type label (canvas challenges) */}
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', gap: 16 }}>
-        {/* Stepper centered in the right panel */}
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 0 }}>
-          <FlowStepper
-            currentStep={currentStep}
-            completedSteps={completedSteps}
-            onStepClick={handleStepClick}
-            questionIdx={questionIdx}
-            questionCount={activeStepData?.questions.length}
-          />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-          <button
-            className="btn btn--ghost"
-            style={{
-              padding: '6px 10px', fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4,
-              background: hintOpen ? '#f3e2b9' : undefined,
-              color: hintOpen ? '#5c3a00' : undefined,
-              borderRadius: 8,
-            }}
-            onClick={() => setHintOpen(v => !v)}
-          >
-            <span
-              className="material-symbols-outlined msi-sm"
-              style={{ fontVariationSettings: hintOpen ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" : undefined }}
-            >lightbulb</span> Hint
-          </button>
-        </div>
+        {isCanvasChallenge ? (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{
+                fontSize: 12, fontWeight: 600,
+                color: 'var(--color-on-surface-variant)',
+                background: 'var(--color-surface-container)',
+                border: '1px solid var(--color-outline-variant)',
+                borderRadius: 20, padding: '3px 10px',
+                textTransform: 'capitalize',
+                letterSpacing: '0.01em',
+              }}>
+                {apiChallengeType === 'system_design' ? 'System Design' : 'Data Modeling'}
+              </span>
+              <button
+                onClick={() => setHintForceOpen((v) => !v)}
+                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-surface-container-low border border-outline-variant text-on-surface-variant hover:text-on-surface text-xs font-semibold"
+                title="How to use this canvas"
+                aria-label="Show canvas hint"
+              >?</button>
+            </div>
+            <button
+              onClick={() => setCanvasMaximised((v) => !v)}
+              className="inline-flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"
+              title={canvasMaximised ? 'Exit full screen' : 'Full screen canvas'}
+              aria-label={canvasMaximised ? 'Exit full screen' : 'Full screen canvas'}
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                {canvasMaximised ? 'fullscreen_exit' : 'fullscreen'}
+              </span>
+            </button>
+          </>
+        ) : (
+          <>
+            {/* Stepper centered in the right panel */}
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+              <FlowStepper
+                currentStep={currentStep}
+                completedSteps={completedSteps}
+                onStepClick={handleStepClick}
+                questionIdx={questionIdx}
+                questionCount={activeStepData?.questions.length}
+              />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+              <button
+                className="btn btn--ghost"
+                style={{
+                  padding: '6px 10px', fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4,
+                  background: hintOpen ? '#f3e2b9' : undefined,
+                  color: hintOpen ? '#5c3a00' : undefined,
+                  borderRadius: 8,
+                }}
+                onClick={() => setHintOpen(v => !v)}
+              >
+                <span
+                  className="material-symbols-outlined msi-sm"
+                  style={{ fontVariationSettings: hintOpen ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" : undefined }}
+                >lightbulb</span> Hint
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
@@ -1240,7 +1439,47 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               </div>
             )}
 
-            {showMirror ? (
+            {/* Interview feedback for canvas challenge types — fills the right panel
+                in place of the canvas, matching product sense PostSessionMirror UX.
+                Renders for both fresh submissions (interviewGrade) and history view
+                (historyInterviewGrade fetched by attempt id). */}
+            {isCanvasChallenge && phase === 'complete' && interviewGrade && (
+              <div className="flex-1 min-h-0 overflow-y-auto animate-step-enter">
+                <InterviewFeedback
+                  grade={interviewGrade}
+                  challengeType={apiChallengeType ?? 'system_design'}
+                  onRetry={() => window.location.reload()}
+                  onBackToCanvas={() => {
+                    setPhase('question')
+                    setInterviewGrade(null)
+                  }}
+                />
+              </div>
+            )}
+            {isCanvasChallenge && historyRecord && (
+              historyGradeLoading ? (
+                <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-4">
+                  <HatchGlyph size={40} state="reviewing" className="text-primary" />
+                  <p className="font-body text-sm text-on-surface-variant">Loading your feedback…</p>
+                </div>
+              ) : historyInterviewGrade ? (
+                <div className="flex-1 min-h-0 overflow-y-auto animate-step-enter">
+                  <InterviewFeedback
+                    grade={historyInterviewGrade}
+                    challengeType={apiChallengeType ?? 'system_design'}
+                  />
+                </div>
+              ) : (
+                <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-2 p-6 text-center">
+                  <span className="material-symbols-outlined text-on-surface-variant text-[40px]">description</span>
+                  <p className="font-body text-sm text-on-surface-variant max-w-sm">
+                    No feedback recorded for this attempt.
+                  </p>
+                </div>
+              )
+            )}
+
+            {!isCanvasChallenge && (showMirror ? (
               <div className="flex-1 min-h-0 animate-step-enter">
                 <PostSessionMirror
                   challengeTitle={challengeTitle ?? 'Challenge'}
@@ -1284,7 +1523,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   isLastStep={isLastStep}
                 />
               </div>
-            )}
+            ))}
           </div>
         </div>
       </div>
@@ -1304,11 +1543,72 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
         {/* Right pane: scrollable workspace content only */}
         <section style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--color-background)', overflow: 'hidden', minHeight: 0 }}>
+          {/* Grading interstitial — fills the right panel while the model grades. */}
+          {isCanvasChallenge && isSubmittingInterview && (
+            <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-4 animate-step-enter">
+              <HatchGlyph size={48} state="reviewing" className="text-primary" />
+              <div className="font-headline text-xl text-on-surface">Hatch is reviewing your design…</div>
+              <div className="font-body text-sm text-on-surface-variant max-w-md text-center">
+                Reading the schema, checking relationships, and writing your feedback.
+              </div>
+            </div>
+          )}
+
+          {/* Canvas workspace for interview challenge types */}
+          {isCanvasChallenge && !isSubmittingInterview && (
+            <div style={canvasMaximised
+              ? { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', background: 'var(--color-background)' }
+              : { flex: '1 1 auto', display: 'flex', minHeight: 0, minWidth: 0, position: 'relative' }
+            }>
+              {/* Canvas column — flex child stretches to row height */}
+              <div style={{ flex: 1, minWidth: 0, minHeight: 0, position: 'relative' }}>
+                <ExcalidrawCanvas
+                  sessionId={attemptId ?? 'draft'}
+                  onSnapshot={setCanvasScene}
+                  onElementsAdded={(count) => requestNudge(count)}
+                  apiRef={excalidrawApiRef}
+                />
+                <CanvasHintCard
+                  challengeType={apiChallengeType as 'system_design' | 'data_modeling'}
+                  forceOpen={hintForceOpen}
+                  onDismiss={() => setHintForceOpen(false)}
+                />
+                {/* Exit fullscreen — only visible when maximised, since the
+                    topChrome (which holds the toggle in the unmaximised view)
+                    is hidden behind the fixed overlay. */}
+                {canvasMaximised && (
+                  <button
+                    onClick={() => setCanvasMaximised(false)}
+                    className="absolute top-3 right-3 z-30 inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-high border border-outline-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest shadow-sm font-label text-xs font-semibold transition-colors"
+                    title="Exit full screen"
+                    aria-label="Exit full screen"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">fullscreen_exit</span>
+                    Exit full screen
+                  </button>
+                )}
+              </div>
+              {/* Chat panel */}
+              <CanvasChatPanel
+                attemptId={attemptId ?? ''}
+                challengeId={isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''}
+                challengeType={apiChallengeType as 'system_design' | 'data_modeling'}
+                scene={scene}
+                isOpen={chatPanelOpen}
+                onToggle={() => setChatPanelOpen((v) => !v)}
+                onCanvasActions={handleCanvasActions}
+                proactiveNudge={proactiveNudge}
+                onDismissNudge={() => setProactiveNudge(null)}
+              />
+            </div>
+          )}
           <div
             ref={workspaceRef}
             key={`${currentStep}-question`}
-            className="flex-1 overflow-y-auto min-h-0 min-w-0"
-            style={{ padding: '20px 24px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}
+            className={`flex-1 overflow-y-auto min-h-0 min-w-0${isCanvasChallenge ? ' hidden' : ''}`}
+            style={isCanvasChallenge
+              ? { display: 'none' }
+              : { padding: '20px 24px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}
           >
             {/* Hint card */}
             {hintOpen && activeStepData?.nudge && (
@@ -1414,8 +1714,29 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </section>
       </div>
 
+      {/* Submit bar for canvas / interview challenge types */}
+      {isCanvasChallenge && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          borderTop: '1px solid var(--color-outline-faint)',
+          background: 'var(--color-surface)',
+          flexShrink: 0,
+          padding: '10px 16px',
+        }}>
+          <button
+            onClick={handleInterviewSubmit}
+            disabled={isSubmittingInterview}
+            className="rounded-full bg-primary text-on-primary font-label font-semibold px-6 py-2 disabled:opacity-60 hover:opacity-90 transition-opacity"
+          >
+            {isSubmittingInterview ? 'Submitting…' : 'Submit'}
+          </button>
+        </div>
+      )}
+
       {/* Full-width bottom footer: left actions + submit — one continuous borderTop */}
-      {bottomFooter}
+      {!isCanvasChallenge && bottomFooter}
     </div>
   )
 }

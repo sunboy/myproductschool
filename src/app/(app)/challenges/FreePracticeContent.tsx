@@ -7,7 +7,7 @@ import { HatchPick } from './HatchPick'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 export interface FreePracticeContentProps {
-  searchParams: Promise<{ paradigm?: string; role?: string; difficulty?: string; company?: string; tab?: string; view?: string; q?: string }>
+  searchParams: Promise<{ paradigm?: string; role?: string; difficulty?: string; company?: string; tab?: string; view?: string; q?: string; type?: string }>
 }
 
 const PARADIGMS = [
@@ -61,12 +61,17 @@ function getParadigmLabel(paradigm?: string | null): string {
 
 const MAX_COMPANY_CHIPS = 8
 
+const CHALLENGE_TYPES = [
+  { key: 'system_design', label: 'System Design', dot: 'bg-cyan-500' },
+  { key: 'data_modeling', label: 'Data Modeling', dot: 'bg-rose-500' },
+] as const
+
 export async function FreePracticeContent({ searchParams }: FreePracticeContentProps) {
-  const { paradigm, role, difficulty, company, view, q } = await searchParams
+  const { paradigm, role, difficulty, company, view, q, type } = await searchParams
   const isListView = view === 'list'
 
   const [challenges, featuredChallenges] = await Promise.all([
-    getChallenges({ difficulty, paradigm, role, company, q }),
+    getChallenges({ difficulty, paradigm, role, company, q, type }),
     getFeaturedChallenges(),
   ])
 
@@ -91,12 +96,14 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
     const d  = 'difficulty' in overrides ? overrides.difficulty : difficulty
     const co = 'company'    in overrides ? overrides.company    : company
     const v  = 'view'       in overrides ? overrides.view       : view
+    const ty = 'type'       in overrides ? overrides.type       : type
     if (pa && pa !== 'all') p.set('paradigm', pa)
     if (r && r !== 'all')   p.set('role', r)
     if (d && d !== 'all')   p.set('difficulty', d)
     if (co)                 p.set('company', co)
     if (v && v !== 'grid')  p.set('view', v)
     if (q)                  p.set('q', q)
+    if (ty && ty !== 'all') p.set('type', ty)
     const s = p.toString()
     return s ? `/challenges?${s}` : '/challenges'
   }
@@ -239,6 +246,40 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
             </div>
           </div>
         )}
+
+        {/* Interview type filter */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-[11px] font-bold text-on-surface-variant font-label uppercase tracking-wider w-20 shrink-0">Type</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link
+              href={buildHref({ type: undefined })}
+              className={`px-3 py-1 text-xs font-semibold rounded-full transition-colors font-label ${
+                !type || type === 'all'
+                  ? 'bg-primary text-on-primary'
+                  : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
+              }`}
+            >
+              All
+            </Link>
+            {CHALLENGE_TYPES.map(ct => {
+              const isActive = type === ct.key
+              return (
+                <Link
+                  key={ct.key}
+                  href={buildHref({ type: ct.key })}
+                  className={`px-3 py-1 text-xs font-semibold rounded-full flex items-center gap-1.5 transition-colors font-label ${
+                    isActive
+                      ? 'bg-primary text-on-primary'
+                      : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
+                  }`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isActive ? 'bg-on-primary/70' : ct.dot}`} />
+                  {ct.label}
+                </Link>
+              )
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Featured Challenges — only when editorially pinned challenges exist */}
