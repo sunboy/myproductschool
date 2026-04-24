@@ -518,7 +518,7 @@ export type ResponseType = 'pure_mcq' | 'mcq_plus_elaboration' | 'modified_optio
 export type Competency = 'motivation_theory' | 'cognitive_empathy' | 'taste' | 'strategic_thinking' | 'creative_execution' | 'domain_expertise'
 export type UserRoleV2 = 'swe' | 'data_eng' | 'ml_eng' | 'devops' | 'founding_eng' | 'em' | 'tech_lead' | 'pm' | 'designer' | 'data_scientist'
 
-export type ChallengeType = 'flow' | 'freeform' | 'quick_take'
+export type ChallengeType = 'flow' | 'freeform' | 'quick_take' | 'system_design' | 'data_modeling'
 
 export interface Challenge {
   id: string; slug: string | null; title: string
@@ -562,6 +562,10 @@ export interface ChallengeAttemptV2 {
   time_spent_seconds: number; is_replay: boolean
   started_at: string; completed_at: string | null
   mental_models_breakdown?: Array<{ step: string; competency: string; reasoning_move: string; demonstrated: string; missed: string }> | null
+  canvas_final_snapshot?: Record<string, unknown>
+  draft_snapshot?: Record<string, unknown>
+  draft_updated_at?: string
+  conversation_summary?: string
 }
 
 export interface StepAttemptRecord {
@@ -675,6 +679,63 @@ export interface LearnModule {
   created_at: string
 }
 
+// ── Learn chapter figures (typed, structured; render via React components) ──
+
+export type FigureTone = 'ok' | 'warn' | 'neutral'
+
+// Row in a two-or-more-column comparison table. Optional arrow is drawn
+// between the first and second cell (used for "same move, different room"
+// style figures). Optional badge is a FLOW move name. Optional tone flags
+// a row as the uncalibrated / anti-pattern one (rendered in red).
+export interface ComparisonRow {
+  cells: string[]
+  badge?: string
+  tone?: FigureTone
+  arrow?: boolean
+}
+
+export interface ComparisonTableFigure {
+  kind: 'comparison_table'
+  caption: string
+  ariaLabel: string
+  headers: string[]
+  rows: ComparisonRow[]
+  footer?: { cells: string[] }
+}
+
+// Labeled box in a sequence. Anti-line is rendered in red italic beneath
+// the body (used for FLOW move cards with their anti-patterns).
+export interface ConnectedBox {
+  label: string
+  body: string[]
+  anti?: string
+  tone?: FigureTone
+}
+
+export interface ConnectedBoxesFigure {
+  kind: 'connected_boxes'
+  caption: string
+  ariaLabel: string
+  orientation: 'horizontal' | 'vertical'
+  boxes: ConnectedBox[]
+  showArrows: boolean
+}
+
+// Many-to-few mapping diagram (sources at top, targets at bottom, crossing
+// lines between them). Used for "frameworks → FLOW moves".
+export interface MappingDiagramFigure {
+  kind: 'mapping_diagram'
+  caption: string
+  ariaLabel: string
+  sources: string[]
+  targets: Array<{ label: string; body?: string; tone?: FigureTone }>
+  links: Array<{ from: number; to: number }>  // indices into sources and targets
+  sourcesLabel?: string
+  targetsLabel?: string
+}
+
+export type ChapterFigure = ComparisonTableFigure | ConnectedBoxesFigure | MappingDiagramFigure
+
 export interface LearnChapter {
   id: string
   module_id: string
@@ -684,6 +745,7 @@ export interface LearnChapter {
   sort_order: number
   hook_text: string
   body_mdx: string
+  figures: ChapterFigure[]
   created_at: string
 }
 
@@ -952,6 +1014,12 @@ export interface DraftFlowStep {
   questions: DraftQuestion[]
 }
 
+export interface ScenarioExcerpt {
+  id: string
+  quote: string
+  topic: 'framing' | 'options' | 'tradeoff' | 'recommendation' | 'context'
+}
+
 export interface ChallengeJsonScenario {
   role: string
   context: string
@@ -959,8 +1027,11 @@ export interface ChallengeJsonScenario {
   question: string
   explanation: string
   engineer_standout: string
+  specific_detail?: string
   data_points?: string[]
-  visuals?: string[]   // SVG strings or markdown tables
+  insights?: string[]
+  excerpts?: ScenarioExcerpt[]
+  visuals?: string[]
 }
 
 export interface ChallengeJsonMetadata {
@@ -1006,4 +1077,72 @@ export interface DraftChallenge {
   reviewer_notes: string | null
   created_at: string
   updated_at: string
+}
+
+// ── Interview Challenge Types (system_design + data_modeling) ─────────────────
+
+export interface InterviewGradeDimension {
+  score: number  // 1-5
+  verdict: string
+  evidence: string
+  hole_to_poke: string
+  how_to_improve: string
+}
+
+export interface CanvasAnnotation {
+  target_label: string
+  text: string
+  severity: 'warning' | 'error' | 'info'
+}
+
+export interface InterviewGrade {
+  overall_score: number  // 1-5
+  headline: string
+  dimensions: Record<string, InterviewGradeDimension>
+  top_strength: string
+  top_improvement: string
+  canvas_annotations: CanvasAnnotation[]
+}
+
+export interface CanvasAction {
+  action: 'create_from_library' | 'create' | 'connect' | 'annotate' | 'remove' | 'rename'
+  // create_from_library
+  library_item?: string
+  x?: number
+  y?: number
+  label_override?: string
+  // create
+  elements?: Array<{
+    type: string
+    x: number
+    y: number
+    width?: number
+    height?: number
+    label?: { text: string }
+    columns?: string[]   // array of column lines like ["id PK", "email UNIQUE"]
+  }>
+  // connect
+  fromLabel?: string
+  toLabel?: string
+  label?: string
+  // annotate
+  text?: string
+  // remove / rename
+  targetLabel?: string
+  fromLabel_rename?: string
+  toLabel_rename?: string
+}
+
+export interface CanvasAnnotationHint {
+  target_label: string
+  text: string
+}
+
+export type CanvasIntent = 'build' | 'coach' | 'build_and_coach'
+
+export interface CanvasInterpretResponse {
+  intent: CanvasIntent
+  message: string
+  actions: CanvasAction[]
+  annotations?: CanvasAnnotationHint[]
 }

@@ -1,0 +1,429 @@
+[
+  {
+    "title": "Design a Real-Time Collaborative Document Editor",
+    "difficulty": "standard",
+    "estimated_minutes": 50,
+    "industry": "productivity",
+    "problem_statement_markdown": "Design a backend system for a Google Docs-like collaborative document editor that supports real-time multi-user editing, conflict resolution, and version history.\n\n**Core Features:**\n- Multiple users edit the same document simultaneously\n- Changes propagate to all active editors in <500ms\n- Automatic conflict resolution when concurrent edits occur\n- Full version history with ability to revert to any checkpoint\n- Presence indicators showing who is editing and their cursor positions\n- Document persistence and offline support recovery\n\n**Scale Assumptions:**\n- 1M daily active users\n- 500K concurrent documents being edited at any time\n- Peak load: 50K documents with 10+ concurrent editors each\n- Average document: 2MB of content\n- Average edits: 5 operations per second per active document\n- Retention: 7-year version history\n\n**Constraints:**\n- Latency budget: <500ms for edit propagation\n- Strong consistency preferred for document state\n- Support offline edits with sync on reconnection",
+    "metadata": {
+      "requirements": [
+        "Real-time bidirectional communication between clients and server",
+        "Operational Transformation (OT) or CRDT-based conflict resolution",
+        "Distributed session management for presence tracking",
+        "Persistent document state with version snapshots",
+        "Efficient delta compression for network transmission",
+        "Offline queue and reconciliation on reconnect",
+        "Access control and collaborative permissions",
+        "Activity audit logs for all document changes"
+      ],
+      "required_components": [
+        "WebSocket server for real-time communication",
+        "Conflict resolution engine (OT or CRDT implementation)",
+        "Distributed in-memory store (Redis) for active sessions",
+        "Document storage layer (PostgreSQL + S3)",
+        "Snapshot/checkpoint service for version history",
+        "Presence service for cursor tracking",
+        "Message queue (Kafka) for edit event streaming",
+        "Load balancer with sticky sessions"
+      ],
+      "scalability_signals": [
+        "Sharding documents by document ID to distribute conflict resolution load",
+        "Connection pooling and WebSocket server clustering",
+        "Eventual consistency model for presence vs strong consistency for edits",
+        "Incremental snapshots to reduce storage footprint of version history",
+        "Edge caching for read-heavy version retrieval"
+      ],
+      "reference_diagram_description": "Clients connect via WebSocket to a load-balanced cluster of WebSocket servers. Each server maintains in-memory operation queues backed by Redis. Edit operations flow through a Kafka topic for durability, then to a distributed conflict resolution engine. Document state is persisted in PostgreSQL with snapshots stored in S3. A separate presence service tracks active cursors via Redis pubsub."
+    },
+    "challenge_type": "system_design",
+    "approved": true,
+    "generated_at": "2026-04-24T06:37:18.578Z"
+  },
+  {
+    "title": "Design a Real-Time Leaderboard System",
+    "difficulty": "standard",
+    "estimated_minutes": 50,
+    "industry": "gaming",
+    "problem_statement_markdown": "Design a real-time leaderboard system for a competitive gaming platform where millions of players compete globally. Players earn points through matches, and the leaderboard must instantly reflect score updates, rank changes, and support multiple leaderboard views (global, regional, friends, seasonal).\n\nPlayers expect:\n- Immediate rank updates after a match completes (within 1-2 seconds)\n- Fast leaderboard queries showing top 100, user's rank, and nearby players\n- Historical leaderboards for past seasons\n- Consistent ranking without ties or gaps\n\nYou have 50 million total players, with 5 million monthly active players. Peak concurrent matches: 500,000. Average match completion: 100 matches/second, with score updates varying from +10 to +50,000 points.",
+    "metadata": {
+      "requirements": [
+        "Submit match results and update player scores atomically",
+        "Query player rank and percentile in real-time",
+        "Retrieve top N players globally and by region",
+        "Show players ranked around a specific user (e.g., top 50 near me)",
+        "Support multiple concurrent leaderboards (global, regional, seasonal, friend groups)",
+        "Handle score corrections and disputes with audit trails",
+        "Archive and rollover seasonal leaderboards"
+      ],
+      "required_components": [
+        "Sorted Set Database (Redis or similar for ranking)",
+        "Write-ahead Log for durability",
+        "Distributed Cache Layer",
+        "Leaderboard Aggregation Service",
+        "Real-time Notification System (rank change alerts)",
+        "Time-series Database for historical rankings",
+        "API Gateway with rate limiting",
+        "Message Queue for async score processing",
+        "Geolocation Service for regional partitioning"
+      ],
+      "scalability_signals": [
+        "Redis Cluster sharding by region/user-id ranges to handle 100k+ concurrent reads",
+        "Batch score updates using message queues to prevent thundering herd",
+        "Time-window bucketing to balance consistency vs. real-time latency",
+        "Caching hot leaderboards (top 1,000) separately with TTL invalidation",
+        "Eventual consistency model for non-top-100 ranks to reduce write contention"
+      ],
+      "reference_diagram_description": "Match completion events flow through a Message Queue (Kafka) \u2192 Leaderboard Service validates and updates Redis Sorted Sets (sharded by region). Reads go directly to Redis with a Cache Layer for popular queries. Rank changes trigger notifications via WebSocket. Archive service periodically snapshots to TimescaleDB for historical queries."
+    },
+    "challenge_type": "system_design",
+    "approved": true,
+    "generated_at": "2026-04-24T06:37:26.379Z"
+  },
+  {
+    "title": "Design a Distributed Payment Processing System",
+    "difficulty": "advanced",
+    "estimated_minutes": 60,
+    "industry": "fintech",
+    "problem_statement_markdown": "Design a distributed payment processing system that handles transactions across multiple merchants, payment methods, and geographic regions. The system must process payments reliably, prevent fraud, handle disputes, and reconcile transactions in real-time.\n\nYour system should support:\n- **Payment Processing**: Credit cards, digital wallets, bank transfers, and cryptocurrency\n- **Multi-Currency Support**: Automatic FX conversion with rate locking\n- **Idempotency**: Retry-safe transactions to prevent duplicate charges\n- **Real-Time Settlement**: Process and settle payments within seconds\n- **Dispute Resolution**: Handle chargebacks and refunds with audit trails\n- **Fraud Detection**: Rule-based and ML-driven anomaly detection\n- **Compliance**: PCI-DSS adherence, KYC/AML verification\n\n**Scale Assumptions**:\n- 10,000 QPS peak transaction volume\n- 500+ merchants onboarded\n- 100+ payment corridors (routes between regions)\n- 5+ years of transaction history (petabyte-scale)\n- 99.99% uptime SLA with <2 second P99 latency\n- Global deployment across 6+ regions",
+    "metadata": {
+      "requirements": [
+        "Process payments from multiple sources (cards, wallets, bank transfers) with idempotent transaction handling",
+        "Support multi-currency transactions with real-time FX conversion and rate locking",
+        "Implement real-time fraud detection using rule engines and machine learning models",
+        "Handle payment disputes, chargebacks, and refunds with complete audit trails",
+        "Ensure PCI-DSS compliance with tokenization and encryption of sensitive payment data",
+        "Reconcile transactions across multiple payment gateways and settlement partners",
+        "Provide real-time transaction status updates and webhook notifications to merchants",
+        "Scale horizontally across multiple regions with consistent data and strong eventual consistency"
+      ],
+      "required_components": [
+        "API Gateway with request validation and rate limiting",
+        "Payment Service (orchestrates transaction workflow)",
+        "Idempotency Store (deduplicates retry requests using unique keys)",
+        "Fraud Detection Engine (rules + ML model scoring)",
+        "Payment Gateway Adapters (integrations with external providers)",
+        "Distributed Transaction Ledger (immutable transaction log)",
+        "Settlement Engine (batch processing for fund transfers)",
+        "KYC/AML Verification Service",
+        "Webhook Notification System (async merchant updates)",
+        "Data Warehouse/Analytics (reconciliation and reporting)"
+      ],
+      "scalability_signals": [
+        "Idempotency key management across distributed nodes to prevent duplicate transactions",
+        "Event sourcing for transaction immutability and audit compliance",
+        "Sharding strategy for ledger (by merchant ID or payment corridor) to distribute write load",
+        "Async settlement processing with compensating transactions for failures",
+        "Cross-region replication with conflict-free reconciliation for multi-currency conversions",
+        "Caching layer for FX rates with cache invalidation strategy",
+        "Circuit breakers for external payment gateway integrations to handle failures gracefully"
+      ],
+      "reference_diagram_description": "Merchants submit payment requests to an API Gateway. Requests flow through a Payment Service that checks the Idempotency Store, validates KYC/AML, and runs Fraud Detection. Valid transactions are routed to Payment Gateway Adapters (Stripe, PayPal, etc.) or direct bank processors. All transactions are logged in a Distributed Ledger. Successful payments flow to the Settlement Engine for batch processing. Merchants receive webhook notifications. Failed/disputed transactions are tracked separately for chargeback handling. Analytics and reconciliation queries pull from the Data Warehouse."
+    },
+    "challenge_type": "system_design",
+    "approved": true,
+    "generated_at": "2026-04-24T06:37:35.494Z"
+  },
+  {
+    "title": "Design a Real-Time Content Moderation System",
+    "difficulty": "standard",
+    "estimated_minutes": 50,
+    "industry": "content_safety",
+    "problem_statement_markdown": "Design a real-time content moderation system for a social media platform that processes user-generated content (text posts, comments, images) and flags potentially harmful material before it reaches other users.\n\nThe platform has 50M daily active users generating 200M pieces of content daily. Content moderation decisions must be made within 500ms to avoid user friction. The system should support multiple moderation strategies: automated ML-based filtering, keyword blocking, user reporting workflows, and human review escalation for edge cases.\n\nContent types include short-form text (tweets, comments), long-form text (articles), and images. The system must handle:\n- Real-time classification of incoming content\n- Appeal workflows for incorrectly flagged content\n- Admin dashboards for reviewing flagged items\n- Configurable policy rules per region/market\n- Historical audit logs for compliance\n\nDesign the system to minimize false positives (user frustration), false negatives (safety risk), and latency while handling traffic spikes during viral events.",
+    "metadata": {
+      "requirements": [
+        "Accept content submissions (text/image) with <500ms decision latency",
+        "Support multiple classification models (toxicity, NSFW, spam, hate speech)",
+        "Provide human review queue for uncertain or appealed items",
+        "Enable regional policy customization and A/B testing of rules",
+        "Store audit trails for compliance and appeals investigation",
+        "Real-time metrics dashboard (flagged rate, appeal rate, model performance)",
+        "Graceful degradation when ML services are slow or unavailable"
+      ],
+      "required_components": [
+        "Content Ingestion Service (API endpoint with load balancing)",
+        "ML Classification Pipeline (multiple models, ensemble scoring)",
+        "Feature Extraction Engine (text embeddings, image analysis, metadata)",
+        "Policy Rules Engine (configurable blocking rules, regional variations)",
+        "Content Queue/Store (fast retrieval for review, appeals, analytics)",
+        "Human Review Workflow Service (task assignment, reviewer UI, state management)",
+        "Caching Layer (model outputs, policy rules, hot content)",
+        "Audit Log Storage (immutable, queryable, compliance-ready)",
+        "Metrics & Monitoring (false positive rate, latency SLIs, model drift detection)"
+      ],
+      "scalability_signals": [
+        "Horizontal scaling of classification workers with load balancing",
+        "Distributed feature extraction (batch processing for images, streaming for text)",
+        "Model serving optimization (quantization, caching, regional inference endpoints)",
+        "Asynchronous appeals processing to decouple from real-time path",
+        "Time-series database for metrics and model performance tracking across regions"
+      ],
+      "reference_diagram_description": "Content flows from multiple clients \u2192 API Gateway with rate limiting \u2192 Content Ingestion Service \u2192 parallel Feature Extraction (text embeddings, image detection) + Policy Rules Engine \u2192 ML Classification Pipeline (ensemble of models) \u2192 Decision Cache \u2192 returns decision to user. Uncertain items route to Human Review Queue (with appeals feedback loop). All decisions logged to Audit Storage. Metrics streamed to monitoring dashboard."
+    },
+    "challenge_type": "system_design",
+    "approved": true,
+    "generated_at": "2026-04-24T06:37:44.514Z"
+  },
+  {
+    "title": "Design a Real-Time Video Recommendation Engine",
+    "difficulty": "advanced",
+    "estimated_minutes": 50,
+    "industry": "media_entertainment",
+    "problem_statement_markdown": "Design a recommendation engine for a video streaming platform that generates personalized content suggestions in real-time. The system must handle millions of concurrent users, each with unique viewing histories, preferences, and interaction patterns.\n\nUsers can watch videos, like/dislike content, add items to watchlists, and pause/resume playback. The recommendation engine should surface relevant videos on the home feed, in carousel tiles, and during end-of-video suggestions within 200ms latency.\n\nKey challenges: balancing collaborative filtering with content-based recommendations, handling cold-start problems for new users and videos, avoiding recommendation staleness as user preferences evolve, and preventing recommendation bubbles while maintaining engagement metrics.\n\n**Scale Assumptions:**\n- 50M daily active users\n- 2B total videos in catalog\n- 500K QPS for recommendation requests\n- Average user has 200-500 interactions (views, likes, watchlist adds)\n- New videos uploaded: 10K/day\n- Recommendation freshness required: < 5 minutes for trending shifts",
+    "metadata": {
+      "requirements": [
+        "Real-time personalized recommendations within 200ms SLA",
+        "Handle cold-start for new users (< 24h data) and new videos",
+        "Support multiple recommendation contexts (home feed, end-of-video, search results, carousel tiles)",
+        "Track and incorporate user signals (watches, likes, dislikes, watch duration, watchlist adds)",
+        "Detect and prevent recommendation bubbles and echo chambers",
+        "A/B test recommendation algorithms with metrics tracking",
+        "Handle user preference drift and seasonal content popularity changes",
+        "Provide explainability signals for why a video was recommended"
+      ],
+      "required_components": [
+        "Feature Extraction Pipeline (user embeddings, video embeddings, metadata features)",
+        "Collaborative Filtering Service (user-user and item-item similarity)",
+        "Content-Based Ranking Module (video metadata, genres, cast, themes)",
+        "Real-Time Signal Ingestion (Kafka/Pulsar for events: views, likes, watch duration)",
+        "Embedding Store (vector database like Pinecone/Weaviate for fast similarity search)",
+        "Model Serving Layer (low-latency inference for ranking models)",
+        "Candidate Generation Service (ALS, matrix factorization, or neural collaborative filtering)",
+        "Ranking & Re-ranking Service (combining signals, diversity, freshness, business rules)",
+        "Cache Layer (Redis for user embeddings, popular recommendations, trending videos)",
+        "Feedback Loop & Monitoring (impression tracking, engagement metrics, model drift detection)"
+      ],
+      "scalability_signals": [
+        "Distributed embedding computation across GPU clusters for daily/hourly model retraining",
+        "Sharding user embedding store by user_id hash to distribute 50M+ embeddings",
+        "Approximate nearest neighbor search (ANN) indices to avoid exhaustive similarity computation",
+        "Batch inference pipelines for non-real-time candidate generation with online ranking re-ranking",
+        "Event streaming with windowed aggregations to compute user signals without full history scans",
+        "Separate read-replica embeddings for inference vs. write-optimized stores for ingestion",
+        "Circuit breakers and fallback to cached/trending recommendations on service degradation",
+        "Multi-tier caching: hot user embeddings in memory, warm embeddings in Redis, cold in vector DB"
+      ],
+      "reference_diagram_description": "User makes recommendation request \u2192 API Gateway \u2192 Real-Time Ranking Service queries (1) User Embedding Cache, (2) Video Feature Store, (3) Trending/Recency Cache. Ranking Service retrieves candidate videos from Collaborative Filtering Service (pulling from Embedding Vector DB) and Content-Based Service. Kafka ingests user events (views, likes) \u2192 Stream Processing computes aggregated signals \u2192 Model Serving updates embeddings. A/B Testing Framework routes users to different ranking algorithms. Monitoring tracks recommendation freshness, diversity, engagement CTR, and model drift."
+    },
+    "challenge_type": "system_design",
+    "approved": true,
+    "generated_at": "2026-04-24T06:37:56.180Z"
+  },
+  {
+    "title": "Design a Multi-Tenant Subscription & Billing Schema",
+    "difficulty": "standard",
+    "estimated_minutes": 35,
+    "industry": "saas",
+    "problem_statement_markdown": "You are building a billing platform for a multi-tenant SaaS that supports flexible subscription plans with usage-based charges, plan changes, and prorated billing.\n\nCustomers subscribe to plans (e.g., Basic, Pro, Enterprise), each with a base monthly fee. Plans contain features, and customers are granted feature entitlements based on their current plan. Customers can upgrade/downgrade plans mid-cycle, triggering prorated adjustments. Additionally, plans support overage charges\u2014if a customer exceeds usage thresholds for metered features (e.g., API calls), they incur per-unit overage costs.\n\nEach tenant (SaaS customer company) has multiple user accounts, and billing is tracked at the subscription level. Historical plan changes, feature entitlements, and overage charges must be auditable. Soft-deleted subscriptions and plan changes should not affect active billing calculations.",
+    "metadata": {
+      "requirements": [
+        "Support multiple subscription tiers with distinct base pricing and features",
+        "Track temporal validity of plan changes (effective dates, cancellation dates) without deleting historical records",
+        "Implement M:M relationship between Plans and Features with feature-level entitlements (e.g., API rate limit per feature)",
+        "Model usage-based overage charges tied to metered features with aggregation logic",
+        "Support mid-cycle plan transitions with prorated billing calculations",
+        "Enable soft-deletion of subscriptions and audit historical billing events",
+        "Isolate multi-tenant data; each tenant has independent plans, subscriptions, and usage tracking",
+        "Track billing cycles, invoice generation triggers, and payment status transitions"
+      ],
+      "required_entities": [
+        "Tenant",
+        "Account",
+        "Plan",
+        "Feature",
+        "Subscription",
+        "PlanChange",
+        "UsageRecord",
+        "Invoice"
+      ],
+      "modeling_signals": [
+        "Temporal validity (effective_date, ended_at) on Subscription and PlanChange to track plan history",
+        "Soft delete via deleted_at on Subscription to preserve billing audit trail",
+        "M:M relationship (Plan \u2194 Feature) with attributes (entitlement_value, e.g., API call limit)",
+        "M:M relationship (Subscription \u2194 Feature) to track active entitlements with temporal scope",
+        "Polymorphic or discriminated charge types (base fee vs. overage) in Invoice line items",
+        "Multi-tenancy isolation at Tenant level with cascading foreign keys",
+        "Usage aggregation: UsageRecord tied to Subscription, Feature, and billing period"
+      ],
+      "reference_schema_description": "Core structure: Tenant \u2192 Account (user) and Subscription (with temporal validity). Plan contains Features via M:M with entitlement metadata. Subscription tracks active plan and history via PlanChange records (each with effective_date, ended_at). UsageRecord captures metered consumption per Subscription/Feature/period. Invoice aggregates base fees and calculated overages, with line items linking to Feature and usage totals. Soft-deleted Subscriptions exclude from active billing queries via WHERE deleted_at IS NULL."
+    },
+    "challenge_type": "data_modeling",
+    "approved": true,
+    "generated_at": "2026-04-24T06:38:04.986Z"
+  },
+  {
+    "title": "Design a Healthcare Provider Network & Claims Schema",
+    "difficulty": "standard",
+    "estimated_minutes": 35,
+    "industry": "healthcare",
+    "problem_statement_markdown": "You are designing a data model for a health insurance platform that manages provider networks, member enrollments, and insurance claims processing. The system must track which providers (doctors, hospitals, clinics) are in-network for different insurance plans, handle temporal validity of network memberships, process claims with multiple service line items, and support soft deletes for historical audit trails. Providers can offer different specialties and have varying contracted rates by plan. Claims must reference both the provider and the specific plan under which care was delivered, and support rejection reasons with appeal workflows.",
+    "metadata": {
+      "requirements": [
+        "Track provider network membership with effective and termination dates (temporal validity)",
+        "Support multiple specialties per provider with many-to-many relationships",
+        "Model contracted rates that vary by provider-plan combination with historical tracking",
+        "Process claims with multiple service line items, each with its own cost and status",
+        "Support soft deletes on all entities with deleted_at timestamps for compliance auditing",
+        "Enable claim rejection with reason codes and appeal workflow states",
+        "Track claim adjudication history (submitted, in-review, approved, rejected, appealed)",
+        "Ensure claims reference both the plan member belongs to and the in-network provider"
+      ],
+      "required_entities": [
+        "Provider",
+        "InsurancePlan",
+        "Member",
+        "ProviderNetworkMembership",
+        "Specialty",
+        "ContractedRate",
+        "Claim",
+        "ClaimLineItem",
+        "ClaimAdjudication"
+      ],
+      "modeling_signals": [
+        "Temporal validity: effective_date and termination_date on ProviderNetworkMembership",
+        "Soft deletes: deleted_at column on all core entities for audit compliance",
+        "M:M with attributes: Provider-Specialty junction with years_of_experience and certification_level",
+        "M:M with attributes: ContractedRate joining Provider-Plan with rate_amount, effective_period, and copay_override",
+        "Polymorphic state machine: ClaimAdjudication with status enum (submitted, in_review, approved, rejected, appealed) and conditional reason_code",
+        "Historical tracking: audit trail of rate changes and membership changes via effective dating",
+        "Referential integrity: Claim must validate that provider and member's plan are in active ProviderNetworkMembership"
+      ],
+      "reference_schema_description": "Core schema includes Provider (with NPI, license_state), InsurancePlan (plan_type, coverage_year), and Member (plan_id, effective_enrollment_date). ProviderNetworkMembership bridges Provider-Plan with temporal dates and status. ContractedRate tracks negotiated rates per Provider-Plan pair with valid date ranges. Claim aggregates claim-level metadata (claim_number, member_id, provider_id, plan_id, submitted_date, total_amount). ClaimLineItem breaks down services (service_code, description, quantity, billed_amount, allowed_amount). ClaimAdjudication stores the approval state machine (status, adjudicated_amount, reason_code for rejections, appeal_count). All entities include created_at, updated_at, and deleted_at for audit trails."
+    },
+    "challenge_type": "data_modeling",
+    "approved": true,
+    "generated_at": "2026-04-24T06:38:13.303Z"
+  },
+  {
+    "title": "Design a Dynamic Inventory & Fulfillment Schema for Multi-Warehouse E-Commerce",
+    "difficulty": "advanced",
+    "estimated_minutes": 45,
+    "industry": "e-commerce",
+    "problem_statement_markdown": "You are designing the inventory and fulfillment backbone for a multi-warehouse e-commerce platform serving multiple regional brands. The system must track product inventory across distributed warehouses in real-time, handle complex fulfillment rules (split shipments, cross-warehouse transfers, backorders with temporal validity windows), and support polymorphic inventory types (physical stock, pre-orders with release dates, drop-shipped items). Additionally, the schema must audit all inventory mutations (stock movements, holds, reservations) with full traceability, support brand-level inventory isolation, and efficiently query available-to-promise (ATP) inventory across warehouse networks considering in-flight orders and pending transfers. A critical challenge: inventory reservations expire if orders aren't confirmed within a time window, and you must handle race conditions where multiple orders compete for limited stock across asynchronous fulfillment pipelines.",
+    "metadata": {
+      "requirements": [
+        "Track inventory levels across multiple warehouses with real-time availability visibility",
+        "Support polymorphic inventory types: physical stock, pre-orders (with release dates), drop-shipped items, and consignment inventory",
+        "Implement inventory reservations with temporal expiration windows and cascading release logic",
+        "Audit all inventory transactions (receives, transfers, adjustments, holds, releases) with full lineage and reason codes",
+        "Enforce brand-level inventory isolation while allowing cross-warehouse fulfillment within authorized networks",
+        "Calculate available-to-promise (ATP) inventory accounting for in-flight orders, pending transfers, and safety stock policies",
+        "Support backorder queuing with customer priority rules and automatic allocation when stock replenishes",
+        "Model fulfillment rules as polymorphic relationships (warehouse rules, carrier rules, product-warehouse rules) with soft-delete history"
+      ],
+      "required_entities": [
+        "Product",
+        "Warehouse",
+        "InventoryLocation",
+        "InventoryMovement",
+        "InventoryReservation",
+        "InventoryType",
+        "BackorderQueue",
+        "FulfillmentRule",
+        "Brand",
+        "Order"
+      ],
+      "modeling_signals": [
+        "Temporal validity: reservation expiration windows, pre-order release dates, backorder FIFO timestamps",
+        "Polymorphic relationships: InventoryType hierarchy (Physical, PreOrder, DropShipped, Consignment) with type-specific attributes",
+        "Soft deletes on FulfillmentRule with temporal versioning for audit trails",
+        "M:M with attributes: InventoryLocation-to-InventoryType junction with quantity, reserved_qty, hold_qty, damaged_qty",
+        "Event sourcing pattern: InventoryMovement as immutable audit log with reason codes and linked order/transfer context",
+        "Race condition handling: reservation state machine (pending \u2192 confirmed \u2192 released/expired) with optimistic locking",
+        "Hierarchical multi-tenancy: Brand isolation with warehouse network authorization rules"
+      ],
+      "reference_schema_description": "The schema models inventory as a state machine across distributed locations. Core junction table InventoryLocation (Warehouse \u00d7 Product \u00d7 InventoryType) tracks quantity variants (available, reserved, on_hold, damaged). InventoryMovement is an append-only ledger capturing every state change with contextual references (order_id, transfer_id, reason_code). InventoryReservation (M:M between Order and InventoryLocation) includes expiration logic and cascading release triggers. FulfillmentRule uses single-table inheritance (rule_type discriminator) to polymorphically attach to Warehouse, Product, or Warehouse-Product pairs. BackorderQueue maintains FIFO priority with allocation triggers on replenishment. ATP queries join across InventoryLocation filtered by type and temporal validity, minus reserved and on-hold quantities. Brand-level isolation enforced via foreign key on Warehouse and row-level filtering on all inventory queries."
+    },
+    "challenge_type": "data_modeling",
+    "approved": true,
+    "generated_at": "2026-04-24T06:38:23.314Z"
+  },
+  {
+    "title": "Design a Social Graph & Content Feed Schema",
+    "difficulty": "standard",
+    "estimated_minutes": 35,
+    "industry": "social platforms",
+    "problem_statement_markdown": "You are designing the data model for a social content platform similar to Twitter/X. Users create posts, follow each other, and engage through likes, reposts, and replies. The platform must support:\n\n- **Relationship graphs** with temporal follow/unfollow history\n- **Polymorphic content** (posts can be original, replies, or reposts, each with different attributes)\n- **Feed ranking** requiring denormalization decisions and temporal validity windows\n- **Soft-delete workflows** for privacy and compliance (posts/accounts marked deleted but retained for analytics)\n- **Engagement metrics** that must be recalculated when content is modified or deleted\n- **Multi-tenant capabilities** (future white-label platform)\n\nDesign a schema supporting millions of daily active users, billions of posts, and real-time feed queries without sacrificing data consistency.",
+    "metadata": {
+      "requirements": [
+        "Model users with profile information, account status (active/suspended/deleted), and privacy settings",
+        "Support directional follow relationships with temporal validity (follow_at, unfollow_at timestamps)",
+        "Enable polymorphic post types: original posts, replies (threaded), and reposts with shared attributes and type-specific fields",
+        "Track engagement (likes, reposts, replies) with ability to soft-delete and recalculate aggregate counts",
+        "Support feed generation requiring both social graph traversal and content ranking signals",
+        "Implement soft deletes for posts and users while maintaining referential integrity",
+        "Model notifications triggered by follows, likes, replies, and mentions with read status",
+        "Enable hashtag and mention indexing for discoverability without denormalization anti-patterns"
+      ],
+      "required_entities": [
+        "User",
+        "FollowRelationship",
+        "Post",
+        "Engagement",
+        "Notification",
+        "Hashtag",
+        "Mention"
+      ],
+      "modeling_signals": [
+        "Polymorphic relationships (single Post table with type discriminator for original/reply/repost)",
+        "Temporal validity (follow_at, unfollow_at, deleted_at for audit trails)",
+        "M:M with attributes (FollowRelationship carries follow_at, mutual_follow boolean, notification_muted)",
+        "Soft deletes via deleted_at for GDPR/compliance while preserving analytics",
+        "Aggregate challenge (engagement counts must sync with soft-deleted content)",
+        "Graph traversal complexity (feed queries crossing 2-3 degrees of followers)"
+      ],
+      "reference_schema_description": "Core tables: users (id, username, deleted_at, account_status), follow_relationships (follower_id, followee_id, follow_at, unfollow_at, is_mutual), posts (id, user_id, content, post_type, parent_post_id, repost_of_id, created_at, deleted_at), engagements (id, user_id, post_id, engagement_type, created_at, deleted_at), notifications (id, user_id, actor_id, event_type, post_id, read_at, created_at). Key constraints: follow_relationships enforces follower_id \u2260 followee_id; posts enforces parent_post_id only set if post_type='reply'; engagements prevents duplicate (user, post, type); soft deletes require filtered queries everywhere."
+    },
+    "challenge_type": "data_modeling",
+    "approved": true,
+    "generated_at": "2026-04-24T06:38:31.916Z"
+  },
+  {
+    "title": "Design a Dynamic Pricing & Seat Allocation Schema for Event Ticketing",
+    "difficulty": "advanced",
+    "estimated_minutes": 45,
+    "industry": "event_ticketing",
+    "problem_statement_markdown": "You are designing the data model for a large-scale event ticketing platform that supports concerts, sports, theater, and conferences. The platform must handle dynamic pricing (prices change based on demand, time-to-event, and seat location), complex seat inventories across multiple venue layouts, ticket holds with expiration, and flexible refund/exchange policies that vary by event and ticket type.\n\nKey challenges: (1) Seat locations have different price tiers that change over time, (2) Ticket holds reserve inventory but expire, (3) Events can have multiple pricing windows with different rules, (4) Refunds/exchanges create audit trails and affect inventory, (5) Venues can reconfigure layouts per-event, and (6) The system must support soft-deletes for compliance while maintaining historical pricing and allocation data.",
+    "metadata": {
+      "requirements": [
+        "Support multiple pricing tiers per seat section that evolve over time with effective date ranges",
+        "Track ticket holds (reserved but unpaid) with automatic expiration and inventory rollback",
+        "Enable events to define custom refund and exchange policies tied to ticket type and time windows",
+        "Maintain immutable audit trail of all price changes, inventory adjustments, and transaction reversals",
+        "Support venue layout reconfiguration per-event with seat section definitions and capacity constraints",
+        "Model complex seat relationships (sections \u2192 rows \u2192 individual seats) with dynamic allocation status",
+        "Track ticket lifecycle (available \u2192 held \u2192 sold \u2192 used/refunded/exchanged) with state transitions",
+        "Prevent overbooking across holds, sales, and reserved inventory with strong constraints",
+        "Enable historical queries (e.g., 'price on this date for this section') and point-in-time reporting",
+        "Support soft-delete of events and tickets while preserving historical transaction integrity"
+      ],
+      "required_entities": [
+        "Event",
+        "Venue",
+        "VenueLayout",
+        "SeatSection",
+        "Seat",
+        "PricingTier",
+        "PricingWindow",
+        "Ticket",
+        "TicketHold",
+        "Order",
+        "Transaction",
+        "RefundPolicy"
+      ],
+      "modeling_signals": [
+        "Temporal validity: PricingWindow and PricingTier with effective_date_start/end for time-series pricing",
+        "Soft deletes: deleted_at timestamps on Event and Ticket for audit compliance",
+        "M:M with attributes: SeatSection-to-PricingTier (mapping with price override and valid date range)",
+        "State machine: Ticket status progression (available \u2192 held \u2192 sold \u2192 {used, refunded, exchanged})",
+        "Hierarchical composite: VenueLayout \u2192 SeatSection \u2192 Seat with cascading capacity tracking",
+        "Expiring inventory: TicketHold with hold_expires_at requiring background job for rollback",
+        "Immutable audit trail: Transaction table logging all price changes, holds, sales, refunds with before/after snapshots",
+        "Polymorphic soft-deletes: RefundPolicy records tied to EventRefundPolicy or TicketTypeRefundPolicy with effective windows"
+      ],
+      "reference_schema_description": "Core tables: Events (with deleted_at), Venues, VenueLayouts (layout_version, effective_event_id), SeatSections, Seats (section_id, row, seat_number, status), PricingWindows (event_id, start_date, end_date), PricingTiers (name, section_id, window_id, base_price, effective_from, effective_to), Tickets (seat_id, order_id, status, price_paid, created_at, deleted_at), TicketHolds (ticket_id/seat_id, order_id, hold_expires_at), Orders (user_id, event_id, total_price, status), Transactions (order_id, type: 'hold'/'sale'/'refund'/'exchange', before_state, after_state, timestamp), RefundPolicies (event_id/ticket_type_id, refund_before_days, restocking_fee_pct, exchange_allowed, valid_from, valid_to). Constraints: seat capacity per section, no double-holds/sales on same seat, hold expiration triggers inventory release, refund/exchange respect policy windows."
+    },
+    "challenge_type": "data_modeling",
+    "approved": true,
+    "generated_at": "2026-04-24T06:38:43.143Z"
+  }
+]

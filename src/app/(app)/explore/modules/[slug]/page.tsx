@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useLearnModule } from '@/hooks/useLearnModule'
 import { useLearnChapter } from '@/hooks/useLearnChapter'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { LEARN_MODULES_SEED } from '@/lib/learn-seed'
+import { ChapterBody } from '@/components/learning/ChapterBody'
 import type { LearnModule, LearnChapterWithProgress, LearnDifficulty } from '@/lib/types'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -23,23 +25,8 @@ const DIFFICULTY_LABELS: Record<LearnDifficulty, string> = {
   'entry-point': 'Entry Point',
 }
 
-// ─── renderMdx (minimal markdown → HTML) ─────────────────────────────────────
-
-function renderMdx(mdx: string): string {
-  return mdx
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/^---$/gm, '<hr/>')
-    .split('\n\n')
-    .map(block => {
-      if (block.startsWith('<h') || block.startsWith('<hr')) return block
-      return `<p>${block.trim()}</p>`
-    })
-    .join('\n')
-}
+// Chapter body rendering moved to `src/components/learning/ChapterBody.tsx`.
+// Figures are typed React components (src/components/learning/figures/*).
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
@@ -179,17 +166,7 @@ function ChapterPane({
       </div>
 
       {/* Body — scrollable */}
-      <div
-        className="flex-1 overflow-y-auto px-6 py-5 prose prose-sm max-w-none
-          [&_h1]:font-headline [&_h1]:text-xl [&_h1]:font-bold [&_h1]:text-on-surface [&_h1]:mt-6 [&_h1]:mb-2
-          [&_h2]:font-headline [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-on-surface [&_h2]:mt-5 [&_h2]:mb-2
-          [&_h3]:font-label [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-on-surface [&_h3]:mt-4 [&_h3]:mb-1
-          [&_p]:text-on-surface-variant [&_p]:leading-relaxed [&_p]:mb-3 [&_p]:text-sm
-          [&_strong]:text-on-surface [&_strong]:font-semibold
-          [&_em]:italic
-          [&_hr]:border-outline-variant [&_hr]:my-4"
-        dangerouslySetInnerHTML={{ __html: renderMdx(data.body_mdx) }}
-      />
+      <ChapterBody body_mdx={data.body_mdx} figures={data.figures ?? []} />
 
       {/* Footer */}
       <div className="px-5 py-3 border-t border-outline-variant bg-surface-container-low flex items-center justify-between flex-shrink-0">
@@ -254,27 +231,17 @@ function ProgressCard({ module, completedCount }: { module: LearnModule; complet
 }
 
 function AfterThisModule({ currentSlug }: { currentSlug: string }) {
-  const [modules, setModules] = useState<LearnModule[]>([])
-
-  useEffect(() => {
-    fetch('/api/learn')
-      .then(r => r.ok ? r.json() : [])
-      .then((data: { modules: LearnModule[] }) => setModules((data.modules ?? []).filter(m => m.slug !== currentSlug).slice(0, 2)))
-      .catch(() => {})
-  }, [currentSlug])
-
-  if (modules.length === 0) return null
-
+  const nextModules = LEARN_MODULES_SEED.filter(m => m.slug !== currentSlug).slice(0, 2)
   return (
     <div className="bg-surface-container rounded-xl p-3 space-y-2">
       <div className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">After this module</div>
-      {modules.map(nm => (
+      {nextModules.map(nm => (
         <Link
           key={nm.slug}
-          href={`/explore/modules/${nm.slug}`}
+          href={`/learn/${nm.slug}`}
           className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-surface-container-high transition-colors"
         >
-          <div className="w-6 h-6 rounded-md flex-shrink-0" style={{ background: nm.cover_color ?? '#4a7c59' }} />
+          <div className="w-6 h-6 rounded-md flex-shrink-0" style={{ background: nm.cover_color }} />
           <div className="flex-1 min-w-0">
             <div className="text-xs font-bold text-on-surface truncate">{nm.name}</div>
             <div className="text-[10px] text-on-surface-variant">{nm.chapter_count} chapters</div>
@@ -311,7 +278,7 @@ function ModulePageInner({ slug }: { slug: string }) {
 
   const handleSelectChapter = (chSlug: string) => {
     setActiveChapterSlug(chSlug)
-    router.replace(`/explore/modules/${slug}?chapter=${chSlug}`, { scroll: false })
+    router.replace(`/learn/${slug}?chapter=${chSlug}`, { scroll: false })
   }
 
   const handleNext = (chSlug: string) => {
@@ -339,7 +306,7 @@ function ModulePageInner({ slug }: { slug: string }) {
     return (
       <div className="p-8">
         <p className="text-error text-sm">{error ?? 'Module not found'}</p>
-        <Link href="/explore" className="text-primary text-sm mt-2 inline-block">← Back to Explore</Link>
+        <Link href="/learn" className="text-primary text-sm mt-2 inline-block">← Back to Learn</Link>
       </div>
     )
   }
@@ -352,7 +319,7 @@ function ModulePageInner({ slug }: { slug: string }) {
       {/* Top breadcrumb bar */}
       <div className="h-11 flex items-center gap-2 px-4 border-b border-outline-variant flex-shrink-0 bg-background">
         <Link
-          href="/explore/modules"
+          href="/learn"
           className="inline-flex items-center gap-1 text-xs font-bold font-label text-on-surface-variant hover:text-on-surface transition-colors"
         >
           <span className="material-symbols-outlined text-sm">arrow_back</span>

@@ -145,12 +145,13 @@ export function TopNav() {
         borderColor: 'var(--color-outline-faint)',
       }}
     >
-      <div className="mx-auto max-w-[1440px] px-8 py-3 flex items-center gap-8">
+      <div className="mx-auto max-w-[1440px] px-8 py-2 flex items-center gap-8">
 
-        {/* Column 1: Brand */}
+        {/* Column 1: Brand. Wordmark file has padding around the glyphs, so it
+            needs more pixels than the visible text suggests. */}
         <Link href="/dashboard" className="flex items-center no-underline shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/wordmark.png" alt="HackProduct" className="h-[84px]" />
+          <img src="/images/wordmark.png" alt="HackProduct" className="h-12" />
         </Link>
 
         {/* Column 2: Nav pills (centered) */}

@@ -80,14 +80,15 @@ return <LegacyWorkspace challengeId={params.id} />
 
 ## Writing Style
 
-All copy produced by this skill — nudges, labels, status messages, coaching text, UI strings — must follow these rules:
+All user-facing copy this skill produces (nudges, labels, status messages, UI strings, coaching fragments) follows the canonical HackProduct Writing Style Guide: [`docs/notes/writing-style-guide.md`](../../../../docs/notes/writing-style-guide.md), summarized in `CLAUDE.md` at the repo root.
 
-- Write like a sharp senior colleague, not a corporate document or an AI assistant
-- Professional but not stiff. Clear but not over-explained.
-- No em dashes. Use a comma, period, or restructure the sentence instead.
-- No AI slop: never use "delve", "leverage", "utilize", "holistic", "robust", "seamlessly", "it's worth noting", "in order to", "as well as", or any phrase that sounds like it was generated to sound thorough
-- Say what you mean in the fewest words. Cut filler. Cut hedges.
-- No motivational padding. If something is weak, say it's weak.
+**The hard rules to enforce here:**
+- No second-person role framing in user-facing copy ("you are a tech lead", "as a senior engineer", "imagine you work at"). Role is metadata used for filtering, never rendered as copy.
+- No em dashes. Use commas, periods, or restructure.
+- No AI slop: *delve, leverage, utilize, holistic, robust, seamlessly, it's worth noting, in order to, as well as, embark on, navigate, unlock, landscape, tapestry, ensure, tailored, cutting-edge, revolutionary, game-changing*.
+- Coherent sentences that flow together. Fragment-style prose reads as a speech, not writing. Exception: UI chrome like button labels where terse is correct.
+
+Status messages and error states inherit the same tone: direct, specific, not apologetic.
 
 ## Files This Skill Produces
 

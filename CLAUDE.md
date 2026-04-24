@@ -235,6 +235,10 @@ Use this pattern for any significant build task (3+ files, multiple concerns):
 ### Example spawn message to a dev agent
 > "You are devN on the [team] team. You have ONE task: [Task #N — Title]. Working dir: [...]. Read [...] first. Implement [...]. After implementing: run tsc, send full output to opus saying 'Task N proof: [output]'. Wait for APPROVED from opus before marking task completed."
 
+### Token efficiency note
+
+Linear me would've burned ~50% more context. Team approach: Opus orchestrated, 9 Sonnets coded in parallel waves, Haiku ran the final test suite. T6 stalled — I jumped in and did it myself in 2 minutes rather than waiting. That kind of intervention is the orchestrator's job.
+
 ## Mental Models Framework — Hatch's Grading Intelligence
 
 This is the conceptual foundation for everything Hatch does: grading, per-MCQ feedback, in-context nudges, step coaching, post-challenge breakdowns, analytics, and competency routing. All Hatch output should be rooted in these mental models.
@@ -436,6 +440,49 @@ All Hatch AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropi
 - `plausible_wrong` → 0 pts → grade "Missed"
 
 This is pre-existing design (introduced in commit `47872c1`). Always use `quality` for scoring, never derive points from a boolean.
+
+## Content Authoring Pipeline
+
+Full architecture: [`docs/notes/content-authoring-architecture.md`](./docs/notes/content-authoring-architecture.md). Operator runbook: [`docs/notes/content-generation-runbook.md`](./docs/notes/content-generation-runbook.md).
+
+**What it does:** turns a URL, article, or question into a 4-step FLOW challenge (Frame / List / Optimize / Win) with 1-3 MCQ questions per step, 4 options each (one of each quality), taxonomy tags, and deterministic validation. Two pipelines with identical shape: local mode (`scripts/job-server.ts` using the `claude` CLI subprocess) and API mode (`src/lib/content/generator.ts` using Anthropic SDK).
+
+**Audience:** engineers first (tech lead, staff engineer, founding engineer, EM, SWE). PMs secondary. Taxonomy biases toward engineering roles. Copy never uses second-person role framing — no "you are a tech lead", no "as a senior engineer". Role is metadata, not copy.
+
+**Grounding is the core idea.** Every MCQ generation call receives a grounding pack: per-question `focus`, source `excerpts` filtered by step topic, real `data_points`, extracted `insights`, the `engineer_standout` angle, and `siblingFocuses` from other questions in the step to prevent overlap. The BEST option must reference a source-specific element (named entity, metric, or listed insight), or it does not qualify as BEST.
+
+**Open-ended prompts** (short questions like "how do you improve ChatGPT") run an expansion step that picks a concrete angle and writes source-like material, then a verifier step that strips fabricated claims before the main pipeline runs. Unsalvageable sources fail the job.
+
+**Voice rules** (enforced by prompts and validator warnings):
+- No second-person role framing in user-facing copy
+- No em dashes
+- No AI slop ("delve", "leverage", "utilize", "holistic", "robust", "seamlessly", "in order to", "as well as")
+- Explanations read like insight, not instruction
+- Best option is genuinely better in reasoning, not longer
+
+**Validator** runs after generation: hard errors (structural) block publish; warnings (grounding miss, sibling overlap, role-framing match) surface to the reviewer.
+
+**Admin UI:** `/admin/content` lists all jobs with View / Review / Tags / Delete actions. Review page has inline editing and step approvals. Tag editor for published challenges at `/admin/content/challenges/{id}`.
+
+**Bulk ingest** from a Notion "Challenge Pipeline" database: `scripts/bulk-ingest.ts`. Reads rows where `Status=Queued`, submits jobs, updates Notion with `Job ID` and `Status=Generating`.
+
+## Writing Style
+
+Canonical guide: [`docs/notes/writing-style-guide.md`](./docs/notes/writing-style-guide.md). Every user-facing word the platform produces follows this. All five HackProduct skills (`backend_planning/hackproduct-v2-bundle/skills/*/SKILL.md`) inherit from it.
+
+**Register:** Shreyas Doshi in a tweet thread, or an opinionated staff engineer thinking out loud. Direct. Confident. Slightly opinionated. Academic is wrong. Corporate is worse.
+
+**Hard rules (enforced by the content validator):**
+- **No second-person role framing.** No "you are a tech lead", "as a senior engineer", "imagine you work at". Drop into the situation. Role is metadata, not copy.
+- **No em dashes.** Use a comma, a period, or restructure. Hard ban.
+- **No AI slop.** Never: *delve, leverage, utilize, holistic, robust, seamlessly, it's worth noting, in order to, as well as, embark on, navigate, unlock, landscape, tapestry, ensure, tailored, cutting-edge, revolutionary, game-changing*.
+- **Coherent sentences, not fragments.** Full flowing sentences that connect. Fragment-style ("Four moves. Real problem is upstream.") reads like a speech, not writing. Exception: UI chrome (buttons, labels, status).
+
+**Applies to:** challenge scenarios/questions/options/nudges, grading explanations, Luma coaching, learn chapter bodies, competency labels, push notifications, emails, and any admin UI copy that appears alongside user-facing content.
+
+**Does NOT apply to:** code comments, migration SQL, developer-facing error messages, internal reference docs.
+
+**Quick check before shipping generated text:** Does a sentence exist only to sound thorough? Cut it. Does a word appear in the AI-slop list? Replace it. Does the scenario open with "you are" or "as a"? Rewrite it into the situation.
 
 ## Key Conventions
 

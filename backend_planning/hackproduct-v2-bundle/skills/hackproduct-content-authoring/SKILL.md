@@ -5,46 +5,84 @@ description: "Content authoring pipeline for HackProduct challenges. Use when cr
 
 # HackProduct Content Authoring Pipeline
 
-Takes raw questions and turns them into structured FLOW challenges with MCQ options, nudges, taxonomy tags, and validation.
+Turns raw source material into structured FLOW challenges with MCQ options, nudges, taxonomy tags, and validation.
 
-## Pipeline: 8 steps, ~$0.18/challenge, ~40s
+## Audience
+
+HackProduct is a product sense gym for **engineers**: staff engineers, tech leads, founding engineers, EMs, SWEs who want to reason about product decisions like a senior PM would. PMs are a secondary audience. All content skews to engineering-relevant decisions, technical tradeoffs, and system-level thinking.
+
+The audience shapes WHAT decisions get tested and HOW options are framed. It does NOT change HOW the reader is addressed. User-facing copy NEVER uses second-person role framing like "you are a tech lead" or "as a senior engineer". Role is metadata, not copy.
+
+## Pipeline
 
 ```
-Raw markdown → scenario_extractor → competency_tagger → taxonomy_tagger
-  → mcq_option_generator (×4 steps × N questions)
-  → nudge_writer (×4) → difficulty_calibrator → content_validator → publish
+rawText (URL → scraped, text, or question)
+  → [if open-ended question] expand_source → verify_source
+  → scrape (Haiku): situation_summary, data_points, insights, excerpts, source_richness
+  → scenario (Sonnet): role, context, trigger, question, explanation, engineer_standout, specific_detail
+  → for each FLOW step:
+       step_question_plan (Haiku): 1-3 questions with distinct focus strings
+       for each question: mcq_with_grounding (Sonnet) — gets excerpts, data_points, insights, focus, siblingFocuses
+  → taxonomy (Sonnet): paradigm, industry, difficulty, roles, competencies
+  → validate: structure (hard fail) + grounding/voice warnings
 ```
+
+## Grounding Rules (the difference between good and generic)
+
+Every MCQ generation call receives a grounding pack:
+- **focus**: the specific decision or reasoning move this question tests (from the plan step)
+- **sourceExcerpts**: 2-3 verbatim passages from the source, filtered by step topic
+- **dataPoints**: real numbers from the source
+- **insights**: the 2-4 non-obvious observations the scraper pulled out
+- **engineerStandout**: what an engineer sees here that a pure PM might miss
+- **siblingFocuses**: focuses of other questions in the same step, to avoid overlap
+
+**The BEST option must reference at least one source-specific element** (named entity, metric, or insight). Generic product truisms disqualify an option from being BEST.
+
+## Open-Ended Prompts
+
+For short open-ended question inputs (e.g. "how do you improve ChatGPT"), the pipeline runs two extra Claude calls before scraping:
+
+1. **Expand**: narrow the open prompt into 2-3 specific product tensions, pick the most interesting, write 600-1000 words of source-like material around it, self-report every factual claim
+2. **Verify**: a second Claude call flags fabricated or unsubstantiated claims. Metrics without substantiation get stripped or converted to qualitative framing. If the whole source is unreliable, the job fails with a reason.
+
+The verifier exists to mitigate hallucination bias introduced by the expansion step. For URL and long text inputs, both steps are skipped — those already have real source.
 
 ## Voice and Writing Style
 
-All generated content uses the voice of a senior product thinker who has seen this problem before, not a trainer building curriculum. Think Shreyas Doshi writing a tweet thread, not a PM certification course.
+All generated content follows the canonical HackProduct Writing Style Guide: [`docs/notes/writing-style-guide.md`](../../../../docs/notes/writing-style-guide.md), summarized in `CLAUDE.md` at the repo root. Read it before writing prompts; the register applies to scenarios, question text, nudges, option text, explanations, and taxonomy labels alike.
 
-**Tone:**
-- Direct, confident, slightly opinionated. Not academic, not corporate.
-- No scene-setting fluff: never open with "the VP wants", "stakeholders are asking", "the executive team needs". Drop straight into the situation.
-- Explanations read like insight, not instruction. "Here's why this matters" not "this question tests your ability to..."
-- Nudges feel like a smart colleague leaning over: a pointed question that makes you think differently, not a hint that telegraphs the answer.
-- Option text sounds like something a real person would actually say or think, not a textbook category label.
+**The hard rules the prompts must enforce:**
+- No second-person role framing in user-facing copy. No "you are a tech lead", "as a senior engineer", "imagine you work at". This is the number one smell that the model fell back to interview-prep framing. Role goes in `scenario.role` as metadata; it does not appear in `context`, `trigger`, `question`, `question_text`, or option text.
+- No em dashes. Use a comma, period, or restructure.
+- No AI slop: *delve, leverage, utilize, holistic, robust, seamlessly, it's worth noting, in order to, as well as, embark on, navigate, unlock, landscape, tapestry, ensure, tailored, cutting-edge, revolutionary, game-changing*.
+- Coherent sentences that flow together. Fragment-style prose reads as a speech, not writing. Exception: UI chrome (buttons, labels) where terse is correct.
 
-**Hard rules:**
-- No em dashes. Use a comma, period, or restructure the sentence.
-- No AI slop: never use "delve", "leverage", "utilize", "holistic", "robust", "seamlessly", "it's worth noting", "in order to", "as well as", or any phrase that reads like padding.
-- The best option must be genuinely better in its reasoning, not just more comprehensive-sounding or longer.
-- Cut anything that exists to sound thorough. Every sentence should earn its place.
+**Skill-specific voice requirements:**
+- The BEST option must be genuinely better in reasoning, not longer. It must reference something source-specific: a named company, a real metric, a contrarian take from the source, or a listed insight. Generic product truisms disqualify an option from being BEST.
+- Explanations read like insight, not instruction. "Here's why this matters" beats "this question tests your ability to...".
+- Nudges feel like a smart colleague leaning over, a pointed question that makes you think differently rather than a hint that telegraphs the answer.
+- Option text sounds like someone actually reasoning, not a textbook category label.
 
-**What good looks like:**
+**Worked examples:**
 
-Scenario context (bad): "The VP of Product has asked you to evaluate whether the company should expand into a new market segment. Stakeholders across the organization have differing opinions."
+Scenario context, role-framed (reject): *"You're three months into owning the SMB product at a Series B fintech."*
 
-Scenario context (good): "You're three months into owning the SMB product at a Series B fintech. Growth is flat. The sales team says enterprise is the obvious move. You're not so sure."
+Scenario context, corporate (reject): *"The VP of Product has asked you to evaluate whether the company should expand into a new market segment."*
 
-Nudge (bad): "Consider what the root cause of the problem might be before jumping to solutions."
+Scenario context, correct: *"Notifications went from 3 a day to 18. DAU dropped 14% the same week. The activity digest quadrupled notification volume, and customer success is hearing 'too many pings' on every call."*
 
-Nudge (good): "What would have to be true for this to still be a problem six months from now?"
+Nudge, bad: *"Consider what the root cause might be before jumping to solutions."*
 
-Explanation (bad): "This question tests strategic thinking and the ability to identify upstream causes rather than treating symptoms."
+Nudge, good: *"What would have to be true for this to still be a problem six months from now?"*
 
-Explanation (good): "Most people fix the thing that's visibly broken. The better move is asking what made it breakable in the first place. That's the difference between a patch and a structural change."
+Explanation, bad: *"This question tests strategic thinking and the ability to identify upstream causes rather than treating symptoms."*
+
+Explanation, good: *"Most people fix the thing that's visibly broken, but the better move is asking what made it breakable in the first place, which is the difference between a patch and a structural change."*
+
+Option text, role-framed (reject): *"As a tech lead, I would segment users by notification volume and measure churn correlation."*
+
+Option text, correct: *"Segment users by notifications received per day, because if the top quintile is churning faster than the median then volume is a proxy for the real problem, and the real problem is signal."*
 
 ## Questions Per FLOW Step
 
@@ -108,20 +146,21 @@ The scenario object must include these fields:
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `role` | Yes | Specific role, company type, stage |
-| `context` | Yes | 2-3 sentences: company, product, current situation |
-| `trigger` | Yes | 1 sentence: concrete event forcing a decision |
-| `question` | Yes | The core PM question being tested (not a restatement of trigger) |
-| `explanation` | Yes | 2-3 sentences: why this question matters to product thinking |
-| `engineer_standout` | Yes | 1-2 sentences: what makes an engineer's answer valuable here |
-| `data_points` | No | String[]. Quantitative facts from source. Only populate when source contains real metrics. Leave empty otherwise. |
-| `visuals` | No | String[]. SVG strings or markdown tables only. Use only when structural/tabular content from source genuinely aids comprehension. Never generate images. |
+| `role` | Yes | Metadata only, not rendered as copy. Engineer-leaning by default (tech lead, staff engineer, founding engineer, EM). |
+| `context` | Yes | 2-3 sentences. Drop into the situation. NO second-person role framing. |
+| `trigger` | Yes | 1 sentence: the concrete thing that just happened. Specific. |
+| `question` | Yes | The decision being tested. Not a restatement of the trigger. |
+| `explanation` | Yes | 2-3 sentences: why this problem is interesting, as insight not instruction. |
+| `engineer_standout` | Yes | 1-2 sentences: what an engineer sees here that a pure PM might miss. System-level or technical-angle observation. |
+| `specific_detail` | Yes | A verbatim or near-verbatim phrase from the source (company name, metric, stakeholder quote, contrarian claim). `context` or `trigger` must incorporate this. |
+| `data_points` | No | String[]. Real quantitative facts from source. Never fabricate. Leave empty otherwise. |
+| `insights` | No | String[]. 2-4 non-obvious observations the scraper extracted. Used to ground MCQ best-option explanations. |
+| `excerpts` | No | `{id, quote, topic}[]`. Verbatim source passages tagged by FLOW step topic. Filtered into the MCQ grounding pack per step. |
+| `visuals` | No | String[]. SVG strings or markdown tables only. Never image URLs or base64. |
 
-**Rules for `data_points` and `visuals`:**
-- Only include if the source material genuinely contains quantitative data or structural/tabular content
-- Never fabricate data points
-- For visuals: use SVG strings or markdown tables only — never image URLs or base64
-- Absence is preferred over noise — empty arrays are the correct default
+**Rules for optional fields:**
+- Only include if the source material genuinely contains the content. Never fabricate.
+- Absence is preferred over noise. Empty arrays are the correct default.
 
 ### FLOW Step → Intellectual Theme Mapping
 
@@ -138,7 +177,19 @@ Each FLOW step is anchored to a primary intellectual theme. The `theme` and `the
 
 ## Content Validator (deterministic)
 
-Checks: 4 flow_steps each with 1+ questions each with 4 options; exactly 1 "best" per question; word count variance ≤ 20%; valid competency enums; nudge < 40 words ending with "?"; estimated_minutes 5-20.
+**Hard errors (block publish):**
+- 4 flow_steps each with ≥1 questions, each with 4 options, one of each quality
+- Valid competency enum values
+- Required scenario fields present
+- Required metadata fields present
+
+**Warnings (non-blocking, surfaced to reviewer):**
+- Word count variance across options > 20%
+- Best option is the longest
+- step_nudge > 40 words or missing "?"
+- **Grounding**: No MCQ option references a token from `data_points`, `specific_detail`, or `insights` — signals the question may be generic
+- **Sibling overlap**: Two questions in the same step share ≥3 content words
+- **Voice**: Any user-facing copy contains second-person role framing ("you are a…", "as a…", "imagine you") — hard smell of interview-prep framing
 
 ## Database Insert Order
 

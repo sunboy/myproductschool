@@ -70,6 +70,18 @@ const MODULES_STATIC = [
   { slug: 'strategy-execution', name: 'Strategy & Execution',   tagline: 'Closing the gap between plans and outcomes.', cover_color: '#1a1a1a', accent_color: '#a8d8a8', chapter_count: 6,  est_minutes: 70,  difficulty: 'advanced'     },
 ] as const
 
+/* ── Difficulty config (shared with explore cards) ──────────────── */
+
+const DIFFICULTY_CONFIG: Record<string, { label: string; dot: string }> = {
+  warmup:       { label: 'Warm-up',  dot: '#10b981' },
+  standard:     { label: 'Standard', dot: '#f59e0b' },
+  advanced:     { label: 'Advanced', dot: '#ef4444' },
+  staff_plus:   { label: 'Staff+',   dot: '#8b5cf6' },
+  beginner:     { label: 'Easy',     dot: '#10b981' },
+  intermediate: { label: 'Medium',   dot: '#f59e0b' },
+  hard:         { label: 'Hard',     dot: '#ef4444' },
+}
+
 /* ── Domain card palettes & SVG art ─────────────────────────────── */
 
 const DOMAIN_PALETTES = [
@@ -139,7 +151,7 @@ export default async function ExplorePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [studyPlansRaw, showcaseProducts, modulesRaw, domains, challengeCount, personalisedPlan] = await Promise.all([
+  const [studyPlansRaw, showcaseProducts, modulesRaw, domains, challengeCount, personalisedPlan, systemDesignChallenges, dataModelingChallenges] = await Promise.all([
     getStudyPlanSummaries(4).catch(() => [] as StudyPlan[]),
     getShowcaseProducts().catch(() => [] as AutopsyProduct[]),
     getLearnModuleSummaries(6).catch(() => [] as LearnModule[]),
@@ -168,6 +180,30 @@ export default async function ExplorePage() {
         const plan = (data as unknown as { study_plans: PersonalisedPlan | null }).study_plans
         return plan
       } catch { return null }
+    })(),
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('challenges')
+          .select('id, title, slug, difficulty, paradigm, challenge_type, prompt_text, company_tags')
+          .eq('is_published', true)
+          .eq('challenge_type', 'system_design')
+          .order('created_at', { ascending: false })
+          .limit(4)
+        return data ?? []
+      } catch { return [] }
+    })(),
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('challenges')
+          .select('id, title, slug, difficulty, paradigm, challenge_type, prompt_text, company_tags')
+          .eq('is_published', true)
+          .eq('challenge_type', 'data_modeling')
+          .order('created_at', { ascending: false })
+          .limit(4)
+        return data ?? []
+      } catch { return [] }
     })(),
   ])
 
@@ -590,6 +626,108 @@ export default async function ExplorePage() {
                     )}
                   </div>
                 </Link>
+              )
+            })}
+          </div>
+        </>
+      )}
+
+      {/* ── SYSTEM DESIGN CHALLENGES ─────────────────────────── */}
+      {systemDesignChallenges.length > 0 && (
+        <>
+          <SectionHeading eyebrow="Interview prep" title="System Design." href="/challenges?type=system_design" linkLabel="View all →" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-12">
+            {systemDesignChallenges.map((c) => {
+              const diff = DIFFICULTY_CONFIG[c.difficulty as string] ?? { label: c.difficulty, dot: '#74796e' }
+              return (
+                <a
+                  key={c.id}
+                  href={`/workspace/challenges/${c.slug ?? c.id}`}
+                  style={{
+                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                    background: '#e0f0f8', borderRadius: 20, padding: '18px 18px 16px',
+                    minHeight: 140, textDecoration: 'none',
+                    border: '1px solid rgba(0,0,0,0.05)',
+                    position: 'relative', overflow: 'hidden',
+                  }}
+                >
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
+                      <span className="bg-secondary-container text-on-secondary-container rounded-full text-xs px-2 py-0.5 font-label">
+                        System Design
+                      </span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#4a6072' }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: diff.dot, display: 'inline-block' }} />
+                        {diff.label}
+                      </span>
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700, color: '#1a3048', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
+                      {c.title}
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 4,
+                      background: '#2d7aa8', color: '#fff',
+                      padding: '6px 12px', borderRadius: 999,
+                      fontWeight: 700, fontSize: 12,
+                    }}>
+                      Start
+                      <span className="material-symbols-outlined" style={{ fontSize: 13 }}>arrow_forward</span>
+                    </span>
+                  </div>
+                </a>
+              )
+            })}
+          </div>
+        </>
+      )}
+
+      {/* ── DATA MODELING CHALLENGES ──────────────────────────── */}
+      {dataModelingChallenges.length > 0 && (
+        <>
+          <SectionHeading eyebrow="Interview prep" title="Data Modeling." href="/challenges?type=data_modeling" linkLabel="View all →" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-12">
+            {dataModelingChallenges.map((c) => {
+              const diff = DIFFICULTY_CONFIG[c.difficulty as string] ?? { label: c.difficulty, dot: '#74796e' }
+              return (
+                <a
+                  key={c.id}
+                  href={`/workspace/challenges/${c.slug ?? c.id}`}
+                  style={{
+                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                    background: '#fce8ef', borderRadius: 20, padding: '18px 18px 16px',
+                    minHeight: 140, textDecoration: 'none',
+                    border: '1px solid rgba(0,0,0,0.05)',
+                    position: 'relative', overflow: 'hidden',
+                  }}
+                >
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
+                      <span className="bg-secondary-container text-on-secondary-container rounded-full text-xs px-2 py-0.5 font-label">
+                        Data Modeling
+                      </span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#603040' }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: diff.dot, display: 'inline-block' }} />
+                        {diff.label}
+                      </span>
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700, color: '#3a1020', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
+                      {c.title}
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 4,
+                      background: '#b83060', color: '#fff',
+                      padding: '6px 12px', borderRadius: 999,
+                      fontWeight: 700, fontSize: 12,
+                    }}>
+                      Start
+                      <span className="material-symbols-outlined" style={{ fontSize: 13 }}>arrow_forward</span>
+                    </span>
+                  </div>
+                </a>
               )
             })}
           </div>

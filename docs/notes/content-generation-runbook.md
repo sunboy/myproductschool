@@ -188,20 +188,31 @@ The `generation_jobs` row updates to `status = published` with `result_challenge
 
 ## Pipeline internals
 
-Each job runs 6 Claude CLI calls:
+Each job runs 6-10 Claude CLI calls depending on input type:
 
-| Step | Claude call | Output |
-|---|---|---|
-| 1 | Scrape/enrich | `situation_summary`, `data_points` |
-| 2 | Scenario | `role`, `context`, `trigger`, `question`, `explanation`, `engineer_standout` |
-| 3–6 | MCQ per FLOW step | `question_text`, `nudge`, 4 options with `quality`/`competencies`/`explanation` |
-| 7 | Taxonomy | `paradigm`, `industry`, `difficulty`, `frameworks`, `relevant_roles`, `company_tags` |
+| Step | When | Claude call | Output |
+|---|---|---|---|
+| 0a | `input_type=question` && short open-ended prompt | Expand source | 600-1000 words of source-like material, chosen angle, grounding claims |
+| 0b | After expansion | Verify | Corrected source with fabricated claims stripped. Fails job if unsalvageable. |
+| 1 | Always | Scrape | `situation_summary`, `data_points`, **`insights`**, **`excerpts`**, `source_richness` |
+| 2 | Always | Scenario | `role`, `context`, `trigger`, `question`, `explanation`, `engineer_standout`, **`specific_detail`** |
+| 3 | Per FLOW step | Question plan | `question_count` (1-3), per-question `focus` and `grading_weight` |
+| 4 | Per question | MCQ with grounding pack | `question_text`, `nudge`, 4 options. The prompt includes excerpts, data_points, insights, focus, siblingFocuses. |
+| 5 | Always | Taxonomy | `paradigm`, `industry`, `difficulty`, engineering-leaning `relevant_roles`, etc. |
 
-After generation, a deterministic validator checks:
-- Exactly 4 FLOW steps
-- Exactly 4 options per question, one of each quality (`best`, `good_but_incomplete`, `surface`, `plausible_wrong`)
-- Valid competency enum values
-- Structural errors → hard fail; style guidelines (word count variance, nudge length) → warnings only
+Bold fields are new grounding additions that thread source specificity into MCQ generation.
+
+### Validator: hard errors vs warnings
+
+**Hard errors** (block publish):
+- Structural: 4 FLOW steps, 4 options each, one of each quality, valid competency enums
+- Required scenario and metadata fields
+
+**Warnings** (reviewer sees, doesn't block):
+- Word count variance, best-not-longest, nudge length/formatting
+- **Grounding**: No MCQ option in a question references any `data_points` / `specific_detail` / `insights` token — signals the question may be generic
+- **Sibling overlap**: Two questions in the same step share ≥3 content words
+- **Voice**: User-facing copy contains second-person role framing ("you are a…", "as a…", "imagine you"). Reviewer should rewrite before publish.
 
 ### FLOW step → intellectual theme mapping
 
@@ -211,6 +222,15 @@ After generation, a deterministic validator checks:
 | List | T4: Width Before Depth | 25% |
 | Optimize | T5: Name the Criterion, Name the Sacrifice | 25% |
 | Win | T7: A Recommendation Is a Falsifiable Hypothesis | 25% |
+
+### Open-ended prompts: expansion + verification
+
+Short question inputs like "how do you improve ChatGPT" trigger two extra Claude calls before the main pipeline:
+
+1. **Expand** — the model picks 2-3 concrete tensions in the product/company, chooses the most interesting, writes 600-1000 words of source-like material around it, and self-reports every factual claim with a confidence level.
+2. **Verify** — a second call flags fabricated or unsubstantiated claims. Low-confidence metrics get stripped or converted to qualitative framing ("users have reported X"). If the source is unsalvageable, the job fails with a reason.
+
+From that point the pipeline runs normally against the verified source. For URL or long-text inputs, both steps are skipped. Watch the job-server logs to see which path ran.
 
 ---
 
