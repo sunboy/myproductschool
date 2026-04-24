@@ -187,19 +187,13 @@ export default async function ExplorePage() {
   const modules = modulesRaw.length > 0 ? modulesRaw : MODULES_STATIC
 
   return (
-    <div
-      className="animate-fade-in-up"
-      style={{ maxWidth: 1440, margin: '0 auto', padding: '28px 32px 120px' }}
-    >
+    <div className="animate-fade-in-up max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-7 pb-28">
 
       {/* ── HERO ─────────────────────────────────────────────── */}
-      <div style={{
-        background: 'linear-gradient(135deg, #1e3528 0%, #14241c 55%, #0e1a14 100%)',
-        borderRadius: 32,
-        padding: '36px 40px 32px',
-        position: 'relative', overflow: 'hidden',
-        marginBottom: 48,
-      }}>
+      <div
+        className="rounded-[32px] relative overflow-hidden mb-12 p-6 sm:p-9 md:p-10"
+        style={{ background: 'linear-gradient(135deg, #1e3528 0%, #14241c 55%, #0e1a14 100%)' }}
+      >
         {/* Dot grid bg */}
         <div aria-hidden style={{
           position: 'absolute', inset: 0,
@@ -295,13 +289,10 @@ export default async function ExplorePage() {
       <ParadigmGrid />
 
       {/* ── FLOW FRAMEWORK STRIP ─────────────────────────────── */}
-      <div style={{
-        background: '#1e1b14',
-        borderRadius: 32,
-        padding: '44px 48px',
-        position: 'relative', overflow: 'hidden',
-        marginBottom: 48,
-      }}>
+      <div
+        className="rounded-[32px] relative overflow-hidden mb-12 p-6 sm:p-8 md:p-12"
+        style={{ background: '#1e1b14' }}
+      >
         <div aria-hidden style={{
           position: 'absolute', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
@@ -311,7 +302,7 @@ export default async function ExplorePage() {
           whiteSpace: 'nowrap', userSelect: 'none', pointerEvents: 'none',
         }}>FLOW</div>
 
-        <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: '360px 1fr', gap: 48, alignItems: 'center' }}>
+        <div className="relative grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-8 lg:gap-12 items-center">
           <div>
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(243,237,224,0.45)', marginBottom: 10 }}>
               The reasoning framework
@@ -336,7 +327,7 @@ export default async function ExplorePage() {
             </Link>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <div className="grid grid-cols-2 gap-3.5">
             {FLOW_MOVES.map(m => (
               <div key={m.k} style={{
                 background: m.bg, borderRadius: 24, padding: '22px 20px',
@@ -367,7 +358,7 @@ export default async function ExplorePage() {
 
       {/* ── COURSE MODULES ───────────────────────────────────── */}
       <SectionHeading eyebrow="Deep learning" title="Guides." href="/explore/modules" linkLabel="All guides" />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 48 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 mb-12">
         {modules.map(m => (
           <Link
             key={m.slug}
@@ -445,7 +436,7 @@ export default async function ExplorePage() {
       {showcaseProducts.length > 0 && (
         <>
           <SectionHeading eyebrow="Case studies" title="Product autopsies." href="/explore/showcase" linkLabel="View all" />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 48 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-12">
             {showcaseProducts.slice(0, 4).map(product => {
               const bg = product.cover_color ?? '#1e1b14'
               return (
@@ -524,7 +515,7 @@ export default async function ExplorePage() {
       {domains.length > 0 && (
         <>
           <SectionHeading eyebrow="Topic areas" title="Explore by domain." href="/domains" linkLabel="All domains" />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 48 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-12">
             {domains.slice(0, 8).map((d, i) => {
               const palette = DOMAIN_PALETTES[i % DOMAIN_PALETTES.length]
               const DomainArt = DOMAIN_ARTS[i % DOMAIN_ARTS.length]

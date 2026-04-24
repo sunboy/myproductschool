@@ -447,9 +447,17 @@ export function PostSessionMirror({
   const footerRef = useRef<HTMLDivElement>(null)
   const [modalStep, setModalStep] = useState<StepResult | null>(null)
 
-  const passCount = stepResults.filter(r => qualityToVerdict(r.quality_label) === 'pass').length
-  const partialCount = stepResults.filter(r => qualityToVerdict(r.quality_label) === 'partial').length
-  const missCount = stepResults.filter(r => qualityToVerdict(r.quality_label) === 'miss').length
+  // Deduplicate by step key — keep the last occurrence (most recent data wins)
+  const seenSteps = new Set<string>()
+  const uniqueStepResults = [...stepResults].reverse().filter(r => {
+    if (seenSteps.has(r.step)) return false
+    seenSteps.add(r.step)
+    return true
+  }).reverse()
+
+  const passCount = uniqueStepResults.filter(r => qualityToVerdict(r.quality_label) === 'pass').length
+  const partialCount = uniqueStepResults.filter(r => qualityToVerdict(r.quality_label) === 'partial').length
+  const missCount = uniqueStepResults.filter(r => qualityToVerdict(r.quality_label) === 'miss').length
 
   const summaryLine = passCount === 4
     ? 'Clean run. Every move landed.'
@@ -483,7 +491,7 @@ export function PostSessionMirror({
       tl.to(pathRef.current, { strokeDashoffset: 0, duration: 1.4, ease: 'power1.inOut' }, '-=0.15')
     }
 
-    stepResults.forEach((_, i) => {
+    uniqueStepResults.forEach((_, i) => {
       tl.to(badgeRefs.current[i], { scale: 1, opacity: 1, rotation: 0, duration: 0.32, ease: 'back.out(2.2)' }, 0.55 + i * 0.22)
       tl.to(cardRefs.current[i], { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: 'power3.out' }, 0.62 + i * 0.22)
     })
@@ -493,7 +501,7 @@ export function PostSessionMirror({
     if (footerRef.current) tl.to(footerRef.current, { opacity: 1, y: 0, duration: 0.35 }, '-=0.3')
 
     return () => { tl.kill() }
-  }, [stepResults.length])
+  }, [uniqueStepResults.length])
 
   return (
     <section
@@ -535,7 +543,7 @@ export function PostSessionMirror({
               Results
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
-              <MiniStat label="Clean" value={`${passCount}/${stepResults.length}`} color="#2f7a4a" />
+              <MiniStat label="Clean" value={`${passCount}/${uniqueStepResults.length}`} color="#2f7a4a" />
               {partialCount > 0 && <MiniStat label="Partial" value={String(partialCount)} color="#c9933a" />}
               {missCount > 0 && <MiniStat label="Miss" value={String(missCount)} color="#b23a2a" />}
             </div>
@@ -543,7 +551,7 @@ export function PostSessionMirror({
         </div>
 
         {/* FLOW path + step cards */}
-        {stepResults.length > 0 && (
+        {uniqueStepResults.length > 0 && (
           <div style={{ position: 'relative', flexShrink: 0, paddingTop: 18 }}>
             <svg
               width="100%" height="60"
@@ -571,13 +579,13 @@ export function PostSessionMirror({
             </svg>
             <div style={{
               display: 'grid',
-              gridTemplateColumns: `repeat(${stepResults.length}, minmax(0, 1fr))`,
+              gridTemplateColumns: `repeat(${uniqueStepResults.length}, minmax(0, 1fr))`,
               gap: 10,
               position: 'relative', zIndex: 2,
               width: '100%',
               alignItems: 'start',
             }}>
-              {stepResults.map((result, i) => (
+              {uniqueStepResults.map((result, i) => (
                 <StepCard
                   key={result.step}
                   result={result}
@@ -592,7 +600,7 @@ export function PostSessionMirror({
         )}
 
         {/* Empty state */}
-        {stepResults.length === 0 && (
+        {uniqueStepResults.length === 0 && (
           <div className="flex-1 flex items-center justify-center">
             <p className="font-body text-sm text-on-surface-variant italic">Loading results…</p>
           </div>

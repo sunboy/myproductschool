@@ -51,5 +51,8 @@ export function qualityToVerdict(quality: string): Verdict {
 export function gradeToVerdict(grade: string): Verdict {
   if (grade === 'Outstanding' || grade === 'Strong') return 'pass'
   if (grade === 'Developing' || grade === 'Good') return 'partial'
+  // Also handle quality_label values returned by the step submit API
+  if (grade === 'best') return 'pass'
+  if (grade === 'good_but_incomplete' || grade === 'surface') return 'partial'
   return 'miss'
 }

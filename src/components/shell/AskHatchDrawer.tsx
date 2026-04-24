@@ -160,7 +160,7 @@ export function AskHatchDrawer({ open, onClose }: AskHatchDrawerProps) {
       />
 
       {/* Drawer */}
-      <div className="fixed inset-y-0 right-0 z-50 w-80 bg-background flex flex-col shadow-2xl border-l border-outline-variant">
+      <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-80 bg-background flex flex-col shadow-2xl border-l border-outline-variant">
 
         {/* Header */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-outline-variant/40 bg-primary-fixed">

@@ -254,6 +254,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const startTimeRef = useRef<number>(Date.now())
   // Prevents double-submit: locks for the full duration of submitAnswer + fetchCoaching
   const handlingSubmitRef = useRef(false)
+  // Prevents double-advance: locks for the full duration of handleNextStep
+  const handlingNextRef = useRef(false)
 
   // Surface paywall to parent when 402 is returned from start API
   useEffect(() => {
@@ -574,6 +576,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   }, [completedSteps])
 
   const handleNextStep = useCallback(async () => {
+    if (handlingNextRef.current) return
+    handlingNextRef.current = true
     const stepIdx = FLOW_STEPS.indexOf(currentStep)
     const isLast = stepIdx === FLOW_STEPS.length - 1
 
@@ -712,6 +716,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setCurrentStep(FLOW_STEPS[stepIdx + 1])
       setPhase('question')
     }
+    handlingNextRef.current = false
   }, [isApiMode, challengeId, currentStep, attemptId, props, questionRevealHistory, confidence, mirrorStepResults])
 
   // Handle option select — update Hatch message
@@ -757,6 +762,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       { stepKey: 'win',      stepLabel: 'Win',      status: 'pending', confidenceLabel: null },
     ])
     hasAnimated.current = false
+    handlingNextRef.current = false
     if (isApiMode) {
       setPhase('loading')
       reload()
