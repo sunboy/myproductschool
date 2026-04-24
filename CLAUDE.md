@@ -235,6 +235,10 @@ Use this pattern for any significant build task (3+ files, multiple concerns):
 ### Example spawn message to a dev agent
 > "You are devN on the [team] team. You have ONE task: [Task #N — Title]. Working dir: [...]. Read [...] first. Implement [...]. After implementing: run tsc, send full output to opus saying 'Task N proof: [output]'. Wait for APPROVED from opus before marking task completed."
 
+### Token efficiency note
+
+Linear me would've burned ~50% more context. Team approach: Opus orchestrated, 9 Sonnets coded in parallel waves, Haiku ran the final test suite. T6 stalled — I jumped in and did it myself in 2 minutes rather than waiting. That kind of intervention is the orchestrator's job.
+
 ## Mental Models Framework — Hatch's Grading Intelligence
 
 This is the conceptual foundation for everything Hatch does: grading, per-MCQ feedback, in-context nudges, step coaching, post-challenge breakdowns, analytics, and competency routing. All Hatch output should be rooted in these mental models.

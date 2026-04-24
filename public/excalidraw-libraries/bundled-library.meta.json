@@ -1,0 +1,33 @@
+{
+  "sources": [
+    {
+      "name": "System Design Template",
+      "author": "aretecode",
+      "source": "https://github.com/excalidraw/excalidraw-libraries/tree/main/libraries/aretecode",
+      "file": "system-design-template.excalidrawlib",
+      "items": 8,
+      "license": "MIT"
+    },
+    {
+      "name": "AWS Architecture Icons",
+      "author": "childishgirl",
+      "source": "https://github.com/excalidraw/excalidraw-libraries/tree/main/libraries/childishgirl",
+      "file": "aws-architecture-icons.excalidrawlib",
+      "items": 249,
+      "license": "MIT"
+    },
+    {
+      "name": "Cloud Shapes",
+      "author": "cloud",
+      "source": "https://github.com/excalidraw/excalidraw-libraries/tree/main/libraries/cloud",
+      "file": "cloud-shapes.excalidrawlib",
+      "items": 19,
+      "license": "MIT"
+    }
+  ],
+  "bundled_at": "2026-04-24",
+  "total_items": 276,
+  "repository": "https://github.com/excalidraw/excalidraw-libraries",
+  "repository_license": "MIT",
+  "notes": "All libraries sourced from the official excalidraw/excalidraw-libraries GitHub repository, confirmed MIT license."
+}

@@ -114,6 +114,11 @@ export function FloatingHatch() {
   const hatchCtx = useHatchContext()
   const glyphState = hatchCtx?.state ?? 'idle'
 
+  // Suppress on the challenge workspace — workspace has its own Hatch affordance
+  // (HatchSidePanel for FLOW, CanvasChatPanel for system_design/data_modeling)
+  const isInWorkspace = /^\/workspace\/challenges\/[^/]+/.test(pathname)
+  if (isInWorkspace) return null
+
   // Chat messages live in context so they persist across page navigations
   const messages: HatchChatMessage[] = hatchCtx?.chatMessages ?? []
   const setMessages = hatchCtx?.setChatMessages ?? (() => {})

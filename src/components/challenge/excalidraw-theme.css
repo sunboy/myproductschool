@@ -1,0 +1,123 @@
+/* Hatch overrides for Excalidraw — branding/chrome only.
+   Theming is parked; revisit later.
+   Scoped to .hatch-canvas. */
+
+/* Hide Excalidraw branding & promotional surfaces */
+.hatch-canvas .excalidraw a[href*="github.com/excalidraw"],
+.hatch-canvas .excalidraw a[href*="excalidraw.com"],
+.hatch-canvas .excalidraw a[href*="excalidraw-plus"],
+.hatch-canvas .excalidraw a[href*="plus.excalidraw"],
+.hatch-canvas .excalidraw a[href*="twitter.com/excalidraw"],
+.hatch-canvas .excalidraw a[href*="discord.gg"],
+.hatch-canvas .excalidraw .socials,
+.hatch-canvas .excalidraw .footer-center,
+.hatch-canvas .excalidraw .welcome-screen-decor,
+.hatch-canvas .excalidraw .welcome-screen-menu,
+.hatch-canvas .excalidraw .welcome-screen-center,
+.hatch-canvas .excalidraw .dropdown-menu-item[href*="github"],
+.hatch-canvas .excalidraw .dropdown-menu-item[href*="excalidraw"],
+.hatch-canvas .excalidraw .dropdown-menu-item[href*="discord"],
+.hatch-canvas .excalidraw .dropdown-menu-item[href*="twitter"],
+.hatch-canvas .excalidraw .dropdown-menu-item[href*="plus"],
+.hatch-canvas .excalidraw .dropdown-menu-group--social,
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="Excalidraw"],
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="GitHub"],
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="Discord"],
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="Follow"],
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="X (Twitter)"] {
+  display: none !important;
+}
+
+/* Hide the gray hint text above the canvas ("To move canvas, hold mouse wheel...") */
+.hatch-canvas .excalidraw .HintViewer {
+  display: none !important;
+}
+
+/* Hide both library section headers — "Personal Library" and "Excalidraw Library".
+   The bundled Hatch items still render below; they just don't need a banner. */
+.hatch-canvas .excalidraw .library-menu-items-container__header {
+  display: none !important;
+}
+
+/* Hide the Personal Library empty state ("No items added yet…" + the
+   instructional text below it). The personal library is not part of our
+   product surface — only the bundled Hatch library items should show. */
+.hatch-canvas .excalidraw .library-menu-items__no-items {
+  display: none !important;
+}
+
+/* Hide other personal-library affordances: browse, save-to-library, sign-in,
+   and the dropdown menu (where personal-library actions live). */
+.hatch-canvas .excalidraw .library-menu-browse-button,
+.hatch-canvas .excalidraw [class*="library-menu-dropdown"],
+.hatch-canvas .excalidraw [aria-label*="Browse" i],
+.hatch-canvas .excalidraw [aria-label*="Save to library" i],
+.hatch-canvas .excalidraw [aria-label*="Sign in" i],
+.hatch-canvas .excalidraw .library-actions,
+.hatch-canvas .excalidraw [class*="library-actions"],
+.hatch-canvas .excalidraw .library-menu-control-buttons {
+  display: none !important;
+}
+
+/* Hamburger menu cleanup: hide everything except the Canvas background swatches.
+   Excalidraw doesn't expose stable test ids on menu rows, so we target
+   the items by aria-label / shortcut text. */
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="Find"],
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="Help"],
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="Reset"],
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="Clear"],
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="Dark"],
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="Theme"],
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="dark mode"],
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="Save to"],
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="Open"],
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="Export"],
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="Live"],
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="Command"],
+.hatch-canvas .excalidraw .dropdown-menu-item[aria-label*="palette"],
+/* The "Excalidraw links" section header + its dropdown group */
+.hatch-canvas .excalidraw .dropdown-menu-group-title,
+.hatch-canvas .excalidraw .dropdown-menu-item-bare,
+/* Dividers between sections we just hid */
+.hatch-canvas .excalidraw .dropdown-menu hr,
+.hatch-canvas .excalidraw .dropdown-menu .padding {
+  display: none !important;
+}
+
+/* Make sure the Canvas Background row stays visible (override above if matched). */
+.hatch-canvas .excalidraw .dropdown-menu .RadioGroup,
+.hatch-canvas .excalidraw .dropdown-menu .RadioGroup *,
+.hatch-canvas .excalidraw .dropdown-menu [class*="canvas-background"],
+.hatch-canvas .excalidraw .dropdown-menu [class*="CanvasBackground"] {
+  display: revert !important;
+}
+
+/* Canvas paint stays default (white) so drawn elements remain visible.
+   We tried setting it to #faf6f0 — too close to default stroke colors,
+   shapes disappeared. Tracked separately. */
+
+/* Use Excalidraw's bundled Nunito (FONT_FAMILY = 6) — set on each text element
+   via the executor, and as appState.currentItemFontFamily for new user text.
+   The bundled font loads itself; no CSS override needed for canvas paint.
+   We still want the surrounding UI chrome to use Nunito Sans. */
+.hatch-canvas .excalidraw,
+.hatch-canvas .excalidraw button,
+.hatch-canvas .excalidraw input,
+.hatch-canvas .excalidraw label,
+.hatch-canvas .excalidraw legend,
+.hatch-canvas .excalidraw fieldset,
+.hatch-canvas .excalidraw [class*="Stack_"],
+.hatch-canvas .excalidraw .panelColumn,
+.hatch-canvas .excalidraw .panelRow,
+.hatch-canvas .excalidraw .control-label,
+.hatch-canvas .excalidraw .ToolIcon__label,
+.hatch-canvas .excalidraw .ToolIcon,
+.hatch-canvas .excalidraw .RadioGroup,
+.hatch-canvas .excalidraw .RadioGroup *,
+.hatch-canvas .excalidraw [aria-label],
+.hatch-canvas .excalidraw [class*="library"],
+.hatch-canvas .excalidraw [class*="Library"],
+.hatch-canvas .excalidraw [class*="picker"],
+.hatch-canvas .excalidraw [class*="Picker"] {
+  font-family: var(--font-nunito-sans), 'Nunito Sans', system-ui, -apple-system, sans-serif !important;
+}

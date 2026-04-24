@@ -188,7 +188,7 @@ async function buildPageContextBlock(pageContext: PageContext): Promise<string> 
 }
 
 export async function POST(req: NextRequest) {
-  const { challengeId, challengePrompt, message, history, pageContext } = await req.json()
+  const { challengeId, challengePrompt, message, history, pageContext, challengeType, canvasSummary } = await req.json()
 
   if (!message?.trim()) {
     return NextResponse.json({ reply: null })
@@ -218,6 +218,25 @@ export async function POST(req: NextRequest) {
     if (contextBlock) systemPrompt += '\n\n## Learner Context\n' + contextBlock
     if (pageContextBlock) systemPrompt += '\n\n' + pageContextBlock
     if (recommendedBlock) systemPrompt += '\n\n' + recommendedBlock
+
+    if (challengeType === 'system_design' || challengeType === 'data_modeling') {
+      const canvasAddendum = `\n\n--- CANVAS COACHING MODE ---
+The user is working on an Excalidraw canvas for a ${challengeType === 'system_design' ? 'system design' : 'data modeling'} interview.
+
+Current canvas state:
+${canvasSummary || "Canvas is empty — user hasn't drawn anything yet."}
+
+Your role:
+- Ask probing questions about the design
+- Highlight gaps based on what's actually on the canvas
+- Challenge assumptions: "You have a single DB — what happens at 100k users?"
+- Be direct, not flattering
+- When answering "what am I missing?", compare canvas to the challenge requirements specifically
+
+Do NOT output canvas action JSON here — that's for the /canvas/interpret route.
+Respond conversationally.`
+      systemPrompt += canvasAddendum
+    }
 
     // Build message history
     const messages: Anthropic.MessageParam[] = []

@@ -518,7 +518,7 @@ export type ResponseType = 'pure_mcq' | 'mcq_plus_elaboration' | 'modified_optio
 export type Competency = 'motivation_theory' | 'cognitive_empathy' | 'taste' | 'strategic_thinking' | 'creative_execution' | 'domain_expertise'
 export type UserRoleV2 = 'swe' | 'data_eng' | 'ml_eng' | 'devops' | 'founding_eng' | 'em' | 'tech_lead' | 'pm' | 'designer' | 'data_scientist'
 
-export type ChallengeType = 'flow' | 'freeform' | 'quick_take'
+export type ChallengeType = 'flow' | 'freeform' | 'quick_take' | 'system_design' | 'data_modeling'
 
 export interface Challenge {
   id: string; slug: string | null; title: string
@@ -562,6 +562,10 @@ export interface ChallengeAttemptV2 {
   time_spent_seconds: number; is_replay: boolean
   started_at: string; completed_at: string | null
   mental_models_breakdown?: Array<{ step: string; competency: string; reasoning_move: string; demonstrated: string; missed: string }> | null
+  canvas_final_snapshot?: Record<string, unknown>
+  draft_snapshot?: Record<string, unknown>
+  draft_updated_at?: string
+  conversation_summary?: string
 }
 
 export interface StepAttemptRecord {
@@ -1073,4 +1077,72 @@ export interface DraftChallenge {
   reviewer_notes: string | null
   created_at: string
   updated_at: string
+}
+
+// ── Interview Challenge Types (system_design + data_modeling) ─────────────────
+
+export interface InterviewGradeDimension {
+  score: number  // 1-5
+  verdict: string
+  evidence: string
+  hole_to_poke: string
+  how_to_improve: string
+}
+
+export interface CanvasAnnotation {
+  target_label: string
+  text: string
+  severity: 'warning' | 'error' | 'info'
+}
+
+export interface InterviewGrade {
+  overall_score: number  // 1-5
+  headline: string
+  dimensions: Record<string, InterviewGradeDimension>
+  top_strength: string
+  top_improvement: string
+  canvas_annotations: CanvasAnnotation[]
+}
+
+export interface CanvasAction {
+  action: 'create_from_library' | 'create' | 'connect' | 'annotate' | 'remove' | 'rename'
+  // create_from_library
+  library_item?: string
+  x?: number
+  y?: number
+  label_override?: string
+  // create
+  elements?: Array<{
+    type: string
+    x: number
+    y: number
+    width?: number
+    height?: number
+    label?: { text: string }
+    columns?: string[]   // array of column lines like ["id PK", "email UNIQUE"]
+  }>
+  // connect
+  fromLabel?: string
+  toLabel?: string
+  label?: string
+  // annotate
+  text?: string
+  // remove / rename
+  targetLabel?: string
+  fromLabel_rename?: string
+  toLabel_rename?: string
+}
+
+export interface CanvasAnnotationHint {
+  target_label: string
+  text: string
+}
+
+export type CanvasIntent = 'build' | 'coach' | 'build_and_coach'
+
+export interface CanvasInterpretResponse {
+  intent: CanvasIntent
+  message: string
+  actions: CanvasAction[]
+  annotations?: CanvasAnnotationHint[]
 }

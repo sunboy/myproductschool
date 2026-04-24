@@ -216,6 +216,13 @@ export function ChallengeCard({
           {paradigm}
         </span>
 
+        {/* Interview type badge */}
+        {(challenge.challenge_type === 'system_design' || challenge.challenge_type === 'data_modeling') && (
+          <span className="hidden sm:inline bg-secondary-container text-on-secondary-container rounded-full text-xs px-2 py-0.5 font-label shrink-0">
+            {challenge.challenge_type === 'system_design' ? 'System Design' : 'Data Modeling'}
+          </span>
+        )}
+
         {/* Difficulty label */}
         <span className="hidden md:inline text-[11px] text-on-surface-variant font-label shrink-0 w-16 text-right">
           {diff.label}
@@ -264,14 +271,21 @@ export function ChallengeCard({
       </div>
 
       {/* Top row: paradigm badge + difficulty */}
-      <div className="flex items-center justify-between">
-        <span
-          className="text-[11px] font-bold px-2.5 py-0.5 rounded-full font-label"
-          style={{ backgroundColor: 'rgba(255,255,255,0.7)', color: style.fg }}
-        >
-          {paradigm}
-        </span>
-        <span className="flex items-center gap-1.5 text-[11px] font-medium font-label" style={{ color: `${style.fg}bb` }}>
+      <div className="flex items-center justify-between gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span
+            className="text-[11px] font-bold px-2.5 py-0.5 rounded-full font-label"
+            style={{ backgroundColor: 'rgba(255,255,255,0.7)', color: style.fg }}
+          >
+            {paradigm}
+          </span>
+          {(challenge.challenge_type === 'system_design' || challenge.challenge_type === 'data_modeling') && (
+            <span className="bg-secondary-container text-on-secondary-container rounded-full text-xs px-2 py-0.5 font-label">
+              {challenge.challenge_type === 'system_design' ? 'System Design' : 'Data Modeling'}
+            </span>
+          )}
+        </div>
+        <span className="flex items-center gap-1.5 text-[11px] font-medium font-label shrink-0" style={{ color: `${style.fg}bb` }}>
           <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: diff.dot }} />
           {diff.label}
         </span>

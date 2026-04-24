@@ -6,10 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:scene": "npx tsx scripts/test-canvas-scene.ts",
+    "test:canvas-e2e": "npx playwright test e2e/canvas-coach.spec.ts",
+    "test:canvas-judge": "npx tsx scripts/test-canvas-judge.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
+    "@excalidraw/excalidraw": "^0.18.1",
     "@notionhq/client": "^5.19.0",
     "@stripe/react-stripe-js": "^6.2.0",
     "@stripe/stripe-js": "^9.2.0",
@@ -35,6 +39,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
