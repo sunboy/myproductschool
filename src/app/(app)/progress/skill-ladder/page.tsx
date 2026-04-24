@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import type { CareerBenchmark, FlowMove } from '@/lib/types'
 
@@ -146,11 +146,11 @@ function SkillLadderContent() {
         {/* Left Column */}
         <div className="lg:col-span-8 space-y-4">
 
-          {/* Luma coaching card */}
+          {/* Hatch coaching card */}
           <div className="bg-surface-container rounded-xl p-5 flex items-center gap-5 border border-outline-variant">
             <div className="relative shrink-0">
               <div className="w-14 h-14 rounded-full border-2 border-primary flex items-center justify-center overflow-hidden bg-primary-fixed">
-                <LumaGlyph size={48} state="speaking" className="text-primary" />
+                <HatchGlyph size={48} state="speaking" className="text-primary" />
               </div>
               <div className="absolute -top-1 -right-1 bg-primary text-white p-0.5 rounded-full border border-white">
                 <span className="material-symbols-outlined text-[10px]" style={{ fontVariationSettings: "'FILL' 1" }}>chat</span>
@@ -329,7 +329,7 @@ function SkillLadderContent() {
                 </div>
               </div>
               <p className="text-[11px] text-on-surface-variant italic leading-relaxed pt-2">
-                {benchmark?.luma_message ?? `Your ${meta.label} Move skill places you in the developing range. Complete more challenges to advance your benchmark.`}
+                {benchmark?.hatch_message ?? `Your ${meta.label} Move skill places you in the developing range. Complete more challenges to advance your benchmark.`}
               </p>
             </div>
           </div>
@@ -467,9 +467,9 @@ function CurrentLevelCard({
         </div>
       </div>
 
-      {/* Luma's pick */}
+      {/* Hatch's pick */}
       <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 border border-primary/10">
-        <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-2">Luma&apos;s pick for you</p>
+        <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-2">Hatch&apos;s pick for you</p>
         {recommendation?.challenge_id ? (
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">

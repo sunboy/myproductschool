@@ -44,7 +44,7 @@ export async function POST(
   const { attempt_id, from_plan, step_signals } = body as {
     attempt_id: string
     from_plan?: string
-    step_signals?: Array<{ step: string; quality_label: string; luma_signal: string | null; framework_hint: string | null }>
+    step_signals?: Array<{ step: string; quality_label: string; hatch_signal: string | null; framework_hint: string | null }>
   }
 
   if (!attempt_id) {
@@ -251,7 +251,7 @@ export async function POST(
     }
   }
 
-  // Insert luma_context row
+  // Insert hatch_context row
   const challengeTitle = challengeId.replace(/-/g, ' ').replace(/^c\d+ /, '')
 
   // Transform deltas object to array format with before/after values
@@ -291,7 +291,7 @@ export async function POST(
       return {
         step,
         quality_label: lastRow?.quality_label ?? 'plausible_wrong',
-        luma_signal: lastRow?.grading_explanation ?? null,
+        hatch_signal: lastRow?.grading_explanation ?? null,
         framework_hint: lastRow?.competency_signal?.framework_hint ?? null,
         selected_option_id: optionLabel,
       }
@@ -321,7 +321,7 @@ export async function POST(
     ? `Completed "${challengeTitle}": ${grade_label} (${total_score.toFixed(2)}/${max_score.toFixed(2)}). Top competency shown: ${topDelta.competency}. Watch: ${watchDelta?.competency ?? 'keep practising'}.`
     : `Completed "${challengeTitle}": ${grade_label} (${total_score.toFixed(2)}/${max_score.toFixed(2)}).`
 
-  await admin.from('luma_context').insert({
+  await admin.from('hatch_context').insert({
     user_id: userId,
     context_type: 'challenge_insight',
     content: contentStr,

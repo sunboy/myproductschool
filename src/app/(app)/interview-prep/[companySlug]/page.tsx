@@ -32,7 +32,7 @@ export default async function CompanyProfilePage({
 
       <h1 className="font-headline text-3xl text-on-surface mb-2">{company.name}</h1>
       <p className="text-on-surface-variant mb-8">
-        Interview prep plan — personalized by Luma
+        Interview prep plan — personalized by Hatch
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -123,7 +123,7 @@ export default async function CompanyProfilePage({
               <p className="font-label font-semibold text-on-surface text-sm">Run a simulation</p>
             </div>
             <p className="text-xs text-on-surface-variant">
-              Luma will act as a {company.name} PM interviewer.
+              Hatch will act as a {company.name} PM interviewer.
             </p>
             <StartSimulationButton companyId={company.id} companyName={company.name} />
           </div>

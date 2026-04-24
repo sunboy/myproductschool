@@ -240,7 +240,7 @@ export default async function ExplorePage() {
               }}>challenge library.</span>
             </h1>
             <p style={{ margin: '0 0 22px', fontSize: 15, lineHeight: 1.55, color: 'rgba(243,237,224,0.72)', maxWidth: 520 }}>
-              Real scenarios from real companies. Pick a paradigm, follow a structured plan, or let Luma choose for you.
+              Real scenarios from real companies. Pick a paradigm, follow a structured plan, or let Hatch choose for you.
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               <Link
@@ -281,7 +281,7 @@ export default async function ExplorePage() {
                   }}
                 >
                   <span className="material-symbols-outlined" style={{ fontSize: 15, fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-                  Your plan, built by Luma
+                  Your plan, built by Hatch
                 </Link>
               )}
             </div>

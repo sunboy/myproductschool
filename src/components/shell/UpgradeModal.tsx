@@ -11,7 +11,7 @@ const stripePromise = loadStripe(
 
 const FEATURES = [
   { icon: 'all_inclusive',     text: 'Unlimited challenge attempts' },
-  { icon: 'psychology',        text: 'Full Luma coaching on every step' },
+  { icon: 'psychology',        text: 'Full Hatch coaching on every step' },
   { icon: 'analytics',         text: 'Learner DNA — competency radar' },
   { icon: 'school',            text: 'All study plans, unlocked' },
   { icon: 'mic',               text: 'Live AI interview sessions' },

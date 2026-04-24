@@ -76,7 +76,7 @@ export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
 ]
 
 export const MOCK_USER_NOTES: UserNote[] = [
-  { id: 'n-mock-1', content: 'Always define the metric before proposing a solution — Luma flagged this twice.', color: 'yellow', pinned: true, created_at: '2026-03-28T10:00:00Z', updated_at: '2026-03-28T10:00:00Z' },
+  { id: 'n-mock-1', content: 'Always define the metric before proposing a solution — Hatch flagged this twice.', color: 'yellow', pinned: true, created_at: '2026-03-28T10:00:00Z', updated_at: '2026-03-28T10:00:00Z' },
   { id: 'n-mock-2', content: 'RICE framework works best for prioritization challenges.', color: 'green', pinned: false, created_at: '2026-03-27T15:00:00Z', updated_at: '2026-03-27T15:00:00Z' },
   { id: 'n-mock-3', content: 'Remember to address trade-offs explicitly in every answer.', color: 'default', pinned: false, created_at: '2026-03-26T09:00:00Z', updated_at: '2026-03-26T09:00:00Z' },
 ]

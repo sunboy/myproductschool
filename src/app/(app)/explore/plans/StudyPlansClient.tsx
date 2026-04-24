@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { StudyPlanCard } from '@/components/explore/StudyPlanCard'
 import type { StudyPlanWithItems } from '@/lib/types'
 
@@ -101,7 +101,7 @@ export function StudyPlansClient({ studyPlans }: Props) {
               color: 'rgba(243,237,224,0.70)',
               maxWidth: 500, marginBottom: 28,
             }}>
-              Luma curates multi-week tracks across all four FLOW moves. Follow a plan, or build your own from any challenge.
+              Hatch curates multi-week tracks across all four FLOW moves. Follow a plan, or build your own from any challenge.
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               <Link href="/explore/plans" style={{
@@ -122,7 +122,7 @@ export function StudyPlansClient({ studyPlans }: Props) {
                 fontFamily: 'var(--font-label)', fontWeight: 700, fontSize: 15, cursor: 'pointer',
               }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 18 }}>auto_awesome</span>
-                Luma builds mine
+                Hatch builds mine
               </button>
             </div>
           </div>
@@ -158,7 +158,7 @@ export function StudyPlansClient({ studyPlans }: Props) {
         </div>
       </div>
 
-      {/* ── Luma recommendation banner ── */}
+      {/* ── Hatch recommendation banner ── */}
       {firstEnrolled && (
         <div style={{
           display: 'flex', alignItems: 'flex-start', gap: 16,
@@ -168,14 +168,14 @@ export function StudyPlansClient({ studyPlans }: Props) {
           border: '1px solid rgba(0,0,0,0.04)',
           marginBottom: 28,
         }}>
-          <LumaGlyph size={48} state="speaking" className="text-primary flex-shrink-0" />
+          <HatchGlyph size={48} state="speaking" className="text-primary flex-shrink-0" />
           <div>
             <div style={{
               fontFamily: 'var(--font-label)',
               fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase',
               color: 'var(--color-on-primary-container, #0f3d1f)', opacity: 0.7, marginBottom: 4,
             }}>
-              Luma&rsquo;s Recommendation
+              Hatch&rsquo;s Recommendation
             </div>
             <div style={{
               fontFamily: 'var(--font-headline)',

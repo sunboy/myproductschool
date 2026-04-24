@@ -5,8 +5,8 @@ import { useSearchParams } from 'next/navigation'
 import { TopNav } from '@/components/shell/TopNav'
 import { BottomTabs } from '@/components/shell/BottomTabs'
 import { StudyPlanIndexPanel } from '@/components/shell/StudyPlanIndexPanel'
-import { FloatingLuma } from '@/components/shell/FloatingLuma'
-import { LumaProvider } from '@/context/LumaContext'
+import { FloatingHatch } from '@/components/shell/FloatingHatch'
+import { HatchProvider } from '@/context/HatchContext'
 
 function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams()
@@ -14,7 +14,7 @@ function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
   const cid = searchParams.get('cid') ?? undefined
 
   return (
-    <LumaProvider>
+    <HatchProvider>
       <div className="flex flex-col h-screen bg-background">
         <TopNav />
         <div className="flex flex-1 overflow-hidden">
@@ -26,9 +26,9 @@ function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
           </main>
         </div>
         <BottomTabs />
-        <FloatingLuma />
+        <FloatingHatch />
       </div>
-    </LumaProvider>
+    </HatchProvider>
   )
 }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 
 interface InterviewLimitModalProps {
@@ -51,7 +51,7 @@ export function InterviewLimitModal({
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <LumaGlyph size={32} state="idle" className="text-primary" />
+              <HatchGlyph size={32} state="idle" className="text-primary" />
             </div>
           </div>
           <p className="font-label text-[11px] uppercase tracking-[0.18em] font-bold text-on-surface-variant mb-1">

@@ -249,7 +249,7 @@ export default async function Product75Page() {
             </div>
           </div>
 
-          {/* Luma's Tip */}
+          {/* Hatch's Tip */}
           <div className="mt-6 bg-secondary-container rounded-lg p-6 relative overflow-hidden group">
             <div className="absolute -right-4 -top-4 opacity-10 rotate-12 transition-transform group-hover:scale-110">
               <span className="material-symbols-outlined text-[120px]">diamond</span>
@@ -264,7 +264,7 @@ export default async function Product75Page() {
                 </span>
               </div>
               <h4 className="font-headline font-bold text-on-secondary-container">
-                Luma&apos;s Tip
+                Hatch&apos;s Tip
               </h4>
             </div>
             <p className="font-body text-sm leading-relaxed text-on-secondary-container/80">

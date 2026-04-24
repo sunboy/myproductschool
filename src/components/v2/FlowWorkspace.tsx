@@ -11,8 +11,8 @@ import { StepQuestion } from './StepQuestion'
 import { StepReveal } from './StepReveal'
 import { PostSessionMirror, type StepResult as MirrorStepResult, type CompetencyDelta as MirrorCompetencyDelta } from './PostSessionMirror'
 import type { StepCalibration } from './CalibrationPreview'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
-import { useLumaContext } from '@/context/LumaContext'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { useHatchContext } from '@/context/HatchContext'
 
 const FLOW_STEPS: FlowStep[] = ['frame', 'list', 'optimize', 'win']
 const CONF_LABELS = ['Guessing', 'Not sure', 'Fairly sure', 'Rock solid']
@@ -44,7 +44,7 @@ interface CompletionData {
   xp_awarded: number
   step_breakdown: Array<{ step: FlowStep; score: number; max_score: number }>
   competency_deltas: Array<{ competency: string; before: number; after: number }>
-  step_signals?: Array<{ step: string; quality_label: string; luma_signal: string | null; framework_hint: string | null; selected_option_id?: string | null }>
+  step_signals?: Array<{ step: string; quality_label: string; hatch_signal: string | null; framework_hint: string | null; selected_option_id?: string | null }>
 }
 
 interface SessionRecord {
@@ -120,17 +120,17 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     { stepKey: 'win',      stepLabel: 'Win',      status: 'pending', confidenceLabel: null },
   ])
 
-  // Luma message state
-  const [lumaMessage, setLumaMessage] = useState('Ready when you are. Pick the option that fits best.')
-  const [lumaState, setLumaState] = useState<'idle' | 'listening' | 'reviewing' | 'speaking'>('idle')
-  const lumaCtx = useLumaContext()
+  // Hatch message state
+  const [hatchMessage, setHatchMessage] = useState('Ready when you are. Pick the option that fits best.')
+  const [hatchState, setHatchState] = useState<'idle' | 'listening' | 'reviewing' | 'speaking'>('idle')
+  const hatchCtx = useHatchContext()
 
-  // Sync local luma state to FloatingLuma context
-  const setLuma = useCallback((msg: string, s: 'idle' | 'listening' | 'reviewing' | 'speaking') => {
-    setLumaMessage(msg)
-    setLumaState(s)
-    lumaCtx?.setLuma(msg, s)
-  }, [lumaCtx])
+  // Sync local hatch state to FloatingHatch context
+  const setHatch = useCallback((msg: string, s: 'idle' | 'listening' | 'reviewing' | 'speaking') => {
+    setHatchMessage(msg)
+    setHatchState(s)
+    hatchCtx?.setHatch(msg, s)
+  }, [hatchCtx])
 
   // GSAP workspace ref for session-start animation
   const workspaceRef = useRef<HTMLDivElement>(null)
@@ -165,7 +165,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         submitted_at: string | null
         feedback_json: {
           step_breakdown?: Array<{ step: string; score: number; max_score: number }>
-          step_signals?: Array<{ step: string; quality_label: string; luma_signal: string | null; framework_hint: string | null; selected_option_id?: string | null }>
+          step_signals?: Array<{ step: string; quality_label: string; hatch_signal: string | null; framework_hint: string | null; selected_option_id?: string | null }>
           competency_deltas?: Array<{ competency: string; before: number; after: number; delta?: number }>
           xp_awarded?: number
           total_score?: number
@@ -187,7 +187,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 confidence: null,
                 reasoning: '',
                 competency_signal: undefined,
-                lumaSignal: sig?.luma_signal ?? null,
+                hatchSignal: sig?.hatch_signal ?? null,
                 frameworkHint: sig?.framework_hint ?? null,
                 selectedOptionId: sig?.selected_option_id ?? null,
               }
@@ -331,10 +331,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const currentQuestion = activeStepData?.questions[questionIdx] ?? null
   const activeSubmitting = isApiMode ? submitting : adapterSubmitting
 
-  // Update Luma message when step loads
+  // Update Hatch message when step loads
   useEffect(() => {
     if (phase !== 'question' || !activeStepData) return
-    setLuma(activeStepData.nudge ?? 'Pick the best option.', 'listening')
+    setHatch(activeStepData.nudge ?? 'Pick the best option.', 'listening')
   }, [phase, activeStepData])
 
   // GSAP session-start animation — fires once when phase first becomes 'question'
@@ -425,7 +425,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (handlingSubmitRef.current) return
     handlingSubmitRef.current = true
 
-    setLuma('Reviewing your answer…', 'reviewing')
+    setHatch('Reviewing your answer…', 'reviewing')
 
     try {
       if (isApiMode) {
@@ -458,16 +458,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           competencySignal: thisCompetencySignal,
         }])
 
-        // Set Luma message based on result
+        // Set Hatch message based on result
         const hasReasoning = reasoning.trim().length > 10
         const isCorrect = result.grade_label === 'best'
-        let lumaMsg = ''
-        if (isCorrect && hasReasoning) lumaMsg = 'Luma saw your thinking. Sharp pick.'
-        else if (isCorrect) lumaMsg = 'Nice pick. Reasoning next time will get you tier 2.'
-        else if (confidence === 3) lumaMsg = 'Rock solid — but missed. High-value learning moment.'
-        else if (hasReasoning) lumaMsg = 'Worth looking at. Your reasoning shows the gap.'
-        else lumaMsg = 'One to revisit. Think about why the best option works.'
-        setLuma(lumaMsg, 'speaking')
+        let hatchMsg = ''
+        if (isCorrect && hasReasoning) hatchMsg = 'Hatch saw your thinking. Sharp pick.'
+        else if (isCorrect) hatchMsg = 'Nice pick. Reasoning next time will get you tier 2.'
+        else if (confidence === 3) hatchMsg = 'Rock solid — but missed. High-value learning moment.'
+        else if (hasReasoning) hatchMsg = 'Worth looking at. Your reasoning shows the gap.'
+        else hatchMsg = 'One to revisit. Think about why the best option works.'
+        setHatch(hatchMsg, 'speaking')
 
         // Fetch coaching in parallel — don't block step advancement on it
         fetchCoaching({
@@ -519,16 +519,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             }])
           }
 
-          // Set Luma message based on result
+          // Set Hatch message based on result
           const hasReasoning = reasoning.trim().length > 10
           const isCorrect = result.grade_label === 'best'
-          let lumaMsg = ''
-          if (isCorrect && hasReasoning) lumaMsg = 'Luma saw your thinking. Sharp pick.'
-          else if (isCorrect) lumaMsg = 'Nice pick. Reasoning next time will get you tier 2.'
-          else if (confidence === 3) lumaMsg = 'Rock solid — but missed. High-value learning moment.'
-          else if (hasReasoning) lumaMsg = 'Worth looking at. Your reasoning shows the gap.'
-          else lumaMsg = 'One to revisit. Think about why the best option works.'
-          setLuma(lumaMsg, 'speaking')
+          let hatchMsg = ''
+          if (isCorrect && hasReasoning) hatchMsg = 'Hatch saw your thinking. Sharp pick.'
+          else if (isCorrect) hatchMsg = 'Nice pick. Reasoning next time will get you tier 2.'
+          else if (confidence === 3) hatchMsg = 'Rock solid — but missed. High-value learning moment.'
+          else if (hasReasoning) hatchMsg = 'Worth looking at. Your reasoning shows the gap.'
+          else hatchMsg = 'One to revisit. Think about why the best option works.'
+          setHatch(hatchMsg, 'speaking')
 
           // Fetch coaching without blocking step advancement
           adapter.fetchCoaching({
@@ -558,7 +558,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     } finally {
       handlingSubmitRef.current = false
     }
-  }, [isApiMode, currentQuestion, attemptId, selectedOptionId, reasoning, confidence, submitAnswer, fetchCoaching, initialRoleId, currentStep, props, setLuma])
+  }, [isApiMode, currentQuestion, attemptId, selectedOptionId, reasoning, confidence, submitAnswer, fetchCoaching, initialRoleId, currentStep, props, setHatch])
 
   const handleStepClick = useCallback((step: FlowStep) => {
     if (!completedSteps.includes(step)) return
@@ -595,7 +595,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       confidence: confidence,
       reasoning: reasoning,
       competency_signal: stepRevealRecord.competencySignal ?? undefined,
-      lumaSignal: stepRevealRecord.competencySignal?.signal ?? null,
+      hatchSignal: stepRevealRecord.competencySignal?.signal ?? null,
       frameworkHint: stepRevealRecord.competencySignal?.framework_hint ?? null,
       selectedOptionId: stepRevealRecord.selectedOptionId ?? null,
       questions: questionRevealHistory.map(q => ({
@@ -634,7 +634,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           return {
             ...r,
             quality_label: sig.quality_label ?? r.quality_label,
-            lumaSignal: sig.luma_signal ?? r.lumaSignal,
+            hatchSignal: sig.hatch_signal ?? r.hatchSignal,
             frameworkHint: sig.framework_hint ?? r.frameworkHint,
             selectedOptionId: sig.selected_option_id ?? r.selectedOptionId,
           }
@@ -665,7 +665,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               step_signals: finalStepResults.map(r => ({
                 step: r.step,
                 quality_label: r.quality_label,
-                luma_signal: r.lumaSignal ?? null,
+                hatch_signal: r.hatchSignal ?? null,
                 framework_hint: r.frameworkHint ?? null,
               })),
             }),
@@ -714,11 +714,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     }
   }, [isApiMode, challengeId, currentStep, attemptId, props, questionRevealHistory, confidence, mirrorStepResults])
 
-  // Handle option select — update Luma message
+  // Handle option select — update Hatch message
   const handleOptionSelect = useCallback((id: string) => {
     setSelectedOptionId(id)
-    setLuma('Good. Now rate your confidence.', 'listening')
-  }, [setLuma])
+    setHatch('Good. Now rate your confidence.', 'listening')
+  }, [setHatch])
 
   // ── Render states ──────────────────────────────────────────────
 
@@ -734,7 +734,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   if ((isApiMode && challengeLoading) || phase === 'loading') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <LumaGlyph size={56} state="reviewing" className="text-primary" />
+        <HatchGlyph size={56} state="reviewing" className="text-primary" />
         <p className="font-body text-on-surface-variant text-sm">Loading challenge…</p>
       </div>
     )
@@ -1176,7 +1176,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         >
           {activeSubmitting ? 'Grading…' : (isLastStep && questionIdx === (activeStepData?.questions.length ?? 1) - 1 ? 'Finish' : 'Submit')}
           {!activeSubmitting && <span className="material-symbols-outlined msi-sm">arrow_forward</span>}
-          {activeSubmitting && <LumaGlyph size={16} state="reviewing" className="text-on-primary" />}
+          {activeSubmitting && <HatchGlyph size={16} state="reviewing" className="text-on-primary" />}
         </button>
       </div>
     </div>
@@ -1337,7 +1337,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             {/* Question card */}
             {(isApiMode ? stepLoading : false) ? (
               <div className="flex justify-center py-8">
-                <LumaGlyph size={40} state="reviewing" className="text-primary" />
+                <HatchGlyph size={40} state="reviewing" className="text-primary" />
               </div>
             ) : (isApiMode && stepError) ? (
               <p className="font-body text-error text-sm text-center">{stepError}</p>

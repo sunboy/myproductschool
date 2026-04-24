@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import type { FlowOption, FlowStep } from '@/lib/types'
-import { getLumaContext } from '@/lib/v2/luma-context'
+import { getHatchContext } from '@/lib/v2/hatch-context'
 import { loadRubric, getReasoningMove } from '@/lib/v2/skills/rubric-loader'
-import { MENTAL_MODELS_CONTEXT, STEP_PRIMARY_COMPETENCIES } from '@/lib/luma/system-prompt'
+import { MENTAL_MODELS_CONTEXT, STEP_PRIMARY_COMPETENCIES } from '@/lib/hatch/system-prompt'
 import { createCachedMessage } from '@/lib/anthropic/cached-client'
 
 // ── Zod schemas ──────────────────────────────────────────────
@@ -89,8 +89,8 @@ export async function gradeFreeform(
   const surface = options.find(o => o.quality === 'surface')
   const wrong = options.find(o => o.quality === 'plausible_wrong')
 
-  // Inject Luma context for personalization (fail open)
-  const lumaContext = userId ? await getLumaContext(userId, '', step) : ''
+  // Inject Hatch context for personalization (fail open)
+  const hatchContext = userId ? await getHatchContext(userId, '', step) : ''
 
   // Load rubric criteria for this step
   let rubricSection = ''
@@ -113,7 +113,7 @@ REASONING MOVE for this step: ${rubric.reasoning_move}`
   const systemPrompt = `You are a product sense grading agent. Grade responses against rubric exemplars and criteria.
 ${MENTAL_MODELS_CONTEXT}`
 
-  const prompt = `${lumaContext ? `LEARNER CONTEXT:\n${lumaContext}\n\n` : ''}SCENARIO: ${scenario.scenario_context} ${scenario.scenario_trigger}
+  const prompt = `${hatchContext ? `LEARNER CONTEXT:\n${hatchContext}\n\n` : ''}SCENARIO: ${scenario.scenario_context} ${scenario.scenario_trigger}
 FLOW STEP: ${step} — ${STEP_PURPOSE[step]}
 TARGET COMPETENCIES: ${targetCompetencies.join(', ')}
 

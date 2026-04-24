@@ -3,7 +3,7 @@ import { MOCK_LIVE_INTERVIEW_PERSONAS } from '@/lib/mock-live-interviews'
 import FilteredPersonaGrid from './FilteredPersonaGrid'
 import PastInterviews from './PastInterviews'
 import { UsageProvider } from '@/context/UsageContext'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 export interface ScenarioBrief {
   id: string
@@ -80,7 +80,7 @@ export default async function LiveInterviewsPage() {
   return (
     <UsageProvider>
       <div className="max-w-[1440px] mx-auto px-6 py-7 space-y-6">
-        {/* Luma Interview CTA Hero Card */}
+        {/* Hatch Interview CTA Hero Card */}
         <div
           className="relative rounded-2xl p-6 overflow-hidden"
           style={{
@@ -90,11 +90,11 @@ export default async function LiveInterviewsPage() {
           }}
         >
           <div className="flex items-center gap-4">
-            <LumaGlyph size={64} state="listening" className="text-white shrink-0" />
+            <HatchGlyph size={64} state="listening" className="text-white shrink-0" />
             <div>
               <div className="font-label font-bold text-xs uppercase tracking-widest opacity-60 mb-1">Live Mock Interview</div>
-              <h2 className="font-headline text-2xl font-medium mb-2">Ready to be interviewed by Luma?</h2>
-              <p className="text-sm opacity-75 mb-4">Pick a persona and scenario. Luma will ask real PM interview questions and give you a debrief.</p>
+              <h2 className="font-headline text-2xl font-medium mb-2">Ready to be interviewed by Hatch?</h2>
+              <p className="text-sm opacity-75 mb-4">Pick a persona and scenario. Hatch will ask real PM interview questions and give you a debrief.</p>
               <Link
                 href="/live-interviews"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-label font-bold text-sm"

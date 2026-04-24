@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 interface CohortData {
   total_participants: number
@@ -206,7 +206,7 @@ export function GuidedTab() {
             ) : cohort.total_participants === 0 ? (
               /* No active cohort */
               <div className="flex flex-col items-center py-4 gap-2 text-center">
-                <LumaGlyph size={36} state="idle" className="text-primary" />
+                <HatchGlyph size={36} state="idle" className="text-primary" />
                 <p className="text-xs text-on-surface-variant">No active cohort challenge this week.</p>
                 <Link href="/cohort" className="text-xs font-bold text-primary hover:underline">Check back soon →</Link>
               </div>
@@ -263,9 +263,9 @@ export function GuidedTab() {
       {/* Footer Coaching Strip */}
       {!coachingDismissed && (
         <div className="bg-surface-container-low border border-outline-variant p-4 rounded-xl flex items-center gap-4">
-          <LumaGlyph size={28} state="speaking" className="text-primary shrink-0" />
+          <HatchGlyph size={28} state="speaking" className="text-primary shrink-0" />
           <p className="text-sm text-on-surface-variant leading-tight flex-1">
-            <span className="font-bold text-on-surface">Luma&apos;s Tip:</span> Strong <span className="text-primary font-bold italic">Problem Framing</span> is the most common differentiator at Staff-level interviews. Before listing solutions, make sure you&apos;ve defined the core tension clearly.
+            <span className="font-bold text-on-surface">Hatch&apos;s Tip:</span> Strong <span className="text-primary font-bold italic">Problem Framing</span> is the most common differentiator at Staff-level interviews. Before listing solutions, make sure you&apos;ve defined the core tension clearly.
           </p>
           <button
             onClick={() => setCoachingDismissed(true)}

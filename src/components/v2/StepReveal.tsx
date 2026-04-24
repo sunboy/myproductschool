@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import gsap from 'gsap'
 import type { FlowStep } from '@/lib/types'
 import type { QuestionRevealRecord } from './FlowWorkspace'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import {
   type Verdict,
   VERDICT_COLOR, VERDICT_BG, VERDICT_LABEL, VERDICT_ICON,
@@ -300,7 +300,7 @@ export function StepReveal({
         </div>
       </div>
 
-      {/* ── Luma coaching ── */}
+      {/* ── Hatch coaching ── */}
       <div
         ref={coachingRef}
         style={{
@@ -313,12 +313,12 @@ export function StepReveal({
         }}
       >
         <div style={{ flexShrink: 0 }}>
-          <LumaGlyph size={36} state={roleContext ? 'speaking' : 'reviewing'} className="text-primary" />
+          <HatchGlyph size={36} state={roleContext ? 'speaking' : 'reviewing'} className="text-primary" />
         </div>
         {roleContext ? (
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-primary)', marginBottom: 4 }}>
-              Luma's Take
+              Hatch's Take
             </div>
             <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--color-on-surface)', margin: 0 }}>{roleContext}</p>
             {careerSignal && (

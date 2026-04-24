@@ -1,4 +1,4 @@
-import { Domain, Concept, Flashcard, ChallengePrompt, CompanyProfile, LumaFeedbackItem, AnalyticsSummary, ChallengeDiscussion, RecentAttempt, GlossaryTerm, ProfileData, WeeklyDigest, Topic, StudyPlan, StudyPlanItem } from '@/lib/types'
+import { Domain, Concept, Flashcard, ChallengePrompt, CompanyProfile, HatchFeedbackItem, AnalyticsSummary, ChallengeDiscussion, RecentAttempt, GlossaryTerm, ProfileData, WeeklyDigest, Topic, StudyPlan, StudyPlanItem } from '@/lib/types'
 
 export const MOCK_DOMAINS: Domain[] = [
   {
@@ -394,7 +394,7 @@ Your task:
   },
 ]
 
-export const MOCK_FEEDBACK: LumaFeedbackItem[] = [
+export const MOCK_FEEDBACK: HatchFeedbackItem[] = [
   {
     dimension: 'diagnostic_accuracy',
     score: 8,
@@ -536,7 +536,7 @@ export const MOCK_DISCUSSIONS: ChallengeDiscussion[] = [
     id: 'd1000000-0000-0000-0000-000000000002',
     challenge_id: 'c1000000-0000-0000-0000-000000000001',
     user_id: 'u1000000-0000-0000-0000-000000000002',
-    content: "The key insight I missed was stakeholder translation — I diagnosed the problem well but never explained how I'd communicate the investigation plan to the engineering lead. Luma flagged that as FP-14. Will revisit.",
+    content: "The key insight I missed was stakeholder translation — I diagnosed the problem well but never explained how I'd communicate the investigation plan to the engineering lead. Hatch flagged that as FP-14. Will revisit.",
     is_expert_pick: false,
     upvote_count: 8,
     created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),

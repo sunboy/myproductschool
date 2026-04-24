@@ -1,10 +1,10 @@
 'use client'
 
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const FEATURES = [
   { icon: 'all_inclusive',  text: 'Unlimited challenge attempts' },
-  { icon: 'psychology',     text: 'Full Luma coaching on every step' },
+  { icon: 'psychology',     text: 'Full Hatch coaching on every step' },
   { icon: 'analytics',      text: 'Learner DNA — competency radar' },
   { icon: 'school',         text: 'All study plans, unlocked' },
   { icon: 'mic',            text: 'Live AI interview sessions' },
@@ -52,7 +52,7 @@ export function ChallengePaywallGate({
             style={{ background: 'linear-gradient(145deg, #2d5a3d 0%, #4a7c59 60%, #3a6b4a 100%)' }}
           >
             <div className="flex items-center gap-3 mb-4">
-              <LumaGlyph size={40} state="idle" className="text-white shrink-0" />
+              <HatchGlyph size={40} state="idle" className="text-white shrink-0" />
               <div>
                 <p className="font-label text-[11px] uppercase tracking-[0.18em] font-bold text-white/60">
                   HackProduct Pro

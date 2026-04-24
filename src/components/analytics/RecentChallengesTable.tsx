@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { RecentAttempt } from '@/lib/types'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 interface Props {
   attempts: RecentAttempt[]
@@ -19,11 +19,11 @@ export function RecentChallengesTable({ attempts }: Props) {
 
       {attempts.length === 0 ? (
         <div className="p-12 text-center flex flex-col items-center gap-4">
-          <LumaGlyph size={56} state="idle" className="text-primary" />
+          <HatchGlyph size={56} state="idle" className="text-primary" />
           <div>
             <p className="font-bold text-on-surface mb-1">No challenges yet</p>
             <p className="text-on-surface-variant text-sm max-w-xs mx-auto">
-              Complete your first challenge and Luma will track your progress here.
+              Complete your first challenge and Hatch will track your progress here.
             </p>
           </div>
           <Link

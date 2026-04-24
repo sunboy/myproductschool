@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const RADAR_DIMENSIONS = [
   { label: 'Problem\nReframing', score: 4, angle: -90 },
@@ -120,11 +120,11 @@ export default function ResultsPage() {
         </div>
       </div>
 
-      {/* Luma quote */}
+      {/* Hatch quote */}
       <div className="flex items-start gap-3 mb-8 bg-surface-container-low rounded-xl p-5">
-        <LumaGlyph size={36} className="text-primary flex-shrink-0" state="celebrating" />
+        <HatchGlyph size={36} className="text-primary flex-shrink-0" state="celebrating" />
         <div>
-          <span className="text-xs font-label font-bold text-primary uppercase tracking-wide">Luma</span>
+          <span className="text-xs font-label font-bold text-primary uppercase tracking-wide">Hatch</span>
           <p className="text-sm text-on-surface font-body mt-1">
             Sharp instincts — you&apos;ve got a strong analytical foundation. Let&apos;s sharpen your <strong>Win</strong> move.
           </p>

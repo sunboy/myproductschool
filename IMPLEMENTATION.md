@@ -3,7 +3,7 @@
 
 **Stack:** Next.js 16, React 19, Supabase (Postgres + pgvector), Anthropic TS SDK, Tailwind v4  
 **Design:** Material 3 Terra — forest green `#4a7c59`, amber `#705c30`, warm cream `#faf6f0`  
-**Existing patterns:** See `CLAUDE.md` for font, color token, LumaGlyph, and layout conventions
+**Existing patterns:** See `CLAUDE.md` for font, color token, HatchGlyph, and layout conventions
 
 ---
 
@@ -437,7 +437,7 @@ Props: `{ label, text, isSelected, onSelect }`. Unselected: `bg-surface-containe
 
 **StepQuestion.tsx** — renders one question: nudge card + 4 OptionCards + optional elaboration textarea + freeform override toggle + submit button.
 Props: `{ question, stepNudge, isFirstQuestion, onSubmit, isSubmitting }`.
-Nudge card uses `LumaGlyph state="speaking"` at 32px with `bg-secondary-container`.
+Nudge card uses `HatchGlyph state="speaking"` at 32px with `bg-secondary-container`.
 
 **StepReveal.tsx** — post-submit reveal: score bar + quality badge + explanation + coaching (async) + expandable option list.
 Props: `{ result, role, onContinue, coaching }`.
@@ -569,10 +569,10 @@ const { data: profile } = await admin.from('profiles').select('role').eq('id', u
 if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 ```
 
-**LumaGlyph usage:**
+**HatchGlyph usage:**
 ```tsx
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
-<LumaGlyph size={32} state="speaking" />  // nudges
-<LumaGlyph size={48} state="reviewing" /> // grading
-<LumaGlyph size={48} state="celebrating" /> // results
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
+<HatchGlyph size={32} state="speaking" />  // nudges
+<HatchGlyph size={48} state="reviewing" /> // grading
+<HatchGlyph size={48} state="celebrating" /> // results
 ```

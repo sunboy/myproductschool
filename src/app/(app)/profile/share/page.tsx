@@ -31,7 +31,7 @@ export default function SharePage() {
           challengeCount={analytics.total_attempts}
           streak={analytics.streak_days}
           percentile={28}
-          lumaQuote="Strong recommendation instincts. Keep sharpening your diagnostic framing."
+          hatchQuote="Strong recommendation instincts. Keep sharpening your diagnostic framing."
         />
       </div>
     </div>

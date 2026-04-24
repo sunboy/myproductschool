@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import CompetencyRadar from '@/components/live-interview/CompetencyRadar'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -156,7 +156,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
         {/* Score card */}
         <div className="bg-surface-container rounded-xl p-6 border-t-4 border-primary">
           <div className="flex items-center gap-4 mb-4">
-            <LumaGlyph size={64} state="celebrating" className="text-primary shrink-0" />
+            <HatchGlyph size={64} state="celebrating" className="text-primary shrink-0" />
             <div className="flex-1">
               <div className="flex items-center gap-3">
                 <span className="text-5xl font-headline font-extrabold text-primary">
@@ -328,23 +328,23 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
             </h2>
             <div className="space-y-0">
               {(() => {
-                // Group turns into pairs (user + luma)
-                const pairs: Array<{ user?: typeof turns[0]; luma?: typeof turns[0]; index: number }> = []
+                // Group turns into pairs (user + hatch)
+                const pairs: Array<{ user?: typeof turns[0]; hatch?: typeof turns[0]; index: number }> = []
                 let pairIndex = 0
                 for (let i = 0; i < turns.length; i++) {
                   pairIndex++
                   const turn = turns[i]
                   if (turn.role === 'user') {
                     const next = turns[i + 1]
-                    if (next?.role === 'luma') {
-                      pairs.push({ user: turn, luma: next, index: pairIndex })
-                      i++ // skip the luma turn
+                    if (next?.role === 'hatch') {
+                      pairs.push({ user: turn, hatch: next, index: pairIndex })
+                      i++ // skip the hatch turn
                     } else {
                       pairs.push({ user: turn, index: pairIndex })
                     }
                   } else {
-                    // Luma turn without user (opening message)
-                    pairs.push({ luma: turn, index: pairIndex })
+                    // Hatch turn without user (opening message)
+                    pairs.push({ hatch: turn, index: pairIndex })
                   }
                 }
 
@@ -359,7 +359,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
                 const startTime = turns[0]?.createdAt ? new Date(turns[0].createdAt).getTime() : 0
 
                 return pairs.map((pair) => {
-                  const flowMove = pair.luma?.flowMoveDetected
+                  const flowMove = pair.hatch?.flowMoveDetected
                   const borderColorValue = flowMove ? flowBorderColors[flowMove] ?? defaultBorderColor : defaultBorderColor
                   const relTime = pair.user?.createdAt && startTime
                     ? Math.round((new Date(pair.user.createdAt).getTime() - startTime) / 1000)
@@ -378,8 +378,8 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
                           </span>
                         )}
                         <span className="flex-1 text-sm text-on-surface-variant truncate font-body">
-                          {pair.user ? pair.user.content.slice(0, 100) : pair.luma?.content.slice(0, 100)}
-                          {((pair.user?.content ?? pair.luma?.content) ?? '').length > 100 ? '...' : ''}
+                          {pair.user ? pair.user.content.slice(0, 100) : pair.hatch?.content.slice(0, 100)}
+                          {((pair.user?.content ?? pair.hatch?.content) ?? '').length > 100 ? '...' : ''}
                         </span>
                         <span className="flex items-center gap-1.5 shrink-0">
                           {flowMove && (
@@ -396,10 +396,10 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
                             <p className="text-sm text-on-surface-variant leading-relaxed mt-0.5">{pair.user.content}</p>
                           </div>
                         )}
-                        {pair.luma && (
+                        {pair.hatch && (
                           <div className="bg-primary-fixed/50 border border-primary/10 rounded-lg p-3">
-                            <span className="text-[10px] font-label font-bold text-on-surface-variant uppercase">Luma</span>
-                            <p className="text-sm text-on-surface-variant leading-relaxed mt-0.5">{pair.luma.content}</p>
+                            <span className="text-[10px] font-label font-bold text-on-surface-variant uppercase">Hatch</span>
+                            <p className="text-sm text-on-surface-variant leading-relaxed mt-0.5">{pair.hatch.content}</p>
                           </div>
                         )}
                       </div>

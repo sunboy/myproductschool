@@ -28,7 +28,7 @@ interface GradingResult {
  * POST /api/live-interview/[id]/grade-turn
  *
  * Asynchronous post-hoc grading of a conversation turn. Called AFTER the
- * Luma response has already been returned to the user, so latency here
+ * Hatch response has already been returned to the user, so latency here
  * does not affect conversational flow.
  *
  * Uses Claude Haiku for speed and cost — this is pure analytical
@@ -45,7 +45,7 @@ export async function POST(
   }
 
   const { recentTurns, challengeId } = (await request.json()) as {
-    recentTurns: Array<{ role: 'user' | 'luma'; content: string }>
+    recentTurns: Array<{ role: 'user' | 'hatch'; content: string }>
     challengeId?: string | null
   }
 
@@ -68,7 +68,7 @@ export async function POST(
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
   const transcript = recentTurns
-    .map((t) => `${t.role === 'luma' ? 'INTERVIEWER' : 'CANDIDATE'}: ${t.content}`)
+    .map((t) => `${t.role === 'hatch' ? 'INTERVIEWER' : 'CANDIDATE'}: ${t.content}`)
     .join('\n\n')
 
   // Build scenario-specific grading context if a challenge is linked
@@ -210,17 +210,17 @@ Guidelines:
       .eq('id', id)
   }
 
-  // Update the latest luma turn with grading data
-  const { data: latestLumaTurn } = await adminClient
+  // Update the latest hatch turn with grading data
+  const { data: latestHatchTurn } = await adminClient
     .from('live_interview_turns')
     .select('id')
     .eq('session_id', id)
-    .eq('role', 'luma')
+    .eq('role', 'hatch')
     .order('turn_index', { ascending: false })
     .limit(1)
     .single()
 
-  if (latestLumaTurn) {
+  if (latestHatchTurn) {
     await adminClient
       .from('live_interview_turns')
       .update({
@@ -230,7 +230,7 @@ Guidelines:
           : null,
         rubric_alignment: rubricAlignment,
       })
-      .eq('id', latestLumaTurn.id)
+      .eq('id', latestHatchTurn.id)
   }
 
   const result: GradingResult = {

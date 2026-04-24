@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { ChallengePrompt } from '@/lib/types'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useSteps } from '@/hooks/useSteps'
 
 /* ── Types ───────────────────────────────────────────────── */
@@ -319,7 +319,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
             <div className="flex-1 flex flex-col p-6 gap-4">
               <div className="bg-primary-fixed/30 rounded-xl p-4 text-sm text-on-surface">
                 <p className="font-bold mb-1">Quick Take</p>
-                <p className="text-on-surface-variant">Give your best 2-3 sentence answer. Luma grades it in seconds.</p>
+                <p className="text-on-surface-variant">Give your best 2-3 sentence answer. Hatch grades it in seconds.</p>
               </div>
               <textarea
                 className="flex-1 resize-none rounded-xl border border-outline-variant p-4 text-sm bg-surface focus:outline-none focus:border-primary font-body"
@@ -340,11 +340,11 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
               </div>
             </div>
 
-            {/* Luma coaching strip */}
+            {/* Hatch coaching strip */}
             <div className="bg-primary-fixed/30 border-t border-primary/10 px-6 py-3 flex items-center gap-4 flex-shrink-0">
-              <LumaGlyph size={28} state="listening" className="text-primary flex-shrink-0" />
+              <HatchGlyph size={28} state="listening" className="text-primary flex-shrink-0" />
               <div className="flex-1 text-sm text-on-primary-container font-medium">
-                <span className="font-bold">Quick Take</span> — no steps needed. Just share your instinct and Luma will grade it.
+                <span className="font-bold">Quick Take</span> — no steps needed. Just share your instinct and Hatch will grade it.
               </div>
             </div>
           </section>
@@ -626,12 +626,12 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
                 </div>
               )}
 
-              {/* Data Cards Grid — Luma thought starter + Add custom segment */}
+              {/* Data Cards Grid — Hatch thought starter + Add custom segment */}
               <div className="mt-12 grid grid-cols-2 gap-4">
                 <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30">
                   <div className="flex items-center gap-2 mb-3">
-                    <LumaGlyph size={24} state="speaking" className="text-primary" />
-                    <span className="text-[10px] font-bold uppercase text-on-surface-variant">Luma&apos;s Thought Starter</span>
+                    <HatchGlyph size={24} state="speaking" className="text-primary" />
+                    <span className="text-[10px] font-bold uppercase text-on-surface-variant">Hatch&apos;s Thought Starter</span>
                   </div>
                   <p className="text-xs italic text-on-surface-variant">
                     &ldquo;{coaching.thought}&rdquo;
@@ -696,9 +696,9 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
             ))}
           </div>
 
-          {/* Luma Coaching Strip (bottom) */}
+          {/* Hatch Coaching Strip (bottom) */}
           <div className="bg-primary-fixed/30 border-t border-primary/10 px-6 py-3 flex items-center gap-4 flex-shrink-0">
-            <LumaGlyph size={28} state="speaking" className="text-primary flex-shrink-0" />
+            <HatchGlyph size={28} state="speaking" className="text-primary flex-shrink-0" />
             <div className="flex-1 text-sm text-on-primary-container font-medium">
               <span className="font-bold">Pro tip:</span> {coaching.tip}
             </div>
@@ -792,13 +792,13 @@ function FreeformView({
             </div>
           </div>
 
-          {/* Luma Insight sidebar */}
+          {/* Hatch Insight sidebar */}
           <div className="md:col-span-4 space-y-4">
             <div className="bg-tertiary-container/10 border border-tertiary-container/30 rounded-xl p-4">
               <div className="flex items-center gap-3 mb-3">
-                <LumaGlyph size={40} state="speaking" className="flex-shrink-0" />
+                <HatchGlyph size={40} state="speaking" className="flex-shrink-0" />
                 <div>
-                  <h4 className="font-bold text-sm text-tertiary">Luma&apos;s Insight</h4>
+                  <h4 className="font-bold text-sm text-tertiary">Hatch&apos;s Insight</h4>
                   <p className="text-xs text-on-surface-variant">Focus on the cannibalization.</p>
                 </div>
               </div>
@@ -853,9 +853,9 @@ function FreeformView({
             />
           </div>
 
-          {/* Luma coaching strip */}
+          {/* Hatch coaching strip */}
           <div className="bg-primary-fixed/30 border-y border-primary-fixed px-6 py-3 flex items-center gap-4">
-            <LumaGlyph size={28} state="speaking" className="flex-shrink-0" />
+            <HatchGlyph size={28} state="speaking" className="flex-shrink-0" />
             <p className="text-sm font-medium text-primary">
               <span className="font-bold">Freeform tip:</span> Structure is optional, but great answers
               usually address: What problem really is &rarr; Who&apos;s affected &rarr; What the tradeoff

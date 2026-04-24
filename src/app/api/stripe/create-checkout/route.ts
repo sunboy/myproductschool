@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
           currency: 'usd',
           product_data: {
             name: config.label,
-            description: 'Unlimited challenges, full Luma coaching, Learner DNA, and all study plans',
+            description: 'Unlimited challenges, full Hatch coaching, Learner DNA, and all study plans',
           },
           unit_amount: config.unitAmount,
           recurring: { interval: config.interval },

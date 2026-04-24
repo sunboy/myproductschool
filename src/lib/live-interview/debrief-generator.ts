@@ -14,7 +14,7 @@ export interface DebriefResult {
 export interface DebriefParams {
   /** Session ID — available for future logging/tracing */
   sessionId: string
-  turns: Array<{ role: 'luma' | 'user'; content: string; turnIndex: number }>
+  turns: Array<{ role: 'hatch' | 'user'; content: string; turnIndex: number }>
   calibrationSnapshot: { archetype: string; moveLevels: Record<string, number> }
   scenarioRubric?: Record<string, unknown> | null
   challengeId?: string | null
@@ -62,7 +62,7 @@ export async function generateDebrief(params: DebriefParams): Promise<DebriefRes
   const sorted = [...turns].sort((a, b) => a.turnIndex - b.turnIndex)
   const transcript = sorted
     .map((t) => {
-      const speaker = t.role === 'luma' ? 'LUMA' : 'CANDIDATE'
+      const speaker = t.role === 'hatch' ? 'HATCH' : 'CANDIDATE'
       return `${speaker}: ${t.content}`
     })
     .join('\n')

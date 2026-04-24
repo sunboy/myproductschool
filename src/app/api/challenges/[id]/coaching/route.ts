@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getLumaContext } from '@/lib/v2/luma-context'
+import { getHatchContext } from '@/lib/v2/hatch-context'
 import { createCachedMessage } from '@/lib/anthropic/cached-client'
 
 export async function POST(
@@ -76,16 +76,16 @@ export async function POST(
     const questionText = question?.question_text ?? ''
     const scenarioContext = challenge?.scenario_context ?? ''
     const scenarioTrigger = challenge?.scenario_trigger ?? ''
-    const lumaContext = await getLumaContext(user.id, challengeId, step)
+    const hatchContext = await getHatchContext(user.id, challengeId, step)
 
-    const systemPrompt = `You are Luma, an AI coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
+    const systemPrompt = `You are Hatch, an AI coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
     let userPrompt = `The learner is a ${roleLabel} who just answered the ${step} step.
 Challenge: ${scenarioContext} ${scenarioTrigger}
 Question: ${questionText}
 Their answer: "${user_text ?? '(no answer provided)'}"`
 
-    if (lumaContext) {
-      userPrompt += `\n\nLearner context:\n${lumaContext}`
+    if (hatchContext) {
+      userPrompt += `\n\nLearner context:\n${hatchContext}`
     }
 
     userPrompt += `
@@ -203,11 +203,11 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
   const scenarioTrigger = challenge?.scenario_trigger ?? ''
   const questionText = question?.question_text ?? ''
 
-  // Get Luma context for personalization
-  const lumaContext = await getLumaContext(user.id, challengeId, step)
+  // Get Hatch context for personalization
+  const hatchContext = await getHatchContext(user.id, challengeId, step)
 
   // Build the prompt
-  const systemPrompt = `You are Luma, Luma is an AI coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
+  const systemPrompt = `You are Hatch, Hatch is an AI coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
 
   let userPrompt = `The learner is a ${roleLabel} who just answered the ${step} step.
 Challenge: ${scenarioContext} ${scenarioTrigger}
@@ -216,8 +216,8 @@ They selected: "${selectedText}" (${qualityLabel})
 Best answer: "${bestText}"
 Static explanation: ${staticExplanation}`
 
-  if (lumaContext) {
-    userPrompt += `\n\nLearner context:\n${lumaContext}`
+  if (hatchContext) {
+    userPrompt += `\n\nLearner context:\n${hatchContext}`
   }
 
   userPrompt += `

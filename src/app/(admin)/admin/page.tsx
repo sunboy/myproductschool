@@ -71,7 +71,7 @@ export default async function AdminPage() {
   const kpis = [
     { label: 'Total users', value: stats.totalUsers.toLocaleString(), icon: 'group' },
     { label: 'Total attempts', value: stats.totalAttempts.toLocaleString(), icon: 'fitness_center' },
-    { label: 'Avg Luma score', value: stats.avgScore, icon: 'star' },
+    { label: 'Avg Hatch score', value: stats.avgScore, icon: 'star' },
     { label: 'Active streaks', value: stats.activeStreaks.toLocaleString(), icon: 'local_fire_department' },
   ]
 
@@ -207,9 +207,9 @@ export default async function AdminPage() {
           <span className="material-symbols-outlined text-sm text-primary">group</span>
           All users
         </Link>
-        <Link href="/admin/luma-queue" className="flex items-center gap-2 px-4 py-2.5 bg-surface-container border border-outline-variant text-on-surface rounded-xl text-sm hover:bg-surface-container-high transition-colors">
+        <Link href="/admin/hatch-queue" className="flex items-center gap-2 px-4 py-2.5 bg-surface-container border border-outline-variant text-on-surface rounded-xl text-sm hover:bg-surface-container-high transition-colors">
           <span className="material-symbols-outlined text-sm text-primary">rate_review</span>
-          Luma queue
+          Hatch queue
         </Link>
         <Link href="/admin/paywall-config" className="flex items-center gap-2 px-4 py-2.5 bg-surface-container border border-outline-variant text-on-surface rounded-xl text-sm hover:bg-surface-container-high transition-colors">
           <span className="material-symbols-outlined text-sm text-primary">lock</span>

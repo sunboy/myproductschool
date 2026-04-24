@@ -1,5 +1,5 @@
 /**
- * Parses the grading signal JSON block appended by Claude to each Luma response.
+ * Parses the grading signal JSON block appended by Claude to each Hatch response.
  * The system prompt instructs Claude to append:
  *   {"flow_move":"frame","competency":"motivation_theory","signal":"..."}
  * This function strips it from the visible content and returns both.

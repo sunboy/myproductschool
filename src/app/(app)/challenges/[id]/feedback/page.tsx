@@ -3,11 +3,11 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { FeedbackAccordion } from '@/components/challenge/FeedbackAccordion'
 import { MentalModelsBreakdown } from '@/components/challenge/MentalModelsBreakdown'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { LumaFeedbackItem } from '@/lib/types'
+import type { HatchFeedbackItem } from '@/lib/types'
 import { IS_MOCK } from '@/lib/mock'
 
 const dimensionConfig: Record<string, { label: string; icon: string }> = {
@@ -35,7 +35,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
 
   const isMock = IS_MOCK || attempt === 'mock' || !attempt
 
-  let feedback: LumaFeedbackItem[] = isMock ? MOCK_FEEDBACK : []
+  let feedback: HatchFeedbackItem[] = isMock ? MOCK_FEEDBACK : []
   let feedbackFull: typeof MOCK_FEEDBACK_FULL | undefined = isMock ? MOCK_FEEDBACK_FULL : undefined
   let rawOverallScore: number | null = null
   let submissionDate: string | null = null
@@ -59,7 +59,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
 
         if (attemptData) {
           if (attemptData.feedback_json) {
-            feedback = attemptData.feedback_json as LumaFeedbackItem[]
+            feedback = attemptData.feedback_json as HatchFeedbackItem[]
           }
           if (attemptData.submitted_at) {
             submissionDate = attemptData.submitted_at
@@ -142,7 +142,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
       : 70
 
   const full = feedbackFull ?? MOCK_FEEDBACK_FULL
-  const items = feedback.length > 0 ? feedback : (full.dimensions as LumaFeedbackItem[])
+  const items = feedback.length > 0 ? feedback : (full.dimensions as HatchFeedbackItem[])
 
   // Determine score descriptor text
   const scoreDescriptor = overallScoreNum >= 90
@@ -270,7 +270,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           </div>
         </section>
 
-        {/* ─── Right Pane: Luma's Analysis (7 cols) ─── */}
+        {/* ─── Right Pane: Hatch's Analysis (7 cols) ─── */}
         <section className="col-span-12 lg:col-span-7 space-y-4">
           <h2 className="font-headline text-2xl font-bold text-on-surface">Submission Review</h2>
 
@@ -278,10 +278,10 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           <div className="bg-surface-container p-5 rounded-xl editorial-shadow border-t-4 border-primary">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <LumaGlyph size={40} className="text-primary flex-shrink-0" />
+                <HatchGlyph size={40} className="text-primary flex-shrink-0" />
                 <div>
                   <h3 className="font-headline text-lg font-bold text-on-surface">
-                    Luma&apos;s Analysis
+                    Hatch&apos;s Analysis
                   </h3>
                   <p className="text-sm text-on-surface-variant">AI-Assisted Evaluation</p>
                 </div>

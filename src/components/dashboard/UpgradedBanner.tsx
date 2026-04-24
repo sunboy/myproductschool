@@ -37,7 +37,7 @@ export function UpgradedBanner() {
       </span>
       <div className="flex-1">
         <p className="font-body text-sm text-on-surface font-semibold">Welcome to Pro.</p>
-        <p className="font-body text-xs text-on-surface-variant">Unlimited challenges, full Luma coaching, and Learner DNA are now unlocked.</p>
+        <p className="font-body text-xs text-on-surface-variant">Unlimited challenges, full Hatch coaching, and Learner DNA are now unlocked.</p>
       </div>
       <button
         onClick={() => setShow(false)}

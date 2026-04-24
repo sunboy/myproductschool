@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { FAILURE_PATTERNS } from '@/lib/luma/system-prompt'
+import { FAILURE_PATTERNS } from '@/lib/hatch/system-prompt'
 import type { Prescription, PatternSummary } from '@/lib/types'
 import { IS_MOCK } from '@/lib/mock'
 
@@ -130,7 +130,7 @@ export async function GET(req: NextRequest) {
         mode: prescribedMode,
         challenge_slug: nextChallenge?.id ?? '',
         challenge_title: nextChallenge?.title ?? 'Next challenge',
-        reason: `Your last ${topPattern.occurrence_count} submissions show "${topPattern.pattern_name}". ${prescribedMode === 'live' ? 'Live mode forces real-time prioritization with Luma coaching.' : 'Solo mode gives you space to practice without pressure.'}`,
+        reason: `Your last ${topPattern.occurrence_count} submissions show "${topPattern.pattern_name}". ${prescribedMode === 'live' ? 'Live mode forces real-time prioritization with Hatch coaching.' : 'Solo mode gives you space to practice without pressure.'}`,
       },
       secondary_patterns: recurringPatterns.slice(1, 3).map(p => ({
         pattern_id: p.pattern_id,

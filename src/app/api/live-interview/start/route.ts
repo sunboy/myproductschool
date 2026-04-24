@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getLumaContext, buildLumaContextString } from '@/lib/luma-context'
+import { getHatchContext, buildHatchContextString } from '@/lib/hatch-context'
 import { buildLiveInterviewSystemPrompt } from '@/lib/live-interview/system-prompt'
 import type { ScenarioParams, RoleLensParams } from '@/lib/live-interview/system-prompt'
 import { checkUsageLimit, recordUsageEvent } from '@/lib/usage/check-limit'
@@ -79,9 +79,9 @@ export async function POST(request: Request) {
   const competencies = competenciesResult.data ?? []
   const failurePatterns = failurePatternsResult.data ?? []
 
-  // Build Luma context string
-  const lumaCtx = await getLumaContext(user.id)
-  const lumaContextStr = buildLumaContextString(lumaCtx, 'coaching')
+  // Build Hatch context string
+  const hatchCtx = await getHatchContext(user.id)
+  const hatchContextStr = buildHatchContextString(hatchCtx, 'coaching')
 
   // Build move levels object for system prompt
   const moveLevelsObj = {
@@ -175,7 +175,7 @@ export async function POST(request: Request) {
     moveLevels: moveLevelsObj,
     failurePatterns: failurePatterns.map((fp) => ({ pattern_name: fp.pattern_name })),
     competencies: competencies.map((c) => ({ competency: c.competency, score: c.score })),
-    lumaContext: lumaContextStr,
+    hatchContext: hatchContextStr,
     companyName: companyRow?.name,
     roleId: roleId ?? 'PM',
     personaPrompt: companyRow?.interview_persona_prompt ?? undefined,

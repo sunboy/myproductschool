@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const TABS = [
   { id: 'frame', label: 'Frame', icon: 'pentagon', done: true },
@@ -78,10 +78,10 @@ export default function CalibrationSplitPage() {
         ))}
       </div>
 
-      {/* Luma */}
+      {/* Hatch */}
       <div className="flex justify-end mb-6">
         <div className="flex items-center gap-2">
-          <LumaGlyph size={28} className="text-primary" state="listening" />
+          <HatchGlyph size={28} className="text-primary" state="listening" />
         </div>
       </div>
 

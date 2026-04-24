@@ -51,7 +51,7 @@ export async function POST(
   // Build conversation messages from turns table
   const conversationMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [
     ...(turns ?? []).map((t) => ({
-      role: (t.role === 'luma' ? 'assistant' : 'user') as 'user' | 'assistant',
+      role: (t.role === 'hatch' ? 'assistant' : 'user') as 'user' | 'assistant',
       content: t.content,
     })),
     { role: 'user' as const, content: lastUserMsg },
@@ -88,7 +88,7 @@ export async function POST(
       {
         session_id: id,
         turn_index: nextIndex + 1,
-        role: 'luma',
+        role: 'hatch',
         content: cleanContent,
         flow_move_detected: signal?.flowMove || null,
         competency_signals: signal ? { competency: signal.competency, signal: signal.signal } : null,

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 
 interface SimTurn {
-  role: 'user' | 'luma'
+  role: 'user' | 'hatch'
   content: string
   turn_index: number
 }
@@ -47,7 +47,7 @@ export function useSimulation(sessionId: string | null) {
         body: JSON.stringify({ content }),
       })
       const data = await res.json()
-      setTurns(prev => [...prev, { role: 'luma', content: data.reply, turn_index: data.turn_index }])
+      setTurns(prev => [...prev, { role: 'hatch', content: data.reply, turn_index: data.turn_index }])
       setQuestionsRemaining(data.questions_remaining ?? 0)
     } catch (e) {
       setTurns(prev => prev.filter(t => t !== optimisticTurn))

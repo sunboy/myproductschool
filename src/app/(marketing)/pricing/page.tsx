@@ -83,7 +83,7 @@ export default function PricingPage() {
       {/* Hero Section */}
       <header className="relative bg-signature-gradient pt-48 pb-64 overflow-hidden">
         <div className="max-w-7xl mx-auto px-8 relative z-10 text-center">
-          {/* Luma Glyph */}
+          {/* Hatch Glyph */}
           <div className="mb-10 relative inline-block">
             <div className="relative w-20 h-20 flex items-center justify-center">
               <div className="absolute border-2 border-white/20 rounded-full w-20 h-20 animate-[spin_20s_linear_infinite]" />

@@ -7,7 +7,7 @@
 - [Onboarding](#onboarding)
 - [Challenges (v1)](#challenges-v1)
 - [Challenges (v2)](#challenges-v2)
-- [Luma AI](#luma-ai)
+- [Hatch AI](#hatch-ai)
 - [Move Levels](#move-levels)
 - [Learn](#learn)
 - [Cohort & Leaderboard](#cohort--leaderboard)
@@ -143,7 +143,7 @@
 ---
 
 ### `GET /api/challenges/recommended`
-**Does:** Returns Luma's recommended challenge — the highest learning-impact uncompleted challenge targeting the weakest FLOW move.
+**Does:** Returns Hatch's recommended challenge — the highest learning-impact uncompleted challenge targeting the weakest FLOW move.
 **DB:** `challenge_attempts` (read), `move_levels` (read), `challenge_prompts` (read)
 **Auth:** Yes
 **Notes:** Mock mode returns a hardcoded prioritization challenge.
@@ -151,10 +151,10 @@
 ---
 
 ### `POST /api/challenges/submit`
-**Does:** Saves a v1 challenge attempt and triggers async Luma grading (feedback generation, embedding, trap detection, XP update, FLOW move update, achievement check).
-**DB:** `profiles` (read — `plan`; write — `xp_total`), `challenge_attempts` (write — attempt row, then update with `feedback_json`, `score`, `response_embedding`), `user_failure_patterns` (read for bonus XP, persisted via `/api/luma/feedback`), `move_levels` (updated via internal call)
+**Does:** Saves a v1 challenge attempt and triggers async Hatch grading (feedback generation, embedding, trap detection, XP update, FLOW move update, achievement check).
+**DB:** `profiles` (read — `plan`; write — `xp_total`), `challenge_attempts` (write — attempt row, then update with `feedback_json`, `score`, `response_embedding`), `user_failure_patterns` (read for bonus XP, persisted via `/api/hatch/feedback`), `move_levels` (updated via internal call)
 **Auth:** Yes
-**Notes:** LLM: `claude-sonnet-4-6` (via `/api/luma/feedback`). Async grading — returns `{attemptId}` immediately; grading page polls for completion. Free tier enforces 3 challenges/day. Calls `match_thinking_traps` RPC for trap detection.
+**Notes:** LLM: `claude-sonnet-4-6` (via `/api/hatch/feedback`). Async grading — returns `{attemptId}` immediately; grading page polls for completion. Free tier enforces 3 challenges/day. Calls `match_thinking_traps` RPC for trap detection.
 
 ---
 
@@ -208,33 +208,33 @@
 ---
 
 ### `POST /api/v2/challenges/[id]/complete`
-**Does:** Finalizes a v2 challenge attempt — computes weighted step scores, aggregates total score, runs ELO-style competency updates, awards XP, and writes a Luma context row.
+**Does:** Finalizes a v2 challenge attempt — computes weighted step scores, aggregates total score, runs ELO-style competency updates, awards XP, and writes a Hatch context row.
 **DB:** `challenge_attempts_v2` (read — ownership; write — `status`, `total_score`, `max_score`, `grade_label`, `completed_at`), `step_attempts` (read — all answers), `step_questions` (read — weights), `role_lenses` (read), `learner_competencies` (read + upsert), `profiles` (read + write — `xp_total`), `luma_context_v2` (write — challenge insight)
 **Auth:** Yes
 **Notes:** Calls `update_user_streak` RPC fire-and-forget. `grade_label` values: `Developing`, `Competent`, `Strong`, `Exceptional`.
 
 ---
 
-## Luma AI
+## Hatch AI
 
-### `POST /api/luma/chat`
-**Does:** Streams a Luma coaching reply given a challenge prompt, conversation history, and user message.
+### `POST /api/hatch/chat`
+**Does:** Streams a Hatch coaching reply given a challenge prompt, conversation history, and user message.
 **DB:** None
 **Auth:** No
 **Notes:** LLM: `claude-sonnet-4-6`, max 300 tokens. Falls back to canned mock replies if `USE_MOCK_DATA=true` or no `ANTHROPIC_API_KEY`.
 
 ---
 
-### `POST /api/luma/feedback`
-**Does:** Calls Luma to score a v1 challenge response on 4 FLOW dimensions, validates the JSON schema, retries once on parse failure, and persists detected failure patterns.
+### `POST /api/hatch/feedback`
+**Does:** Calls Hatch to score a v1 challenge response on 4 FLOW dimensions, validates the JSON schema, retries once on parse failure, and persists detected failure patterns.
 **DB:** `user_failure_patterns` (write — detected patterns per attempt)
 **Auth:** No (called server-to-server from `/api/challenges/submit`)
-**Notes:** LLM: `claude-sonnet-4-6`, max 2000 tokens. Validates with `LumaFeedbackSchema` (Zod). One auto-retry with stricter prompt. Mock mode returns `MOCK_FEEDBACK_FULL` fixture. Logs `session.feedback_generated` event.
+**Notes:** LLM: `claude-sonnet-4-6`, max 2000 tokens. Validates with `HatchFeedbackSchema` (Zod). One auto-retry with stricter prompt. Mock mode returns `MOCK_FEEDBACK_FULL` fixture. Logs `session.feedback_generated` event.
 
 ---
 
-### `POST /api/luma/nudge`
-**Does:** Returns a Luma thinking nudge for a draft response (in-progress challenge); rate-limited to 3 nudges per attempt.
+### `POST /api/hatch/nudge`
+**Does:** Returns a Hatch thinking nudge for a draft response (in-progress challenge); rate-limited to 3 nudges per attempt.
 **DB:** `nudge_usage` (read — count; write — record usage)
 **Auth:** Optional
 **Notes:** LLM: `claude-sonnet-4-6`, max 150 tokens. Returns HTTP 429 when limit reached. Mock mode returns random canned nudge.
@@ -424,18 +424,18 @@
 ---
 
 ### `POST /api/simulation/[id]/turn`
-**Does:** Submits one user turn and returns Luma's AI reply, persisting both to the turn log.
-**DB:** `simulation_sessions` (read — session + company/challenge context), `simulation_turns` (read — history; write — user + luma turns)
+**Does:** Submits one user turn and returns Hatch's AI reply, persisting both to the turn log.
+**DB:** `simulation_sessions` (read — session + company/challenge context), `simulation_turns` (read — history; write — user + hatch turns)
 **Auth:** Yes
 **Notes:** LLM: `claude-sonnet-4-6`, max 300 tokens. System prompt includes company and challenge context. Returns `questions_remaining` countdown.
 
 ---
 
 ### `POST /api/simulation/[id]/end`
-**Does:** Ends a simulation session — generates a Luma debrief from the full transcript and marks session completed.
+**Does:** Ends a simulation session — generates a Hatch debrief from the full transcript and marks session completed.
 **DB:** `simulation_sessions` (read — transcript; write — `status=completed`, `debrief_json`, `completed_at`), `simulation_turns` (read)
 **Auth:** Yes
-**Notes:** LLM: `claude-sonnet-4-6`, max 1000 tokens. Validates debrief with `LumaFeedbackSchema`. Triggers achievement check fire-and-forget. Idempotent: returns cached debrief if already completed.
+**Notes:** LLM: `claude-sonnet-4-6`, max 1000 tokens. Validates debrief with `HatchFeedbackSchema`. Triggers achievement check fire-and-forget. Idempotent: returns cached debrief if already completed.
 
 ---
 
@@ -508,7 +508,7 @@
 ---
 
 ### `GET /api/prescription/next`
-**Does:** Returns Luma's learning prescription — the most impactful next challenge and mode based on the user's recurring failure patterns.
+**Does:** Returns Hatch's learning prescription — the most impactful next challenge and mode based on the user's recurring failure patterns.
 **DB:** `challenge_attempts` (read — submission count, mode distribution, completed IDs), `user_pattern_summary` (read — recurring patterns), `challenge_prompts` (read — next uncompleted)
 **Auth:** No (`userId` as query param)
 **Notes:** Three prescription types: `onboarding` (< 2 submissions), `explore` (no recurring patterns), `prescription` (pattern-driven). Mock mode returns hardcoded FP-09 prescription.

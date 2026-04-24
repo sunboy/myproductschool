@@ -1,10 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import Anthropic from '@anthropic-ai/sdk'
-import { LUMA_CHAT_SYSTEM_PROMPT } from '@/lib/luma/system-prompt'
+import { HATCH_CHAT_SYSTEM_PROMPT } from '@/lib/hatch/system-prompt'
 import { NextResponse } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
-import { getLumaContext, buildLumaContextString } from '@/lib/luma-context'
+import { getHatchContext, buildHatchContextString } from '@/lib/hatch-context'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -32,13 +32,13 @@ export async function POST(
   if (sessionError || !session) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
   if (session.status === 'completed') return NextResponse.json({ error: 'Session already completed' }, { status: 400 })
 
-  const [existingTurnsResult, lumaCtx] = await Promise.all([
+  const [existingTurnsResult, hatchCtx] = await Promise.all([
     adminClient
       .from('simulation_turns')
       .select('role, content, turn_index')
       .eq('session_id', id)
       .order('turn_index', { ascending: true }),
-    getLumaContext(user.id),
+    getHatchContext(user.id),
   ])
 
   const existingTurns = existingTurnsResult.data
@@ -50,21 +50,21 @@ export async function POST(
   const challengeContext = session.challenges
     ? `\n\nChallenge prompt: ${session.challenges.prompt_text}`
     : ''
-  const candidateContext = buildLumaContextString(lumaCtx, 'chat')
-  const baseSystemPrompt = LUMA_CHAT_SYSTEM_PROMPT + companyContext + challengeContext
+  const candidateContext = buildHatchContextString(hatchCtx, 'chat')
+  const baseSystemPrompt = HATCH_CHAT_SYSTEM_PROMPT + companyContext + challengeContext
   const systemPrompt = baseSystemPrompt + (candidateContext ? '\n\n## Candidate Profile\n' + candidateContext : '')
 
   const messages = [
     ...(existingTurns ?? []).map(t => ({
-      role: t.role === 'luma' ? 'assistant' as const : 'user' as const,
+      role: t.role === 'hatch' ? 'assistant' as const : 'user' as const,
       content: t.content,
     })),
     { role: 'user' as const, content },
   ]
 
-  let lumaReply: string
+  let hatchReply: string
   if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
-    lumaReply = "That's an interesting perspective. Can you walk me through how you'd measure the success of that approach? What specific metrics would you track in the first 30 days?"
+    hatchReply = "That's an interesting perspective. Can you walk me through how you'd measure the success of that approach? What specific metrics would you track in the first 30 days?"
   } else {
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
@@ -72,15 +72,15 @@ export async function POST(
       system: systemPrompt,
       messages,
     })
-    lumaReply = response.content[0].type === 'text' ? response.content[0].text : ''
+    hatchReply = response.content[0].type === 'text' ? response.content[0].text : ''
   }
 
   await adminClient.from('simulation_turns').insert([
     { session_id: id, role: 'user', content, turn_index: nextTurnIndex },
-    { session_id: id, role: 'luma', content: lumaReply, turn_index: nextTurnIndex + 1 },
+    { session_id: id, role: 'hatch', content: hatchReply, turn_index: nextTurnIndex + 1 },
   ])
 
   const questionsRemaining = Math.max(0, 5 - Math.floor((nextTurnIndex + 2) / 2))
 
-  return NextResponse.json({ reply: lumaReply, turn_index: nextTurnIndex + 1, questions_remaining: questionsRemaining })
+  return NextResponse.json({ reply: hatchReply, turn_index: nextTurnIndex + 1, questions_remaining: questionsRemaining })
 }

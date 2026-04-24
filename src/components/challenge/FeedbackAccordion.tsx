@@ -136,7 +136,7 @@ export function FeedbackAccordion({ dimensions, detectedPatterns }: FeedbackAcco
                         lightbulb
                       </span>
                       <p className="text-xs font-semibold text-on-tertiary-fixed-variant">
-                        Luma suggests: &quot;Focus on strengthening this area in your next attempt. Prioritize {dim.label.toLowerCase()} to lift your overall score.&quot;
+                        Hatch suggests: &quot;Focus on strengthening this area in your next attempt. Prioritize {dim.label.toLowerCase()} to lift your overall score.&quot;
                       </p>
                     </div>
                   )}
@@ -170,7 +170,7 @@ export function FeedbackAccordion({ dimensions, detectedPatterns }: FeedbackAcco
             <div className="bg-tertiary-fixed/30 p-3 rounded-md border border-tertiary/10 flex items-start gap-3 ml-8">
               <span className="material-symbols-outlined text-tertiary text-lg">psychology</span>
               <p className="text-xs font-semibold text-on-tertiary-fixed-variant">
-                Luma suggests: &quot;See your Diagnosis for a personalized drill to address these patterns.&quot;
+                Hatch suggests: &quot;See your Diagnosis for a personalized drill to address these patterns.&quot;
               </p>
             </div>
           )}

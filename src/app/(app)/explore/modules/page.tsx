@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useLearnModules } from '@/hooks/useLearnModules'
 import type { LearnDifficulty, LearnModuleWithProgress } from '@/lib/types'
 
@@ -333,7 +333,7 @@ export default function ModulesPage() {
               color: 'rgba(243,237,224,0.70)',
               maxWidth: 500, marginBottom: 28,
             }}>
-              Self-paced reading tracks from foundations to the new era of AI product. Each module builds the mental models Luma grades you on.
+              Self-paced reading tracks from foundations to the new era of AI product. Each module builds the mental models Hatch grades you on.
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               <Link href="/explore" style={{
@@ -391,7 +391,7 @@ export default function ModulesPage() {
         </div>
       </div>
 
-      {/* ── Luma in-progress banner ── */}
+      {/* ── Hatch in-progress banner ── */}
       {firstInProgress && (
         <div style={{
           display: 'flex', alignItems: 'flex-start', gap: 16,
@@ -401,7 +401,7 @@ export default function ModulesPage() {
           border: '1px solid rgba(0,0,0,0.04)',
           marginBottom: 28,
         }}>
-          <LumaGlyph size={48} state="speaking" className="text-primary flex-shrink-0" />
+          <HatchGlyph size={48} state="speaking" className="text-primary flex-shrink-0" />
           <div>
             <div style={{
               fontFamily: 'var(--font-label)',
@@ -421,7 +421,7 @@ export default function ModulesPage() {
               fontSize: 13.5, lineHeight: 1.55, color: 'var(--color-on-primary-container, #0f3d1f)',
               opacity: 0.85, maxWidth: 580, margin: '0 0 12px',
             }}>
-              You&rsquo;re {firstInProgress.progress_percentage}% through. Completing this module unlocks the mental model signals Luma uses to calibrate your coaching.
+              You&rsquo;re {firstInProgress.progress_percentage}% through. Completing this module unlocks the mental model signals Hatch uses to calibrate your coaching.
             </p>
             <Link href={`/explore/modules/${firstInProgress.slug}`} style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,

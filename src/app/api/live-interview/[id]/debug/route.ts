@@ -57,7 +57,7 @@ export async function GET(
       content: t.content,
       createdAt: t.created_at,
     })),
-    lumaContextPreview: (session.system_prompt ?? '').slice(0, 500),
+    hatchContextPreview: (session.system_prompt ?? '').slice(0, 500),
     hasCalibrationData: !!(snapshot?.archetype && snapshot?.moveLevels),
   })
 }

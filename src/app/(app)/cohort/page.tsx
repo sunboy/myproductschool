@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useCohort } from '@/hooks/useCohort'
 
 const MEDAL_COLORS = ['text-amber-400', 'text-slate-400', 'text-amber-700']
@@ -178,7 +178,7 @@ export default function CohortPage() {
       {submission && (
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          {/* Luma Insights */}
+          {/* Hatch Insights */}
           <div className="bg-surface-container-low border border-outline-variant rounded-xl p-5 flex gap-4 items-start">
             {displayRank !== null ? (
               <div className="flex flex-col items-center shrink-0">
@@ -201,7 +201,7 @@ export default function CohortPage() {
               <div className="relative bg-white p-3 rounded-lg border border-outline-variant shadow-sm mt-4">
                 <div className="absolute -left-2 top-3 w-4 h-4 bg-white border-l border-b border-outline-variant rotate-45" />
                 <div className="flex gap-3">
-                  <LumaGlyph size={32} state="speaking" className="text-primary shrink-0" />
+                  <HatchGlyph size={32} state="speaking" className="text-primary shrink-0" />
                   <p className="text-xs italic text-on-surface leading-relaxed">
                     {percentilePct !== null
                       ? percentilePct <= 10
@@ -247,10 +247,10 @@ export default function CohortPage() {
       {!submission && challenge && (
         <section className="bg-surface-container-low border border-outline-variant rounded-xl p-5 space-y-4">
           <div className="flex items-start gap-3">
-            <LumaGlyph size={32} state="listening" className="text-primary shrink-0" />
+            <HatchGlyph size={32} state="listening" className="text-primary shrink-0" />
             <div>
               <p className="text-sm font-bold text-on-surface">Submit your response to join the leaderboard</p>
-              <p className="text-xs text-on-surface-variant">Write your thinking on this week&apos;s challenge — Luma will score it against the community.</p>
+              <p className="text-xs text-on-surface-variant">Write your thinking on this week&apos;s challenge — Hatch will score it against the community.</p>
             </div>
           </div>
           <textarea
@@ -281,7 +281,7 @@ export default function CohortPage() {
           </div>
         ) : leaderboardDisplay.length === 0 ? (
           <div className="p-8 flex flex-col items-center gap-3 text-center">
-            <LumaGlyph size={48} state="idle" className="text-primary" />
+            <HatchGlyph size={48} state="idle" className="text-primary" />
             <p className="text-sm font-bold text-on-surface">No submissions yet this week</p>
             <p className="text-xs text-on-surface-variant">Be the first to submit and claim the top spot!</p>
           </div>

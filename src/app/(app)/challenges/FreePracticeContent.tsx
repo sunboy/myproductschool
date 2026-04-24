@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { ChallengeCard } from './ChallengeCard'
 import { ChallengeSearch } from './ChallengeSearch'
 import { LockedChallengeGrid } from './LockedChallengeGrid'
-import { LumaPick } from './LumaPick'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchPick } from './HatchPick'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 export interface FreePracticeContentProps {
   searchParams: Promise<{ paradigm?: string; role?: string; difficulty?: string; company?: string; tab?: string; view?: string; q?: string }>
@@ -112,8 +112,8 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
         <ChallengeSearch total={challenges.length} />
       </div>
 
-      {/* Luma's Pick */}
-      <LumaPick />
+      {/* Hatch's Pick */}
+      <HatchPick />
 
       {/* ── FILTER BAR ──────────────────────────────────────────── */}
       <div className="mb-6 flex flex-col gap-3">
@@ -295,7 +295,7 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
 
       {challenges.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
-          <LumaGlyph size={56} state="idle" className="text-primary" />
+          <HatchGlyph size={56} state="idle" className="text-primary" />
           <div>
             <p className="font-headline text-base font-bold text-on-surface mb-1">No challenges match that filter</p>
             <p className="text-sm text-on-surface-variant max-w-xs">

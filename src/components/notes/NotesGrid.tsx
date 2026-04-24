@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createNote } from '@/app/actions/notes'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { NoteCard } from '@/components/notes/NoteCard'
 import type { UserNote } from '@/lib/data/dashboard'
 
@@ -149,9 +149,9 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
       {/* Notes grid or empty state */}
       {sorted.length === 0 && !adding ? (
         <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
-          <LumaGlyph size={64} state="celebrating" className="text-primary" />
+          <HatchGlyph size={64} state="celebrating" className="text-primary" />
           <p className="text-on-surface-variant text-sm max-w-xs">
-            Your notes become Luma&apos;s memory &mdash; jot anything down.
+            Your notes become Hatch&apos;s memory &mdash; jot anything down.
           </p>
           <button
             onClick={() => setAdding(true)}

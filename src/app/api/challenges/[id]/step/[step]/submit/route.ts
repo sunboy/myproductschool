@@ -5,7 +5,7 @@ import type { FlowOption, FlowStep, ResponseType } from '@/lib/types'
 import { routeResponse, gradePureMCQ } from '@/lib/v2/skills/grading-router'
 import { scoreOption } from '@/lib/v2/skills/option-scorer'
 import { calculateStepScore } from '@/lib/v2/skills/step-score-calculator'
-import { STEP_PRIMARY_COMPETENCIES } from '@/lib/luma/system-prompt'
+import { STEP_PRIMARY_COMPETENCIES } from '@/lib/hatch/system-prompt'
 import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
 
 // ── Request body ─────────────────────────────────────────────
