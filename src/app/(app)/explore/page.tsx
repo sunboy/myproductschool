@@ -8,6 +8,8 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ParadigmGrid } from './ParadigmGrid'
 import { StudyPlanGrid } from './StudyPlanGrid'
+import { DisciplineGrid } from '@/components/explore/DisciplineGrid'
+import { LoopTracksSection } from '@/components/explore/LoopTracksSection'
 
 interface PersonalisedPlan {
   slug: string
@@ -207,6 +209,36 @@ export default async function ExplorePage() {
     })(),
   ])
 
+  // Fetch challenge counts per discipline type
+  const { data: disciplineCountRows } = await supabase
+    .from('challenges')
+    .select('challenge_type')
+    .eq('is_published', true)
+    .in('challenge_type', ['flow', 'freeform', 'quick_take', 'system_design', 'data_modeling'])
+
+  const counts: Record<string, number> = {
+    product_sense: 0,
+    system_design: 0,
+    data_modeling: 0,
+  }
+  for (const row of disciplineCountRows ?? []) {
+    if (['flow', 'freeform', 'quick_take'].includes(row.challenge_type)) {
+      counts.product_sense = (counts.product_sense ?? 0) + 1
+    } else if (row.challenge_type === 'system_design') {
+      counts.system_design = (counts.system_design ?? 0) + 1
+    } else if (row.challenge_type === 'data_modeling') {
+      counts.data_modeling = (counts.data_modeling ?? 0) + 1
+    }
+  }
+
+  // Fetch loop tracks
+  const { data: loopTracks } = await supabase
+    .from('study_plans')
+    .select('id, title, slug, description, estimated_hours, disciplines, difficulty')
+    .eq('is_published', true)
+    .eq('track_type' as string, 'loop')
+    .order('order_index', { ascending: true })
+
   const plans: PlanItem[] = studyPlansRaw.length > 0
     ? studyPlansRaw.map((p, i) => ({
         title: p.title,
@@ -318,6 +350,17 @@ export default async function ExplorePage() {
           </div>
 
         </div>
+      </div>
+
+      {/* ── BROWSE BY DISCIPLINE ─────────────────────────────── */}
+      <section className="mb-12">
+        <h2 className="font-headline font-bold text-on-surface text-base mb-3">Browse by Discipline</h2>
+        <DisciplineGrid counts={counts} />
+      </section>
+
+      {/* ── INTERVIEW LOOP TRACKS ─────────────────────────────── */}
+      <div className="mb-12">
+        <LoopTracksSection tracks={loopTracks ?? []} />
       </div>
 
       {/* ── PARADIGMS ─────────────────────────────────────────── */}
