@@ -2081,7 +2081,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               style={{
                 padding: '7px 14px',
                 fontSize: 13,
-                fontWeight: active ? 600 : 400,
+                fontWeight: active ? 700 : 600,
                 color: active ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)',
                 background: active ? 'var(--color-surface-container-low)' : 'transparent',
                 border: active ? '1px solid var(--color-outline-faint)' : '1px solid transparent',
