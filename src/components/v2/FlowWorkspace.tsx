@@ -29,6 +29,9 @@ import { CodingFeedback } from '@/components/challenge/CodingFeedback'
 import { useCodeRunner } from '@/hooks/useCodeRunner'
 import type { SupportedLanguage, RunResult, GradingFeedback } from '@/lib/coding/types'
 import type { SchemaDiagramData } from '@/components/challenge/SchemaDiagram'
+import { DiscussionThread } from '@/components/challenge/DiscussionThread'
+import { DiscussionInput } from '@/components/challenge/DiscussionInput'
+import type { ChallengeDiscussion } from '@/lib/types'
 
 const ExcalidrawCanvas = dynamic(() => import('@/components/challenge/ExcalidrawCanvas'), { ssr: false })
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })
@@ -309,6 +312,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // Left description tab state
   const [leftTab, setLeftTab] = useState<'Description' | 'Discussions' | 'Submissions'>('Description')
+
+  // Discussions tab state
+  const [discussions, setDiscussions] = useState<ChallengeDiscussion[]>([])
+  const [discussionsLoading, setDiscussionsLoading] = useState(false)
+  const [discussionsLoaded, setDiscussionsLoaded] = useState(false)
+  const [upvoted, setUpvoted] = useState<Set<string>>(new Set())
 
   // Session history for Submissions tab
   const [sessionHistory, setSessionHistory] = useState<SessionRecord[]>([])
@@ -1250,6 +1259,47 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     setHatch('Good. Now rate your confidence.', 'listening')
   }, [setHatch])
 
+  // ── Discussions fetch ──────────────────────────────────────────
+
+  async function fetchDiscussions() {
+    if (!challengeId) return
+    setDiscussionsLoading(true)
+    try {
+      const res = await fetch(`/api/challenges/${challengeId}/discussions`)
+      if (res.ok) {
+        const data: ChallengeDiscussion[] = await res.json()
+        setDiscussions(data)
+        setDiscussionsLoaded(true)
+      }
+    } finally {
+      setDiscussionsLoading(false)
+    }
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (leftTab === 'Discussions' && !discussionsLoaded) {
+      fetchDiscussions()
+    }
+  }, [leftTab])
+
+  async function handleDiscussionUpvote(id: string) {
+    if (!challengeId) return
+    await fetch(`/api/challenges/${challengeId}/discussions/${id}/upvote`, { method: 'PATCH' })
+    setUpvoted(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+    setDiscussions(prev =>
+      prev.map(d =>
+        d.id === id
+          ? { ...d, upvote_count: d.upvote_count + (upvoted.has(id) ? -1 : 1) }
+          : d
+      )
+    )
+  }
+
   // ── Render states ──────────────────────────────────────────────
 
   if (isApiMode && challengeError) {
@@ -1812,12 +1862,63 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   )
 
-  const discussionsPane = (
-    <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+  const expertPicks = discussions.filter(d => d.is_expert_pick)
+  const restDiscussions = discussions.filter(d => !d.is_expert_pick)
+
+  const discussionsPane = !challengeId ? (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 20 }}>
       <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--color-outline)' }}>forum</span>
       <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
-        Discussion forum coming soon.
+        Discussions not available in preview mode.
       </p>
+    </div>
+  ) : (
+    <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flexShrink: 0, padding: '12px 16px', borderBottom: '1px solid var(--color-outline-variant)' }}>
+        <DiscussionInput challengeId={challengeId} onSubmitted={fetchDiscussions} />
+      </div>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {discussionsLoading && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 20, color: 'var(--color-on-surface-variant)', fontSize: 14 }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>progress_activity</span>
+            Loading…
+          </div>
+        )}
+        {!discussionsLoading && expertPicks.length > 0 && (
+          <div>
+            <p style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 700, color: 'var(--color-tertiary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+              Expert picks
+            </p>
+            {expertPicks.map(d => (
+              <DiscussionThread
+                key={d.id}
+                discussion={d}
+                challengeId={challengeId}
+                isOP
+                upvoted={upvoted.has(d.id)}
+                onUpvote={handleDiscussionUpvote}
+              />
+            ))}
+          </div>
+        )}
+        {!discussionsLoading && restDiscussions.length === 0 && expertPicks.length === 0 && discussionsLoaded && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 20 }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 32, color: 'var(--color-outline)' }}>forum</span>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
+              No discussions yet. Be the first to share your approach.
+            </p>
+          </div>
+        )}
+        {!discussionsLoading && restDiscussions.map(d => (
+          <DiscussionThread
+            key={d.id}
+            discussion={d}
+            challengeId={challengeId}
+            upvoted={upvoted.has(d.id)}
+            onUpvote={handleDiscussionUpvote}
+          />
+        ))}
+      </div>
     </div>
   )
 
