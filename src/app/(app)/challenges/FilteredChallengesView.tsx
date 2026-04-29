@@ -25,6 +25,7 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
   const [discipline, setDiscipline] = useState<Discipline>('all')
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS)
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false)
+  const [listView, setListView] = useState(false)
 
   const filteredChallenges = useMemo(() => {
     return challenges.filter((c) => {
@@ -32,8 +33,7 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
       if (discipline === 'product_sense' && !['flow', 'freeform', 'quick_take'].includes(c.challenge_type ?? '')) return false
       if (discipline === 'system_design' && c.challenge_type !== 'system_design') return false
       if (discipline === 'data_modeling' && c.challenge_type !== 'data_modeling') return false
-      // 'coding' is a future discipline not yet in ChallengeType — no challenges match it
-      if (discipline === 'coding') return false
+      if (discipline === 'coding' && c.challenge_type !== 'coding') return false
 
       // Paradigm filter
       if (filters.paradigm.length > 0) {
@@ -88,6 +88,8 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
         onChange={setFilters}
         resultCount={filteredChallenges.length}
         onOpenMobileSheet={() => setMobileSheetOpen(true)}
+        listView={listView}
+        onToggleView={() => setListView((v) => !v)}
       />
 
       {/* Active filter pills */}
@@ -154,11 +156,11 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
                       see all {discChallenges.length} →
                     </button>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className={listView ? 'flex flex-col gap-2' : 'grid grid-cols-1 sm:grid-cols-3 gap-3'}>
                     <LockedChallengeGrid
                       challenges={preview}
                       paradigms={previewParadigms}
-                      listView={false}
+                      listView={listView}
                     />
                   </div>
                 </section>
@@ -166,11 +168,11 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
             })}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className={listView ? 'flex flex-col gap-2' : 'grid grid-cols-1 sm:grid-cols-3 gap-3'}>
             <LockedChallengeGrid
               challenges={filteredChallenges}
               paradigms={paradigms}
-              listView={false}
+              listView={listView}
             />
           </div>
         )}

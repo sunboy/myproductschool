@@ -41,6 +41,8 @@ interface Props {
   onChange: (filters: FilterState) => void
   resultCount: number
   onOpenMobileSheet: () => void
+  listView: boolean
+  onToggleView: () => void
 }
 
 function MultiSelectDropdown({
@@ -97,7 +99,7 @@ function MultiSelectDropdown({
   )
 }
 
-export function FilterDropdownBar({ discipline, filters, onChange, resultCount, onOpenMobileSheet }: Props) {
+export function FilterDropdownBar({ discipline, filters, onChange, resultCount, onOpenMobileSheet, listView, onToggleView }: Props) {
   const visibleDropdowns = DROPDOWNS.filter(
     (d) => d.disciplines.length === 0 || d.disciplines.includes(discipline)
   )
@@ -126,6 +128,22 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
         ))}
         <div className="flex-1" />
         <span className="font-label text-xs text-on-surface-variant">{resultCount} results</span>
+        <div className="flex items-center border border-outline-variant rounded-lg overflow-hidden">
+          <button
+            onClick={() => listView && onToggleView()}
+            className={`px-2 py-1.5 flex items-center transition-colors ${!listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low'}`}
+            title="Grid view"
+          >
+            <span className="material-symbols-outlined text-sm leading-none">grid_view</span>
+          </button>
+          <button
+            onClick={() => !listView && onToggleView()}
+            className={`px-2 py-1.5 flex items-center transition-colors ${listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low'}`}
+            title="List view"
+          >
+            <span className="material-symbols-outlined text-sm leading-none">view_list</span>
+          </button>
+        </div>
       </div>
 
       {/* Mobile filter bar */}
@@ -138,6 +156,20 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
           Filter
         </button>
         <div className="flex-1" />
+        <div className="flex items-center border border-outline-variant rounded-lg overflow-hidden">
+          <button
+            onClick={() => listView && onToggleView()}
+            className={`px-2 py-1.5 flex items-center transition-colors ${!listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low'}`}
+          >
+            <span className="material-symbols-outlined text-sm leading-none">grid_view</span>
+          </button>
+          <button
+            onClick={() => !listView && onToggleView()}
+            className={`px-2 py-1.5 flex items-center transition-colors ${listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low'}`}
+          >
+            <span className="material-symbols-outlined text-sm leading-none">view_list</span>
+          </button>
+        </div>
         <span className="font-label text-xs text-on-surface-variant">{resultCount}</span>
       </div>
     </>

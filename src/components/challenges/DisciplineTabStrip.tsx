@@ -7,7 +7,7 @@ const TABS: { key: Discipline; label: string; mobileLabel: string; disabled?: bo
   { key: 'product_sense', label: 'Product Sense', mobileLabel: 'Product' },
   { key: 'system_design', label: 'System Design', mobileLabel: 'Sys Design' },
   { key: 'data_modeling', label: 'Data Modeling', mobileLabel: 'Data' },
-  { key: 'coding', label: 'Coding', mobileLabel: 'Coding', disabled: true },
+  { key: 'coding', label: 'Coding', mobileLabel: 'Coding' },
 ]
 
 interface Props {

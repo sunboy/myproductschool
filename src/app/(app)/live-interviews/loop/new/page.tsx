@@ -2,7 +2,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import type { LoopDiscipline } from '@/lib/interview-loops/types'
 
 const DISCIPLINE_OPTIONS: { key: LoopDiscipline; label: string; duration: string; emoji: string }[] = [
@@ -29,10 +29,17 @@ function suggestRoundOrder(role: string): LoopDiscipline[] {
 
 export default function LoopBuilderPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [step, setStep] = useState(1)
   const [targetCompany, setTargetCompany] = useState('')
-  const [targetRole, setTargetRole] = useState('')
-  const [roundOrder, setRoundOrder] = useState<LoopDiscipline[]>([])
+  const [targetRole, setTargetRole] = useState(() => searchParams.get('role') ?? '')
+  const [roundOrder, setRoundOrder] = useState<LoopDiscipline[]>(() => {
+    const raw = searchParams.get('disciplines')
+    if (!raw) return []
+    return raw.split(',').filter((d): d is LoopDiscipline =>
+      ['system_design', 'product_sense', 'coding', 'data_modeling'].includes(d)
+    )
+  })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 

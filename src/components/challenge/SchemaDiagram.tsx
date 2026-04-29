@@ -61,11 +61,11 @@ function TableCard({ table }: { table: TableDef }) {
 
       {/* Column rows */}
       <div className="divide-y divide-outline-variant/30">
-        {table.columns.map((col) => {
+        {table.columns.map((col, colIdx) => {
           const hasPK = col.constraints?.includes('PK')
           return (
             <div
-              key={col.name}
+              key={`${col.name}-${colIdx}`}
               className={`flex items-center gap-2 px-3 py-1.5 ${hasPK ? 'bg-surface-container-low' : ''}`}
             >
               {/* PK indicator */}

@@ -228,7 +228,7 @@ export default async function ExplorePage() {
       .from('challenges')
       .select('challenge_type')
       .eq('is_published', true)
-      .in('challenge_type', ['flow', 'freeform', 'quick_take', 'system_design', 'data_modeling'])
+      .in('challenge_type', ['flow', 'freeform', 'quick_take', 'system_design', 'data_modeling', 'coding'])
     disciplineCountRows = data ?? []
   } catch (e) {
     console.error('discipline count fetch failed', e)
@@ -238,6 +238,7 @@ export default async function ExplorePage() {
     product_sense: 0,
     system_design: 0,
     data_modeling: 0,
+    coding: 0,
   }
   for (const row of disciplineCountRows) {
     if (['flow', 'freeform', 'quick_take'].includes(row.challenge_type)) {
@@ -246,18 +247,20 @@ export default async function ExplorePage() {
       counts.system_design = (counts.system_design ?? 0) + 1
     } else if (row.challenge_type === 'data_modeling') {
       counts.data_modeling = (counts.data_modeling ?? 0) + 1
+    } else if (row.challenge_type === 'coding') {
+      counts.coding = (counts.coding ?? 0) + 1
     }
   }
 
   // Fetch loop tracks
-  let loopTracks: { id: string; title: string; slug: string; description: string; estimated_hours: number; disciplines: string[]; difficulty: string }[] = []
+  let loopTracks: { id: string; title: string; slug: string; description: string; estimated_hours: number; disciplines: string[] }[] = []
   try {
     const { data } = await supabase
       .from('study_plans')
-      .select('id, title, slug, description, estimated_hours, disciplines, difficulty')
+      .select('id, title, slug, description, estimated_hours, disciplines')
       .eq('is_published', true)
       .eq('track_type' as string, 'loop')
-      .order('order_index', { ascending: true })
+      .order('created_at', { ascending: true })
     loopTracks = data ?? []
   } catch (e) {
     console.error('loop tracks fetch failed', e)
