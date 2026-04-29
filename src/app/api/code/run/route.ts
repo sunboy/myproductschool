@@ -8,6 +8,8 @@ import { compareOutputs } from '@/lib/coding/compare'
 import type { CompareMode } from '@/lib/coding/compare'
 import { randomUUID } from 'crypto'
 
+export const dynamic = 'force-dynamic'
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
