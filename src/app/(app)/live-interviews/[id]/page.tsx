@@ -1072,6 +1072,11 @@ export default function SessionPage({
           rounds={loopRounds}
           currentRoundIndex={parseInt(roundIndexParam ?? '0', 10)}
           onPause={async () => {
+            // Close SSE stream before navigating to prevent "Lock broken by another request" AbortError
+            if (eventSourceRef.current) {
+              eventSourceRef.current.close()
+              eventSourceRef.current = null
+            }
             await fetch(`/api/live-interview/${sessionId}/pause`, { method: 'POST' })
             router.push(`/live-interviews/loop/${loopIdParam}`)
           }}
