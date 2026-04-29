@@ -78,6 +78,100 @@ export async function POST(
     })
     .eq('id', id)
 
+  // If this session is part of a loop, run post-processing
+  const sessionLoopId = (session as unknown as { loop_id?: string | null }).loop_id
+  const sessionRoundIndex = (session as unknown as { round_index?: number | null }).round_index
+
+  if (sessionLoopId && sessionRoundIndex !== null && sessionRoundIndex !== undefined && !abandoned) {
+    try {
+      const { distillRoundContext } = await import('@/lib/interview-loops/loop-context-distiller')
+      const { generateLoopDebrief } = await import('@/lib/interview-loops/loop-debrief-generator')
+
+      // Fetch the loop and current round discipline
+      const [loopResult, roundResult] = await Promise.all([
+        adminClient.from('interview_loops' as string).select('*').eq('id', sessionLoopId).single(),
+        adminClient.from('loop_rounds' as string).select('discipline, id').eq('loop_id', sessionLoopId).eq('round_index', sessionRoundIndex).single(),
+      ])
+
+      const loop = loopResult.data as {
+        cross_round_memory: unknown[]
+        current_round_index: number
+        round_order: string[]
+        target_company: string | null
+        target_role: string | null
+      } | null
+
+      const roundDiscipline = (roundResult.data as { discipline?: string } | null)?.discipline ?? 'product_sense'
+      const roundId = (roundResult.data as { id?: string } | null)?.id
+
+      if (loop) {
+        // Distil signals from this round's debrief
+        const debriefForDistill = (typeof debriefResult === 'object' && debriefResult !== null)
+          ? debriefResult as unknown as Record<string, unknown>
+          : {}
+
+        const newSignals = await distillRoundContext({
+          roundDebriefJson: debriefForDistill,
+          roundIndex: sessionRoundIndex,
+          discipline: roundDiscipline as import('@/lib/interview-loops/types').LoopDiscipline,
+        })
+
+        const updatedMemory = [...(loop.cross_round_memory ?? []), ...newSignals]
+        const nextRoundIndex = loop.current_round_index + 1
+        const allComplete = nextRoundIndex >= loop.round_order.length
+
+        // Mark this round as completed
+        if (roundId) {
+          await adminClient
+            .from('loop_rounds' as string)
+            .update({
+              status: 'completed',
+              completed_at: new Date().toISOString(),
+              round_score: (debriefForDistill as { overallScore?: number }).overallScore ?? null,
+              round_debrief_json: debriefForDistill,
+            })
+            .eq('id', roundId)
+        }
+
+        // Update loop
+        await adminClient
+          .from('interview_loops' as string)
+          .update({
+            cross_round_memory: updatedMemory,
+            current_round_index: nextRoundIndex,
+            status: allComplete ? 'completed' : 'paused',
+            completed_at: allComplete ? new Date().toISOString() : null,
+          })
+          .eq('id', sessionLoopId)
+
+        // If all rounds done, trigger loop debrief
+        if (allComplete) {
+          const allRoundsResult = await adminClient
+            .from('loop_rounds' as string)
+            .select('*')
+            .eq('loop_id', sessionLoopId)
+            .order('round_index', { ascending: true })
+
+          const loopDebrief = await generateLoopDebrief({
+            rounds: (allRoundsResult.data ?? []) as import('@/lib/interview-loops/types').LoopRound[],
+            crossRoundMemory: updatedMemory as import('@/lib/interview-loops/types').CrossRoundMemoryItem[],
+            targetCompany: loop.target_company,
+            targetRole: loop.target_role,
+            calibrationSnapshot: {},
+          })
+
+          await adminClient
+            .from('interview_loops' as string)
+            .update({ loop_debrief_json: loopDebrief })
+            .eq('id', sessionLoopId)
+        }
+      }
+    } catch (loopErr) {
+      // Don't fail the end route if loop post-processing errors
+      console.error('Loop post-processing error:', loopErr)
+    }
+  }
+
   // Upsert learner_competencies — fetch current scores first
   if (debriefResult.competencySignals?.length > 0) {
     const competencies = [...new Set(debriefResult.competencySignals.map((s) => s.competency))]
