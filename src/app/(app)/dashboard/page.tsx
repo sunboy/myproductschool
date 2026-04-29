@@ -22,7 +22,9 @@ import { EnrolledPlansCard } from '@/components/dashboard/cards/EnrolledPlansCar
 import { TodaysPathCard } from '@/components/dashboard/cards/TodaysPathCard'
 import { AchievementsCard, ICON_COLOR_MAP, ICON_MAP } from '@/components/dashboard/cards/AchievementsCard'
 import { StreakCalendarCard } from '@/components/dashboard/cards/StreakCalendarCard'
+import { PausedLoopCard } from '@/components/live-interviews/PausedLoopCard'
 import type { UserInterview } from '@/lib/data/dashboard'
+import type { InterviewLoop, LoopRound } from '@/lib/interview-loops/types'
 import { difficultyLabel } from '@/lib/utils'
 
 function getGreeting(): string {
@@ -154,6 +156,29 @@ export default async function DashboardPage() {
     userId ? getMoveLevel(userId) : [],
     userId ? getEnrolledPlans(userId) : [],
   ])
+
+  // Fetch paused loops for PausedLoopCard
+  let pausedLoopData: { loop: Record<string, unknown>; rounds: Record<string, unknown>[] } | null = null
+  try {
+    const { data: pausedLoops } = await adminClient
+      .from('interview_loops' as string)
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'paused')
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    if (pausedLoops?.length) {
+      const { data: rounds } = await adminClient
+        .from('loop_rounds' as string)
+        .select('*')
+        .eq('loop_id', (pausedLoops[0] as { id: string }).id)
+        .order('round_index', { ascending: true })
+      pausedLoopData = { loop: pausedLoops[0] as Record<string, unknown>, rounds: rounds ?? [] }
+    }
+  } catch {
+    // Don't fail the dashboard if loop fetch errors
+  }
 
   // ── Right-rail data: achievements + streak (fetched early, path built after challenges) ──
   let achievementData: { id: string; name: string; icon: string; unlocked: boolean; color: string }[] = []
@@ -376,6 +401,14 @@ export default async function DashboardPage() {
               nextMilestoneLevel={(allMoveLevels[0]?.level ?? 1) + 1}
               dailyDone={dailyDone}
             />
+
+            {/* Paused loop resume banner */}
+            {pausedLoopData && (
+              <PausedLoopCard
+                loop={pausedLoopData.loop as unknown as InterviewLoop}
+                rounds={pausedLoopData.rounds as unknown as LoopRound[]}
+              />
+            )}
 
             {/* Resume / Quick Take row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
