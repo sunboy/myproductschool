@@ -1,9 +1,8 @@
 import Link from 'next/link'
 import { MOCK_LIVE_INTERVIEW_PERSONAS } from '@/lib/mock-live-interviews'
-import FilteredPersonaGrid from './FilteredPersonaGrid'
-import PastInterviews from './PastInterviews'
 import { UsageProvider } from '@/context/UsageContext'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { LiveInterviewsShell } from './LiveInterviewsShell'
 
 export interface ScenarioBrief {
   id: string
@@ -115,8 +114,7 @@ export default async function LiveInterviewsPage() {
           </p>
         </section>
 
-        <FilteredPersonaGrid personas={personas} scenarios={scenarios} />
-        <PastInterviews />
+        <LiveInterviewsShell personas={personas} scenarios={scenarios} />
       </div>
     </UsageProvider>
   )
