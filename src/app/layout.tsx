@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Raleway, Literata } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { PostHogProvider } from "@/components/PostHogProvider";
 import "./globals.css";
 
 const raleway = Raleway({
@@ -100,7 +101,9 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-background text-on-surface">
-        {children}
+        <PostHogProvider>
+          {children}
+        </PostHogProvider>
         <Analytics />
       </body>
     </html>

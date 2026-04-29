@@ -109,7 +109,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         redirectTo: `${siteOrigin()}/reset-password`,
       })
       // Always show success (don't reveal whether email exists)
-      setSuccess('Check your email — we sent a password reset link.')
+      setSuccess('Check your email. We sent a password reset link.')
       setLoading(false)
       return
     }
@@ -238,21 +238,21 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
               maxWidth: '11ch',
             } as React.CSSProperties}
           >
-            Think like a product person.
+            Build with judgment.
           </h1>
           <p
             className="font-body mt-4 leading-relaxed"
             style={{ fontSize: 'clamp(13px, 1.2vw, 16px)', color: 'rgba(255,255,255,0.45)', maxWidth: '38ch' }}
           >
-            Build the thinking. Ship the confidence.
+            Practice real scenarios across five disciplines. Stay sharp as AI reshapes the job.
           </p>
 
           {/* Feature bullets — desktop only */}
           <ul className="hidden md:flex flex-col gap-3 mt-10">
             {[
-              'Scenario-based interview practice',
-              'Real-time coaching from Hatch',
-              'Daily product thinking drills',
+              'Product sense, system design, data modeling, and coding across four disciplines',
+              'Hatch coaches you in real time, pushes back when you hand-wave',
+              '20 minutes a day. Most people do it on lunch.',
             ].map(item => (
               <li key={item} className="flex items-center gap-3">
                 <span

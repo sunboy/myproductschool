@@ -13,7 +13,7 @@ const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist', '/hatch-preview']
 // Marketing / auth pages — accessible without any session.
 // These short-circuit BEFORE we talk to Supabase so they can
 // never be blocked by an auth-service hiccup.
-const MARKETING_ROUTES = ['/', '/waitlist', '/waitlist-quick', '/waitlist-flow', '/pricing', '/flow', '/hatch-preview']
+const MARKETING_ROUTES = ['/', '/waitlist', '/waitlist-quick', '/waitlist-flow', '/pricing', '/flow', '/hatch-preview', '/home']
 const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-password']
 
 // Routes that require a user but NOT a completed profile/onboarding
@@ -84,25 +84,11 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // ── A/B split for root → waitlist variants ──────────────
   // Authenticated users visiting / go straight to dashboard.
-  // Unauthenticated visitors get a stable 50/50 split between waitlist variants.
+  // Unauthenticated visitors see the landing page.
   if (isRoot) {
     if (user) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
-    const existing = request.cookies.get('ab_waitlist')?.value
-    const variant = existing === 'a' || existing === 'b'
-      ? existing
-      : Math.random() < 0.5 ? 'a' : 'b'
-
-    supabaseResponse.headers.set('x-ab-waitlist', variant)
-    if (!existing) {
-      supabaseResponse.cookies.set('ab_waitlist', variant, {
-        maxAge: 60 * 60 * 24 * 30, // 30 days
-        path: '/',
-        sameSite: 'lax',
-      })
     }
     return supabaseResponse
   }
