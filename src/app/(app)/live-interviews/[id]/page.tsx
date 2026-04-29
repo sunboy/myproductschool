@@ -8,6 +8,9 @@ import HatchAvatar, { type HatchAvatarState } from '@/components/live-interview/
 import dynamic from 'next/dynamic'
 import DeepgramVoiceSession from '@/components/live-interview/DeepgramVoiceSession'
 import type { TalkingHeadHandle } from '@/components/live-interview/TalkingHeadAvatar'
+import { LoopProgressBar } from '@/components/live-interviews/LoopProgressBar'
+import { PriorRoundRecap } from '@/components/live-interviews/PriorRoundRecap'
+import type { LoopRound } from '@/lib/interview-loops/types'
 
 const TalkingHeadAvatar = dynamic(
   () => import('@/components/live-interview/TalkingHeadAvatar'),
@@ -389,10 +392,10 @@ export default function SessionPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ company?: string; role?: string; autostart?: string }>
+  searchParams: Promise<{ company?: string; role?: string; autostart?: string; loop_id?: string; round_index?: string }>
 }) {
   const { id } = use(params)
-  const { company, role: roleParam, autostart } = use(searchParams)
+  const { company, role: roleParam, autostart, loop_id: loopIdParam, round_index: roundIndexParam } = use(searchParams)
   const router = useRouter()
   const { startUpgrade } = useUpgrade()
   const { isPro, isAdmin } = useEntitlements()
@@ -435,6 +438,9 @@ export default function SessionPage({
   const [chatInput, setChatInput] = useState('')
   const [isChatSending, setIsChatSending] = useState(false)
   const chatListRef = useRef<HTMLDivElement>(null)
+
+  const [loopRounds, setLoopRounds] = useState<LoopRound[]>([])
+  const [previousRound, setPreviousRound] = useState<LoopRound | null>(null)
 
   const eventSourceRef = useRef<EventSource | null>(null)
   const lastSignalTurnIndexRef = useRef<number>(-1)
@@ -523,6 +529,25 @@ export default function SessionPage({
       .catch(() => {})
   }, [])
 
+  // Fetch loop data when this session belongs to a loop
+  useEffect(() => {
+    if (!loopIdParam) return
+    const roundIndex = parseInt(roundIndexParam ?? '0', 10)
+    fetch(`/api/interview-loops/${loopIdParam}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.rounds) {
+          setLoopRounds(data.rounds as LoopRound[])
+          const prev = (data.rounds as LoopRound[]).find(
+            (r) => r.round_index === roundIndex - 1 && r.status === 'completed'
+          )
+          setPreviousRound(prev ?? null)
+        }
+      })
+      .catch(() => {})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loopIdParam])
+
   const handleStartInterview = useCallback(() => {
     setInterviewPhase('active')
     setInterviewStartedAt(Date.now())
@@ -591,14 +616,22 @@ export default function SessionPage({
     if (interviewPhase !== 'active') return
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault()
-      navigator.sendBeacon(
-        `/api/live-interview/${sessionId}/end`,
-        new Blob([JSON.stringify({ abandoned: true })], { type: 'application/json' })
-      )
+      if (loopIdParam) {
+        // Loop session: pause instead of abandon so the user can resume later
+        navigator.sendBeacon(
+          `/api/live-interview/${sessionId}/pause`,
+          new Blob([JSON.stringify({})], { type: 'application/json' })
+        )
+      } else {
+        navigator.sendBeacon(
+          `/api/live-interview/${sessionId}/end`,
+          new Blob([JSON.stringify({ abandoned: true })], { type: 'application/json' })
+        )
+      }
     }
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [interviewPhase, sessionId])
+  }, [interviewPhase, sessionId, loopIdParam])
 
   useEffect(() => {
     if (isLimitReached && interviewPhase === 'active' && !showLimitModal) {
@@ -1032,6 +1065,19 @@ export default function SessionPage({
         }
       `}</style>
 
+      {/* Loop progress bar — shown when this session is part of a loop */}
+      {loopRounds.length > 0 && loopIdParam && (
+        <LoopProgressBar
+          loopTitle={companyName ? `${companyName} Loop` : 'Interview Loop'}
+          rounds={loopRounds}
+          currentRoundIndex={parseInt(roundIndexParam ?? '0', 10)}
+          onPause={async () => {
+            await fetch(`/api/live-interview/${sessionId}/pause`, { method: 'POST' })
+            router.push(`/live-interviews/loop/${loopIdParam}`)
+          }}
+        />
+      )}
+
       {/* Mock banner */}
       {IS_MOCK && (
         <div
@@ -1444,6 +1490,13 @@ export default function SessionPage({
                   </p>
                 </div>
               ))
+            )}
+
+            {/* Prior round recap — only visible in loop sessions */}
+            {previousRound && (
+              <div className="mt-3">
+                <PriorRoundRecap previousRound={previousRound} />
+              </div>
             )}
           </div>
         </div>

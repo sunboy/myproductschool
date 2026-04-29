@@ -12,8 +12,8 @@ export function StartRoundButton({ loopId, label }: { loopId: string; label: str
     try {
       const res = await fetch(`/api/interview-loops/${loopId}/start-round`, { method: 'POST' })
       if (res.ok) {
-        const { sessionId } = await res.json()
-        router.push(`/live-interviews/${sessionId}`)
+        const { sessionId, roundIndex } = await res.json()
+        router.push(`/live-interviews/${sessionId}?autostart=1&loop_id=${loopId}&round_index=${roundIndex ?? 0}`)
       }
     } finally {
       setLoading(false)
