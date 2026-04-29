@@ -64,6 +64,7 @@ const MAX_COMPANY_CHIPS = 8
 const CHALLENGE_TYPES = [
   { key: 'system_design', label: 'System Design', dot: 'bg-cyan-500' },
   { key: 'data_modeling', label: 'Data Modeling', dot: 'bg-rose-500' },
+  { key: 'coding',        label: 'Coding',         dot: 'bg-emerald-600' },
 ] as const
 
 export async function FreePracticeContent({ searchParams }: FreePracticeContentProps) {

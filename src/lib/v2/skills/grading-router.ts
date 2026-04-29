@@ -13,6 +13,7 @@ export function routeResponse(responseType: ResponseType): 'deterministic' | 'hy
     case 'mcq_plus_elaboration': return 'hybrid'
     case 'modified_option': return 'ai'
     case 'freeform': return 'ai'
+    case 'coding_subtask': return 'ai'
   }
 }
 
