@@ -153,7 +153,7 @@ export default async function ExplorePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [studyPlansRaw, showcaseProducts, modulesRaw, domains, challengeCount, personalisedPlan, systemDesignChallenges, dataModelingChallenges] = await Promise.all([
+  const [studyPlansRaw, showcaseProducts, modulesRaw, domains, challengeCount, personalisedPlan, codingChallenges, systemDesignChallenges, dataModelingChallenges] = await Promise.all([
     getStudyPlanSummaries(4).catch(() => [] as StudyPlan[]),
     getShowcaseProducts().catch(() => [] as AutopsyProduct[]),
     getLearnModuleSummaries(6).catch(() => [] as LearnModule[]),
@@ -182,6 +182,18 @@ export default async function ExplorePage() {
         const plan = (data as unknown as { study_plans: PersonalisedPlan | null }).study_plans
         return plan
       } catch { return null }
+    })(),
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('challenges')
+          .select('id, title, slug, difficulty, paradigm, challenge_type, prompt_text, company_tags, metadata')
+          .eq('is_published', true)
+          .eq('challenge_type', 'coding')
+          .order('created_at', { ascending: false })
+          .limit(4)
+        return data ?? []
+      } catch { return [] }
     })(),
     (async () => {
       try {
@@ -674,6 +686,82 @@ export default async function ExplorePage() {
           </div>
         </>
       )}
+
+      {/* ── CODING INTERVIEW CHALLENGES ──────────────────────── */}
+      <div data-testid="section-coding">
+        {codingChallenges.length > 0 ? (
+          <>
+            <SectionHeading eyebrow="Interview prep" title="Coding Interviews." href="/challenges?type=coding" linkLabel="View all →" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-12">
+              {codingChallenges.map((c) => {
+                const diff = DIFFICULTY_CONFIG[c.difficulty as string] ?? { label: c.difficulty, dot: '#74796e' }
+                const meta = (c as unknown as { metadata?: { language?: string; time_limit_seconds?: number; test_cases?: unknown[] } }).metadata
+                const langLabel = meta?.language === 'sql' ? 'SQL' : meta?.language ?? 'Code'
+                return (
+                  <a
+                    key={c.id}
+                    href={`/workspace/challenges/${c.slug ?? c.id}`}
+                    style={{
+                      display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                      background: '#e8f0e8', borderRadius: 20, padding: '18px 18px 16px',
+                      minHeight: 140, textDecoration: 'none',
+                      border: '1px solid rgba(0,0,0,0.05)',
+                      position: 'relative', overflow: 'hidden',
+                    }}
+                  >
+                    <div style={{ position: 'relative' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
+                        <span className="bg-surface-container-high text-on-surface rounded-full text-xs px-2 py-0.5 font-label font-semibold border border-outline-variant/40">
+                          Coding
+                        </span>
+                        <span className="bg-secondary-container text-on-secondary-container rounded-full text-xs px-2 py-0.5 font-label font-semibold">
+                          {langLabel}
+                        </span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#2e4a30' }}>
+                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: diff.dot, display: 'inline-block' }} />
+                          {diff.label}
+                        </span>
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700, color: '#1a3020', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
+                        {c.title}
+                      </div>
+                      {(meta?.time_limit_seconds != null || meta?.test_cases != null) && (
+                        <div style={{ fontSize: 11, color: '#3a5a3c', marginTop: 6, display: 'flex', gap: 8 }}>
+                          {meta?.time_limit_seconds != null && (
+                            <span>{Math.round(meta.time_limit_seconds / 60)} min</span>
+                          )}
+                          {meta?.test_cases != null && (
+                            <span>{(meta.test_cases as unknown[]).length} test cases</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                        background: '#4a7c59', color: '#fff',
+                        padding: '6px 12px', borderRadius: 999,
+                        fontWeight: 700, fontSize: 12,
+                      }}>
+                        Start
+                        <span className="material-symbols-outlined" style={{ fontSize: 13 }}>arrow_forward</span>
+                      </span>
+                    </div>
+                  </a>
+                )
+              })}
+            </div>
+          </>
+        ) : (
+          <>
+            <SectionHeading eyebrow="Interview prep" title="Coding Interviews." href="/challenges?type=coding" linkLabel="View all →" />
+            <div className="mb-12 rounded-2xl border border-outline-variant/30 bg-surface-container-low p-8 text-center">
+              <span className="material-symbols-outlined text-3xl text-on-surface-variant/40 block mb-2">code</span>
+              <p className="text-sm text-on-surface-variant font-body">No coding challenges yet — check back soon.</p>
+            </div>
+          </>
+        )}
+      </div>
 
       {/* ── SYSTEM DESIGN CHALLENGES ─────────────────────────── */}
       {systemDesignChallenges.length > 0 && (

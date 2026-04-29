@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Never use the Anthropic API key unless explicitly asked
+
+The repo has scripts that call the Anthropic API directly (`@anthropic-ai/sdk` with `process.env.ANTHROPIC_API_KEY`) — for example, the bulk enrichment scripts in `scripts/`. Those calls bill the user's Anthropic account by token.
+
+For bulk content work (generating challenges, grading rubrics, MCQ options, etc.), default to **Claude Code sub-agents** instead of API calls. Sub-agents use the user's Claude Code subscription at zero per-token cost. Only use the API key when the user has explicitly asked for it (or when reading existing code that already uses it without modification).
+
+When in doubt: ask before running a script that consumes API credit.
+
 ## Commands
 
 ```bash
@@ -85,6 +93,23 @@ Available `state` values — always use the contextually correct one:
 | `celebrating` | Results page, high scores, feedback reveal | Sparkles, cap toss, wide smile |
 
 **Do NOT** use the deprecated `animated` boolean prop — always use `state`. **Do NOT** replace HatchGlyph with a Material Symbol icon, emoji, or any other element. When in doubt about which state to use, `idle` is a safe default.
+
+## Hatch-Awareness — Required for Every Feature
+
+Hatch is not a side feature; it is the platform's coaching surface. **Every feature change or new feature MUST include a Hatch-awareness component.** If a user can do something new in the workspace, Hatch must be able to see it, talk about it, and reason about it. Shipping a feature without this is treating Hatch as decoration.
+
+Concretely, when adding or changing a feature, ask:
+
+1. **Does this introduce new state the user can act on?** (a new field, a new panel section, a new sub-question, a new workspace mode, a new step). If yes, that state MUST be passed to Hatch's chat endpoint as part of the request body.
+2. **Does Hatch's system prompt need to know about this state?** Update the relevant skill (`hackproduct-coding-coach`, `hackproduct-canvas-coach`, etc.) and the user-content builder in `src/app/api/hatch/canvas/interpret/route.ts` so the model sees it on every turn.
+3. **Does the user-facing copy in the chat reflect the active context?** Initial messages, example prompts, and placeholder text in `src/components/challenge/CanvasChatPanel.tsx` should match what the user is doing.
+4. **Is grading aware of the new state?** If the feature affects how a session is scored, update the relevant grader skill so per-session evidence references it.
+
+Verification before claiming a feature is done:
+- Open the chat panel in the new context and ask a question that requires Hatch to know the new state. The reply must demonstrate awareness, not generic guidance.
+- If Hatch falls back to "I can only see what's in your editor" or asks the user to paste context the platform already has, the integration is incomplete.
+
+This is not optional. A feature without Hatch-awareness is half-shipped.
 
 ## Architecture
 

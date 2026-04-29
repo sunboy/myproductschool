@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import type { Challenge, ChallengeAttemptV2, FlowStepRecord, UserRoleV2 } from '@/lib/types'
+import type { Challenge, ChallengeAttemptV2, CodingPart, FlowStepRecord, UserRoleV2 } from '@/lib/types'
 
 interface ChallengeDetail {
   challenge: Challenge
   steps: FlowStepRecord[]
   current_attempt: ChallengeAttemptV2 | null
+  /** Parts for multi-part coding challenges. Empty array for single-prompt coding and all other challenge types. */
+  codingParts: CodingPart[]
 }
 
 export interface PaywallData {
@@ -36,7 +38,8 @@ export function useChallenge(challengeId: string): UseChallengeReturn {
       const res = await fetch(`/api/challenges/${challengeId}`)
       if (!res.ok) throw new Error(`Failed to load challenge: ${res.status}`)
       const data = await res.json()
-      setDetail(data)
+      // Ensure codingParts is always an array even if the server omits it (e.g. cached older response)
+      setDetail({ ...data, codingParts: data.codingParts ?? [] })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error')
     } finally {

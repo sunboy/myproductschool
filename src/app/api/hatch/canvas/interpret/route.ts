@@ -1,8 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 import { createCachedMessage } from '@/lib/anthropic/cached-client'
 import { createClient } from '@/lib/supabase/server'
 import { sceneToPrompt, type CanvasScene } from '@/lib/hatch/canvas-scene'
 import type { CanvasInterpretResponse, CanvasIntent } from '@/lib/types'
+
+function loadCodingCoachSkill(): string {
+  try {
+    const skillPath = join(
+      process.env.HOME ?? '/root',
+      '.claude/skills/hackproduct-coding-coach/SKILL.md'
+    )
+    return readFileSync(skillPath, 'utf-8')
+  } catch {
+    // Fallback inline prompt if skill file is unavailable
+    return `You are Hatch, a coding interview coach for HackProduct. The user is solving a timed coding interview challenge.
+
+Your role: Socratic thinking partner — guide, don't solve. Read their code and recent test results before responding.
+
+Rules:
+- If user asks for the complete solution: decline and redirect. "Not going to do that. What's your first instinct?"
+- For debugging: read their code, identify the issue, ask a leading question that points them at it.
+- Freely explain: time/space complexity, data structure choices, algorithm theory, language idioms, syntax.
+- If stuck 3+ exchanges: give a stronger hint — still not the full solution.
+- Always return: { "intent": "coach", "message": "...", "actions": [], "annotations": [] }
+- Never set intent to "build" or "build_and_coach" for coding challenges.`
+  }
+}
 
 const COACH_PERSONA = `You are Hatch, a system design and data modeling interview coach for HackProduct.
 Voice: direct, opinionated, slightly Shreyas-Doshi-tweet-thread. Never academic. Never corporate.
@@ -113,6 +138,9 @@ Hard rules:
 - Never invent canvas labels that don't exist when using connect/remove/rename — only act on labels in the provided scene.`
 
 function buildSystemPrompt(challengeType: string): string {
+  if (challengeType === 'coding') {
+    return loadCodingCoachSkill()
+  }
   const domain =
     challengeType === 'data_modeling' ? DATA_MODELING_RULES : SYSTEM_DESIGN_RULES
   return [COACH_PERSONA, ROUTING_RULES, domain, ACTION_SCHEMA].join('\n\n')
@@ -125,11 +153,107 @@ interface InterpretBody {
   canvasSummary?: string
   history?: Array<{ role: 'user' | 'hatch'; content: string }>
   challengeId?: string
-  challengeType?: string
+  challengeType?: 'system_design' | 'data_modeling' | 'coding' | string
   attemptId?: string
+  // Coding-mode fields (only used when challengeType === 'coding')
+  current_code?: string
+  current_language?: string
+  last_run_result?: unknown
+  time_elapsed_seconds?: number
+  time_remaining_seconds?: number
+  sql_schema_summary?: string
+  challenge_title?: string
+  problem_statement?: string
+  // Multi-part coding context — present when a part is open in the workspace
+  active_part_id?: string
+  active_part_sequence?: number
+  active_part_title?: string
+  active_part_prompt?: string
+  active_part_response_type?: string
+  active_part_weight_pct?: number
+}
+
+function buildCodingUserContent(body: InterpretBody): string {
+  const historyText = (body.history ?? [])
+    .slice(-6)
+    .map((m) => `${m.role === 'hatch' ? 'Hatch' : 'User'}: ${m.content}`)
+    .join('\n')
+
+  const lastRunSummary = body.last_run_result
+    ? JSON.stringify(body.last_run_result, null, 2)
+    : 'No test run yet.'
+
+  const timeElapsedMin = body.time_elapsed_seconds != null
+    ? `${Math.floor(body.time_elapsed_seconds / 60)}m ${body.time_elapsed_seconds % 60}s`
+    : 'unknown'
+  const timeRemainingMin = body.time_remaining_seconds != null
+    ? `${Math.floor(body.time_remaining_seconds / 60)}m ${body.time_remaining_seconds % 60}s`
+    : 'unknown'
+
+  const parts: string[] = []
+
+  if (body.challenge_title || body.problem_statement) {
+    const title = body.challenge_title ?? 'Untitled challenge'
+    const statement = body.problem_statement?.trim()
+    parts.push(
+      `# Challenge (shared context)\n## ${title}\n` +
+      (statement ? `\n${statement}` : '(no problem statement provided)')
+    )
+  }
+
+  // Multi-part: emphasize the part the user is currently working on so the
+  // coach scopes guidance to that subtask.
+  if (body.active_part_id && body.active_part_title) {
+    const partType = body.active_part_response_type === 'pure_mcq' ? 'MCQ probe' : 'coding subtask'
+    const seq = body.active_part_sequence ? `Part ${body.active_part_sequence}` : 'Active part'
+    const weight = body.active_part_weight_pct != null ? ` (${body.active_part_weight_pct}% of total)` : ''
+    const promptBlock = body.active_part_prompt?.trim()
+    parts.push(
+      `# Active part — answer ONLY about this part unless the user asks otherwise\n` +
+      `## ${seq}: ${body.active_part_title} — ${partType}${weight}\n` +
+      (promptBlock ? `\n${promptBlock}` : '(no per-part prompt — see shared context above)')
+    )
+  } else {
+    parts.push(
+      `# Active part\nNo part is currently open. The user is on the shared context. ` +
+      `If they ask about a specific part, suggest they open it in the parts panel.`
+    )
+  }
+
+  parts.push(
+    `# User context\n` +
+    `- Language: ${body.current_language ?? 'unknown'}\n` +
+    `- Time elapsed: ${timeElapsedMin}\n` +
+    `- Time remaining: ${timeRemainingMin}`
+  )
+
+  if (body.current_code != null && body.current_code.trim()) {
+    parts.push(
+      `# Current code\n\`\`\`${body.current_language ?? ''}\n${body.current_code}\n\`\`\``
+    )
+  } else {
+    parts.push(`# Current code\n(editor is empty)`)
+  }
+
+  parts.push(`# Last run result\n${lastRunSummary}`)
+
+  if (body.sql_schema_summary) {
+    parts.push(`# Schema\n${body.sql_schema_summary}`)
+  }
+
+  if (historyText) {
+    parts.push(`# Recent conversation\n${historyText}`)
+  }
+
+  parts.push(`# User's latest message\n${body.message}`)
+
+  return parts.join('\n\n')
 }
 
 function buildUserContent(body: InterpretBody): string {
+  if (body.challengeType === 'coding') {
+    return buildCodingUserContent(body)
+  }
   const sceneText = body.scene
     ? sceneToPrompt(body.scene)
     : body.canvasSummary || 'The canvas is empty.'
@@ -164,7 +288,8 @@ function normalizeResponse(raw: unknown): CanvasInterpretResponse {
 
 async function callClaude(
   systemPrompt: string,
-  userContent: string
+  userContent: string,
+  isCodingMode = false
 ): Promise<CanvasInterpretResponse> {
   const response = await createCachedMessage(systemPrompt, userContent, {
     model: 'claude-sonnet-4-6',
@@ -173,6 +298,31 @@ async function callClaude(
   const content = response.content[0]
   if (content.type !== 'text') throw new Error('Non-text response')
   const raw = content.text.trim()
+
+  // For coding mode: the skill may return plain text or JSON — handle both.
+  if (isCodingMode) {
+    // Try to parse as JSON first (skill instructs JSON output)
+    try {
+      const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '')
+      const parsed = JSON.parse(cleaned)
+      // Enforce coding constraints: always coach, never build
+      return {
+        intent: 'coach',
+        message: typeof parsed.message === 'string' ? parsed.message : raw,
+        actions: [],
+        annotations: [],
+      }
+    } catch {
+      // Model returned plain text — wrap it
+      return {
+        intent: 'coach',
+        message: raw,
+        actions: [],
+        annotations: [],
+      }
+    }
+  }
+
   // Strip ```json fences if the model used them despite instructions
   const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '')
   const parsed = JSON.parse(cleaned)
@@ -194,17 +344,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing message' }, { status: 400 })
   }
 
-  const systemPrompt = buildSystemPrompt(body.challengeType ?? 'system_design')
+  const challengeType = body.challengeType ?? 'system_design'
+  const isCodingMode = challengeType === 'coding'
+  const systemPrompt = buildSystemPrompt(challengeType)
   const userContent = buildUserContent(body)
 
   try {
     let result: CanvasInterpretResponse
     try {
-      result = await callClaude(systemPrompt, userContent)
+      result = await callClaude(systemPrompt, userContent, isCodingMode)
     } catch {
       result = await callClaude(
         systemPrompt,
-        userContent + '\n\nReturn ONLY valid JSON, no markdown, no prose.'
+        userContent + '\n\nReturn ONLY valid JSON, no markdown, no prose.',
+        isCodingMode
       )
     }
     return NextResponse.json(result)

@@ -513,12 +513,41 @@ export interface SessionEvent {
 
 export type DifficultyV2 = 'warmup' | 'standard' | 'advanced' | 'staff_plus'
 export type FlowStep = 'frame' | 'list' | 'optimize' | 'win'
+/** Extended FlowStep that includes the coding sentinel step added in migration 072. */
+export type FlowStepAll = FlowStep | 'coding'
 export type OptionQuality = 'best' | 'good_but_incomplete' | 'surface' | 'plausible_wrong'
-export type ResponseType = 'pure_mcq' | 'mcq_plus_elaboration' | 'modified_option' | 'freeform'
+export type ResponseType = 'pure_mcq' | 'mcq_plus_elaboration' | 'modified_option' | 'freeform' | 'coding_subtask'
+
+/** A single part of a multi-part coding challenge (loaded from flow_steps + step_questions). */
+export interface CodingPart {
+  /** step_questions.id */
+  id: string
+  sequence: number
+  /** question_text — shown as the part title in the Parts list */
+  title: string
+  response_type: 'coding_subtask' | 'pure_mcq'
+  /** 0.0–1.0, sourced from step_questions.grading_weight_within_step */
+  grading_weight_within_step: number
+  /** IDs of test cases (from challenges.metadata.test_cases) that belong to this part */
+  coding_test_case_ids: string[]
+  /** Per-language starter code for this subtask, or null */
+  coding_starter_code: Record<string, string> | null
+  /** Markdown problem statement for this subtask, or null */
+  coding_subtask_prompt: string | null
+  /** Populated only for pure_mcq parts */
+  options?: Array<{
+    id: string
+    option_label: string
+    option_text: string
+    quality: string
+    points: number
+    explanation: string
+  }>
+}
 export type Competency = 'motivation_theory' | 'cognitive_empathy' | 'taste' | 'strategic_thinking' | 'creative_execution' | 'domain_expertise'
 export type UserRoleV2 = 'swe' | 'data_eng' | 'ml_eng' | 'devops' | 'founding_eng' | 'em' | 'tech_lead' | 'pm' | 'designer' | 'data_scientist'
 
-export type ChallengeType = 'flow' | 'freeform' | 'quick_take' | 'system_design' | 'data_modeling'
+export type ChallengeType = 'flow' | 'freeform' | 'quick_take' | 'system_design' | 'data_modeling' | 'coding'
 
 export interface Challenge {
   id: string; slug: string | null; title: string
@@ -535,11 +564,21 @@ export interface Challenge {
   domain_id: string | null
   move_tags: string[]
   decision_id: string | null
+  // JSONB metadata for coding/canvas challenges (added in migration 070/071)
+  metadata?: Record<string, unknown> | null
 }
 
 export interface FlowStepRecord {
-  id: string; challenge_id: string; step: FlowStep; step_nudge: string | null
+  id: string; challenge_id: string; step: FlowStepAll; step_nudge: string | null
   grading_weight: number; step_order: number
+}
+
+/** Extended StepQuestion shape that includes coding-specific columns added in migration 072. */
+export interface StepQuestionWithCoding extends StepQuestion {
+  response_type: ResponseType
+  coding_test_case_ids: string[]
+  coding_starter_code: Record<string, string> | null
+  coding_subtask_prompt: string | null
 }
 
 export interface StepQuestion {
