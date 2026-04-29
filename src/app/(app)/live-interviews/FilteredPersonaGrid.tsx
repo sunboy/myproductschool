@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import type { LiveInterviewPersona } from '@/lib/mock-live-interviews'
 import type { ScenarioBrief } from './page'
 import StartInterviewButton from './StartInterviewButton'
+import type { InterviewDiscipline } from '@/components/live-interviews/DisciplineFilterStrip'
 
 const FILTER_ROLES = ['All', 'PM', 'SWE', 'Data Eng', 'ML Eng'] as const
 type FilterRole = typeof FILTER_ROLES[number]
@@ -35,6 +36,7 @@ const SCENARIO_DIFFICULTY_DOT: Record<string, string> = {
 interface FilteredPersonaGridProps {
   personas: LiveInterviewPersona[]
   scenarios?: ScenarioBrief[]
+  disciplineFilter?: InterviewDiscipline
 }
 
 function PaginationBar({
@@ -86,15 +88,22 @@ function PaginationBar({
   )
 }
 
-export default function FilteredPersonaGrid({ personas, scenarios = [] }: FilteredPersonaGridProps) {
+export default function FilteredPersonaGrid({ personas, scenarios = [], disciplineFilter = 'all' }: FilteredPersonaGridProps) {
   const [rightFilter, setRightFilter] = useState<FilterRole>('All')
   const [selected, setSelected] = useState<LiveInterviewPersona>(personas[0])
   const [leftPage, setLeftPage] = useState(0)
   const [rightPage, setRightPage] = useState(0)
 
+  // Filter personas by selected discipline before deduplication
+  const visiblePersonas = disciplineFilter === 'all'
+    ? personas
+    : personas.filter((p) =>
+        ((p as unknown as { disciplines?: string[] }).disciplines ?? ['product_sense']).includes(disciplineFilter)
+      )
+
   // Deduplicate by companyId — one entry per company, left panel shows all
   const seen = new Set<string>()
-  const deduped = personas.filter(p => {
+  const deduped = visiblePersonas.filter(p => {
     if (seen.has(p.companyId)) return false
     seen.add(p.companyId)
     return true
@@ -167,12 +176,29 @@ export default function FilteredPersonaGrid({ personas, scenarios = [] }: Filter
                 >
                   {persona.icon}
                 </span>
-                <p className={cn(
-                  'flex-1 min-w-0 text-sm font-semibold truncate transition-colors',
-                  isActive ? 'text-on-surface' : 'text-on-surface-variant group-hover:text-on-surface'
-                )}>
-                  {persona.companyName}
-                </p>
+                <div className="flex-1 min-w-0">
+                  <p className={cn(
+                    'text-sm font-semibold truncate transition-colors',
+                    isActive ? 'text-on-surface' : 'text-on-surface-variant group-hover:text-on-surface'
+                  )}>
+                    {persona.companyName}
+                  </p>
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {((persona as unknown as { disciplines?: string[] }).disciplines ?? ['product_sense']).map((d: string) => {
+                      const labels: Record<string, string> = {
+                        product_sense: 'Product',
+                        system_design: 'Sys Design',
+                        data_modeling: 'Data',
+                        coding: 'Coding',
+                      }
+                      return (
+                        <span key={d} className="bg-surface-container-highest text-on-surface-variant rounded text-[9px] px-1.5 py-0.5 font-label">
+                          {labels[d] ?? d}
+                        </span>
+                      )
+                    })}
+                  </div>
+                </div>
                 <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
               </button>
             )
