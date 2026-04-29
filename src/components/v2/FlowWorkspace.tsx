@@ -1874,9 +1874,6 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   ) : (
     <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ flexShrink: 0, padding: '12px 16px', borderBottom: '1px solid var(--color-outline-variant)' }}>
-        <DiscussionInput challengeId={challengeId} onSubmitted={fetchDiscussions} />
-      </div>
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {discussionsLoading && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 20, color: 'var(--color-on-surface-variant)', fontSize: 14 }}>
@@ -1918,6 +1915,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             onUpvote={handleDiscussionUpvote}
           />
         ))}
+      </div>
+      <div style={{ flexShrink: 0, padding: '12px 16px', borderTop: '1px solid var(--color-outline-variant)' }}>
+        <DiscussionInput challengeId={challengeId} onSubmitted={fetchDiscussions} />
       </div>
     </div>
   )
