@@ -4,21 +4,22 @@ import { JUDGE0_LANGUAGE_IDS } from './languageMap'
 import type { TestStatus } from '../coding/types'
 
 const JUDGE0_HOST = 'judge0-ce.p.rapidapi.com'
-const JUDGE0_KEY = process.env.JUDGE0_RAPIDAPI_KEY
 
-// Throw at module load if the key is missing — surfaces misconfiguration
-// immediately rather than at first request.
-if (!JUDGE0_KEY) {
-  throw new Error(
-    'JUDGE0_RAPIDAPI_KEY is not set. Add it to .env.local (dev) or the production secrets manager.'
-  )
+function getKey(): string {
+  const key = process.env.JUDGE0_RAPIDAPI_KEY
+  if (!key) {
+    throw new Error(
+      'JUDGE0_RAPIDAPI_KEY is not set. Add it to .env.local (dev) or the production secrets manager.'
+    )
+  }
+  return key
 }
 
 async function judge0Fetch(path: string, init: RequestInit = {}): Promise<Response> {
   return fetch(`https://${JUDGE0_HOST}${path}`, {
     ...init,
     headers: {
-      'x-rapidapi-key': JUDGE0_KEY!,
+      'x-rapidapi-key': getKey(),
       'x-rapidapi-host': JUDGE0_HOST,
       'Content-Type': 'application/json',
       ...(init.headers ?? {}),
