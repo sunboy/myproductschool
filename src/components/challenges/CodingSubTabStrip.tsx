@@ -19,6 +19,7 @@ export function CodingSubTabStrip({ active, onChange }: Props) {
         const isActive = active === tab.key
         return (
           <button
+            type="button"
             key={tab.key}
             onClick={() => onChange(tab.key)}
             className={[
