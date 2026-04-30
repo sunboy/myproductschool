@@ -184,6 +184,11 @@ export function ChallengeCard({
   const style = PARADIGM_STYLE[paradigm] ?? PARADIGM_STYLE.Traditional
   const diff = DIFFICULTY_CONFIG[challenge.difficulty] ?? { label: challenge.difficulty, dot: '#74796e' }
   const attempts = challenge.attempt_count ?? 0
+  const statusIcon = challenge.is_completed
+    ? { icon: 'check_circle', fill: 1, color: 'var(--color-primary)' }
+    : attempts > 0
+      ? { icon: 'incomplete_circle', fill: 0, color: 'var(--color-tertiary)' }
+      : null
 
   if (listView) {
     return (
@@ -228,10 +233,28 @@ export function ChallengeCard({
           {diff.label}
         </span>
 
-        {/* Attempts */}
-        <span className="hidden sm:flex text-[11px] text-on-surface-variant font-label items-center gap-1 shrink-0 w-16 justify-end">
-          <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 0", color: style.accent }}>group</span>
-          {attempts > 0 ? `${attempts}` : '—'}
+        {/* Status + attempts */}
+        <span className="hidden sm:flex items-center gap-1 shrink-0 w-16 justify-end">
+          <span
+            className="material-symbols-outlined text-[13px]"
+            style={{
+              fontVariationSettings: `'FILL' ${challenge.is_completed ? 1 : 0}`,
+              color: challenge.is_completed
+                ? 'var(--color-primary)'
+                : attempts > 0
+                  ? 'var(--color-tertiary)'
+                  : 'color-mix(in srgb, var(--color-on-surface) 40%, transparent)',
+            }}
+          >
+            {challenge.is_completed
+              ? 'check_circle'
+              : attempts > 0
+                ? 'incomplete_circle'
+                : 'circle'}
+          </span>
+          <span className="text-[11px] text-on-surface-variant font-label">
+            {attempts > 0 ? attempts : '—'}
+          </span>
         </span>
 
         {/* CTA */}
@@ -285,10 +308,23 @@ export function ChallengeCard({
             </span>
           )}
         </div>
-        <span className="flex items-center gap-1.5 text-[11px] font-medium font-label shrink-0" style={{ color: `${style.fg}bb` }}>
-          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: diff.dot }} />
-          {diff.label}
-        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {statusIcon && (
+            <span
+              className="material-symbols-outlined text-[16px]"
+              style={{
+                fontVariationSettings: `'FILL' ${statusIcon.fill}`,
+                color: statusIcon.color,
+              }}
+            >
+              {statusIcon.icon}
+            </span>
+          )}
+          <span className="flex items-center gap-1.5 text-[11px] font-medium font-label" style={{ color: `${style.fg}bb` }}>
+            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: diff.dot }} />
+            {diff.label}
+          </span>
+        </div>
       </div>
 
       {/* Title */}
