@@ -110,7 +110,7 @@ export default async function LoopDashboardPage({ params }: { params: Promise<{ 
       {loop.status !== 'completed' && nextRound && (
         <div>
           {pausedRound?.session_id ? (
-            <Link href={`/live-interviews/${pausedRound.session_id}`}>
+            <Link href={`/live-interviews/${pausedRound.session_id}?loop_id=${id}&round_index=${pausedRound.round_index}${pausedRound.discipline ? `&discipline=${pausedRound.discipline}` : ''}`}>
               <button className="w-full bg-primary text-on-primary rounded-xl py-3 font-label font-bold text-sm">
                 Resume Round {pausedRound.round_index + 1} →
               </button>

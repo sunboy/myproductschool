@@ -1,0 +1,2138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HackProduct — Dopamine Loop Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  :root {
+    --cream: #FAF6F0;
+    --cream-deep: #F2EBE0;
+    --forest: #4A7C59;
+    --forest-dark: #3A6247;
+    --forest-light: #6B9A79;
+    --amber: #705C30;
+    --amber-light: #A88A4E;
+    --ink: #1C1A17;
+    --ink-soft: #4A453E;
+    --ink-mute: #8A8277;
+    --line: #E5DED0;
+    --line-soft: #EFE9DC;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow-card: 0 1px 0 rgba(28,26,23,0.03), 0 2px 10px rgba(28,26,23,0.03);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  body {
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(74,124,89,0.04) 0%, transparent 40%),
+      radial-gradient(circle at 85% 70%, rgba(112,92,48,0.03) 0%, transparent 40%);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .shell {
+    max-width: 1320px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 14px 28px 18px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  header.nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 14px;
+    flex-shrink: 0;
+  }
+
+  .nav-left { display: flex; align-items: center; gap: 18px; }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-family: 'Instrument Serif', serif;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+  }
+  .brand-mark {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    background: var(--forest);
+    display: grid; place-items: center;
+    color: var(--cream);
+    font-family: 'Geist Mono', monospace;
+    font-size: 12px;
+  }
+
+  .breadcrumb {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    display: flex; gap: 8px; align-items: center;
+  }
+  .breadcrumb b { color: var(--ink); font-weight: 500; }
+  .breadcrumb .sep { opacity: 0.4; }
+
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+
+  .streak {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    background: var(--cream-deep);
+    border-radius: 999px;
+    border: 1px solid var(--line);
+  }
+  .streak-dots { display: flex; gap: 2px; }
+  .streak-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--line); }
+  .streak-dot.clean { background: var(--forest); }
+  .streak-dot.mixed { background: var(--amber-light); }
+  .streak-value {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+  }
+  .streak-value span { color: var(--ink-mute); }
+
+  .profile-chip {
+    display: flex; align-items: center; gap: 7px;
+    padding: 4px 11px 4px 4px;
+    background: var(--cream-deep);
+    border-radius: 999px;
+  }
+  .profile-avatar {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--amber-light), var(--amber));
+    color: var(--cream);
+    display: grid; place-items: center;
+    font-size: 10px; font-weight: 600;
+  }
+  .profile-name { font-size: 12px; }
+
+  .flow-rail {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+    flex-shrink: 0;
+  }
+  .flow-step {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--cream-deep);
+    border: 1px solid var(--line-soft);
+    transition: all 0.25s;
+  }
+  .flow-step .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    border: 1.5px solid var(--ink-mute);
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+  .flow-step.active {
+    background: var(--cream);
+    color: var(--ink);
+    border-color: var(--forest);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+  }
+  .flow-step.active .dot {
+    border-color: var(--forest);
+    background: var(--forest);
+  }
+  .flow-step.done {
+    color: var(--forest);
+    background: #F0F6EE;
+    border-color: #D0E2CF;
+  }
+  .flow-step.done .dot {
+    border-color: var(--forest);
+    background: var(--forest);
+  }
+  .flow-step.done .dot::after {
+    content: '';
+    display: block;
+    width: 3px; height: 1.5px;
+    border-left: 1.5px solid var(--cream);
+    border-bottom: 1.5px solid var(--cream);
+    transform: rotate(-45deg) translate(0.5px, -0.5px);
+  }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 14px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .challenge-card {
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px 28px 18px;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .prompt-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 4px;
+    flex-shrink: 0;
+  }
+  .prompt-eyebrow {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--forest);
+    flex-shrink: 0;
+  }
+  .prompt-meta {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-mute);
+    letter-spacing: 0.04em;
+    margin-left: auto;
+  }
+
+  .prompt {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    margin-bottom: 6px;
+    color: var(--ink);
+    flex-shrink: 0;
+  }
+
+  .prompt-sub {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+    line-height: 1.5;
+    max-width: 62ch;
+    flex-shrink: 0;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    flex-shrink: 0;
+  }
+
+  .option {
+    position: relative;
+    padding: 11px 14px 11px 42px;
+    background: var(--cream);
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.16s;
+    text-align: left;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--ink);
+    line-height: 1.45;
+    width: 100%;
+  }
+  .option:hover:not(.selected):not(.locked) {
+    border-color: var(--forest-light);
+    background: #FCFAF4;
+  }
+  .option .option-mark {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid var(--line);
+    display: grid; place-items: center;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-mute);
+    transition: all 0.2s;
+    background: var(--cream);
+  }
+  .option.selected {
+    border-color: var(--forest);
+    background: #F3F7F1;
+  }
+  .option.selected .option-mark {
+    background: var(--forest);
+    color: var(--cream);
+    border-color: var(--forest);
+  }
+  .option.selected.correct {
+    border-color: var(--forest);
+    background: #F0F6EE;
+  }
+  .option.selected.incorrect {
+    border-color: var(--amber-light);
+    background: #FBF6EB;
+  }
+  .option.selected.incorrect .option-mark {
+    background: var(--amber);
+    border-color: var(--amber);
+  }
+  .option.reveal-correct:not(.selected) {
+    border-color: var(--forest-light);
+    background: #F7FAF5;
+    border-style: dashed;
+  }
+  .option.reveal-correct:not(.selected) .option-mark {
+    border-color: var(--forest);
+    color: var(--forest);
+  }
+  .option.locked { cursor: default; }
+
+  .dock {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .dock-row {
+    display: grid;
+    grid-template-columns: 112px 1fr auto;
+    gap: 14px;
+    align-items: center;
+    transition: opacity 0.25s;
+  }
+  .dock-row.disabled {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  .dock-label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    line-height: 1.3;
+  }
+  .dock-label b {
+    display: block;
+    color: var(--ink);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+
+  .conf-options {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+  }
+  .conf-btn {
+    padding: 7px 8px;
+    background: var(--cream);
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    font-family: inherit;
+    transition: all 0.16s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .conf-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--forest);
+    transform: scaleX(var(--conf-fill, 0));
+    transform-origin: left center;
+    z-index: 0;
+    border-radius: 6px;
+  }
+  .conf-btn > * { position: relative; z-index: 1; }
+  .conf-btn:hover:not(.selected) {
+    border-color: var(--forest-light);
+    background: #FCFAF4;
+  }
+  .conf-btn .conf-num {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-mute);
+    letter-spacing: 0.04em;
+  }
+  .conf-btn .conf-txt {
+    font-size: 12px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .conf-btn.selected {
+    border-color: var(--forest);
+  }
+  .conf-btn.selected .conf-num,
+  .conf-btn.selected .conf-txt {
+    color: var(--cream);
+  }
+
+  .conf-hint, .reasoning-opt {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-mute);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .reasoning-input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--cream);
+    resize: none;
+    line-height: 1.45;
+    transition: all 0.2s;
+    height: 36px;
+  }
+  .reasoning-input:focus {
+    outline: none;
+    border-color: var(--forest);
+    background: #FCFAF4;
+    height: 54px;
+  }
+  .reasoning-input::placeholder {
+    color: var(--ink-mute);
+    font-style: italic;
+  }
+
+  .submit-strip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 2px;
+  }
+  .submit-hint {
+    font-size: 11.5px;
+    color: var(--ink-mute);
+    font-family: 'Geist Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+  .submit-hint b { color: var(--ink); font-weight: 500; }
+
+  .submit-btn {
+    padding: 9px 20px;
+    background: var(--forest);
+    color: var(--cream);
+    border: none;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 2px 0 var(--forest-dark);
+    transition: all 0.15s;
+  }
+  .submit-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 0 var(--forest-dark);
+  }
+  .submit-btn:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 1px 0 var(--forest-dark);
+  }
+  .submit-btn:disabled {
+    background: var(--line);
+    color: var(--ink-mute);
+    box-shadow: 0 2px 0 #D5CDBE;
+    cursor: not-allowed;
+  }
+  .submit-btn.ready-pulse {
+    animation: readyPulse 1.6s ease-in-out 2;
+  }
+  @keyframes readyPulse {
+    0%, 100% { box-shadow: 0 2px 0 var(--forest-dark), 0 0 0 0 rgba(74,124,89,0); }
+    50% { box-shadow: 0 2px 0 var(--forest-dark), 0 0 0 8px rgba(74,124,89,0.12); }
+  }
+
+  .feedback-card {
+    margin-top: 14px;
+    padding: 14px 18px 12px;
+    background: var(--cream-deep);
+    border-radius: 10px;
+    border-left: 3px solid var(--forest);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .feedback-card.tier-2 { border-left-color: var(--forest); }
+  .feedback-card.tier-3 {
+    border-left-color: var(--amber);
+    background: linear-gradient(180deg, #FBF6EB, var(--cream-deep));
+  }
+  .feedback-card.wrong {
+    border-left-color: var(--amber-light);
+    background: #FBF6EB;
+  }
+
+  .fb-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .fb-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--forest);
+  }
+  .feedback-card.tier-3 .fb-eyebrow { color: var(--amber); }
+  .feedback-card.wrong .fb-eyebrow { color: var(--amber); }
+  .fb-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .fb-body {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .fb-body p + p { margin-top: 6px; }
+  .fb-body em {
+    background: rgba(74,124,89,0.08);
+    padding: 0 5px;
+    border-radius: 3px;
+    font-style: normal;
+    color: var(--forest-dark);
+    font-weight: 500;
+  }
+  .feedback-card.wrong .fb-body em {
+    background: rgba(112,92,48,0.1);
+    color: var(--amber);
+  }
+
+  .fb-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 9px;
+    border-top: 1px solid var(--line);
+    gap: 12px;
+  }
+  .fb-pattern {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+  }
+  .fp-tag {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+  }
+
+  .fb-next-btn {
+    padding: 7px 16px;
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .fb-next-btn:hover { background: var(--forest-dark); }
+
+  .side-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+  }
+
+  .luma-card {
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow-card);
+    flex-shrink: 0;
+  }
+
+  .luma-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .luma-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #FFF8E0, var(--amber-light), var(--amber));
+    position: relative;
+    box-shadow: 0 0 0 2px var(--cream), 0 0 0 3px rgba(112,92,48,0.15);
+    flex-shrink: 0;
+  }
+  .luma-avatar::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(168,138,78,0.15), transparent 70%);
+    animation: pulse 3s ease-in-out infinite;
+    z-index: -1;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.08); opacity: 1; }
+  }
+  .luma-name {
+    font-family: 'Instrument Serif', serif;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+  }
+  .luma-role {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  .luma-msg {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+  .luma-msg em {
+    color: var(--ink);
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  .calib-preview {
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    box-shadow: var(--shadow-card);
+    flex-shrink: 0;
+  }
+  .calib-title {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 8px;
+  }
+  .calib-rows { display: flex; flex-direction: column; gap: 3px; }
+  .calib-row {
+    display: grid;
+    grid-template-columns: 18px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 12px;
+  }
+  .calib-row + .calib-row {
+    border-top: 1px solid var(--line-soft);
+  }
+  .calib-mark {
+    width: 14px; height: 14px; border-radius: 3px;
+    display: grid; place-items: center;
+    font-family: 'Geist Mono', monospace;
+    font-size: 8px;
+    color: var(--cream);
+  }
+  .calib-mark.right { background: var(--forest); }
+  .calib-mark.wrong { background: var(--amber-light); }
+  .calib-mark.pending {
+    background: var(--cream-deep);
+    color: var(--ink-mute);
+    border: 1px solid var(--line);
+  }
+  .calib-step { color: var(--ink); font-size: 12px; }
+  .calib-conf {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-mute);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .context-card {
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    box-shadow: var(--shadow-card);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .context-title {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 8px;
+  }
+  .context-content {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+  .context-content b {
+    color: var(--ink);
+    font-weight: 500;
+    display: block;
+    margin-bottom: 3px;
+    font-size: 12.5px;
+  }
+  .context-content p + p { margin-top: 7px; }
+
+  .post-session {
+    display: none;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+  }
+  .post-session.active { display: flex; flex-direction: column; gap: 12px; }
+
+  .post-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .post-head h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 28px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .post-head .post-meta {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  .post-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .hero-block {
+    position: relative;
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px 22px 18px;
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+  }
+  .hero-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: linear-gradient(180deg, var(--forest), var(--forest-light));
+  }
+
+  .hero-eyebrow {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .hero-eyebrow-chip {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--forest);
+    padding: 3px 8px;
+    background: #EDF3EA;
+    border-radius: 3px;
+  }
+  .hero-eyebrow-meta {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    color: var(--ink-mute);
+  }
+
+  .hero-headline {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    margin-bottom: 14px;
+  }
+  .hero-headline em {
+    font-style: italic;
+    color: var(--forest);
+  }
+
+  .hero-evidence {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+  .evidence-label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 5px;
+  }
+  .evidence-quote {
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+    font-style: italic;
+  }
+  .evidence-col.now .evidence-quote {
+    color: var(--ink);
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  .calib-snapshot {
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 22px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+  }
+  .section-sub {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  .calib-matrix {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .matrix-cell {
+    padding: 10px 12px;
+    background: var(--cream-deep);
+    border-radius: 8px;
+  }
+  .matrix-cell .mc-label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 3px;
+  }
+  .matrix-cell .mc-main {
+    font-family: 'Instrument Serif', serif;
+    font-size: 18px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+  .matrix-cell .mc-main b { color: var(--forest); font-weight: 400; }
+  .matrix-cell .mc-main b.warn { color: var(--amber); }
+  .matrix-cell .mc-note {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 3px;
+  }
+
+  .calib-insight {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: #F0F6EE;
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--forest-dark);
+    line-height: 1.5;
+  }
+  .calib-insight b { font-weight: 600; }
+
+  .pattern-section {
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 22px;
+    box-shadow: var(--shadow-card);
+  }
+  .pattern-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .pattern-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 9px 12px;
+    background: var(--cream-deep);
+    border-radius: 8px;
+  }
+  .pattern-id {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    padding: 3px 7px;
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    letter-spacing: 0.04em;
+  }
+  .pattern-name {
+    font-size: 12.5px;
+    color: var(--ink);
+  }
+  .pattern-move {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .state-chip {
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-size: 9px;
+  }
+  .state-chip.active { background: #FBF6EB; color: var(--amber); }
+  .state-chip.improving { background: #EDF3EA; color: var(--forest-dark); }
+  .state-chip.dormant { background: #E8EEE4; color: var(--forest); }
+  .state-chip.mastered { background: var(--forest); color: var(--cream); }
+  .arrow { color: var(--ink-mute); font-size: 11px; }
+
+  .post-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 6px;
+    flex-shrink: 0;
+  }
+  .score-line {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-mute);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .score-line b { color: var(--ink); font-weight: 500; font-size: 11px; }
+  .post-cta { display: flex; gap: 8px; }
+
+  .btn-primary, .btn-ghost {
+    padding: 9px 18px;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+  }
+  .btn-primary {
+    background: var(--forest);
+    color: var(--cream);
+    box-shadow: 0 2px 0 var(--forest-dark);
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 0 var(--forest-dark);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+  }
+  .btn-ghost:hover { background: var(--cream-deep); color: var(--ink); }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .intro {
+    position: fixed;
+    inset: 0;
+    background: var(--cream);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+  .intro.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s;
+  }
+  .intro-content { max-width: 520px; }
+  .intro-eyebrow {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--forest);
+    margin-bottom: 16px;
+  }
+  .intro-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 48px;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    margin-bottom: 16px;
+  }
+  .intro-title em { font-style: italic; color: var(--forest); }
+  .intro-body {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+    max-width: 48ch;
+  }
+  .intro-notes {
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+    margin-bottom: 24px;
+    display: grid;
+    gap: 8px;
+    max-width: 48ch;
+  }
+  .intro-note {
+    display: grid;
+    grid-template-columns: 14px 1fr;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+  .intro-note::before { content: '—'; color: var(--forest); }
+
+  @media (max-width: 980px) {
+    html, body { overflow: auto; height: auto; }
+    .main-grid { grid-template-columns: 1fr; }
+    .post-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-height: 740px) {
+    .prompt { font-size: 19px; margin-bottom: 4px; }
+    .prompt-sub { margin-bottom: 10px; font-size: 12.5px; }
+    .option { padding: 9px 12px 9px 38px; font-size: 13px; }
+    .challenge-card { padding: 18px 22px 14px; }
+    .dock { margin-top: 10px; padding-top: 10px; gap: 8px; }
+    .shell { padding: 10px 24px 12px; }
+    header.nav { padding-bottom: 10px; margin-bottom: 10px; }
+    .flow-rail { margin-bottom: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="intro" id="intro">
+  <div class="intro-content">
+    <div class="intro-eyebrow">HackProduct · Prototype</div>
+    <h1 class="intro-title">A short session with <em>Luma</em>.</h1>
+    <p class="intro-body">
+      One challenge on <b style="color: var(--ink); font-weight: 600;">QuickBite</b>. Four FLOW steps. Pick, rate your confidence, optionally add reasoning. Should take about 4 minutes.
+    </p>
+    <div class="intro-notes">
+      <div class="intro-note">Pick an option, rate your confidence, optionally add reasoning.</div>
+      <div class="intro-note">Luma gives you richer feedback when you engage more.</div>
+      <div class="intro-note">At the end, you'll see how your judgment compares to your past self.</div>
+    </div>
+    <button class="btn-primary" onclick="startSession()">Start the session</button>
+  </div>
+</div>
+
+<div class="shell">
+
+  <header class="nav">
+    <div class="nav-left">
+      <div class="brand">
+        <div class="brand-mark">H</div>
+        HackProduct
+      </div>
+      <div class="breadcrumb">
+        <span>Luma: Workshop</span>
+        <span class="sep">/</span>
+        <span><b>Session 18 · QuickBite retention</b></span>
+      </div>
+    </div>
+    <div class="nav-right">
+      <div class="streak">
+        <div class="streak-dots">
+          <span class="streak-dot clean"></span>
+          <span class="streak-dot clean"></span>
+          <span class="streak-dot mixed"></span>
+          <span class="streak-dot clean"></span>
+          <span class="streak-dot clean"></span>
+          <span class="streak-dot clean"></span>
+          <span class="streak-dot clean"></span>
+        </div>
+        <div class="streak-value">7 sharp <span>sessions</span></div>
+      </div>
+      <div class="profile-chip">
+        <div class="profile-avatar">S</div>
+        <div class="profile-name">Sandeep</div>
+      </div>
+    </div>
+  </header>
+
+  <div id="sessionView" style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
+
+    <div class="flow-rail" id="flowRail">
+      <div class="flow-step active" data-step="0"><span class="dot"></span>Frame</div>
+      <div class="flow-step" data-step="1"><span class="dot"></span>List</div>
+      <div class="flow-step" data-step="2"><span class="dot"></span>Weigh</div>
+      <div class="flow-step" data-step="3"><span class="dot"></span>Win</div>
+    </div>
+
+    <div class="main-grid">
+
+      <div class="challenge-card" id="challengeCard"></div>
+
+      <aside class="side-rail">
+        <div class="luma-card">
+          <div class="luma-head">
+            <div class="luma-avatar"></div>
+            <div>
+              <div class="luma-name">Luma</div>
+              <div class="luma-role">Your product coach</div>
+            </div>
+          </div>
+          <div class="luma-msg" id="lumaMsg">
+            Start by framing what's actually going wrong with QuickBite's retention — who's affected, what's the real pain.
+          </div>
+        </div>
+
+        <div class="calib-preview">
+          <div class="calib-title">This session · calibration</div>
+          <div class="calib-rows" id="calibRows">
+            <div class="calib-row">
+              <div class="calib-mark pending">1</div>
+              <div class="calib-step">Frame</div>
+              <div class="calib-conf">—</div>
+            </div>
+            <div class="calib-row">
+              <div class="calib-mark pending">2</div>
+              <div class="calib-step">List</div>
+              <div class="calib-conf">—</div>
+            </div>
+            <div class="calib-row">
+              <div class="calib-mark pending">3</div>
+              <div class="calib-step">Weigh</div>
+              <div class="calib-conf">—</div>
+            </div>
+            <div class="calib-row">
+              <div class="calib-mark pending">4</div>
+              <div class="calib-step">Win</div>
+              <div class="calib-conf">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="context-card">
+          <div class="context-title">QuickBite · context</div>
+          <div class="context-content">
+            <p><b>The data</b>Weekly retention dropped 12% over 3 months. Churn is concentrated in once-weekly users. Delivery times have spiked 22% in the same window.</p>
+            <p><b>The ask</b>Diagnose and propose a fix in one session.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div id="postSessionView" class="post-session">
+    <div class="post-head">
+      <h1>Here's what moved.</h1>
+      <div class="post-meta">Session 18 · Complete</div>
+    </div>
+
+    <div class="post-grid">
+      <div class="hero-block">
+        <div class="hero-eyebrow">
+          <span class="hero-eyebrow-chip">Pattern moving</span>
+          <span class="hero-eyebrow-meta">FP-03 · prioritization without ordering</span>
+        </div>
+        <h2 class="hero-headline">Six sessions ago you jumped to solutions. <em>Today you ordered by impact first.</em></h2>
+
+        <div class="hero-evidence">
+          <div class="evidence-col past">
+            <div class="evidence-label">Session 12 · You wrote</div>
+            <div class="evidence-quote">"We should add loyalty rewards and improve delivery time estimates"</div>
+          </div>
+          <div class="evidence-col now">
+            <div class="evidence-label">Session 18 · You wrote</div>
+            <div class="evidence-quote" id="heroQuoteNow">"Retention loss among once-weekly users is the real issue — fix late-arrival experience first since it correlates with churn"</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="calib-snapshot">
+        <div class="section-head">
+          <h3 class="section-title">Calibration mirror</h3>
+          <div class="section-sub">This session</div>
+        </div>
+        <div class="calib-matrix" id="calibMatrix"></div>
+        <div class="calib-insight" id="calibInsight"></div>
+      </div>
+    </div>
+
+    <div class="pattern-section">
+      <div class="section-head">
+        <h3 class="section-title">Patterns in motion</h3>
+        <div class="section-sub">Last 10 sessions</div>
+      </div>
+      <div class="pattern-list">
+        <div class="pattern-item">
+          <span class="pattern-id">FP-03</span>
+          <div class="pattern-name">Prioritization without ordering by impact</div>
+          <div class="pattern-move">
+            <span class="state-chip active">Active</span>
+            <span class="arrow">→</span>
+            <span class="state-chip improving">Improving</span>
+          </div>
+        </div>
+        <div class="pattern-item">
+          <span class="pattern-id">FP-01</span>
+          <div class="pattern-name">Vague user segment (jumping straight to "users")</div>
+          <div class="pattern-move">
+            <span class="state-chip improving">Improving</span>
+            <span class="arrow">→</span>
+            <span class="state-chip dormant">Dormant</span>
+          </div>
+        </div>
+        <div class="pattern-item">
+          <span class="pattern-id">FP-07</span>
+          <div class="pattern-name">Solution-first framing (skipping problem definition)</div>
+          <div class="pattern-move">
+            <span class="state-chip dormant">Dormant</span>
+            <span class="arrow">→</span>
+            <span class="state-chip dormant">Dormant</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="post-footer">
+      <div class="score-line">Session score · <b id="scoreVal">— / 4</b></div>
+      <div class="post-cta">
+        <button class="btn-ghost" onclick="restart()">Dashboard</button>
+        <button class="btn-primary" onclick="restart()">Run another</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const state = { stepIndex: 0, steps: [], locked: false };
+  const CONF_LABELS = ['Guessing', 'Not sure', 'Fairly sure', 'Rock solid'];
+
+  // -------- Animation helpers --------
+  function animateLumaMsg(newHTML) {
+    const msgEl = document.getElementById('lumaMsg');
+    if (!msgEl) return;
+    // Fade out → swap content → fade in with slight y drift
+    gsap.to(msgEl, {
+      opacity: 0,
+      y: -3,
+      duration: 0.18,
+      ease: 'power2.in',
+      onComplete: () => {
+        msgEl.innerHTML = newHTML;
+        gsap.fromTo(msgEl,
+          { opacity: 0, y: 3 },
+          { opacity: 1, y: 0, duration: 0.28, ease: 'power2.out' }
+        );
+      }
+    });
+  }
+
+  function animateLumaReaction() {
+    // Luma avatar: subtle scale + glow pulse, as if the coach is responding
+    const avatar = document.querySelector('.luma-avatar');
+    if (!avatar) return;
+    gsap.fromTo(avatar,
+      { scale: 1 },
+      {
+        scale: 1.08,
+        duration: 0.25,
+        ease: 'power2.out',
+        yoyo: true,
+        repeat: 1,
+      }
+    );
+  }
+
+  function animateCalibRow(rowIndex, isCorrect, confLabel) {
+    // Flip the pending mark into the result mark (like a card flipping)
+    const rows = document.querySelectorAll('.calib-row');
+    const row = rows[rowIndex];
+    if (!row) return;
+    const mark = row.querySelector('.calib-mark');
+    const conf = row.querySelector('.calib-conf');
+
+    // 3D flip in two halves: rotateX to 90, swap content, rotateX back
+    gsap.to(mark, {
+      rotationX: 90,
+      duration: 0.18,
+      ease: 'power2.in',
+      onComplete: () => {
+        mark.className = 'calib-mark ' + (isCorrect ? 'right' : 'wrong');
+        mark.textContent = isCorrect ? '✓' : '✗';
+        gsap.fromTo(mark,
+          { rotationX: -90 },
+          { rotationX: 0, duration: 0.24, ease: 'back.out(2)' }
+        );
+      }
+    });
+    // Conf label swap: fade out → set text → fade in
+    gsap.to(conf, {
+      opacity: 0,
+      duration: 0.15,
+      ease: 'power2.in',
+      onComplete: () => {
+        if (confLabel !== undefined) conf.textContent = confLabel;
+        gsap.to(conf, { opacity: 1, duration: 0.3, ease: 'power2.out' });
+      }
+    });
+  }
+
+  function splitIntoWords(el) {
+    // Idempotent: if already split (has .word children), return them
+    if (el.querySelector('.word')) {
+      return el.querySelectorAll('.word');
+    }
+
+    // Store original HTML for potential future restore
+    if (!el.dataset.original) {
+      el.dataset.original = el.innerHTML;
+    }
+
+    // Parse into nodes, walk, split text nodes into word spans while preserving element nodes (like <em>)
+    const result = document.createDocumentFragment();
+    function processNode(node, targetParent) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const words = node.textContent.split(/(\s+)/);
+        words.forEach(w => {
+          if (w.trim()) {
+            const span = document.createElement('span');
+            span.className = 'word';
+            span.style.display = 'inline-block';
+            span.textContent = w;
+            targetParent.appendChild(span);
+          } else if (w) {
+            targetParent.appendChild(document.createTextNode(w));
+          }
+        });
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        // Clone the element but empty, recurse into its children as word spans
+        const clone = node.cloneNode(false);
+        targetParent.appendChild(clone);
+        node.childNodes.forEach(child => processNode(child, clone));
+      }
+    }
+
+    Array.from(el.childNodes).forEach(node => processNode(node, result));
+    el.innerHTML = '';
+    el.appendChild(result);
+
+    return el.querySelectorAll('.word');
+  }
+
+  function restoreHeadline(el) {
+    // Called on restart to undo the word split
+    if (el && el.dataset.original) {
+      el.innerHTML = el.dataset.original;
+    }
+  }
+
+  const CONTENT = [
+    {
+      name: 'Frame',
+      promptEyebrow: 'Step 1 · Frame',
+      promptMeta: 'The problem · who, what',
+      prompt: "QuickBite's weekly retention dropped 12% over 3 months. Which framing is strongest?",
+      promptSub: "What are we trying to solve, and for whom? Pick the strongest framing before you get near solutions.",
+      ghost: "I picked this because...",
+      options: [
+        { text: "Users are churning because competitors are cheaper — we need to drop prices", correct: false },
+        { text: "Retention loss is concentrated in once-weekly users whose late deliveries have spiked — the churn is driven by reliability, not price", correct: true },
+        { text: "The app needs better onboarding to improve user engagement", correct: false },
+        { text: "We should investigate whether our delivery partner network has enough coverage", correct: false },
+      ],
+      lumaMsgInitial: "Start by framing what's actually going wrong with QuickBite's retention — who's affected, what's the real pain.",
+      lumaMsgConfidence: "Before you lock in — how sure are you? Quick tap. No judgment either way.",
+      feedback: {
+        correct_tier2: {
+          eyebrow: 'Luma saw your thinking', tier: 'tier-2',
+          body: ["You named a <em>specific user segment</em> and tied the problem to <em>a measurable signal</em>. That's exactly the move — framing before solving."],
+          pattern: { id: 'FP-01', label: 'Vague segment — avoided' }
+        },
+        correct_tier1: {
+          eyebrow: 'Nice pick', tier: 'tier-2',
+          body: ["You got to the right framing. Worth writing <em>why</em> next time — the reasoning field is where coaching gets sharper."],
+          pattern: { id: 'FP-01', label: 'Vague segment — avoided' }
+        },
+        wrong_tier2: {
+          eyebrow: 'Worth looking at', tier: 'wrong',
+          body: ["Your reasoning treats 'users' as one group, but retention drops are almost never uniform. The data shows once-weekly users with late-delivery experiences — a specific segment with a specific pain."],
+          pattern: { id: 'FP-01', label: 'Vague user segment detected' }
+        },
+        wrong_tier1: {
+          eyebrow: 'One to revisit', tier: 'wrong',
+          body: ["The strongest framing names <em>which users</em> and <em>what's actually driving the drop</em>. Price and onboarding are generic — the data points to reliability among once-weekly users."],
+          pattern: { id: 'FP-01', label: 'Vague user segment detected' }
+        },
+        rockSolidWrong: {
+          eyebrow: 'High-value moment', tier: 'wrong',
+          body: ["Rock solid + off-target is the most useful learning rep. Price-framing <em>feels</em> right because competitors are a default villain — but the data is about <em>who's churning</em> and <em>what happened to them</em>. When confidence feels high, one extra beat on \"what would change my mind?\" is the move."],
+          pattern: { id: 'FP-01', label: 'Vague segment + overconfidence' }
+        }
+      }
+    },
+    {
+      name: 'List',
+      promptEyebrow: 'Step 2 · List',
+      promptMeta: 'Generate · not select',
+      prompt: "What's the strongest candidate set for improving late-arrival experience?",
+      promptSub: "Listing, not selecting. Which set is most on-scope and specific to the pain?",
+      ghost: "The strongest set is... because...",
+      options: [
+        { text: "Improve ETAs, send proactive delay notifications, offer credits for late orders", correct: true },
+        { text: "Partner with more delivery providers, hire more drivers", correct: false },
+        { text: "Launch a loyalty program and referral bonuses", correct: false },
+        { text: "Redesign the restaurant discovery page", correct: false },
+      ],
+      lumaMsgInitial: "Good framing. Now list options — generate candidates that address the specific pain, don't pick a winner yet.",
+      lumaMsgConfidence: "Same two-tap calibration.",
+      feedback: {
+        correct_tier2: {
+          eyebrow: 'Luma saw your thinking', tier: 'tier-2',
+          body: ["You picked the set that directly maps to <em>late-arrival experience</em>. Expectation-setting (ETAs), trust during delay (notifications), recovery (credits)."],
+          pattern: { id: 'FP-04', label: 'Scope discipline held' }
+        },
+        correct_tier1: {
+          eyebrow: 'Solid pick', tier: 'tier-2',
+          body: ["You picked the set that maps to the framed problem. Tight scope."],
+          pattern: { id: 'FP-04', label: 'Scope discipline held' }
+        },
+        wrong_tier2: {
+          eyebrow: 'Worth looking at', tier: 'wrong',
+          body: ["The framing was about late-delivery experience. Your pick introduces solutions to different problems — all fine ideas, but not addressing what you diagnosed. <em>FP-04</em> — scope creep in listing."],
+          pattern: { id: 'FP-04', label: 'Scope creep in listing' }
+        },
+        wrong_tier1: {
+          eyebrow: 'One to revisit', tier: 'wrong',
+          body: ["Remember the framing: <em>late-arrival experience</em>. The strongest list addresses that specific pain — ETAs, notifications, credits."],
+          pattern: { id: 'FP-04', label: 'Scope creep in listing' }
+        },
+        rockSolidWrong: {
+          eyebrow: 'High-value moment', tier: 'wrong',
+          body: ["Confident but off-scope — the exact pattern we're working on. Loyalty and referrals are fine answers to 'how do we improve retention generally' — but that's not the problem you framed. Staying narrow is a muscle."],
+          pattern: { id: 'FP-04', label: 'Scope creep + overconfidence' }
+        }
+      }
+    },
+    {
+      name: 'Weigh',
+      promptEyebrow: 'Step 3 · Weigh',
+      promptMeta: 'Order matters',
+      prompt: "Of those three interventions, which ships first?",
+      promptSub: "Prioritization lives here. What ships first matters more than what ships eventually.",
+      ghost: "I'd prioritize X over Y since...",
+      options: [
+        { text: "Proactive delay notifications — low build cost, high perceived-trust impact, addresses the anxiety moment itself", correct: true },
+        { text: "Credits for late orders — customers feel compensated", correct: false },
+        { text: "Improved ETA accuracy — better expectations upfront", correct: false },
+        { text: "Ship all three together so users see a comprehensive fix", correct: false },
+      ],
+      lumaMsgInitial: "Prioritization step. What you pick matters less than <em>why</em> — impact, effort, order. Watch for the trap of shipping everything.",
+      lumaMsgConfidence: "The step where overconfidence shows up most often.",
+      feedback: {
+        correct_tier2: {
+          eyebrow: 'Sharp thinking', tier: 'tier-3',
+          body: ["You named <em>impact</em>, <em>effort</em>, and <em>sequencing</em>. Three of the four things a calibrated evaluator listens for. FP-03 was active — this rep goes in the improving column."],
+          pattern: { id: 'FP-03', label: 'Prioritization — strong rep' }
+        },
+        correct_tier1: {
+          eyebrow: 'Good call', tier: 'tier-2',
+          body: ["Right pick. Next rep, try writing the <em>why</em> — it's where the coaching compounds."],
+          pattern: { id: 'FP-03', label: 'Prioritization — correct' }
+        },
+        wrong_tier2: {
+          eyebrow: 'Worth looking at', tier: 'wrong',
+          body: ["Valid intervention, but the question was about <em>order</em>. Credits compensate for a bad experience; notifications prevent it. Prevention before recovery is usually the stronger sequence. <em>FP-03</em> active again."],
+          pattern: { id: 'FP-03', label: 'Prioritization pattern present' }
+        },
+        wrong_tier1: {
+          eyebrow: 'One to revisit', tier: 'wrong',
+          body: ["The strongest prioritization leads with <em>proactive notifications</em> — cheapest to build, addresses the anxiety itself rather than compensating after."],
+          pattern: { id: 'FP-03', label: 'Prioritization pattern present' }
+        },
+        rockSolidWrong: {
+          eyebrow: 'High-value moment', tier: 'wrong',
+          body: ["Rock solid + off on prioritization is the single most valuable data point here. Every option <em>sounds</em> good in isolation — prioritization isn't about which is good, it's about which is best <em>first</em>."],
+          pattern: { id: 'FP-03', label: 'Prioritization + overconfidence' }
+        }
+      }
+    },
+    {
+      name: 'Win',
+      promptEyebrow: 'Step 4 · Win',
+      promptMeta: 'One sentence',
+      prompt: "How would you pitch proactive delay notifications to leadership in one sentence?",
+      promptSub: "Specificity is what makes pitches land — the exact user, the exact mechanism, the exact insight.",
+      ghost: "The one-liner is... because...",
+      options: [
+        { text: "We should build proactive delay notifications because they reduce user anxiety and will improve retention", correct: false },
+        { text: "Proactive delay notifications turn our weakest moment — late orders — into a trust-building one, keeping once-weekly users who are churning because of reliability, not price", correct: true },
+        { text: "We need to improve our notifications to stay competitive", correct: false },
+        { text: "Our users want more communication from us, so let's build delay notifications", correct: false },
+      ],
+      lumaMsgInitial: "Last step: the one-liner. Specificity is what makes pitches land — the exact user, mechanism, and insight.",
+      lumaMsgConfidence: "Almost done. Confidence tap before you commit.",
+      feedback: {
+        correct_tier2: {
+          eyebrow: 'Sharp thinking', tier: 'tier-3',
+          body: ["You named the <em>exact user</em>, the <em>exact mechanism</em>, and the <em>exact insight</em>. That's the sentence you could say in a leadership room."],
+          pattern: { id: 'FP-09', label: 'Sharp close — rare move' }
+        },
+        correct_tier1: {
+          eyebrow: 'Good pick', tier: 'tier-2',
+          body: ["Right answer. Naming what made this sentence better than the others is the rep that compounds."],
+          pattern: { id: 'FP-09', label: 'Strong close' }
+        },
+        wrong_tier2: {
+          eyebrow: 'Worth looking at', tier: 'wrong',
+          body: ["Directionally right but generic. A calibrated pitch names the specific user, mechanism, and insight. Yours names the feature and a vague benefit. <em>FP-09</em> — generic pitch."],
+          pattern: { id: 'FP-09', label: 'Generic pitch' }
+        },
+        wrong_tier1: {
+          eyebrow: 'One to revisit', tier: 'wrong',
+          body: ["The strongest one-liner is option 2 — names the user, the mechanism, and the insight in one sentence. That's what makes a pitch land."],
+          pattern: { id: 'FP-09', label: 'Generic pitch' }
+        },
+        rockSolidWrong: {
+          eyebrow: 'High-value moment', tier: 'wrong',
+          body: ["Confident and generic. The pitch you picked would get a polite nod. The winning pitch gets a budget. Specificity is the difference."],
+          pattern: { id: 'FP-09', label: 'Generic pitch + overconfidence' }
+        }
+      }
+    }
+  ];
+
+  function startSession() {
+    // Orchestrated reveal: intro fades out, app elements stagger in
+    const intro = document.getElementById('intro');
+    gsap.to(intro, {
+      opacity: 0,
+      duration: 0.3,
+      ease: 'power2.out',
+      onComplete: () => {
+        intro.classList.add('hidden');
+        intro.style.opacity = '';
+      }
+    });
+
+    // Prime the app shell elements to staggered-in state
+    const revealTargets = [
+      document.querySelector('.nav'),
+      document.querySelector('.flow-rail'),
+      document.querySelector('.challenge-card'),
+      document.querySelector('.luma-card'),
+      document.querySelector('.calib-preview'),
+      document.querySelector('.context-card'),
+    ].filter(Boolean);
+
+    gsap.set(revealTargets, { opacity: 0, y: 8 });
+
+    renderStep(0);
+
+    gsap.to(revealTargets, {
+      opacity: 1,
+      y: 0,
+      duration: 0.5,
+      ease: 'power3.out',
+      stagger: 0.07,
+      delay: 0.1,
+    });
+  }
+
+  function renderStep(idx) {
+    state.stepIndex = idx;
+    state.locked = false;
+    state.steps[idx] = state.steps[idx] || { choice: null, confidence: null, reasoning: '', correct: null };
+
+    const step = CONTENT[idx];
+
+    document.querySelectorAll('.flow-step').forEach((el, i) => {
+      el.classList.remove('active', 'done');
+      if (i < idx) el.classList.add('done');
+      if (i === idx) el.classList.add('active');
+    });
+
+    document.getElementById('lumaMsg').innerHTML = step.lumaMsgInitial;
+
+    const card = document.getElementById('challengeCard');
+    card.innerHTML = `
+      <div class="prompt-row">
+        <div class="prompt-eyebrow">${step.promptEyebrow}</div>
+        <div class="prompt-meta">${step.promptMeta}</div>
+      </div>
+      <h2 class="prompt">${step.prompt}</h2>
+      <p class="prompt-sub">${step.promptSub}</p>
+
+      <div class="options" id="optionsList">
+        ${step.options.map((o, i) => `
+          <button class="option" data-idx="${i}" onclick="selectOption(${i})">
+            <span class="option-mark">${String.fromCharCode(65 + i)}</span>
+            ${o.text}
+          </button>
+        `).join('')}
+      </div>
+
+      <div class="dock" id="dock">
+        <div class="dock-row disabled" id="confRow">
+          <div class="dock-label"><b>Confidence</b>Before you lock in</div>
+          <div class="conf-options" id="confOptions">
+            ${CONF_LABELS.map((l, i) => `
+              <button class="conf-btn" data-conf="${i}" onclick="selectConfidence(${i})">
+                <span class="conf-num">${i + 1}/4</span>
+                <span class="conf-txt">${l}</span>
+              </button>
+            `).join('')}
+          </div>
+          <div class="conf-hint">2 sec · required</div>
+        </div>
+
+        <div class="dock-row disabled" id="reasoningRow">
+          <div class="dock-label"><b>Why this one?</b>Unlocks richer coaching</div>
+          <textarea id="reasoningInput" class="reasoning-input" rows="1" placeholder="${step.ghost}" oninput="onReasoningInput()"></textarea>
+          <div class="reasoning-opt">Optional</div>
+        </div>
+
+        <div class="submit-strip">
+          <div class="submit-hint" id="submitHint">Pick an option to continue</div>
+          <button class="submit-btn" id="submitBtn" onclick="submitStep()" disabled>Submit</button>
+        </div>
+      </div>
+
+      <div id="feedbackSlot"></div>
+    `;
+
+    // Animate prompt + options stagger (only on subsequent steps, not first — first is handled by startSession)
+    if (idx > 0) {
+      const prompt = card.querySelector('.prompt');
+      const promptSub = card.querySelector('.prompt-sub');
+      const options = card.querySelectorAll('.option');
+      const dock = card.querySelector('.dock');
+
+      gsap.fromTo([prompt, promptSub],
+        { opacity: 0, y: 6 },
+        { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out', stagger: 0.05 }
+      );
+      gsap.fromTo(options,
+        { opacity: 0, y: 4 },
+        { opacity: 1, y: 0, duration: 0.35, ease: 'power3.out', stagger: 0.04, delay: 0.12 }
+      );
+      gsap.fromTo(dock,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.3, delay: 0.32 }
+      );
+    }
+  }
+
+  function selectOption(i) {
+    if (state.locked) return;
+    const step = state.steps[state.stepIndex];
+    const wasEmpty = step.choice === null;
+    step.choice = i;
+
+    document.querySelectorAll('.option').forEach((el, idx) => {
+      el.classList.toggle('selected', idx === i);
+    });
+
+    // Satisfying pop on the selected mark
+    const selectedMark = document.querySelector('.option.selected .option-mark');
+    if (selectedMark) {
+      gsap.fromTo(selectedMark,
+        { scale: 0.7 },
+        { scale: 1, duration: 0.35, ease: 'back.out(2.5)' }
+      );
+    }
+
+    const confRow = document.getElementById('confRow');
+
+    // Only animate-in the first time confidence row becomes available
+    if (wasEmpty) {
+      confRow.classList.remove('disabled');
+      gsap.fromTo(confRow,
+        { y: 4, opacity: 0.3 },
+        { y: 0, opacity: 1, duration: 0.35, ease: 'power2.out' }
+      );
+    } else {
+      confRow.classList.remove('disabled');
+    }
+
+    // Animate Luma message swap
+    animateLumaMsg(CONTENT[state.stepIndex].lumaMsgConfidence);
+
+    updateSubmitState();
+  }
+
+  function selectConfidence(c) {
+    if (state.locked) return;
+    const step = state.steps[state.stepIndex];
+    const wasEmpty = step.confidence === null;
+    step.confidence = c;
+
+    const allBtns = document.querySelectorAll('.conf-btn');
+    allBtns.forEach((el, idx) => {
+      if (idx === c) {
+        el.classList.add('selected');
+        // Sweep fill left-to-right
+        gsap.fromTo(el,
+          { '--conf-fill': 0 },
+          { '--conf-fill': 1, duration: 0.32, ease: 'power2.out' }
+        );
+      } else {
+        // If it was selected, collapse back
+        if (el.classList.contains('selected')) {
+          gsap.to(el, { '--conf-fill': 0, duration: 0.2, ease: 'power2.in' });
+        }
+        el.classList.remove('selected');
+      }
+    });
+
+    const reasoningRow = document.getElementById('reasoningRow');
+    if (wasEmpty) {
+      reasoningRow.classList.remove('disabled');
+      gsap.fromTo(reasoningRow,
+        { y: 4, opacity: 0.3 },
+        { y: 0, opacity: 1, duration: 0.35, ease: 'power2.out' }
+      );
+    } else {
+      reasoningRow.classList.remove('disabled');
+    }
+
+    updateSubmitState();
+  }
+
+  function onReasoningInput() {
+    const step = state.steps[state.stepIndex];
+    step.reasoning = document.getElementById('reasoningInput').value;
+  }
+
+  function updateSubmitState() {
+    const step = state.steps[state.stepIndex];
+    const btn = document.getElementById('submitBtn');
+    const hint = document.getElementById('submitHint');
+    const wasDisabled = btn.disabled;
+
+    if (step.choice === null) {
+      btn.disabled = true;
+      hint.textContent = 'Pick an option to continue';
+      return;
+    }
+    if (step.confidence === null) {
+      btn.disabled = true;
+      hint.textContent = 'Rate your confidence to continue';
+      return;
+    }
+    btn.disabled = false;
+    const optionLetter = String.fromCharCode(65 + step.choice);
+    const confLabel = CONF_LABELS[step.confidence];
+    hint.innerHTML = `Locked in: <b>${optionLetter}</b> · <b>${confLabel}</b>`;
+
+    // Trigger ready pulse only on transition from disabled → enabled
+    if (wasDisabled) {
+      btn.classList.remove('ready-pulse');
+      // Force reflow to restart animation
+      void btn.offsetWidth;
+      btn.classList.add('ready-pulse');
+    }
+  }
+
+  function submitStep() {
+    state.locked = true;
+    const step = state.steps[state.stepIndex];
+    const content = CONTENT[state.stepIndex];
+    const isCorrect = content.options[step.choice].correct;
+    step.correct = isCorrect;
+
+    // Remove ready-pulse
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) submitBtn.classList.remove('ready-pulse');
+
+    // Lock options + reveal correct answer
+    document.querySelectorAll('.option').forEach((el, idx) => {
+      el.classList.add('locked');
+      if (idx === step.choice) {
+        el.classList.add(isCorrect ? 'correct' : 'incorrect');
+      } else if (content.options[idx].correct) {
+        el.classList.add('reveal-correct');
+      }
+    });
+
+    // Fade out the dock before showing feedback (smooth handoff)
+    const dock = document.getElementById('dock');
+    gsap.to(dock, {
+      opacity: 0,
+      y: -4,
+      duration: 0.25,
+      ease: 'power2.in',
+      onComplete: () => { dock.style.display = 'none'; }
+    });
+
+    const hasReasoning = (step.reasoning || '').trim().length > 10;
+    let fb;
+    if (isCorrect) {
+      fb = hasReasoning ? content.feedback.correct_tier2 : content.feedback.correct_tier1;
+    } else {
+      if (step.confidence === 3) {
+        fb = content.feedback.rockSolidWrong;
+      } else {
+        fb = hasReasoning ? content.feedback.wrong_tier2 : content.feedback.wrong_tier1;
+      }
+    }
+
+    const slot = document.getElementById('feedbackSlot');
+    const isLast = state.stepIndex === CONTENT.length - 1;
+    slot.innerHTML = `
+      <div class="feedback-card ${fb.tier}">
+        <div class="fb-header">
+          <div class="fb-eyebrow">${fb.eyebrow}</div>
+        </div>
+        <div class="fb-body">${fb.body.map(p => `<p>${p}</p>`).join('')}</div>
+        <div class="fb-footer">
+          ${fb.pattern ? `
+            <div class="fb-pattern">
+              <span class="fp-tag">${fb.pattern.id}</span>
+              <span>${fb.pattern.label}</span>
+            </div>
+          ` : '<div></div>'}
+          <button class="fb-next-btn" onclick="${isLast ? 'goToPostSession()' : 'nextStep()'}">${isLast ? 'See session mirror →' : 'Next step →'}</button>
+        </div>
+      </div>
+    `;
+
+    // Orchestrated feedback reveal
+    const card = slot.querySelector('.feedback-card');
+    const eyebrow = card.querySelector('.fb-eyebrow');
+    const bodyParas = card.querySelectorAll('.fb-body p');
+    const footer = card.querySelector('.fb-footer');
+
+    gsap.fromTo(card,
+      { opacity: 0, y: 12 },
+      { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out', delay: 0.15 }
+    );
+    gsap.fromTo(eyebrow,
+      { opacity: 0, x: -6 },
+      { opacity: 1, x: 0, duration: 0.3, ease: 'power2.out', delay: 0.3 }
+    );
+    gsap.fromTo(bodyParas,
+      { opacity: 0, y: 4 },
+      { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out', stagger: 0.06, delay: 0.4 }
+    );
+    gsap.fromTo(footer,
+      { opacity: 0 },
+      { opacity: 1, duration: 0.3, delay: 0.55 }
+    );
+
+    // Animate calibration row flip
+    updateCalibPreview();
+
+    // Luma reaction + message swap
+    animateLumaReaction();
+    setTimeout(() => {
+      animateLumaMsg(isCorrect
+        ? `Good rep. ${hasReasoning ? "Reasoning noted — that's where the coaching compounds." : ''}`
+        : `Worth a beat here. The feedback card has the full breakdown.`);
+    }, 200);
+  }
+
+  function updateCalibPreview() {
+    const currentIdx = state.stepIndex;
+    const s = state.steps[currentIdx];
+    if (!s || s.correct === null) return;
+    animateCalibRow(currentIdx, s.correct, CONF_LABELS[s.confidence]);
+  }
+
+  function nextStep() {
+    const card = document.getElementById('challengeCard');
+    // Fade challenge card contents out, then render next step
+    gsap.to(card, {
+      opacity: 0,
+      y: -6,
+      duration: 0.22,
+      ease: 'power2.in',
+      onComplete: () => {
+        gsap.set(card, { opacity: 1, y: 0 });
+        renderStep(state.stepIndex + 1);
+      }
+    });
+  }
+
+  function goToPostSession() {
+    document.getElementById('sessionView').style.display = 'none';
+    const postView = document.getElementById('postSessionView');
+    postView.classList.add('active');
+
+    const matrix = document.getElementById('calibMatrix');
+    const highConf = state.steps.filter(s => s.confidence >= 2);
+    const lowConf = state.steps.filter(s => s.confidence < 2);
+    const highConfRight = highConf.filter(s => s.correct).length;
+    const lowConfRight = lowConf.filter(s => s.correct).length;
+
+    matrix.innerHTML = `
+      <div class="matrix-cell">
+        <div class="mc-label">Confident on</div>
+        <div class="mc-main"><b>${highConf.length}</b> · <b class="${highConfRight === highConf.length ? '' : 'warn'}">${highConfRight} right</b></div>
+        <div class="mc-note">${highConf.map(s => CONTENT[state.steps.indexOf(s)].name).join(', ') || 'None'}</div>
+      </div>
+      <div class="matrix-cell">
+        <div class="mc-label">Uncertain on</div>
+        <div class="mc-main"><b>${lowConf.length}</b> · <b>${lowConfRight} right</b></div>
+        <div class="mc-note">${lowConf.map(s => CONTENT[state.steps.indexOf(s)].name).join(', ') || 'None'}</div>
+      </div>
+    `;
+
+    const insight = document.getElementById('calibInsight');
+    const totalRight = state.steps.filter(s => s.correct).length;
+    const rockSolidWrong = state.steps.filter(s => s.confidence === 3 && !s.correct).length;
+    const uncertainRight = state.steps.filter(s => s.confidence <= 1 && s.correct).length;
+
+    let insightText = '';
+    if (rockSolidWrong > 0) {
+      const badSteps = state.steps.map((s, i) => ({s, i})).filter(x => x.s.confidence === 3 && !x.s.correct);
+      const stepNames = badSteps.map(x => CONTENT[x.i].name).join(', ');
+      insightText = `<b>Watch this:</b> rock solid on ${stepNames} but off-target. Highest-value signal in the session.`;
+    } else if (uncertainRight > 0 && totalRight >= 3) {
+      insightText = `<b>Pattern:</b> you're <em>underconfident</em> on steps where you got it right. Judgment is stronger than your gut.`;
+    } else if (totalRight === 4) {
+      insightText = `<b>Clean session:</b> confidence matched correctness across the board. Calibration working.`;
+    } else {
+      insightText = `<b>Pattern:</b> confidence calls landed roughly where they should. Wrong answers came on steps you were less sure about.`;
+    }
+    insight.innerHTML = insightText;
+
+    document.getElementById('scoreVal').textContent = `${totalRight} / 4`;
+
+    const frameStep = state.steps[0];
+    if (frameStep.correct && frameStep.reasoning.trim().length > 15) {
+      document.getElementById('heroQuoteNow').textContent = `"${frameStep.reasoning.trim()}"`;
+    }
+
+    // -------- Orchestrated reveal --------
+    // Priming: set all post-session sections to pre-reveal state
+    const postHead = postView.querySelector('.post-head');
+    const heroBlock = postView.querySelector('.hero-block');
+    const heroHeadline = postView.querySelector('.hero-headline');
+    const heroEyebrow = postView.querySelector('.hero-eyebrow');
+    const heroEvidenceCols = postView.querySelectorAll('.evidence-col');
+    const calibSnapshot = postView.querySelector('.calib-snapshot');
+    const matrixCells = postView.querySelectorAll('.matrix-cell');
+    const calibInsightEl = postView.querySelector('.calib-insight');
+    const patternSection = postView.querySelector('.pattern-section');
+    const patternItems = postView.querySelectorAll('.pattern-item');
+    const stateChips = postView.querySelectorAll('.state-chip');
+    const postFooter = postView.querySelector('.post-footer');
+
+    gsap.set([postHead, heroBlock, calibSnapshot, patternSection, postFooter], { opacity: 0, y: 12 });
+    gsap.set(heroEyebrow, { opacity: 0, x: -8 });
+    gsap.set(heroEvidenceCols, { opacity: 0, y: 6 });
+    gsap.set(matrixCells, { opacity: 0, y: 6 });
+    gsap.set(calibInsightEl, { opacity: 0 });
+    gsap.set(patternItems, { opacity: 0, y: 6 });
+
+    // Word-by-word reveal for the hero headline (this is the dopamine moment)
+    const words = splitIntoWords(heroHeadline);
+    gsap.set(words, { opacity: 0, y: 8 });
+
+    // Timeline
+    const tl = gsap.timeline();
+
+    // 1. Header fades up
+    tl.to(postHead, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 0);
+
+    // 2. Hero block fades up
+    tl.to(heroBlock, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 0.08);
+
+    // 3. Hero eyebrow slides in
+    tl.to(heroEyebrow, { opacity: 1, x: 0, duration: 0.35, ease: 'power2.out' }, 0.22);
+
+    // 4. Hero headline: word-by-word stagger (the star of the show)
+    tl.to(words, {
+      opacity: 1,
+      y: 0,
+      duration: 0.5,
+      ease: 'power3.out',
+      stagger: 0.045
+    }, 0.3);
+
+    // 5. Past evidence dims in, then now evidence brightens
+    tl.to(heroEvidenceCols[0], { opacity: 0.75, y: 0, duration: 0.4, ease: 'power2.out' }, 0.65);
+    tl.to(heroEvidenceCols[1], { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }, 0.8);
+
+    // 6. Calibration snapshot
+    tl.to(calibSnapshot, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 0.75);
+    tl.to(matrixCells, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', stagger: 0.08 }, 0.92);
+    tl.to(calibInsightEl, { opacity: 1, duration: 0.4, ease: 'power2.out' }, 1.15);
+
+    // 7. Pattern section
+    tl.to(patternSection, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 1.05);
+    tl.to(patternItems, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', stagger: 0.08 }, 1.2);
+
+    // 8. State chip "pulse" for the improving/dormant transitions — a subtle cue that state changed
+    tl.fromTo('.state-chip.improving, .state-chip.dormant',
+      { scale: 0.9 },
+      { scale: 1, duration: 0.3, ease: 'back.out(2)', stagger: 0.06 },
+      1.3
+    );
+
+    // 9. Footer
+    tl.to(postFooter, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }, 1.4);
+  }
+
+  function restart() {
+    state.stepIndex = 0;
+    state.steps = [];
+    state.locked = false;
+
+    // Kill any running tweens and clear GSAP-set inline styles
+    gsap.killTweensOf('*');
+    const postView = document.getElementById('postSessionView');
+    const postTargets = postView.querySelectorAll('.post-head, .hero-block, .hero-headline, .hero-eyebrow, .evidence-col, .calib-snapshot, .matrix-cell, .calib-insight, .pattern-section, .pattern-item, .state-chip, .post-footer, .word');
+    gsap.set(postTargets, { clearProps: 'all' });
+
+    // Reset intro opacity (in case it was animated)
+    gsap.set('#intro', { clearProps: 'all' });
+
+    // Reset session shell elements
+    gsap.set('.nav, .flow-rail, .challenge-card, .luma-card, .calib-preview, .context-card', { clearProps: 'all' });
+
+    // Reset calibration rows to pending state
+    document.querySelectorAll('.calib-row').forEach((row, i) => {
+      const mark = row.querySelector('.calib-mark');
+      mark.className = 'calib-mark pending';
+      mark.textContent = i + 1;
+      const conf = row.querySelector('.calib-conf');
+      conf.textContent = '—';
+      gsap.set([mark, conf], { clearProps: 'all' });
+    });
+
+    // Restore split hero headline
+    const heroHeadline = document.querySelector('.hero-headline');
+    restoreHeadline(heroHeadline);
+
+    document.getElementById('sessionView').style.display = 'flex';
+    postView.classList.remove('active');
+    document.getElementById('intro').classList.remove('hidden');
+  }
+</script>
+
+</body>
+</html>

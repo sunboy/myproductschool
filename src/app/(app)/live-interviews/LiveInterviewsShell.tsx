@@ -2,9 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import type { LiveInterviewPersona } from '@/lib/mock-live-interviews'
 import type { ScenarioBrief } from './page'
 import type { LoopDiscipline } from '@/lib/interview-loops/types'
+import StartInterviewButton from './StartInterviewButton'
+import SingleRoundPicker from './SingleRoundPicker'
 
 // ── Design tokens (exact from styles.css) ─────────────────────────────────────
 const T = {
@@ -188,6 +191,8 @@ interface Round {
   status: 'locked' | 'ready' | 'in_progress' | 'passed' | 'failed'
   grade?: string
   elapsed?: number
+  sessionId?: string | null
+  discipline?: string
 }
 
 function RoundRow({ round, index, isCurrent }: { round: Round; index: number; isCurrent: boolean }) {
@@ -264,6 +269,7 @@ function RoundRow({ round, index, isCurrent }: { round: Round; index: number; is
 // ── Loop types ────────────────────────────────────────────────────────────────
 interface Loop {
   id: string
+  loopDbId: string
   name: string
   company: string
   icon: string
@@ -329,6 +335,7 @@ function mapApiLoop(l: any): Loop {
 
   return {
     id: l.id,
+    loopDbId: l.id,
     name: l.title,
     company: l.target_company ?? 'General',
     icon: COMPANY_ICONS[l.target_company ?? ''] ?? 'corporate_fare',
@@ -353,6 +360,8 @@ function mapApiLoop(l: any): Loop {
         elapsed: activeRound?.id === r.id && r.started_at
           ? Math.floor((Date.now() - new Date(r.started_at).getTime()) / 60000)
           : undefined,
+        sessionId: r.session_id ?? null,
+        discipline: r.discipline ?? null,
       }
     }),
   }
@@ -428,7 +437,8 @@ function LoopGroup({ label, children }: { label: string; children: React.ReactNo
 }
 
 // ── Loop detail ───────────────────────────────────────────────────────────────
-function LoopDetail({ loop }: { loop: Loop }) {
+function LoopDetail({ loop, onEdit }: { loop: Loop; onEdit?: () => void }) {
+  const router = useRouter()
   const isInProgress = loop.status === 'in_progress'
   const isConfigured = loop.status === 'configured'
   const isCompleted  = loop.status === 'completed'
@@ -460,36 +470,54 @@ function LoopDetail({ loop }: { loop: Loop }) {
         </div>
 
         {/* Primary CTA */}
-        {isInProgress && (
-          <button style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '14px 24px', borderRadius: 999, border: 'none', cursor: 'pointer',
-            background: T.primary, color: T.onPrimary,
-            fontSize: 15, fontWeight: 700, flexShrink: 0, whiteSpace: 'nowrap',
-          }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>play_arrow</span>
-            Resume round {loop.rounds.findIndex((r) => r.status === 'in_progress') + 1}
-          </button>
-        )}
+        {isInProgress && (() => {
+          const inProgressIdx = loop.rounds.findIndex((r) => r.status === 'in_progress')
+          const inProgressRound = loop.rounds[inProgressIdx]
+          const params = new URLSearchParams({ loop_id: loop.loopDbId, round_index: String(inProgressIdx) })
+          if (inProgressRound?.discipline) params.set('discipline', inProgressRound.discipline)
+          const href = inProgressRound?.sessionId
+            ? `/live-interviews/${inProgressRound.sessionId}?${params.toString()}`
+            : `/live-interviews/loop/${loop.loopDbId}`
+          return (
+            <button
+              onClick={() => router.push(href)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                padding: '14px 24px', borderRadius: 999, border: 'none', cursor: 'pointer',
+                background: T.primary, color: T.onPrimary,
+                fontSize: 15, fontWeight: 700, flexShrink: 0, whiteSpace: 'nowrap',
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>play_arrow</span>
+              Resume round {inProgressIdx + 1}
+            </button>
+          )
+        })()}
         {isConfigured && (
-          <button style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '14px 24px', borderRadius: 999, border: 'none', cursor: 'pointer',
-            background: T.btnDarkBg, color: T.btnDarkText,
-            fontSize: 15, fontWeight: 700, flexShrink: 0, whiteSpace: 'nowrap',
-          }}>
+          <button
+            onClick={() => router.push(`/live-interviews/loop/${loop.loopDbId}`)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '14px 24px', borderRadius: 999, border: 'none', cursor: 'pointer',
+              background: T.btnDarkBg, color: T.btnDarkText,
+              fontSize: 15, fontWeight: 700, flexShrink: 0, whiteSpace: 'nowrap',
+            }}
+          >
             <span className="material-symbols-outlined" style={{ fontSize: 18 }}>play_arrow</span>
             Start loop
           </button>
         )}
         {isCompleted && (
-          <button style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '14px 24px', borderRadius: 999, cursor: 'pointer',
-            background: 'transparent', color: T.onSurface,
-            border: `1px solid ${T.outlineVariant}`,
-            fontSize: 15, fontWeight: 700, flexShrink: 0, whiteSpace: 'nowrap',
-          }}>
+          <button
+            onClick={() => router.push(`/live-interviews/loop/${loop.loopDbId}`)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '14px 24px', borderRadius: 999, cursor: 'pointer',
+              background: 'transparent', color: T.onSurface,
+              border: `1px solid ${T.outlineVariant}`,
+              fontSize: 15, fontWeight: 700, flexShrink: 0, whiteSpace: 'nowrap',
+            }}
+          >
             <span className="material-symbols-outlined" style={{ fontSize: 18 }}>summarize</span>
             View debrief
           </button>
@@ -516,7 +544,10 @@ function LoopDetail({ loop }: { loop: Loop }) {
         <span style={{ fontSize: 12, color: T.onSurfaceVariant }}>
           Persona: <b>{loop.company}</b> · Difficulty <b>Staff+</b> · Voice mode on · Auto-save every round
         </span>
-        <button style={{ marginLeft: 'auto', border: 'none', background: 'transparent', color: T.primary, fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+        <button
+          onClick={() => onEdit?.()}
+          style={{ marginLeft: 'auto', border: 'none', background: 'transparent', color: T.primary, fontWeight: 700, fontSize: 12, cursor: 'pointer' }}
+        >
           Edit
         </button>
       </div>
@@ -735,7 +766,7 @@ function LoopBuilder({ onCancel, onSaved }: { onCancel: () => void; onSaved: (lo
 // ── Mock loop data ─────────────────────────────────────────────────────────────
 const MOCK_LOOPS: Loop[] = [
   {
-    id: 'lp1', name: 'Stripe — Senior PM loop', company: 'Stripe', icon: 'credit_card',
+    id: 'lp1', loopDbId: 'lp1', name: 'Stripe — Senior PM loop', company: 'Stripe', icon: 'credit_card',
     status: 'in_progress', progressPct: 33,
     lastActive: 'Resumed 2h ago', totalMins: 120,
     rounds: [
@@ -746,7 +777,7 @@ const MOCK_LOOPS: Loop[] = [
     ],
   },
   {
-    id: 'lp2', name: 'Anthropic — Staff PM loop', company: 'Anthropic', icon: 'psychology',
+    id: 'lp2', loopDbId: 'lp2', name: 'Anthropic — Staff PM loop', company: 'Anthropic', icon: 'psychology',
     status: 'configured',
     lastActive: 'Configured Apr 22', totalMins: 140,
     rounds: [
@@ -757,7 +788,7 @@ const MOCK_LOOPS: Loop[] = [
     ],
   },
   {
-    id: 'lp3', name: 'Meta — IC6 PM loop', company: 'Meta', icon: 'groups',
+    id: 'lp3', loopDbId: 'lp3', name: 'Meta — IC6 PM loop', company: 'Meta', icon: 'groups',
     status: 'completed', grade: 'B+', overallScore: 84,
     lastActive: 'Completed Apr 16', totalMins: 110,
     rounds: [
@@ -871,7 +902,7 @@ function FullLoopPanel() {
       {/* Right: detail or builder */}
       {building
         ? <LoopBuilder onCancel={() => setBuilding(false)} onSaved={handleLoopSaved} />
-        : activeLoop ? <LoopDetail loop={activeLoop} /> : null
+        : activeLoop ? <LoopDetail loop={activeLoop} onEdit={() => setBuilding(true)} /> : null
       }
     </div>
   )
@@ -972,123 +1003,10 @@ function PastSessionsTable() {
   )
 }
 
-// ── Single round panel ────────────────────────────────────────────────────────
-const ROLES = ['All', 'PM', 'SWE', 'Data Eng', 'ML Eng']
-
-function SingleRoundPanel({ personas }: { personas: LiveInterviewPersona[] }) {
-  const [activeFilter, setActiveFilter] = useState('All')
-  const [selectedIdx, setSelectedIdx] = useState(0)
-
-  const filtered = activeFilter === 'All' ? personas : personas.filter((p) => p.role === activeFilter)
-  const persona = filtered[selectedIdx] ?? filtered[0]
-
-  return (
-    <div style={{
-      display: 'grid', gridTemplateColumns: '260px 1fr',
-      borderRadius: 24, overflow: 'hidden',
-      border: `1px solid ${T.outlineFaint}`,
-      background: T.surface,
-      minHeight: 480,
-    }}>
-      {/* Left roster */}
-      <div style={{ borderRight: `1px solid ${T.outlineFaint}`, display: 'flex', flexDirection: 'column' }}>
-        {/* Role filter pills */}
-        <div style={{ padding: '14px 12px 10px', display: 'flex', flexWrap: 'wrap', gap: 6, borderBottom: `1px solid ${T.outlineFaint}` }}>
-          {ROLES.map((r) => {
-            const active = activeFilter === r
-            return (
-              <button key={r} onClick={() => { setActiveFilter(r); setSelectedIdx(0) }} style={{
-                padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700,
-                background: active ? T.onSurface : T.surfaceContainerLow,
-                color: active ? '#f7ede0' : T.onSurfaceVariant,
-                border: 'none', cursor: 'pointer',
-              }}>{r}</button>
-            )
-          })}
-        </div>
-        {/* Company list */}
-        <div style={{ flex: 1, overflow: 'auto', padding: '10px 10px' }}>
-          {filtered.map((p, i) => {
-            const isActive = i === selectedIdx
-            return (
-              <button key={p.slug} onClick={() => setSelectedIdx(i)} style={{
-                width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-                padding: '10px 12px', borderRadius: 12, border: 'none', textAlign: 'left',
-                background: isActive ? T.primaryContainer : 'transparent',
-                marginBottom: 2, cursor: 'pointer',
-              }}>
-                <span className="material-symbols-outlined" style={{
-                  fontSize: 20,
-                  color: isActive ? T.primary : T.onSurfaceMuted,
-                  fontVariationSettings: "'FILL' 0",
-                }}>{p.icon}</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 700, color: isActive ? T.onPrimaryContainer : T.onSurface }}>{p.companyName}</div>
-                  <div style={{ fontSize: 11, color: T.onSurfaceMuted }}>{p.role}</div>
-                </div>
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: DIFF_DOT[p.difficulty] ?? T.primary, flexShrink: 0, display: 'inline-block' }} />
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Right detail */}
-      {persona && (
-        <div style={{ position: 'relative', padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 18 }}>
-          {/* Ghost icon */}
-          <div aria-hidden style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 280, color: T.primary, opacity: 0.04, fontVariationSettings: "'FILL' 1" }}>{persona.icon}</span>
-          </div>
-
-          <div style={{ position: 'relative' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 22, color: T.primary }}>{persona.icon}</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: T.onSurfaceMuted }}>{persona.companyName}</span>
-            </div>
-            <h2 style={{ margin: '0 0 10px', fontFamily: 'var(--font-headline,Literata,Georgia,serif)', fontSize: 32, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.1, color: T.onSurface }}>
-              {persona.role} round
-            </h2>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <Chip label={DIFF_LABEL[persona.difficulty] ?? persona.difficulty} amber />
-              <Chip label={`~${persona.estimatedMins} min`} />
-            </div>
-          </div>
-
-          <div style={{ position: 'relative', borderLeft: `2px solid ${T.primary}`, paddingLeft: 14, fontSize: 14, fontStyle: 'italic', lineHeight: 1.6, color: T.onSurfaceVariant }}>
-            {persona.interviewStyle}
-          </div>
-
-          <div style={{
-            position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '16px 18px', borderRadius: 18, // --radius-md
-            background: T.primaryContainer,
-          }}>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 14, color: T.onSurface }}>Free-form interview</div>
-              <div style={{ fontSize: 12, color: T.onSurfaceMuted }}>Hatch picks the scenario</div>
-            </div>
-            <Link
-              href={`/live-interviews/${encodeURIComponent(persona.slug)}`}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 8,
-                padding: '10px 18px', borderRadius: 999, textDecoration: 'none',
-                background: T.btnDarkBg, color: T.btnDarkText,
-                fontSize: 14, fontWeight: 700,
-              }}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>mic</span> Start interview
-            </Link>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
 // ── Main shell ────────────────────────────────────────────────────────────────
 export function LiveInterviewsShell({
   personas,
+  scenarios,
 }: {
   personas: LiveInterviewPersona[]
   scenarios: ScenarioBrief[]
@@ -1206,7 +1124,7 @@ export function LiveInterviewsShell({
       </div>
 
       {/* ── Body ── */}
-      {mode === 'loop' ? <FullLoopPanel /> : <SingleRoundPanel personas={personas} />}
+      {mode === 'loop' ? <FullLoopPanel /> : <SingleRoundPicker personas={personas} scenarios={scenarios} />}
 
       {/* ── Past sessions ── */}
       <div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { Md } from '@/components/ui/Md'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { VoiceInputButton } from './VoiceInputButton'
 import type { CanvasScene } from '@/lib/hatch/canvas-scene'
@@ -264,7 +265,7 @@ export function CanvasChatPanel({
                   )}
                 </div>
               )}
-              {msg.content}
+              {msg.role === 'hatch' ? <Md>{msg.content}</Md> : msg.content}
               {msg.kind === 'canvas_action' && (
                 <span className="material-symbols-outlined text-[14px] ml-1 opacity-70">draw</span>
               )}

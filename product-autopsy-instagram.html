@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Autopsy: Instagram — Decoded | HackProduct</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --green-dark: #2d4a3e;
+    --green-mid: #4a7c5c;
+    --green-light: #e8f0e4;
+    --green-bg: #f4f7f2;
+    --cream: #faf8f3;
+    --warm-gray: #6b6b6b;
+    --text: #1a1a1a;
+    --text-secondary: #555;
+    --accent-orange: #e67e22;
+    --accent-red: #d63031;
+    --accent-blue: #2980b9;
+    --accent-purple: #8e44ad;
+    --accent-teal: #00897b;
+    --border: #e0ddd5;
+    --ig-pink: #E1306C;
+    --ig-purple: #833AB4;
+    --ig-orange: #F77737;
+    --ig-yellow: #FCAF45;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: var(--cream); color: var(--text); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+
+  /* NAV */
+  .back-nav { background: var(--green-dark); padding: 12px 40px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .back-nav a { color: rgba(255,255,255,0.5); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 1px; }
+
+  /* HERO */
+  .hero { background: var(--green-dark); color: white; padding: 60px 40px 50px; text-align: center; }
+  .hero-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 20px; }
+  .hero-icon { width: 72px; height: 72px; background: linear-gradient(135deg, var(--ig-yellow), var(--ig-pink), var(--ig-purple)); border-radius: 18px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: 44px; font-weight: 700; margin-bottom: 12px; line-height: 1.2; }
+  .hero .subtitle { font-size: 17px; color: rgba(255,255,255,0.65); font-style: italic; max-width: 580px; margin: 0 auto 24px; }
+  .hero .meta { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: rgba(255,255,255,0.35); }
+  .hero .meta span { margin: 0 8px; }
+
+  /* STAGE NAV */
+  .stage-nav { background: white; border-bottom: 1px solid var(--border); padding: 0 24px; position: sticky; top: 0; z-index: 100; overflow-x: auto; }
+  .stage-nav-inner { max-width: 900px; margin: 0 auto; display: flex; }
+  .stage-nav a { display: flex; align-items: center; gap: 6px; padding: 14px 13px; font-size: 13px; font-weight: 500; color: var(--warm-gray); text-decoration: none; white-space: nowrap; border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .stage-nav a:hover { color: var(--green-dark); border-bottom-color: var(--green-mid); }
+  .stage-nav .sn { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; background: var(--green-bg); color: var(--green-mid); width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+  /* STORY PROSE */
+  .story { font-size: 17px; color: var(--text); line-height: 1.85; margin-bottom: 20px; }
+  .story em { color: var(--text-secondary); }
+  .story strong { color: var(--text); font-weight: 600; }
+
+  /* STAGE */
+  section.stage { padding: 60px 0; border-top: 1px solid var(--border); }
+  .stage-header { margin-bottom: 36px; }
+  .stage-header .stage-number { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+  .stage-header h2 { font-family: 'Playfair Display', serif; font-size: 32px; margin-bottom: 6px; line-height: 1.3; }
+  .stage-header .stage-question { font-size: 16px; color: var(--warm-gray); font-style: italic; }
+  .divider { width: 60px; height: 4px; border-radius: 2px; margin-bottom: 32px; }
+  .stage-1 .stage-number { color: var(--accent-orange); } .stage-1 .divider { background: var(--accent-orange); }
+  .stage-2 .stage-number { color: var(--ig-pink); } .stage-2 .divider { background: var(--ig-pink); }
+  .stage-3 .stage-number { color: var(--accent-blue); } .stage-3 .divider { background: var(--accent-blue); }
+  .stage-4 .stage-number { color: var(--accent-teal); } .stage-4 .divider { background: var(--accent-teal); }
+  .stage-5 .stage-number { color: var(--accent-purple); } .stage-5 .divider { background: var(--accent-purple); }
+  .stage-6 .stage-number { color: var(--accent-orange); } .stage-6 .divider { background: var(--accent-orange); }
+  .stage-7 .stage-number { color: var(--accent-blue); } .stage-7 .divider { background: var(--accent-blue); }
+  .stage-8 .stage-number { color: var(--accent-red); } .stage-8 .divider { background: var(--accent-red); }
+  .stage-9 .stage-number { color: var(--accent-teal); } .stage-9 .divider { background: var(--accent-teal); }
+
+  h3 { font-size: 20px; font-weight: 700; margin: 28px 0 12px; }
+  p { color: var(--text-secondary); font-size: 16px; margin-bottom: 16px; }
+
+  /* WAR ROOM */
+  .war-room { background: white; border-radius: 16px; padding: 0; margin: 32px 0; box-shadow: var(--card-shadow); overflow: hidden; }
+  .war-room-header { background: #1a1a1a; color: white; padding: 16px 24px; display: flex; align-items: center; gap: 10px; }
+  .war-room-header .wr-icon { font-size: 16px; }
+  .war-room-header .wr-title { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+  .war-room-body { padding: 24px; }
+  .wr-item { display: flex; gap: 14px; margin-bottom: 18px; align-items: flex-start; }
+  .wr-item:last-child { margin-bottom: 0; }
+  .wr-role { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600; padding: 3px 8px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+  .wr-role.pm { background: #ede9fe; color: #5b21b6; }
+  .wr-role.eng { background: #dbeafe; color: #1e40af; }
+  .wr-role.data { background: #d1fae5; color: #065f46; }
+  .wr-role.design { background: #fce7f3; color: #9d174d; }
+  .wr-role.ops { background: #ffedd5; color: #c2410c; }
+  .wr-text { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+  .wr-text strong { color: var(--text); }
+
+  /* CALLOUT */
+  .callout { background: #fff9e6; border-left: 4px solid var(--accent-orange); border-radius: 0 8px 8px 0; padding: 20px 24px; margin: 28px 0; }
+  .callout p { margin-bottom: 0; font-size: 15px; }
+  .callout strong { color: var(--text); }
+
+  /* DATA CARD */
+  .data-card { background: white; border-radius: 12px; padding: 28px; margin: 24px 0; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .data-card h4 { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 16px; }
+
+  /* METRIC ROW */
+  .metric-row { display: flex; gap: 20px; margin: 24px 0; flex-wrap: wrap; }
+  .metric { background: white; border-radius: 12px; padding: 20px 24px; flex: 1; min-width: 140px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); text-align: center; }
+  .metric .mv { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: var(--green-dark); margin-bottom: 4px; }
+  .metric .ml { font-size: 12px; color: var(--warm-gray); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* TABLE */
+  .data-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  .data-table th { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--border); color: var(--warm-gray); background: var(--green-bg); }
+  .data-table td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; vertical-align: top; color: var(--text-secondary); }
+  .data-table tr:last-child td { border-bottom: none; }
+
+  /* COMPARISON */
+  .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 28px 0; }
+  .comp-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .comp-card .cl { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+  .comp-card h4 { font-size: 16px; font-weight: 700; color: var(--text); text-transform: none; letter-spacing: 0; margin-bottom: 8px; }
+  .comp-card p { font-size: 14px; margin-bottom: 0; }
+
+  /* BLOCKQUOTE */
+  blockquote { font-family: 'Playfair Display', serif; font-style: italic; font-size: 22px; color: var(--green-dark); border-left: 4px solid var(--green-mid); padding: 16px 0 16px 28px; margin: 32px 0; line-height: 1.5; }
+
+  /* PRACTICE */
+  .practice-box { background: var(--green-dark); border-radius: 16px; padding: 32px; margin: 40px 0; color: white; }
+  .practice-box .plbl { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 12px; }
+  .practice-box h4 { font-size: 18px; font-weight: 700; color: white; text-transform: none; letter-spacing: 0; margin-bottom: 12px; line-height: 1.4; }
+  .practice-box p { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 0; }
+  .practice-box .phint { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 13px; color: rgba(255,255,255,0.35); font-style: italic; }
+
+  /* FUNNEL */
+  .funnel-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .funnel-bar .fl { font-size: 13px; font-weight: 500; width: 140px; text-align: right; flex-shrink: 0; }
+  .funnel-bar .ff { height: 28px; border-radius: 6px; display: flex; align-items: center; padding: 0 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; color: white; min-width: 48px; }
+
+  /* PHONE MOCKUP */
+  .phone-wrap { display: flex; justify-content: center; margin: 32px 0; }
+  .phone { width: 280px; background: #1a1a1a; border-radius: 32px; padding: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.18); }
+  .screen { background: white; border-radius: 22px; overflow: hidden; }
+  .sbar { background: white; padding: 8px 16px 4px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 700; color: #1a1a1a; }
+  .sbar-dark { background: #1a1a1a; color: white; }
+  .sbar .icons { display: flex; gap: 4px; align-items: center; }
+
+  /* IG Components */
+  .ig-header { padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+  .ig-header .ig-logo { font-size: 18px; font-weight: 700; font-family: 'Playfair Display', serif; font-style: italic; }
+  .ig-header .ig-icons { display: flex; gap: 14px; font-size: 16px; }
+  .ig-stories { display: flex; gap: 12px; padding: 12px 16px; overflow: hidden; border-bottom: 1px solid #eee; }
+  .ig-story-av { width: 56px; text-align: center; }
+  .ig-story-ring { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, var(--ig-yellow), var(--ig-pink), var(--ig-purple)); padding: 2px; margin: 0 auto 4px; }
+  .ig-story-ring .inner { width: 100%; height: 100%; border-radius: 50%; background: white; padding: 2px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .ig-story-name { font-size: 10px; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ig-post { margin-bottom: 8px; }
+  .ig-post-header { display: flex; align-items: center; gap: 8px; padding: 8px 16px; }
+  .ig-post-av { width: 28px; height: 28px; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .ig-post-user { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+  .ig-post-img { width: 100%; height: 200px; }
+  .ig-post-actions { display: flex; gap: 14px; padding: 10px 16px; font-size: 20px; }
+  .ig-post-actions .right { margin-left: auto; }
+  .ig-post-likes { padding: 0 16px; font-size: 13px; font-weight: 600; color: #1a1a1a; }
+  .ig-post-caption { padding: 4px 16px 8px; font-size: 13px; color: #1a1a1a; line-height: 1.4; }
+  .ig-post-caption .user { font-weight: 600; }
+  .bnav { display: flex; justify-content: space-around; padding: 8px 0; border-top: 1px solid #eee; }
+  .bnav-i { text-align: center; font-size: 10px; color: #999; }
+  .bnav-i.on { color: #1a1a1a; }
+  .bnav-i .ni { font-size: 16px; margin-bottom: 1px; }
+
+  /* Reels */
+  .ig-reel { background: #1a1a1a; position: relative; min-height: 380px; color: white; }
+  .ig-reel-content { position: absolute; bottom: 60px; left: 16px; right: 60px; }
+  .ig-reel-user { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .ig-reel-user .av { width: 28px; height: 28px; border-radius: 50%; background: #555; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .ig-reel-user .name { font-size: 13px; font-weight: 600; }
+  .ig-reel-user .follow { font-size: 11px; border: 1px solid white; border-radius: 6px; padding: 2px 10px; margin-left: 8px; }
+  .ig-reel-desc { font-size: 12px; line-height: 1.4; opacity: 0.9; }
+  .ig-reel-audio { font-size: 11px; opacity: 0.7; margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+  .ig-reel-actions { position: absolute; bottom: 80px; right: 12px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .ig-reel-action { text-align: center; font-size: 22px; }
+  .ig-reel-action .count { font-size: 10px; margin-top: 2px; }
+
+  /* Explore */
+  .ig-explore-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+  .ig-explore-item { height: 80px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+  .ig-explore-item.large { grid-column: span 2; grid-row: span 2; height: 162px; font-size: 36px; }
+
+  /* DM */
+  .ig-dm-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
+  .ig-dm-av { width: 44px; height: 44px; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .ig-dm-info { flex: 1; min-width: 0; }
+  .ig-dm-name { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .ig-dm-msg { font-size: 12px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ig-dm-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ig-pink); flex-shrink: 0; }
+
+  /* Notification */
+  .notif-wrap { display: flex; justify-content: center; gap: 16px; margin: 32px 0; flex-wrap: wrap; }
+  .notif { width: 300px; background: white; border-radius: 16px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+  .notif-hd { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .notif-ico { width: 24px; height: 24px; background: linear-gradient(135deg, var(--ig-yellow), var(--ig-pink), var(--ig-purple)); border-radius: 6px; }
+  .notif-app { font-size: 12px; font-weight: 600; color: #1a1a1a; }
+  .notif-t { font-size: 11px; color: #999; margin-left: auto; }
+  .notif-title { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+  .notif-body { font-size: 13px; color: #666; line-height: 1.4; }
+
+  /* TRANSITION */
+  .transition { text-align: center; padding: 28px 0; font-style: italic; color: var(--warm-gray); font-size: 15px; }
+
+  footer { background: var(--green-dark); color: rgba(255,255,255,0.5); text-align: center; padding: 40px; font-size: 13px; }
+
+  @media (max-width: 768px) {
+    .hero { padding: 40px 20px 30px; }
+    .hero h1 { font-size: 28px; }
+    .stage-header h2 { font-size: 24px; }
+    .comparison { grid-template-columns: 1fr; }
+    .metric-row { flex-direction: column; }
+    .notif-wrap { flex-direction: column; align-items: center; }
+    .funnel-bar .fl { width: 100px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="back-nav"><a href="#">&larr; BACK TO ALL AUTOPSIES</a></div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">Product Autopsy &middot; Decoded</div>
+  <div class="hero-icon">
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+      <rect x="4" y="4" width="28" height="28" rx="8" stroke="white" stroke-width="2.5" fill="none"/>
+      <circle cx="18" cy="18" r="7" stroke="white" stroke-width="2.5" fill="none"/>
+      <circle cx="27" cy="9" r="2" fill="white"/>
+    </svg>
+  </div>
+  <h1>Instagram, Decoded</h1>
+  <div class="subtitle">Follow one user from a friend's recommendation to becoming a micro-creator — and see the product machine running behind every scroll, tap, and share</div>
+  <div class="meta">Product Autopsy<span>&middot;</span>9 Stages<span>&middot;</span>~22 min read</div>
+</div>
+
+<nav class="stage-nav">
+  <div class="stage-nav-inner">
+    <a href="#s1"><span class="sn">1</span>Acquisition</a>
+    <a href="#s2"><span class="sn">2</span>Activation</a>
+    <a href="#s3"><span class="sn">3</span>Engagement</a>
+    <a href="#s4"><span class="sn">4</span>Monetization</a>
+    <a href="#s5"><span class="sn">5</span>Retention</a>
+    <a href="#s6"><span class="sn">6</span>Referral</a>
+    <a href="#s7"><span class="sn">7</span>Expansion</a>
+    <a href="#s8"><span class="sn">8</span>Sustainability</a>
+    <a href="#s9"><span class="sn">9</span>Ecosystem</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- INTRO -->
+<div style="padding: 60px 0 20px;">
+  <p class="story">It's a Saturday morning in Brooklyn. Maya is 24, a graphic designer at a small branding agency, and she's sitting in a coffee shop with her sketchbook. Her college friend Jess just texted her a link to an Instagram Reel — a time-lapse of someone painting a mural in Bushwick. "You NEED to see this," the text says.</p>
+  <p class="story">Maya has heard of Instagram, obviously. But she's been a holdout — she deleted TikTok six months ago for her mental health, and she's suspicious of another feed-based app. Still, she taps the link. The mural video is gorgeous. Below it, more art. Then design inspiration. Then someone's portfolio that looks exactly like what Maya wants hers to become.</p>
+  <p class="story">This is the story of what happens next — told from both sides. Maya's side: the experience of discovering, scrolling, posting, and building an audience. And the other side: the product, algorithm, and business decisions that were designed months or years before Maya ever opened the app, engineered specifically to make every moment feel effortless and inevitable.</p>
+  <p class="story">Let's follow her through all nine stages.</p>
+</div>
+
+<!-- ===== STAGE 1 ===== -->
+<section class="stage stage-1" id="s1">
+  <div class="stage-header">
+    <div class="stage-number">Stage 01</div>
+    <div class="divider"></div>
+    <h2>Acquisition</h2>
+    <p class="stage-question">Where do they come from — and at what cost?</p>
+  </div>
+
+  <p class="story">Maya didn't find Instagram through an ad. She found it through Jess. That shared Reel link opened in a mobile browser with a degraded experience — no stories tray, no profile browsing, a persistent "Open in App" banner covering 15% of the screen. The web experience isn't broken by accident. It's <strong>strategically limited</strong> to funnel people into the native app, where engagement is 4x higher and push notifications are possible.</p>
+
+  <p class="story">She tapped "Get the App." The App Store page loaded with 4.7 stars and 12M+ reviews. She downloaded it in eight seconds. Instagram's organic acquisition cost for Maya: effectively $0.</p>
+
+  <p class="story">But that link Jess shared? It wasn't just a URL. It was an <strong>instrumented deep link</strong> containing attribution data — the content ID, the sharing user's account, the platform it was shared to (iMessage), and a timestamp. When Maya installed and opened the app, the deep link resolved to take her directly to that same Reel. No home screen. No onboarding carousel. The very first thing she saw was the content that made her want to download the app. That's not a coincidence — it's a product decision called <strong>deferred deep linking</strong>, and it's one of the highest-leverage activation optimizations in mobile growth.</p>
+
+  <p class="story">But Instagram also runs one of the largest paid acquisition machines on the planet — spending an estimated $2-3B annually across Meta's own ad network, Google UAC, and influencer partnerships. For users in competitive demographics (18-34, US, high engagement potential), paid CAC can reach $5-8 per install.</p>
+
+  <!-- PHONE: App Store / First Open -->
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="screen">
+        <div class="sbar"><span>10:14 AM</span><div class="icons"><svg width="14" height="10" viewBox="0 0 14 10"><rect x="0" y="6" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="3.5" y="4" width="3" height="6" rx="0.5" fill="#1a1a1a"/><rect x="7" y="2" width="3" height="8" rx="0.5" fill="#1a1a1a"/><rect x="10.5" y="0" width="3" height="10" rx="0.5" fill="#1a1a1a"/></svg></div></div>
+        <div style="padding:20px 16px 12px;text-align:center;">
+          <div style="width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#FCAF45,#E1306C,#833AB4);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+            <svg width="28" height="28" viewBox="0 0 36 36" fill="none"><rect x="4" y="4" width="28" height="28" rx="8" stroke="white" stroke-width="2.5" fill="none"/><circle cx="18" cy="18" r="7" stroke="white" stroke-width="2.5" fill="none"/><circle cx="27" cy="9" r="2" fill="white"/></svg>
+          </div>
+          <div style="font-size:18px;font-weight:700;color:#1a1a1a;">Welcome to Instagram</div>
+          <div style="font-size:13px;color:#999;margin-top:4px;">Sign up to see photos and videos from your friends.</div>
+        </div>
+        <div style="margin:8px 24px;background:var(--ig-pink);color:white;text-align:center;padding:12px;border-radius:8px;font-size:14px;font-weight:600;">Log in with Facebook</div>
+        <div style="text-align:center;font-size:13px;color:#999;margin:12px 0;">OR</div>
+        <div style="margin:0 24px 8px;background:#fafafa;border:1px solid #ddd;border-radius:6px;padding:10px 14px;font-size:13px;color:#999;">Phone number or email</div>
+        <div style="margin:0 24px 8px;background:#fafafa;border:1px solid #ddd;border-radius:6px;padding:10px 14px;font-size:13px;color:#999;">Full Name</div>
+        <div style="margin:0 24px 8px;background:#fafafa;border:1px solid #ddd;border-radius:6px;padding:10px 14px;font-size:13px;color:#999;">Username</div>
+        <div style="margin:0 24px 12px;background:#fafafa;border:1px solid #ddd;border-radius:6px;padding:10px 14px;font-size:13px;color:#999;">Password</div>
+        <div style="margin:8px 24px 16px;background:#B2DFFC;color:white;text-align:center;padding:12px;border-radius:8px;font-size:14px;font-weight:600;">Sign Up</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="story">Notice what's missing from this screen: there is no explanation of what Instagram does. No feature tour. No value proposition. Just a login form. The product is so well-known that the signup page assumes you already understand the value. This is a luxury only products with massive brand awareness can afford — and it's worth roughly 15% fewer form fields compared to apps that need to "sell" themselves on the signup screen.</p>
+
+  <p class="story">The signup screen is optimized to within an inch of its life. "Log in with Facebook" is the top option — not because it's the best experience, but because it instantly imports Maya's social graph. If she signs up with Facebook, Instagram immediately knows who her friends are, which means the "Suggested for You" feed can be populated within seconds.</p>
+
+  <p class="story">Maya uses her email instead. That's fine — the contact sync prompt is coming in 90 seconds.</p>
+
+  <div class="data-card">
+    <h4>Acquisition Channel Mix (estimated)</h4>
+    <div class="funnel-bar"><span class="fl">Organic / WOM</span><div class="ff" style="width:55%;background:var(--green-mid);">~55%</div></div>
+    <div class="funnel-bar"><span class="fl">Cross-Meta</span><div class="ff" style="width:20%;background:var(--accent-blue);">~20%</div></div>
+    <div class="funnel-bar"><span class="fl">Paid (non-Meta)</span><div class="ff" style="width:12%;background:var(--accent-orange);">~12%</div></div>
+    <div class="funnel-bar"><span class="fl">Celebrity / Press</span><div class="ff" style="width:8%;background:var(--accent-purple);">~8%</div></div>
+    <div class="funnel-bar"><span class="fl">App Store</span><div class="ff" style="width:5%;background:var(--accent-teal);">~5%</div></div>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric"><div class="mv">~$0</div><div class="ml">Organic CAC</div></div>
+    <div class="metric"><div class="mv">$5-8</div><div class="ml">Paid CAC (US)</div></div>
+    <div class="metric"><div class="mv">2B+</div><div class="ml">Monthly Active Users</div></div>
+  </div>
+
+  <div class="war-room">
+    <div class="war-room-header"><span class="wr-icon">&#128736;</span><span class="wr-title">What Teams Are Building &amp; Debating</span></div>
+    <div class="war-room-body">
+      <div class="wr-item"><span class="wr-role pm">PM</span><div class="wr-text"><strong>"The mobile web experience is intentionally degraded — is that still the right call?"</strong> Data shows 72% of web visitors who install the app become 30-day actives. But regulators in the EU are starting to challenge forced app-install patterns. The team is exploring a better web reader mode for compliance while preserving the install funnel.</div></div>
+      <div class="wr-item"><span class="wr-role eng">ENG</span><div class="wr-text"><strong>Deep link routing is the silent hero.</strong> When Jess shared that Reel, the link had to resolve correctly across iOS Universal Links, Android App Links, and web fallback — with attribution metadata intact. One broken redirect and Maya never arrives. The deep link service handles 500M+ resolutions per day.</div></div>
+      <div class="wr-item"><span class="wr-role data">DATA</span><div class="wr-text"><strong>Modeling the viral coefficient.</strong> Each active user generates ~0.7 new signups over their lifetime through shares, tags, and "Join Instagram" prompts. The team is testing whether Reels shared to iMessage drive higher-quality installs than feed posts shared to WhatsApp.</div></div>
+      <div class="wr-item"><span class="wr-role design">DESIGN</span><div class="wr-text"><strong>The "Suggested for You" onboarding screen needs to show value in 3 seconds.</strong> If Maya doesn't see someone she recognizes or content she cares about immediately after signup, activation probability drops 40%. Design is testing interest-picker screens vs. pure algorithmic cold-start.</div></div>
+    </div>
+  </div>
+
+  <div class="practice-box">
+    <div class="plbl">Practice Question</div>
+    <h4>Instagram's organic acquisition rate is slowing in mature markets (US, EU). Design a strategy to reaccelerate growth without increasing paid spend.</h4>
+    <p>Consider the sharing loop, cross-app promotion within Meta, creator-driven acquisition, and the role of Reels as a discovery surface on other platforms.</p>
+    <div class="phint">Framework hint: Map every moment a non-user encounters Instagram content — what's the conversion rate at each touchpoint, and which one has the most room to improve?</div>
+  </div>
+</section>
+
+<div class="transition">Maya signed up with her email. Instagram asked to sync her contacts. She hesitated — then said yes. Forty-three friends appeared instantly. &darr;</div>
+
+<!-- ===== STAGE 2 ===== -->
+<section class="stage stage-2" id="s2">
+  <div class="stage-header">
+    <div class="stage-number">Stage 02</div>
+    <div class="divider"></div>
+    <h2>Activation</h2>
+    <p class="stage-question">Did the product actually deliver for them?</p>
+  </div>
+
+  <p class="story">Maya followed 12 friends, three design accounts, and one tattoo artist. Then she opened her feed for the first time. At the top: Jess's story from brunch. Below: a post from @designmilk showing a minimalist poster. Then a Reel of someone lettering with a brush pen. Then her friend Marcus's dog.</p>
+
+  <p class="story">She scrolled for fourteen minutes without realizing it. <em>That</em> is activation. Not the signup. Not the follow. The moment Instagram delivered on its implicit promise: <strong>"The people and things you care about, beautifully curated, always fresh."</strong></p>
+
+  <p class="story">But here's what Maya doesn't know: that first feed was assembled by a cold-start recommendation system that had almost no data on her. It used three signals — her contact graph (who she followed), the content Jess originally shared (art/design affinity), and demographic similarity to other 24-year-old designers in Brooklyn. Within 48 hours and 200 interactions, the algorithm will know her better than she knows herself.</p>
+
+  <!-- PHONE: First Feed -->
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="screen">
+        <div class="sbar"><span>10:28 AM</span><div class="icons"><svg width="14" height="10" viewBox="0 0 14 10"><rect x="0" y="6" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="3.5" y="4" width="3" height="6" rx="0.5" fill="#1a1a1a"/><rect x="7" y="2" width="3" height="8" rx="0.5" fill="#1a1a1a"/><rect x="10.5" y="0" width="3" height="10" rx="0.5" fill="#1a1a1a"/></svg></div></div>
+        <div class="ig-header">
+          <div class="ig-logo">Instagram</div>
+          <div class="ig-icons">&#9825; &#9993;</div>
+        </div>
+        <div class="ig-stories">
+          <div class="ig-story-av"><div class="ig-story-ring"><div class="inner">&#128105;</div></div><div class="ig-story-name">Jess</div></div>
+          <div class="ig-story-av"><div class="ig-story-ring"><div class="inner">&#128104;</div></div><div class="ig-story-name">Marcus</div></div>
+          <div class="ig-story-av"><div class="ig-story-ring"><div class="inner">&#127912;</div></div><div class="ig-story-name">designmilk</div></div>
+          <div class="ig-story-av"><div class="ig-story-ring"><div class="inner">&#128247;</div></div><div class="ig-story-name">bk_murals</div></div>
+        </div>
+        <div class="ig-post">
+          <div class="ig-post-header"><div class="ig-post-av">&#127912;</div><span class="ig-post-user">designmilk</span></div>
+          <div class="ig-post-img" style="background:linear-gradient(135deg,#f0e6ff,#ffe6f0,#fff5e6);display:flex;align-items:center;justify-content:center;font-size:42px;">&#127912;</div>
+          <div class="ig-post-actions">&#9825; &#128172; &#9993; <span class="right">&#128278;</span></div>
+          <div class="ig-post-likes">2,847 likes</div>
+          <div class="ig-post-caption"><span class="user">designmilk</span> Minimalism is not about having less. It's about making room for more of what matters.</div>
+        </div>
+        <div class="bnav"><div class="bnav-i on"><div class="ni">&#127968;</div></div><div class="bnav-i"><div class="ni">&#128269;</div></div><div class="bnav-i"><div class="ni">&#127909;</div></div><div class="bnav-i"><div class="ni">&#128722;</div></div><div class="bnav-i"><div class="ni">&#128100;</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="story">The critical activation metric isn't "did she sign up" — it's <strong>"did she follow 5+ accounts and open the app a second time within 48 hours?"</strong> Instagram's data shows that users who cross the 5-follow threshold in the first session are 3x more likely to become 30-day actives. That's why the onboarding flow aggressively surfaces "Suggested for You" accounts — not just friends, but topical accounts that match inferred interests.</p>
+
+  <div class="callout">
+    <p><strong>The Follow Threshold.</strong> Instagram's internal "aha moment" metric: users who follow 7+ accounts within their first 72 hours retain at 65% after 30 days. Users who follow fewer than 3 retain at just 18%. The entire onboarding experience — contact sync, interest picker, suggested accounts — exists to push users past this threshold as fast as possible.</p>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric"><div class="mv">7+</div><div class="ml">Magic Follow #</div></div>
+    <div class="metric"><div class="mv">65%</div><div class="ml">30-day Retention (7+ follows)</div></div>
+    <div class="metric"><div class="mv">18%</div><div class="ml">30-day Retention (&lt;3 follows)</div></div>
+  </div>
+
+  <div class="war-room">
+    <div class="war-room-header"><span class="wr-icon">&#128736;</span><span class="wr-title">What Teams Are Building &amp; Debating</span></div>
+    <div class="war-room-body">
+      <div class="wr-item"><span class="wr-role pm">PM</span><div class="wr-text"><strong>"Should we auto-follow accounts during onboarding?"</strong> Some apps do this. Instagram tested it and found it increased D1 retention by 8% but decreased D30 by 5% — users felt their feed was "not theirs." Intentional friction in following creates ownership.</div></div>
+      <div class="wr-item"><span class="wr-role eng">ENG</span><div class="wr-text"><strong>The cold-start recommendation model</strong> runs a two-tower neural network: one tower encodes the new user's sparse signals (contacts, signup source, demographics), the other encodes candidate accounts. Nearest-neighbor matching in embedding space generates the "Suggested for You" list in under 50ms.</div></div>
+      <div class="wr-item"><span class="wr-role data">DATA</span><div class="wr-text"><strong>Tracking time-to-first-like and time-to-first-follow as leading indicators.</strong> Users who like within 60 seconds of first feed load retain 2.1x better. The data team built a real-time activation dashboard that tracks these micro-moments by cohort, country, and signup source.</div></div>
+      <div class="wr-item"><span class="wr-role design">DESIGN</span><div class="wr-text"><strong>The stories tray is the first thing new users see on the feed.</strong> Design tested moving it below the first post for new users (so they see content before social context). Result: 12% more time on first session, but 9% fewer story taps. They kept it on top — social context drives return visits.</div></div>
+    </div>
+  </div>
+
+  <div class="practice-box">
+    <div class="plbl">Practice Question</div>
+    <h4>Instagram's D1 retention is 62% but D7 drops to 38%. Propose three product changes to close this gap, and describe how you'd measure success.</h4>
+    <p>Think about what happens between Day 1 euphoria and Day 7 — what's missing from the user's experience that causes them to drift away?</p>
+    <div class="phint">Framework hint: Map the user's motivation curve. Day 1 is novelty-driven. Day 7 needs habit or social obligation. What bridges the gap?</div>
+  </div>
+</section>
+
+<div class="transition">Maya opened Instagram again that evening. And the next morning. By Day 3, she was checking it before she checked her email. &darr;</div>
+
+<!-- ===== STAGE 3 ===== -->
+<section class="stage stage-3" id="s3">
+  <div class="stage-header">
+    <div class="stage-number">Stage 03</div>
+    <div class="divider"></div>
+    <h2>Engagement</h2>
+    <p class="stage-question">Is the product earning repeated attention?</p>
+  </div>
+
+  <p class="story">Two weeks in. Maya opens Instagram 8-12 times a day. She doesn't plan to — it just happens. Waiting for coffee. On the subway. Before bed. The pull-to-refresh gesture has become muscle memory.</p>
+
+  <p class="story">The notifications are just the visible triggers. The deeper pull is <strong>variable-ratio reinforcement</strong> — the same psychological mechanism behind slot machines. Maya never knows exactly what she'll find when she opens the app. Sometimes it's a friend's engagement announcement. Sometimes it's a mediocre meme. Sometimes it's a Reel so perfect she watches it four times. The unpredictability is the hook. If the feed were always great, she'd get satisfied and leave. If it were always bad, she'd stop opening it. The mix of highs and lows keeps her pulling the lever.</p>
+
+  <p class="story">Her behavior has settled into a pattern: <strong>Stories first</strong> (to see what friends are doing right now), then <strong>feed scroll</strong> (5-10 posts), then the <strong>Reels tab</strong> (where she loses 15-20 minutes without realizing it), and occasionally <strong>Explore</strong> (when she's looking for something new). Each surface serves a different psychological need — social connection, passive consumption, entertainment, and discovery.</p>
+
+  <div class="notif-wrap">
+    <div class="notif"><div class="notif-hd"><div class="notif-ico"></div><span class="notif-app">Instagram</span><span class="notif-t">2:14 PM</span></div><div class="notif-title">Jess just posted a story</div><div class="notif-body">See what she's up to before it disappears in 24 hours.</div></div>
+    <div class="notif"><div class="notif-hd"><div class="notif-ico"></div><span class="notif-app">Instagram</span><span class="notif-t">6:30 PM</span></div><div class="notif-title">New Reels for you &#127916;</div><div class="notif-body">Based on your recent activity, we think you'll love these.</div></div>
+  </div>
+
+  <p class="story">Each notification is a carefully calibrated re-engagement trigger. Instagram sends an average of 4-6 push notifications per day to active users — but the timing, content, and frequency are all personalized. If Maya hasn't opened the app by 2 PM, she'll get a friend-activity notification (social obligation). If she typically scrolls Reels at 9 PM, she'll get a Reels suggestion at 8:45 PM (habit reinforcement).</p>
+
+  <!-- PHONE: Reels -->
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="screen">
+        <div class="sbar sbar-dark"><span style="color:white;">9:22 PM</span><div class="icons"><svg width="14" height="10" viewBox="0 0 14 10"><rect x="0" y="6" width="3" height="4" rx="0.5" fill="white"/><rect x="3.5" y="4" width="3" height="6" rx="0.5" fill="white"/><rect x="7" y="2" width="3" height="8" rx="0.5" fill="white"/><rect x="10.5" y="0" width="3" height="10" rx="0.5" fill="white"/></svg></div></div>
+        <div class="ig-reel" style="background:linear-gradient(180deg,#2a1a3e,#1a1a2e);">
+          <div style="position:absolute;top:12px;left:16px;font-size:16px;font-weight:700;color:white;">Reels</div>
+          <div style="position:absolute;top:12px;right:16px;font-size:18px;color:white;">&#128247;</div>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:64px;">&#127912;</div>
+          <div class="ig-reel-actions">
+            <div class="ig-reel-action">&#9825;<div class="count" style="color:white;font-size:10px;">24.3k</div></div>
+            <div class="ig-reel-action">&#128172;<div class="count" style="color:white;font-size:10px;">892</div></div>
+            <div class="ig-reel-action">&#9993;<div class="count" style="color:white;font-size:10px;">1.2k</div></div>
+            <div class="ig-reel-action">&#8230;</div>
+          </div>
+          <div class="ig-reel-content">
+            <div class="ig-reel-user"><div class="av">&#128105;</div><span class="name">@brush.letters</span><span class="follow">Follow</span></div>
+            <div class="ig-reel-desc">Watch this come together &#10024; Brush lettering "Create" in real time #typography #design #calligraphy</div>
+            <div class="ig-reel-audio">&#127925; Original Audio - brush.letters</div>
+          </div>
+        </div>
+        <div class="bnav" style="background:#1a1a1a;border-top:1px solid #333;"><div class="bnav-i" style="color:#777;"><div class="ni">&#127968;</div></div><div class="bnav-i" style="color:#777;"><div class="ni">&#128269;</div></div><div class="bnav-i on" style="color:white;"><div class="ni">&#127909;</div></div><div class="bnav-i" style="color:#777;"><div class="ni">&#128722;</div></div><div class="bnav-i" style="color:#777;"><div class="ni">&#128100;</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <h3>The Explore Grid: Serendipity by Design</h3>
+
+  <p class="story">On Thursday, Maya taps the magnifying glass icon. The Explore page opens — a grid of images and videos she's never seen before, from accounts she doesn't follow. It feels random. It isn't.</p>
+
+  <!-- PHONE: Explore -->
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="screen">
+        <div class="sbar"><span>7:48 PM</span><div class="icons"><svg width="14" height="10" viewBox="0 0 14 10"><rect x="0" y="6" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="3.5" y="4" width="3" height="6" rx="0.5" fill="#1a1a1a"/><rect x="7" y="2" width="3" height="8" rx="0.5" fill="#1a1a1a"/><rect x="10.5" y="0" width="3" height="10" rx="0.5" fill="#1a1a1a"/></svg></div></div>
+        <div style="padding:8px 16px;"><div style="background:#f0f0f0;border-radius:10px;padding:8px 14px;font-size:13px;color:#999;display:flex;align-items:center;gap:6px;">&#128269; Search</div></div>
+        <div class="ig-explore-grid">
+          <div class="ig-explore-item" style="background:linear-gradient(135deg,#f0e6ff,#e6f0ff);">&#127912;</div>
+          <div class="ig-explore-item" style="background:linear-gradient(135deg,#ffe6f0,#fff5e6);">&#128396;</div>
+          <div class="ig-explore-item large" style="background:linear-gradient(135deg,#1a1a2e,#2a1a3e);font-size:28px;">&#127909; <span style="font-size:10px;color:white;position:absolute;bottom:8px;left:8px;">&#9654; 1.2M</span></div>
+          <div class="ig-explore-item" style="background:linear-gradient(135deg,#e6ffe6,#e6fff5);">&#127752;</div>
+          <div class="ig-explore-item" style="background:linear-gradient(135deg,#fff5e6,#ffe6e6);">&#9998;</div>
+          <div class="ig-explore-item" style="background:linear-gradient(135deg,#ffe6f0,#e6ffe6);">&#127776;</div>
+          <div class="ig-explore-item" style="background:linear-gradient(135deg,#e6f0ff,#f0e6ff);">&#128247;</div>
+          <div class="ig-explore-item" style="background:linear-gradient(135deg,#fde2e2,#f4a0a0);">&#127860;</div>
+          <div class="ig-explore-item" style="background:linear-gradient(135deg,#f8d7a4,#f2b05e);">&#127796;</div>
+        </div>
+        <div class="bnav"><div class="bnav-i"><div class="ni">&#127968;</div></div><div class="bnav-i on"><div class="ni">&#128269;</div></div><div class="bnav-i"><div class="ni">&#127909;</div></div><div class="bnav-i"><div class="ni">&#128722;</div></div><div class="bnav-i"><div class="ni">&#128100;</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="story">The Explore page is a discovery engine serving 200M+ daily users. Its grid is populated by a two-phase system: <strong>candidate sourcing</strong> (pulling content that similar users engaged with) and <strong>ranking</strong> (ordering by predicted engagement probability). The large tiles aren't random — they're the highest-confidence predictions, often Reels with proven engagement rates. Explore is how Instagram introduces users to new creators and communities — it's responsible for 30%+ of all new follows.</p>
+
+  <p class="story">The Reels algorithm is Instagram's most powerful engagement engine. It works on a multi-stage ranking system: <strong>candidate generation</strong> (pulling from millions of eligible Reels), <strong>first-pass ranking</strong> (lightweight model scoring relevance), and <strong>final ranking</strong> (deep neural network predicting probability of like, comment, share, and completion). The system optimizes for <em>time well spent</em> — or more precisely, for the combination of watch time and positive engagement signals.</p>
+
+  <p class="story">Maya doesn't know it, but the algorithm has already learned that she watches design Reels to completion 78% of the time, food Reels 45%, and travel Reels only 20%. It's adjusting in real time. Each swipe teaches it more.</p>
+
+  <p class="story">The engagement loop has another critical component: <strong>creation</strong>. Maya posted her first Story this week — a boomerang of her coffee cup with a "Monday mood" sticker. It took four seconds to create. Three friends replied with emoji reactions. Those replies pulled her back into the app to respond. Then she saw their Stories. Then she scrolled the feed. A four-second creative act triggered a twenty-minute engagement session. This is why Instagram invests so heavily in creation tools — stickers, filters, music, text overlays, templates. Every tool that lowers the barrier to posting creates a new engagement trigger.</p>
+
+  <div class="callout">
+    <p><strong>The Creation-Consumption Ratio.</strong> Only 5-10% of Instagram users post in a given week. But that small group generates all the content that the other 90% consumes. Instagram's biggest engagement challenge isn't getting people to scroll — it's getting people to post. Every user who becomes a creator generates content that retains dozens of consumers.</p>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric"><div class="mv">32 min</div><div class="ml">Daily Time Spent (avg)</div></div>
+    <div class="metric"><div class="mv">8.4x</div><div class="ml">Daily Opens (avg)</div></div>
+    <div class="metric"><div class="mv">~40%</div><div class="ml">Time in Reels</div></div>
+    <div class="metric"><div class="mv">500M</div><div class="ml">Daily Stories Users</div></div>
+  </div>
+
+  <div class="war-room">
+    <div class="war-room-header"><span class="wr-icon">&#128736;</span><span class="wr-title">What Teams Are Building &amp; Debating</span></div>
+    <div class="war-room-body">
+      <div class="wr-item"><span class="wr-role eng">ENG</span><div class="wr-text"><strong>The Reels ranking system runs a 3-stage cascade.</strong> Stage 1: retrieve ~1,500 candidates from embedding similarity. Stage 2: lightweight model scores top 500. Stage 3: full deep model with 1,200+ features ranks final 50. All in under 200ms. GPU inference cost per user session: ~$0.003.</div></div>
+      <div class="wr-item"><span class="wr-role pm">PM</span><div class="wr-text"><strong>"Should we show more friend content or creator content in the feed?"</strong> Creator content drives longer sessions (3.2x more time). Friend content drives more return visits (1.8x better D7 retention). The current ratio is ~60/40 creator/friend, but it's personalized per user.</div></div>
+      <div class="wr-item"><span class="wr-role data">DATA</span><div class="wr-text"><strong>Session depth is the north star metric.</strong> Not just "did they open" but "how many content units did they consume per session?" Average is 47 content units per session. Users below 20 are at churn risk. Above 80 correlates with notification opt-out (burnout signal).</div></div>
+      <div class="wr-item"><span class="wr-role design">DESIGN</span><div class="wr-text"><strong>The Reels full-screen format was a bet against Instagram's own DNA.</strong> The app was built for square photos. Going full-screen vertical video meant rethinking navigation, typography, and interaction patterns. The swipe-up paradigm was borrowed from TikTok but the UI details — action column, audio attribution, follow button placement — were iterated over 200+ A/B tests.</div></div>
+    </div>
+  </div>
+
+  <div class="practice-box">
+    <div class="plbl">Practice Question</div>
+    <h4>Instagram's average daily time spent is 32 minutes, but TikTok's is 55 minutes. Should Instagram try to close this gap? Design a strategy and defend whether "more time" is the right goal.</h4>
+    <p>Consider: time spent vs. sessions per day vs. content creation rate. Which metric best predicts long-term retention and monetization?</p>
+    <div class="phint">Framework hint: Think about the difference between "time spent" and "value delivered." More time can mean addicted (fragile) or engaged (durable). Which is Instagram optimizing for?</div>
+  </div>
+</section>
+
+<div class="transition">Three weeks in. Maya posted her first photo — a flat lay of her sketchbook and coffee. It got 47 likes. She felt a rush she didn't expect. &darr;</div>
+
+<!-- ===== STAGE 4 ===== -->
+<section class="stage stage-4" id="s4">
+  <div class="stage-header">
+    <div class="stage-number">Stage 04</div>
+    <div class="divider"></div>
+    <h2>Monetization</h2>
+    <p class="stage-question">How does revenue actually work?</p>
+  </div>
+
+  <p class="story">Maya doesn't pay for Instagram. She never will. And yet she's worth approximately $25-35 per year to Meta in ad revenue. Every time she scrolls her feed, she sees an ad roughly every 4-5 posts. Every Reels session includes a sponsored Reel every 3-6 swipes. Every Story tray includes a sponsored Story between friends' stories. She barely notices most of them.</p>
+
+  <p class="story">That's the magic. Instagram's ad system is so precisely targeted that ads feel like content. Maya saw an ad for a brush pen set from a small Etsy shop this morning. She actually saved it. An ad she <em>chose to bookmark</em>. That's the holy grail of advertising — when the user perceives the ad as valuable content rather than interruption.</p>
+
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="screen">
+        <div class="sbar"><span>12:44 PM</span><div class="icons"><svg width="14" height="10" viewBox="0 0 14 10"><rect x="0" y="6" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="3.5" y="4" width="3" height="6" rx="0.5" fill="#1a1a1a"/><rect x="7" y="2" width="3" height="8" rx="0.5" fill="#1a1a1a"/><rect x="10.5" y="0" width="3" height="10" rx="0.5" fill="#1a1a1a"/></svg></div></div>
+        <div class="ig-header"><div class="ig-logo">Instagram</div><div class="ig-icons">&#9825; &#9993;</div></div>
+        <div class="ig-post">
+          <div class="ig-post-header"><div class="ig-post-av" style="background:linear-gradient(135deg,#ff9a56,#ff6b6b);">&#9998;</div><span class="ig-post-user">pencraft.co <span style="font-weight:400;color:#999;font-size:11px;">&middot; Sponsored</span></span></div>
+          <div class="ig-post-img" style="background:linear-gradient(135deg,#fff5e6,#ffe6f0);display:flex;align-items:center;justify-content:center;font-size:36px;">&#128396;&#10024;</div>
+          <div class="ig-post-actions">&#9825; &#128172; &#9993; <span class="right">&#128278;</span></div>
+          <div class="ig-post-likes">1,204 likes</div>
+          <div class="ig-post-caption"><span class="user">pencraft.co</span> The brush pen set every designer is obsessing over. 12 colors, dual tips, $24.99. Link in bio. &#128396;</div>
+          <div style="padding:6px 16px 12px;"><div style="background:#f0f0f0;border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;color:#1a1a1a;font-weight:600;">Shop Now</span><span style="font-size:14px;">&#8250;</span></div></div>
+        </div>
+        <div class="bnav"><div class="bnav-i on"><div class="ni">&#127968;</div></div><div class="bnav-i"><div class="ni">&#128269;</div></div><div class="bnav-i"><div class="ni">&#127909;</div></div><div class="bnav-i"><div class="ni">&#128722;</div></div><div class="bnav-i"><div class="ni">&#128100;</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="story">The targeting is layered. Meta knows Maya is 24, female, lives in Brooklyn, works in design (from her Facebook profile she linked years ago), recently engaged with brush pen content, and has a purchase history suggesting a $30-50 impulse threshold. The ad from pencraft.co bid $8.50 CPM for "women 18-34 interested in art supplies" — but Instagram's auction system estimated Maya's click probability at 4.2% (vs. the average 0.8%), which meant pencraft.co's <em>effective</em> bid was weighted 5x higher. Better targeting means higher predicted engagement, which means the ad wins the auction at a lower actual cost. Advertisers with relevant creative pay less, and users see ads they actually want. The system rewards quality.</p>
+
+  <p class="story">Instagram's ad auction runs billions of times per day. When Maya loads her feed, an auction fires for every ad slot: advertisers bid based on their target audience, creative quality, and estimated action rate. Instagram's system predicts the probability that Maya will engage with each candidate ad, multiplies that by the bid, and selects the highest expected-value ad. The entire auction resolves in under 10 milliseconds.</p>
+
+  <div class="data-card">
+    <h4>Revenue Model Breakdown</h4>
+    <table class="data-table">
+      <thead><tr><th>Revenue Stream</th><th>Est. Share</th><th>How It Works</th></tr></thead>
+      <tbody>
+        <tr><td>Feed/Stories Ads</td><td>~55%</td><td>In-feed image/video/carousel ads + Story interstitials</td></tr>
+        <tr><td>Reels Ads</td><td>~25%</td><td>Full-screen sponsored Reels in the Reels tab + feed</td></tr>
+        <tr><td>Explore Ads</td><td>~10%</td><td>Sponsored tiles in the Explore grid</td></tr>
+        <tr><td>Shopping / Checkout</td><td>~5%</td><td>Product tags, in-app checkout, affiliate commissions</td></tr>
+        <tr><td>Creator / Branded</td><td>~5%</td><td>Branded content tools, creator marketplace, badges</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric"><div class="mv">$7.2</div><div class="ml">ARPU (US, quarterly)</div></div>
+    <div class="metric"><div class="mv">$12</div><div class="ml">CPM (US avg)</div></div>
+    <div class="metric"><div class="mv">~2M</div><div class="ml">Active Advertisers</div></div>
+  </div>
+
+  <div class="war-room">
+    <div class="war-room-header"><span class="wr-icon">&#128736;</span><span class="wr-title">What Teams Are Building &amp; Debating</span></div>
+    <div class="war-room-body">
+      <div class="wr-item"><span class="wr-role pm">PM</span><div class="wr-text"><strong>"Ad load in Reels is 30% lower than Feed — should we increase it?"</strong> Revenue pressure says yes. But Reels engagement is still growing, and premature ad load increase could stunt adoption. The team is experimenting with 1-in-5 vs. 1-in-4 ad frequency, measuring completion rate and session length impact.</div></div>
+      <div class="wr-item"><span class="wr-role eng">ENG</span><div class="wr-text"><strong>The ad auction system processes 200B+ auctions per day.</strong> Each auction evaluates ~1,000 candidate ads against the user's predicted engagement. The ML model uses 10,000+ features including recency of ad exposure, creative fatigue signals, and cross-surface engagement history. Latency budget: 10ms end-to-end.</div></div>
+      <div class="wr-item"><span class="wr-role data">DATA</span><div class="wr-text"><strong>Measuring ad quality via "negative feedback rate."</strong> Users who hide an ad, or whose session ends within 30 seconds of seeing one, generate a negative signal. Ads with high negative feedback get demoted in the auction — even if their bids are high. This protects user experience as a revenue lever.</div></div>
+      <div class="wr-item"><span class="wr-role ops">OPS</span><div class="wr-text"><strong>Ad review is half automated, half human.</strong> 15M+ ads submitted per week. AI catches 95% of policy violations. The remaining 5% require human reviewers — a global ops team of ~5,000 people handling escalations in 50+ languages.</div></div>
+    </div>
+  </div>
+
+  <div class="practice-box">
+    <div class="plbl">Practice Question</div>
+    <h4>Instagram wants to increase ARPU by 20% in mature markets without increasing ad load. Design three strategies that grow revenue through value, not volume.</h4>
+    <p>Consider: higher-intent ad formats, shopping integration, creator commerce, and advertiser tools that improve auction efficiency.</p>
+    <div class="phint">Framework hint: Revenue = impressions x CPM. If you can't increase impressions, how do you make each impression worth more?</div>
+  </div>
+</section>
+
+<div class="transition">Maya doesn't think about ads. She thinks about the art she's discovering, the people she's connecting with. She posted three more times this week. Her follower count just hit 200. &darr;</div>
+
+<!-- ===== STAGE 5 ===== -->
+<section class="stage stage-5" id="s5">
+  <div class="stage-header">
+    <div class="stage-number">Stage 05</div>
+    <div class="divider"></div>
+    <h2>Retention</h2>
+    <p class="stage-question">What makes them stay instead of churn?</p>
+  </div>
+
+  <p class="story">It's been two months. Maya hasn't missed a single day on Instagram. She didn't make a conscious decision to keep using it — the app just became part of the rhythm of her life. Morning scroll with coffee. Lunch break stories check. Evening Reels before sleep. The question isn't "why does she open Instagram?" — it's "what would make her stop?"</p>
+
+  <p class="story">The answer: almost nothing. Instagram has built <strong>four interlocking retention walls</strong> that make leaving increasingly costly over time.</p>
+
+  <p class="story"><strong>1. Social graph lock-in.</strong> Maya's 200 followers and 180 following represent real relationships. Moving to another platform means rebuilding those connections from zero. Every follow is a switching cost.</p>
+
+  <p class="story"><strong>2. Content investment.</strong> She's posted 23 times. Each post represents creative effort, memories, and social validation (likes, comments). Leaving means losing that portfolio — or at least its audience.</p>
+
+  <p class="story"><strong>3. Habit loops.</strong> The cue-routine-reward cycle is deeply embedded. Bored? Open Instagram. See new content (variable reward). Feel connected. Repeat. The variable-ratio reinforcement schedule — sometimes 3 likes, sometimes 47 — is the same mechanism that makes slot machines addictive.</p>
+
+  <p class="story"><strong>4. Notification re-engagement.</strong> When Maya's usage dips, Instagram notices within hours.</p>
+
+  <!-- PHONE: DM Inbox -->
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="screen">
+        <div class="sbar"><span>8:15 PM</span><div class="icons"><svg width="14" height="10" viewBox="0 0 14 10"><rect x="0" y="6" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="3.5" y="4" width="3" height="6" rx="0.5" fill="#1a1a1a"/><rect x="7" y="2" width="3" height="8" rx="0.5" fill="#1a1a1a"/><rect x="10.5" y="0" width="3" height="10" rx="0.5" fill="#1a1a1a"/></svg></div></div>
+        <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eee;">
+          <div style="font-size:18px;font-weight:700;">maya.designs</div>
+          <div style="font-size:18px;">&#9998;</div>
+        </div>
+        <div style="padding:8px 16px;"><div style="background:#f0f0f0;border-radius:10px;padding:8px 14px;font-size:13px;color:#999;">&#128269; Search</div></div>
+        <div class="ig-dm-item">
+          <div class="ig-dm-av">&#128105;</div>
+          <div class="ig-dm-info"><div class="ig-dm-name">Jess</div><div class="ig-dm-msg">OMG have you seen this designer?? &#128525;</div></div>
+          <div class="ig-dm-dot"></div>
+        </div>
+        <div class="ig-dm-item">
+          <div class="ig-dm-av">&#128104;</div>
+          <div class="ig-dm-info"><div class="ig-dm-name">Marcus</div><div class="ig-dm-msg">Sent you a reel</div></div>
+          <div class="ig-dm-dot"></div>
+        </div>
+        <div class="ig-dm-item">
+          <div class="ig-dm-av" style="background:linear-gradient(135deg,#ff9a56,#ff6b6b);">&#9998;</div>
+          <div class="ig-dm-info"><div class="ig-dm-name">pencraft.co</div><div class="ig-dm-msg">Hey Maya! We love your work and...</div></div>
+          <div style="font-size:11px;color:#999;">2h</div>
+        </div>
+        <div class="ig-dm-item">
+          <div class="ig-dm-av">&#128102;</div>
+          <div class="ig-dm-info"><div class="ig-dm-name">Anil</div><div class="ig-dm-msg">That Reel was so good!</div></div>
+          <div style="font-size:11px;color:#999;">5h</div>
+        </div>
+        <div class="ig-dm-item">
+          <div class="ig-dm-av">&#127912;</div>
+          <div class="ig-dm-info"><div class="ig-dm-name">brush.letters</div><div class="ig-dm-msg">Thanks for the follow! &#10024;</div></div>
+          <div style="font-size:11px;color:#999;">1d</div>
+        </div>
+        <div class="bnav"><div class="bnav-i"><div class="ni">&#127968;</div></div><div class="bnav-i"><div class="ni">&#128269;</div></div><div class="bnav-i"><div class="ni">&#127909;</div></div><div class="bnav-i"><div class="ni">&#128722;</div></div><div class="bnav-i on"><div class="ni">&#128100;</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="story">DMs are Instagram's secret retention weapon. Over 50% of sharing on Instagram happens through Direct Messages — not public posts, not Stories, but private sharing between friends. When Maya sends Jess a Reel, that's not just content distribution. That's a <strong>social obligation loop</strong>: Jess feels compelled to respond, which pulls her back into the app, which creates another opportunity for engagement. The DM inbox is the most underappreciated surface on Instagram — it's where relationships deepen and where the social graph becomes truly sticky.</p>
+
+  <p class="story">When Maya's usage dips, Instagram notices within hours. A "You have unseen stories from 3 close friends" notification fires at her typical open time. A "Your post from last week is getting new likes" email arrives. The reactivation system has 40+ trigger templates calibrated to different churn-risk levels.</p>
+
+  <div class="data-card">
+    <h4>Retention Curve (Typical US User Cohort)</h4>
+    <div class="funnel-bar"><span class="fl">D1 Retention</span><div class="ff" style="width:62%;background:var(--green-mid);">62%</div></div>
+    <div class="funnel-bar"><span class="fl">D7 Retention</span><div class="ff" style="width:45%;background:var(--accent-blue);">45%</div></div>
+    <div class="funnel-bar"><span class="fl">D30 Retention</span><div class="ff" style="width:38%;background:var(--accent-orange);">38%</div></div>
+    <div class="funnel-bar"><span class="fl">D90 Retention</span><div class="ff" style="width:32%;background:var(--accent-purple);">32%</div></div>
+    <div class="funnel-bar"><span class="fl">D365 Retention</span><div class="ff" style="width:25%;background:var(--accent-red);">25%</div></div>
+  </div>
+
+  <p class="story">That 25% annual retention means three out of four new signups eventually churn. But the users who stay are enormously valuable — they become daily actives who engage for years. Instagram's strategy isn't to prevent all churn; it's to identify high-value users early and invest heavily in retaining them.</p>
+
+  <div class="war-room">
+    <div class="war-room-header"><span class="wr-icon">&#128736;</span><span class="wr-title">What Teams Are Building &amp; Debating</span></div>
+    <div class="war-room-body">
+      <div class="wr-item"><span class="wr-role pm">PM</span><div class="wr-text"><strong>"The 'Take a Break' feature — does it help retention or hurt engagement?"</strong> Counterintuitively, users who opt into usage reminders show 5% higher D30 retention. The hypothesis: it gives users a sense of control, which reduces guilt-driven uninstalls. The feature is good PR <em>and</em> good product.</div></div>
+      <div class="wr-item"><span class="wr-role eng">ENG</span><div class="wr-text"><strong>The churn prediction model runs nightly on 2B+ users.</strong> Features include session frequency delta, content creation recency, notification response rate, and social reciprocity score (are their friends still active?). Users flagged as high-risk enter a reactivation flow within 24 hours.</div></div>
+      <div class="wr-item"><span class="wr-role data">DATA</span><div class="wr-text"><strong>"Following count is the single best predictor of 1-year retention."</strong> Above 150 followings: 78% annual retention. Below 50: 12%. The data team built a dashboard that tracks following growth velocity as a leading indicator for cohort health.</div></div>
+      <div class="wr-item"><span class="wr-role design">DESIGN</span><div class="wr-text"><strong>Testing "missed content" nudges in the feed.</strong> A card that says "You missed posts from @jess_design while you were away" creates a 22% increase in scroll depth. But it also creates anxiety. Design is debating whether FOMO-driven engagement is sustainable.</div></div>
+    </div>
+  </div>
+
+  <div class="practice-box">
+    <div class="plbl">Practice Question</div>
+    <h4>Instagram's D30 retention for users who post at least once is 58%, vs. 28% for consume-only users. Design a product strategy to convert passive consumers into creators without making the experience feel pushy.</h4>
+    <p>Consider the creator spectrum: lurker, liker, commenter, story poster, feed poster, Reels creator. How do you move users one step at a time?</p>
+    <div class="phint">Framework hint: Think about reducing the cost of creation. What's the minimal creative act that still generates social validation?</div>
+  </div>
+</section>
+
+<div class="transition">Maya isn't going anywhere. She's now posting weekly, replying to DMs, and tagging friends in Reels. Speaking of which — she just shared something with her friend who isn't on Instagram yet. &darr;</div>
+
+<!-- ===== STAGE 6 ===== -->
+<section class="stage stage-6" id="s6">
+  <div class="stage-header">
+    <div class="stage-number">Stage 06</div>
+    <div class="divider"></div>
+    <h2>Referral</h2>
+    <p class="stage-question">How do existing users bring new ones?</p>
+  </div>
+
+  <p class="story">Maya found a Reel of someone speed-designing a logo in Procreate. She immediately sent it to her coworker Anil via iMessage. The link preview looked great — a thumbnail, the creator's name, the first line of the caption. But when Anil tapped it, he got the degraded mobile web experience: the Reel played, but with a banner blocking the bottom and no way to see more content. The implicit message was clear: <strong>"Want the full experience? Download the app."</strong></p>
+
+  <p class="story">Anil downloaded it. He was Instagram's 2-billionth-something user, acquired for free through Maya's organic share. Every share is a referral. Every tag is an invitation. Every collaborative post is a joint endorsement.</p>
+
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="screen">
+        <div class="sbar"><span>3:15 PM</span><div class="icons"><svg width="14" height="10" viewBox="0 0 14 10"><rect x="0" y="6" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="3.5" y="4" width="3" height="6" rx="0.5" fill="#1a1a1a"/><rect x="7" y="2" width="3" height="8" rx="0.5" fill="#1a1a1a"/><rect x="10.5" y="0" width="3" height="10" rx="0.5" fill="#1a1a1a"/></svg></div></div>
+        <div class="ig-header"><div class="ig-logo">Instagram</div><div class="ig-icons">&#9825; &#9993;</div></div>
+        <div style="padding:16px;">
+          <div style="font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:12px;">Share to...</div>
+          <div style="display:flex;gap:16px;margin-bottom:16px;">
+            <div style="text-align:center;"><div style="width:48px;height:48px;border-radius:50%;background:#eee;display:flex;align-items:center;justify-content:center;font-size:20px;">&#128104;</div><div style="font-size:10px;margin-top:4px;">Anil</div></div>
+            <div style="text-align:center;"><div style="width:48px;height:48px;border-radius:50%;background:#eee;display:flex;align-items:center;justify-content:center;font-size:20px;">&#128105;</div><div style="font-size:10px;margin-top:4px;">Jess</div></div>
+            <div style="text-align:center;"><div style="width:48px;height:48px;border-radius:50%;background:#eee;display:flex;align-items:center;justify-content:center;font-size:20px;">&#128102;</div><div style="font-size:10px;margin-top:4px;">Marcus</div></div>
+            <div style="text-align:center;"><div style="width:48px;height:48px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:14px;">+</div><div style="font-size:10px;margin-top:4px;">More</div></div>
+          </div>
+          <div style="border-top:1px solid #eee;padding-top:16px;">
+            <div style="font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:10px;">Share via</div>
+            <div style="display:flex;gap:12px;">
+              <div style="flex:1;background:#25D366;color:white;text-align:center;padding:10px;border-radius:8px;font-size:12px;font-weight:600;">WhatsApp</div>
+              <div style="flex:1;background:#007AFF;color:white;text-align:center;padding:10px;border-radius:8px;font-size:12px;font-weight:600;">Messages</div>
+              <div style="flex:1;background:#1DA1F2;color:white;text-align:center;padding:10px;border-radius:8px;font-size:12px;font-weight:600;">Twitter</div>
+            </div>
+            <div style="margin-top:12px;background:#f0f0f0;border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;font-size:13px;"><span style="color:#999;">https://instagr.am/reel/Cx7k...</span><span style="color:var(--ig-pink);font-weight:600;">Copy</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="story">The referral loop has a subtle but powerful amplifier: <strong>the watermark</strong>. When someone downloads a Reel to share on TikTok, Twitter, or iMessage, it carries an Instagram watermark and the creator's username. Every reshared Reel is a micro-billboard. Meta estimated that Instagram-watermarked content receives over 2B views per day on non-Instagram platforms. That's free advertising at a scale no paid campaign could match.</p>
+
+  <p class="story">Instagram's referral mechanics are mostly <strong>implicit</strong>, not explicit. There's no "Invite a friend, get $10" program. Instead, the entire product is designed so that normal usage creates referral opportunities. Sharing content to other platforms. Tagging non-users in photos (who receive email invitations). Collaborative posts that appear on both profiles. "Join Instagram" CTAs when viewing profiles on the web.</p>
+
+  <div class="metric-row">
+    <div class="metric"><div class="mv">~0.7</div><div class="ml">Viral Coefficient</div></div>
+    <div class="metric"><div class="mv">1B+</div><div class="ml">Shares/Day (cross-platform)</div></div>
+    <div class="metric"><div class="mv">~15%</div><div class="ml">Share-to-Install Rate</div></div>
+  </div>
+
+  <div class="war-room">
+    <div class="war-room-header"><span class="wr-icon">&#128736;</span><span class="wr-title">What Teams Are Building &amp; Debating</span></div>
+    <div class="war-room-body">
+      <div class="wr-item"><span class="wr-role pm">PM</span><div class="wr-text"><strong>"Should we make the web experience better to increase engagement, or worse to increase app installs?"</strong> This is the eternal tension. Every improvement to instagram.com reduces install pressure. The current strategy: make the web good enough for content consumption, but gate creation, DMs, and Stories behind the app.</div></div>
+      <div class="wr-item"><span class="wr-role eng">ENG</span><div class="wr-text"><strong>The share sheet is instrumented down to the pixel.</strong> Which share target do users select? How long does the share take? Does the recipient open the link? Within how many minutes? Every share is an attribution event, and the data feeds back into the ranking model (content with high share rates gets boosted).</div></div>
+      <div class="wr-item"><span class="wr-role data">DATA</span><div class="wr-text"><strong>Reels are the #1 driver of cross-platform shares.</strong> Reels generate 3.2x more off-platform shares than feed posts. The data team is modeling whether this is because Reels are more entertaining or because the full-screen format is more shareable. Probably both.</div></div>
+      <div class="wr-item"><span class="wr-role design">DESIGN</span><div class="wr-text"><strong>The "Collab" post feature increased co-creation by 28%.</strong> When two users co-author a post, it appears on both profiles and reaches both audiences. Design is exploring "Collab Reels" — two creators' clips stitched together — as the next referral multiplier.</div></div>
+    </div>
+  </div>
+
+  <div class="practice-box">
+    <div class="plbl">Practice Question</div>
+    <h4>Instagram's viral coefficient is 0.7 (below 1.0, meaning the product doesn't grow virally on its own). Design a feature or mechanism to push it above 1.0 in a specific user segment.</h4>
+    <p>Consider: what makes someone share Instagram content to a non-user, and what would make that non-user actually install?</p>
+    <div class="phint">Framework hint: Break the viral loop into steps: create content, share externally, recipient sees it, recipient installs, recipient becomes active. Which step has the biggest drop-off?</div>
+  </div>
+</section>
+
+<div class="transition">Anil is now on Instagram. Maya's design posts are getting 80-120 likes each. She started a Reels series showing her design process. One of them hit 12,000 views. She's becoming a creator. &darr;</div>
+
+<!-- ===== STAGE 7 ===== -->
+<section class="stage stage-7" id="s7">
+  <div class="stage-header">
+    <div class="stage-number">Stage 07</div>
+    <div class="divider"></div>
+    <h2>Revenue Expansion</h2>
+    <p class="stage-question">How does revenue grow beyond the first dollar?</p>
+  </div>
+
+  <p class="story">Maya now has 2,400 followers. She's not an influencer — she's a <strong>micro-creator</strong>, exactly the type Instagram is betting its future on. Last week, a brush pen brand reached out through Instagram's Creator Marketplace and offered her $150 to make a sponsored Reel. She said yes. The brand paid Instagram a platform fee. Maya made money. The content was good enough that the algorithm surfaced it to people beyond Maya's followers.</p>
+
+  <p class="story">This is the revenue expansion flywheel: more creators making money on the platform means more high-quality content, which means more engagement, which means more ad inventory, which means more revenue, which funds more creator monetization tools.</p>
+
+  <p class="story">Maya also turned on <strong>Subscriptions</strong>. For $4.99/month, her most dedicated followers get exclusive Stories, subscriber-only Reels, and a badge next to their name in comments. She has 34 subscribers so far — that's $170/month in recurring revenue, of which Instagram currently takes 0% (a temporary growth incentive). When the platform eventually takes 15-30%, it becomes a new revenue line that didn't exist two years ago.</p>
+
+  <p class="story">And there's the <strong>Creator Marketplace</strong> — Instagram's matchmaking layer between brands and creators. Maya's profile is flagged as eligible: she has a Business account, 2,400+ followers, consistent posting history, and audience demographics that align with D2C brand targets. When the brush pen brand found her, they did it through the Marketplace's search filters. Instagram facilitated the connection, hosted the branded content tools, and collected a service fee. Every transaction strengthens the platform's position as the infrastructure for the creator economy.</p>
+
+  <div class="comparison">
+    <div class="comp-card">
+      <div class="cl" style="color:var(--ig-pink);">Then (2019)</div>
+      <h4>Single Revenue Stream</h4>
+      <p>Nearly 100% of revenue from feed and Stories ads. Shopping was experimental. Reels didn't exist. Creator monetization was zero.</p>
+    </div>
+    <div class="comp-card">
+      <div class="cl" style="color:var(--accent-teal);">Now (2025)</div>
+      <h4>Multi-Surface Revenue</h4>
+      <p>Reels ads are ~25% of revenue and growing 30% YoY. Shopping checkout drives 5%. Creator subscriptions, branded content marketplace, and Gifts add new streams. Ad inventory has nearly doubled.</p>
+    </div>
+  </div>
+
+  <p class="story">Instagram's biggest revenue expansion lever is <strong>Reels monetization</strong>. When Reels launched, it had zero ads — the team was focused purely on engagement growth. Now, Reels ad revenue is the fastest-growing segment. But the ad load is still lower than Feed, which means there's significant headroom.</p>
+
+  <p class="story">The second lever is <strong>Shopping</strong>. When Maya tags a product in her post, followers can tap to buy without leaving Instagram. The platform takes a commission. It's turning every creator into a storefront and every post into a potential transaction.</p>
+
+  <div class="metric-row">
+    <div class="metric"><div class="mv">30%</div><div class="ml">Reels Revenue YoY Growth</div></div>
+    <div class="metric"><div class="mv">$500M+</div><div class="ml">Creator Payouts (annual est.)</div></div>
+    <div class="metric"><div class="mv">130M</div><div class="ml">Monthly Shopping Taps</div></div>
+  </div>
+
+  <div class="war-room">
+    <div class="war-room-header"><span class="wr-icon">&#128736;</span><span class="wr-title">What Teams Are Building &amp; Debating</span></div>
+    <div class="war-room-body">
+      <div class="wr-item"><span class="wr-role pm">PM</span><div class="wr-text"><strong>"Creator subscriptions: should we take a 0% cut to grow the market, or 30% to monetize now?"</strong> Taking 0% loses revenue but attracts creators from Patreon and Substack. Taking 30% generates immediate revenue but may not compete. Current strategy: 0% through 2025 to build supply, then introduce a graduated take rate.</div></div>
+      <div class="wr-item"><span class="wr-role eng">ENG</span><div class="wr-text"><strong>Building the in-app checkout pipeline.</strong> Product discovery, cart, payment, shipping integration, returns. Each step needs to be as frictionless as the rest of Instagram. The team is integrating with Shopify, BigCommerce, and direct merchant APIs to make the backend invisible to users.</div></div>
+      <div class="wr-item"><span class="wr-role data">DATA</span><div class="wr-text"><strong>LTV of creator-acquired users is 2.3x higher than ad-acquired users.</strong> Users who join because of a specific creator have higher engagement, longer retention, and higher ad revenue contribution. This justifies paying creators — their content is the most efficient acquisition channel.</div></div>
+      <div class="wr-item"><span class="wr-role design">DESIGN</span><div class="wr-text"><strong>The product tag UX is the bottleneck for shopping adoption.</strong> Only 8% of eligible creators tag products. The current flow requires 5 taps. Design is testing auto-suggested product tags using image recognition — if the AI detects a specific product, it pre-populates the tag. Early tests show 3x more tagging.</div></div>
+    </div>
+  </div>
+
+  <div class="practice-box">
+    <div class="plbl">Practice Question</div>
+    <h4>Instagram wants to double shopping revenue in 12 months. Design a product strategy that turns more creators into sellers and more browsers into buyers.</h4>
+    <p>Consider both sides of the marketplace: creator supply (why would they tag products?) and user demand (why would they buy in-app vs. going to Amazon?).</p>
+    <div class="phint">Framework hint: Think about trust. People buy from people they trust. How does Instagram leverage the creator-follower relationship to create purchase intent?</div>
+  </div>
+</section>
+
+<div class="transition">Maya earned $150 from her first brand deal. She's invested — not just in content, but in Instagram as a platform for her creative career. But can this system sustain itself? &darr;</div>
+
+<!-- ===== STAGE 8 ===== -->
+<section class="stage stage-8" id="s8">
+  <div class="stage-header">
+    <div class="stage-number">Stage 08</div>
+    <div class="divider"></div>
+    <h2>Sustainability</h2>
+    <p class="stage-question">What keeps the machine running at scale?</p>
+  </div>
+
+  <p class="story">Maya woke up one morning to find her latest Reel had been removed. "This content may violate our Community Guidelines," the notification said. She appealed. Twelve hours later, it was restored with an apology — the AI had flagged a close-up of her painting as potential nudity. False positive. But the twelve hours of anxiety, the lost momentum, the feeling of being punished for no reason — that's a sustainability problem.</p>
+
+  <p class="story">Instagram processes <strong>over 100 million content moderation decisions per day</strong>. Most are automated. The AI catches 95% of policy violations before they're reported. But it also generates millions of false positives — and each one is a creator whose trust is eroded. At scale, content moderation is not a policy problem. It's an engineering problem, a design problem, and ultimately an existential one.</p>
+
+  <blockquote>At 2 billion users, even a 0.1% error rate means 2 million people having a bad experience today.</blockquote>
+
+  <p class="story">Beyond moderation, Instagram faces three other sustainability challenges:</p>
+
+  <p class="story"><strong>Creator economics.</strong> The top 1% of creators capture most of the audience. The other 99% — people like Maya — create most of the content but earn almost nothing. If mid-tier creators burn out or leave, the content supply that feeds the algorithm dries up. Instagram needs a creator middle class, and it doesn't have one yet.</p>
+
+  <p class="story"><strong>Algorithm fairness.</strong> The recommendation algorithm decides who gets seen and who doesn't. Small changes in ranking weights can devastate entire creator communities. "The algorithm changed and my reach dropped 70%" is a constant complaint. The lack of transparency breeds distrust.</p>
+
+  <p class="story"><strong>Mental health and regulatory pressure.</strong> Instagram is under constant scrutiny from governments, researchers, and parents. Internal research (leaked in 2021) showed that Instagram can negatively affect teen mental health, particularly around body image. The platform responded with "Take a Break" reminders, hidden like counts (optional), and content sensitivity filters. These features serve a dual purpose: genuine harm reduction and regulatory preemption. If Instagram doesn't self-regulate, governments will — and government regulation tends to be blunt, slow, and bad for product velocity.</p>
+
+  <p class="story"><strong>Infrastructure costs.</strong> Serving 2B+ users with personalized feeds, real-time Stories, high-definition Reels, and instant DMs requires one of the largest computing infrastructures on Earth. Estimated infrastructure cost: $5-8B annually. Every new feature (AI-generated content, longer videos, live shopping) adds to the compute burden.</p>
+
+  <div class="metric-row">
+    <div class="metric"><div class="mv">100M+</div><div class="ml">Daily Moderation Decisions</div></div>
+    <div class="metric"><div class="mv">~95%</div><div class="ml">Automated Detection Rate</div></div>
+    <div class="metric"><div class="mv">$5-8B</div><div class="ml">Est. Annual Infra Cost</div></div>
+  </div>
+
+  <div class="war-room">
+    <div class="war-room-header"><span class="wr-icon">&#128736;</span><span class="wr-title">What Teams Are Building &amp; Debating</span></div>
+    <div class="war-room-body">
+      <div class="wr-item"><span class="wr-role pm">PM</span><div class="wr-text"><strong>"False positive appeals take 12-24 hours. Can we get it to under 1 hour?"</strong> The business case: creators who experience a false positive and wait >6 hours for restoration post 40% less in the following week. Speed of appeal resolution directly impacts content supply. PM is pushing for a real-time human-in-the-loop appeal system for creators above 1,000 followers.</div></div>
+      <div class="wr-item"><span class="wr-role eng">ENG</span><div class="wr-text"><strong>Moderation AI is a multi-modal transformer</strong> processing image, video, text, and audio simultaneously. The model handles 50+ violation categories across 100+ languages. Retraining happens weekly. The biggest engineering challenge: balancing precision (catch bad content) with recall (don't catch good content). Every 1% improvement in precision generates 200K fewer false positives per day.</div></div>
+      <div class="wr-item"><span class="wr-role data">DATA</span><div class="wr-text"><strong>"Creator burnout index" tracks posting frequency decay curves.</strong> Creators who post 5x/week and drop to 1x/week within 60 days are flagged as burnout risk. The data team is building an early warning system that triggers support interventions (monetization tips, performance insights, mental health resources) before creators go silent.</div></div>
+      <div class="wr-item"><span class="wr-role ops">OPS</span><div class="wr-text"><strong>Human moderation workforce: ~15,000 contractors globally.</strong> They handle edge cases, appeals, and novel violation types. The mental health toll is significant — moderators review disturbing content daily. Ops is implementing mandatory rotation schedules and wellness programs, but turnover remains 35% annually.</div></div>
+    </div>
+  </div>
+
+  <div class="practice-box">
+    <div class="plbl">Practice Question</div>
+    <h4>Instagram's content moderation AI has a 2% false positive rate, which means ~2M wrongly flagged posts per day. Design a system to reduce this by 50% without increasing the miss rate for genuinely harmful content.</h4>
+    <p>Consider: creator reputation scores, content context understanding, appeal speed, and the trade-off between automated and human review.</p>
+    <div class="phint">Framework hint: Not all false positives are equal. A false positive on a creator with 50K followers costs more than one on a private account. How do you prioritize?</div>
+  </div>
+</section>
+
+<div class="transition">Maya's post got restored. She kept creating. Her audience is growing. She's now thinking about Instagram not as a social app, but as her creative platform — one that connects to everything else in her digital life. &darr;</div>
+
+<!-- ===== STAGE 9 ===== -->
+<section class="stage stage-9" id="s9">
+  <div class="stage-header">
+    <div class="stage-number">Stage 09</div>
+    <div class="divider"></div>
+    <h2>Ecosystem</h2>
+    <p class="stage-question">How does the product become a platform?</p>
+  </div>
+
+  <p class="story">Six months have passed. Maya has 2,847 followers. She switched to a Business Profile, which gave her access to Instagram Insights — demographics, reach, impression sources, follower growth curves. She can see that 40% of her audience is in New York, 65% is female, and her Reels get 3x more reach than her static posts. She uses this data to refine what she creates. She's not just a user anymore — she's an <strong>operator</strong>.</p>
+
+  <p class="story">Maya cross-posts her Reels to Facebook automatically. She shares her Stories to Threads. Her business profile links to her WhatsApp for client inquiries. She uses the Instagram API through a scheduling tool called Later to plan her content calendar. When a brand pitches her, they use Instagram's Creator Marketplace. When she sells a design template, she uses Instagram Shopping checkout.</p>
+
+  <p class="story">Maya doesn't use "an app." She uses a <strong>platform</strong> — one that sits at the center of a web of tools, services, relationships, and revenue streams. This is the ecosystem stage: when the product transcends its original use case and becomes infrastructure.</p>
+
+  <!-- PHONE: Business Profile -->
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="screen">
+        <div class="sbar"><span>4:30 PM</span><div class="icons"><svg width="14" height="10" viewBox="0 0 14 10"><rect x="0" y="6" width="3" height="4" rx="0.5" fill="#1a1a1a"/><rect x="3.5" y="4" width="3" height="6" rx="0.5" fill="#1a1a1a"/><rect x="7" y="2" width="3" height="8" rx="0.5" fill="#1a1a1a"/><rect x="10.5" y="0" width="3" height="10" rx="0.5" fill="#1a1a1a"/></svg></div></div>
+        <div style="padding:16px;text-align:center;">
+          <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#f0e6ff,#ffe6f0);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:28px;">&#127912;</div>
+          <div style="font-size:16px;font-weight:700;">maya.designs</div>
+          <div style="font-size:12px;color:#999;">Graphic Designer &middot; Brooklyn, NY</div>
+          <div style="display:flex;justify-content:center;gap:24px;margin:12px 0;">
+            <div style="text-align:center;"><div style="font-size:16px;font-weight:700;">2,847</div><div style="font-size:11px;color:#999;">followers</div></div>
+            <div style="text-align:center;"><div style="font-size:16px;font-weight:700;">186</div><div style="font-size:11px;color:#999;">following</div></div>
+            <div style="text-align:center;"><div style="font-size:16px;font-weight:700;">67</div><div style="font-size:11px;color:#999;">posts</div></div>
+          </div>
+          <div style="font-size:13px;color:#1a1a1a;line-height:1.4;margin-bottom:8px;">&#127912; Design is thinking made visual<br>&#128232; Collabs & commissions open<br>&#128279; linktr.ee/mayaDesigns</div>
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <div style="flex:1;background:var(--ig-pink);color:white;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;">Follow</div>
+            <div style="flex:1;background:#f0f0f0;color:#1a1a1a;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:600;">Message</div>
+            <div style="width:36px;background:#f0f0f0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;">&#9660;</div>
+          </div>
+          <div style="display:flex;justify-content:center;gap:0;border-top:1px solid #eee;">
+            <div style="flex:1;padding:10px;text-align:center;border-bottom:2px solid #1a1a1a;font-size:18px;">&#9638;</div>
+            <div style="flex:1;padding:10px;text-align:center;font-size:18px;color:#999;">&#127909;</div>
+            <div style="flex:1;padding:10px;text-align:center;font-size:18px;color:#999;">&#128278;</div>
+          </div>
+          <div class="ig-explore-grid">
+            <div class="ig-explore-item" style="background:linear-gradient(135deg,#f0e6ff,#e6f0ff);">&#127912;</div>
+            <div class="ig-explore-item" style="background:linear-gradient(135deg,#ffe6f0,#fff5e6);">&#128396;</div>
+            <div class="ig-explore-item" style="background:linear-gradient(135deg,#e6ffe6,#e6fff5);">&#127752;</div>
+            <div class="ig-explore-item" style="background:linear-gradient(135deg,#fff5e6,#ffe6e6);">&#128247;</div>
+            <div class="ig-explore-item" style="background:linear-gradient(135deg,#e6f0ff,#f0e6ff);">&#9998;</div>
+            <div class="ig-explore-item" style="background:linear-gradient(135deg,#ffe6f0,#e6ffe6);">&#127776;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="story">Instagram's ecosystem strategy is built on three pillars:</p>
+
+  <p class="story"><strong>1. Meta cross-pollination.</strong> Instagram doesn't exist in isolation. It's part of a family that includes Facebook (3B users), WhatsApp (2B users), Threads (200M+ users), and Messenger. Content flows between them. Social graphs overlap. Advertisers buy across all surfaces from a single dashboard. This is Instagram's deepest moat — not just its own network effects, but the combined network effects of the entire Meta ecosystem.</p>
+
+  <p class="story"><strong>2. Creator tools as platform.</strong> Business profiles, Insights analytics, Creator Marketplace, branded content tags, subscription tools, shopping checkout — these turn Instagram from a social network into a <em>business operating system</em> for 200M+ creator and business accounts. Every tool creates dependency. Every dependency increases switching costs.</p>
+
+  <p class="story"><strong>3. API and developer platform.</strong> The Instagram Graph API lets third-party tools (Later, Hootsuite, Sprout Social) build businesses on top of Instagram. 2M+ apps are connected. This creates a surrounding ecosystem of services that make Instagram more valuable without Instagram building everything itself.</p>
+
+  <div class="data-card">
+    <h4>Ecosystem Scale</h4>
+    <table class="data-table">
+      <thead><tr><th>Dimension</th><th>Scale</th><th>Why It Matters</th></tr></thead>
+      <tbody>
+        <tr><td>Business Profiles</td><td>200M+</td><td>Each is a storefront that creates commercial content for free</td></tr>
+        <tr><td>Meta Cross-Posting</td><td>~40% of IG content</td><td>Content shared to FB/Threads extends reach and locks in the ecosystem</td></tr>
+        <tr><td>Connected Apps (API)</td><td>2M+</td><td>Third-party tools that depend on Instagram create an ecosystem moat</td></tr>
+        <tr><td>Creator Marketplace</td><td>500K+ creators</td><td>Matchmaking platform between brands and creators, taking a service fee</td></tr>
+        <tr><td>Threads Integration</td><td>200M+ users</td><td>Text-based companion app cross-pollinating with IG's visual identity</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="war-room">
+    <div class="war-room-header"><span class="wr-icon">&#128736;</span><span class="wr-title">What Teams Are Building &amp; Debating</span></div>
+    <div class="war-room-body">
+      <div class="wr-item"><span class="wr-role pm">PM</span><div class="wr-text"><strong>"Should Instagram have its own messaging app, or continue using DMs + Messenger integration?"</strong> DMs are Instagram's fastest-growing surface (50%+ of sharing happens via DM). But Meta also wants users on Messenger. The tension: what's best for Instagram's engagement vs. what's best for Meta's portfolio. Currently, Instagram DMs are being enhanced independently while maintaining Messenger cross-chat.</div></div>
+      <div class="wr-item"><span class="wr-role eng">ENG</span><div class="wr-text"><strong>The cross-posting infrastructure handles 500M+ cross-posts per day.</strong> An Instagram Reel shared to Facebook needs to be re-encoded for different aspect ratios, re-ranked for a different algorithm, and re-moderated for different community standards — all in real time. The shared ML infrastructure across Meta apps is the biggest technical moat in social media.</div></div>
+      <div class="wr-item"><span class="wr-role data">DATA</span><div class="wr-text"><strong>Users who cross-post to 2+ Meta surfaces retain at 85% annually</strong> vs. 62% for Instagram-only users. The data team is building a "platform depth" score that measures how embedded a user is across the ecosystem. Higher depth = higher LTV = more investment in retention.</div></div>
+      <div class="wr-item"><span class="wr-role design">DESIGN</span><div class="wr-text"><strong>The Threads integration design challenge: differentiation vs. cohesion.</strong> Threads needs to feel distinct enough to justify its existence, but connected enough to Instagram that users move fluidly between them. Design is testing a shared navigation model — swipe from Instagram to Threads — vs. the current separate-app approach.</div></div>
+    </div>
+  </div>
+
+  <div class="practice-box">
+    <div class="plbl">Practice Question</div>
+    <h4>A new social platform is gaining traction among Gen Z creators by offering 50% ad revenue share (vs. Instagram's ~20%). Design Instagram's competitive response — considering both short-term creator retention and long-term platform economics.</h4>
+    <p>Consider: matching on revenue share, competing on distribution, building creator tools no one else has, or leveraging the Meta ecosystem advantage.</p>
+    <div class="phint">Framework hint: Creators go where the audience is, not where the revenue share is highest. What matters more — the payout percentage or the total payout? How does Instagram's distribution advantage change the math?</div>
+  </div>
+</section>
+
+<!-- CLOSING -->
+<div style="padding: 60px 0 40px; text-align: center;">
+  <blockquote style="border-left:none;text-align:center;">Maya started as a curious user. She became a daily active. Then a creator. Then a micro-business. Instagram didn't just capture her attention — it became the infrastructure for her creative life.</blockquote>
+
+  <p class="story" style="text-align:center;max-width:640px;margin:0 auto 20px;">That's the product machine. Nine stages. From a shared Reel link to a platform ecosystem. Every scroll was shaped by ranking algorithms. Every notification was timed by prediction models. Every ad was placed by a real-time auction. Every feature was debated in war rooms by PMs, engineers, data scientists, and designers who understood that behind every metric is a person like Maya — trying to create, connect, and be seen.</p>
+
+  <p class="story" style="text-align:center;max-width:640px;margin:0 auto 20px;">Instagram isn't one product. It's a feed, a Stories platform, a short-video app, a messaging service, a shopping mall, a creator economy, and a business tool — all sharing a single social graph and a single algorithmic brain. Understanding how these pieces interlock is what separates surface-level product thinking from the kind of systems thinking that builds and sustains products at scale.</p>
+
+  <p class="story" style="text-align:center;max-width:640px;margin:0 auto;">The next time you open Instagram, look at it differently. Behind every pixel is a decision. Behind every decision is a trade-off. And behind every trade-off is a team that argued about it for weeks. That's product management at 2 billion users.</p>
+</div>
+
+</div><!-- /container -->
+
+<footer>
+  <div>Product Autopsy: Instagram &middot; HackProduct</div>
+  <div style="margin-top:8px;font-size:11px;">All data is illustrative / estimated for educational purposes. Not affiliated with Meta.</div>
+</footer>
+
+</body>
+</html>

@@ -17,12 +17,28 @@ const TalkingHeadAvatar = dynamic(
   { ssr: false }
 )
 
+const ExcalidrawCanvas = dynamic(
+  () => import('@/components/challenge/ExcalidrawCanvas'),
+  { ssr: false }
+)
+
+const MonacoCodeEditor = dynamic(
+  () => import('@/components/challenge/MonacoCodeEditor').then(m => m.MonacoCodeEditor),
+  { ssr: false }
+)
+
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { Md } from '@/components/ui/Md'
 import { useInterviewTimer } from '@/hooks/useInterviewTimer'
 import { InterviewLimitModal } from '@/components/paywalls/InterviewLimitModal'
 import { useUpgrade } from '@/hooks/useUpgrade'
 import { useEntitlements } from '@/hooks/useEntitlements'
 import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
+import {
+  DISCIPLINE_META,
+  normalizeDiscipline,
+  type LiveInterviewDiscipline,
+} from '@/lib/live-interview/disciplines'
 import { MOCK_LIVE_SESSION, MOCK_LIVE_TURNS } from '@/lib/mock-live-interviews'
 
 const IS_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
@@ -59,6 +75,7 @@ interface TranscriptTurn {
   content: string
   source: 'voice' | 'chat'
   coachingSignal?: CoachingSignal
+  artifactSignal?: string
 }
 
 type InterviewPhase = 'loading' | 'ready' | 'active' | 'ended'
@@ -286,7 +303,7 @@ function TurnBubble({ turn }: { turn: TranscriptTurn }) {
                 }
           }
         >
-          {turn.content}
+          {isHatch ? <Md>{turn.content}</Md> : turn.content}
         </div>
 
         {/* User initials */}
@@ -302,6 +319,19 @@ function TurnBubble({ turn }: { turn: TranscriptTurn }) {
           </div>
         )}
       </div>
+
+      {/* Artifact signal note below user bubble */}
+      {!isHatch && turn.artifactSignal && (
+        <div
+          className="flex items-center gap-1.5 mt-1 mr-9 font-label text-[10.5px]"
+          style={{ color: 'rgba(243,237,224,0.45)' }}
+        >
+          <span className="material-symbols-outlined text-[11px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 12" }}>
+            visibility
+          </span>
+          <span>{turn.artifactSignal}</span>
+        </div>
+      )}
     </div>
   )
 }
@@ -392,10 +422,10 @@ export default function SessionPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ company?: string; role?: string; autostart?: string; loop_id?: string; round_index?: string }>
+  searchParams: Promise<{ company?: string; role?: string; autostart?: string; loop_id?: string; round_index?: string; discipline?: string }>
 }) {
   const { id } = use(params)
-  const { company, role: roleParam, autostart, loop_id: loopIdParam, round_index: roundIndexParam } = use(searchParams)
+  const { company, role: roleParam, autostart, loop_id: loopIdParam, round_index: roundIndexParam, discipline: disciplineParam } = use(searchParams)
   const router = useRouter()
   const { startUpgrade } = useUpgrade()
   const { isPro, isAdmin } = useEntitlements()
@@ -442,6 +472,15 @@ export default function SessionPage({
   const [loopRounds, setLoopRounds] = useState<LoopRound[]>([])
   const [previousRound, setPreviousRound] = useState<LoopRound | null>(null)
 
+  // Artifact workspace state
+  const [centerMode, setCenterMode] = useState<'orb' | 'canvas' | 'editor'>('orb')
+  const [isFlowHudCollapsed, setIsFlowHudCollapsed] = useState(false)
+  const [canvasScene, setCanvasScene] = useState<{ elements: unknown[]; appState: unknown } | null>(null)
+  const [currentCode, setCurrentCode] = useState('')
+  const [currentLanguage, setCurrentLanguage] = useState<'python' | 'javascript' | 'java' | 'cpp' | 'go' | 'sql'>('python')
+  const [lastRunResult, setLastRunResult] = useState<unknown>(null)
+  const [artifactSignals, setArtifactSignals] = useState<Array<{ id: string; text: string; time: number }>>([])
+
   const eventSourceRef = useRef<EventSource | null>(null)
   const lastSignalTurnIndexRef = useRef<number>(-1)
 
@@ -455,6 +494,23 @@ export default function SessionPage({
   const overallScore = Math.round(
     ((flowCoverage.frame + flowCoverage.list + flowCoverage.optimize + flowCoverage.win) / 4) * 100
   )
+
+  const currentRoundIndex = roundIndexParam ? parseInt(roundIndexParam) : 0
+  const discipline: LiveInterviewDiscipline | null =
+    (loopRounds[currentRoundIndex]?.discipline as LiveInterviewDiscipline | undefined)
+    ?? normalizeDiscipline(disciplineParam)
+    ?? null
+
+  // Set the editor's default language based on discipline (sql vs coding).
+  // Guard with !currentCode so we never stomp on user input.
+  useEffect(() => {
+    if (!discipline) return
+    const meta = DISCIPLINE_META[discipline]
+    if (meta.artifact === 'editor' && meta.defaultLanguage && !currentCode) {
+      setCurrentLanguage(meta.defaultLanguage)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [discipline])
 
   // Auto-scroll transcript
   useEffect(() => {
@@ -682,10 +738,25 @@ export default function SessionPage({
     }
 
     if (role === 'user' && cleanContent) {
+      const artifactSnapshot = centerMode !== 'orb' ? {
+        type: centerMode as 'canvas' | 'editor',
+        ...(centerMode === 'canvas' ? {
+          elementCount: canvasScene ? (canvasScene.elements as unknown[]).length : 0,
+          discipline: discipline ?? undefined,
+        } : {
+          code: currentCode,
+          language: currentLanguage,
+          runResult: lastRunResult,
+          discipline: discipline ?? undefined,
+        }),
+      } : undefined
+
+      const turnId = turn.id
+
       fetch(`/api/live-interview/${sessionId}/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: cleanContent, role: 'user' }),
+        body: JSON.stringify({ content: cleanContent, role: 'user', ...(artifactSnapshot ? { artifactSnapshot } : {}) }),
       }).then((res) => res.ok ? res.json() : null).then((data) => {
         if (data?.flowMove) {
           setFlowCoverage((prev) => ({
@@ -693,9 +764,17 @@ export default function SessionPage({
             [data.flowMove]: Math.min(1.0, (prev[data.flowMove as keyof typeof prev] ?? 0) + 0.15),
           }))
         }
+        if (data?.artifactSignal) {
+          setArtifactSignals(prev => [
+            { id: crypto.randomUUID(), text: data.artifactSignal, time: Date.now() },
+            ...prev.slice(0, 9),
+          ])
+          // Patch the turn bubble with the artifact signal
+          setTurns(prev => prev.map(t => t.id === turnId ? { ...t, artifactSignal: data.artifactSignal } : t))
+        }
       }).catch(() => {})
     }
-  }, [sessionId, router])
+  }, [sessionId, router, centerMode, canvasScene, currentCode, currentLanguage, lastRunResult, discipline])
 
   const handleAgentSpeaking = useCallback(() => {
     setHatchState('speaking')
@@ -705,6 +784,10 @@ export default function SessionPage({
   const handleAgentDoneSpeaking = useCallback(() => {
     setHatchState('listening')
     setTimeout(() => setCurrentCaption(''), 2000)
+  }, [])
+
+  const handleCanvasSnapshot = useCallback((scene: { elements: unknown[]; appState: unknown }) => {
+    setCanvasScene(scene)
   }, [])
 
   const handleConnected = useCallback(() => {
@@ -789,6 +872,22 @@ export default function SessionPage({
       return
     }
     try {
+      // Save artifact snapshot before ending so the end route can grade it
+      if (centerMode !== 'orb' && sessionId) {
+        const snapshot = centerMode === 'canvas'
+          ? { type: 'canvas' as const, elementCount: (canvasScene?.elements as unknown[])?.length ?? 0, discipline: discipline ?? undefined }
+          : { type: 'editor' as const, code: currentCode, language: currentLanguage, runResult: lastRunResult, discipline: discipline ?? undefined }
+        try {
+          await fetch(`/api/live-interview/${sessionId}/snapshot`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ artifactSnapshot: snapshot }),
+          })
+        } catch {
+          // Non-fatal — end still proceeds
+        }
+      }
+
       await fetch(`/api/live-interview/${sessionId}/end`, { method: 'POST' })
       router.push(`/live-interviews/${sessionId}/debrief`)
     } catch {
@@ -796,7 +895,7 @@ export default function SessionPage({
       setIsEnding(false)
       setInterviewPhase('active')
     }
-  }, [sessionId, router])
+  }, [sessionId, router, centerMode, canvasScene, currentCode, currentLanguage, lastRunResult, discipline])
 
   // ─── Loading ───
   if (interviewPhase === 'loading') {
@@ -1275,12 +1374,12 @@ export default function SessionPage({
           </div>
         </div>
 
-        {/* CENTER: Hatch orb + captions */}
+        {/* CENTER: Hatch orb / canvas / editor */}
         <div
           className="flex-1 flex flex-col items-center justify-center relative overflow-hidden"
           style={{ minWidth: 0 }}
         >
-          {/* Ambient radial glow */}
+          {/* Ambient radial glow — always visible */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
@@ -1297,58 +1396,105 @@ export default function SessionPage({
             }}
           />
 
-          {/* Mode badge (top right of center) */}
+          {/* Mode badge (top right) */}
           <div
-            className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full px-2.5 py-1"
+            className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full px-2.5 py-1 z-10"
             style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.08)' }}
           >
             <span className="material-symbols-outlined text-[14px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
-              {isVoiceAvailable ? 'mic' : 'chat'}
+              {centerMode === 'orb' ? (isVoiceAvailable ? 'mic' : 'chat') : centerMode === 'canvas' ? 'draw' : 'code'}
             </span>
             <span className="font-label text-[10.5px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              {isVoiceAvailable ? 'Voice mode' : 'Chat mode'}
+              {centerMode === 'orb' ? (isVoiceAvailable ? 'Voice mode' : 'Chat mode') : centerMode === 'canvas' ? 'Canvas' : 'Editor'}
             </span>
           </div>
 
-          {/* Hatch Orb */}
-          <div className="relative z-10 flex flex-col items-center gap-4">
-            <div style={{ animation: 'floatHatchAnim 5s ease-in-out infinite' }}>
-              <HatchOrb state={hatchState} />
-            </div>
-
-            {/* State label */}
-            <span
-              className="font-label uppercase tracking-widest text-[12px]"
-              style={{ color: 'rgba(255,255,255,0.4)' }}
-            >
-              {hatchStateLabel}
-            </span>
-
-            {/* Live captions */}
-            {isCaptionsOn && captionText && (
-              <div
-                className="max-w-[560px] px-5 py-3 text-center rounded-xl"
-                style={{
-                  background: 'rgba(0,0,0,0.55)',
-                  backdropFilter: 'blur(8px)',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                  animation: 'fadeUp 0.3s ease-out',
-                }}
+          {centerMode === 'orb' && (
+            /* Hatch Orb — existing content, unchanged */
+            <div className="relative z-10 flex flex-col items-center gap-4">
+              <div style={{ animation: 'floatHatchAnim 5s ease-in-out infinite' }}>
+                <HatchOrb state={hatchState} />
+              </div>
+              <span
+                className="font-label uppercase tracking-widest text-[12px]"
+                style={{ color: 'rgba(255,255,255,0.4)' }}
               >
-                <p
-                  className="font-body"
+                {hatchStateLabel}
+              </span>
+              {isCaptionsOn && captionText && (
+                <div
+                  className="max-w-[560px] px-5 py-3 text-center rounded-xl"
                   style={{
-                    fontSize: 15,
-                    fontStyle: captionIsItalic ? 'italic' : 'normal',
-                    color: captionIsItalic ? 'rgba(255,255,255,0.4)' : 'rgba(243,237,224,0.9)',
-                    lineHeight: 1.5,
+                    background: 'rgba(0,0,0,0.55)',
+                    backdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    animation: 'fadeUp 0.3s ease-out',
                   }}
                 >
-                  {captionText}
-                </p>
-              </div>
-            )}
-          </div>
+                  <p
+                    className="font-body"
+                    style={{
+                      fontSize: 15,
+                      fontStyle: captionIsItalic ? 'italic' : 'normal',
+                      color: captionIsItalic ? 'rgba(255,255,255,0.4)' : 'rgba(243,237,224,0.9)',
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {captionText}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {centerMode === 'canvas' && (
+            <div className="absolute inset-0">
+              <ExcalidrawCanvas
+                sessionId={sessionId}
+                onSnapshot={handleCanvasSnapshot}
+                initialData={canvasScene ?? undefined}
+              />
+            </div>
+          )}
+
+          {centerMode === 'editor' && (
+            <div className="absolute inset-0 flex flex-col">
+              <MonacoCodeEditor
+                value={currentCode}
+                onChange={(val) => setCurrentCode(val ?? '')}
+                language={currentLanguage}
+                theme="vs-dark"
+                height="100%"
+                onPaste={() => {}}
+              />
+            </div>
+          )}
+
+          {/* Hatch pip — shown when workspace is active */}
+          {centerMode !== 'orb' && (
+            <div
+              className="absolute bottom-4 left-4 z-20 flex items-center justify-center"
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: '50%',
+                background: 'rgba(13,20,16,0.9)',
+                border: `1px solid ${hatchState === 'listening' ? 'rgba(74,124,89,0.6)' : 'rgba(255,255,255,0.1)'}`,
+                boxShadow: hatchState === 'listening' ? '0 0 12px rgba(74,124,89,0.4)' : 'none',
+                transition: 'border-color 0.3s, box-shadow 0.3s',
+                pointerEvents: 'none',
+              }}
+            >
+              <HatchGlyph
+                size={28}
+                state={
+                  hatchState === 'thinking'
+                    ? 'reviewing'
+                    : hatchState
+                }
+              />
+            </div>
+          )}
         </div>
 
         {/* RIGHT: FLOW HUD (280px) */}
@@ -1360,87 +1506,104 @@ export default function SessionPage({
             borderLeft: '1px solid rgba(255,255,255,0.07)',
           }}
         >
-          {/* FLOW Coverage */}
+          {/* FLOW Coverage header with collapse toggle */}
           <div className="shrink-0 px-4 pt-4 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-            <span
-              className="font-label font-semibold tracking-widest uppercase mb-3 block"
-              style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.25)' }}
-            >
-              FLOW Coverage
-            </span>
-
-            <div className="flex flex-col gap-3">
-              {flowMoves.map(({ key, name }) => {
-                const score = flowCoverage[key] ?? 0
-                const pct = Math.round(score * 100)
-                const color = FLOW_COLORS[key]
-                const active = score > 0.5
-                return (
-                  <div key={key}>
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-[14px]" style={{ color: active ? color : 'rgba(255,255,255,0.25)' }}>
-                          {key === 'frame' ? 'frame_inspect' : key === 'list' ? 'list' : key === 'optimize' ? 'tune' : 'emoji_events'}
-                        </span>
-                        <span className="font-label text-[12px] font-semibold" style={{ color: active ? 'rgba(243,237,224,0.85)' : 'rgba(255,255,255,0.35)' }}>
-                          {name}
-                        </span>
-                      </div>
-                      <span className="font-label text-[11px] tabular-nums" style={{ color: active ? color : 'rgba(255,255,255,0.25)' }}>
-                        {pct}%
-                      </span>
-                    </div>
-                    <div
-                      className="w-full rounded-full overflow-hidden"
-                      style={{ height: 5, background: 'rgba(255,255,255,0.07)' }}
-                    >
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{
-                          width: `${pct}%`,
-                          background: color,
-                          boxShadow: active ? `0 0 8px ${color}88` : 'none',
-                        }}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-
-            {/* Overall score card */}
-            <div
-              className="mt-4 rounded-xl p-3 flex items-center justify-between"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
-            >
-              <div>
-                <p className="font-label text-[11px] uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                  Overall signal
-                </p>
-                <p
-                  className="font-label text-[12px] font-semibold mt-0.5"
-                  style={{ color: overallScore >= 60 ? '#7ee099' : overallScore >= 35 ? '#c9933a' : 'rgba(255,255,255,0.4)' }}
-                >
-                  {overallScore >= 60 ? 'Strong' : overallScore >= 35 ? 'Building' : 'Developing'}
-                </p>
-              </div>
+            <div className="flex items-center justify-between mb-3">
               <span
-                className="font-headline font-bold"
-                style={{ fontSize: 28, color: 'rgba(243,237,224,0.9)' }}
+                className="font-label font-semibold tracking-widest uppercase"
+                style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.25)' }}
               >
-                {overallScore}
-                <span className="font-label font-normal text-[13px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                  /100
-                </span>
+                FLOW Coverage
               </span>
+              <button
+                onClick={() => setIsFlowHudCollapsed(c => !c)}
+                className="flex items-center justify-center rounded w-5 h-5 transition-colors"
+                style={{ color: 'rgba(255,255,255,0.25)' }}
+                aria-label={isFlowHudCollapsed ? 'Expand FLOW HUD' : 'Collapse FLOW HUD'}
+                aria-expanded={!isFlowHudCollapsed}
+              >
+                <span className="material-symbols-outlined text-[14px]">
+                  {isFlowHudCollapsed ? 'expand_more' : 'expand_less'}
+                </span>
+              </button>
             </div>
 
-            <div className="flex items-center gap-2 mt-2">
-              <span className="material-symbols-outlined text-[12px]" style={{ color: 'rgba(255,255,255,0.25)' }}>swap_horiz</span>
-              <span className="font-label text-[10.5px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                {totalTurns} exchanges
-              </span>
-            </div>
+            {!isFlowHudCollapsed && (
+              <>
+                <div className="flex flex-col gap-3">
+                  {flowMoves.map(({ key, name }) => {
+                    const score = flowCoverage[key] ?? 0
+                    const pct = Math.round(score * 100)
+                    const color = FLOW_COLORS[key]
+                    const active = score > 0.5
+                    return (
+                      <div key={key}>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[14px]" style={{ color: active ? color : 'rgba(255,255,255,0.25)' }}>
+                              {key === 'frame' ? 'frame_inspect' : key === 'list' ? 'list' : key === 'optimize' ? 'tune' : 'emoji_events'}
+                            </span>
+                            <span className="font-label text-[12px] font-semibold" style={{ color: active ? 'rgba(243,237,224,0.85)' : 'rgba(255,255,255,0.35)' }}>
+                              {name}
+                            </span>
+                          </div>
+                          <span className="font-label text-[11px] tabular-nums" style={{ color: active ? color : 'rgba(255,255,255,0.25)' }}>
+                            {pct}%
+                          </span>
+                        </div>
+                        <div
+                          className="w-full rounded-full overflow-hidden"
+                          style={{ height: 5, background: 'rgba(255,255,255,0.07)' }}
+                        >
+                          <div
+                            className="h-full rounded-full transition-all duration-700"
+                            style={{
+                              width: `${pct}%`,
+                              background: color,
+                              boxShadow: active ? `0 0 8px ${color}88` : 'none',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Overall score card */}
+                <div
+                  className="mt-4 rounded-xl p-3 flex items-center justify-between"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+                >
+                  <div>
+                    <p className="font-label text-[11px] uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                      Overall signal
+                    </p>
+                    <p
+                      className="font-label text-[12px] font-semibold mt-0.5"
+                      style={{ color: overallScore >= 60 ? '#7ee099' : overallScore >= 35 ? '#c9933a' : 'rgba(255,255,255,0.4)' }}
+                    >
+                      {overallScore >= 60 ? 'Strong' : overallScore >= 35 ? 'Building' : 'Developing'}
+                    </p>
+                  </div>
+                  <span
+                    className="font-headline font-bold"
+                    style={{ fontSize: 28, color: 'rgba(243,237,224,0.9)' }}
+                  >
+                    {overallScore}
+                    <span className="font-label font-normal text-[13px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                      /100
+                    </span>
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="material-symbols-outlined text-[12px]" style={{ color: 'rgba(255,255,255,0.25)' }}>swap_horiz</span>
+                  <span className="font-label text-[10.5px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                    {totalTurns} exchanges
+                  </span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Recent signals — scrollable */}
@@ -1547,6 +1710,26 @@ export default function SessionPage({
             onClick={() => setIsChatOpen((o) => !o)}
           />
 
+          {/* Canvas button — system_design or data_modeling rounds */}
+          {(discipline === 'system_design' || discipline === 'data_modeling') && (
+            <CtrlBtn
+              icon="draw"
+              label={centerMode === 'canvas' ? 'Hide Canvas' : 'Canvas'}
+              active={centerMode === 'canvas'}
+              onClick={() => setCenterMode(m => m === 'canvas' ? 'orb' : 'canvas')}
+            />
+          )}
+
+          {/* Editor button — coding + sql rounds */}
+          {(discipline === 'coding' || discipline === 'sql') && (
+            <CtrlBtn
+              icon={discipline === 'sql' ? 'terminal' : 'code'}
+              label={centerMode === 'editor' ? 'Hide Editor' : 'Editor'}
+              active={centerMode === 'editor'}
+              onClick={() => setCenterMode(m => m === 'editor' ? 'orb' : 'editor')}
+            />
+          )}
+
           {/* Divider */}
           <div
             className="rounded-full"
@@ -1638,7 +1821,7 @@ export default function SessionPage({
                           }
                     }
                   >
-                    {turn.content}
+                    {turn.role === 'hatch' ? <Md>{turn.content}</Md> : turn.content}
                   </div>
                 </div>
               ))}

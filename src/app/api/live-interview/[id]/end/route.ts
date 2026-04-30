@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateDebrief } from '@/lib/live-interview/debrief-generator'
+import { gradeArtifact } from '@/lib/live-interview/artifact-grader'
 
 export async function POST(
   request: Request,
@@ -57,6 +58,44 @@ export async function POST(
     turnIndex: t.turn_index,
   }))
 
+  // Grade artifact if one was captured during the session
+  const calibrationSnap = (session.calibration_snapshot ?? {}) as Record<string, unknown>
+  const artifactSnapshot = calibrationSnap._artifactSnapshot as {
+    type: 'canvas' | 'editor'
+    elementCount?: number
+    code?: string
+    language?: string
+    runResult?: unknown
+    discipline?: string
+  } | undefined
+
+  let artifactGrading: Awaited<ReturnType<typeof gradeArtifact>> | null = null
+  if (artifactSnapshot && process.env.ANTHROPIC_API_KEY) {
+    try {
+      artifactGrading = await gradeArtifact(artifactSnapshot)
+    } catch (err) {
+      console.error('Artifact grading error:', err)
+    }
+  }
+
+  // Apply flow_signal_boosts from artifact grading to session coverage before generating debrief
+  let boostedFlowCoverage: Record<string, number> | undefined
+  if (artifactGrading?.flow_signal_boosts) {
+    const baseCoverage = (session.flow_coverage ?? { frame: 0, list: 0, optimize: 0, win: 0 }) as Record<string, number>
+    const boosts = artifactGrading.flow_signal_boosts
+    boostedFlowCoverage = {
+      frame: Math.min(1.0, (baseCoverage.frame ?? 0) + (boosts.frame ?? 0)),
+      list: Math.min(1.0, (baseCoverage.list ?? 0) + (boosts.list ?? 0)),
+      optimize: Math.min(1.0, (baseCoverage.optimize ?? 0) + (boosts.optimize ?? 0)),
+      win: Math.min(1.0, (baseCoverage.win ?? 0) + (boosts.win ?? 0)),
+    }
+    // Persist boosted coverage so debrief generator sees it via session state
+    await adminClient
+      .from('live_interview_sessions')
+      .update({ flow_coverage: boostedFlowCoverage })
+      .eq('id', id)
+  }
+
   const debriefResult = await generateDebrief({
     sessionId: id,
     turns,
@@ -67,6 +106,10 @@ export async function POST(
 
   const duration = Math.floor((Date.now() - new Date(session.started_at).getTime()) / 1000)
 
+  const debriefWithArtifact = artifactGrading
+    ? { ...debriefResult, artifactGrading }
+    : debriefResult
+
   // Update session status
   await adminClient
     .from('live_interview_sessions')
@@ -74,7 +117,7 @@ export async function POST(
       status: 'completed',
       ended_at: new Date().toISOString(),
       duration_seconds: duration,
-      debrief_json: debriefResult,
+      debrief_json: debriefWithArtifact,
     })
     .eq('id', id)
 
@@ -217,5 +260,5 @@ export async function POST(
     )
   }
 
-  return Response.json({ debriefJson: debriefResult, sessionId: id })
+  return Response.json({ debriefJson: debriefWithArtifact, sessionId: id })
 }

@@ -7,15 +7,29 @@ import { InterviewPaywallGate } from '@/components/paywalls/InterviewPaywallGate
 import { useIsAtLimit, useUsage } from '@/context/UsageContext'
 import { useUpgrade } from '@/hooks/useUpgrade'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import type { LiveInterviewDiscipline } from '@/lib/live-interview/disciplines'
+
+export type StartInterviewButtonVariant = 'chip' | 'hero'
 
 interface StartInterviewButtonProps {
   companyId: string
   roleId: string
   challengeId?: string
   companyName?: string
+  discipline?: LiveInterviewDiscipline | string
+  variant?: StartInterviewButtonVariant
+  label?: string
 }
 
-export default function StartInterviewButton({ companyId, roleId, challengeId, companyName }: StartInterviewButtonProps) {
+export default function StartInterviewButton({
+  companyId,
+  roleId,
+  challengeId,
+  companyName,
+  discipline,
+  variant = 'chip',
+  label,
+}: StartInterviewButtonProps) {
   const router = useRouter()
   const { startUpgrade } = useUpgrade()
   const [loading, setLoading] = useState(false)
@@ -24,6 +38,7 @@ export default function StartInterviewButton({ companyId, roleId, challengeId, c
   const [showReadyModal, setShowReadyModal] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [sessionError, setSessionError] = useState<string | null>(null)
+  const [sessionDiscipline, setSessionDiscipline] = useState<string | null>(null)
   const [modalCompany, setModalCompany] = useState(companyName ?? '')
   const [modalRole, setModalRole] = useState(roleId)
   const isAtLimit = useIsAtLimit('interviews')
@@ -42,7 +57,7 @@ export default function StartInterviewButton({ companyId, roleId, challengeId, c
       const res = await fetch('/api/live-interview/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ companyId, roleId, challengeId }),
+        body: JSON.stringify({ companyId, roleId, challengeId, discipline }),
       })
 
       if (res.status === 402) {
@@ -60,9 +75,10 @@ export default function StartInterviewButton({ companyId, roleId, challengeId, c
       if (data.sessionId && data.systemPrompt) {
         sessionStorage.setItem(`hatch_prompt_${data.sessionId}`, data.systemPrompt)
       }
-      // Cache company/role for modal display and URL params
+      // Cache company/role/discipline for modal display and URL params
       if (data.companyName) setModalCompany(data.companyName)
       if (data.role) setModalRole(data.role)
+      if (data.discipline) setSessionDiscipline(data.discipline)
       setShowReadyModal(true)
     } catch {
       setSessionError('Failed to start — please try again.')
@@ -76,27 +92,59 @@ export default function StartInterviewButton({ companyId, roleId, challengeId, c
     const params = new URLSearchParams({ autostart: '1' })
     if (modalCompany) params.set('company', modalCompany)
     if (modalRole) params.set('role', modalRole)
+    if (sessionDiscipline) params.set('discipline', sessionDiscipline)
     router.push(`/live-interviews/${sessionId}?${params.toString()}`)
   }
 
+  const heroLabel = label ?? 'Start a random interview'
+  const chipLabel = label ?? 'Start Interview →'
+
   return (
     <>
-      <button
-        onClick={handleClick}
-        disabled={loading}
-        className={cn(
-          'inline-flex items-center gap-1 bg-primary text-on-primary rounded-full px-3 py-1 text-xs font-label font-semibold transition-opacity',
-          loading && 'opacity-60 cursor-not-allowed',
-          isAtLimit && 'bg-surface-container-high text-on-surface-variant'
-        )}
-      >
-        {isAtLimit ? (
-          <>
-            <span className="material-symbols-outlined text-[14px]">lock</span>
-            Upgrade
-          </>
-        ) : loading ? 'Starting…' : 'Start Interview →'}
-      </button>
+      {variant === 'hero' ? (
+        <button
+          onClick={handleClick}
+          disabled={loading}
+          className={cn(
+            'group w-full inline-flex items-center justify-center gap-3 rounded-full px-6 py-3.5 font-label font-semibold text-base transition-opacity',
+            'bg-primary text-on-primary hover:opacity-95',
+            loading && 'opacity-70 cursor-not-allowed',
+            isAtLimit && 'bg-surface-container-high text-on-surface-variant'
+          )}
+        >
+          {isAtLimit ? (
+            <>
+              <span className="material-symbols-outlined text-[20px]">lock</span>
+              Upgrade to start an interview
+            </>
+          ) : (
+            <>
+              <HatchGlyph size={28} state="idle" className="text-on-primary" />
+              <span>{loading ? 'Starting…' : heroLabel}</span>
+              {!loading && (
+                <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+              )}
+            </>
+          )}
+        </button>
+      ) : (
+        <button
+          onClick={handleClick}
+          disabled={loading}
+          className={cn(
+            'inline-flex items-center gap-1 bg-primary text-on-primary rounded-full px-3 py-1 text-xs font-label font-semibold transition-opacity',
+            loading && 'opacity-60 cursor-not-allowed',
+            isAtLimit && 'bg-surface-container-high text-on-surface-variant'
+          )}
+        >
+          {isAtLimit ? (
+            <>
+              <span className="material-symbols-outlined text-[14px]">lock</span>
+              Upgrade
+            </>
+          ) : loading ? 'Starting…' : chipLabel}
+        </button>
+      )}
 
       {/* Ready modal — overlays the list page */}
       {showReadyModal && sessionId && (

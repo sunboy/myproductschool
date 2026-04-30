@@ -4,13 +4,14 @@ import { getHatchContext, buildHatchContextString } from '@/lib/hatch-context'
 import { buildLiveInterviewSystemPrompt } from '@/lib/live-interview/system-prompt'
 import type { ScenarioParams, RoleLensParams } from '@/lib/live-interview/system-prompt'
 import { checkUsageLimit, recordUsageEvent } from '@/lib/usage/check-limit'
+import { challengeTypeToDiscipline, normalizeDiscipline } from '@/lib/live-interview/disciplines'
 
 export async function POST(request: Request) {
   if (process.env.USE_MOCK_DATA === 'true') {
     return Response.json({ sessionId: 'mock-session-id', companyName: 'Uber', role: 'PM' })
   }
 
-  const { companyId, roleId, challengeId } = await request.json()
+  const { companyId, roleId, challengeId, discipline } = await request.json()
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -168,6 +169,13 @@ export async function POST(request: Request) {
     }
   }
 
+  // Normalize to one of the 5 canonical live-interview disciplines so the
+  // active-interview page can rely on the value (e.g. 'algorithm' -> 'coding').
+  const effectiveDiscipline =
+    challengeTypeToDiscipline(challenge?.challenge_type)
+    ?? normalizeDiscipline(discipline)
+    ?? null
+
   // Voice mode: exclude grading signals from prompt — Deepgram TTS would speak the JSON aloud
   const systemPrompt = buildLiveInterviewSystemPrompt({
     archetype: profile?.archetype ?? 'Analyst',
@@ -183,6 +191,7 @@ export async function POST(request: Request) {
     learnerName: profile?.display_name ?? undefined,
     scenario,
     roleLens,
+    discipline: effectiveDiscipline ?? undefined,
   }, false)
 
   const { data: session } = await adminClient
@@ -217,5 +226,6 @@ export async function POST(request: Request) {
     role: roleId ?? 'PM',
     scenarioTitle: challenge?.title ?? null,
     challengeId: challengeId ?? null,
+    discipline: effectiveDiscipline,
   })
 }

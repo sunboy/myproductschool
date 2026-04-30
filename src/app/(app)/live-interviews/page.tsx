@@ -1,6 +1,10 @@
 import { MOCK_LIVE_INTERVIEW_PERSONAS } from '@/lib/mock-live-interviews'
 import { UsageProvider } from '@/context/UsageContext'
 import { LiveInterviewsShell } from './LiveInterviewsShell'
+import {
+  challengeTypeToDiscipline,
+  type LiveInterviewDiscipline,
+} from '@/lib/live-interview/disciplines'
 
 export interface ScenarioBrief {
   id: string
@@ -10,6 +14,7 @@ export interface ScenarioBrief {
   estimatedMinutes: number
   relevantRoles: string[]
   primaryCompetencies: string[]
+  discipline: LiveInterviewDiscipline
 }
 
 async function getPersonas() {
@@ -55,20 +60,37 @@ async function getScenarios(): Promise<ScenarioBrief[]> {
   const supabase = await createClient()
   const { data } = await supabase
     .from('challenges')
-    .select('id, title, scenario_question, difficulty, estimated_minutes, relevant_roles, primary_competencies')
+    .select('id, title, scenario_question, difficulty, estimated_minutes, relevant_roles, primary_competencies, challenge_type')
     .eq('is_published', true)
     .not('scenario_question', 'is', null)
+    .in('challenge_type', [
+      'flow',
+      'freeform',
+      'quick_take',
+      'system_design',
+      'data_modeling',
+      'sql',
+      'algorithm',
+    ])
     .order('difficulty')
+    .limit(120)
 
-  return (data ?? []).map((c) => ({
-    id: c.id,
-    title: c.title,
-    scenarioQuestion: c.scenario_question ?? '',
-    difficulty: c.difficulty ?? 'standard',
-    estimatedMinutes: c.estimated_minutes ?? 20,
-    relevantRoles: c.relevant_roles ?? [],
-    primaryCompetencies: c.primary_competencies ?? [],
-  }))
+  return (data ?? [])
+    .map((c) => {
+      const discipline = challengeTypeToDiscipline(c.challenge_type)
+      if (!discipline) return null
+      return {
+        id: c.id,
+        title: c.title,
+        scenarioQuestion: c.scenario_question ?? '',
+        difficulty: c.difficulty ?? 'standard',
+        estimatedMinutes: c.estimated_minutes ?? 20,
+        relevantRoles: c.relevant_roles ?? [],
+        primaryCompetencies: c.primary_competencies ?? [],
+        discipline,
+      } satisfies ScenarioBrief
+    })
+    .filter((s): s is ScenarioBrief => s !== null)
 }
 
 export default async function LiveInterviewsPage() {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Md } from '@/components/ui/Md'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import type { RunResult, GradingFeedback, GradingDimensionKey } from '@/lib/coding/types'
 
@@ -226,14 +227,14 @@ function DimensionAccordion({
         <div className="overflow-hidden">
           <div className="px-4 pb-4 pt-2 space-y-3 bg-surface-container-low">
             {/* Verdict */}
-            <p className="text-sm text-on-surface leading-relaxed">{verdict}</p>
+            <div className="text-sm text-on-surface leading-relaxed"><Md>{verdict}</Md></div>
 
             {/* Evidence */}
             <div data-testid={`dimension-${dimensionKey}-evidence`}>
               <p className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant mb-1">
                 Evidence
               </p>
-              <p className="text-xs text-on-surface-variant leading-relaxed italic">{evidence}</p>
+              <div className="text-xs text-on-surface-variant leading-relaxed italic"><Md>{evidence}</Md></div>
             </div>
 
             {/* Hole to poke */}
@@ -242,7 +243,7 @@ function DimensionAccordion({
                 <span className="material-symbols-outlined text-tertiary text-[15px] mt-0.5 flex-shrink-0">
                   search
                 </span>
-                <p className="text-xs text-on-surface-variant leading-relaxed">{hole_to_poke}</p>
+                <div className="text-xs text-on-surface-variant leading-relaxed"><Md>{hole_to_poke}</Md></div>
               </div>
             )}
 
@@ -251,7 +252,7 @@ function DimensionAccordion({
               <p className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant mb-1">
                 How to improve
               </p>
-              <p className="text-xs text-on-surface leading-relaxed">{how_to_improve}</p>
+              <div className="text-xs text-on-surface leading-relaxed"><Md>{how_to_improve}</Md></div>
             </div>
           </div>
         </div>
@@ -336,7 +337,7 @@ function GradingColumn({
               {grading.overall_score.toFixed(1)} / 5
             </span>
           </div>
-          <p className="text-sm text-on-primary-container leading-relaxed">{grading.headline}</p>
+          <div className="text-sm text-on-primary-container leading-relaxed"><Md>{grading.headline}</Md></div>
         </div>
       </div>
 
@@ -369,7 +370,7 @@ function GradingColumn({
           <p className="text-[10px] font-label font-bold uppercase tracking-wider text-primary mb-0.5">
             Top strength
           </p>
-          <p className="text-xs text-on-surface leading-relaxed">{grading.top_strength}</p>
+          <div className="text-xs text-on-surface leading-relaxed"><Md>{grading.top_strength}</Md></div>
         </div>
       </div>
 
@@ -382,7 +383,7 @@ function GradingColumn({
           <p className="text-[10px] font-label font-bold uppercase tracking-wider text-tertiary mb-0.5">
             Top improvement
           </p>
-          <p className="text-xs text-on-surface leading-relaxed">{grading.top_improvement}</p>
+          <div className="text-xs text-on-surface leading-relaxed"><Md>{grading.top_improvement}</Md></div>
         </div>
       </div>
 
@@ -395,9 +396,7 @@ function GradingColumn({
           <p className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant mb-0.5">
             What a 5 would look like
           </p>
-          <p className="text-xs text-on-surface-variant leading-relaxed">
-            {grading.what_a_5_would_look_like}
-          </p>
+          <div className="text-xs text-on-surface-variant leading-relaxed"><Md>{grading.what_a_5_would_look_like}</Md></div>
         </div>
       </div>
 

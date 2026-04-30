@@ -1,5 +1,3 @@
-import Link from 'next/link'
-
 interface LeaderboardEntry {
   rank: number
   name: string
@@ -27,9 +25,6 @@ export function LeaderboardPeekCard({ entries, userRank }: LeaderboardPeekCardPr
           </span>
           <h3 className="font-headline font-semibold text-sm text-on-surface">This week</h3>
         </div>
-        <Link href="/cohort" className="text-[11px] text-primary font-label font-semibold hover:underline">
-          Full board
-        </Link>
       </div>
 
       <div className="flex flex-col gap-0.5">

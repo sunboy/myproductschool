@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { Md } from '@/components/ui/Md'
 
 export interface CoachingSignal {
   flowMove: string
@@ -100,7 +101,7 @@ export default function TranscriptPanel({ turns, className, showCoachingChips = 
                   : 'bg-surface-container-high text-on-surface rounded-xl rounded-tr-sm p-3 max-w-[85%] ml-auto font-body text-sm'
               }
             >
-              {turn.content}
+              {turn.role === 'hatch' ? <Md>{turn.content}</Md> : turn.content}
             </div>
             {showCoachingChips && turn.role === 'hatch' && turn.coachingSignal && (
               <CoachingChip signal={turn.coachingSignal} />

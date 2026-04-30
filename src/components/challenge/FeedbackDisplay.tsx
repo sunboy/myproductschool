@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { Md } from '@/components/ui/Md'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { WhatWorkedSection } from '@/components/challenge/WhatWorkedSection'
 import { PercentileContext } from '@/components/challenge/PercentileContext'
@@ -106,7 +107,7 @@ export function FeedbackDisplay({ feedback, loading, feedbackFull }: FeedbackDis
             <HatchGlyph size={32} className="text-primary flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-label font-medium text-on-primary-container mb-1">Hatch&apos;s Assessment</p>
-              <p className="text-sm text-on-primary-container leading-relaxed">{full.overall}</p>
+              <div className="text-sm text-on-primary-container leading-relaxed"><Md>{full.overall}</Md></div>
             </div>
           </div>
 
@@ -136,7 +137,7 @@ export function FeedbackDisplay({ feedback, loading, feedbackFull }: FeedbackDis
             <span className="material-symbols-outlined text-tertiary flex-shrink-0">lightbulb</span>
             <div>
               <p className="font-label font-semibold text-on-tertiary-fixed-variant mb-1">Key Insight</p>
-              <p className="text-sm text-on-tertiary-fixed-variant">{full.key_insight}</p>
+              <div className="text-sm text-on-tertiary-fixed-variant"><Md>{full.key_insight}</Md></div>
             </div>
           </div>
 
@@ -160,14 +161,14 @@ export function FeedbackDisplay({ feedback, loading, feedbackFull }: FeedbackDis
                   item.score >= 8 ? 'text-primary' : item.score >= 5 ? 'text-tertiary' : 'text-error'
                 }`}>{item.score}/10</span>
               </div>
-              <p className="text-on-surface text-sm leading-relaxed">{item.commentary}</p>
+              <div className="text-on-surface text-sm leading-relaxed"><Md>{item.commentary}</Md></div>
               {item.suggestions.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-xs font-label font-semibold text-on-surface-variant uppercase tracking-wide">Suggestions</p>
                   {item.suggestions.map((s, i) => (
                     <div key={i} className="flex gap-2 text-sm">
                       <span className="material-symbols-outlined text-base text-primary flex-shrink-0 mt-0.5">arrow_forward</span>
-                      <span className="text-on-surface-variant">{s}</span>
+                      <span className="text-on-surface-variant"><Md>{s}</Md></span>
                     </div>
                   ))}
                 </div>

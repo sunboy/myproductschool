@@ -3,6 +3,15 @@ import Anthropic from '@anthropic-ai/sdk'
 
 const VALID_FLOW_MOVES = new Set(['frame', 'list', 'optimize', 'win'])
 
+interface ArtifactSnapshot {
+  type: 'canvas' | 'editor'
+  elementCount?: number
+  code?: string
+  language?: string
+  runResult?: unknown
+  discipline?: string
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -13,10 +22,15 @@ export async function POST(
     return Response.json({ ok: false }, { status: 503 })
   }
 
-  const { content, role } = await request.json()
+  const { content, role, artifactSnapshot } = await request.json() as {
+    content: string
+    role: string
+    artifactSnapshot?: ArtifactSnapshot
+  }
+
   if (!content || role !== 'user') {
     // Only analyze user turns for FLOW move detection
-    return Response.json({ ok: true, flowMove: null })
+    return Response.json({ ok: true, flowMove: null, artifactSignal: null })
   }
 
   const adminClient = createAdminClient()
@@ -33,7 +47,9 @@ export async function POST(
 
   // Use a fast model to classify the FLOW move
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-  const response = await anthropic.messages.create({
+
+  // Run FLOW move classification and artifact analysis in parallel when both are needed
+  const flowPromise = anthropic.messages.create({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 50,
     system: `Classify the following interview response into exactly one FLOW move. Reply with ONLY one word: frame, list, optimize, win, or none.
@@ -45,7 +61,34 @@ export async function POST(
     messages: [{ role: 'user', content }],
   })
 
-  const raw = response.content[0].type === 'text' ? response.content[0].text.trim().toLowerCase() : ''
+  const artifactPromise: Promise<string | null> = artifactSnapshot
+    ? (async () => {
+        const { type, elementCount, code, language, runResult, discipline } = artifactSnapshot
+        const disciplineLabel = discipline ?? (type === 'canvas' ? 'system design' : 'coding')
+
+        const artifactUserContent = type === 'canvas'
+          ? `Canvas has ${elementCount ?? 0} elements.`
+          : `Code (${language ?? 'unknown'}):\n${(code ?? '').slice(0, 800)}${code && code.length > 800 ? '\n...(truncated)' : ''}\nLast run result: ${runResult ? JSON.stringify(runResult).slice(0, 200) : 'not run yet'}`
+
+        const artifactResponse = await anthropic.messages.create({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 60,
+          system: `You are watching a candidate's ${type === 'canvas' ? 'whiteboard canvas' : 'code editor'} during a live ${disciplineLabel} interview.
+Respond with ONE short observation about what you see (max 12 words).
+Focus on: gaps, jumps, missed components, edge cases, or strong moves.
+If nothing notable, reply "none".`,
+          messages: [{ role: 'user', content: artifactUserContent }],
+        })
+
+        const raw = artifactResponse.content[0].type === 'text' ? artifactResponse.content[0].text.trim() : ''
+        if (raw && raw.toLowerCase() !== 'none') return raw
+        return null
+      })()
+    : Promise.resolve(null)
+
+  const [flowResponse, artifactSignal] = await Promise.all([flowPromise, artifactPromise])
+
+  const raw = flowResponse.content[0].type === 'text' ? flowResponse.content[0].text.trim().toLowerCase() : ''
   const flowMove = VALID_FLOW_MOVES.has(raw) ? raw : null
 
   if (flowMove) {
@@ -59,5 +102,5 @@ export async function POST(
       .eq('id', id)
   }
 
-  return Response.json({ ok: true, flowMove })
+  return Response.json({ ok: true, flowMove, artifactSignal })
 }
