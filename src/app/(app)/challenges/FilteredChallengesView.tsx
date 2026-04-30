@@ -179,7 +179,7 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
                       onClick={() => {
                         if (disc === 'sql' || disc === 'algorithm') {
                           setDiscipline('coding')
-                          setCodingSub(disc)
+                          handleCodingSubChange(disc)
                         } else {
                           setDiscipline(disc as Discipline)
                         }
