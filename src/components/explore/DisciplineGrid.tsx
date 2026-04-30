@@ -29,11 +29,19 @@ const DISCIPLINES = [
     count: null as number | null,
   },
   {
-    key: 'coding',
+    key: 'algorithm',
     label: 'Coding',
     emoji: '💻',
     bg: 'bg-[#3a5a7c]',
-    href: '/challenges?discipline=coding&sub=sql',
+    href: '/challenges?discipline=algorithm',
+    count: null as number | null,
+  },
+  {
+    key: 'sql',
+    label: 'SQL',
+    emoji: '🗃️',
+    bg: 'bg-[#5a3a7c]',
+    href: '/challenges?discipline=sql',
     count: null as number | null,
   },
 ]
@@ -44,7 +52,7 @@ interface Props {
 
 export function DisciplineGrid({ counts }: Props) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
       {DISCIPLINES.map((d) => {
         const count = counts[d.key] ?? 0
         const card = (

@@ -238,7 +238,8 @@ export default async function ExplorePage() {
     product_sense: 0,
     system_design: 0,
     data_modeling: 0,
-    coding: 0,
+    algorithm: 0,
+    sql: 0,
   }
   for (const row of disciplineCountRows) {
     if (['flow', 'freeform', 'quick_take'].includes(row.challenge_type)) {
@@ -247,8 +248,10 @@ export default async function ExplorePage() {
       counts.system_design = (counts.system_design ?? 0) + 1
     } else if (row.challenge_type === 'data_modeling') {
       counts.data_modeling = (counts.data_modeling ?? 0) + 1
-    } else if (row.challenge_type === 'sql' || row.challenge_type === 'algorithm') {
-      counts.coding = (counts.coding ?? 0) + 1
+    } else if (row.challenge_type === 'algorithm') {
+      counts.algorithm = (counts.algorithm ?? 0) + 1
+    } else if (row.challenge_type === 'sql') {
+      counts.sql = (counts.sql ?? 0) + 1
     }
   }
 
@@ -706,7 +709,7 @@ export default async function ExplorePage() {
       <div data-testid="section-coding">
         {codingChallenges.length > 0 ? (
           <>
-            <SectionHeading eyebrow="Interview prep" title="Coding Interviews." href="/challenges?discipline=coding&sub=sql" linkLabel="View all →" />
+            <SectionHeading eyebrow="Interview prep" title="Coding Interviews." href="/challenges?discipline=algorithm" linkLabel="View all →" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-12">
               {codingChallenges.map((c) => {
                 const diff = DIFFICULTY_CONFIG[c.difficulty as string] ?? { label: c.difficulty, dot: '#74796e' }
@@ -769,7 +772,7 @@ export default async function ExplorePage() {
           </>
         ) : (
           <>
-            <SectionHeading eyebrow="Interview prep" title="Coding Interviews." href="/challenges?discipline=coding&sub=sql" linkLabel="View all →" />
+            <SectionHeading eyebrow="Interview prep" title="Coding Interviews." href="/challenges?discipline=algorithm" linkLabel="View all →" />
             <div className="mb-12 rounded-2xl border border-outline-variant/30 bg-surface-container-low p-8 text-center">
               <span className="material-symbols-outlined text-3xl text-on-surface-variant/40 block mb-2">code</span>
               <p className="text-sm text-on-surface-variant font-body">No coding challenges yet — check back soon.</p>

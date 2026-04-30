@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { DisciplineTabStrip, type Discipline } from '@/components/challenges/DisciplineTabStrip'
-import { CodingSubTabStrip, type CodingSubDiscipline } from '@/components/challenges/CodingSubTabStrip'
 import { FilterDropdownBar, type FilterState } from '@/components/challenges/FilterDropdownBar'
 import { ActiveFilterPills } from '@/components/challenges/ActiveFilterPills'
 import { FilterBottomSheet } from '@/components/challenges/FilterBottomSheet'
@@ -24,11 +23,9 @@ const EMPTY_FILTERS: FilterState = {
 }
 
 export function FilteredChallengesView({ challenges, paradigms }: Props) {
-  const router = useRouter()
   const searchParams = useSearchParams()
-  const [discipline, setDiscipline] = useState<Discipline>('all')
-  const [codingSub, setCodingSub] = useState<CodingSubDiscipline>(
-    (searchParams.get('sub') as CodingSubDiscipline) ?? 'sql'
+  const [discipline, setDiscipline] = useState<Discipline>(
+    (searchParams.get('discipline') as Discipline) ?? 'all'
   )
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS)
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false)
@@ -40,10 +37,9 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
       if (discipline === 'product_sense' && !['flow', 'freeform', 'quick_take'].includes(c.challenge_type ?? '')) return false
       if (discipline === 'system_design' && c.challenge_type !== 'system_design') return false
       if (discipline === 'data_modeling' && c.challenge_type !== 'data_modeling') return false
-      if (discipline === 'coding') {
-        if (codingSub === 'sql' && c.challenge_type !== 'sql') return false
-        if (codingSub === 'algorithm' && c.challenge_type !== 'algorithm') return false
-      }
+      if (discipline === 'algorithm' && c.challenge_type !== 'algorithm') return false
+      if (discipline === 'sql' && c.challenge_type !== 'sql') return false
+
 
       // Paradigm filter
       if (filters.paradigm.length > 0) {
@@ -76,7 +72,7 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
 
       return true
     })
-  }, [challenges, discipline, codingSub, filters])
+  }, [challenges, discipline, filters])
 
   function handleRemoveFilter(key: keyof FilterState, value: string) {
     setFilters((f) => ({ ...f, [key]: f[key].filter((v) => v !== value) }))
@@ -86,22 +82,10 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
     setFilters(EMPTY_FILTERS)
   }
 
-  function handleCodingSubChange(sub: CodingSubDiscipline) {
-    setCodingSub(sub)
-    const params = new URLSearchParams(searchParams.toString())
-    params.set('sub', sub)
-    router.push(`?${params.toString()}`)
-  }
-
   return (
     <div className="flex flex-col -mx-6">
       {/* Discipline tab strip — full-bleed */}
       <DisciplineTabStrip active={discipline} onChange={setDiscipline} />
-
-      {/* Coding sub-tab strip (SQL / Algorithms) */}
-      {discipline === 'coding' && (
-        <CodingSubTabStrip active={codingSub} onChange={handleCodingSubChange} />
-      )}
 
       {/* Filter dropdown bar */}
       <FilterDropdownBar
@@ -152,14 +136,14 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
                 system_design: 'System Design',
                 data_modeling: 'Data Modeling',
                 sql: 'SQL',
-                algorithm: 'Algorithms',
+                algorithm: 'Coding',
               }
               const colors: Record<string, string> = {
                 product_sense: 'text-primary',
                 system_design: 'text-tertiary',
                 data_modeling: 'text-secondary',
-                sql: 'text-primary',
-                algorithm: 'text-tertiary',
+                sql: 'text-[#5a3a7c]',
+                algorithm: 'text-[#3a5a7c]',
               }
               const discChallenges = filteredChallenges.filter((c) => {
                 if (disc === 'product_sense') return ['flow', 'freeform', 'quick_take'].includes(c.challenge_type ?? '')
@@ -176,14 +160,8 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
                   <div className={`font-label font-bold text-sm flex items-center gap-2 ${colors[disc]}`}>
                     {labels[disc]}
                     <button
-                      onClick={() => {
-                        if (disc === 'sql' || disc === 'algorithm') {
-                          setDiscipline('coding')
-                          handleCodingSubChange(disc)
-                        } else {
-                          setDiscipline(disc as Discipline)
-                        }
-                      }}
+                      type="button"
+                      onClick={() => setDiscipline(disc as Discipline)}
                       className="font-label text-xs text-on-surface-variant font-normal hover:underline"
                     >
                       see all {discChallenges.length} →
