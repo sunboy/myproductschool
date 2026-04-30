@@ -582,7 +582,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           body: JSON.stringify({
             attemptId,
             draftSnapshot: {
-              type: 'coding',
+              type: apiChallengeType ?? 'coding',
               language: currentLanguage,
               drafts: { default: { ...codingDrafts['default'], [currentLanguage]: currentCode } },
             },
