@@ -1,8 +1,49 @@
-import { Challenge, ChallengeWithDomain } from '@/lib/types'
+import { Challenge, ChallengeWithDomain, ChallengeAttemptV2 } from '@/lib/types'
 import { MOCK_CHALLENGES, MOCK_DOMAINS } from '@/lib/mock-data'
 import { IS_MOCK } from '@/lib/mock'
 
-export async function getChallenges(filters?: { domainId?: string; difficulty?: string; paradigm?: string; role?: string; company?: string; q?: string; type?: string }): Promise<ChallengeWithDomain[]> {
+type AttemptRow = Pick<ChallengeAttemptV2, 'challenge_id' | 'total_score' | 'status'>
+
+interface ChallengeStats {
+  attempt_count: number
+  best_score: number | null
+  is_completed: boolean
+}
+
+export function buildStatsMap(
+  challengeIds: string[],
+  attempts: AttemptRow[],
+): Map<string, ChallengeStats> {
+  const map = new Map<string, ChallengeStats>()
+  for (const id of challengeIds) {
+    map.set(id, { attempt_count: 0, best_score: null, is_completed: false })
+  }
+  for (const attempt of attempts) {
+    const existing = map.get(attempt.challenge_id)
+    if (!existing) continue
+    existing.attempt_count += 1
+    if (attempt.status === 'completed') {
+      existing.is_completed = true
+      if (attempt.total_score !== null) {
+        existing.best_score =
+          existing.best_score === null
+            ? attempt.total_score
+            : Math.max(existing.best_score, attempt.total_score)
+      }
+    }
+  }
+  return map
+}
+
+export async function getChallenges(filters?: {
+  domainId?: string
+  difficulty?: string
+  paradigm?: string
+  role?: string
+  company?: string
+  q?: string
+  type?: string
+}): Promise<ChallengeWithDomain[]> {
   if (IS_MOCK) {
     let challenges = MOCK_CHALLENGES
     if (filters?.domainId) challenges = challenges.filter(c => c.domain_id === filters.domainId)
@@ -22,6 +63,9 @@ export async function getChallenges(filters?: { domainId?: string; difficulty?: 
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+
   let query = supabase
     .from('challenges')
     .select('*, domains(slug, title, icon)')
@@ -37,13 +81,24 @@ export async function getChallenges(filters?: { domainId?: string; difficulty?: 
   if (filters?.type && filters.type !== 'all') query = query.eq('challenge_type', filters.type)
   const { data } = await query.order('created_at', { ascending: false })
 
+  const challengeIds = (data ?? []).map(c => c.id)
+
+  const { data: attempts } =
+    user && challengeIds.length > 0
+      ? await supabase
+          .from('challenge_attempts')
+          .select('challenge_id, total_score, status')
+          .eq('user_id', user.id)
+          .in('challenge_id', challengeIds)
+      : { data: null }
+
+  const statsMap = buildStatsMap(challengeIds, (attempts ?? []) as AttemptRow[])
+
   return (data ?? []).map(c => ({
     ...c,
     slug: c.slug ?? c.id.replace(/^c\d+-/, ''),
     domain: { slug: '', title: '', icon: null },
-    attempt_count: 0,
-    best_score: null,
-    is_completed: false,
+    ...(statsMap.get(c.id) ?? { attempt_count: 0, best_score: null, is_completed: false }),
   }))
 }
 
@@ -52,6 +107,9 @@ export async function getFeaturedChallenges(): Promise<ChallengeWithDomain[]> {
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+
   const { data } = await supabase
     .from('challenges')
     .select('*, domains(slug, title, icon)')
@@ -60,13 +118,24 @@ export async function getFeaturedChallenges(): Promise<ChallengeWithDomain[]> {
     .order('created_at', { ascending: false })
     .limit(6)
 
+  const challengeIds = (data ?? []).map(c => c.id)
+
+  const { data: attempts } =
+    user && challengeIds.length > 0
+      ? await supabase
+          .from('challenge_attempts')
+          .select('challenge_id, total_score, status')
+          .eq('user_id', user.id)
+          .in('challenge_id', challengeIds)
+      : { data: null }
+
+  const statsMap = buildStatsMap(challengeIds, (attempts ?? []) as AttemptRow[])
+
   return (data ?? []).map(c => ({
     ...c,
     slug: c.slug ?? c.id.replace(/^c\d+-/, ''),
     domain: { slug: '', title: '', icon: null },
-    attempt_count: 0,
-    best_score: null,
-    is_completed: false,
+    ...(statsMap.get(c.id) ?? { attempt_count: 0, best_score: null, is_completed: false }),
   }))
 }
 
