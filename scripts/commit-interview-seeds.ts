@@ -156,7 +156,7 @@ async function main() {
     const { error } = await supabase.from('challenges').insert({
       id: challengeId,
       title: c.title,
-      challenge_type: c.challenge_type,
+      challenge_type: (c as unknown as { is_sql?: boolean }).is_sql ? 'sql' : 'algorithm',
       difficulty: normalizeDifficulty(c.difficulty),
       estimated_minutes: (c.estimated_minutes as number) ?? 30,
       industry: (c.industry as string) ?? null,
