@@ -189,7 +189,7 @@ export default async function ExplorePage() {
           .from('challenges')
           .select('id, title, slug, difficulty, paradigm, challenge_type, prompt_text, company_tags, metadata')
           .eq('is_published', true)
-          .eq('challenge_type', 'coding')
+          .in('challenge_type', ['sql', 'algorithm'])
           .order('created_at', { ascending: false })
           .limit(4)
         return data ?? []
@@ -228,7 +228,7 @@ export default async function ExplorePage() {
       .from('challenges')
       .select('challenge_type')
       .eq('is_published', true)
-      .in('challenge_type', ['flow', 'freeform', 'quick_take', 'system_design', 'data_modeling', 'coding'])
+      .in('challenge_type', ['flow', 'freeform', 'quick_take', 'system_design', 'data_modeling', 'sql', 'algorithm'])
     disciplineCountRows = data ?? []
   } catch (e) {
     console.error('discipline count fetch failed', e)
@@ -247,7 +247,7 @@ export default async function ExplorePage() {
       counts.system_design = (counts.system_design ?? 0) + 1
     } else if (row.challenge_type === 'data_modeling') {
       counts.data_modeling = (counts.data_modeling ?? 0) + 1
-    } else if (row.challenge_type === 'coding') {
+    } else if (row.challenge_type === 'sql' || row.challenge_type === 'algorithm') {
       counts.coding = (counts.coding ?? 0) + 1
     }
   }
@@ -727,7 +727,7 @@ export default async function ExplorePage() {
                     <div style={{ position: 'relative' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
                         <span className="bg-surface-container-high text-on-surface rounded-full text-xs px-2 py-0.5 font-label font-semibold border border-outline-variant/40">
-                          Coding
+                          {c.challenge_type === 'sql' ? 'SQL' : 'Algorithms'}
                         </span>
                         <span className="bg-secondary-container text-on-secondary-container rounded-full text-xs px-2 py-0.5 font-label font-semibold">
                           {langLabel}
