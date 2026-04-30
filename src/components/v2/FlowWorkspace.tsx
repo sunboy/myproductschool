@@ -472,7 +472,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Canvas challenges are only supported in API mode; adapter mode always returns false
   const apiChallengeType = isApiMode ? detail?.challenge?.challenge_type : undefined
   const isCanvasChallenge = apiChallengeType === 'system_design' || apiChallengeType === 'data_modeling'
-  const isCodingChallenge = apiChallengeType === 'coding'
+  const isCodingChallenge = apiChallengeType === 'sql' || apiChallengeType === 'algorithm'
   // Either canvas or coding — both are full-panel interview modes (no MCQ FLOW steps)
   const isInterviewChallenge = isCanvasChallenge || isCodingChallenge
 
@@ -604,7 +604,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       sql_schema?: unknown
       supported_languages?: SupportedLanguage[]
     }
-    if (meta.sql_schema) {
+    if (apiChallengeType === 'sql' || meta.sql_schema) {
       setCurrentLanguage('sql')
       return
     }
