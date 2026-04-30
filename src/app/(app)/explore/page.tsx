@@ -4,6 +4,7 @@ import { getStudyPlanSummaries } from '@/lib/data/study-plans'
 import { getShowcaseProducts } from '@/lib/data/showcase'
 import { getLearnModuleSummaries } from '@/lib/data/learn-modules'
 import { getDomainsWithProgress } from '@/lib/data/domains'
+import { buildStatsMap } from '@/lib/data/challenges'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ParadigmGrid } from './ParadigmGrid'
@@ -220,6 +221,27 @@ export default async function ExplorePage() {
       } catch { return [] }
     })(),
   ])
+
+  // Batch fetch attempt stats for inline snippet cards
+  const allSnippetIds = [
+    ...codingChallenges.map((c: { id: string }) => c.id),
+    ...systemDesignChallenges.map((c: { id: string }) => c.id),
+    ...dataModelingChallenges.map((c: { id: string }) => c.id),
+  ]
+
+  const { data: snippetAttempts } =
+    user && allSnippetIds.length > 0
+      ? await supabase
+          .from('challenge_attempts')
+          .select('challenge_id, total_score, status')
+          .eq('user_id', user.id)
+          .in('challenge_id', allSnippetIds)
+      : { data: null }
+
+  const snippetStatsMap = buildStatsMap(
+    allSnippetIds,
+    (snippetAttempts ?? []) as { challenge_id: string; total_score: number | null; status: 'in_progress' | 'completed' | 'abandoned' }[],
+  )
 
   // Fetch challenge counts per discipline type
   let disciplineCountRows: { challenge_type: string }[] = []
@@ -715,6 +737,12 @@ export default async function ExplorePage() {
                 const diff = DIFFICULTY_CONFIG[c.difficulty as string] ?? { label: c.difficulty, dot: '#74796e' }
                 const meta = (c as unknown as { metadata?: { language?: string; time_limit_seconds?: number; test_cases?: unknown[] } }).metadata
                 const langLabel = meta?.language === 'sql' ? 'SQL' : meta?.language ?? 'Code'
+                const cStats = snippetStatsMap.get(c.id)
+                const cIcon = cStats?.is_completed
+                  ? { icon: 'check_circle', fill: 1, color: '#4a7c59' }
+                  : (cStats?.attempt_count ?? 0) > 0
+                    ? { icon: 'incomplete_circle', fill: 0, color: '#705c30' }
+                    : null
                 return (
                   <a
                     key={c.id}
@@ -743,6 +771,17 @@ export default async function ExplorePage() {
                       <div style={{ fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700, color: '#1a3020', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
                         {c.title}
                       </div>
+                      {cIcon && (
+                        <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <span
+                            className="material-symbols-outlined"
+                            style={{ fontSize: 14, fontVariationSettings: `'FILL' ${cIcon.fill}`, color: cIcon.color }}
+                          >{cIcon.icon}</span>
+                          <span style={{ fontSize: 11, color: cIcon.color, fontWeight: 600 }}>
+                            {cStats?.is_completed ? 'Completed' : `${cStats?.attempt_count} attempt${(cStats?.attempt_count ?? 0) !== 1 ? 's' : ''}`}
+                          </span>
+                        </div>
+                      )}
                       {(meta?.time_limit_seconds != null || meta?.test_cases != null) && (
                         <div style={{ fontSize: 11, color: '#3a5a3c', marginTop: 6, display: 'flex', gap: 8 }}>
                           {meta?.time_limit_seconds != null && (
@@ -788,6 +827,12 @@ export default async function ExplorePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-12">
             {systemDesignChallenges.map((c) => {
               const diff = DIFFICULTY_CONFIG[c.difficulty as string] ?? { label: c.difficulty, dot: '#74796e' }
+              const sdStats = snippetStatsMap.get(c.id)
+              const sdIcon = sdStats?.is_completed
+                ? { icon: 'check_circle', fill: 1, color: '#2d7aa8' }
+                : (sdStats?.attempt_count ?? 0) > 0
+                  ? { icon: 'incomplete_circle', fill: 0, color: '#5a5a80' }
+                  : null
               return (
                 <a
                   key={c.id}
@@ -813,6 +858,17 @@ export default async function ExplorePage() {
                     <div style={{ fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700, color: '#1a3048', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
                       {c.title}
                     </div>
+                    {sdIcon && (
+                      <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span
+                          className="material-symbols-outlined"
+                          style={{ fontSize: 14, fontVariationSettings: `'FILL' ${sdIcon.fill}`, color: sdIcon.color }}
+                        >{sdIcon.icon}</span>
+                        <span style={{ fontSize: 11, color: sdIcon.color, fontWeight: 600 }}>
+                          {sdStats?.is_completed ? 'Completed' : `${sdStats?.attempt_count} attempt${(sdStats?.attempt_count ?? 0) !== 1 ? 's' : ''}`}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
                     <span style={{
@@ -839,6 +895,12 @@ export default async function ExplorePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-12">
             {dataModelingChallenges.map((c) => {
               const diff = DIFFICULTY_CONFIG[c.difficulty as string] ?? { label: c.difficulty, dot: '#74796e' }
+              const dmStats = snippetStatsMap.get(c.id)
+              const dmIcon = dmStats?.is_completed
+                ? { icon: 'check_circle', fill: 1, color: '#8a3c80' }
+                : (dmStats?.attempt_count ?? 0) > 0
+                  ? { icon: 'incomplete_circle', fill: 0, color: '#8a3c80' }
+                  : null
               return (
                 <a
                   key={c.id}
@@ -864,6 +926,17 @@ export default async function ExplorePage() {
                     <div style={{ fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700, color: '#3a1020', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
                       {c.title}
                     </div>
+                    {dmIcon && (
+                      <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span
+                          className="material-symbols-outlined"
+                          style={{ fontSize: 14, fontVariationSettings: `'FILL' ${dmIcon.fill}`, color: dmIcon.color }}
+                        >{dmIcon.icon}</span>
+                        <span style={{ fontSize: 11, color: dmIcon.color, fontWeight: 600 }}>
+                          {dmStats?.is_completed ? 'Completed' : `${dmStats?.attempt_count} attempt${(dmStats?.attempt_count ?? 0) !== 1 ? 's' : ''}`}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
                     <span style={{
