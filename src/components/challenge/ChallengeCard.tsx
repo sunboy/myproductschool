@@ -28,7 +28,7 @@ export function ChallengeCard({
   index = 0,
 }: ChallengeCardProps) {
   const count = participantCount ?? getParticipantCount(index)
-  const isCoding = challenge.challenge_type === 'coding'
+  const isCoding = challenge.challenge_type === 'sql' || challenge.challenge_type === 'algorithm'
   const codingMeta = isCoding
     ? ((challenge as unknown as { metadata?: CodingMetadata }).metadata ?? {})
     : null

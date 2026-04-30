@@ -112,7 +112,7 @@ export async function POST(
     .eq('id', id)
     .single()
 
-  if (!challenge || challenge.challenge_type !== 'coding') {
+  if (!challenge || (challenge.challenge_type !== 'sql' && challenge.challenge_type !== 'algorithm')) {
     return NextResponse.json({ error: 'Not a coding challenge' }, { status: 400 })
   }
 
@@ -252,7 +252,7 @@ export async function POST(
   // Persist grade to interview_grades
   await supabase.from('interview_grades').insert({
     attempt_id: attemptId,
-    challenge_type: 'coding',
+    challenge_type: challenge.challenge_type,
     overall_score: grade.overall_score,
     headline: grade.headline,
     rubric_scores: grade.dimensions,

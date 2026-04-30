@@ -147,7 +147,7 @@ export async function GET(
   // (single-prompt path remains fully backwards compatible).
   let codingParts: CodingPart[] = []
 
-  if ((challenge as Challenge).challenge_type === 'coding') {
+  if ((challenge as Challenge).challenge_type === 'sql' || (challenge as Challenge).challenge_type === 'algorithm') {
     const { data: codingStep } = await supabase
       .from('flow_steps')
       .select('id')

@@ -312,7 +312,7 @@ export async function POST(
     .from('interview_grades')
     .insert({
       attempt_id: attemptId,
-      challenge_type: 'coding',
+      challenge_type: challenge.challenge_type,
       overall_score: overallScore,
       headline: grade.headline,
       rubric_scores: grade.dimensions,

@@ -44,7 +44,7 @@ export default async function HistoryPage() {
       )
     `)
     .eq('challenge_attempts.user_id', user.id)
-    .eq('challenge_type', 'coding')
+    .in('challenge_type', ['sql', 'algorithm'])
     .order('graded_at', { ascending: false })
     .limit(50)
 
