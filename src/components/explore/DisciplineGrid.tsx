@@ -33,7 +33,7 @@ const DISCIPLINES = [
     label: 'Coding',
     emoji: '💻',
     bg: 'bg-[#3a5a7c]',
-    href: '/challenges?discipline=coding',
+    href: '/challenges?discipline=coding&sub=sql',
     count: null as number | null,
   },
 ]
