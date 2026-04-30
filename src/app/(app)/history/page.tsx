@@ -23,7 +23,7 @@ export default async function HistoryPage() {
   if (!user) redirect('/login')
 
   // Query: interview_grades joined through challenge_attempts to challenges
-  // Only coding submissions (challenge_type = 'coding')
+  // Only coding submissions (challenge_type IN ('sql', 'algorithm'))
   const { data: grades, error } = await supabase
     .from('interview_grades')
     .select(`

@@ -13,7 +13,7 @@ interface ChallengeDetailResponse {
   challenge: Challenge
   steps: StepSummary[]
   current_attempt: ChallengeAttemptV2 | null
-  /** Populated for challenge_type='coding' when a flow_steps row with step='coding' exists. Empty array otherwise. */
+  /** Populated for challenge_type='sql'|'algorithm' when a flow_steps row with step='coding' exists. Empty array otherwise. */
   codingParts: CodingPart[]
 }
 
