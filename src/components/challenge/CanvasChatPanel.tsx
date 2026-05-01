@@ -110,10 +110,9 @@ export function CanvasChatPanel({
   const [isLoading, setIsLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  // Suppress unused variable warnings — grade is reserved for future use; isOpen/onToggle kept for callers
+  // Suppress unused variable warnings — grade is reserved for future use; isOpen kept for callers
   void grade
   void isOpen
-  void onToggle
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -214,7 +213,7 @@ export function CanvasChatPanel({
   if (mode === 'closed') {
     return (
       <button
-        onClick={() => setMode('floating')}
+        onClick={() => { setMode('floating'); onToggle() }}
         className="absolute bottom-4 right-4 z-20 flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-on-primary shadow-lg hover:shadow-xl hover:scale-105 transition-all"
         title="Open Hatch chat"
       >
@@ -241,7 +240,7 @@ export function CanvasChatPanel({
             <span className="material-symbols-outlined text-[18px]">dock_to_bottom</span>
           </button>
           <button
-            onClick={() => setMode('closed')}
+            onClick={() => { setMode('closed'); onToggle() }}
             className="text-on-surface-variant hover:text-on-surface transition-colors"
             title="Close"
           >
