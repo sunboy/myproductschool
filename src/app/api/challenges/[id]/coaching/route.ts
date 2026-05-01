@@ -140,6 +140,21 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
   }
 
   // Option-based path
+  // Check global pre-generated cache first (covers all MCQ selections, all users)
+  const globalKey = `global:${challengeId}:${step}:${question_id}:${option_id}:${roleId}`
+  const { data: globalHit } = await admin
+    .from('coaching_cache')
+    .select('role_context, career_signal')
+    .eq('cache_key', globalKey)
+    .single()
+  if (globalHit) {
+    return NextResponse.json({
+      role_context: globalHit.role_context,
+      career_signal: globalHit.career_signal,
+      cached: true,
+    })
+  }
+
   // Cache key: userId:challengeId:step:questionId:optionId:roleId
   const cacheKey = `${user.id}:${challengeId}:${step}:${question_id}:${option_id}:${roleId}`
 
