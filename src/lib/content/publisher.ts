@@ -1,6 +1,7 @@
 // src/lib/content/publisher.ts
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { ChallengeJson, FlowStep } from '@/lib/types'
+import { preGenerateCoaching } from './coaching-warmer'
 
 const VALID_PARADIGMS = ['traditional', 'ai_assisted', 'agentic', 'ai_native'] as const
 
@@ -113,6 +114,11 @@ export async function publishDraft(draftId: string): Promise<string> {
       if (optErr) throw new Error(`flow_options insert failed: ${optErr.message}`)
     }
   }
+
+  // Fire-and-forget — publish response does not wait for warming to complete
+  preGenerateCoaching(challengeId).catch(err =>
+    console.error('[coaching-warmer] pre-generation failed', err)
+  )
 
   // Update draft + job
   await supabase.from('draft_challenges').update({ review_status: 'approved' }).eq('id', draftId)
