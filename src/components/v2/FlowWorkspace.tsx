@@ -720,6 +720,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep, attemptId, phase, isApiMode])
 
+  // Warm Anthropic's prompt cache for nudges on each step entry (best-effort)
+  useEffect(() => {
+    if (!isApiMode || !challengeId) return
+    fetch('/api/hatch/nudge-warmup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ step: currentStep }),
+    }).catch(() => { /* silent */ })
+  }, [challengeId, currentStep, isApiMode])
+
   // Unified step data
   const activeStepData = isApiMode ? stepData : adapterStepData
   const currentQuestion = activeStepData?.questions[questionIdx] ?? null
@@ -1177,6 +1187,24 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             selectedOptionId: sig.selected_option_id ?? r.selectedOptionId,
           }
         })
+        // Fill in steps completed in a prior session that aren't in current in-memory results
+        const FLOW_ORDER = ['frame', 'list', 'optimize', 'win'] as const
+        const missingSteps: MirrorStepResult[] = dbSignals
+          .filter(sig => !enrichedStepRes.some(r => r.step === sig.step))
+          .map(sig => ({
+            step: sig.step as 'frame' | 'list' | 'optimize' | 'win',
+            score: 0,
+            quality_label: sig.quality_label ?? 'plausible_wrong',
+            confidence: null,
+            reasoning: '',
+            competency_signal: undefined,
+            hatchSignal: sig.hatch_signal ?? null,
+            frameworkHint: sig.framework_hint ?? null,
+            selectedOptionId: sig.selected_option_id ?? null,
+            questions: [],
+          }))
+        const allStepRes = [...enrichedStepRes, ...missingSteps]
+        allStepRes.sort((a, b) => FLOW_ORDER.indexOf(a.step) - FLOW_ORDER.indexOf(b.step))
         const record: SessionRecord = {
           attemptId,
           completedAt: new Date(),
@@ -1184,7 +1212,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           totalScore: cd?.total_score ?? 0,
           maxScore: cd?.max_score ?? 0,
           xpAwarded: cd?.xp_awarded ?? 0,
-          stepResults: enrichedStepRes,
+          stepResults: allStepRes,
           competencyDeltas: deltas,
         }
         setSessionHistory((prev) => [record, ...prev])
@@ -1330,6 +1358,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const handleRunAnother = () => {
     setMirrorStepResults([])
     setSelectedHistoryIdx(null)
+    setAttemptId(null)
     setCalibrationSteps([
       { stepKey: 'frame',    stepLabel: 'Frame',    status: 'pending', confidenceLabel: null },
       { stepKey: 'list',     stepLabel: 'List',     status: 'pending', confidenceLabel: null },
