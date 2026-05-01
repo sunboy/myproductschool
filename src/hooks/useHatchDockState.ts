@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 
 export type HatchDockMode = 'closed' | 'floating' | 'docked'
 
@@ -9,8 +9,8 @@ const MIN_WIDTH = 240
 const MAX_WIDTH = 480
 
 export function useHatchDockState(surface: 'canvas' | 'flow') {
-  const modeKey = `hatch-mode:${surface}`
-  const widthKey = `hatch-width:${surface}`
+  const modeKey = useMemo(() => `hatch-mode:${surface}`, [surface])
+  const widthKey = useMemo(() => `hatch-width:${surface}`, [surface])
 
   const [mode, setModeState] = useState<HatchDockMode>(() => {
     if (typeof window === 'undefined') return 'closed'
