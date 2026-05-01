@@ -6,6 +6,7 @@ import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { VoiceInputButton } from './VoiceInputButton'
 import type { CanvasScene } from '@/lib/hatch/canvas-scene'
 import type { CanvasInterpretResponse, InterviewGrade } from '@/lib/types'
+import { useHatchDockState } from '@/hooks/useHatchDockState'
 
 interface ChatMessage {
   role: 'user' | 'hatch'
@@ -96,6 +97,8 @@ export function CanvasChatPanel({
   activePartResponseType,
   activePartWeightPct,
 }: CanvasChatPanelProps) {
+  const { mode, panelWidth: _panelWidth, setMode, setPanelWidth: _setPanelWidth, MIN_WIDTH: _MIN_WIDTH, MAX_WIDTH: _MAX_WIDTH } = useHatchDockState('canvas')
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'hatch',
@@ -107,8 +110,10 @@ export function CanvasChatPanel({
   const [isLoading, setIsLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  // Suppress unused variable warning — grade is reserved for future use
+  // Suppress unused variable warnings — grade is reserved for future use; isOpen/onToggle kept for callers
   void grade
+  void isOpen
+  void onToggle
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -206,10 +211,10 @@ export function CanvasChatPanel({
     }
   }
 
-  if (!isOpen) {
+  if (mode === 'closed') {
     return (
       <button
-        onClick={onToggle}
+        onClick={() => setMode('floating')}
         className="absolute bottom-4 right-4 z-20 flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-on-primary shadow-lg hover:shadow-xl hover:scale-105 transition-all"
         title="Open Hatch chat"
       >
@@ -227,9 +232,22 @@ export function CanvasChatPanel({
           <HatchGlyph size={20} state={isLoading ? 'reviewing' : 'idle'} className="text-primary" />
           <span className="font-label font-semibold text-sm text-on-surface">Hatch</span>
         </div>
-        <button onClick={onToggle} className="text-on-surface-variant hover:text-on-surface transition-colors">
-          <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setMode('docked')}
+            className="text-on-surface-variant hover:text-on-surface transition-colors"
+            title="Dock to side"
+          >
+            <span className="material-symbols-outlined text-[18px]">dock_to_bottom</span>
+          </button>
+          <button
+            onClick={() => setMode('closed')}
+            className="text-on-surface-variant hover:text-on-surface transition-colors"
+            title="Close"
+          >
+            <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
