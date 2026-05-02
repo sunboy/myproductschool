@@ -25,6 +25,7 @@ import { TodaysPathCard } from '@/components/dashboard/cards/TodaysPathCard'
 import { AchievementsCard, ICON_COLOR_MAP, ICON_MAP } from '@/components/dashboard/cards/AchievementsCard'
 import { StreakCalendarCard } from '@/components/dashboard/cards/StreakCalendarCard'
 import { PausedLoopCard } from '@/components/live-interviews/PausedLoopCard'
+import { DisciplineExplorer } from '@/components/flow-disciplines'
 import type { UserInterview } from '@/lib/data/dashboard'
 import type { InterviewLoop, LoopRound } from '@/lib/interview-loops/types'
 import { difficultyLabel } from '@/lib/utils'
@@ -437,6 +438,9 @@ export default async function DashboardPage() {
 
             {/* FLOW Move Levels */}
             <FlowMoveLevelsCard levels={allMoveLevels} />
+
+            {/* FLOW Disciplines explorer card */}
+            <DisciplineExplorer />
 
             {/* Latest Interview — conditional on having a completed debrief */}
             {latestInterview && <LatestInterviewCard data={latestInterview} />}
