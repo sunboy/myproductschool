@@ -232,6 +232,78 @@ export async function getMoveLevel(userId: string): Promise<MoveLevel[]> {
   }))
 }
 
+// ── Latest live interview ────────────────────────────────────
+
+export interface LatestInterviewSummary {
+  sessionId: string
+  companyName: string | null
+  scenarioTitle: string | null
+  overallScore: number
+  grade: string
+  completedAt: string
+  topStrength: string | null
+  topGrowth: string | null
+}
+
+export async function getLatestInterview(userId: string): Promise<LatestInterviewSummary | null> {
+  if (IS_MOCK) return null
+
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = await createClient()
+
+  const { data: session } = await supabase
+    .from('live_interview_sessions')
+    .select('id, company_id, challenge_id, debrief_json, ended_at, status')
+    .eq('user_id', userId)
+    .eq('status', 'completed')
+    .not('debrief_json', 'is', null)
+    .order('ended_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (!session) return null
+
+  type Debrief = {
+    overallScore?: number
+    grade?: string
+    strengths?: string[]
+    improvements?: string[]
+  }
+  const debrief = session.debrief_json as Debrief | null
+  if (!debrief || typeof debrief.overallScore !== 'number') return null
+
+  let companyName: string | null = null
+  if (session.company_id) {
+    const { data: company } = await supabase
+      .from('company_profiles')
+      .select('name')
+      .eq('slug', session.company_id)
+      .maybeSingle()
+    companyName = company?.name ?? null
+  }
+
+  let scenarioTitle: string | null = null
+  if (session.challenge_id) {
+    const { data: challenge } = await supabase
+      .from('challenges')
+      .select('title')
+      .eq('id', session.challenge_id)
+      .maybeSingle()
+    scenarioTitle = challenge?.title ?? null
+  }
+
+  return {
+    sessionId: session.id,
+    companyName,
+    scenarioTitle,
+    overallScore: debrief.overallScore,
+    grade: debrief.grade ?? '',
+    completedAt: session.ended_at ?? '',
+    topStrength: debrief.strengths?.[0] ?? null,
+    topGrowth: debrief.improvements?.[0] ?? null,
+  }
+}
+
 // ── Helpers ──────────────────────────────────────────────────
 
 function formatRelativeTime(isoDate: string): string {

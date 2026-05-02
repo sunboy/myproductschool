@@ -145,7 +145,7 @@ export async function POST(
   fetch(gradeUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ recentTurns, challengeId: session.challenge_id }),
+    body: JSON.stringify({ recentTurns, challengeId: session.challenge_id, turnIndex: nextIndex }),
   }).catch((err) => {
     console.error('Async grade-turn failed:', err)
   })

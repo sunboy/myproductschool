@@ -33,7 +33,9 @@ export interface StepResult {
   confidence: number | null
   reasoning: string
   competency_signal?: {
-    primary: string
+    // Transitional: pre-migration rows have `primary`; post-migration have `competency`.
+    competency?: string
+    primary?: string
     signal: string
     framework_hint: string
   }
@@ -142,8 +144,10 @@ function StepCard({ result, index, cardRef, badgeRef, onOpenModal }: StepCardPro
   const verdictColor = VERDICT_COLOR[verdict]
   const coaching = result.hatchSignal ?? result.competency_signal?.signal
     ?? (verdict === 'pass' ? 'Strong reasoning on this move.' : verdict === 'partial' ? 'Partially on track — room to sharpen.' : 'The key move was missed here.')
-  const competency = result.competency_signal?.primary
-    ? formatCompetencyName(result.competency_signal.primary)
+  // Transitional fallback: post-migration rows store `competency`; pre-migration rows store `primary`.
+  const competencyKey = result.competency_signal?.competency ?? result.competency_signal?.primary
+  const competency = competencyKey
+    ? formatCompetencyName(competencyKey)
     : (STEP_COMPETENCY_KEYS[result.step]?.[0] ?? null)
   const chips = buildChoiceChips(result)
   const frameworkHint = result.competency_signal?.framework_hint ?? result.frameworkHint ?? null

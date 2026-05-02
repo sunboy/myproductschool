@@ -97,7 +97,7 @@ export function CanvasChatPanel({
   activePartResponseType,
   activePartWeightPct,
 }: CanvasChatPanelProps) {
-  const { mode, panelWidth: _panelWidth, setMode, setPanelWidth: _setPanelWidth, MIN_WIDTH: _MIN_WIDTH, MAX_WIDTH: _MAX_WIDTH } = useHatchDockState('canvas')
+  const { mode, panelWidth, setMode, setPanelWidth, MIN_WIDTH, MAX_WIDTH } = useHatchDockState('canvas')
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -109,10 +109,28 @@ export function CanvasChatPanel({
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const dragRef = useRef<{ startX: number; startWidth: number } | null>(null)
 
   // Suppress unused variable warnings — grade is reserved for future use; isOpen kept for callers
   void grade
   void isOpen
+
+  const startResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    dragRef.current = { startX: e.clientX, startWidth: panelWidth }
+    const onMove = (ev: MouseEvent) => {
+      if (!dragRef.current) return
+      const delta = dragRef.current.startX - ev.clientX
+      setPanelWidth(dragRef.current.startWidth + delta)
+    }
+    const onUp = () => {
+      dragRef.current = null
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }, [panelWidth, setPanelWidth])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -223,6 +241,128 @@ export function CanvasChatPanel({
     )
   }
 
+  if (mode === 'docked') {
+    return (
+      <div
+        data-testid="hatch-chat-panel"
+        style={{ width: panelWidth, minWidth: MIN_WIDTH, maxWidth: MAX_WIDTH }}
+        className="relative flex flex-col border-l border-outline-variant bg-surface-container h-full overflow-hidden shrink-0"
+      >
+        {/* Drag handle */}
+        <div
+          onMouseDown={startResize}
+          className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary/20 z-10"
+        />
+        {/* Header */}
+        <div className="flex items-center justify-between px-3 py-2 border-b border-outline-variant bg-surface-container-high shrink-0">
+          <div className="flex items-center gap-2">
+            <HatchGlyph size={20} state={isLoading ? 'reviewing' : 'idle'} className="text-primary" />
+            <span className="font-label font-semibold text-sm text-on-surface">Hatch</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setMode('floating')}
+              className="text-on-surface-variant hover:text-on-surface transition-colors"
+              title="Undock"
+            >
+              <span className="material-symbols-outlined text-[18px]">open_in_new</span>
+            </button>
+            <button
+              onClick={() => { setMode('closed'); onToggle() }}
+              className="text-on-surface-variant hover:text-on-surface transition-colors"
+              title="Close"
+            >
+              <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+            </button>
+          </div>
+        </div>
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+              {msg.role === 'hatch' && (
+                <HatchGlyph size={20} state="idle" className="text-primary shrink-0 mt-0.5" />
+              )}
+              <div
+                data-testid={msg.role === 'user' ? 'hatch-message-user' : 'hatch-message-assistant'}
+                className={`rounded-xl px-3 py-2 text-sm max-w-[85%] font-body leading-relaxed ${
+                  msg.role === 'user'
+                    ? 'bg-primary text-on-primary'
+                    : msg.kind === 'canvas_action'
+                      ? 'bg-primary-container text-on-primary-container'
+                      : msg.kind === 'nudge'
+                        ? 'bg-tertiary-container text-on-secondary-container border border-outline-variant'
+                        : 'bg-surface-container-high text-on-surface'
+                }`}
+              >
+                {msg.kind === 'nudge' && (
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-xs font-semibold opacity-70">Hatch noticed</span>
+                    {onDismissNudge && (
+                      <button onClick={onDismissNudge} className="text-xs opacity-60 hover:opacity-100" aria-label="Dismiss nudge">✕</button>
+                    )}
+                  </div>
+                )}
+                {msg.role === 'hatch' ? <Md>{msg.content}</Md> : msg.content}
+                {msg.kind === 'canvas_action' && (
+                  <span className="material-symbols-outlined text-[14px] ml-1 opacity-70">draw</span>
+                )}
+              </div>
+            </div>
+          ))}
+          {challengeType === 'coding' && messages.length === 1 && !isLoading && (
+            <div className="flex flex-col gap-1.5 mt-2">
+              {getExamplePrompts(challengeType, currentLanguage).map((prompt) => (
+                <button
+                  key={prompt}
+                  onClick={() => sendMessage(prompt)}
+                  className="text-left text-xs px-3 py-2 rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          )}
+          {isLoading && (
+            <div className="flex gap-2">
+              <HatchGlyph size={20} state="reviewing" className="text-primary shrink-0" />
+              <div className="bg-surface-container-high rounded-xl px-3 py-2 text-sm text-on-surface-variant">
+                {challengeType === 'coding' ? 'Hatch is thinking…' : onCanvasActions ? 'Hatch is drawing…' : '…'}
+              </div>
+            </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
+        {/* Input */}
+        {!feedbackMode && (
+          <div className="border-t border-outline-variant p-2 bg-surface-container-high shrink-0">
+            <div className="flex gap-2 items-end">
+              <textarea
+                data-testid="hatch-input"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={challengeType === 'coding' ? "Ask Hatch about your code…" : "Ask Hatch or describe what to add…"}
+                rows={2}
+                className="flex-1 resize-none rounded-lg bg-surface-container border border-outline-variant text-on-surface text-sm px-3 py-2 font-body placeholder:text-on-surface-variant focus:outline-none focus:border-primary"
+              />
+              <div className="flex flex-col gap-1">
+                <VoiceInputButton onTranscript={sendMessage} disabled={isLoading} />
+                <button
+                  onClick={() => sendMessage(input)}
+                  disabled={isLoading || !input.trim()}
+                  className="p-2 rounded-full bg-primary text-on-primary disabled:opacity-40 hover:opacity-90 transition-opacity"
+                >
+                  <span className="material-symbols-outlined text-[18px]">send</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div data-testid="hatch-chat-panel" className="absolute bottom-4 right-4 z-20 flex flex-col w-80 h-[480px] max-h-[calc(100%-2rem)] border border-outline-variant rounded-xl bg-surface-container shadow-2xl overflow-hidden">
       {/* Header */}
@@ -237,7 +377,7 @@ export function CanvasChatPanel({
             className="text-on-surface-variant hover:text-on-surface transition-colors"
             title="Dock to side"
           >
-            <span className="material-symbols-outlined text-[18px]">dock_to_bottom</span>
+            <span className="material-symbols-outlined text-[18px]">push_pin</span>
           </button>
           <button
             onClick={() => { setMode('closed'); onToggle() }}

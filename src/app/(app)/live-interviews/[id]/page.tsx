@@ -546,6 +546,30 @@ export default function SessionPage({
       return
     }
 
+    // Resume path — loop_id present and no autostart means the user is
+    // returning to a paused round. Hit /resume to rebuild the system prompt
+    // against current move levels before going active.
+    if (loopIdParam) {
+      let cancelled = false
+      ;(async () => {
+        try {
+          const res = await fetch(`/api/live-interview/${id}/resume`, { method: 'POST' })
+          if (!res.ok) return
+          const data = await res.json()
+          if (cancelled) return
+          if (data.systemPrompt) setSystemPrompt(data.systemPrompt)
+          if (data.session?.company_id) setCompanyName(company ?? data.session.company_id)
+          else setCompanyName(company ?? '')
+          setRoleName(roleParam ?? '')
+          setInterviewPhase('active')
+          setInterviewStartedAt(Date.now())
+        } catch {
+          // Fall through silently — UI will still render in 'starting' phase
+        }
+      })()
+      return () => { cancelled = true }
+    }
+
     let cancelled = false
     async function startSession() {
       try {
@@ -658,7 +682,10 @@ export default function SessionPage({
             setInterviewPhase('ended')
             es.close()
             fetch(`/api/live-interview/${sessionId}/end`, { method: 'POST' })
-              .then(() => router.push(`/live-interviews/${sessionId}/debrief`))
+              .then(() => {
+                window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'live-interview' } }))
+                router.push(`/live-interviews/${sessionId}/debrief`)
+              })
               .catch(() => setError('Failed to generate debrief'))
           }, 2000)
         }
@@ -732,7 +759,10 @@ export default function SessionPage({
         setInterviewPhase('ended')
         eventSourceRef.current?.close()
         fetch(`/api/live-interview/${sessionId}/end`, { method: 'POST' })
-          .then(() => router.push(`/live-interviews/${sessionId}/debrief`))
+          .then(() => {
+            window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'live-interview' } }))
+            router.push(`/live-interviews/${sessionId}/debrief`)
+          })
           .catch(() => setError('Failed to generate debrief'))
       }, 2000)
     }
@@ -753,10 +783,19 @@ export default function SessionPage({
 
       const turnId = turn.id
 
+      // turn_index for dedup: this user turn is being appended at position `totalTurns`
+      // (the server stores zero-indexed turns; totalTurns increments after this fetch).
+      const userTurnIndex = totalTurns
+
       fetch(`/api/live-interview/${sessionId}/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: cleanContent, role: 'user', ...(artifactSnapshot ? { artifactSnapshot } : {}) }),
+        body: JSON.stringify({
+          content: cleanContent,
+          role: 'user',
+          turnIndex: userTurnIndex,
+          ...(artifactSnapshot ? { artifactSnapshot } : {}),
+        }),
       }).then((res) => res.ok ? res.json() : null).then((data) => {
         if (data?.flowMove) {
           setFlowCoverage((prev) => ({
@@ -889,6 +928,7 @@ export default function SessionPage({
       }
 
       await fetch(`/api/live-interview/${sessionId}/end`, { method: 'POST' })
+      window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'live-interview' } }))
       router.push(`/live-interviews/${sessionId}/debrief`)
     } catch {
       setError('Failed to generate debrief')
@@ -1019,7 +1059,7 @@ export default function SessionPage({
 
           <HatchGlyph size={64} state="idle" className="text-primary" />
 
-          {/* Company / role tags */}
+          {/* Company / discipline / role tags */}
           <div className="flex items-center gap-2 flex-wrap justify-center">
             {companyName && (
               <span
@@ -1029,9 +1069,14 @@ export default function SessionPage({
                 {companyName}
               </span>
             )}
+            {discipline && (
+              <span className="font-label text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                {DISCIPLINE_META[discipline].label}
+              </span>
+            )}
             {roleName && (
-              <span className="font-label text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                {roleName} Round
+              <span className="font-label text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                · {roleName}
               </span>
             )}
           </div>
@@ -1230,9 +1275,14 @@ export default function SessionPage({
               {companyName}
             </span>
           )}
+          {discipline && (
+            <span className="font-label text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>
+              {DISCIPLINE_META[discipline].label}
+            </span>
+          )}
           {roleName && (
-            <span className="font-label text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              {roleName} Round
+            <span className="font-label text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              · {roleName}
             </span>
           )}
 

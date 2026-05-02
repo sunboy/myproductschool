@@ -616,7 +616,9 @@ export interface StepAttemptRecord {
   grading_confidence: number | null
   role_context: string | null; career_signal: string | null
   time_spent_seconds: number
-  competency_signal?: { primary: string; signal: string; framework_hint: string } | null
+  // Transitional: pre-migration rows have `primary`; post-migration have `competency`.
+  // New writers should always emit `competency`. Readers may use the `?? primary` fallback.
+  competency_signal?: { competency?: string; primary?: string; signal: string; framework_hint: string } | null
 }
 
 export interface LearnerCompetency {

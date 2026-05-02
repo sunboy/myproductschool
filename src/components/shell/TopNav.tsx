@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 
@@ -88,7 +88,7 @@ export function TopNav() {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
+  const fetchProfile = useCallback(() => {
     fetch('/api/profile')
       .then(r => {
         if (r.status === 401) { window.location.href = '/login'; return null }
@@ -106,6 +106,22 @@ export function TopNav() {
       })
       .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    const refreshProfileStats = () => fetchProfile()
+    window.addEventListener('challenge-completed', refreshProfileStats)
+    window.addEventListener('profile-stats-updated', refreshProfileStats)
+    return () => {
+      window.removeEventListener('challenge-completed', refreshProfileStats)
+      window.removeEventListener('profile-stats-updated', refreshProfileStats)
+    }
+  }, [fetchProfile])
+
+  useEffect(() => {
+    // Route transitions can occur after progression writes complete.
+    // Re-fetch on path change to keep nav badges fresh.
+    fetchProfile()
+  }, [fetchProfile, pathname])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

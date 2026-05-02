@@ -53,6 +53,7 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
       if (!res.ok) throw new Error(data.error ?? 'Submission failed')
       setResult(data)
       setState('done')
+      window.dispatchEvent(new CustomEvent('profile-stats-updated', { detail: { source: 'quick-take' } }))
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong')
       setState('writing')

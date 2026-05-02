@@ -4,18 +4,20 @@ import { getHatchContext } from '@/lib/v2/hatch-context'
 import { loadRubric, getReasoningMove } from '@/lib/v2/skills/rubric-loader'
 import { MENTAL_MODELS_CONTEXT, STEP_PRIMARY_COMPETENCIES } from '@/lib/hatch/system-prompt'
 import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { FLOW_MAX_SCORE, TIER_CAPS_FIVE } from '@/lib/scoring/flow-scale'
+import type { CompetencySignal } from '@/lib/scoring/competency-signal'
 
 // ── Zod schemas ──────────────────────────────────────────────
 
 const GradingResponseSchema = z.object({
-  score: z.number().min(0).max(3),
+  score: z.number().min(0).max(FLOW_MAX_SCORE),
   quality_label: z.enum(['best', 'good_but_incomplete', 'surface', 'plausible_wrong', 'between_levels']),
   competencies_demonstrated: z.array(z.string()),
   grading_explanation: z.string().max(500),
   confidence: z.number().min(0).max(1),
   criteria_scores: z.record(z.string(), z.enum(['strong', 'partial', 'needs_work'])).optional(),
   competency_signal: z.object({
-    primary: z.string(),
+    competency: z.string(),
     signal: z.string(),
     framework_hint: z.string(),
   }).optional(),
@@ -30,12 +32,8 @@ const ElaborationSchema = z.object({
 type GradingResponse = z.infer<typeof GradingResponseSchema>
 type ElaborationResponse = z.infer<typeof ElaborationSchema>
 
-// ── Tier caps ────────────────────────────────────────────────
-
-const TIER_CAPS: Record<number, number> = { 0: 0.5, 1: 1.75, 2: 2.75, 3: 3.0 }
-
 export function capElaborationScore(basePoints: number, adjustment: number): number {
-  return Math.max(0, Math.min(basePoints + adjustment, TIER_CAPS[basePoints] ?? basePoints))
+  return Math.max(0, Math.min(basePoints + adjustment, TIER_CAPS_FIVE[basePoints] ?? basePoints))
 }
 
 // ── Step purpose ─────────────────────────────────────────────
@@ -73,7 +71,7 @@ export interface GradingResult {
   competencies_demonstrated: string[]
   confidence: number
   criteria_scores?: Record<string, 'strong' | 'partial' | 'needs_work'>
-  competency_signal?: { primary: string; signal: string; framework_hint: string }
+  competency_signal?: CompetencySignal
 }
 
 export async function gradeFreeform(
@@ -143,19 +141,19 @@ LEARNER'S RESPONSE:
 
 GRADING INSTRUCTIONS:
 1. Compare by SUBSTANCE (ideas), not wording. "Instrument the funnel" = "add step-level tracking".
-2. Score 0.0–3.0 continuously:
-   2.5–3.0: Core insight of BEST exemplar
-   2.0–2.4: Good but missing a key dimension
-   1.0–1.9: Directionally correct but shallow
-   0.0–0.9: Fundamentally misreads the situation
+2. Score 0.0–5.0 continuously:
+   4.0–5.0: Core insight of BEST exemplar
+   3.0–3.9: Good but missing a key dimension
+   1.5–2.9: Directionally correct but shallow
+   0.0–1.4: Fundamentally misreads the situation
 3. Identify competencies demonstrated from: ${targetCompetencies.join(', ')}
 4. Rate confidence 0.0–1.0
-5. Can exceed 2.8 if response covers BEST AND adds genuine insight. Rare.
+5. Can exceed 4.5 if response covers BEST AND adds genuine insight. Rare.
 6. Score each rubric criterion (${criterionIds.join(', ') || 'if available'}) as "strong", "partial", or "needs_work".
 7. Generate a competency_signal: identify the primary competency being tested (from: ${(STEP_PRIMARY_COMPETENCIES[step] ?? []).join(', ')}), write a 1-sentence coaching signal, and a framework_hint connecting to the reasoning move.
 
 Return ONLY valid JSON:
-{"score":<float>,"quality_label":"<best|good_but_incomplete|surface|plausible_wrong|between_levels>","competencies_demonstrated":[<strings>],"grading_explanation":"<2 sentences>","confidence":<float>,"criteria_scores":{${criterionIds.map(id => `"${id}":"<strong|partial|needs_work>"`).join(',')}},"competency_signal":{"primary":"<competency_key>","signal":"<1 sentence coaching>","framework_hint":"<reasoning move connection>"}}`
+{"score":<float>,"quality_label":"<best|good_but_incomplete|surface|plausible_wrong|between_levels>","competencies_demonstrated":[<strings>],"grading_explanation":"<2 sentences>","confidence":<float>,"criteria_scores":{${criterionIds.map(id => `"${id}":"<strong|partial|needs_work>"`).join(',')}},"competency_signal":{"competency":"<competency_key>","signal":"<1 sentence coaching>","framework_hint":"<reasoning move connection>"}}`
 
   // Fallback result used on error
   const fallback: GradingResult = {
@@ -186,7 +184,7 @@ Return ONLY valid JSON:
         parsed = validated.data
       } else {
         // Zod failed — clamp score but use data anyway
-        const clamped = { ...json, score: Math.min(3, Math.max(0, Number(json.score) || 1)) }
+        const clamped = { ...json, score: Math.min(FLOW_MAX_SCORE, Math.max(0, Number(json.score) || TIER_CAPS_FIVE[1])) }
         const recheck = GradingResponseSchema.safeParse(clamped)
         if (recheck.success) parsed = recheck.data
       }
@@ -212,7 +210,7 @@ Return ONLY valid JSON:
           // Clamp and proceed
           parsed = {
             ...retryJson,
-            score: Math.min(3, Math.max(0, Number(retryJson.score) || 1)),
+            score: Math.min(FLOW_MAX_SCORE, Math.max(0, Number(retryJson.score) || TIER_CAPS_FIVE[1])),
           } as GradingResponse
         }
       } catch {
@@ -225,9 +223,10 @@ Return ONLY valid JSON:
     // Apply confidence gate
     const gated = applyConfidenceGate(parsed)
 
-    // Apply low-confidence clamp: if confidence < 0.6, cap score at 1.75
+    // Apply low-confidence clamp: if confidence < 0.6, cap score at the
+    // "surface" tier (TIER_CAPS_FIVE[1] = 2.5).
     const finalScore = gated.confidence < 0.6
-      ? Math.min(gated.score, 1.75)
+      ? Math.min(gated.score, TIER_CAPS_FIVE[1])
       : gated.score
 
     return {

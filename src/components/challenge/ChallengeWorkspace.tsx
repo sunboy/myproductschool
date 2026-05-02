@@ -6,6 +6,7 @@ import Link from 'next/link'
 import type { ChallengePrompt } from '@/lib/types'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useSteps } from '@/hooks/useSteps'
+import { useHatchDockState } from '@/hooks/useHatchDockState'
 
 /* ── Types ───────────────────────────────────────────────── */
 
@@ -105,6 +106,61 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
 
   const { steps } = useSteps(challenge.id)
   const scaffoldOptions = steps[activeStep]?.scaffold_options ?? []
+
+  // Hatch chat state
+  const { mode: hatchMode, panelWidth: hatchWidth, setMode: setHatchMode, setPanelWidth: setHatchWidth, MIN_WIDTH: HATCH_MIN, MAX_WIDTH: HATCH_MAX } = useHatchDockState('flow')
+  const [hatchMessages, setHatchMessages] = useState<Array<{ role: 'user' | 'hatch'; content: string }>>([
+    { role: 'hatch', content: "I'm watching your analysis. Ask me anything — framing, tradeoffs, what your metrics mean." },
+  ])
+  const [hatchInput, setHatchInput] = useState('')
+  const [hatchLoading, setHatchLoading] = useState(false)
+  const hatchBottomRef = useRef<HTMLDivElement>(null)
+  const hatchDragRef = useRef<{ startX: number; startWidth: number } | null>(null)
+
+  useEffect(() => {
+    hatchBottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [hatchMessages])
+
+  const sendHatchMessage = useCallback(async (text: string) => {
+    if (!text.trim() || hatchLoading) return
+    setHatchMessages((prev) => [...prev, { role: 'user', content: text }])
+    setHatchInput('')
+    setHatchLoading(true)
+    try {
+      const res = await fetch('/api/hatch/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text,
+          history: hatchMessages.slice(-10),
+          pageContext: { pageType: 'challenge_workspace', entityId: challenge.id, pathname: `/challenges/${challenge.slug}` },
+        }),
+      })
+      if (!res.ok) throw new Error('chat failed')
+      const data = await res.json() as { reply: string }
+      setHatchMessages((prev) => [...prev, { role: 'hatch', content: data.reply }])
+    } catch {
+      setHatchMessages((prev) => [...prev, { role: 'hatch', content: "Couldn't reach Hatch. Try again in a moment." }])
+    } finally {
+      setHatchLoading(false)
+    }
+  }, [hatchLoading, hatchMessages, challenge.id, challenge.slug])
+
+  const startHatchResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    hatchDragRef.current = { startX: e.clientX, startWidth: hatchWidth }
+    const onMove = (ev: MouseEvent) => {
+      if (!hatchDragRef.current) return
+      setHatchWidth(hatchDragRef.current.startWidth + (hatchDragRef.current.startX - ev.clientX))
+    }
+    const onUp = () => {
+      hatchDragRef.current = null
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }, [hatchWidth, setHatchWidth])
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const responseRef = useRef('')
@@ -216,6 +272,57 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
   const step     = FLOW_STEPS[activeStep]
   const coaching = COACHING_PROMPTS[activeStep]
 
+  const hatchChatContent = (
+    <>
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
+        {hatchMessages.map((msg, i) => (
+          <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+            {msg.role === 'hatch' && (
+              <HatchGlyph size={20} state="idle" className="text-primary shrink-0 mt-0.5" />
+            )}
+            <div
+              className={`rounded-xl px-3 py-2 text-sm max-w-[85%] font-body leading-relaxed ${
+                msg.role === 'user'
+                  ? 'bg-primary text-on-primary'
+                  : 'bg-surface-container-high text-on-surface'
+              }`}
+            >
+              {msg.content}
+            </div>
+          </div>
+        ))}
+        {hatchLoading && (
+          <div className="flex gap-2">
+            <HatchGlyph size={20} state="reviewing" className="text-primary shrink-0" />
+            <div className="bg-surface-container-high rounded-xl px-3 py-2 text-sm text-on-surface-variant">…</div>
+          </div>
+        )}
+        <div ref={hatchBottomRef} />
+      </div>
+      {/* Input */}
+      <div className="border-t border-outline-variant p-2 bg-surface-container-high shrink-0">
+        <div className="flex gap-2 items-end">
+          <textarea
+            value={hatchInput}
+            onChange={(e) => setHatchInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendHatchMessage(hatchInput) } }}
+            placeholder="Ask Hatch…"
+            rows={2}
+            className="flex-1 resize-none rounded-lg bg-surface-container border border-outline-variant text-on-surface text-sm px-3 py-2 font-body placeholder:text-on-surface-variant focus:outline-none focus:border-primary"
+          />
+          <button
+            onClick={() => sendHatchMessage(hatchInput)}
+            disabled={hatchLoading || !hatchInput.trim()}
+            className="p-2 rounded-full bg-primary text-on-primary disabled:opacity-40 hover:opacity-90 transition-opacity"
+          >
+            <span className="material-symbols-outlined text-[18px]">send</span>
+          </button>
+        </div>
+      </div>
+    </>
+  )
+
   /* ── Render ── */
 
   return (
@@ -289,6 +396,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
       {/* ═══════════════════════════════════════════════════════
           CONTENT AREA — quick / guided split-pane / freeform scroll
           ═══════════════════════════════════════════════════════ */}
+      <div className="flex flex-1 min-h-0 overflow-hidden relative">
       {mode === 'quick' ? (
         <div className="flex-1 flex overflow-hidden">
           {/* Left pane — scenario */}
@@ -711,6 +819,69 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
         </div>
       </div>
       )}
+
+      {/* Hatch FAB — closed state */}
+      {hatchMode === 'closed' && (
+        <button
+          onClick={() => setHatchMode('floating')}
+          className="absolute bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-on-primary shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+          title="Open Hatch chat"
+        >
+          <HatchGlyph size={20} state="idle" className="text-on-primary" />
+          <span className="font-label font-semibold text-sm">Ask Hatch</span>
+        </button>
+      )}
+
+      {/* Hatch floating panel */}
+      {hatchMode === 'floating' && (
+        <div className="absolute bottom-4 right-4 z-20 flex flex-col w-80 h-[480px] max-h-[calc(100%-2rem)] border border-outline-variant rounded-xl bg-surface-container shadow-2xl overflow-hidden">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-outline-variant bg-surface-container-high shrink-0">
+            <div className="flex items-center gap-2">
+              <HatchGlyph size={20} state={hatchLoading ? 'reviewing' : 'idle'} className="text-primary" />
+              <span className="font-label font-semibold text-sm text-on-surface">Hatch</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <button onClick={() => setHatchMode('docked')} className="text-on-surface-variant hover:text-on-surface transition-colors" title="Dock to side">
+                <span className="material-symbols-outlined text-[18px]">push_pin</span>
+              </button>
+              <button onClick={() => setHatchMode('closed')} className="text-on-surface-variant hover:text-on-surface transition-colors" title="Close">
+                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+              </button>
+            </div>
+          </div>
+          {hatchChatContent}
+        </div>
+      )}
+
+      {/* Hatch docked panel */}
+      {hatchMode === 'docked' && (
+        <div
+          style={{ width: hatchWidth, minWidth: HATCH_MIN, maxWidth: HATCH_MAX }}
+          className="relative flex flex-col border-l border-outline-variant bg-surface-container shrink-0 overflow-hidden"
+        >
+          <div
+            onMouseDown={startHatchResize}
+            className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary/20 z-10"
+          />
+          <div className="flex items-center justify-between px-3 py-2 border-b border-outline-variant bg-surface-container-high shrink-0">
+            <div className="flex items-center gap-2">
+              <HatchGlyph size={20} state={hatchLoading ? 'reviewing' : 'idle'} className="text-primary" />
+              <span className="font-label font-semibold text-sm text-on-surface">Hatch</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <button onClick={() => setHatchMode('floating')} className="text-on-surface-variant hover:text-on-surface transition-colors" title="Undock">
+                <span className="material-symbols-outlined text-[18px]">open_in_new</span>
+              </button>
+              <button onClick={() => setHatchMode('closed')} className="text-on-surface-variant hover:text-on-surface transition-colors" title="Close">
+                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+              </button>
+            </div>
+          </div>
+          {hatchChatContent}
+        </div>
+      )}
+
+      </div>
     </div>
   )
 }

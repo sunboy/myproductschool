@@ -7,7 +7,7 @@ import { InterviewPaywallGate } from '@/components/paywalls/InterviewPaywallGate
 import { useIsAtLimit, useUsage } from '@/context/UsageContext'
 import { useUpgrade } from '@/hooks/useUpgrade'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
-import type { LiveInterviewDiscipline } from '@/lib/live-interview/disciplines'
+import { DISCIPLINE_META, type LiveInterviewDiscipline } from '@/lib/live-interview/disciplines'
 
 export type StartInterviewButtonVariant = 'chip' | 'hero'
 
@@ -189,9 +189,16 @@ export default function StartInterviewButton({
                   {modalCompany}
                 </span>
               )}
-              <span className="font-label text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                {modalRole} Round
-              </span>
+              {sessionDiscipline && DISCIPLINE_META[sessionDiscipline as LiveInterviewDiscipline] && (
+                <span className="font-label text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                  {DISCIPLINE_META[sessionDiscipline as LiveInterviewDiscipline].label}
+                </span>
+              )}
+              {modalRole && (
+                <span className="font-label text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                  · {modalRole}
+                </span>
+              )}
             </div>
 
             <div className="space-y-2">

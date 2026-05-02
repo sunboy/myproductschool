@@ -1,6 +1,7 @@
 // src/app/api/live-interview/[id]/resume/route.ts
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { buildPromptFromSession } from '@/lib/live-interview/build-prompt-from-session'
 
 export async function POST(
   _request: Request,
@@ -28,6 +29,9 @@ export async function POST(
     round_index?: number | null
     flow_coverage?: Record<string, number> | null
     conversation_memory?: unknown[] | null
+    company_id?: string | null
+    role_id?: string | null
+    challenge_id?: string | null
   }
   const s = session as SessionRow
 
@@ -36,14 +40,26 @@ export async function POST(
 
   const { data: round } = await adminClient
     .from('loop_rounds' as string)
-    .select('id, pause_snapshot')
+    .select('id, pause_snapshot, discipline')
     .eq('loop_id', s.loop_id)
     .eq('round_index', s.round_index ?? 0)
     .single()
 
   const snapshot = (round as { pause_snapshot?: { flow_coverage?: Record<string, number>; conversation_memory?: unknown[] } | null } | null)?.pause_snapshot
+  const roundDiscipline = (round as { discipline?: string | null } | null)?.discipline ?? null
 
   const now = new Date().toISOString()
+
+  // Rebuild the system prompt from current move_levels / competencies / failure
+  // patterns so a long-paused session reflects the user's latest state.
+  const built = await buildPromptFromSession({
+    adminClient,
+    userId: user.id,
+    companyId: s.company_id ?? null,
+    roleId: s.role_id ?? null,
+    challengeId: s.challenge_id ?? null,
+    discipline: roundDiscipline,
+  })
 
   await adminClient
     .from('live_interview_sessions')
@@ -51,6 +67,9 @@ export async function POST(
       status: 'active',
       flow_coverage: snapshot?.flow_coverage ?? s.flow_coverage,
       conversation_memory: snapshot?.conversation_memory ?? s.conversation_memory,
+      system_prompt: built.systemPrompt,
+      scenario_rubric: built.scenarioRubric,
+      calibration_snapshot: built.calibrationSnapshot,
     })
     .eq('id', id)
 
@@ -72,5 +91,10 @@ export async function POST(
     .eq('id', id)
     .single()
 
-  return Response.json({ session: refreshed, resumedAt: now })
+  return Response.json({
+    session: refreshed,
+    resumedAt: now,
+    systemPrompt: built.systemPrompt,
+    discipline: built.effectiveDiscipline,
+  })
 }

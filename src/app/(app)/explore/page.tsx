@@ -382,7 +382,7 @@ export default async function ExplorePage() {
                 <span className="material-symbols-outlined" style={{ fontSize: 18 }}>route</span>
                 View study plans
               </Link>
-              {personalisedPlan && (
+              {personalisedPlan ? (
                 <Link
                   href={`/explore/plans/${personalisedPlan.slug}`}
                   style={{
@@ -396,6 +396,21 @@ export default async function ExplorePage() {
                 >
                   <span className="material-symbols-outlined" style={{ fontSize: 15, fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
                   Your plan, built by Hatch
+                </Link>
+              ) : (
+                <Link
+                  href={`/explore/plans/${(['frame-like-a-pm', 'the-list-move', 'optimize-under-pressure', 'win-the-room'] as const)[Math.floor(Math.random() * 4)]}`}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                    background: 'transparent',
+                    border: '1px solid rgba(126,224,153,0.18)',
+                    padding: '10px 16px', borderRadius: 999,
+                    fontWeight: 700, fontSize: 13, textDecoration: 'none',
+                    color: 'rgba(126,224,153,0.7)',
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: 15, fontVariationSettings: "'FILL' 0" }}>auto_awesome</span>
+                  Your first study plan
                 </Link>
               )}
             </div>

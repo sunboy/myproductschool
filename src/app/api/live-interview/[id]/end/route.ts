@@ -2,6 +2,15 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateDebrief } from '@/lib/live-interview/debrief-generator'
 import { gradeArtifact } from '@/lib/live-interview/artifact-grader'
+import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
+
+const INTERVIEW_DIFFICULTY_BASE_XP: Record<string, number> = {
+  beginner: 60,
+  intermediate: 90,
+  advanced: 120,
+}
+
+const DEFAULT_INTERVIEW_BASE_XP = 80
 
 export async function POST(
   request: Request,
@@ -52,6 +61,14 @@ export async function POST(
   }
 
   const session = sessionResult.data
+  if (session.status === 'completed') {
+    return Response.json({
+      debriefJson: session.debrief_json ?? null,
+      sessionId: id,
+      alreadyCompleted: true,
+    })
+  }
+
   const turns = (turnsResult.data ?? []).map((t) => ({
     role: t.role as 'hatch' | 'user',
     content: t.content,
@@ -120,6 +137,31 @@ export async function POST(
       debrief_json: debriefWithArtifact,
     })
     .eq('id', id)
+
+  // Reward policy for completed interviews:
+  // XP scales with debrief score and challenge difficulty (or default interview base),
+  // then applies the same streak multiplier used across challenge completion paths.
+  const [{ data: profileRow }, { data: challengeRow }] = await Promise.all([
+    adminClient.from('profiles').select('xp_total, streak_days').eq('id', user.id).single(),
+    session.challenge_id
+      ? adminClient.from('challenges').select('difficulty').eq('id', session.challenge_id).single()
+      : Promise.resolve({ data: null }),
+  ])
+
+  if (profileRow) {
+    const difficultyBase = INTERVIEW_DIFFICULTY_BASE_XP[challengeRow?.difficulty ?? ''] ?? DEFAULT_INTERVIEW_BASE_XP
+    const scoreFactor = Math.max(0, Math.min(1, debriefResult.overallScore / FLOW_MAX_SCORE))
+    const baseXp = Math.round(difficultyBase * scoreFactor)
+    const streakMultiplier = Math.min(1 + (profileRow.streak_days ?? 0) * 0.05, 1.5)
+    const xpEarned = Math.round(baseXp * streakMultiplier)
+
+    await adminClient
+      .from('profiles')
+      .update({ xp_total: (profileRow.xp_total ?? 0) + xpEarned })
+      .eq('id', user.id)
+
+    await adminClient.rpc('update_user_streak', { p_user_id: user.id })
+  }
 
   // If this session is part of a loop, run post-processing
   const sessionLoopId = (session as unknown as { loop_id?: string | null }).loop_id

@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
   const primaryMove = challenge.move_tags?.[0] ?? 'frame'
 
   // Record attempt so "unattempted" filtering works for next-question routing
-  adminClient.from('challenge_attempts').insert({
+  const { error: attemptInsertError } = await adminClient.from('challenge_attempts').insert({
     user_id: user.id,
     challenge_id,
     mode: 'quick-take',
@@ -116,35 +116,40 @@ export async function POST(req: NextRequest) {
     max_score: 1,
     grade_label: score >= 0.8 ? 'Sharp' : score >= 0.5 ? 'Solid' : score >= 0.2 ? 'Surface' : 'Weak',
     feedback_json: { feedback, xp_earned, move: primaryMove },
-  }).then(() => {}, () => {})
+  })
+  if (attemptInsertError) {
+    return NextResponse.json({ error: 'Failed to save quick-take attempt' }, { status: 500 })
+  }
 
-  // Log session event (fire and forget)
-  adminClient.from('session_events').insert({
+  const { error: sessionEventError } = await adminClient.from('session_events').insert({
     user_id: user.id,
     event_type: 'quick_take_submit',
     event_data: { challenge_id, move: primaryMove, score, xp_earned },
-  }).then(() => {}, () => {})
+  })
+  if (sessionEventError) console.error('[quick-take] session_events insert failed:', sessionEventError.message)
 
   await applyMoveLevelXp(user.id, { [primaryMove]: Math.round(score * 10) }, 'quick-take')
 
-  // Award XP to profile (fire and forget)
-  adminClient
+  // Award XP to profile
+  const { data: profileRow, error: profileReadError } = await adminClient
     .from('profiles')
     .select('xp_total')
     .eq('id', user.id)
     .single()
-    .then(({ data }) => {
-      if (data) {
-        adminClient
-          .from('profiles')
-          .update({ xp_total: (data.xp_total ?? 0) + xp_earned })
-          .eq('id', user.id)
-          .then(() => {}, () => {})
-      }
-    })
+  if (profileReadError || !profileRow) {
+    return NextResponse.json({ error: 'Failed to load profile for XP update' }, { status: 500 })
+  }
 
-  // Update streak (fire and forget)
-  adminClient.rpc('update_user_streak', { p_user_id: user.id }).then(() => {}, () => {})
+  const { error: xpUpdateError } = await adminClient
+    .from('profiles')
+    .update({ xp_total: (profileRow.xp_total ?? 0) + xp_earned })
+    .eq('id', user.id)
+  if (xpUpdateError) {
+    return NextResponse.json({ error: 'Failed to award quick-take XP' }, { status: 500 })
+  }
+
+  const { error: streakError } = await adminClient.rpc('update_user_streak', { p_user_id: user.id })
+  if (streakError) console.error('[quick-take] update_user_streak failed:', streakError.message)
 
   return NextResponse.json({ score, xp_earned, feedback_summary: feedback })
 }

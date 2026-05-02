@@ -24,9 +24,11 @@ interface HeroGreeterCardProps {
   nextMilestoneMove: string
   nextMilestoneLevel: number
   dailyDone: number
+  sessionHref?: string
+  studyPlanHref?: string
 }
 
-export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMilestoneMove, nextMilestoneLevel, dailyDone }: HeroGreeterCardProps) {
+export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMilestoneMove, nextMilestoneLevel, dailyDone, sessionHref = '/challenges', studyPlanHref = '/explore/plans' }: HeroGreeterCardProps) {
   const [idx, setIdx] = useState(0)
 
   useEffect(() => {
@@ -132,7 +134,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
         </p>
         <div className="flex gap-2.5 mt-5">
           <Link
-            href="/challenges"
+            href={sessionHref}
             className="inline-flex items-center gap-2 px-5 py-3 rounded-full font-label font-bold text-sm"
             style={{ background: '#f3ede0', color: '#1e1b14' }}
           >
@@ -140,7 +142,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
             Start today&apos;s session
           </Link>
           <Link
-            href="/explore"
+            href={studyPlanHref}
             className="inline-flex items-center gap-2 px-5 py-3 rounded-full font-label font-bold text-sm"
             style={{
               background: 'rgba(255,255,255,0.06)',

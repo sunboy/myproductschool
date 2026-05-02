@@ -1,4 +1,5 @@
 import type { FlowStep, RoleLens } from '@/lib/types'
+import { FLOW_MAX_SCORE, scoreToGrade } from '@/lib/scoring/flow-scale'
 
 export function aggregateChallenge(
   stepResults: Array<{ step: FlowStep; step_score: number }>,
@@ -12,9 +13,9 @@ export function aggregateChallenge(
   ) / 100
 
   const max_score = Math.round(
-    stepResults.reduce((s, r) => s + 3.0 * roleLens[stepWeightKey(r.step)], 0) * 100
+    stepResults.reduce((s, r) => s + FLOW_MAX_SCORE * roleLens[stepWeightKey(r.step)], 0) * 100
   ) / 100
 
-  const grade_label = total_score >= 2.5 ? 'Outstanding' : total_score >= 2.0 ? 'Strong' : total_score >= 1.5 ? 'Developing' : 'Needs Practice'
+  const grade_label = scoreToGrade(total_score, max_score)
   return { total_score, max_score, grade_label }
 }

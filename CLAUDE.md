@@ -22,7 +22,7 @@ npx shadcn@latest add <component>  # Add shadcn/ui components
 
 ## UI Change Workflow
 
-For every UI change made, use a haiku subagent to run a Playwright test for the change before asking the user to check that it works. The haiku agent should navigate to the affected page, take a screenshot, and report what renders.
+For every UI change made, use a haiku subagent to run a Playwright test for the change before asking the user to check that it works. The haiku agent should navigate to the affected page, take a screenshot, and report what renders. After Playwright finishes, always close the Chrome browser using `mcp__playwright__browser_close`.
 
 ## Reference Archive
 

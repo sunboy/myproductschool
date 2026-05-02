@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import Anthropic from '@anthropic-ai/sdk'
+import { applyCoverageCredit, type FlowMove } from '@/lib/live-interview/flow-coverage-credits'
 
 const VALID_FLOW_MOVES = new Set(['frame', 'list', 'optimize', 'win'])
 
@@ -22,10 +23,11 @@ export async function POST(
     return Response.json({ ok: false }, { status: 503 })
   }
 
-  const { content, role, artifactSnapshot } = await request.json() as {
+  const { content, role, artifactSnapshot, turnIndex } = await request.json() as {
     content: string
     role: string
     artifactSnapshot?: ArtifactSnapshot
+    turnIndex?: number
   }
 
   if (!content || role !== 'user') {
@@ -37,7 +39,7 @@ export async function POST(
 
   const { data: session } = await adminClient
     .from('live_interview_sessions')
-    .select('flow_coverage, total_turns, status')
+    .select('flow_coverage, flow_coverage_credits, total_turns, status')
     .eq('id', id)
     .single()
 
@@ -92,14 +94,23 @@ If nothing notable, reply "none".`,
   const flowMove = VALID_FLOW_MOVES.has(raw) ? raw : null
 
   if (flowMove) {
-    const coverage = (session.flow_coverage ?? { frame: 0, list: 0, optimize: 0, win: 0 }) as Record<string, number>
-    const current = coverage[flowMove] ?? 0
-    coverage[flowMove] = Math.min(1.0, current + 0.15)
+    const result = applyCoverageCredit({
+      coverage: session.flow_coverage,
+      credits: (session as { flow_coverage_credits?: Record<string, number[]> | null }).flow_coverage_credits,
+      move: flowMove as FlowMove,
+      turnIndex: typeof turnIndex === 'number' ? turnIndex : null,
+    })
 
-    await adminClient
-      .from('live_interview_sessions')
-      .update({ flow_coverage: coverage, total_turns: (session.total_turns ?? 0) + 1 })
-      .eq('id', id)
+    if (result.credited) {
+      await adminClient
+        .from('live_interview_sessions')
+        .update({
+          flow_coverage: result.coverage,
+          flow_coverage_credits: result.credits,
+          total_turns: (session.total_turns ?? 0) + 1,
+        })
+        .eq('id', id)
+    }
   }
 
   return Response.json({ ok: true, flowMove, artifactSignal })

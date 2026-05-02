@@ -8,6 +8,7 @@ import { updateCompetencies } from '@/lib/v2/skills/competency-updater'
 import { analyzeTrend } from '@/lib/v2/skills/trend-analyzer'
 import type { FlowStep, LearnerCompetency, RoleLens } from '@/lib/types'
 import { applyMoveLevelXp } from '@/lib/data/move-levels-update'
+import { MOVE_XP_MULTIPLIER } from '@/lib/scoring/flow-scale'
 
 export async function POST(
   req: NextRequest,
@@ -198,13 +199,13 @@ export async function POST(
       .eq('id', userId)
   }
 
-  // Fire-and-forget streak RPC — do NOT await
-  admin.rpc('update_user_streak', { p_user_id: userId }).then(() => {}, () => {})
+  const { error: streakError } = await admin.rpc('update_user_streak', { p_user_id: userId })
+  if (streakError) console.error('[streak] update_user_streak failed:', streakError.message)
 
   // Update FLOW move levels based on per-step scores (awaited — direct DB call)
   const moveScores: Record<string, number> = {}
   for (const s of stepResults) {
-    moveScores[s.step] = Math.round(s.step_score * 10)
+    moveScores[s.step] = Math.round(s.step_score * MOVE_XP_MULTIPLIER)
   }
   await applyMoveLevelXp(userId, moveScores, 'challenge')
 

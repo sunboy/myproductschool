@@ -9,12 +9,14 @@ import {
   getHotChallenges,
   getLeaderboardPeek,
   getMoveLevel,
+  getLatestInterview,
 } from '@/lib/data/dashboard'
 import { getEnrolledPlans } from '@/lib/data/study-plans'
 import { QuickTakeCard } from '@/components/dashboard/cards/QuickTakeCard'
 import { NextChallengeCard } from '@/components/dashboard/cards/NextChallengeCard'
 import { HeroGreeterCard } from '@/components/dashboard/cards/HeroGreeterCard'
 import { FlowMoveLevelsCard } from '@/components/dashboard/cards/FlowMoveLevelsCard'
+import { LatestInterviewCard } from '@/components/dashboard/cards/LatestInterviewCard'
 import { HotChallengesCard } from '@/components/dashboard/cards/HotChallengesCard'
 import { LeaderboardPeekCard } from '@/components/dashboard/cards/LeaderboardPeekCard'
 import { InterviewCountdownCard } from '@/components/dashboard/cards/InterviewCountdownCard'
@@ -150,11 +152,12 @@ export default async function DashboardPage() {
   const userId = user?.id ?? ''
   const adminClient = createAdminClient()
 
-  const [hotChallenges, leaderboard, moveLevels, enrolledPlans] = await Promise.all([
+  const [hotChallenges, leaderboard, moveLevels, enrolledPlans, latestInterview] = await Promise.all([
     getHotChallenges(),
     userId ? getLeaderboardPeek(userId) : [],
     userId ? getMoveLevel(userId) : [],
     userId ? getEnrolledPlans(userId) : [],
+    userId ? getLatestInterview(userId) : null,
   ])
 
   // Fetch paused loops for PausedLoopCard
@@ -350,7 +353,7 @@ export default async function DashboardPage() {
         icon: 'bolt',
         done: doneQuickTake,
         active: !doneQuickTake,
-        href: quickTakePrompt ? `/workspace/challenges/${quickTakePrompt.slug ?? quickTakePrompt.id}` : '/challenges',
+        href: quickTakePrompt ? `/workspace/challenges/${quickTakePrompt.slug ?? quickTakePrompt.id}` : undefined,
       },
       {
         label: 'Core challenge',
@@ -360,7 +363,7 @@ export default async function DashboardPage() {
         icon: 'track_changes',
         done: doneFlowChallenge,
         active: doneQuickTake && !doneFlowChallenge,
-        href: nextChallenge ? `/workspace/challenges/${nextChallenge.slug ?? nextChallenge.id}` : '/challenges',
+        href: nextChallenge ? `/workspace/challenges/${nextChallenge.slug ?? nextChallenge.id}` : undefined,
       },
       {
         label: 'Reflect',
@@ -400,6 +403,12 @@ export default async function DashboardPage() {
               nextMilestoneMove={capitalize(allMoveLevels[0]?.move ?? 'Frame')}
               nextMilestoneLevel={(allMoveLevels[0]?.level ?? 1) + 1}
               dailyDone={dailyDone}
+              sessionHref={
+                nextChallenge
+                  ? `/workspace/challenges/${nextChallenge.slug ?? nextChallenge.id}`
+                  : '/challenges'
+              }
+              studyPlanHref={enrolledPlans.length > 0 ? `/explore/plans/${enrolledPlans[0].slug}` : '/explore/plans'}
             />
 
             {/* Paused loop resume banner */}
@@ -428,6 +437,9 @@ export default async function DashboardPage() {
 
             {/* FLOW Move Levels */}
             <FlowMoveLevelsCard levels={allMoveLevels} />
+
+            {/* Latest Interview — conditional on having a completed debrief */}
+            {latestInterview && <LatestInterviewCard data={latestInterview} />}
 
             {/* Enrolled Study Plans */}
             {enrolledPlans.length > 0 && <EnrolledPlansCard plans={enrolledPlans} />}
@@ -487,3 +499,4 @@ export default async function DashboardPage() {
     </div>
   )
 }
+

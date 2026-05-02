@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
 import Anthropic from '@anthropic-ai/sdk'
+import { applyCoverageCredit, type FlowMove } from '@/lib/live-interview/flow-coverage-credits'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -68,15 +69,25 @@ export async function POST(
   const rawContent = response.content[0].type === 'text' ? response.content[0].text : ''
   const { cleanContent, signal } = parseGradingSignal(rawContent)
 
-  // Update flow_coverage from LLM signal
-  const currentCoverage = (session.flow_coverage ?? { frame: 0, list: 0, optimize: 0, win: 0 }) as Record<string, number>
-  if (signal?.flowMove) {
-    const current = currentCoverage[signal.flowMove] ?? 0
-    currentCoverage[signal.flowMove] = Math.min(1.0, current + 0.15)
+  // Save turns and update session in parallel.
+  // FLOW coverage is credited against the user's turn_index (`nextIndex`) so
+  // a later /grade-turn pass on the same turn is a no-op.
+  const nextIndex = turnCount
+  const creditResult = signal?.flowMove
+    ? applyCoverageCredit({
+        coverage: session.flow_coverage,
+        credits: (session as { flow_coverage_credits?: Record<string, number[]> | null }).flow_coverage_credits,
+        move: signal.flowMove as FlowMove,
+        turnIndex: nextIndex,
+      })
+    : null
+
+  const sessionUpdate: Record<string, unknown> = { total_turns: nextIndex + 2 }
+  if (creditResult?.credited) {
+    sessionUpdate.flow_coverage = creditResult.coverage
+    sessionUpdate.flow_coverage_credits = creditResult.credits
   }
 
-  // Save turns and update session in parallel
-  const nextIndex = turnCount
   await Promise.all([
     adminClient.from('live_interview_turns').insert([
       {
@@ -96,7 +107,7 @@ export async function POST(
     ]),
     adminClient
       .from('live_interview_sessions')
-      .update({ flow_coverage: currentCoverage, total_turns: nextIndex + 2 })
+      .update(sessionUpdate)
       .eq('id', id),
   ])
 
