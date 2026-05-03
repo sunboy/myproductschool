@@ -6,14 +6,15 @@ import Link from 'next/link'
 const SPOTS_LEFT = 84
 
 export function FomoBlock() {
-  const [now, setNow] = useState(new Date())
+  const [now, setNow] = useState<Date | null>(null)
   useEffect(() => {
+    setNow(new Date())
     const t = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(t)
   }, [])
 
   const friday = (() => {
-    const d = new Date()
+    const d = now ?? new Date(0)
     const day = d.getDay()
     const delta = ((5 - day) + 7) % 7 || 7
     const f = new Date(d)
@@ -22,7 +23,7 @@ export function FomoBlock() {
     return f
   })()
 
-  const ms = Math.max(0, friday.getTime() - now.getTime())
+  const ms = now ? Math.max(0, friday.getTime() - now.getTime()) : 0
   const days  = Math.floor(ms / 86400000)
   const hours = Math.floor((ms % 86400000) / 3600000)
   const mins  = Math.floor((ms % 3600000) / 60000)

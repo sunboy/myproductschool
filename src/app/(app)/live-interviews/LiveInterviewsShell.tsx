@@ -280,6 +280,8 @@ interface Loop {
   grade?: string
   overallScore?: number
   rounds: Round[]
+  targetRole?: string
+  roundOrder?: LoopDiscipline[]
 }
 
 // ── API → UI mapping helpers ──────────────────────────────────────────────────
@@ -345,13 +347,15 @@ function mapApiLoop(l: any): Loop {
     totalMins: rounds.reduce((sum: number, r: any) => sum + (ROUND_MINS[r.discipline as LoopDiscipline] ?? 30), 0),
     grade: l.loop_debrief_json?.round_scores?.[0]?.grade ?? undefined,
     overallScore: l.loop_debrief_json?.overall_score ?? undefined,
+    targetRole: l.target_role ?? undefined,
+    roundOrder: (l.round_order ?? []) as LoopDiscipline[],
     rounds: rounds.map((r: any, i: number): Round => {
       const prevDone = i === 0 || rounds[i - 1]?.status === 'completed'
       let roundStatus: Round['status'] = 'locked'
       if (r.status === 'completed') roundStatus = 'passed'
       else if (r.status === 'active') roundStatus = 'in_progress'
       else if (r.status === 'paused') roundStatus = 'in_progress'
-      else if (r.status === 'pending' && prevDone) roundStatus = 'ready'
+      else if (r.status === 'pending' && (l.status === 'draft' || prevDone)) roundStatus = 'ready'
       return {
         name: DISCIPLINE_LABELS[r.discipline as LoopDiscipline] ?? r.discipline,
         mins: ROUND_MINS[r.discipline as LoopDiscipline] ?? 30,
@@ -437,7 +441,7 @@ function LoopGroup({ label, children }: { label: string; children: React.ReactNo
 }
 
 // ── Loop detail ───────────────────────────────────────────────────────────────
-function LoopDetail({ loop, onEdit }: { loop: Loop; onEdit?: () => void }) {
+function LoopDetail({ loop, onEdit, onDelete }: { loop: Loop; onEdit?: () => void; onDelete?: () => void }) {
   const router = useRouter()
   const isInProgress = loop.status === 'in_progress'
   const isConfigured = loop.status === 'configured'
@@ -544,12 +548,24 @@ function LoopDetail({ loop, onEdit }: { loop: Loop; onEdit?: () => void }) {
         <span style={{ fontSize: 12, color: T.onSurfaceVariant }}>
           Persona: <b>{loop.company}</b> · Difficulty <b>Staff+</b> · Voice mode on · Auto-save every round
         </span>
-        <button
-          onClick={() => onEdit?.()}
-          style={{ marginLeft: 'auto', border: 'none', background: 'transparent', color: T.primary, fontWeight: 700, fontSize: 12, cursor: 'pointer' }}
-        >
-          Edit
-        </button>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
+          {loop.status === 'configured' && (
+            <>
+              <button
+                onClick={() => onEdit?.()}
+                style={{ border: 'none', background: 'transparent', color: T.primary, fontWeight: 700, fontSize: 12, cursor: 'pointer', padding: 0 }}
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => onDelete?.()}
+                style={{ border: 'none', background: 'transparent', color: '#b83230', fontWeight: 700, fontSize: 12, cursor: 'pointer', padding: 0 }}
+              >
+                Delete
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -557,13 +573,10 @@ function LoopDetail({ loop, onEdit }: { loop: Loop; onEdit?: () => void }) {
 
 // ── Loop builder ──────────────────────────────────────────────────────────────
 const ROUND_OPTIONS = [
-  { id: 'product-sense',  label: 'Product sense',    mins: 35, icon: 'center_focus_strong' },
-  { id: 'metric-design',  label: 'Metric design',    mins: 30, icon: 'monitoring' },
-  { id: 'exec-story',     label: 'Exec storytelling', mins: 25, icon: 'record_voice_over' },
-  { id: 'system-design',  label: 'System design',    mins: 40, icon: 'schema' },
-  { id: 'cross-func',     label: 'Cross-functional', mins: 30, icon: 'groups' },
-  { id: 'analytical',     label: 'Analytical',       mins: 25, icon: 'bar_chart' },
-  { id: 'coding',         label: 'Coding',           mins: 35, icon: 'code' },
+  { id: 'product-sense',  label: 'Product sense',  mins: 35, icon: 'center_focus_strong' },
+  { id: 'system-design',  label: 'System design',  mins: 40, icon: 'schema' },
+  { id: 'analytical',     label: 'Data modeling',  mins: 30, icon: 'bar_chart' },
+  { id: 'coding',         label: 'Coding',         mins: 35, icon: 'code' },
 ]
 
 const COMPANIES = [
@@ -577,18 +590,45 @@ const DIFF_LABELS: Record<string, string> = { standard: 'Standard', advanced: 'A
 
 const UI_TO_DISCIPLINE: Record<string, LoopDiscipline> = {
   'product-sense': 'product_sense',
-  'metric-design': 'product_sense',
-  'exec-story':    'product_sense',
-  'cross-func':    'product_sense',
-  'analytical':    'data_modeling',
   'system-design': 'system_design',
+  'analytical':    'data_modeling',
   'coding':        'coding',
 }
 
-function LoopBuilder({ onCancel, onSaved }: { onCancel: () => void; onSaved: (loopId: string) => void }) {
-  const [selectedCo, setSelectedCo] = useState('Stripe')
-  const [selectedRounds, setSelectedRounds] = useState(['product-sense', 'metric-design', 'exec-story'])
-  const [difficulty, setDifficulty] = useState('advanced')
+// Maps a backend discipline to the first matching UI round id (used for pre-filling edit mode)
+const DISCIPLINE_TO_UI: Record<LoopDiscipline, string> = {
+  product_sense: 'product-sense',
+  data_modeling: 'analytical',
+  system_design: 'system-design',
+  coding:        'coding',
+}
+
+// Reverse-map a target_role string (e.g. "Advanced") to the difficulty key
+const DIFF_LABEL_TO_KEY: Record<string, string> = Object.fromEntries(
+  Object.entries({ standard: 'Standard', advanced: 'Advanced', staff_plus: 'Staff+' }).map(([k, v]) => [v, k])
+)
+
+interface LoopBuilderProps {
+  editLoopId?: string
+  initialCompany?: string
+  initialDifficulty?: string
+  initialRounds?: LoopDiscipline[]
+  onCancel: () => void
+  onSaved: (loopId: string) => void
+}
+
+function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRounds, onCancel, onSaved }: LoopBuilderProps) {
+  const [selectedCo, setSelectedCo] = useState(initialCompany ?? 'Stripe')
+  const [selectedRounds, setSelectedRounds] = useState<string[]>(() => {
+    if (initialRounds && initialRounds.length > 0) {
+      return initialRounds.map((d) => DISCIPLINE_TO_UI[d] ?? 'product-sense')
+    }
+    return ['product-sense', 'system-design']
+  })
+  const [difficulty, setDifficulty] = useState(() => {
+    if (initialDifficulty) return DIFF_LABEL_TO_KEY[initialDifficulty] ?? initialDifficulty
+    return 'advanced'
+  })
   const [voiceMode, setVoiceMode] = useState(true)
   const [name, setName] = useState('')
   const [saving, setSaving] = useState(false)
@@ -604,8 +644,11 @@ function LoopBuilder({ onCancel, onSaved }: { onCancel: () => void; onSaved: (lo
     if (selectedRounds.length < 2 || saving) return
     setSaving(true)
     const roundOrder = selectedRounds.map((id) => UI_TO_DISCIPLINE[id] ?? 'product_sense')
-    const res = await fetch('/api/interview-loops/create', {
-      method: 'POST',
+    const isEdit = Boolean(editLoopId)
+    const url = isEdit ? `/api/interview-loops/${editLoopId}` : '/api/interview-loops/create'
+    const method = isEdit ? 'PATCH' : 'POST'
+    const res = await fetch(url, {
+      method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         targetCompany: selectedCo,
@@ -625,8 +668,8 @@ function LoopBuilder({ onCancel, onSaved }: { onCancel: () => void; onSaved: (lo
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: T.primary, marginBottom: 6 }}>New loop</div>
-          <h2 style={{ margin: 0, fontFamily: 'var(--font-headline,Literata,Georgia,serif)', fontSize: 26, fontWeight: 600, letterSpacing: '-0.015em', color: T.onSurface }}>Configure your loop</h2>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: T.primary, marginBottom: 6 }}>{editLoopId ? 'Edit loop' : 'New loop'}</div>
+          <h2 style={{ margin: 0, fontFamily: 'var(--font-headline,Literata,Georgia,serif)', fontSize: 26, fontWeight: 600, letterSpacing: '-0.015em', color: T.onSurface }}>{editLoopId ? 'Update configuration' : 'Configure your loop'}</h2>
         </div>
         <button onClick={onCancel} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: T.onSurfaceMuted, padding: 6 }}>
           <span className="material-symbols-outlined">close</span>
@@ -770,10 +813,10 @@ const MOCK_LOOPS: Loop[] = [
     status: 'in_progress', progressPct: 33,
     lastActive: 'Resumed 2h ago', totalMins: 120,
     rounds: [
-      { name: 'Product sense',   mins: 35, status: 'passed',      grade: 'B+' },
-      { name: 'Metric design',   mins: 30, status: 'in_progress', elapsed: 14 },
-      { name: 'Exec storytelling', mins: 25, status: 'locked' },
-      { name: 'Cross-functional', mins: 30, status: 'locked' },
+      { name: 'Product sense',  mins: 35, status: 'passed',      grade: 'B+' },
+      { name: 'System design',  mins: 40, status: 'in_progress', elapsed: 14 },
+      { name: 'Data modeling',  mins: 30, status: 'locked' },
+      { name: 'Coding',         mins: 35, status: 'locked' },
     ],
   },
   {
@@ -781,10 +824,10 @@ const MOCK_LOOPS: Loop[] = [
     status: 'configured',
     lastActive: 'Configured Apr 22', totalMins: 140,
     rounds: [
-      { name: 'Product sense',    mins: 40, status: 'ready' },
-      { name: 'AI safety judgment', mins: 35, status: 'ready' },
-      { name: 'Research collab',  mins: 30, status: 'ready' },
-      { name: 'Exec narrative',   mins: 35, status: 'ready' },
+      { name: 'Product sense', mins: 35, status: 'ready' },
+      { name: 'System design', mins: 40, status: 'ready' },
+      { name: 'Data modeling', mins: 30, status: 'ready' },
+      { name: 'Coding',        mins: 35, status: 'ready' },
     ],
   },
   {
@@ -793,9 +836,9 @@ const MOCK_LOOPS: Loop[] = [
     lastActive: 'Completed Apr 16', totalMins: 110,
     rounds: [
       { name: 'Product sense', mins: 35, status: 'passed', grade: 'B+' },
-      { name: 'Execution',     mins: 30, status: 'passed', grade: 'A-' },
-      { name: 'Leadership',    mins: 30, status: 'passed', grade: 'B' },
-      { name: 'Analytical',    mins: 25, status: 'passed', grade: 'B+' },
+      { name: 'System design', mins: 40, status: 'passed', grade: 'A-' },
+      { name: 'Data modeling', mins: 30, status: 'passed', grade: 'B' },
+      { name: 'Coding',        mins: 35, status: 'passed', grade: 'B+' },
     ],
   },
 ]
@@ -805,6 +848,7 @@ function FullLoopPanel() {
   const [loops, setLoops] = useState<Loop[]>(MOCK_LOOPS)
   const [selectedLoop, setSelectedLoop] = useState<string>(MOCK_LOOPS[0]?.id ?? '')
   const [building, setBuilding] = useState(false)
+  const [editingLoopId, setEditingLoopId] = useState<string | undefined>(undefined)
   const [loadingLoops, setLoadingLoops] = useState(true)
 
   const fetchLoops = useCallback(async () => {
@@ -839,6 +883,16 @@ function FullLoopPanel() {
     await fetchLoops()
     setSelectedLoop(loopId)
     setBuilding(false)
+    setEditingLoopId(undefined)
+  }
+
+  async function handleDeleteLoop(loopId: string) {
+    const res = await fetch(`/api/interview-loops/${loopId}`, { method: 'DELETE' })
+    if (!res.ok) return
+    await fetchLoops()
+    setSelectedLoop('')
+    setBuilding(false)
+    setEditingLoopId(undefined)
   }
 
   return (
@@ -901,8 +955,21 @@ function FullLoopPanel() {
 
       {/* Right: detail or builder */}
       {building
-        ? <LoopBuilder onCancel={() => setBuilding(false)} onSaved={handleLoopSaved} />
-        : activeLoop ? <LoopDetail loop={activeLoop} onEdit={() => setBuilding(true)} /> : null
+        ? <LoopBuilder
+            editLoopId={editingLoopId}
+            initialCompany={editingLoopId ? activeLoop?.company : undefined}
+            initialDifficulty={editingLoopId ? activeLoop?.targetRole : undefined}
+            initialRounds={editingLoopId ? activeLoop?.roundOrder : undefined}
+            onCancel={() => { setBuilding(false); setEditingLoopId(undefined) }}
+            onSaved={handleLoopSaved}
+          />
+        : activeLoop
+          ? <LoopDetail
+              loop={activeLoop}
+              onEdit={() => { setEditingLoopId(activeLoop.loopDbId); setBuilding(true) }}
+              onDelete={() => handleDeleteLoop(activeLoop.loopDbId)}
+            />
+          : null
       }
     </div>
   )

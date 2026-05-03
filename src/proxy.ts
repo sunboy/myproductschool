@@ -102,6 +102,8 @@ export async function proxy(request: NextRequest) {
   }
 
   if (user) {
+    // Password reset page must stay accessible even after setSession() establishes a session
+    if (pathname === '/reset-password') return supabaseResponse
     // Logged-in users hitting auth pages → redirect to dashboard
     if (isAuthRoute) {
       return NextResponse.redirect(new URL('/dashboard', request.url))

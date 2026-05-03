@@ -412,13 +412,8 @@ export default async function DashboardPage() {
               studyPlanHref={enrolledPlans.length > 0 ? `/explore/plans/${enrolledPlans[0].slug}` : '/explore/plans'}
             />
 
-            {/* Paused loop resume banner */}
-            {pausedLoopData && (
-              <PausedLoopCard
-                loop={pausedLoopData.loop as unknown as InterviewLoop}
-                rounds={pausedLoopData.rounds as unknown as LoopRound[]}
-              />
-            )}
+            {/* FLOW Disciplines explorer card */}
+            <DisciplineExplorer />
 
             {/* Resume / Quick Take row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -438,9 +433,6 @@ export default async function DashboardPage() {
 
             {/* FLOW Move Levels */}
             <FlowMoveLevelsCard levels={allMoveLevels} />
-
-            {/* FLOW Disciplines explorer card */}
-            <DisciplineExplorer />
 
             {/* Latest Interview — conditional on having a completed debrief */}
             {latestInterview && <LatestInterviewCard data={latestInterview} />}
@@ -464,6 +456,12 @@ export default async function DashboardPage() {
           <aside className="hidden lg:flex flex-col gap-5">
             {todaysPathSteps.length > 0 && (
               <TodaysPathCard steps={todaysPathSteps} completedCount={todaysPathCompleted} />
+            )}
+            {pausedLoopData && (
+              <PausedLoopCard
+                loop={pausedLoopData.loop as unknown as InterviewLoop}
+                rounds={pausedLoopData.rounds as unknown as LoopRound[]}
+              />
             )}
             {achievementData.length > 0 && (
               <AchievementsCard
