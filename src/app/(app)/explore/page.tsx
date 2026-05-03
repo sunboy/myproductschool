@@ -62,6 +62,51 @@ const FLOW_MOVES = [
   { k: 'Win',      sub: 'Drive durable outcomes',    color: '#a878d6', bg: '#ecdeff', icon: 'emoji_events' },
 ] as const
 
+/* ── Hatch bundles ─────────────────────────────────────────────── */
+
+const HATCH_BUNDLES = [
+  {
+    title: 'Interview readiness',
+    eyebrow: 'AI loop',
+    body: 'Product sense, systems, data, coding, and SQL in one Hatch-run interview flow.',
+    href: '/live-interviews',
+    icon: 'graphic_eq',
+    bg: '#1e3528',
+    fg: '#f3ede0',
+    accent: '#7ee099',
+  },
+  {
+    title: 'Product judgment reps',
+    eyebrow: 'FLOW drills',
+    body: 'Short prompts and longer cases that make framing, tradeoffs, and metrics automatic.',
+    href: '/challenges?discipline=product_sense',
+    icon: 'center_focus_strong',
+    bg: '#f3e2b9',
+    fg: '#352407',
+    accent: '#c9933a',
+  },
+  {
+    title: 'Architecture studio',
+    eyebrow: 'Canvas work',
+    body: 'System design and data modeling challenges with context notes and Hatch critique.',
+    href: '/challenges?discipline=system_design',
+    icon: 'schema',
+    bg: '#e1ecff',
+    fg: '#132a50',
+    accent: '#3b6ed4',
+  },
+  {
+    title: 'Execution lab',
+    eyebrow: 'Live runner',
+    body: 'SQL and DSA reps with runnable cases, verification, and post-run coaching.',
+    href: '/challenges?discipline=sql',
+    icon: 'terminal',
+    bg: '#ecdeff',
+    fg: '#2e1458',
+    accent: '#8b46d4',
+  },
+] as const
+
 /* ── Module static fallback ─────────────────────────────────────── */
 
 const MODULES_STATIC = [
@@ -399,7 +444,7 @@ export default async function ExplorePage() {
                 </Link>
               ) : (
                 <Link
-                  href={`/explore/plans/${(['frame-like-a-pm', 'the-list-move', 'optimize-under-pressure', 'win-the-room'] as const)[Math.floor(Math.random() * 4)]}`}
+                  href="/explore/plans/frame-like-a-pm"
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 7,
                     background: 'transparent',
@@ -418,6 +463,72 @@ export default async function ExplorePage() {
 
         </div>
       </div>
+
+      {/* ── HATCH PATHS ──────────────────────────────────────── */}
+      <section className="mb-12">
+        <div className="flex items-end justify-between gap-4 mb-4">
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--color-on-surface-muted)', marginBottom: 6 }}>
+              Hatch paths
+            </div>
+            <h2 className="font-headline font-bold text-on-surface text-[30px] leading-none">Choose the work mode.</h2>
+          </div>
+          <Link
+            href="/live-interviews"
+            className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-outline-variant px-4 py-2 text-xs font-label font-bold text-primary no-underline hover:bg-primary-fixed"
+          >
+            Let Hatch interview me
+            <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3.5">
+          {HATCH_BUNDLES.map(bundle => (
+            <Link
+              key={bundle.title}
+              href={bundle.href}
+              className="group relative overflow-hidden rounded-[24px] p-5 no-underline min-h-[190px] flex flex-col justify-between"
+              style={{
+                background: bundle.bg,
+                color: bundle.fg,
+                border: '1px solid rgba(0,0,0,0.05)',
+              }}
+            >
+              <div
+                aria-hidden
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundImage: `linear-gradient(135deg, ${bundle.accent}22 0%, transparent 42%), radial-gradient(${bundle.accent}18 1px, transparent 1px)`,
+                  backgroundSize: 'auto, 18px 18px',
+                  opacity: 0.9,
+                }}
+              />
+              <div aria-hidden style={{ position: 'absolute', right: -10, bottom: -18, fontFamily: 'var(--font-headline)', fontSize: 94, fontWeight: 800, color: bundle.accent, opacity: 0.14, lineHeight: 1 }}>
+                {bundle.title[0]}
+              </div>
+              <div className="relative">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[10px] font-label font-bold uppercase tracking-[0.10em]" style={{ background: `${bundle.accent}20`, color: bundle.accent }}>
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: bundle.accent }} />
+                  {bundle.eyebrow}
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="material-symbols-outlined text-[24px] shrink-0" style={{ color: bundle.accent, fontVariationSettings: "'FILL' 1" }}>
+                    {bundle.icon}
+                  </span>
+                  <div>
+                    <h3 className="font-headline text-[21px] font-bold leading-tight m-0">{bundle.title}</h3>
+                    <p className="mt-2 text-[13px] font-semibold leading-5 opacity-75">{bundle.body}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="relative mt-5 inline-flex items-center gap-1 text-[12px] font-label font-bold" style={{ color: bundle.accent }}>
+                Open path
+                <span className="material-symbols-outlined text-[14px] transition-transform group-hover:translate-x-0.5">arrow_forward</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {/* ── BROWSE BY DISCIPLINE ─────────────────────────────── */}
       <section className="mb-12">

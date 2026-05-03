@@ -18,7 +18,7 @@ export function GradientFooter() {
             </h4>
             <ul className="space-y-4 text-sm text-[#faf6f0]/70">
               <li>
-                <Link className="hover:text-white transition-colors" href="/about">
+                <Link className="hover:text-white transition-colors" href="/flow">
                   Methodology
                 </Link>
               </li>
@@ -45,22 +45,22 @@ export function GradientFooter() {
             </h4>
             <ul className="space-y-4 text-sm text-[#faf6f0]/70">
               <li>
-                <Link className="hover:text-white transition-colors" href="/about">
+                <Link className="hover:text-white transition-colors" href="/explore/modules">
                   Documentation
                 </Link>
               </li>
               <li>
-                <Link className="hover:text-white transition-colors" href="/challenges">
+                <Link className="hover:text-white transition-colors" href="/explore/showcase">
                   Case Studies
                 </Link>
               </li>
               <li>
-                <Link className="hover:text-white transition-colors" href="/cohort">
-                  Community
+                <Link className="hover:text-white transition-colors" href="/live-interviews">
+                  AI Interviews
                 </Link>
               </li>
               <li>
-                <Link className="hover:text-white transition-colors" href="/prep/study-plans">
+                <Link className="hover:text-white transition-colors" href="/explore/modules">
                   Guides
                 </Link>
               </li>

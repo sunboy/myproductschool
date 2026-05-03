@@ -19,6 +19,7 @@ interface CanvasChatPanelProps {
   challengeId: string
   challengeType: 'system_design' | 'data_modeling' | 'coding'
   scene: CanvasScene
+  contextPack?: string
   isOpen: boolean
   onToggle: () => void
   onCanvasActions?: (response: { message: string; actions: unknown[] }) => void
@@ -76,6 +77,7 @@ export function CanvasChatPanel({
   challengeId,
   challengeType,
   scene,
+  contextPack,
   isOpen,
   onToggle,
   onCanvasActions,
@@ -154,6 +156,7 @@ export function CanvasChatPanel({
         challengeId,
         challengeType,
         attemptId,
+        context_pack: contextPack,
       }
 
       const codingBody = challengeType === 'coding' ? {
@@ -203,7 +206,7 @@ export function CanvasChatPanel({
     } finally {
       setIsLoading(false)
     }
-  }, [isLoading, scene, challengeId, challengeType, attemptId, messages, onCanvasActions,
+  }, [isLoading, scene, contextPack, challengeId, challengeType, attemptId, messages, onCanvasActions,
       currentCode, currentLanguage, lastRunResult, timeElapsed, timeRemaining,
       challengeTitle, problemStatement,
       activePartId, activePartSequence, activePartTitle, activePartPrompt,

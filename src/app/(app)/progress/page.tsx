@@ -50,6 +50,107 @@ const CERT_CHALLENGE_QUOTA = 10
 const CERT_MOVE_LEVEL = 3
 const CERT_MOVES: string[] = ['frame', 'list', 'optimize', 'win']
 
+function ReadinessMap({
+  attemptedPct,
+  masteredPct,
+  overallPct,
+  latestInterviewScore,
+  hasActivity,
+}: {
+  attemptedPct: number
+  masteredPct: number
+  overallPct: number
+  latestInterviewScore: number | null
+  hasActivity: boolean
+}) {
+  const lanes = [
+    {
+      label: 'Practice coverage',
+      value: `${attemptedPct}%`,
+      sub: hasActivity ? 'Library touched' : 'Start with one challenge',
+      href: '/challenges',
+      icon: 'track_changes',
+      color: '#4a7c59',
+      pct: attemptedPct,
+    },
+    {
+      label: 'Mastery signal',
+      value: `${masteredPct}%`,
+      sub: 'Challenges at 80+',
+      href: '/progress/skill-ladder',
+      icon: 'verified',
+      color: '#c9933a',
+      pct: masteredPct,
+    },
+    {
+      label: 'Interview pressure',
+      value: latestInterviewScore != null ? `${latestInterviewScore}` : 'New',
+      sub: latestInterviewScore != null ? 'Latest Hatch debrief' : 'Run a mock loop',
+      href: '/live-interviews',
+      icon: 'graphic_eq',
+      color: '#8b46d4',
+      pct: latestInterviewScore ?? 18,
+    },
+    {
+      label: 'Certification path',
+      value: `${overallPct}%`,
+      sub: 'Badge readiness',
+      href: '/progress',
+      icon: 'workspace_premium',
+      color: '#3b6ed4',
+      pct: overallPct,
+    },
+  ]
+
+  return (
+    <section className="mb-12 rounded-[28px] border border-outline-variant bg-surface-container-low p-5 sm:p-6">
+      <div className="flex flex-wrap items-end justify-between gap-3 mb-5">
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--color-on-surface-muted)', marginBottom: 6 }}>
+            Readiness map
+          </div>
+          <h2 className="font-headline text-[28px] font-bold leading-none text-on-surface m-0">
+            Where Hatch should push next.
+          </h2>
+        </div>
+        <Link
+          href="/explore"
+          className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant px-4 py-2 text-xs font-label font-bold text-primary no-underline hover:bg-primary-fixed"
+        >
+          Pick a path
+          <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
+        </Link>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+        {lanes.map(lane => (
+          <Link
+            key={lane.label}
+            href={lane.href}
+            className="rounded-[20px] bg-background border border-outline-variant/50 p-4 no-underline transition-transform hover:-translate-y-0.5"
+          >
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <span className="material-symbols-outlined text-[24px]" style={{ color: lane.color, fontVariationSettings: "'FILL' 1" }}>
+                {lane.icon}
+              </span>
+              <span className="font-headline text-[26px] font-bold leading-none" style={{ color: lane.color }}>
+                {lane.value}
+              </span>
+            </div>
+            <div className="text-[13px] font-label font-extrabold text-on-surface">{lane.label}</div>
+            <div className="mt-1 text-[11.5px] font-semibold text-on-surface-variant">{lane.sub}</div>
+            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-surface-container-high">
+              <div
+                className="h-full rounded-full"
+                style={{ width: `${Math.min(100, Math.max(0, lane.pct))}%`, background: lane.color }}
+              />
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 export default function ProgressPage() {
   const router = useRouter()
   const { moves } = useMoveLevels()
@@ -292,6 +393,14 @@ export default function ProgressPage() {
           </div>
         </div>
       </div>
+
+      <ReadinessMap
+        attemptedPct={attemptedPct}
+        masteredPct={masteredPct}
+        overallPct={overallPct}
+        latestInterviewScore={recentInterviews[0]?.overallScore ?? null}
+        hasActivity={hasActivity}
+      />
 
       {/* ── REASONING DNA ───────────────────────────────────── */}
       {dnaData && (
@@ -929,4 +1038,3 @@ function GateCard({ icon, label, value, total, meta, pct, done, footer }: {
     </div>
   )
 }
-

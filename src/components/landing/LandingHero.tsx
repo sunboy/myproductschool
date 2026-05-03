@@ -1,15 +1,13 @@
 import Link from 'next/link'
 import { HeroStageCycler } from './HeroStageCycler'
 
-const SPOTS_LEFT = 84
-
 export function LandingHero() {
   return (
     <section className="land-hero">
       <div className="land-hero-grid">
         <div>
           <div className="land-hero-eyebrow">
-            <span className="land-dot" /> Cohort 018 · {SPOTS_LEFT} seats left · Engineers &amp; PMs
+            <span className="land-dot" /> AI-native practice gym · Engineers &amp; PMs
           </div>
           <h1 className="land-hero-h1">
             Build with judgment. <br /><em>Or get replaced by a prompt.</em>
@@ -32,7 +30,7 @@ export function LandingHero() {
             </div>
             <div>
               <div className="k"><em>5</em></div>
-              <div className="l">Disciplines, one<br />FLOW framework</div>
+              <div className="l">Disciplines, one<br />AI coach</div>
             </div>
           </div>
         </div>

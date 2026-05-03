@@ -27,7 +27,9 @@ The ## Connections section lists arrows drawn between entity shapes, with option
 
 CONVERSATION HISTORY contains the full chat between user and Hatch — articulation of relationships here counts as a valid relationship signal even when not drawn.
 
-Always read all three sources — columns, connections, and conversation — before scoring.
+CONTEXT PACK may contain assumptions, constraints, APIs/events, query patterns, and open questions captured beside the canvas. Count this as articulation and query-awareness evidence when specific, but do not let notes compensate for missing entities, PKs, FKs, or cardinality in the actual model.
+
+Always read all four sources — columns, connections, conversation, and Context Pack — before scoring.
 
 RUBRIC (5 dimensions, score each 1-5):
 

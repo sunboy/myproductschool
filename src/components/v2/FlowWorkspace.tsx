@@ -36,6 +36,58 @@ import type { ChallengeDiscussion } from '@/lib/types'
 const ExcalidrawCanvas = dynamic(() => import('@/components/challenge/ExcalidrawCanvas'), { ssr: false })
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })
 
+type ContextPackKey = 'assumptions' | 'constraints' | 'interfaces' | 'risks'
+type ContextPackState = Record<ContextPackKey, string>
+
+const CONTEXT_PACK_FIELDS: Array<{
+  key: ContextPackKey
+  label: string
+  icon: string
+  placeholder: string
+}> = [
+  {
+    key: 'assumptions',
+    label: 'Assumptions',
+    icon: 'fact_check',
+    placeholder: 'Traffic, tenant model, data freshness, user roles...',
+  },
+  {
+    key: 'constraints',
+    label: 'Constraints',
+    icon: 'rule',
+    placeholder: 'Latency, privacy, consistency, compliance, storage limits...',
+  },
+  {
+    key: 'interfaces',
+    label: 'APIs, events, queries',
+    icon: 'hub',
+    placeholder: 'Key endpoints, event streams, read/write paths, access patterns...',
+  },
+  {
+    key: 'risks',
+    label: 'Open questions',
+    icon: 'help',
+    placeholder: 'What you would clarify, monitor, defer, or validate next...',
+  },
+]
+
+const EMPTY_CONTEXT_PACK: ContextPackState = {
+  assumptions: '',
+  constraints: '',
+  interfaces: '',
+  risks: '',
+}
+
+function formatContextPack(pack: ContextPackState): string {
+  return CONTEXT_PACK_FIELDS
+    .map((field) => {
+      const value = pack[field.key].trim()
+      return value ? `${field.label}:\n${value}` : null
+    })
+    .filter(Boolean)
+    .join('\n\n')
+}
+
 // Strip a leading `# Title\n` so it doesn't duplicate the workspace's own h2
 function stripLeadingH1(md: string): string {
   return md.replace(/^\s*#\s+[^\n]+\n+/, '')
@@ -204,6 +256,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [historyInterviewGrade, setHistoryInterviewGrade] = useState<InterviewGrade | null>(null)
   const [historyGradeLoading, setHistoryGradeLoading] = useState(false)
   const [canvasScene, setCanvasScene] = useState<{ elements: unknown[]; appState: unknown } | null>(null)
+  const [contextPackOpen, setContextPackOpen] = useState(true)
+  const [contextPack, setContextPack] = useState<ContextPackState>(EMPTY_CONTEXT_PACK)
   const [isSubmittingInterview, setIsSubmittingInterview] = useState(false)
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -481,6 +535,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     () => summarizeScene(canvasScene?.elements ?? []),
     [canvasScene]
   )
+  const contextPackText = useMemo(() => formatContextPack(contextPack), [contextPack])
+  const contextPackFieldCount = CONTEXT_PACK_FIELDS.filter((field) => contextPack[field.key].trim().length > 0).length
 
   // Excalidraw API + library refs (for canvas action execution)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -550,9 +606,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCanvasChallenge, attemptId, scene, apiChallengeType, isApiMode, props])
 
-  // Autosave canvas snapshot every 10s when changed
+  // Autosave canvas snapshot and Context Pack every 10s when changed
   useEffect(() => {
-    if (!isCanvasChallenge || !attemptId || !canvasScene) return
+    if (!isCanvasChallenge || !attemptId || (!canvasScene && !contextPackText)) return
     if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current)
     autosaveTimerRef.current = setTimeout(async () => {
       try {
@@ -561,14 +617,19 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             attemptId,
-            draftSnapshot: { type: 'canvas', ...canvasScene },
+            draftSnapshot: {
+              type: 'canvas',
+              ...(canvasScene ?? { elements: [], appState: {} }),
+              context_pack: contextPackText || null,
+              context_pack_fields: contextPack,
+            },
             updatedAt: new Date().toISOString(),
           }),
         })
       } catch { /* fire and forget */ }
     }, 10000)
     return () => { if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current) }
-  }, [canvasScene, isCanvasChallenge, attemptId])
+  }, [canvasScene, contextPack, contextPackText, isCanvasChallenge, attemptId])
 
   // Autosave coding drafts every 10s when currentCode changes
   useEffect(() => {
@@ -975,7 +1036,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           attemptId,
-          canvasFinalSnapshot: canvasScene,
+          canvasFinalSnapshot: {
+            ...(canvasScene ?? { elements: [], appState: {} }),
+            context_pack: contextPackText || null,
+            context_pack_fields: contextPack,
+          },
+          contextPack: contextPackText || null,
         }),
       })
       if (!res.ok) throw new Error('Submit failed')
@@ -987,7 +1053,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     } finally {
       setIsSubmittingInterview(false)
     }
-  }, [isApiMode, props, attemptId, canvasScene, isSubmittingInterview])
+  }, [isApiMode, props, attemptId, canvasScene, contextPack, contextPackText, isSubmittingInterview])
 
   // Run handler for coding challenges — fires visible test cases only
   const handleCodingRun = useCallback(async () => {
@@ -1517,6 +1583,105 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           <p style={{ fontFamily: 'var(--font-body)', fontSize: 13.5, lineHeight: 1.6, color: 'var(--color-on-surface)', fontWeight: 500 }}>
             {challengeScenarioQ}
           </p>
+        </div>
+      )}
+
+      {isCanvasChallenge && (
+        <div
+          style={{
+            marginBottom: 20,
+            background: 'linear-gradient(135deg, #f7f3ea 0%, #eef5ee 100%)',
+            border: '1px solid rgba(74,124,89,0.18)',
+            borderRadius: 16,
+            overflow: 'hidden',
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setContextPackOpen((v) => !v)}
+            style={{
+              width: '100%',
+              border: 'none',
+              background: 'transparent',
+              padding: '13px 14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              cursor: 'pointer',
+              textAlign: 'left',
+              fontFamily: 'inherit',
+            }}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 9,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'var(--color-primary)',
+                color: 'var(--color-on-primary)',
+                fontSize: 16,
+                fontVariationSettings: "'FILL' 1, 'wght' 500",
+              }}
+            >
+              data_object
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontFamily: 'var(--font-label)', fontSize: 12, fontWeight: 800, color: 'var(--color-on-surface)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  Context Pack
+                </span>
+                <span style={{ fontFamily: 'var(--font-label)', fontSize: 10.5, fontWeight: 700, color: contextPackFieldCount > 0 ? 'var(--color-primary)' : 'var(--color-on-surface-variant)' }}>
+                  {contextPackFieldCount}/4 filled
+                </span>
+              </div>
+              <p style={{ margin: '2px 0 0', fontSize: 12, lineHeight: 1.45, color: 'var(--color-on-surface-variant)' }}>
+                Assumptions and tradeoffs Hatch should grade with your diagram.
+              </p>
+            </div>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 18, color: 'var(--color-on-surface-variant)', transform: contextPackOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 160ms' }}
+            >
+              expand_more
+            </span>
+          </button>
+          {contextPackOpen && (
+            <div style={{ padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {CONTEXT_PACK_FIELDS.map((field) => (
+                <label key={field.key} style={{ display: 'block' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5, fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 800, color: 'var(--color-on-surface-variant)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 13 }}>{field.icon}</span>
+                    {field.label}
+                  </span>
+                  <textarea
+                    value={contextPack[field.key]}
+                    onChange={(event) => setContextPack((prev) => ({ ...prev, [field.key]: event.target.value }))}
+                    placeholder={field.placeholder}
+                    rows={field.key === 'interfaces' ? 3 : 2}
+                    style={{
+                      width: '100%',
+                      boxSizing: 'border-box',
+                      resize: 'vertical',
+                      minHeight: field.key === 'interfaces' ? 78 : 58,
+                      borderRadius: 12,
+                      border: '1px solid var(--color-outline-variant)',
+                      background: 'rgba(255,255,255,0.72)',
+                      color: 'var(--color-on-surface)',
+                      padding: '9px 10px',
+                      fontFamily: 'var(--font-body)',
+                      fontSize: 12.5,
+                      lineHeight: 1.45,
+                      outline: 'none',
+                    }}
+                  />
+                </label>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -2574,6 +2739,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 challengeId={isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''}
                 challengeType={apiChallengeType as 'system_design' | 'data_modeling'}
                 scene={scene}
+                contextPack={contextPackText || undefined}
                 isOpen={chatPanelOpen}
                 onToggle={() => setChatPanelOpen((v) => !v)}
                 onCanvasActions={handleCanvasActions}

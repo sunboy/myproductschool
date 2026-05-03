@@ -29,6 +29,7 @@ RUBRIC (5 dimensions, score each 1-5):
 
 SCORING GUIDANCE:
 - Be direct. A 3 means the dimension has real gaps. A 5 means genuinely excellent.
+- Read the Context Pack when present. Treat explicit assumptions, constraints, APIs/events, and open questions as communication evidence, but do not let notes compensate for missing critical canvas components.
 - Every dimension verdict must cite a specific moment from the session.
 - hole_to_poke: the single clearest weakness, specific and actionable.
 - how_to_improve: one concrete thing to do differently next time.

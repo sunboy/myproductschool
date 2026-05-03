@@ -118,7 +118,7 @@ export default function ShareScoreCardPage() {
             </div>
             <div className="text-center">
               <p className="text-xs text-white/80">3 friends from your network have also attempted this challenge</p>
-              <Link href="/cohort" className="text-xs text-primary-fixed font-bold hover:underline mt-1 inline-block">See how you compare &rarr;</Link>
+              <Link href="/progress" className="text-xs text-primary-fixed font-bold hover:underline mt-1 inline-block">See your progress &rarr;</Link>
             </div>
           </div>
         </div>

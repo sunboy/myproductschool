@@ -302,6 +302,33 @@ const COMPANY_ICONS: Record<string, string> = {
   Stripe: 'credit_card', Uber: 'local_taxi',
 }
 
+interface ApiLoopRound {
+  id: string
+  status: string
+  round_index: number
+  discipline: string
+  round_debrief_json?: { grade?: string } | null
+  started_at?: string | null
+  session_id?: string | null
+}
+
+interface ApiLoop {
+  id: string
+  title: string
+  target_company?: string | null
+  target_role?: string | null
+  status: string
+  created_at: string | null
+  started_at?: string | null
+  completed_at?: string | null
+  round_order?: LoopDiscipline[] | null
+  loop_debrief_json?: {
+    overall_score?: number
+    round_scores?: Array<{ grade?: string }>
+  } | null
+  loop_rounds?: ApiLoopRound[] | null
+}
+
 function fmtDate(iso: string | null): string {
   if (!iso) return ''
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
@@ -317,9 +344,8 @@ function relTime(iso: string | null): string {
   return `${Math.floor(hrs / 24)}d ago`
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapApiLoop(l: any): Loop {
-  const rounds: any[] = [...(l.loop_rounds ?? [])].sort((a: any, b: any) => a.round_index - b.round_index)
+function mapApiLoop(l: ApiLoop): Loop {
+  const rounds = [...(l.loop_rounds ?? [])].sort((a, b) => a.round_index - b.round_index)
 
   const DB_TO_UI_STATUS: Record<string, Loop['status']> = {
     draft: 'configured', active: 'in_progress', paused: 'in_progress',
@@ -328,7 +354,7 @@ function mapApiLoop(l: any): Loop {
 
   const completedCount = rounds.filter((r) => r.status === 'completed').length
   const progressPct = rounds.length > 0 ? Math.round((completedCount / rounds.length) * 100) : 0
-  const activeRound = rounds.find((r: any) => r.status === 'active' || r.status === 'paused')
+  const activeRound = rounds.find((r) => r.status === 'active' || r.status === 'paused')
   const uiStatus = DB_TO_UI_STATUS[l.status] ?? 'configured'
 
   let lastActive = `Configured ${fmtDate(l.created_at)}`
@@ -344,12 +370,12 @@ function mapApiLoop(l: any): Loop {
     status: uiStatus,
     progressPct,
     lastActive,
-    totalMins: rounds.reduce((sum: number, r: any) => sum + (ROUND_MINS[r.discipline as LoopDiscipline] ?? 30), 0),
+    totalMins: rounds.reduce((sum, r) => sum + (ROUND_MINS[r.discipline as LoopDiscipline] ?? 30), 0),
     grade: l.loop_debrief_json?.round_scores?.[0]?.grade ?? undefined,
     overallScore: l.loop_debrief_json?.overall_score ?? undefined,
     targetRole: l.target_role ?? undefined,
     roundOrder: (l.round_order ?? []) as LoopDiscipline[],
-    rounds: rounds.map((r: any, i: number): Round => {
+    rounds: rounds.map((r, i): Round => {
       const prevDone = i === 0 || rounds[i - 1]?.status === 'completed'
       let roundStatus: Round['status'] = 'locked'
       if (r.status === 'completed') roundStatus = 'passed'
@@ -897,7 +923,7 @@ function FullLoopPanel() {
 
   return (
     <div style={{
-      display: 'grid', gridTemplateColumns: '320px 1fr',
+      display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
       borderRadius: 24, overflow: 'hidden',
       border: `1px solid ${T.outlineFaint}`,
       background: T.surface,
@@ -1084,7 +1110,7 @@ export function LiveInterviewsShell({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
       {/* ── Mode switcher ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.35fr', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 16 }}>
 
         {/* Single Round */}
         <ModeCard
@@ -1119,13 +1145,14 @@ export function LiveInterviewsShell({
             <RadioDot active={mode === 'single'} />
           </div>
           <div style={{ fontSize: 13.5, color: T.onSurfaceVariant, lineHeight: 1.5 }}>
-            One interview type with a company persona. 25–45 min.
+            One AI-run interview type with a company persona. 25-45 min.
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
             <Chip label="Product sense" />
             <Chip label="System design" />
             <Chip label="Data modeling" outline />
             <Chip label="Coding" outline />
+            <Chip label="SQL" outline />
           </div>
         </ModeCard>
 
@@ -1177,7 +1204,7 @@ export function LiveInterviewsShell({
             <RadioDot active={mode === 'loop'} dark />
           </div>
           <div style={{ position: 'relative', fontSize: 13.5, color: 'rgba(243,237,224,0.78)', lineHeight: 1.5 }}>
-            Sequential rounds simulating a real interview loop. Pause and resume across sessions. Hatch grades across all rounds.
+            Sequential rounds with shared memory. Pause, resume, and let Hatch synthesize the loop-level signal.
           </div>
           <div style={{
             position: 'relative', display: 'flex', gap: 14, marginTop: 6,
@@ -1188,6 +1215,48 @@ export function LiveInterviewsShell({
             <LoopStatPill label="Completed"   count={1} dotColor="rgba(255,255,255,0.4)" />
           </div>
         </ModeCard>
+      </div>
+
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+        gap: 10,
+      }}>
+        {[
+          { icon: 'graphic_eq', label: 'Voice pressure', sub: 'Natural probing, no scheduling' },
+          { icon: 'draw', label: 'Artifacts watched', sub: 'Canvas, schema, code, SQL' },
+          { icon: 'memory', label: 'Round memory', sub: 'Signals carry into the loop' },
+          { icon: 'summarize', label: 'Debrief engine', sub: 'Scores, transcript, next drills' },
+        ].map((item) => (
+          <div
+            key={item.label}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              minWidth: 0,
+              padding: '12px 14px',
+              borderRadius: 16,
+              background: T.surfaceContainerLow,
+              border: `1px solid ${T.outlineFaint}`,
+            }}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{ color: T.primary, fontSize: 20, fontVariationSettings: "'FILL' 1" }}
+            >
+              {item.icon}
+            </span>
+            <span style={{ minWidth: 0 }}>
+              <span style={{ display: 'block', fontSize: 12.5, fontWeight: 800, color: T.onSurface, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {item.label}
+              </span>
+              <span style={{ display: 'block', fontSize: 11.5, color: T.onSurfaceMuted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {item.sub}
+              </span>
+            </span>
+          </div>
+        ))}
       </div>
 
       {/* ── Body ── */}

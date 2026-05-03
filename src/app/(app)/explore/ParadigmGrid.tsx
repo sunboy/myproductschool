@@ -240,29 +240,63 @@ function ParadigmCard({
 
 export function ParadigmGrid() {
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: '1.45fr 1fr 1fr',
-      gridTemplateRows: 'auto auto',
-      gap: 14,
-      marginBottom: 48,
-    }}>
-      {/* Traditional — big, spans 2 rows */}
-      <div style={{ gridRow: '1 / span 2', gridColumn: 1 }}>
-        <ParadigmCard p={PARADIGMS[0]} big />
+    <>
+      <div className="paradigm-grid">
+        {/* Traditional — big, spans 2 rows on desktop */}
+        <div className="paradigm-grid__traditional">
+          <ParadigmCard p={PARADIGMS[0]} big />
+        </div>
+        <div className="paradigm-grid__assisted">
+          <ParadigmCard p={PARADIGMS[1]} />
+        </div>
+        <div className="paradigm-grid__agentic">
+          <ParadigmCard p={PARADIGMS[2]} />
+        </div>
+        <div className="paradigm-grid__native">
+          <ParadigmCard p={PARADIGMS[3]} wide />
+        </div>
       </div>
-      {/* AI-Assisted — top right col 2 */}
-      <div style={{ gridRow: 1, gridColumn: 2 }}>
-        <ParadigmCard p={PARADIGMS[1]} />
-      </div>
-      {/* Agentic — top right col 3 */}
-      <div style={{ gridRow: 1, gridColumn: 3 }}>
-        <ParadigmCard p={PARADIGMS[2]} />
-      </div>
-      {/* AI-Native — wide, bottom cols 2+3 */}
-      <div style={{ gridRow: 2, gridColumn: '2 / span 2' }}>
-        <ParadigmCard p={PARADIGMS[3]} wide />
-      </div>
-    </div>
+      <style>{`
+        .paradigm-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) minmax(0, 1fr);
+          grid-template-rows: auto auto;
+          gap: 14px;
+          margin-bottom: 48px;
+        }
+        .paradigm-grid > div {
+          min-width: 0;
+        }
+        .paradigm-grid__traditional {
+          grid-row: 1 / span 2;
+          grid-column: 1;
+        }
+        .paradigm-grid__assisted {
+          grid-row: 1;
+          grid-column: 2;
+        }
+        .paradigm-grid__agentic {
+          grid-row: 1;
+          grid-column: 3;
+        }
+        .paradigm-grid__native {
+          grid-row: 2;
+          grid-column: 2 / span 2;
+        }
+        @media (max-width: 900px) {
+          .paradigm-grid {
+            grid-template-columns: 1fr;
+            grid-template-rows: none;
+          }
+          .paradigm-grid__traditional,
+          .paradigm-grid__assisted,
+          .paradigm-grid__agentic,
+          .paradigm-grid__native {
+            grid-row: auto;
+            grid-column: 1;
+          }
+        }
+      `}</style>
+    </>
   )
 }

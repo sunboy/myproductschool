@@ -155,6 +155,7 @@ interface InterpretBody {
   challengeId?: string
   challengeType?: 'system_design' | 'data_modeling' | 'coding' | string
   attemptId?: string
+  context_pack?: string
   // Coding-mode fields (only used when challengeType === 'coding')
   current_code?: string
   current_language?: string
@@ -263,6 +264,7 @@ function buildUserContent(body: InterpretBody): string {
     .join('\n')
   return [
     `# Canvas state\n${sceneText}`,
+    body.context_pack?.trim() ? `# Context Pack\n${body.context_pack.trim()}` : null,
     historyText ? `# Recent conversation\n${historyText}` : null,
     `# User's latest message\n${body.message}`,
   ]

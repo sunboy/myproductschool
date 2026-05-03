@@ -15,7 +15,6 @@ const PAGE_PROMPTS: { pattern: RegExp; message: string }[] = [
   { pattern: /^\/explore/, message: "Not sure where to start? Tell me your role." },
   { pattern: /^\/challenges/, message: "I can filter these to the FLOW move you need most." },
   { pattern: /^\/progress/, message: "Want to understand what your numbers actually mean?" },
-  { pattern: /^\/cohort/, message: "Ask me what to focus on this week." },
   { pattern: /^\/dashboard/, message: "Ready to pick your first challenge today?" },
 ]
 
@@ -39,7 +38,7 @@ function parsePageContext(pathname: string): { pageType: string; entityId: strin
   if (pathname.startsWith('/explore')) return { pageType: 'explore', entityId: null }
   if (pathname.startsWith('/challenges')) return { pageType: 'practice', entityId: null }
   if (pathname.startsWith('/progress')) return { pageType: 'progress', entityId: null }
-  if (pathname.startsWith('/cohort')) return { pageType: 'cohort', entityId: null }
+  if (pathname.startsWith('/cohort')) return { pageType: 'practice', entityId: null }
   return { pageType: 'general', entityId: null }
 }
 
@@ -117,7 +116,6 @@ export function FloatingHatch() {
   // Suppress on the challenge workspace — workspace has its own Hatch affordance
   // (HatchSidePanel for FLOW, CanvasChatPanel for system_design/data_modeling)
   const isInWorkspace = /^\/workspace\/challenges\/[^/]+/.test(pathname)
-  if (isInWorkspace) return null
 
   // Chat messages live in context so they persist across page navigations
   const messages: HatchChatMessage[] = hatchCtx?.chatMessages ?? []
@@ -227,6 +225,8 @@ export function FloatingHatch() {
 
   const showBubble = bubble && !bubbleDismissed && !open && messages.length === 0
   const isWorkspace = pathname.startsWith('/workspace')
+
+  if (isInWorkspace) return null
 
   return (
     <div className={`fixed right-5 z-40 flex flex-col items-end gap-2 pointer-events-none ${isWorkspace ? 'bottom-20' : 'bottom-5'}`}>

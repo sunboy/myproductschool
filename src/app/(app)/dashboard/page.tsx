@@ -106,6 +106,90 @@ function LockedMoveLevels() {
   )
 }
 
+function HatchOperatingSystemCard() {
+  const modes = [
+    {
+      label: 'Daily reps',
+      sub: 'Hatch picks the next highest-leverage challenge.',
+      href: '/challenges',
+      icon: 'track_changes',
+      tone: '#4a7c59',
+    },
+    {
+      label: 'Canvas studio',
+      sub: 'Design systems, schemas, and context packs.',
+      href: '/challenges?discipline=system_design',
+      icon: 'schema',
+      tone: '#3b6ed4',
+    },
+    {
+      label: 'AI interviews',
+      sub: 'Pressure test your thinking without scheduling anyone.',
+      href: '/live-interviews',
+      icon: 'graphic_eq',
+      tone: '#8b46d4',
+    },
+    {
+      label: 'Autopsies',
+      sub: 'Read the decision trees behind real products.',
+      href: '/explore/showcase',
+      icon: 'biotech',
+      tone: '#c9933a',
+    },
+  ]
+
+  return (
+    <section
+      className="rounded-[24px] border border-outline-variant/50 bg-surface-container-low p-4 sm:p-5"
+      aria-label="Hatch operating system"
+    >
+      <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
+        <div>
+          <div className="text-[10px] font-label font-extrabold uppercase tracking-[0.12em] text-on-surface-variant mb-1">
+            Hatch OS
+          </div>
+          <h2 className="font-headline text-[22px] font-bold leading-none text-on-surface m-0">
+            One platform-run practice loop.
+          </h2>
+        </div>
+        <Link
+          href="/explore"
+          className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant px-3 py-1.5 text-xs font-label font-bold text-primary no-underline hover:bg-primary-fixed"
+        >
+          Explore paths
+          <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+        </Link>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2.5">
+        {modes.map(mode => (
+          <Link
+            key={mode.label}
+            href={mode.href}
+            className="group rounded-[18px] border border-outline-variant/40 bg-background px-4 py-3 no-underline transition-transform hover:-translate-y-0.5"
+          >
+            <div className="flex items-start gap-3">
+              <span
+                className="material-symbols-outlined mt-0.5 text-[21px]"
+                style={{ color: mode.tone, fontVariationSettings: "'FILL' 1" }}
+              >
+                {mode.icon}
+              </span>
+              <span className="min-w-0">
+                <span className="block text-[13px] font-label font-extrabold text-on-surface leading-tight">
+                  {mode.label}
+                </span>
+                <span className="mt-1 block text-[11.5px] font-body font-semibold leading-4 text-on-surface-variant">
+                  {mode.sub}
+                </span>
+              </span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -412,6 +496,8 @@ export default async function DashboardPage() {
               studyPlanHref={enrolledPlans.length > 0 ? `/explore/plans/${enrolledPlans[0].slug}` : '/explore/plans'}
             />
 
+            <HatchOperatingSystemCard />
+
             {/* FLOW Disciplines explorer card */}
             <DisciplineExplorer />
 
@@ -501,4 +587,3 @@ export default async function DashboardPage() {
     </div>
   )
 }
-
