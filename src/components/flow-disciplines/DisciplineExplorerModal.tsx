@@ -138,21 +138,25 @@ export function DisciplineExplorerModal({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 24, scale: 0.98 }}
               transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-x-4 top-[5vh] bottom-[5vh] z-50 mx-auto flex flex-col rounded-2xl overflow-hidden bg-surface border border-outline-variant shadow-2xl"
-              style={{ maxWidth: 1120 }}
+              className="fixed inset-x-4 top-[5vh] bottom-[5vh] z-50 mx-auto flex flex-col rounded-2xl overflow-hidden shadow-2xl"
+              style={{ maxWidth: 1120, background: '#1a2f26', border: '1px solid rgba(212,165,116,0.2)' }}
             >
               {/* Discipline tab bar */}
-              <div className="flex items-center gap-0.5 px-4 pt-3 pb-0 border-b border-outline-variant bg-surface-container-low shrink-0">
+              <div
+                className="flex items-center gap-0.5 px-4 pt-3 pb-0 shrink-0"
+                style={{ background: '#162620', borderBottom: '1px solid rgba(212,165,116,0.15)' }}
+              >
                 {ALL_DISCIPLINES.map((d) => (
                   <button
                     key={d.id}
                     type="button"
                     onClick={() => setActiveDisciplineId(d.id)}
-                    className={`font-label text-xs px-4 py-2.5 rounded-t-lg transition-all duration-200 border-b-2 -mb-px ${
+                    className="font-label text-[15px] px-4 py-2.5 rounded-t-lg transition-all duration-200 border-b-2 -mb-px"
+                    style={
                       activeDisciplineId === d.id
-                        ? 'border-primary text-primary bg-surface font-semibold'
-                        : 'border-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
-                    }`}
+                        ? { borderColor: '#d4a574', color: '#ffc580', background: '#1a2f26', fontWeight: 600 }
+                        : { borderColor: 'transparent', color: 'rgba(245,240,230,0.45)' }
+                    }
                   >
                     {d.tabLabel ?? d.name}
                   </button>
@@ -164,7 +168,8 @@ export function DisciplineExplorerModal({
                   ref={closeButtonRef}
                   type="button"
                   onClick={onClose}
-                  className="mb-1 p-2 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-primary"
+                  className="mb-1 p-2 rounded-full transition-colors duration-150 focus-visible:outline-2"
+                  style={{ color: 'rgba(245,240,230,0.45)' }}
                   aria-label="Close discipline explorer"
                 >
                   <span className="material-symbols-outlined text-xl" aria-hidden="true">
@@ -183,7 +188,7 @@ export function DisciplineExplorerModal({
               {/* Main content: Circuit + InfoPanel */}
               <div className="flex flex-1 overflow-hidden">
                 {/* Circuit — takes majority of width */}
-                <div className="flex-1 overflow-auto p-4 flex items-center justify-center">
+                <div className="flex-1 overflow-auto p-4 flex items-center justify-center" style={{ background: '#1a2f26' }}>
                   <Circuit
                     discipline={activeDiscipline}
                     activeNodeId={activeNodeId}
@@ -193,8 +198,8 @@ export function DisciplineExplorerModal({
 
                 {/* Info panel — fixed-width sidebar */}
                 <div
-                  className="w-80 shrink-0 border-l border-outline-variant overflow-y-auto p-5"
-                  style={{ background: 'rgba(245,241,234,0.5)' }}
+                  className="w-80 shrink-0 overflow-y-auto p-5"
+                  style={{ background: '#162620', borderLeft: '1px solid rgba(212,165,116,0.15)' }}
                 >
                   <InfoPanel
                     discipline={activeDiscipline}

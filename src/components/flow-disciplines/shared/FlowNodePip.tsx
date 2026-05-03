@@ -36,10 +36,11 @@ export function FlowNodePip({ step, active = false, size = 32, className = '' }:
         {step}
       </div>
       <span
-        className={`font-label uppercase tracking-widest transition-colors duration-300 ${
-          active ? 'text-primary' : 'text-on-surface-variant'
-        }`}
-        style={{ fontSize: Math.round(size * 0.22) }}
+        className="font-label font-bold uppercase tracking-widest transition-colors duration-300"
+        style={{
+          fontSize: Math.round(size * 0.3),
+          color: active ? '#8ecf9e' : 'rgba(245,240,230,0.85)',
+        }}
       >
         {label}
       </span>

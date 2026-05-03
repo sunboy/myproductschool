@@ -214,7 +214,7 @@ export function Circuit({ discipline, activeNodeId, onNodeClick }: CircuitProps)
               y={y + 4}
               textAnchor="end"
               fontFamily="JetBrains Mono, monospace"
-              fontSize="10"
+              fontSize="12.5"
               fill="#d4a574"
               opacity="0.55"
               letterSpacing="1.5"
@@ -253,12 +253,12 @@ export function Circuit({ discipline, activeNodeId, onNodeClick }: CircuitProps)
               y={y + 4}
               textAnchor="middle"
               fontFamily="JetBrains Mono, monospace"
-              fontSize="12"
-              fontWeight="500"
+              fontSize="15"
+              fontWeight="700"
               fill={active ? '#ffc580' : '#d4a574'}
               letterSpacing="0.3"
             >
-              {c.label}
+              {c.label.split('_').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
             </text>
           </g>
         )
@@ -290,8 +290,8 @@ export function Circuit({ discipline, activeNodeId, onNodeClick }: CircuitProps)
               y={y + 6}
               textAnchor="middle"
               fontFamily="JetBrains Mono, monospace"
-              fontSize="20"
-              fontWeight="500"
+              fontSize="25"
+              fontWeight="700"
               fill={active ? '#ffc580' : '#d4a574'}
               letterSpacing="0.5"
             >
@@ -303,7 +303,7 @@ export function Circuit({ discipline, activeNodeId, onNodeClick }: CircuitProps)
               y={y + 4}
               textAnchor="start"
               fontFamily="JetBrains Mono, monospace"
-              fontSize="10"
+              fontSize="12.5"
               fill="#d4a574"
               opacity="0.65"
               letterSpacing="2"

@@ -23,7 +23,7 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
             ↖
           </span>
         </div>
-        <p className="font-label text-sm text-on-surface-variant">
+        <p className="font-label text-[17.5px]" style={{ color: 'rgba(245,240,230,0.45)' }}>
           Click any node in the circuit to explore it
         </p>
       </div>
@@ -40,20 +40,20 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
           style={{ borderLeft: '3px solid #d4a574' }}
         >
           <p
-            className="font-label text-xs uppercase tracking-widest mb-1"
+            className="font-label text-[15px] uppercase tracking-widest mb-1"
             style={{ color: 'rgba(212,164,116,0.65)' }}
           >
             Tradition
           </p>
           <h3
-            className="font-headline text-base font-semibold leading-snug"
+            className="font-headline text-[20px] font-bold leading-snug"
             style={{ color: '#ffc580' }}
           >
             {tradition.label}
           </h3>
         </div>
 
-        <p className="font-body text-sm leading-relaxed text-on-surface-variant">
+        <p className="font-body text-[17.5px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.65)' }}>
           {tradition.body}
         </p>
 
@@ -63,12 +63,12 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
             style={{ background: 'rgba(212,164,116,0.08)', border: '1px solid rgba(212,164,116,0.18)' }}
           >
             <p
-              className="font-label text-xs uppercase tracking-wider mb-1.5"
+              className="font-label text-[15px] uppercase tracking-wider mb-1.5"
               style={{ color: 'rgba(212,164,116,0.65)' }}
             >
               What it contributes
             </p>
-            <p className="font-body text-sm leading-relaxed" style={{ color: '#e8c99a' }}>
+            <p className="font-body text-[17.5px] leading-relaxed" style={{ color: '#e8c99a' }}>
               {tradition.contribution}
             </p>
           </div>
@@ -77,7 +77,7 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
         {tradition.absorbed && tradition.absorbed.length > 0 && (
           <div>
             <p
-              className="font-label text-xs uppercase tracking-wider mb-2"
+              className="font-label text-[15px] uppercase tracking-wider mb-2"
               style={{ color: 'rgba(212,164,116,0.65)' }}
             >
               Absorbed
@@ -86,7 +86,7 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
               {tradition.absorbed.map((item) => (
                 <span
                   key={item}
-                  className="font-label text-xs px-2.5 py-1 rounded-full"
+                  className="font-label text-[15px] px-2.5 py-1 rounded-full"
                   style={{ background: 'rgba(212,164,116,0.12)', color: '#d4a574', border: '1px solid rgba(212,164,116,0.25)' }}
                 >
                   {item}
@@ -99,12 +99,12 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
         {tradition.leftBehind && (
           <div>
             <p
-              className="font-label text-xs uppercase tracking-wider mb-1.5"
+              className="font-label text-[15px] uppercase tracking-wider mb-1.5"
               style={{ color: 'rgba(212,164,116,0.65)' }}
             >
               Left behind
             </p>
-            <p className="font-body text-sm leading-relaxed text-on-surface-variant">
+            <p className="font-body text-[17.5px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.65)' }}>
               {tradition.leftBehind}
             </p>
           </div>
@@ -115,10 +115,10 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
             className="rounded-lg p-4 mt-auto"
             style={{ background: 'rgba(74,124,89,0.12)', border: '1px solid rgba(74,124,89,0.25)' }}
           >
-            <p className="font-label text-xs uppercase tracking-wider mb-1.5 text-primary opacity-70">
+            <p className="font-label text-[15px] uppercase tracking-wider mb-1.5" style={{ color: 'rgba(142,207,158,0.7)' }}>
               Reasoning move
             </p>
-            <p className="font-body text-sm leading-relaxed text-primary">
+            <p className="font-body text-[17.5px] leading-relaxed" style={{ color: '#8ecf9e' }}>
               {tradition.reasoningMove}
             </p>
           </div>
@@ -137,13 +137,13 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
           style={{ borderLeft: '3px solid #d4a574' }}
         >
           <p
-            className="font-label text-xs uppercase tracking-widest mb-1"
+            className="font-label text-[15px] uppercase tracking-widest mb-1"
             style={{ color: 'rgba(212,164,116,0.65)' }}
           >
             Competency
           </p>
           <h3
-            className="font-headline text-base font-semibold leading-snug"
+            className="font-headline text-[20px] font-bold leading-snug"
             style={{ color: '#ffc580' }}
           >
             {competency.label.replace(/_/g, ' ')}
@@ -151,12 +151,12 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
         </div>
 
         {competency.what && (
-          <p className="font-body text-sm leading-relaxed text-on-surface-variant">
+          <p className="font-body text-[17.5px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.65)' }}>
             {competency.what}
           </p>
         )}
 
-        <p className="font-body text-sm leading-relaxed text-on-surface-variant">
+        <p className="font-body text-[17.5px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.65)' }}>
           {competency.body}
         </p>
 
@@ -166,12 +166,12 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
             style={{ background: 'rgba(212,164,116,0.08)', border: '1px solid rgba(212,164,116,0.18)' }}
           >
             <p
-              className="font-label text-xs uppercase tracking-wider mb-1.5"
+              className="font-label text-[15px] uppercase tracking-wider mb-1.5"
               style={{ color: 'rgba(212,164,116,0.65)' }}
             >
               Measured in
             </p>
-            <p className="font-body text-sm leading-relaxed" style={{ color: '#e8c99a' }}>
+            <p className="font-body text-[17.5px] leading-relaxed" style={{ color: '#e8c99a' }}>
               {competency.measuredIn}
             </p>
           </div>
@@ -180,12 +180,12 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
         {competency.coaching && (
           <div>
             <p
-              className="font-label text-xs uppercase tracking-wider mb-1.5"
+              className="font-label text-[15px] uppercase tracking-wider mb-1.5"
               style={{ color: 'rgba(212,164,116,0.65)' }}
             >
               Coaching signal
             </p>
-            <p className="font-body text-sm leading-relaxed text-on-surface-variant">
+            <p className="font-body text-[17.5px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.65)' }}>
               {competency.coaching}
             </p>
           </div>
@@ -196,10 +196,10 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
             className="rounded-lg p-4"
             style={{ background: 'rgba(184,50,48,0.08)', border: '1px solid rgba(184,50,48,0.2)' }}
           >
-            <p className="font-label text-xs uppercase tracking-wider mb-1.5 text-error opacity-70">
+            <p className="font-label text-[15px] uppercase tracking-wider mb-1.5 text-error opacity-70">
               Failure mode
             </p>
-            <p className="font-body text-sm leading-relaxed text-on-surface-variant">
+            <p className="font-body text-[17.5px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.65)' }}>
               {competency.failureMode}
             </p>
           </div>
@@ -210,10 +210,10 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
             className="rounded-lg p-4 mt-auto"
             style={{ background: 'rgba(74,124,89,0.12)', border: '1px solid rgba(74,124,89,0.25)' }}
           >
-            <p className="font-label text-xs uppercase tracking-wider mb-1.5 text-primary opacity-70">
+            <p className="font-label text-[15px] uppercase tracking-wider mb-1.5 text-primary opacity-70">
               Reasoning move
             </p>
-            <p className="font-body text-sm leading-relaxed text-primary">
+            <p className="font-body text-[17.5px] leading-relaxed text-primary">
               {competency.reasoningMove}
             </p>
           </div>
@@ -232,31 +232,31 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
           style={{ borderLeft: '3px solid #ffc580' }}
         >
           <p
-            className="font-label text-xs uppercase tracking-widest mb-1"
+            className="font-label text-[15px] uppercase tracking-widest mb-1"
             style={{ color: 'rgba(255,197,128,0.65)' }}
           >
             FLOW Step · {step.id}
           </p>
           <h3
-            className="font-headline text-base font-semibold leading-snug"
+            className="font-headline text-[20px] font-bold leading-snug"
             style={{ color: '#ffc580' }}
           >
             {step.name}
           </h3>
         </div>
 
-        <p className="font-label text-sm leading-relaxed" style={{ color: '#ffc580', opacity: 0.8 }}>
+        <p className="font-label text-[17.5px] leading-relaxed" style={{ color: '#ffc580', opacity: 0.8 }}>
           {step.label}
         </p>
 
-        <p className="font-body text-sm leading-relaxed text-on-surface-variant">
+        <p className="font-body text-[17.5px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.65)' }}>
           {step.body}
         </p>
 
         {step.criteriaList && step.criteriaList.length > 0 && (
           <div>
             <p
-              className="font-label text-xs uppercase tracking-wider mb-3"
+              className="font-label text-[15px] uppercase tracking-wider mb-3"
               style={{ color: 'rgba(212,164,116,0.65)' }}
             >
               Criteria
@@ -270,16 +270,16 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span
-                      className="font-label text-xs font-semibold px-1.5 py-0.5 rounded"
+                      className="font-label text-[15px] font-bold px-1.5 py-0.5 rounded"
                       style={{ background: 'rgba(212,164,116,0.2)', color: '#d4a574' }}
                     >
                       {item.code}
                     </span>
-                    <span className="font-label text-xs font-medium" style={{ color: '#e8c99a' }}>
+                    <span className="font-label text-[15px] font-semibold" style={{ color: '#e8c99a' }}>
                       {item.title}
                     </span>
                   </div>
-                  <p className="font-body text-xs leading-relaxed text-on-surface-variant">
+                  <p className="font-body text-[15px] leading-relaxed" style={{ color: 'rgba(245,240,230,0.55)' }}>
                     {item.desc}
                   </p>
                 </div>
@@ -291,7 +291,7 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
         {step.antiPatterns && step.antiPatterns.length > 0 && (
           <div>
             <p
-              className="font-label text-xs uppercase tracking-wider mb-2"
+              className="font-label text-[15px] uppercase tracking-wider mb-2"
               style={{ color: 'rgba(184,50,48,0.7)' }}
             >
               Anti-patterns
@@ -300,7 +300,7 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
               {step.antiPatterns.map((ap, i) => (
                 <li
                   key={i}
-                  className="font-body text-xs leading-relaxed text-on-surface-variant flex gap-2"
+                  className="font-body text-[15px] leading-relaxed flex gap-2" style={{ color: 'rgba(245,240,230,0.55)' }}
                 >
                   <span style={{ color: 'rgba(184,50,48,0.6)' }}>–</span>
                   {ap}
@@ -315,10 +315,10 @@ export function InfoPanel({ discipline, selectedId, selectedType }: InfoPanelPro
             className="rounded-lg p-4 mt-auto"
             style={{ background: 'rgba(74,124,89,0.12)', border: '1px solid rgba(74,124,89,0.25)' }}
           >
-            <p className="font-label text-xs uppercase tracking-wider mb-1.5 text-primary opacity-70">
+            <p className="font-label text-[15px] uppercase tracking-wider mb-1.5 text-primary opacity-70">
               Reasoning move
             </p>
-            <p className="font-body text-sm leading-relaxed text-primary">
+            <p className="font-body text-[17.5px] leading-relaxed text-primary">
               {step.reasoningMove}
             </p>
           </div>

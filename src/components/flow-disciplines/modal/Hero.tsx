@@ -14,24 +14,24 @@ const FLOW_STEPS: FlowStepId[] = ['F', 'L', 'O', 'W']
 export function Hero({ discipline, focusedStep, onStepClick }: HeroProps) {
   return (
     <div
-      className="flex items-start justify-between gap-6 px-6 py-5 border-b border-outline-variant"
-      style={{ background: 'linear-gradient(135deg, rgba(31,54,45,0.06) 0%, rgba(45,74,62,0.04) 100%)' }}
+      className="flex items-start justify-between gap-6 px-6 py-5"
+      style={{ background: 'linear-gradient(135deg, #1f362d 0%, #2d4a3e 100%)', borderBottom: '1px solid rgba(212,165,116,0.18)' }}
     >
       {/* Left: discipline name + tagline */}
       <div className="flex flex-col gap-1 min-w-0">
         <p
-          className="font-label text-xs uppercase tracking-widest"
-          style={{ color: 'rgba(212,164,116,0.7)' }}
+          className="font-label text-[15px] uppercase tracking-widest"
+          style={{ color: 'rgba(212,165,116,0.65)' }}
         >
           FLOW Discipline
         </p>
-        <h2 className="font-headline text-xl font-semibold text-on-surface leading-tight">
+        <h2 className="font-headline text-[25px] font-bold leading-tight" style={{ color: '#f5f0e6' }}>
           {discipline.name}
         </h2>
-        <p className="font-body text-sm text-on-surface-variant mt-0.5 leading-snug">
+        <p className="font-body text-[17.5px] mt-0.5 leading-snug" style={{ color: 'rgba(245,240,230,0.65)' }}>
           {discipline.tagline}
         </p>
-        <div className="flex items-center gap-3 mt-2 text-xs text-on-surface-variant font-label opacity-70">
+        <div className="flex items-center gap-3 mt-2 text-[15px] font-label" style={{ color: 'rgba(212,165,116,0.55)' }}>
           <span>{discipline.traditions.length} traditions</span>
           <span>·</span>
           <span>{discipline.competencies.length} competencies</span>

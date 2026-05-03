@@ -1,19 +1,11 @@
 'use client'
 
-import { useAnimationMode } from '../context/AnimationModeContext'
-import type { AnimationMode } from '@/lib/data/flow-framework/types'
 import type { FlowStepId } from '@/lib/data/flow-framework/types'
 
 interface ControlsBarProps {
   focusedStep: FlowStepId | null
   onStepFocus: (step: FlowStepId | null) => void
 }
-
-const ANIMATION_MODES: { value: AnimationMode; label: string }[] = [
-  { value: 'subtle', label: 'Subtle' },
-  { value: 'cinematic', label: 'Cinematic' },
-  { value: 'maximalist', label: 'Maximalist' },
-]
 
 const FLOW_STEPS: { id: FlowStepId; label: string }[] = [
   { id: 'F', label: 'Frame' },
@@ -23,23 +15,28 @@ const FLOW_STEPS: { id: FlowStepId; label: string }[] = [
 ]
 
 export function ControlsBar({ focusedStep, onStepFocus }: ControlsBarProps) {
-  const { mode, setMode } = useAnimationMode()
-
   return (
-    <div className="flex items-center justify-between gap-6 px-6 py-3 border-t border-outline-variant">
+    <div
+      className="flex items-center gap-6 px-6 py-3"
+      style={{ borderTop: '1px solid rgba(212,165,116,0.18)', background: '#1a2f26' }}
+    >
       {/* FLOW step filters */}
       <div className="flex items-center gap-1.5">
-        <span className="font-label text-xs text-on-surface-variant mr-2 opacity-60 uppercase tracking-wider">
+        <span
+          className="font-label text-[15px] mr-2 uppercase tracking-wider"
+          style={{ color: 'rgba(212,165,116,0.5)' }}
+        >
           Focus
         </span>
         <button
           type="button"
           onClick={() => onStepFocus(null)}
-          className={`font-label text-xs px-2.5 py-1 rounded-full transition-all duration-200 ${
+          className="font-label text-[15px] px-2.5 py-1 rounded-full transition-all duration-200"
+          style={
             focusedStep === null
-              ? 'bg-secondary-container text-on-secondary-container'
-              : 'text-on-surface-variant hover:bg-surface-container-high'
-          }`}
+              ? { background: 'rgba(212,165,116,0.2)', color: '#ffc580' }
+              : { color: 'rgba(245,240,230,0.5)' }
+          }
         >
           All
         </button>
@@ -48,29 +45,12 @@ export function ControlsBar({ focusedStep, onStepFocus }: ControlsBarProps) {
             key={id}
             type="button"
             onClick={() => onStepFocus(focusedStep === id ? null : id)}
-            className={`font-label text-xs px-2.5 py-1 rounded-full transition-all duration-200 ${
+            className="font-label text-[15px] px-2.5 py-1 rounded-full transition-all duration-200"
+            style={
               focusedStep === id
-                ? 'bg-primary text-on-primary'
-                : 'text-on-surface-variant hover:bg-surface-container-high'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Animation mode switcher */}
-      <div className="flex items-center gap-0.5 bg-surface-container-high rounded-full p-0.5">
-        {ANIMATION_MODES.map(({ value, label }) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => setMode(value)}
-            className={`font-label text-xs px-3 py-1.5 rounded-full transition-all duration-200 ${
-              mode === value
-                ? 'bg-surface text-on-surface shadow-sm'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
+                ? { background: '#d4a574', color: '#1f362d' }
+                : { color: 'rgba(245,240,230,0.5)' }
+            }
           >
             {label}
           </button>

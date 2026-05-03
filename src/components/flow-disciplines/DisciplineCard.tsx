@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { TraditionGlyph } from './shared/TraditionGlyph'
 import { ALL_DISCIPLINES } from '@/lib/data/flow-framework'
 import type { DisciplineId } from '@/lib/data/flow-framework/types'
 import type { Discipline } from '@/lib/data/flow-framework/types'
@@ -14,13 +13,13 @@ interface DisciplineCardProps {
   className?: string
 }
 
-const NODE_XS = [40, 145, 251, 356]
+const NODE_XS = [45, 165, 285, 405]
 const STEP_LABELS = ['F', 'L', 'O', 'W']
 
 export function DisciplineCard({
   initialDiscipline = 'product_sense',
   autoRotate = true,
-  rotationIntervalMs = 14000,
+  rotationIntervalMs = 28000,
   onClick,
   className = '',
 }: DisciplineCardProps) {
@@ -82,28 +81,28 @@ export function DisciplineCard({
       },
     })
 
-    tl.set([glow, core, trail], { attr: { cx: NODE_XS[0] } })
+    tl.set([glow, core, trail], { attr: { cx: NODE_XS[0], cy: 45 } })
     tl.call(() => burstNode(0, ALL_DISCIPLINES[currentIdxRef.current]))
-    tl.to({}, { duration: 1.3 })
+    tl.to({}, { duration: 3.0 })
 
     for (let i = 1; i < 4; i++) {
       const stepIdx = i
       tl.to([glow, core], {
         attr: { cx: NODE_XS[stepIdx] },
-        duration: 0.85,
+        duration: 1.8,
         ease: 'power2.inOut',
       })
       tl.to(trail, {
         attr: { cx: NODE_XS[stepIdx] },
-        duration: 0.95,
+        duration: 2.0,
         ease: 'power3.out',
       }, '<0.05')
       tl.call(() => burstNode(stepIdx, ALL_DISCIPLINES[currentIdxRef.current]))
-      tl.to({}, { duration: 1.3 })
+      tl.to({}, { duration: 3.0 })
     }
 
     tl.to([glow, core, trail], { opacity: 0, duration: 0.25, ease: 'power2.in' })
-    tl.set([glow, core, trail], { attr: { cx: NODE_XS[0] } })
+    tl.set([glow, core, trail], { attr: { cx: NODE_XS[0], cy: 45 } })
     tl.to([glow, core], { opacity: 1, duration: 0.25, ease: 'power2.out' })
     tl.to(trail, { opacity: 0.5, duration: 0.25, ease: 'power2.out' }, '<')
 
@@ -194,8 +193,6 @@ export function DisciplineCard({
     }
   }
 
-  const glyphIds = currentDiscipline.traditions.map(t => t.glyph as 0 | 1 | 2 | 3 | 4 | 5 | 6)
-
   return (
     <div
       ref={cardRef}
@@ -216,8 +213,8 @@ export function DisciplineCard({
           ? '0 0 0 1px rgba(212, 165, 116, 0.08), 0 30px 80px -30px rgba(0,0,0,0.85), 0 8px 24px -8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)'
           : '0 0 0 1px rgba(212, 165, 116, 0.04), 0 30px 80px -30px rgba(0,0,0,0.85), 0 8px 24px -8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)',
         width: '100%',
-        minHeight: 300,
-        padding: '28px 32px 24px',
+        minHeight: 0,
+        padding: '20px 32px 20px',
         willChange: 'transform',
       }}
     >
@@ -241,11 +238,29 @@ export function DisciplineCard({
         }}
       />
 
-      {/* Header */}
-      <div className="relative z-10 flex justify-between items-start mb-5">
-        <div className="flex flex-col">
+      {/* Indicator dots — top right */}
+      <div className="absolute top-4 right-6 flex gap-1.5 items-center z-10">
+        {ALL_DISCIPLINES.map((d, i) => (
           <div
-            className="font-label font-medium uppercase mb-1.5"
+            key={d.id}
+            className="rounded-full transition-all duration-500"
+            style={{
+              width: 5,
+              height: 5,
+              background: i === currentIdx ? '#d4a574' : 'rgba(212, 165, 116, 0.22)',
+              boxShadow: i === currentIdx ? '0 0 8px rgba(212, 165, 116, 0.45), 0 0 2px #d4a574' : 'none',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Two-column layout: title left (25%) + circuit right (75%) */}
+      <div className="relative z-10 flex items-center gap-0" style={{ minHeight: 140 }}>
+
+        {/* Left: title column */}
+        <div className="flex flex-col justify-center shrink-0" style={{ width: '28%', paddingRight: 16 }}>
+          <div
+            className="font-label font-medium uppercase mb-2"
             style={{
               fontFamily: 'monospace',
               fontSize: 9.5,
@@ -254,7 +269,7 @@ export function DisciplineCard({
               opacity: 0.85,
             }}
           >
-            DISCIPLINE
+            Learn the framework
           </div>
           <div
             className="font-headline font-medium transition-opacity duration-300"
@@ -262,7 +277,7 @@ export function DisciplineCard({
               fontSize: 26,
               color: '#f5f0e6',
               letterSpacing: '0.3px',
-              lineHeight: 1,
+              lineHeight: 1.1,
               opacity: isVisible ? 1 : 0,
             }}
           >
@@ -281,153 +296,121 @@ export function DisciplineCard({
           </div>
         </div>
 
-        {/* Indicator dots */}
-        <div className="flex gap-1.5 items-center pt-2.5">
-          {ALL_DISCIPLINES.map((d, i) => (
-            <div
-              key={d.id}
-              className="rounded-full transition-all duration-500"
-              style={{
-                width: 5,
-                height: 5,
-                background: i === currentIdx ? '#d4a574' : 'rgba(212, 165, 116, 0.22)',
-                boxShadow: i === currentIdx ? '0 0 8px rgba(212, 165, 116, 0.45), 0 0 2px #d4a574' : 'none',
-              }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Glyph row */}
-      <div className="relative z-10 flex justify-center gap-4 mb-2" style={{ height: 26, alignItems: 'center' }}>
-        {glyphIds.slice(0, 7).map((glyphIdx, i) => (
-          <div
-            key={i}
-            className="transition-opacity duration-700"
-            style={{ opacity: isVisible ? 0.7 : 0 }}
-          >
-            <TraditionGlyph
-              index={glyphIdx}
-              size={22}
-              className="text-amber-400"
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* FLOW circuit */}
-      <div className="relative z-10 w-full" style={{ height: 70, margin: '6px 0 14px' }}>
-        <svg
-          ref={svgRef}
-          viewBox="0 0 396 70"
-          preserveAspectRatio="xMidYMid meet"
-          width="100%"
-          height="100%"
-          aria-hidden="true"
-          style={{ overflow: 'visible', display: 'block' }}
-        >
-          <defs>
-            <radialGradient id="dc-pulseGrad" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
-              <stop offset="35%" stopColor="#ffc580" stopOpacity="0.85" />
-              <stop offset="100%" stopColor="#d4a574" stopOpacity="0" />
-            </radialGradient>
-            <filter id="dc-softGlow" x="-100%" y="-100%" width="300%" height="300%">
-              <feGaussianBlur stdDeviation="3" />
-              <feMerge>
-                <feMergeNode />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <filter id="dc-strongGlow" x="-100%" y="-100%" width="300%" height="300%">
-              <feGaussianBlur stdDeviation="5" />
-            </filter>
-          </defs>
-
-          {/* Fiber optic line */}
-          <line x1="40" y1="35" x2="356" y2="35" stroke="#d4a574" strokeWidth="8" opacity="0.10" filter="url(#dc-softGlow)" />
-          <line x1="40" y1="35" x2="356" y2="35" stroke="#d4a574" strokeWidth="2" opacity="0.42" />
-          <line x1="40" y1="35" x2="356" y2="35" stroke="#fff8e8" strokeWidth="0.6" opacity="0.55" />
-
-          {/* Pulse elements */}
-          <circle ref={pulseTrailRef} cx="40" cy="35" r="14" fill="url(#dc-pulseGrad)" opacity="0.5" filter="url(#dc-strongGlow)" />
-          <circle ref={pulseGlowRef} cx="40" cy="35" r="9" fill="url(#dc-pulseGrad)" />
-          <circle ref={pulseCoreRef} cx="40" cy="35" r="2.2" fill="#fff8e8" />
-
-          {/* Nodes */}
-          {NODE_XS.map((x, i) => (
-            <g key={i}>
-              <circle cx={x} cy="35" r="15" fill="#1f362d" stroke="#d4a574" strokeWidth="1.4" />
-              <text
-                x={x}
-                y="39"
-                textAnchor="middle"
-                fontFamily="monospace"
-                fontSize="11"
-                fontWeight="500"
-                fill="#d4a574"
-                letterSpacing="0.5"
-              >
-                {STEP_LABELS[i]}
-              </text>
-            </g>
-          ))}
-
-          {/* Step labels under nodes */}
-          {[
-            { x: NODE_XS[0], label: 'FRAME' },
-            { x: NODE_XS[1], label: 'LIST' },
-            { x: NODE_XS[2], label: 'OPTIMIZE' },
-            { x: NODE_XS[3], label: 'WIN' },
-          ].map(({ x, label }) => (
-            <text
-              key={label}
-              x={x}
-              y="60"
-              textAnchor="middle"
-              fontFamily="monospace"
-              fontSize="8"
-              fill="#d4a574"
-              opacity="0.55"
-              letterSpacing="1.5"
+        {/* Right: circuit + reasoning */}
+        <div className="flex flex-col flex-1 min-w-0" style={{ paddingLeft: 16 }}>
+          {/* FLOW circuit */}
+          <div className="relative w-full" style={{ height: 110 }}>
+            <svg
+              ref={svgRef}
+              viewBox="0 0 450 118"
+              preserveAspectRatio="xMidYMid meet"
+              width="100%"
+              height="100%"
+              aria-hidden="true"
+              style={{ overflow: 'visible', display: 'block' }}
             >
-              {label}
-            </text>
-          ))}
-        </svg>
-      </div>
+              <defs>
+                <radialGradient id="dc-pulseGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+                  <stop offset="35%" stopColor="#ffc580" stopOpacity="0.85" />
+                  <stop offset="100%" stopColor="#d4a574" stopOpacity="0" />
+                </radialGradient>
+                <filter id="dc-softGlow" x="-100%" y="-100%" width="300%" height="300%">
+                  <feGaussianBlur stdDeviation="3" />
+                  <feMerge>
+                    <feMergeNode />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <filter id="dc-strongGlow" x="-100%" y="-100%" width="300%" height="300%">
+                  <feGaussianBlur stdDeviation="5" />
+                </filter>
+              </defs>
 
-      {/* Reasoning text */}
-      <div
-        className="relative z-10 text-center"
-        style={{
-          fontStyle: 'italic',
-          fontSize: 14,
-          lineHeight: 1.45,
-          color: '#f5f0e6',
-          height: 44,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '0 8px',
-        }}
-      >
-        <span className="transition-opacity duration-300" style={{ opacity: isVisible ? 0.92 : 0 }}>
-          {reasoningText}
-        </span>
+              {/* Fiber optic line */}
+              <line x1="45" y1="45" x2="405" y2="45" stroke="#d4a574" strokeWidth="8" opacity="0.10" filter="url(#dc-softGlow)" />
+              <line x1="45" y1="45" x2="405" y2="45" stroke="#d4a574" strokeWidth="2" opacity="0.42" />
+              <line x1="45" y1="45" x2="405" y2="45" stroke="#fff8e8" strokeWidth="0.6" opacity="0.55" />
+
+              {/* Pulse elements */}
+              <circle ref={pulseTrailRef} cx="45" cy="45" r="28" fill="url(#dc-pulseGrad)" opacity="0.5" filter="url(#dc-strongGlow)" />
+              <circle ref={pulseGlowRef} cx="45" cy="45" r="18" fill="url(#dc-pulseGrad)" />
+              <circle ref={pulseCoreRef} cx="45" cy="45" r="4.4" fill="#fff8e8" />
+
+              {/* Nodes */}
+              {NODE_XS.map((x, i) => (
+                <g key={i}>
+                  <circle cx={x} cy="45" r="30" fill="#1f362d" stroke="#d4a574" strokeWidth="1.4" />
+                  <text
+                    x={x}
+                    y="53"
+                    textAnchor="middle"
+                    fontFamily="monospace"
+                    fontSize="22"
+                    fontWeight="700"
+                    fill="#d4a574"
+                    letterSpacing="0.5"
+                  >
+                    {STEP_LABELS[i]}
+                  </text>
+                </g>
+              ))}
+
+              {/* Step labels under nodes */}
+              {[
+                { x: NODE_XS[0], label: 'FRAME' },
+                { x: NODE_XS[1], label: 'LIST' },
+                { x: NODE_XS[2], label: 'OPTIMIZE' },
+                { x: NODE_XS[3], label: 'WIN' },
+              ].map(({ x, label }) => (
+                <text
+                  key={label}
+                  x={x}
+                  y="93"
+                  textAnchor="middle"
+                  fontFamily="monospace"
+                  fontSize="16"
+                  fontWeight="600"
+                  fill="#d4a574"
+                  opacity="0.75"
+                  letterSpacing="1.5"
+                >
+                  {label}
+                </text>
+              ))}
+            </svg>
+          </div>
+
+          {/* Reasoning text */}
+          <div
+            style={{
+              fontStyle: 'italic',
+              fontSize: 13,
+              lineHeight: 1.45,
+              color: '#f5f0e6',
+              height: 32,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center',
+            }}
+          >
+            <span className="transition-opacity duration-300" style={{ opacity: isVisible ? 0.88 : 0 }}>
+              {reasoningText}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Footer */}
       <div
-        className="absolute bottom-5 left-8 right-8 flex justify-between items-center z-10"
+        className="absolute bottom-4 left-8 right-8 flex justify-between items-center z-10"
         style={{
           fontFamily: 'monospace',
           fontSize: 9.5,
           color: 'rgba(245, 240, 230, 0.55)',
           letterSpacing: '1.6px',
           textTransform: 'uppercase',
-          paddingTop: 14,
-          borderTop: '1px solid rgba(212, 165, 116, 0.18)',
         }}
       >
         <div className="flex gap-2.5 items-center">

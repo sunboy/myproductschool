@@ -9,13 +9,13 @@ interface AnimationModeContextValue {
 }
 
 const AnimationModeContext = createContext<AnimationModeContextValue>({
-  mode: 'subtle',
+  mode: 'cinematic',
   setMode: () => {},
 })
 
 export function AnimationModeProvider({
   children,
-  initialMode = 'subtle',
+  initialMode = 'cinematic',
 }: {
   children: React.ReactNode
   initialMode?: AnimationMode
