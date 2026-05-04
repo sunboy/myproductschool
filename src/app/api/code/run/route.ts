@@ -309,6 +309,8 @@ export async function POST(req: NextRequest) {
           label: tc.label,
           status: 'error',
           hidden: tc.hidden,
+          input: tc.hidden ? undefined : tc.args,
+          matchMode: tc.compare_mode,
           errorMessage: submitError ?? 'Submit failed',
         }
       }
@@ -323,6 +325,8 @@ export async function POST(req: NextRequest) {
           label: tc.label,
           status: 'error',
           hidden: tc.hidden,
+          input: tc.hidden ? undefined : tc.args,
+          matchMode: tc.compare_mode,
           errorMessage: 'execution timed out',
         }
       }
@@ -338,6 +342,8 @@ export async function POST(req: NextRequest) {
           label: tc.label,
           status: 'error',
           hidden: tc.hidden,
+          input: tc.hidden ? undefined : tc.args,
+          matchMode: tc.compare_mode,
           errorMessage: judge0Result.compile_output?.trim() ?? 'Compilation error',
           durationMs,
         }
@@ -350,6 +356,8 @@ export async function POST(req: NextRequest) {
           label: tc.label,
           status: 'timeout',
           hidden: tc.hidden,
+          input: tc.hidden ? undefined : tc.args,
+          matchMode: tc.compare_mode,
           durationMs,
         }
       }
@@ -361,6 +369,8 @@ export async function POST(req: NextRequest) {
           label: tc.label,
           status: 'error',
           hidden: tc.hidden,
+          input: tc.hidden ? undefined : tc.args,
+          matchMode: tc.compare_mode,
           errorMessage: judge0Result.stderr?.trim() ?? judge0Result.status.description ?? 'Runtime error',
           durationMs,
         }
@@ -373,6 +383,8 @@ export async function POST(req: NextRequest) {
           label: tc.label,
           status: 'error',
           hidden: tc.hidden,
+          input: tc.hidden ? undefined : tc.args,
+          matchMode: tc.compare_mode,
           errorMessage: `Unexpected Judge0 status: ${statusId} (${judge0Result.status?.description})`,
           durationMs,
         }
@@ -382,13 +394,14 @@ export async function POST(req: NextRequest) {
       const passed = outputsMatch(judge0Result.stdout, tc.expected, tc.compare_mode)
       const executionStatus = passed ? 'passed' : 'failed'
 
-      // Hidden tests that fail must NOT include output/expected
-      if (tc.hidden && !passed) {
+      // Hidden tests must not include input/output/expected — prevent reverse-engineering.
+      if (tc.hidden) {
         return {
           id: tc.id,
           label: tc.label,
           status: executionStatus,
           hidden: tc.hidden,
+          matchMode: tc.compare_mode,
           durationMs,
           // No output, no expected — prevent reverse-engineering
         }
@@ -399,8 +412,10 @@ export async function POST(req: NextRequest) {
         label: tc.label,
         status: executionStatus,
         hidden: tc.hidden,
+        input: tc.hidden ? undefined : tc.args,
         output: parseOutput(judge0Result.stdout),
         expected: tc.expected,
+        matchMode: tc.compare_mode,
         durationMs,
       }
     })

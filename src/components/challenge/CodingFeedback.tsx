@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Md } from '@/components/ui/Md'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
-import type { RunResult, GradingFeedback, GradingDimensionKey } from '@/lib/coding/types'
+import type { RunResult, GradingFeedback, GradingDimensionKey, SupportedLanguage } from '@/lib/coding/types'
 
 interface CodingFeedbackProps {
   correctness?: RunResult | null
@@ -13,6 +13,8 @@ interface CodingFeedbackProps {
   onRetry?: () => void
   onAskHatch?: () => void
   onNextChallenge?: () => void
+  submittedCode?: string | null
+  language?: SupportedLanguage | string | null
   isSqlMode?: boolean
   correctnessError?: string
   gradingError?: string
@@ -56,6 +58,55 @@ function asSqlRows(value: unknown): Record<string, unknown>[] {
   return Array.isArray(value) ? (value as Record<string, unknown>[]) : []
 }
 
+function compactJson(value: unknown): string {
+  try {
+    const text = JSON.stringify(value)
+    return text.length > 90 ? `${text.slice(0, 87)}...` : text
+  } catch {
+    return String(value)
+  }
+}
+
+function prettyJson(value: unknown): string {
+  try {
+    return JSON.stringify(value, null, 2)
+  } catch {
+    return String(value)
+  }
+}
+
+function isGenericTestLabel(label: string, index: number) {
+  const normalized = label.trim().toLowerCase()
+  return normalized === `test ${index + 1}` ||
+    normalized === `test case ${index + 1}` ||
+    normalized === `case ${index + 1}` ||
+    normalized === `tc${index + 1}`
+}
+
+function displayTestLabel(result: RunResult['results'][number], index: number, isSqlMode: boolean) {
+  if (!isGenericTestLabel(result.label, index)) return result.label
+  if (!isSqlMode && result.input !== undefined) return `Case ${index + 1}: input ${compactJson(result.input)}`
+  if (isSqlMode && Array.isArray(result.expected)) {
+    const rows = result.expected.length
+    return `Case ${index + 1}: ${rows} expected row${rows === 1 ? '' : 's'}`
+  }
+  return `Case ${index + 1}`
+}
+
+function languageLabel(language?: SupportedLanguage | string | null, isSqlMode?: boolean) {
+  if (isSqlMode) return 'SQL query'
+  if (!language) return 'Submitted code'
+  const labels: Record<string, string> = {
+    python: 'Python',
+    javascript: 'JavaScript',
+    java: 'Java',
+    cpp: 'C++',
+    go: 'Go',
+    sql: 'SQL',
+  }
+  return `${labels[language] ?? language} submission`
+}
+
 function SqlMiniTable({ rows }: { rows: Record<string, unknown>[] }) {
   if (rows.length === 0) {
     return <div className="rounded-md bg-surface-container-high px-2 py-1.5 text-[10.5px] italic text-on-surface-variant">(no rows)</div>
@@ -92,6 +143,131 @@ function SqlMiniTable({ rows }: { rows: Record<string, unknown>[] }) {
         </div>
       )}
     </div>
+  )
+}
+
+function SubmittedSolutionPanel({
+  code,
+  language,
+  isSqlMode,
+}: {
+  code?: string | null
+  language?: SupportedLanguage | string | null
+  isSqlMode?: boolean
+}) {
+  if (!code?.trim()) return null
+
+  return (
+    <div className="mb-4 shrink-0 overflow-hidden rounded-xl border border-outline-variant bg-surface">
+      <div className="flex items-center gap-2 border-b border-outline-variant bg-surface-container-low px-3 py-2">
+        <span className="material-symbols-outlined text-[16px] text-primary">
+          {isSqlMode ? 'database' : 'code'}
+        </span>
+        <span className="font-label text-xs font-black uppercase tracking-wider text-on-surface-variant">
+          {languageLabel(language, isSqlMode)}
+        </span>
+      </div>
+      <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words bg-surface-container-low px-3 py-3 font-mono text-xs leading-relaxed text-on-surface">
+        {code}
+      </pre>
+    </div>
+  )
+}
+
+function TestCaseDetails({
+  result,
+  isSqlMode,
+}: {
+  result: RunResult['results'][number]
+  isSqlMode?: boolean
+}) {
+  if (result.hidden) return null
+
+  const actual = getDisplayedActual(result)
+  const hasDetails = result.input !== undefined ||
+    result.expected !== undefined ||
+    actual !== undefined ||
+    result.matchMode !== undefined ||
+    result.errorMessage
+
+  if (!hasDetails) return null
+
+  const defaultOpen = result.status !== 'passed'
+
+  return (
+    <details
+      open={defaultOpen}
+      className="mt-2 rounded-lg border border-outline-variant/70 bg-surface/70"
+    >
+      <summary className="cursor-pointer px-2.5 py-1.5 font-label text-[10.5px] font-bold uppercase tracking-wider text-on-surface-variant">
+        Test case details
+      </summary>
+      <div className="space-y-2 border-t border-outline-variant/50 px-2.5 py-2">
+        {result.matchMode && (
+          <div className="inline-flex rounded-full bg-surface-container-high px-2 py-0.5 font-label text-[10.5px] font-bold text-on-surface-variant">
+            Match: {result.matchMode.replaceAll('_', ' ')}
+          </div>
+        )}
+
+        {isSqlMode ? (
+          <div className="grid grid-cols-1 gap-2">
+            {result.expected !== undefined && (
+              <div>
+                <p className="mb-1 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  Expected rows
+                </p>
+                <SqlMiniTable rows={asSqlRows(result.expected)} />
+              </div>
+            )}
+            {actual !== undefined ? (
+              <div>
+                <p className="mb-1 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  Submitted query output
+                </p>
+                <SqlMiniTable rows={asSqlRows(actual)} />
+              </div>
+            ) : (
+              <p className="rounded-md bg-surface-container-high px-2 py-1.5 text-[10.5px] italic text-on-surface-variant">
+                Row output was not captured for this older attempt.
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-2">
+            {result.input !== undefined && (
+              <div>
+                <p className="mb-1 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  Input
+                </p>
+                <pre className="overflow-x-auto rounded-md bg-surface-container-high px-2 py-1.5 font-mono text-[10.5px] text-on-surface">
+                  {prettyJson(result.input)}
+                </pre>
+              </div>
+            )}
+            {result.expected !== undefined && (
+              <div>
+                <p className="mb-1 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  Expected
+                </p>
+                <pre className="overflow-x-auto rounded-md bg-surface-container-high px-2 py-1.5 font-mono text-[10.5px] text-on-surface">
+                  {prettyJson(result.expected)}
+                </pre>
+              </div>
+            )}
+            {actual !== undefined && (
+              <div>
+                <p className="mb-1 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  Submitted output
+                </p>
+                <pre className="overflow-x-auto rounded-md bg-surface-container-high px-2 py-1.5 font-mono text-[10.5px] text-on-surface">
+                  {prettyJson(actual)}
+                </pre>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </details>
   )
 }
 
@@ -164,10 +340,11 @@ function CorrectnessColumn({
 
       {/* Individual test rows */}
       <div className="space-y-1.5">
-        {correctness.results.map((result) => {
+        {correctness.results.map((result, index) => {
           const isPassed = result.status === 'passed'
           const isError = result.status === 'error'
           const isTimeout = result.status === 'timeout'
+          const label = displayTestLabel(result, index, Boolean(isSqlMode))
 
           return (
             <div
@@ -185,45 +362,16 @@ function CorrectnessColumn({
               <div className="flex-1 min-w-0">
                 <span className="text-xs font-label text-on-surface">
                   {result.hidden ? (
-                    <span className="italic text-on-surface-variant">{result.label} (hidden)</span>
+                    <span className="italic text-on-surface-variant">{label} (hidden)</span>
                   ) : (
-                    result.label
+                    label
                   )}
                 </span>
                 {/* Error message for visible errors */}
                 {!result.hidden && (isError || isTimeout) && result.errorMessage && (
                   <p className="text-[11px] text-error mt-0.5 truncate">{result.errorMessage}</p>
                 )}
-                {/* Expected / Got for visible failures */}
-                {!result.hidden && result.status === 'failed' && result.expected !== undefined && (
-                  isSqlMode ? (
-                    <div className="mt-2 grid grid-cols-1 gap-2">
-                      <div>
-                        <p className="mb-1 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                          Your output
-                        </p>
-                        <SqlMiniTable rows={asSqlRows(getDisplayedActual(result))} />
-                      </div>
-                      <div>
-                        <p className="mb-1 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                          Expected
-                        </p>
-                        <SqlMiniTable rows={asSqlRows(result.expected)} />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mt-1 text-[10px] font-mono space-y-0.5">
-                      <div>
-                        <span className="text-on-surface-variant">Expected: </span>
-                        <span className="text-primary">{JSON.stringify(result.expected)}</span>
-                      </div>
-                      <div>
-                        <span className="text-on-surface-variant">Got: </span>
-                        <span className="text-error">{JSON.stringify(getDisplayedActual(result))}</span>
-                      </div>
-                    </div>
-                  )
-                )}
+                <TestCaseDetails result={result} isSqlMode={isSqlMode} />
               </div>
             </div>
           )
@@ -516,6 +664,8 @@ export function CodingFeedback({
   onRetry,
   onAskHatch,
   onNextChallenge,
+  submittedCode,
+  language,
   isSqlMode = false,
   correctnessError,
   gradingError,
@@ -578,6 +728,8 @@ export function CodingFeedback({
           </div>
         </div>
       </div>
+
+      <SubmittedSolutionPanel code={submittedCode} language={language} isSqlMode={isSqlMode} />
 
       <div className="grid min-h-0 flex-1 grid-cols-2 gap-4 overflow-hidden">
         {/* Left: Correctness column */}

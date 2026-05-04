@@ -59,6 +59,8 @@ function serializeTestResults(correctnessPayload: RunResult) {
         label: result.label,
         status: result.status,
         hidden: result.hidden,
+        input: result.hidden ? undefined : result.input,
+        matchMode: result.matchMode,
         durationMs: result.durationMs,
       }
       if (result.hidden) return base

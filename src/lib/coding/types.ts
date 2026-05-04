@@ -30,9 +30,11 @@ export type TestResult = {
   label: string
   status: TestStatus
   hidden: boolean
+  input?: unknown
   output?: unknown
   expected?: unknown
   actual?: unknown
+  matchMode?: string
   errorMessage?: string
   durationMs?: number
 }
