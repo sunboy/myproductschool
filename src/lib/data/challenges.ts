@@ -43,6 +43,10 @@ export async function getChallenges(filters?: {
   company?: string
   q?: string
   type?: string
+  topic?: string
+  technique?: string
+  move_tag?: string
+  real_interview?: boolean
 }): Promise<ChallengeWithDomain[]> {
   if (IS_MOCK) {
     let challenges = MOCK_CHALLENGES
@@ -79,6 +83,10 @@ export async function getChallenges(filters?: {
   if (filters?.company) query = query.contains('company_tags', [filters.company])
   if (filters?.q) query = query.ilike('title', `%${filters.q}%`)
   if (filters?.type && filters.type !== 'all') query = query.eq('challenge_type', filters.type)
+  if (filters?.topic) query = query.contains('topic_tags', [filters.topic])
+  if (filters?.technique) query = query.contains('technique_tags', [filters.technique])
+  if (filters?.move_tag) query = query.contains('move_tags', [filters.move_tag])
+  if (filters?.real_interview) query = query.eq('is_real_interview', true)
   const { data } = await query.order('created_at', { ascending: false })
 
   const challengeIds = (data ?? []).map(c => c.id)

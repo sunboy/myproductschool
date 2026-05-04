@@ -1,5 +1,6 @@
 // src/lib/content/validator.ts
 import type { ChallengeJson, DraftFlowStep, DraftQuestion } from '@/lib/types'
+import { isValidTopicAny, isValidTechniqueAny } from '@/lib/data/taxonomy'
 
 export interface ValidationError {
   path: string
@@ -241,6 +242,30 @@ export function validateChallengeJson(json: ChallengeJson): ValidationResult {
     if (hasRoleFraming(text)) {
       warnings.push({ path, message: 'Contains second-person role framing ("you are a…", "as a…"). Rewrite to drop into the situation.' })
     }
+  }
+
+  // --- Taxonomy tag validation ---
+  const topicTags = json.metadata?.topic_tags ?? []
+  const techniqueTags = json.metadata?.technique_tags ?? []
+
+  for (const slug of topicTags) {
+    if (!isValidTopicAny(slug)) {
+      errors.push({ path: 'metadata.topic_tags', message: `Unknown topic slug: "${slug}". Must be a slug from taxonomy.ts TOPICS.` })
+    }
+  }
+
+  for (const slug of techniqueTags) {
+    if (!isValidTechniqueAny(slug)) {
+      errors.push({ path: 'metadata.technique_tags', message: `Unknown technique slug: "${slug}". Must be a slug from taxonomy.ts TECHNIQUES.` })
+    }
+  }
+
+  if (topicTags.length === 0) {
+    warnings.push({ path: 'metadata.topic_tags', message: 'No topic_tags set. At least 1 topic tag recommended for discovery.' })
+  }
+
+  if (json.metadata?.is_real_interview === true && !json.metadata?.source_url) {
+    warnings.push({ path: 'metadata.source_url', message: 'is_real_interview is true but source_url is missing. Add the URL that confirms this is a real interview question.' })
   }
 
   return { valid: errors.length === 0, errors, warnings }

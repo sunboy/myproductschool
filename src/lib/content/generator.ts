@@ -9,6 +9,7 @@ import {
   type ScrapeResult,
 } from './prompts'
 import { validateChallengeJson } from './validator'
+import { getTopicsForDiscipline, getTechniquesForDiscipline, type Discipline } from '@/lib/data/taxonomy'
 import type { ChallengeJson, DraftFlowStep, FlowStep, IntellectualTheme, ScenarioExcerpt } from '@/lib/types'
 
 const client = new Anthropic()
@@ -69,6 +70,8 @@ function selectExcerpts(all: ScenarioExcerpt[], step: FlowStep): string[] {
 export interface GeneratorInput {
   input_type: 'url' | 'text' | 'question'
   input_raw: string
+  /** Which of the 6 canonical disciplines this challenge targets. Defaults to 'product_sense'. */
+  discipline?: Discipline
 }
 
 export async function generateChallenge(input: GeneratorInput): Promise<ChallengeJson> {
@@ -164,8 +167,11 @@ export async function generateChallenge(input: GeneratorInput): Promise<Challeng
   }
 
   // Step 5: Taxonomy
+  const discipline: Discipline = input.discipline ?? 'product_sense'
+  const allowedTopics = getTopicsForDiscipline(discipline).map(t => t.slug)
+  const allowedTechniques = getTechniquesForDiscipline(discipline).map(t => t.slug)
   const stepSummary = flow_steps.map(s => s.questions[0].question_text).join(' | ')
-  const taxRaw = await callSonnet(buildTaxonomyPrompt(scenario, stepSummary), 800)
+  const taxRaw = await callSonnet(buildTaxonomyPrompt(scenario, stepSummary, discipline, allowedTopics, allowedTechniques), 800)
   const metadata = parseJson<ChallengeJson['metadata']>(taxRaw)
 
   const challengeJson: ChallengeJson = { scenario, flow_steps, metadata }

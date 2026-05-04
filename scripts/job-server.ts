@@ -14,6 +14,7 @@ import {
 } from '../src/lib/content/prompts'
 import { validateChallengeJson } from '../src/lib/content/validator'
 import { scrapeUrl } from '../src/lib/content/scraper'
+import { getTopicsForDiscipline, getTechniquesForDiscipline, type Discipline } from '../src/lib/data/taxonomy'
 import type { ChallengeJson, DraftFlowStep, FlowStep, IntellectualTheme, ScenarioExcerpt } from '../src/lib/types'
 
 const supabase = createClient(
@@ -73,7 +74,7 @@ function selectExcerpts(all: ScenarioExcerpt[], step: FlowStep): string[] {
   return (fallback.length ? fallback : all.map(e => e.quote)).slice(0, 3)
 }
 
-async function generateChallengeLocally(inputType: string, inputRaw: string): Promise<ChallengeJson> {
+async function generateChallengeLocally(inputType: string, inputRaw: string, discipline: Discipline = 'product_sense'): Promise<ChallengeJson> {
   // Step 1: raw text
   let rawText = inputRaw
   if (inputType === 'url') {
@@ -177,8 +178,10 @@ async function generateChallengeLocally(inputType: string, inputRaw: string): Pr
 
   // Step 6: taxonomy
   console.log('  [claude] tagging taxonomy...')
+  const allowedTopics = getTopicsForDiscipline(discipline).map(t => t.slug)
+  const allowedTechniques = getTechniquesForDiscipline(discipline).map(t => t.slug)
   const stepSummary = flow_steps.map(s => s.questions[0].question_text).join(' | ')
-  const taxRaw = callClaude(buildTaxonomyPrompt(scenario, stepSummary))
+  const taxRaw = callClaude(buildTaxonomyPrompt(scenario, stepSummary, discipline, allowedTopics, allowedTechniques))
   const metadata = parseJson<ChallengeJson['metadata']>(taxRaw)
 
   const challengeJson: ChallengeJson = { scenario, flow_steps, metadata }

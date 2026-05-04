@@ -11,7 +11,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { data, error } = await supabase
     .from('challenges')
-    .select('id,title,paradigm,industry,sub_vertical,difficulty,estimated_minutes,primary_competencies,secondary_competencies,frameworks,relevant_roles,company_tags,tags,is_published,is_premium,is_calibration')
+    .select([
+      'id', 'title', 'paradigm', 'industry', 'sub_vertical', 'difficulty',
+      'estimated_minutes', 'primary_competencies', 'secondary_competencies',
+      'frameworks', 'relevant_roles', 'company_tags', 'tags',
+      'is_published', 'is_premium', 'is_calibration', 'challenge_type',
+      'topic_tags', 'technique_tags',
+      'topic_tags_suggested', 'technique_tags_suggested',
+      'is_real_interview', 'source_url',
+    ].join(','))
     .eq('id', id)
     .single()
 
@@ -31,6 +39,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     'paradigm', 'industry', 'sub_vertical', 'difficulty', 'estimated_minutes',
     'primary_competencies', 'secondary_competencies', 'frameworks',
     'relevant_roles', 'company_tags', 'tags', 'is_premium', 'is_published',
+    'topic_tags', 'technique_tags',
+    'topic_tags_suggested', 'technique_tags_suggested',
+    'is_real_interview', 'source_url',
   ]
   const update: Record<string, unknown> = {}
   for (const key of allowed) {

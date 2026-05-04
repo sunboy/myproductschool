@@ -304,12 +304,19 @@ Return ONLY valid JSON:
 
 export function buildTaxonomyPrompt(
   scenario: { role: string; context: string; trigger: string },
-  flowStepsSummary: string
+  flowStepsSummary: string,
+  discipline: import('@/lib/data/taxonomy').Discipline,
+  allowedTopics: string[],
+  allowedTechniques: string[]
 ): string {
   return `Classify a HackProduct challenge for discovery and filtering. Audience skews engineers: staff engineers, tech leads, founding engineers, EMs, SWEs. Bias relevant_roles toward engineering roles unless the source is genuinely PM-specific.
 
 Scenario: ${scenario.role} — ${scenario.context} — ${scenario.trigger}
 Challenge content summary: ${flowStepsSummary}
+Discipline: ${discipline}
+
+Allowed topic slugs for this discipline (pick 1-3 that best match): ${JSON.stringify(allowedTopics)}
+Allowed technique slugs for this discipline (pick 1-3 that best match): ${JSON.stringify(allowedTechniques)}
 
 Return ONLY valid JSON:
 {
@@ -323,11 +330,16 @@ Return ONLY valid JSON:
   "frameworks": [],
   "relevant_roles": ["swe", "tech_lead", "em"],    // prefer engineering roles by default
   "company_tags": [],
-  "tags": []
+  "tags": [],
+  "topic_tags": [],              // 1-3 slugs chosen from the allowed topic slugs above
+  "technique_tags": [],          // 1-3 slugs chosen from the allowed technique slugs above (may be empty if not applicable)
+  "is_real_interview": false,    // true only if the source is a confirmed real interview question
+  "source_url": null             // URL of the source confirming this is a real interview question; null otherwise
 }
 
 relevant_roles options: swe, data_eng, ml_eng, devops, founding_eng, em, tech_lead, pm, designer, data_scientist.
-competencies options: motivation_theory, cognitive_empathy, taste, strategic_thinking, creative_execution, domain_expertise.`
+competencies options: motivation_theory, cognitive_empathy, taste, strategic_thinking, creative_execution, domain_expertise.
+topic_tags and technique_tags MUST only contain slugs from the allowed lists above. Do not invent slugs.`
 }
 
 // Helper for job-server.ts to decide whether to run the expansion + verifier path

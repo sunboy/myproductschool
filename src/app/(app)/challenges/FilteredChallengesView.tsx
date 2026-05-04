@@ -22,12 +22,19 @@ const EMPTY_FILTERS: FilterState = {
   company: [],
   tag: [],
   scope: [],
+  topic: [],
+  technique: [],
+  move: [],
+  real_interview: false,
 }
 
 type FilterKey = keyof FilterState
+/** Filter keys whose value is string[] (all except real_interview). */
+type ArrayFilterKey = Exclude<FilterKey, 'real_interview'>
 type SearchParamReader = Pick<URLSearchParams, 'get' | 'getAll'>
 type SearchParamGetter = Pick<URLSearchParams, 'get'>
 
+const ARRAY_FILTER_KEYS = (Object.keys(EMPTY_FILTERS) as FilterKey[]).filter(k => k !== 'real_interview') as ArrayFilterKey[]
 const FILTER_KEYS = Object.keys(EMPTY_FILTERS) as FilterKey[]
 
 const DISCIPLINES: Array<{
@@ -190,6 +197,26 @@ function matchesSecondaryFilters(challenge: ChallengeWithDomain, filters: Filter
     if (typeof challengeScope !== 'string' || !selectedScopes.includes(challengeScope)) return false
   }
 
+  if (filters.topic.length > 0) {
+    const challengeTopics = challenge.topic_tags ?? []
+    if (!filters.topic.some((t) => challengeTopics.includes(t))) return false
+  }
+
+  if (filters.technique.length > 0) {
+    const challengeTechniques = challenge.technique_tags ?? []
+    if (!filters.technique.some((t) => challengeTechniques.includes(t))) return false
+  }
+
+  if (filters.move.length > 0) {
+    const challengeMoves = (challenge.move_tags ?? []) as string[]
+    const selectedMoves = filters.move.map(m => m.toLowerCase())
+    if (!selectedMoves.some((m) => challengeMoves.includes(m))) return false
+  }
+
+  if (filters.real_interview) {
+    if (!challenge.is_real_interview) return false
+  }
+
   return true
 }
 
@@ -210,6 +237,10 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
     company: readFilterValues(parsedParams, 'company'),
     tag: readFilterValues(parsedParams, 'tag'),
     scope: readFilterValues(parsedParams, 'scope'),
+    topic: readFilterValues(parsedParams, 'topic'),
+    technique: readFilterValues(parsedParams, 'technique'),
+    move: readFilterValues(parsedParams, 'move'),
+    real_interview: parsedParams.get('real_interview') === '1',
   }), [parsedParams])
 
   const listView = parsedParams.get('view') !== 'grid'
@@ -235,7 +266,9 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
 
   function handleFilterChange(nextFilters: FilterState) {
     updateParams((params) => {
-      FILTER_KEYS.forEach((key) => writeFilterValues(params, key, nextFilters[key]))
+      ARRAY_FILTER_KEYS.forEach((key) => writeFilterValues(params, key, nextFilters[key] as string[]))
+      if (nextFilters.real_interview) params.set('real_interview', '1')
+      else params.delete('real_interview')
       if (getDiscipline(params) !== 'system_design') params.delete('scope')
     })
   }
@@ -262,7 +295,12 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
   }, [challenges, filters])
 
   function handleRemoveFilter(key: keyof FilterState, value: string) {
-    handleFilterChange({ ...filters, [key]: filters[key].filter((v) => v !== value) })
+    if (key === 'real_interview') {
+      handleFilterChange({ ...filters, real_interview: false })
+    } else {
+      const current = filters[key] as string[]
+      handleFilterChange({ ...filters, [key]: current.filter((v) => v !== value) })
+    }
   }
 
   function handleClearAll() {

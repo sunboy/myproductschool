@@ -9,12 +9,34 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { StudyPlanGrid } from './StudyPlanGrid'
+import { type Discipline } from '@/lib/data/taxonomy'
 
 interface PersonalisedPlan {
   slug: string
   title: string
   description: string | null
   move_tag: string | null
+}
+
+interface CuratedChallenge {
+  id: string
+  title: string
+  slug: string | null
+  difficulty: string
+  challenge_type: string
+  company_tags: string[] | null
+  topic_tags: string[] | null
+  technique_tags: string[] | null
+}
+
+interface CompanyRow {
+  company: string
+  challenges: CuratedChallenge[]
+}
+
+interface DisciplineRow {
+  discipline: Discipline
+  techniques: Array<{ slug: string; count: number }>
 }
 
 interface PlanItem {
@@ -88,7 +110,7 @@ export default async function ExplorePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [studyPlansRaw, showcaseProducts, modulesRaw, domains, personalisedPlan] = await Promise.all([
+  const [studyPlansRaw, showcaseProducts, modulesRaw, domains, personalisedPlan, realInterviewChallenges, topCompanyChallenges, topTechniquesPerDiscipline] = await Promise.all([
     getStudyPlanSummaries(4).catch(() => [] as StudyPlan[]),
     getShowcaseProducts().catch(() => [] as AutopsyProduct[]),
     getLearnModuleSummaries(4).catch(() => [] as LearnModule[]),
@@ -108,6 +130,93 @@ export default async function ExplorePage() {
       } catch {
         return null
       }
+    })(),
+    // Curated row 1: Real interview questions (is_real_interview=true, non-empty company_tags first)
+    (async (): Promise<CuratedChallenge[]> => {
+      try {
+        const admin = createAdminClient()
+        const { data } = await admin
+          .from('challenges')
+          .select('id, title, slug, difficulty, challenge_type, company_tags, topic_tags, technique_tags')
+          .eq('is_published', true)
+          .eq('is_real_interview', true)
+          .order('created_at', { ascending: false })
+          .limit(12)
+        const rows = (data ?? []) as CuratedChallenge[]
+        // Sort: challenges with company_tags first
+        rows.sort((a, b) => ((b.company_tags?.length ?? 0) - (a.company_tags?.length ?? 0)))
+        return rows.slice(0, 8)
+      } catch { return [] }
+    })(),
+    // Curated row 2: Top 4 companies by real interview challenge count → each with up to 5 challenges
+    (async (): Promise<CompanyRow[]> => {
+      try {
+        const admin = createAdminClient()
+        const { data } = await admin
+          .from('challenges')
+          .select('id, title, slug, difficulty, challenge_type, company_tags, topic_tags, technique_tags')
+          .eq('is_published', true)
+          .eq('is_real_interview', true)
+          .not('company_tags', 'eq', '{}')
+        const rows = (data ?? []) as CuratedChallenge[]
+        // Count per company
+        const counts = new Map<string, CuratedChallenge[]>()
+        for (const c of rows) {
+          for (const company of (c.company_tags ?? [])) {
+            if (!counts.has(company)) counts.set(company, [])
+            counts.get(company)!.push(c)
+          }
+        }
+        // Top 4 companies by challenge count
+        const sorted = [...counts.entries()]
+          .sort((a, b) => b[1].length - a[1].length)
+          .slice(0, 4)
+        return sorted.map(([company, challenges]) => ({
+          company,
+          challenges: challenges.slice(0, 5),
+        }))
+      } catch { return [] }
+    })(),
+    // Curated row 3: Top techniques per discipline (count challenges using each technique)
+    (async (): Promise<DisciplineRow[]> => {
+      try {
+        const admin = createAdminClient()
+        const { data } = await admin
+          .from('challenges')
+          .select('challenge_type, technique_tags')
+          .eq('is_published', true)
+          .not('technique_tags', 'eq', '{}')
+        const rows = (data ?? []) as Array<{ challenge_type: string; technique_tags: string[] }>
+        // Map challenge_type → discipline
+        const TYPE_TO_DISC: Record<string, Discipline> = {
+          flow: 'product_sense', freeform: 'product_sense', quick_take: 'product_sense',
+          system_design: 'system_design', data_modeling: 'data_modeling', sql: 'sql',
+          algorithm: 'coding', coding: 'coding', ai_engineering: 'ai_engineering',
+        }
+        // Count technique occurrences per discipline
+        const discTechCount = new Map<Discipline, Map<string, number>>()
+        for (const row of rows) {
+          const disc = TYPE_TO_DISC[row.challenge_type]
+          if (!disc) continue
+          if (!discTechCount.has(disc)) discTechCount.set(disc, new Map())
+          const techMap = discTechCount.get(disc)!
+          for (const tech of (row.technique_tags ?? [])) {
+            techMap.set(tech, (techMap.get(tech) ?? 0) + 1)
+          }
+        }
+        // Build result: top 5 techniques per discipline
+        const result: DisciplineRow[] = []
+        for (const [disc, techMap] of discTechCount.entries()) {
+          const techniques = [...techMap.entries()]
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([slug, count]) => ({ slug, count }))
+          if (techniques.length > 0) result.push({ discipline: disc, techniques })
+        }
+        // Sort disciplines alphabetically for stability
+        result.sort((a, b) => a.discipline.localeCompare(b.discipline))
+        return result
+      } catch { return [] }
     })(),
   ])
 
@@ -211,6 +320,81 @@ export default async function ExplorePage() {
               <DomainRow key={domain.slug} domain={domain} index={index} />
             ))}
           </section>
+        </>
+      )}
+
+      {/* Curated row 1: Real interview questions */}
+      {realInterviewChallenges.length > 0 && (
+        <>
+          <SectionHeading
+            title="Real interview questions"
+            href="/challenges?real_interview=true"
+            linkLabel="See all"
+          />
+          <div className="mb-10 flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            {realInterviewChallenges.map(c => (
+              <CuratedChallengeCard key={c.id} challenge={c} showVerifiedBadge />
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Curated row 2: Asked at {company} */}
+      {topCompanyChallenges.length > 0 && (
+        <>
+          {topCompanyChallenges.map(({ company, challenges }) => (
+            <div key={company}>
+              <SectionHeading
+                title={`Asked at ${company.charAt(0).toUpperCase() + company.slice(1)}`}
+                href={`/challenges?company=${company}`}
+                linkLabel="See all"
+              />
+              <div className="mb-10 flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {challenges.map(c => (
+                  <CuratedChallengeCard key={c.id} challenge={c} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* Curated row 3: Top techniques per discipline */}
+      {topTechniquesPerDiscipline.length > 0 && (
+        <>
+          <SectionHeading
+            title="Top techniques per discipline"
+            href="/challenges"
+            linkLabel="Browse all"
+          />
+          <div className="mb-10 flex flex-col gap-4">
+            {topTechniquesPerDiscipline.map(({ discipline, techniques }) => (
+              <div key={discipline}>
+                <p className="mb-2 font-label text-sm font-semibold capitalize text-on-surface-variant">
+                  {{
+                    coding: 'Coding', system_design: 'System Design',
+                    data_modeling: 'Data Modeling', sql: 'SQL',
+                    product_sense: 'Product Sense', ai_engineering: 'AI Engineering',
+                  }[discipline] ?? discipline}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {techniques.map(({ slug, count }) => (
+                    <Link
+                      key={slug}
+                      href={`/challenges?technique=${slug}`}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-surface-container-high px-3 py-1.5 text-sm font-label font-medium text-on-surface-variant transition-colors hover:bg-primary-container hover:text-on-primary-container"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">category</span>
+                      {slug}
+                      <span className="ml-1 rounded-full bg-surface-container-highest px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-on-surface-variant">
+                        {count}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </>
       )}
 
@@ -431,6 +615,60 @@ function DomainSketch({ accent, soft }: { accent: string; soft: string }) {
       <rect x="132" y="48" width="22" height="22" rx="7" fill={accent} opacity="0.12" />
       <rect x="170" y="66" width="26" height="26" rx="8" fill={accent} opacity="0.10" />
     </svg>
+  )
+}
+
+function CuratedChallengeCard({ challenge, showVerifiedBadge = false }: {
+  challenge: CuratedChallenge
+  showVerifiedBadge?: boolean
+}) {
+  const href = `/challenges/${challenge.slug ?? challenge.id}`
+  const difficultyColors: Record<string, string> = {
+    warmup: 'bg-primary-fixed text-primary',
+    standard: 'bg-secondary-container text-on-secondary-container',
+    advanced: 'bg-tertiary-container text-tertiary',
+    staff_plus: 'bg-inverse-surface text-inverse-on-surface',
+  }
+  const diffColor = difficultyColors[challenge.difficulty] ?? 'bg-surface-container-high text-on-surface-variant'
+  const firstTopic = challenge.topic_tags?.[0]
+  const firstTechnique = challenge.technique_tags?.[0]
+  return (
+    <Link
+      href={href}
+      className="group flex w-56 shrink-0 flex-col gap-2 rounded-xl bg-surface-container p-4 transition-shadow hover:shadow-md"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${diffColor}`}>
+          {challenge.difficulty}
+        </span>
+        {showVerifiedBadge && (
+          <span className="inline-flex items-center gap-0.5 rounded-full bg-primary-fixed px-2 py-0.5 text-[10px] font-semibold text-primary">
+            <span className="material-symbols-outlined text-[11px]">verified</span>
+            Real
+          </span>
+        )}
+      </div>
+      <p className="line-clamp-2 font-body text-sm font-semibold leading-snug text-on-surface group-hover:text-primary">
+        {challenge.title}
+      </p>
+      {(challenge.company_tags ?? []).length > 0 && (
+        <p className="font-label text-[11px] uppercase tracking-wide text-on-surface-variant">
+          {challenge.company_tags![0]}
+        </p>
+      )}
+      <div className="mt-auto flex flex-wrap gap-1">
+        {firstTopic && (
+          <span className="rounded-full bg-surface-container-high px-2 py-0.5 font-label text-[10px] text-on-surface-variant">
+            {firstTopic}
+          </span>
+        )}
+        {firstTechnique && (
+          <span className="rounded-full bg-surface-container-high px-2 py-0.5 font-label text-[10px] text-on-surface-variant">
+            {firstTechnique}
+          </span>
+        )}
+      </div>
+    </Link>
   )
 }
 

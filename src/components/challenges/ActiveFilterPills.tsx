@@ -12,8 +12,15 @@ interface Props {
 }
 
 export function ActiveFilterPills({ filters, onRemove, onClearAll }: Props) {
-  const active: { key: FilterKey; value: string }[] = (Object.entries(filters) as [FilterKey, string[]][])
-    .flatMap(([key, values]) => values.map((value) => ({ key, value })))
+  // Collect active filter entries — handle boolean real_interview separately
+  const active: { key: FilterKey; value: string }[] = []
+  for (const [k, val] of Object.entries(filters) as [FilterKey, string[] | boolean][]) {
+    if (k === 'real_interview') {
+      if (val === true) active.push({ key: k, value: 'Real interview' })
+    } else {
+      for (const v of val as string[]) active.push({ key: k, value: v })
+    }
+  }
 
   if (active.length === 0) return null
 

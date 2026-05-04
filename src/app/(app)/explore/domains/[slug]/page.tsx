@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { ChallengeAccordion } from '@/components/challenges/ChallengeAccordion'
 import type { AccordionChapter } from '@/components/challenges/ChallengeAccordion'
+import { getTechniqueLabelAny } from '@/lib/data/taxonomy'
 
 const DIFFICULTY_CHAPTERS: Record<string, { title: string; icon: string }> = {
   warmup:     { title: 'Warm-Up',  icon: 'psychology' },
@@ -42,6 +43,24 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
     }
   }
 
+  // ── Technique breakdown ────────────────────────────────────────────────────
+  const techniqueCount = new Map<string, number>()
+  for (const c of challenges) {
+    for (const t of c.technique_tags ?? []) {
+      techniqueCount.set(t, (techniqueCount.get(t) ?? 0) + 1)
+    }
+  }
+  const topTechniques = Array.from(techniqueCount.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([slug, count]) => ({ slug, count, label: getTechniqueLabelAny(slug) }))
+    .filter(t => t.label !== undefined) as { slug: string; count: number; label: string }[]
+
+  // ── Real interview challenges ──────────────────────────────────────────────
+  const realInterviewChallenges = challenges.filter(
+    c => c.is_real_interview && (c.company_tags ?? []).length > 0
+  )
+
   const chapterMap = new Map<string, AccordionChapter>()
   for (const diff of DIFFICULTY_ORDER) {
     const meta = DIFFICULTY_CHAPTERS[diff]
@@ -51,6 +70,10 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
         id: c.id, slug: c.slug, title: c.title, difficulty: c.difficulty,
         best_score: scoreMap[c.id] ?? null,
         is_completed: c.id in scoreMap,
+        topic_tags: c.topic_tags ?? [],
+        technique_tags: c.technique_tags ?? [],
+        is_real_interview: c.is_real_interview ?? false,
+        company_tags: c.company_tags ?? [],
       }))
     if (items.length > 0) chapterMap.set(diff, { key: diff, title: meta.title, icon: meta.icon, items })
   }
@@ -63,6 +86,10 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
         id: c.id, slug: c.slug, title: c.title, difficulty: c.difficulty,
         best_score: scoreMap[c.id] ?? null,
         is_completed: c.id in scoreMap,
+        topic_tags: c.topic_tags ?? [],
+        technique_tags: c.technique_tags ?? [],
+        is_real_interview: c.is_real_interview ?? false,
+        company_tags: c.company_tags ?? [],
       })
     }
   }
@@ -235,6 +262,75 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
               {completedCount} of {challenges.length} completed
             </div>
           </div>
+
+          {/* ── Technique breakdown ── */}
+          {topTechniques.length > 0 && (
+            <div className="mb-5 bg-surface-container rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="material-symbols-outlined text-[18px] text-primary" style={{ fontVariationSettings: "'FILL' 0" }}>schema</span>
+                <h2 className="font-headline text-sm font-bold text-on-surface">Techniques in this domain</h2>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {topTechniques.map(({ slug, label, count }) => (
+                  <Link
+                    key={slug}
+                    href={`/challenges?technique=${slug}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high hover:bg-primary-fixed transition-colors group"
+                  >
+                    <span className="text-xs font-label font-semibold text-on-surface group-hover:text-primary transition-colors">
+                      {label}
+                    </span>
+                    <span className="text-[10px] font-label text-on-surface-variant tabular-nums">
+                      {count}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Real interview questions ── */}
+          {realInterviewChallenges.length > 0 && (
+            <div className="mb-5 bg-tertiary-container/30 border border-outline-variant rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="material-symbols-outlined text-[18px] text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                <h2 className="font-headline text-sm font-bold text-on-surface">Real interview questions</h2>
+                <span className="ml-auto text-[10px] font-label font-bold px-2 py-0.5 rounded-full bg-tertiary-container text-on-secondary-container">
+                  {realInterviewChallenges.length}
+                </span>
+              </div>
+              <p className="font-body text-xs text-on-surface-variant mb-3">
+                These challenges were sourced from actual interview loops at top companies.
+              </p>
+              <div className="flex flex-col gap-1">
+                {realInterviewChallenges.slice(0, 5).map(c => (
+                  <Link
+                    key={c.id}
+                    href={`/workspace/challenges/${c.slug ?? c.id}`}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-container transition-colors group"
+                  >
+                    <span className="material-symbols-outlined text-[14px] text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                    <span className="flex-1 text-xs font-label font-semibold text-on-surface group-hover:text-primary transition-colors truncate">
+                      {c.title}
+                    </span>
+                    {(c.company_tags ?? []).length > 0 && (
+                      <span className="text-[10px] font-label text-on-surface-variant shrink-0">
+                        {c.company_tags![0]}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+                {realInterviewChallenges.length > 5 && (
+                  <Link
+                    href={`/challenges?domain=${domain.slug}&real_interview=true`}
+                    className="text-xs font-label font-semibold text-primary hover:underline mt-1 px-3"
+                  >
+                    View all {realInterviewChallenges.length} real interview questions →
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
 
           {chapters.length > 0 ? (
             <ChallengeAccordion chapters={chapters} defaultOpenIndex={0} />

@@ -4,6 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { appendReturnTo } from '@/lib/navigation/return-to'
 import type { ChallengeWithDomain } from '@/lib/types'
+import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
 
 const PARADIGM_STYLE: Record<string, {
   bg: string
@@ -234,6 +235,37 @@ export function ChallengeCard({
           </span>
         )}
 
+        {/* Topic + technique chips */}
+        {(() => {
+          const topicSlug = challenge.topic_tags?.[0]
+          const techSlug  = challenge.technique_tags?.[0]
+          const topicLabel = topicSlug ? getTopicLabelAny(topicSlug) : undefined
+          const techLabel  = techSlug  ? getTechniqueLabelAny(techSlug) : undefined
+          if (!topicLabel && !techLabel) return null
+          return (
+            <div className="hidden lg:flex items-center gap-1 shrink-0">
+              {topicLabel && (
+                <span className="text-[10px] font-label font-semibold px-2 py-0.5 rounded-full bg-primary-fixed text-primary">
+                  {topicLabel}
+                </span>
+              )}
+              {techLabel && (
+                <span className="text-[10px] font-label font-semibold px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant">
+                  {techLabel}
+                </span>
+              )}
+            </div>
+          )
+        })()}
+
+        {/* Real interview badge */}
+        {challenge.is_real_interview && (challenge.company_tags ?? []).length > 0 && (
+          <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-label font-bold px-2 py-0.5 rounded-full bg-tertiary-container text-on-secondary-container shrink-0">
+            <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+            Asked at {challenge.company_tags![0]}
+          </span>
+        )}
+
         {/* Difficulty label */}
         <span className="hidden md:inline text-[11px] text-on-surface-variant font-label shrink-0 w-16 text-right">
           {diff.label}
@@ -343,6 +375,36 @@ export function ChallengeCard({
           {challenge.title}
         </h3>
       </Link>
+
+      {/* Tag chips + real interview badge */}
+      {(() => {
+        const topicSlug  = challenge.topic_tags?.[0]
+        const techSlug   = challenge.technique_tags?.[0]
+        const topicLabel = topicSlug ? getTopicLabelAny(topicSlug) : undefined
+        const techLabel  = techSlug  ? getTechniqueLabelAny(techSlug) : undefined
+        const isReal     = challenge.is_real_interview && (challenge.company_tags ?? []).length > 0
+        if (!topicLabel && !techLabel && !isReal) return null
+        return (
+          <div className="flex items-center gap-1 flex-wrap">
+            {topicLabel && (
+              <span className="text-[10px] font-label font-semibold px-2 py-0.5 rounded-full bg-white/60 backdrop-blur-sm" style={{ color: style.fg }}>
+                {topicLabel}
+              </span>
+            )}
+            {techLabel && (
+              <span className="text-[10px] font-label font-semibold px-2 py-0.5 rounded-full bg-white/40 backdrop-blur-sm" style={{ color: `${style.fg}cc` }}>
+                {techLabel}
+              </span>
+            )}
+            {isReal && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] font-label font-bold px-2 py-0.5 rounded-full bg-tertiary-container text-on-secondary-container">
+                <span className="material-symbols-outlined text-[11px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                Asked at {challenge.company_tags![0]}
+              </span>
+            )}
+          </div>
+        )
+      })()}
 
       {/* Footer */}
       <div className="flex items-center justify-between mt-auto">

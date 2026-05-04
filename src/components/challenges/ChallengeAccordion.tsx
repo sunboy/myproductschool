@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
 
 export interface AccordionItem {
   id: string
@@ -11,6 +12,10 @@ export interface AccordionItem {
   best_score: number | null
   is_completed: boolean
   is_in_progress?: boolean
+  topic_tags?: string[]
+  technique_tags?: string[]
+  is_real_interview?: boolean
+  company_tags?: string[]
 }
 
 export interface AccordionChapter {
@@ -75,9 +80,38 @@ export function ChallengeAccordion({ chapters, defaultOpenIndex = 0 }: Challenge
                         >
                           {item.is_completed ? 'check_circle' : inProgress ? 'timelapse' : 'radio_button_unchecked'}
                         </span>
-                        <span className={`text-sm font-semibold truncate ${item.is_completed ? 'text-on-surface' : 'text-on-surface-variant'}`}>
-                          {item.title}
-                        </span>
+                        <div className="min-w-0">
+                          <span className={`text-sm font-semibold truncate block ${item.is_completed ? 'text-on-surface' : 'text-on-surface-variant'}`}>
+                            {item.title}
+                          </span>
+                          {/* Tag chips */}
+                          {(() => {
+                            const topicLabel = item.topic_tags?.[0] ? getTopicLabelAny(item.topic_tags[0]) : undefined
+                            const techLabel  = item.technique_tags?.[0] ? getTechniqueLabelAny(item.technique_tags[0]) : undefined
+                            const isReal     = item.is_real_interview && (item.company_tags ?? []).length > 0
+                            if (!topicLabel && !techLabel && !isReal) return null
+                            return (
+                              <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                                {topicLabel && (
+                                  <span className="text-[10px] font-label font-semibold px-1.5 py-px rounded-full bg-primary-fixed text-primary">
+                                    {topicLabel}
+                                  </span>
+                                )}
+                                {techLabel && (
+                                  <span className="text-[10px] font-label font-semibold px-1.5 py-px rounded-full bg-surface-container-highest text-on-surface-variant">
+                                    {techLabel}
+                                  </span>
+                                )}
+                                {isReal && (
+                                  <span className="inline-flex items-center gap-0.5 text-[10px] font-label font-bold px-1.5 py-px rounded-full bg-tertiary-container text-on-secondary-container">
+                                    <span className="material-symbols-outlined text-[10px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                    {item.company_tags![0]}
+                                  </span>
+                                )}
+                              </div>
+                            )
+                          })()}
+                        </div>
                       </div>
                       <div className="flex items-center gap-3 shrink-0 ml-3">
                         {item.best_score != null ? (

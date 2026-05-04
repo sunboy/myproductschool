@@ -177,6 +177,9 @@ export interface ChallengeWithDomain extends ChallengePrompt {
   is_in_progress?: boolean
   company_tags?: string[]
   relevant_roles?: string[]
+  topic_tags?: string[]
+  technique_tags?: string[]
+  is_real_interview?: boolean
 }
 
 // ── Failure Pattern Detection ─────────────────────────────
@@ -656,6 +659,18 @@ export const PARADIGM_V2_LABELS: Record<ParadigmV2, string> = {
   traditional: 'Traditional', ai_assisted: 'AI-Assisted', agentic: 'Agentic', ai_native: 'AI-Native',
 }
 
+// ── Taxonomy re-exports (canonical controlled vocabularies) ──────────────────
+export type { Discipline } from './data/taxonomy'
+
+/** Slug string for a topic within a discipline (e.g. 'hash-tables', 'caching'). */
+export type TopicTag = string
+
+/** Slug string for a technique within a discipline (e.g. 'two-pointers', 'cache-aside'). */
+export type TechniqueTag = string
+
+/** Slug string for a company (e.g. 'google', 'stripe'). */
+export type CompanyTag = string
+
 // ── Topic types (used by explore and study plans) ─────────
 export interface Topic {
   id: string
@@ -1087,6 +1102,14 @@ export interface ChallengeJsonMetadata {
   relevant_roles: string[]
   company_tags: string[]
   tags: string[]
+  /** Controlled-vocabulary topic slugs from taxonomy.ts (e.g. 'caching', 'arrays') */
+  topic_tags?: string[]
+  /** Controlled-vocabulary technique slugs from taxonomy.ts (e.g. 'consistent-hashing', 'two-pointers') */
+  technique_tags?: string[]
+  /** True when the source is a confirmed real interview question */
+  is_real_interview?: boolean
+  /** URL of the source that confirmed this is a real interview question */
+  source_url?: string | null
 }
 
 export interface ChallengeJson {
