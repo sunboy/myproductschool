@@ -70,9 +70,9 @@ export function LoopTracksSection({ tracks }: Props) {
     <section>
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
-          <h2 className="font-headline font-bold text-on-surface text-base">Interview Loop Tracks</h2>
+          <h2 className="font-headline font-bold text-on-surface text-base">AI Interview Loops</h2>
           <span className="bg-primary text-on-primary text-[9px] font-label font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">
-            New
+            Hatch-run
           </span>
         </div>
         <Link
@@ -165,7 +165,7 @@ export function LoopTracksSection({ tracks }: Props) {
                   className="relative text-[11px] font-label font-semibold flex items-center gap-1"
                   style={{ color: accentColor.text }}
                 >
-                  Start loop
+                  Start AI loop
                   <span style={{ fontSize: 13 }}>→</span>
                 </div>
               </div>

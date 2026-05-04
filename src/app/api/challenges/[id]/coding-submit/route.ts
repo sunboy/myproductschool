@@ -43,6 +43,36 @@ interface ChallengeMetadata {
   time_limit_seconds?: number
 }
 
+function getGradeLabel(score: number): string {
+  if (score >= 4.5) return 'best'
+  if (score >= 3) return 'good'
+  return 'surface'
+}
+
+function serializeTestResults(correctnessPayload: RunResult) {
+  return {
+    tests_passed: correctnessPayload.testsPassed,
+    tests_total: correctnessPayload.testsTotal,
+    results: correctnessPayload.results.map((result) => {
+      const base = {
+        id: result.id,
+        label: result.label,
+        status: result.status,
+        hidden: result.hidden,
+        durationMs: result.durationMs,
+      }
+      if (result.hidden) return base
+      return {
+        ...base,
+        output: result.output,
+        expected: result.expected,
+        actual: result.actual,
+        errorMessage: result.errorMessage,
+      }
+    }),
+  }
+}
+
 // ---------------------------------------------------------------------------
 // POST handler
 // ---------------------------------------------------------------------------
@@ -200,13 +230,7 @@ export async function POST(
       final_code: finalCode,
       final_language: language,
       test_results: {
-        tests_passed: correctnessPayload.testsPassed,
-        tests_total: correctnessPayload.testsTotal,
-        results: correctnessPayload.results.map((r) => ({
-          id: r.id,
-          status: r.status,
-          hidden: r.hidden,
-        })),
+        ...serializeTestResults(correctnessPayload),
       },
     })
     .eq('id', attemptId)
@@ -246,6 +270,9 @@ export async function POST(
     .update({
       status: 'completed',
       completed_at: new Date().toISOString(),
+      total_score: grade.overall_score,
+      max_score: 5,
+      grade_label: getGradeLabel(grade.overall_score),
     })
     .eq('id', attemptId)
 
@@ -258,7 +285,11 @@ export async function POST(
     rubric_scores: grade.dimensions,
     top_strength: grade.top_strength,
     top_improvement: grade.top_improvement,
-    // canvas_annotations not applicable for coding — omit (column allows null)
+    canvas_annotations: grade.what_a_5_would_look_like ? [{
+      target_label: '5.0 bar',
+      text: grade.what_a_5_would_look_like,
+      severity: 'info',
+    }] : null,
   })
 
   return NextResponse.json({ grade })

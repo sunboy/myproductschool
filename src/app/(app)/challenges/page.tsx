@@ -5,7 +5,19 @@ import { UsageProvider } from '@/context/UsageContext'
 export default async function ChallengesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ paradigm?: string; role?: string; difficulty?: string; company?: string; tab?: string; view?: string; type?: string }>
+  searchParams: Promise<{
+    company?: string
+    difficulty?: string
+    discipline?: string
+    paradigm?: string
+    q?: string
+    role?: string
+    scope?: string
+    tab?: string
+    tag?: string
+    type?: string
+    view?: string
+  }>
 }) {
   return (
     <UsageProvider>

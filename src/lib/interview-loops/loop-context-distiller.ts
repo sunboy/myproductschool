@@ -8,13 +8,14 @@ export async function distillRoundContext(params: {
   roundDebriefJson: Record<string, unknown>
   roundIndex: number
   discipline: LoopDiscipline
+  budget?: { userId: string; userPlan: string; route: string }
 }): Promise<CrossRoundMemoryItem[]> {
-  const { roundDebriefJson, roundIndex, discipline } = params
+  const { roundDebriefJson, roundIndex, discipline, budget } = params
 
   const response = await createCachedMessage(
     SYSTEM_PROMPT,
     JSON.stringify(roundDebriefJson),
-    { model: 'claude-haiku-4-5-20251001', max_tokens: 512 }
+    { model: 'claude-haiku-4-5-20251001', max_tokens: 512, budget }
   )
 
   const raw = response.content[0].type === 'text' ? response.content[0].text : '[]'

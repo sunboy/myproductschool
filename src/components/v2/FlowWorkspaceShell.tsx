@@ -13,12 +13,14 @@ interface FlowWorkspaceShellProps {
   initialRoleId: UserRoleV2
   fromPlan?: string
   nextChallengeSlug?: string
+  returnTo?: string
 }
 
-export function FlowWorkspaceShell({ challengeId, challengeSlug, initialRoleId, fromPlan, nextChallengeSlug }: FlowWorkspaceShellProps) {
+export function FlowWorkspaceShell({ challengeId, challengeSlug, initialRoleId, fromPlan, nextChallengeSlug, returnTo }: FlowWorkspaceShellProps) {
   const router = useRouter()
   const [paywallData, setPaywallData] = useState<{ used: number; limit: number } | null>(null)
   const { startUpgrade } = useUpgrade()
+  const exitHref = returnTo ?? '/challenges'
 
   return (
     <div className="relative h-full">
@@ -29,7 +31,8 @@ export function FlowWorkspaceShell({ challengeId, challengeSlug, initialRoleId, 
         initialRoleId={initialRoleId}
         fromPlan={fromPlan}
         nextChallengeSlug={nextChallengeSlug}
-        onExit={() => router.push('/challenges')}
+        returnTo={returnTo}
+        onExit={() => router.push(exitHref)}
         onPaywall={(data) => setPaywallData(data)}
       />
       {paywallData && (
@@ -38,7 +41,7 @@ export function FlowWorkspaceShell({ challengeId, challengeSlug, initialRoleId, 
           limit={paywallData.limit}
           challengeTitle="this challenge"
           onUpgrade={startUpgrade}
-          onDismiss={() => router.push('/challenges')}
+          onDismiss={() => router.push(exitHref)}
         />
       )}
     </div>

@@ -134,6 +134,7 @@ export default function SingleRoundPicker({
               <button
                 key={c.companyId}
                 onClick={() => handleSelectCompany(c.companyId)}
+                data-hatch-sound={active ? undefined : 'nudge'}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -195,6 +196,7 @@ export default function SingleRoundPicker({
                 <button
                   key={`${r.slug}-${r.role}`}
                   onClick={() => setSelectedRoleIdx(i)}
+                  data-hatch-sound={active ? undefined : 'nudge'}
                   style={{
                     padding: '6px 14px',
                     borderRadius: 999,
@@ -237,6 +239,7 @@ export default function SingleRoundPicker({
                 <button
                   key={d}
                   onClick={() => setSelectedDiscipline(d)}
+                  data-hatch-sound={active ? undefined : 'nudge'}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',

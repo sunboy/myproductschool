@@ -14,9 +14,10 @@ export async function POST(
   const { id } = await params
 
   const body = await req.json()
-  const { attemptId, canvasFinalSnapshot } = body as {
+  const { attemptId, canvasFinalSnapshot, contextPack } = body as {
     attemptId: string
     canvasFinalSnapshot?: Record<string, unknown>
+    contextPack?: string | null
   }
 
   if (!attemptId) return NextResponse.json({ error: 'Missing attemptId' }, { status: 400 })
@@ -62,10 +63,17 @@ export async function POST(
   // Store the final snapshot first so the grader has data to read, but DO NOT
   // flip status to 'completed' yet — if grading fails we want the user to be
   // able to retry without hitting the "Already submitted" 409.
+  const snapshotWithContext = canvasFinalSnapshot || contextPack
+    ? {
+        ...(canvasFinalSnapshot ?? {}),
+        ...(contextPack ? { context_pack: contextPack } : {}),
+      }
+    : null
+
   await supabase
     .from('challenge_attempts')
     .update({
-      canvas_final_snapshot: canvasFinalSnapshot ?? null,
+      canvas_final_snapshot: snapshotWithContext,
     })
     .eq('id', attemptId)
 

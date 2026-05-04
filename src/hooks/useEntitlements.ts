@@ -36,13 +36,13 @@ export function useEntitlements(): Entitlements {
     checkPlan()
   }, [supabase])
 
-  const unlimited = isPro || isAdmin
+  const hasPaidAccess = isPro || isAdmin
   return {
     isPro,
     isAdmin,
-    canViewModelAnswer: unlimited,
-    canAccessSimulation: unlimited,
-    dailyChallengesRemaining: unlimited ? Infinity : 3,
+    canViewModelAnswer: hasPaidAccess,
+    canAccessSimulation: hasPaidAccess,
+    dailyChallengesRemaining: isAdmin ? Infinity : (isPro ? 80 : 3),
     loading,
   }
 }

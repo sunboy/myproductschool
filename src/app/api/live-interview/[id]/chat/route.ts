@@ -2,6 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { buildCoverageNote } from '@/lib/live-interview/system-prompt'
 import Anthropic from '@anthropic-ai/sdk'
+import {
+  AiBudgetExceededError,
+  assertAiBudget,
+  estimateAnthropicPreflightCents,
+  getUserPlanForBudget,
+  recordAnthropicUsage,
+} from '@/lib/usage/ai-budget'
 
 export async function POST(
   request: Request,
@@ -91,12 +98,43 @@ export async function POST(
   ].join('\n\n')
 
   // Generate Hatch's response — no grading signals, pure conversation
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 600,
-    system: [{ type: 'text', text: fullSystemPrompt, cache_control: { type: 'ephemeral' } }],
-    messages: conversationMessages,
-  })
+  const model = 'claude-sonnet-4-6'
+  const maxTokens = 600
+  const userPlan = await getUserPlanForBudget(user.id)
+  const promptCharCount = fullSystemPrompt.length + conversationMessages.reduce((sum, msg) => sum + msg.content.length, 0)
+  const preflightCostCents = estimateAnthropicPreflightCents(model, maxTokens, promptCharCount)
+
+  let response
+  try {
+    await assertAiBudget(user.id, userPlan, preflightCostCents)
+    response = await anthropic.messages.create({
+      model,
+      max_tokens: maxTokens,
+      system: [{ type: 'text', text: fullSystemPrompt, cache_control: { type: 'ephemeral' } }],
+      messages: conversationMessages,
+    })
+    await recordAnthropicUsage({
+      userId: user.id,
+      model,
+      usage: response.usage,
+      fallbackCostCents: preflightCostCents,
+      route: 'live_interview_chat',
+    })
+  } catch (error) {
+    if (error instanceof AiBudgetExceededError) {
+      return Response.json(
+        {
+          error: 'limit_reached',
+          feature: 'hatch_ai_cents',
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+    throw error
+  }
 
   const reply = response.content[0].type === 'text' ? response.content[0].text : ''
 

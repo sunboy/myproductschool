@@ -193,7 +193,7 @@ export default function SettingsPage() {
               {isPro ? 'HackProduct Pro' : 'Free plan'}
             </p>
             <p className={`text-xs font-body mt-0.5 ${isPro ? 'text-white/60' : 'text-on-surface-variant'}`}>
-              {isPro ? 'Unlimited · full coaching · Learner DNA' : '3 challenges/day · basic feedback'}
+              {isPro ? 'Pro budget · full coaching · Learner DNA' : '3 challenges/month · starter feedback'}
             </p>
           </div>
         </div>

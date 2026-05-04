@@ -4,10 +4,19 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { useHatchSonics } from '@/hooks/useHatchSonics'
 
 interface AuthFormProps {
   mode: 'login' | 'signup'
 }
+
+const AUTH_DISCIPLINES = [
+  { label: 'Coding', icon: 'data_object', color: '#7aa7ff', copy: 'DSA with live execution' },
+  { label: 'SQL', icon: 'database', color: '#c89df5', copy: 'Queries against real datasets' },
+  { label: 'Product sense', icon: 'psychology', color: '#8ecf9e', copy: 'Decision reps with Hatch' },
+  { label: 'Data modeling', icon: 'account_tree', color: '#f0c36a', copy: 'Schemas, grain, contracts' },
+  { label: 'System design', icon: 'hub', color: '#f5a76c', copy: 'Scale and tradeoffs' },
+] as const
 
 // Hatch mascot as giant outline-only line art — no fills, strokes only
 function HatchLineArt() {
@@ -78,6 +87,37 @@ function HatchLineArt() {
   )
 }
 
+function DisciplineSignalBoard() {
+  return (
+    <div className="hidden md:grid max-w-[520px] grid-cols-5 gap-2 pt-7">
+      {AUTH_DISCIPLINES.map((discipline) => (
+        <div
+          key={discipline.label}
+          className="relative min-h-[96px] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.075] p-3"
+        >
+          <div
+            aria-hidden
+            className="absolute -right-4 -top-5 h-14 w-14 rounded-full"
+            style={{ background: discipline.color, opacity: 0.13 }}
+          />
+          <span
+            className="material-symbols-outlined relative text-[20px]"
+            style={{ color: discipline.color, fontVariationSettings: "'FILL' 1" }}
+          >
+            {discipline.icon}
+          </span>
+          <div className="relative mt-3 font-label text-[11px] font-black leading-tight text-white">
+            {discipline.label}
+          </div>
+          <div className="relative mt-1 text-[9.5px] font-semibold leading-tight text-white/45">
+            {discipline.copy}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const [activeMode, setActiveMode] = useState<'login' | 'signup' | 'forgot'>(initialMode)
   const [name, setName] = useState('')
@@ -88,12 +128,14 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const [success, setSuccess] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
+  const { play } = useHatchSonics()
 
   function siteOrigin() {
     return process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin
   }
 
   function switchMode(mode: 'login' | 'signup' | 'forgot') {
+    if (mode !== activeMode) play('nudge')
     setActiveMode(mode)
     setError(null)
     setSuccess(null)
@@ -101,6 +143,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    play('submit')
     setLoading(true)
     setError(null)
 
@@ -110,6 +153,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       })
       // Always show success (don't reveal whether email exists)
       setSuccess('Check your email. We sent a password reset link.')
+      play('success')
       setLoading(false)
       return
     }
@@ -118,6 +162,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) {
         setError(error.message)
+        play('error')
       } else {
         const { data: profile } = await supabase
           .from('profiles')
@@ -133,6 +178,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
             body: JSON.stringify({ display_name: metaName }),
           })
         }
+        play('success')
         router.push(profile?.onboarding_completed_at ? '/dashboard' : '/onboarding/welcome')
         router.refresh()
       }
@@ -147,17 +193,21 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       })
       if (error) {
         setError(error.message)
+        play('error')
       } else if (data.session) {
+        play('success')
         router.push('/onboarding/welcome')
         router.refresh()
       } else {
         setSuccess('Check your email to confirm your account. You\'ll start with Hatch next.')
+        play('success')
       }
     }
     setLoading(false)
   }
 
   async function handleGoogleSignIn() {
+    play('open')
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${siteOrigin()}/dashboard` }
@@ -244,15 +294,15 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
             className="font-body mt-4 leading-relaxed"
             style={{ fontSize: 'clamp(13px, 1.2vw, 16px)', color: 'rgba(255,255,255,0.45)', maxWidth: '38ch' }}
           >
-            Practice real scenarios across five disciplines. Stay sharp as AI reshapes the job.
+            Practice product, systems, data, SQL, and coding judgment. Stay sharp as AI reshapes the job.
           </p>
 
           {/* Feature bullets — desktop only */}
           <ul className="hidden md:flex flex-col gap-3 mt-10">
             {[
-              'Product sense, system design, data modeling, and coding across four disciplines',
-              'Hatch coaches you in real time, pushes back when you hand-wave',
-              '20 minutes a day. Most people do it on lunch.',
+              'Product sense, system design, data modeling, SQL, and coding in one track',
+              'Hatch coaches in real time and pushes back when you hand-wave',
+              'Role-aware plans without live cohorts or human scheduling',
             ].map(item => (
               <li key={item} className="flex items-center gap-3">
                 <span
@@ -265,6 +315,8 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
               </li>
             ))}
           </ul>
+
+          <DisciplineSignalBoard />
         </div>
 
         {/* ── Right: form card — glass on the gradient ─── */}

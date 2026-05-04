@@ -1,4 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk'
+import {
+  assertAiBudget,
+  estimateAnthropicPreflightCents,
+  recordAnthropicUsage,
+} from '@/lib/usage/ai-budget'
 
 export interface ArtifactGradingInput {
   type: 'canvas' | 'editor'
@@ -91,19 +96,40 @@ ${codeSnippet}
 ${runSummary}`
 }
 
-export async function gradeArtifact(input: ArtifactGradingInput): Promise<ArtifactGrading> {
+export async function gradeArtifact(
+  input: ArtifactGradingInput,
+  budget?: { userId: string; userPlan: string; route: string }
+): Promise<ArtifactGrading> {
   if (!process.env.ANTHROPIC_API_KEY) {
     throw new Error('ANTHROPIC_API_KEY not set')
   }
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  const model = 'claude-sonnet-4-6'
+  const maxTokens = 512
+  const userContent = buildUserContent(input)
+  const preflightCostCents = estimateAnthropicPreflightCents(model, maxTokens, SYSTEM_PROMPT.length + userContent.length)
+
+  if (budget) {
+    await assertAiBudget(budget.userId, budget.userPlan, preflightCostCents)
+  }
 
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 512,
+    model,
+    max_tokens: maxTokens,
     system: SYSTEM_PROMPT,
-    messages: [{ role: 'user', content: buildUserContent(input) }],
+    messages: [{ role: 'user', content: userContent }],
   })
+
+  if (budget) {
+    await recordAnthropicUsage({
+      userId: budget.userId,
+      model,
+      usage: response.usage,
+      fallbackCostCents: preflightCostCents,
+      route: budget.route,
+    })
+  }
 
   const raw = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
 

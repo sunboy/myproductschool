@@ -7,6 +7,7 @@ import { VoiceInputButton } from './VoiceInputButton'
 import type { CanvasScene } from '@/lib/hatch/canvas-scene'
 import type { CanvasInterpretResponse, InterviewGrade } from '@/lib/types'
 import { useHatchDockState } from '@/hooks/useHatchDockState'
+import { useHatchSonics } from '@/hooks/useHatchSonics'
 
 interface ChatMessage {
   role: 'user' | 'hatch'
@@ -19,6 +20,8 @@ interface CanvasChatPanelProps {
   challengeId: string
   challengeType: 'system_design' | 'data_modeling' | 'coding'
   scene: CanvasScene
+  contextPack?: string
+  queuedPrompt?: { id: string; text: string; autoSend?: boolean } | null
   isOpen: boolean
   onToggle: () => void
   onCanvasActions?: (response: { message: string; actions: unknown[] }) => void
@@ -68,7 +71,18 @@ function getExamplePrompts(challengeType: 'system_design' | 'data_modeling' | 'c
       "Walk me through the time complexity",
     ]
   }
-  return []
+  if (challengeType === 'data_modeling') {
+    return [
+      'What is missing from this schema?',
+      'Turn my context notes into tables',
+      'Check keys, cardinality, and indexes',
+    ]
+  }
+  return [
+    'What is missing from this design?',
+    'Turn my context notes into components',
+    'Stress-test the failure modes',
+  ]
 }
 
 export function CanvasChatPanel({
@@ -76,6 +90,8 @@ export function CanvasChatPanel({
   challengeId,
   challengeType,
   scene,
+  contextPack,
+  queuedPrompt,
   isOpen,
   onToggle,
   onCanvasActions,
@@ -98,6 +114,7 @@ export function CanvasChatPanel({
   activePartWeightPct,
 }: CanvasChatPanelProps) {
   const { mode, panelWidth, setMode, setPanelWidth, MIN_WIDTH, MAX_WIDTH } = useHatchDockState('canvas')
+  const { muted, toggleMuted, play } = useHatchSonics()
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -110,6 +127,12 @@ export function CanvasChatPanel({
   const [isLoading, setIsLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null)
+  const lastQueuedPromptIdRef = useRef<string | null>(null)
+  const hasContextPack = Boolean(contextPack?.trim())
+  const canvasStatusLabel = challengeType === 'coding'
+    ? null
+    : `${scene.entities.length} ${challengeType === 'data_modeling' ? 'tables' : 'nodes'} · ${scene.connections.length} ${challengeType === 'data_modeling' ? 'links' : 'flows'}`
+  const starterPrompts = getExamplePrompts(challengeType, currentLanguage)
 
   // Suppress unused variable warnings — grade is reserved for future use; isOpen kept for callers
   void grade
@@ -139,6 +162,7 @@ export function CanvasChatPanel({
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || isLoading) return
     const userMsg: ChatMessage = { role: 'user', content: text, kind: 'chat' }
+    play('send')
     setMessages((prev) => [...prev, userMsg])
     setInput('')
     setIsLoading(true)
@@ -154,6 +178,7 @@ export function CanvasChatPanel({
         challengeId,
         challengeType,
         attemptId,
+        context_pack: contextPack,
       }
 
       const codingBody = challengeType === 'coding' ? {
@@ -183,6 +208,7 @@ export function CanvasChatPanel({
       if (willBuild && onCanvasActions) {
         onCanvasActions({ message: data.message, actions: data.actions })
       }
+      play(willBuild ? 'draw' : 'reply')
       setMessages((prev) => [
         ...prev,
         {
@@ -192,6 +218,7 @@ export function CanvasChatPanel({
         },
       ])
     } catch {
+      play('error')
       setMessages((prev) => [
         ...prev,
         {
@@ -203,11 +230,24 @@ export function CanvasChatPanel({
     } finally {
       setIsLoading(false)
     }
-  }, [isLoading, scene, challengeId, challengeType, attemptId, messages, onCanvasActions,
+  }, [isLoading, scene, contextPack, challengeId, challengeType, attemptId, messages, onCanvasActions,
       currentCode, currentLanguage, lastRunResult, timeElapsed, timeRemaining,
       challengeTitle, problemStatement,
       activePartId, activePartSequence, activePartTitle, activePartPrompt,
-      activePartResponseType, activePartWeightPct])
+      activePartResponseType, activePartWeightPct, play])
+
+  useEffect(() => {
+    if (!queuedPrompt || queuedPrompt.id === lastQueuedPromptIdRef.current) return
+    setMode('docked')
+
+    if (queuedPrompt.autoSend === false || isLoading) {
+      setInput(queuedPrompt.text)
+      return
+    }
+
+    lastQueuedPromptIdRef.current = queuedPrompt.id
+    void sendMessage(queuedPrompt.text)
+  }, [queuedPrompt, isLoading, sendMessage, setMode])
 
   // Proactive nudge: surface in chat thread, auto-dismiss-aware.
   const lastNudgeIdRef = useRef<string | null>(null)
@@ -215,11 +255,12 @@ export function CanvasChatPanel({
     if (!proactiveNudge) return
     if (proactiveNudge.id === lastNudgeIdRef.current) return
     lastNudgeIdRef.current = proactiveNudge.id
+    play('nudge')
     setMessages((prev) => [
       ...prev,
       { role: 'hatch', content: proactiveNudge.text, kind: 'nudge' },
     ])
-  }, [proactiveNudge])
+  }, [proactiveNudge, play])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -231,7 +272,7 @@ export function CanvasChatPanel({
   if (mode === 'closed') {
     return (
       <button
-        onClick={() => { setMode('floating'); onToggle() }}
+        onClick={() => { play('open'); setMode('floating'); onToggle() }}
         className="absolute bottom-4 right-4 z-20 flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-on-primary shadow-lg hover:shadow-xl hover:scale-105 transition-all"
         title="Open Hatch chat"
       >
@@ -255,24 +296,43 @@ export function CanvasChatPanel({
         />
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-2 border-b border-outline-variant bg-surface-container-high shrink-0">
-          <div className="flex items-center gap-2">
-            <HatchGlyph size={20} state={isLoading ? 'reviewing' : 'idle'} className="text-primary" />
-            <span className="font-label font-semibold text-sm text-on-surface">Hatch</span>
+          <div className="flex min-w-0 flex-col">
+            <div className="flex items-center gap-2">
+              <HatchGlyph size={20} state={isLoading ? 'reviewing' : 'idle'} className="text-primary" />
+              <span className="font-label font-semibold text-sm text-on-surface">Hatch</span>
+            </div>
+            {canvasStatusLabel && (
+              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 font-label text-[10px] font-bold text-on-surface-variant">
+                <span className="truncate">{canvasStatusLabel}</span>
+                <span className="h-1 w-1 rounded-full bg-outline-variant" />
+                <span className={hasContextPack ? 'text-primary' : ''}>{hasContextPack ? 'context synced' : 'add context'}</span>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-1">
             <button
-              onClick={() => setMode('floating')}
+              onClick={() => { play('open'); setMode('floating') }}
               className="text-on-surface-variant hover:text-on-surface transition-colors"
               title="Undock"
             >
               <span className="material-symbols-outlined text-[18px]">open_in_new</span>
             </button>
             <button
-              onClick={() => { setMode('closed'); onToggle() }}
+              onClick={() => { play('close'); setMode('closed'); onToggle() }}
               className="text-on-surface-variant hover:text-on-surface transition-colors"
               title="Close"
             >
               <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+            </button>
+            <button
+              onClick={toggleMuted}
+              className="text-on-surface-variant hover:text-on-surface transition-colors"
+              title={muted ? 'Turn Hatch sounds on' : 'Mute Hatch sounds'}
+              aria-label={muted ? 'Turn Hatch sounds on' : 'Mute Hatch sounds'}
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                {muted ? 'volume_off' : 'volume_up'}
+              </span>
             </button>
           </div>
         </div>
@@ -310,9 +370,9 @@ export function CanvasChatPanel({
               </div>
             </div>
           ))}
-          {challengeType === 'coding' && messages.length === 1 && !isLoading && (
+          {starterPrompts.length > 0 && messages.length === 1 && !isLoading && (
             <div className="flex flex-col gap-1.5 mt-2">
-              {getExamplePrompts(challengeType, currentLanguage).map((prompt) => (
+              {starterPrompts.map((prompt) => (
                 <button
                   key={prompt}
                   onClick={() => sendMessage(prompt)}
@@ -327,7 +387,7 @@ export function CanvasChatPanel({
             <div className="flex gap-2">
               <HatchGlyph size={20} state="reviewing" className="text-primary shrink-0" />
               <div className="bg-surface-container-high rounded-xl px-3 py-2 text-sm text-on-surface-variant">
-                {challengeType === 'coding' ? 'Hatch is thinking…' : onCanvasActions ? 'Hatch is drawing…' : '…'}
+                {challengeType === 'coding' ? 'Hatch is thinking…' : onCanvasActions ? 'Hatch is reading notes and canvas…' : '…'}
               </div>
             </div>
           )}
@@ -342,7 +402,7 @@ export function CanvasChatPanel({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={challengeType === 'coding' ? "Ask Hatch about your code…" : "Ask Hatch or describe what to add…"}
+                placeholder={challengeType === 'coding' ? "Ask Hatch about your code…" : "Ask Hatch, or tell it what to draw from your notes…"}
                 rows={2}
                 className="flex-1 resize-none rounded-lg bg-surface-container border border-outline-variant text-on-surface text-sm px-3 py-2 font-body placeholder:text-on-surface-variant focus:outline-none focus:border-primary"
               />
@@ -368,23 +428,44 @@ export function CanvasChatPanel({
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-outline-variant bg-surface-container-high">
         <div className="flex items-center gap-2">
-          <HatchGlyph size={20} state={isLoading ? 'reviewing' : 'idle'} className="text-primary" />
-          <span className="font-label font-semibold text-sm text-on-surface">Hatch</span>
+          <div className="flex min-w-0 flex-col">
+            <div className="flex items-center gap-2">
+              <HatchGlyph size={20} state={isLoading ? 'reviewing' : 'idle'} className="text-primary" />
+              <span className="font-label font-semibold text-sm text-on-surface">Hatch</span>
+            </div>
+            {canvasStatusLabel && (
+              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 font-label text-[10px] font-bold text-on-surface-variant">
+                <span className="truncate">{canvasStatusLabel}</span>
+                <span className="h-1 w-1 rounded-full bg-outline-variant" />
+                <span className={hasContextPack ? 'text-primary' : ''}>{hasContextPack ? 'context synced' : 'add context'}</span>
+              </div>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-1">
           <button
-            onClick={() => setMode('docked')}
+            onClick={() => { play('open'); setMode('docked') }}
             className="text-on-surface-variant hover:text-on-surface transition-colors"
             title="Dock to side"
           >
             <span className="material-symbols-outlined text-[18px]">push_pin</span>
           </button>
           <button
-            onClick={() => { setMode('closed'); onToggle() }}
+            onClick={() => { play('close'); setMode('closed'); onToggle() }}
             className="text-on-surface-variant hover:text-on-surface transition-colors"
             title="Close"
           >
             <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+          </button>
+          <button
+            onClick={toggleMuted}
+            className="text-on-surface-variant hover:text-on-surface transition-colors"
+            title={muted ? 'Turn Hatch sounds on' : 'Mute Hatch sounds'}
+            aria-label={muted ? 'Turn Hatch sounds on' : 'Mute Hatch sounds'}
+          >
+            <span className="material-symbols-outlined text-[18px]">
+              {muted ? 'volume_off' : 'volume_up'}
+            </span>
           </button>
         </div>
       </div>
@@ -430,9 +511,9 @@ export function CanvasChatPanel({
           </div>
         ))}
         {/* Example prompts — shown in coding mode when chat is at initial state */}
-        {challengeType === 'coding' && messages.length === 1 && !isLoading && (
+        {starterPrompts.length > 0 && messages.length === 1 && !isLoading && (
           <div className="flex flex-col gap-1.5 mt-2">
-            {getExamplePrompts(challengeType, currentLanguage).map((prompt) => (
+            {starterPrompts.map((prompt) => (
               <button
                 key={prompt}
                 onClick={() => sendMessage(prompt)}
@@ -447,7 +528,7 @@ export function CanvasChatPanel({
           <div className="flex gap-2">
             <HatchGlyph size={20} state="reviewing" className="text-primary shrink-0" />
             <div className="bg-surface-container-high rounded-xl px-3 py-2 text-sm text-on-surface-variant">
-              {challengeType === 'coding' ? 'Hatch is thinking…' : onCanvasActions ? 'Hatch is drawing…' : '…'}
+              {challengeType === 'coding' ? 'Hatch is thinking…' : onCanvasActions ? 'Hatch is reading notes and canvas…' : '…'}
             </div>
           </div>
         )}
@@ -463,7 +544,7 @@ export function CanvasChatPanel({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={challengeType === 'coding' ? "Ask Hatch about your code…" : "Ask Hatch or describe what to add…"}
+              placeholder={challengeType === 'coding' ? "Ask Hatch about your code…" : "Ask Hatch, or tell it what to draw from your notes…"}
               rows={2}
               className="flex-1 resize-none rounded-lg bg-surface-container border border-outline-variant text-on-surface text-sm px-3 py-2 font-body placeholder:text-on-surface-variant focus:outline-none focus:border-primary"
             />

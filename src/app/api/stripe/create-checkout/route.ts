@@ -9,13 +9,13 @@ const stripe = process.env.STRIPE_SECRET_KEY
 const PLAN_CONFIG = {
   monthly: {
     priceId: process.env.STRIPE_PRICE_MONTHLY ?? null,
-    unitAmount: 2900,
+    unitAmount: 3000,
     interval: 'month' as const,
     label: 'HackProduct Pro — Monthly',
   },
   annual: {
     priceId: process.env.STRIPE_PRICE_ANNUAL ?? null,
-    unitAmount: 19900,
+    unitAmount: 30000,
     interval: 'year' as const,
     label: 'HackProduct Pro — Annual',
   },
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
           currency: 'usd',
           product_data: {
             name: config.label,
-            description: 'Unlimited challenges, full Hatch coaching, Learner DNA, and all study plans',
+            description: 'Fair-use Hatch AI coaching, monthly practice starts, Learner DNA, interviews, and study plans',
           },
           unit_amount: config.unitAmount,
           recurring: { interval: config.interval },

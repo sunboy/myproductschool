@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo, useState } from 'react'
 import type { TestResult, RunResult } from '@/lib/coding/types'
 
 interface CodeOutputPanelProps {
@@ -26,7 +27,7 @@ function SqlResultTable({
       </div>
     )
   }
-  const columns = Object.keys(rows[0])
+  const columns = Array.from(new Set(rows.flatMap((row) => Object.keys(row))))
   return (
     <div className={className}>
       {label && (
@@ -64,6 +65,14 @@ function SqlResultTable({
       </div>
     </div>
   )
+}
+
+function getDisplayedActual(result: TestResult): unknown {
+  return result.actual !== undefined ? result.actual : result.output
+}
+
+function asSqlRows(value: unknown): Record<string, unknown>[] {
+  return Array.isArray(value) ? (value as Record<string, unknown>[]) : []
 }
 
 // Diff between expected and actual SQL rows — highlights missing/extra rows
@@ -106,6 +115,169 @@ function SqlRowDiff({
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+type SqlResultTab = 'actual' | 'expected' | 'diff'
+
+function SqlTabbedResults({ results }: { results: RunResult }) {
+  const visibleResults = useMemo(
+    () => results.results.filter((result) => !result.hidden),
+    [results.results],
+  )
+  const preferredResult = useMemo(
+    () => visibleResults.find((result) => result.status !== 'passed') ?? visibleResults[0] ?? results.results[0],
+    [results.results, visibleResults],
+  )
+  const [selectedId, setSelectedId] = useState(preferredResult?.id ?? '')
+  const [activeTab, setActiveTab] = useState<SqlResultTab>('actual')
+
+  const selectedResult = results.results.find((result) => result.id === selectedId) ?? preferredResult
+  const selectedIsHidden = Boolean(selectedResult?.hidden)
+  const actualRows = asSqlRows(selectedResult ? getDisplayedActual(selectedResult) : undefined)
+  const expectedRows = asSqlRows(selectedResult?.expected)
+
+  const renderSelectedTab = () => {
+    if (!selectedResult) {
+      return (
+        <div className="flex items-center gap-2 rounded-lg border border-outline-variant bg-surface p-4 text-sm text-on-surface-variant">
+          <span className="material-symbols-outlined text-[18px]">info</span>
+          Select a test case to inspect its rows.
+        </div>
+      )
+    }
+
+    if (selectedIsHidden) {
+      return (
+        <div className="flex items-start gap-2 rounded-lg border border-outline-variant bg-surface p-4">
+          <span className="material-symbols-outlined text-[18px] text-on-surface-variant">visibility_off</span>
+          <div>
+            <p className="font-label text-sm font-bold text-on-surface">Hidden test</p>
+            <p className="mt-0.5 text-xs leading-relaxed text-on-surface-variant">
+              Hatch runs this on submit, but row-level output is hidden so the test cannot be reverse-engineered.
+            </p>
+          </div>
+        </div>
+      )
+    }
+
+    if (selectedResult.status === 'error') {
+      return (
+        <div className="rounded-lg border border-error/20 bg-error/10 p-3">
+          <p className="font-label text-xs font-bold uppercase tracking-wider text-error">Execution error</p>
+          <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-xs text-error">
+            {selectedResult.errorMessage ?? 'The query could not be executed.'}
+          </pre>
+        </div>
+      )
+    }
+
+    if (activeTab === 'expected') {
+      return <SqlResultTable rows={expectedRows} label="Expected rows" />
+    }
+
+    if (activeTab === 'diff') {
+      if (selectedResult.status === 'passed') {
+        return (
+          <div className="flex items-start gap-2 rounded-lg border border-primary/20 bg-primary-container/40 p-4">
+            <span className="material-symbols-outlined text-[18px] text-primary">check_circle</span>
+            <div>
+              <p className="font-label text-sm font-bold text-on-surface">Rows match</p>
+              <p className="mt-0.5 text-xs text-on-surface-variant">No missing or unexpected rows for this test case.</p>
+            </div>
+          </div>
+        )
+      }
+      return (
+        <div>
+          <p className="mb-2 font-label text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+            Row differences
+          </p>
+          <SqlRowDiff expected={expectedRows} actual={actualRows} />
+        </div>
+      )
+    }
+
+    return <SqlResultTable rows={actualRows} label="Your query output" />
+  }
+
+  return (
+    <div className="grid h-full min-h-0 grid-cols-[minmax(150px,220px)_1fr]">
+      <div className="border-r border-outline-variant bg-surface-container-low p-2">
+        <div className="mb-2 flex items-center justify-between gap-2 px-1">
+          <span className="font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+            Test cases
+          </span>
+          <span className="rounded-full bg-surface px-1.5 py-0.5 font-label text-[10px] font-bold text-on-surface-variant">
+            {results.testsPassed}/{results.testsTotal}
+          </span>
+        </div>
+        <div className="space-y-1">
+          {results.results.map((result) => {
+            const selected = result.id === selectedResult?.id
+            const passed = result.status === 'passed'
+            const icon = passed ? 'check_circle' : result.status === 'timeout' ? 'timer_off' : result.status === 'error' ? 'error' : 'cancel'
+            return (
+              <button
+                key={result.id}
+                type="button"
+                onClick={() => setSelectedId(result.id)}
+                className={[
+                  'flex w-full items-center gap-2 rounded-lg border px-2 py-2 text-left transition-colors',
+                  selected
+                    ? 'border-primary bg-primary-fixed'
+                    : 'border-transparent bg-transparent hover:bg-surface-container',
+                ].join(' ')}
+              >
+                <span
+                  className={`material-symbols-outlined text-[16px] ${passed ? 'text-primary' : 'text-error'}`}
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  {icon}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-label text-xs font-bold text-on-surface">{result.label}</span>
+                  <span className="block truncate text-[10.5px] text-on-surface-variant">
+                    {result.hidden ? 'Hidden' : result.status}
+                  </span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+      <div className="flex min-h-0 flex-col overflow-hidden bg-surface">
+        <div className="flex shrink-0 items-center gap-1 border-b border-outline-variant bg-surface-container-low px-3 py-2">
+          {([
+            ['actual', 'Your output'],
+            ['expected', 'Expected'],
+            ['diff', 'Diff'],
+          ] as const).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setActiveTab(key)}
+              className={[
+                'rounded-md px-2.5 py-1 font-label text-xs font-bold transition-colors',
+                activeTab === key
+                  ? 'bg-primary text-on-primary'
+                  : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface',
+              ].join(' ')}
+            >
+              {label}
+            </button>
+          ))}
+          {selectedResult && (
+            <span className="ml-auto truncate font-label text-xs text-on-surface-variant">
+              {selectedResult.label}
+            </span>
+          )}
+        </div>
+        <div className="min-h-0 flex-1 overflow-auto p-3">
+          {renderSelectedTab()}
+        </div>
+      </div>
     </div>
   )
 }
@@ -170,16 +342,16 @@ function TestResultRow({ result, isSqlMode }: { result: TestResult; isSqlMode: b
                   label="Expected"
                 />
               )}
-              {result.actual !== undefined && (
+              {getDisplayedActual(result) !== undefined && (
                 <SqlResultTable
-                  rows={result.actual as Record<string, unknown>[]}
+                  rows={asSqlRows(getDisplayedActual(result))}
                   label="Got"
                 />
               )}
-              {result.expected !== undefined && result.actual !== undefined && (
+              {result.expected !== undefined && getDisplayedActual(result) !== undefined && (
                 <SqlRowDiff
-                  expected={result.expected as Record<string, unknown>[]}
-                  actual={result.actual as Record<string, unknown>[]}
+                  expected={asSqlRows(result.expected)}
+                  actual={asSqlRows(getDisplayedActual(result))}
                 />
               )}
             </div>
@@ -199,7 +371,7 @@ function TestResultRow({ result, isSqlMode }: { result: TestResult; isSqlMode: b
                   Got:
                 </p>
                 <pre className="bg-error/10 rounded px-2 py-1.5 overflow-x-auto text-on-surface whitespace-pre-wrap break-words">
-                  {JSON.stringify(result.actual, null, 2)}
+                  {JSON.stringify(getDisplayedActual(result), null, 2)}
                 </pre>
               </div>
             </div>
@@ -288,7 +460,11 @@ export function CodeOutputPanel({
         )}
 
         {/* Results */}
-        {status === 'done' && results && results.results.length > 0 && (
+        {status === 'done' && results && results.results.length > 0 && isSqlMode && (
+          <SqlTabbedResults key={results.runId} results={results} />
+        )}
+
+        {status === 'done' && results && results.results.length > 0 && !isSqlMode && (
           <div className="divide-outline-variant/0">
             {results.results.map((result) => (
               <TestResultRow key={result.id} result={result} isSqlMode={isSqlMode} />

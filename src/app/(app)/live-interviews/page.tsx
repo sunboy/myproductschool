@@ -99,14 +99,44 @@ export default async function LiveInterviewsPage() {
   return (
     <UsageProvider>
       <div className="max-w-[1440px] mx-auto px-6 py-7 space-y-6">
-        {/* Header */}
-        <section>
-          <h1 className="font-headline text-[38px] font-semibold tracking-tight text-on-surface" style={{ letterSpacing: '-0.02em' }}>
-            Interviews
-          </h1>
-          <p className="text-[15px] text-on-surface-variant mt-1.5">
-            Practice with real interviewers from top companies. Pick a seat.
-          </p>
+        <section className="relative overflow-hidden rounded-[28px] border border-outline-variant/40 bg-[#14241c] px-6 py-6 sm:px-8 sm:py-7">
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)',
+              backgroundSize: '22px 22px',
+              maskImage: 'radial-gradient(ellipse 80% 100% at 78% 50%, black 30%, transparent 78%)',
+              WebkitMaskImage: 'radial-gradient(ellipse 80% 100% at 78% 50%, black 30%, transparent 78%)',
+            }}
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{ background: 'radial-gradient(520px 360px at 86% 48%, rgba(126,224,153,0.18), transparent 62%)' }}
+          />
+          <div className="relative grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-5 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-[11px] font-label font-bold uppercase tracking-[0.12em] text-[#9ee0b8]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#7ee099]" />
+                AI interviewer online
+              </div>
+              <h1 className="mt-4 font-headline text-[38px] sm:text-[46px] font-semibold leading-[1.03] text-[#f3ede0]" style={{ letterSpacing: '-0.02em' }}>
+                Live interviews, run entirely by Hatch.
+              </h1>
+              <p className="mt-3 max-w-2xl text-[15px] leading-7 text-[#f3ede0]/70">
+                Pick a discipline, open the room, and work out loud. Hatch probes, watches the canvas or editor, carries context across rounds, and writes the debrief.
+              </p>
+            </div>
+            <div className="hidden lg:flex justify-end">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/hatch-mascot.png"
+                alt="Hatch"
+                className="h-40 w-40 rounded-[24px] object-cover shadow-2xl shadow-black/20"
+              />
+            </div>
+          </div>
         </section>
 
         <LiveInterviewsShell personas={personas} scenarios={scenarios} />

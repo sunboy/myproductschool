@@ -81,10 +81,11 @@ function Chip({ label, outline, amber }: { label: string; outline?: boolean; amb
 
 // ── Mode card ──────────────────────────────────────────────────────────────────
 function ModeCard({
-  active, onClick, activeStyle, inactiveStyle, hoverStyle, children,
+  active, onClick, activeStyle, inactiveStyle, hoverStyle, sonic = 'nudge', children,
 }: {
   active: boolean
   onClick: () => void
+  sonic?: string
   activeStyle: React.CSSProperties
   inactiveStyle: React.CSSProperties
   hoverStyle: React.CSSProperties
@@ -95,6 +96,7 @@ function ModeCard({
   return (
     <button
       onClick={onClick}
+      data-hatch-sound={active ? undefined : sonic}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -302,6 +304,33 @@ const COMPANY_ICONS: Record<string, string> = {
   Stripe: 'credit_card', Uber: 'local_taxi',
 }
 
+interface ApiLoopRound {
+  id: string
+  status: string
+  round_index: number
+  discipline: string
+  round_debrief_json?: { grade?: string } | null
+  started_at?: string | null
+  session_id?: string | null
+}
+
+interface ApiLoop {
+  id: string
+  title: string
+  target_company?: string | null
+  target_role?: string | null
+  status: string
+  created_at: string | null
+  started_at?: string | null
+  completed_at?: string | null
+  round_order?: LoopDiscipline[] | null
+  loop_debrief_json?: {
+    overall_score?: number
+    round_scores?: Array<{ grade?: string }>
+  } | null
+  loop_rounds?: ApiLoopRound[] | null
+}
+
 function fmtDate(iso: string | null): string {
   if (!iso) return ''
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
@@ -317,9 +346,8 @@ function relTime(iso: string | null): string {
   return `${Math.floor(hrs / 24)}d ago`
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapApiLoop(l: any): Loop {
-  const rounds: any[] = [...(l.loop_rounds ?? [])].sort((a: any, b: any) => a.round_index - b.round_index)
+function mapApiLoop(l: ApiLoop): Loop {
+  const rounds = [...(l.loop_rounds ?? [])].sort((a, b) => a.round_index - b.round_index)
 
   const DB_TO_UI_STATUS: Record<string, Loop['status']> = {
     draft: 'configured', active: 'in_progress', paused: 'in_progress',
@@ -328,7 +356,7 @@ function mapApiLoop(l: any): Loop {
 
   const completedCount = rounds.filter((r) => r.status === 'completed').length
   const progressPct = rounds.length > 0 ? Math.round((completedCount / rounds.length) * 100) : 0
-  const activeRound = rounds.find((r: any) => r.status === 'active' || r.status === 'paused')
+  const activeRound = rounds.find((r) => r.status === 'active' || r.status === 'paused')
   const uiStatus = DB_TO_UI_STATUS[l.status] ?? 'configured'
 
   let lastActive = `Configured ${fmtDate(l.created_at)}`
@@ -344,12 +372,12 @@ function mapApiLoop(l: any): Loop {
     status: uiStatus,
     progressPct,
     lastActive,
-    totalMins: rounds.reduce((sum: number, r: any) => sum + (ROUND_MINS[r.discipline as LoopDiscipline] ?? 30), 0),
+    totalMins: rounds.reduce((sum, r) => sum + (ROUND_MINS[r.discipline as LoopDiscipline] ?? 30), 0),
     grade: l.loop_debrief_json?.round_scores?.[0]?.grade ?? undefined,
     overallScore: l.loop_debrief_json?.overall_score ?? undefined,
     targetRole: l.target_role ?? undefined,
     roundOrder: (l.round_order ?? []) as LoopDiscipline[],
-    rounds: rounds.map((r: any, i: number): Round => {
+    rounds: rounds.map((r, i): Round => {
       const prevDone = i === 0 || rounds[i - 1]?.status === 'completed'
       let roundStatus: Round['status'] = 'locked'
       if (r.status === 'completed') roundStatus = 'passed'
@@ -377,7 +405,7 @@ function LoopRow({ loop, active, onClick }: { loop: Loop; active: boolean; onCli
   const inProg = loop.rounds.some((r) => r.status === 'in_progress')
 
   return (
-    <button onClick={onClick} style={{
+    <button onClick={onClick} data-hatch-sound={active ? undefined : 'nudge'} style={{
       width: '100%', textAlign: 'left', border: 'none',
       background: active ? T.surface : 'transparent',
       boxShadow: active ? `0 1px 0 ${T.outlineFaint}, 0 6px 16px -10px rgba(30,27,20,0.18)` : 'none',
@@ -485,6 +513,7 @@ function LoopDetail({ loop, onEdit, onDelete }: { loop: Loop; onEdit?: () => voi
           return (
             <button
               onClick={() => router.push(href)}
+              data-hatch-sound="submit"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
                 padding: '14px 24px', borderRadius: 999, border: 'none', cursor: 'pointer',
@@ -500,6 +529,7 @@ function LoopDetail({ loop, onEdit, onDelete }: { loop: Loop; onEdit?: () => voi
         {isConfigured && (
           <button
             onClick={() => router.push(`/live-interviews/loop/${loop.loopDbId}`)}
+            data-hatch-sound="submit"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               padding: '14px 24px', borderRadius: 999, border: 'none', cursor: 'pointer',
@@ -514,6 +544,7 @@ function LoopDetail({ loop, onEdit, onDelete }: { loop: Loop; onEdit?: () => voi
         {isCompleted && (
           <button
             onClick={() => router.push(`/live-interviews/loop/${loop.loopDbId}`)}
+            data-hatch-sound="nudge"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               padding: '14px 24px', borderRadius: 999, cursor: 'pointer',
@@ -553,12 +584,14 @@ function LoopDetail({ loop, onEdit, onDelete }: { loop: Loop; onEdit?: () => voi
             <>
               <button
                 onClick={() => onEdit?.()}
+                data-hatch-sound="open"
                 style={{ border: 'none', background: 'transparent', color: T.primary, fontWeight: 700, fontSize: 12, cursor: 'pointer', padding: 0 }}
               >
                 Edit
               </button>
               <button
                 onClick={() => onDelete?.()}
+                data-hatch-sound="close"
                 style={{ border: 'none', background: 'transparent', color: '#b83230', fontWeight: 700, fontSize: 12, cursor: 'pointer', padding: 0 }}
               >
                 Delete
@@ -671,7 +704,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: T.primary, marginBottom: 6 }}>{editLoopId ? 'Edit loop' : 'New loop'}</div>
           <h2 style={{ margin: 0, fontFamily: 'var(--font-headline,Literata,Georgia,serif)', fontSize: 26, fontWeight: 600, letterSpacing: '-0.015em', color: T.onSurface }}>{editLoopId ? 'Update configuration' : 'Configure your loop'}</h2>
         </div>
-        <button onClick={onCancel} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: T.onSurfaceMuted, padding: 6 }}>
+        <button onClick={onCancel} data-hatch-sound="close" style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: T.onSurfaceMuted, padding: 6 }}>
           <span className="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -695,7 +728,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
         <label style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 8 }}>Company persona</label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {COMPANIES.map((c) => (
-            <button key={c.name} onClick={() => setSelectedCo(c.name)} style={{
+            <button key={c.name} onClick={() => setSelectedCo(c.name)} data-hatch-sound={selectedCo === c.name ? undefined : 'nudge'} style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '7px 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
               background: selectedCo === c.name ? T.primaryContainer : T.surfaceContainerLow,
@@ -720,7 +753,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
             const on = selectedRounds.includes(r.id)
             const order = selectedRounds.indexOf(r.id)
             return (
-              <button key={r.id} onClick={() => toggleRound(r.id)} style={{
+              <button key={r.id} onClick={() => toggleRound(r.id)} data-hatch-sound="nudge" style={{
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '9px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left',
                 background: on ? T.primaryContainer : T.surfaceContainerLow,
@@ -754,7 +787,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
           <label style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 8 }}>Difficulty</label>
           <div style={{ display: 'flex', gap: 6 }}>
             {Object.entries(DIFF_LABELS).map(([k, label]) => (
-              <button key={k} onClick={() => setDifficulty(k)} style={{
+              <button key={k} onClick={() => setDifficulty(k)} data-hatch-sound={difficulty === k ? undefined : 'nudge'} style={{
                 flex: 1, padding: '8px 0', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700,
                 background: difficulty === k ? T.onSurface : T.surfaceContainerLow,
                 color: difficulty === k ? '#f7ede0' : T.onSurfaceVariant,
@@ -787,11 +820,11 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
           <div style={{ fontSize: 13, fontWeight: 700, color: T.onSurface }}>{selectedRounds.length} rounds · ~{totalMins} min total</div>
           <div style={{ fontSize: 12, color: T.onSurfaceMuted }}>{selectedCo} · {DIFF_LABELS[difficulty]}{voiceMode ? ' · Voice on' : ''}</div>
         </div>
-        <button onClick={onCancel} style={{
+        <button onClick={onCancel} data-hatch-sound="close" style={{
           padding: '8px 16px', borderRadius: 999, cursor: 'pointer', fontSize: 13, fontWeight: 700,
           background: 'transparent', color: T.onSurface, border: `1px solid ${T.outlineVariant}`,
         }}>Cancel</button>
-        <button onClick={handleSave} disabled={selectedRounds.length < 2 || saving} style={{
+        <button onClick={handleSave} data-hatch-sound="submit" disabled={selectedRounds.length < 2 || saving} style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
           padding: '8px 16px', borderRadius: 999, border: 'none', fontSize: 13, fontWeight: 700,
           background: T.btnDarkBg, color: T.btnDarkText,
@@ -897,7 +930,7 @@ function FullLoopPanel() {
 
   return (
     <div style={{
-      display: 'grid', gridTemplateColumns: '320px 1fr',
+      display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
       borderRadius: 24, overflow: 'hidden',
       border: `1px solid ${T.outlineFaint}`,
       background: T.surface,
@@ -938,7 +971,7 @@ function FullLoopPanel() {
               )}
             </>
           )}
-          <button onClick={() => setBuilding(true)} style={{
+          <button onClick={() => setBuilding(true)} data-hatch-sound={building ? undefined : 'open'} style={{
             width: '100%', marginTop: 8,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             padding: '12px 14px', borderRadius: 12,
@@ -1084,7 +1117,7 @@ export function LiveInterviewsShell({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
       {/* ── Mode switcher ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.35fr', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 16 }}>
 
         {/* Single Round */}
         <ModeCard
@@ -1119,13 +1152,14 @@ export function LiveInterviewsShell({
             <RadioDot active={mode === 'single'} />
           </div>
           <div style={{ fontSize: 13.5, color: T.onSurfaceVariant, lineHeight: 1.5 }}>
-            One interview type with a company persona. 25–45 min.
+            One AI-run interview type with a company persona. 25-45 min.
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
             <Chip label="Product sense" />
             <Chip label="System design" />
             <Chip label="Data modeling" outline />
             <Chip label="Coding" outline />
+            <Chip label="SQL" outline />
           </div>
         </ModeCard>
 
@@ -1177,7 +1211,7 @@ export function LiveInterviewsShell({
             <RadioDot active={mode === 'loop'} dark />
           </div>
           <div style={{ position: 'relative', fontSize: 13.5, color: 'rgba(243,237,224,0.78)', lineHeight: 1.5 }}>
-            Sequential rounds simulating a real interview loop. Pause and resume across sessions. Hatch grades across all rounds.
+            Sequential rounds with shared memory. Pause, resume, and let Hatch synthesize the loop-level signal.
           </div>
           <div style={{
             position: 'relative', display: 'flex', gap: 14, marginTop: 6,
@@ -1188,6 +1222,48 @@ export function LiveInterviewsShell({
             <LoopStatPill label="Completed"   count={1} dotColor="rgba(255,255,255,0.4)" />
           </div>
         </ModeCard>
+      </div>
+
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+        gap: 10,
+      }}>
+        {[
+          { icon: 'graphic_eq', label: 'Voice pressure', sub: 'Natural probing, no scheduling' },
+          { icon: 'draw', label: 'Artifacts watched', sub: 'Canvas, schema, code, SQL' },
+          { icon: 'memory', label: 'Round memory', sub: 'Signals carry into the loop' },
+          { icon: 'summarize', label: 'Debrief engine', sub: 'Scores, transcript, next drills' },
+        ].map((item) => (
+          <div
+            key={item.label}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              minWidth: 0,
+              padding: '12px 14px',
+              borderRadius: 16,
+              background: T.surfaceContainerLow,
+              border: `1px solid ${T.outlineFaint}`,
+            }}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{ color: T.primary, fontSize: 20, fontVariationSettings: "'FILL' 1" }}
+            >
+              {item.icon}
+            </span>
+            <span style={{ minWidth: 0 }}>
+              <span style={{ display: 'block', fontSize: 12.5, fontWeight: 800, color: T.onSurface, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {item.label}
+              </span>
+              <span style={{ display: 'block', fontSize: 11.5, color: T.onSurfaceMuted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {item.sub}
+              </span>
+            </span>
+          </div>
+        ))}
       </div>
 
       {/* ── Body ── */}

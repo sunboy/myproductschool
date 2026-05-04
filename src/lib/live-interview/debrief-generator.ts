@@ -20,6 +20,7 @@ export interface DebriefParams {
   calibrationSnapshot: { archetype: string; moveLevels: Record<string, number> }
   scenarioRubric?: Record<string, unknown> | null
   challengeId?: string | null
+  budget?: { userId: string; userPlan: string; route: string }
 }
 
 const SYSTEM_PROMPT = `You are an expert PM interview evaluator for HackProduct. Analyze the provided interview transcript against the FLOW rubric and return a structured JSON debrief.
@@ -53,7 +54,7 @@ export async function generateDebrief(params: DebriefParams): Promise<DebriefRes
     return MOCK_LIVE_DEBRIEF
   }
 
-  const { turns, calibrationSnapshot, scenarioRubric } = params
+  const { turns, calibrationSnapshot, scenarioRubric, budget } = params
 
   // Build transcript sorted by turnIndex
   const sorted = [...turns].sort((a, b) => a.turnIndex - b.turnIndex)
@@ -105,6 +106,7 @@ ${transcript}`
   const response = await createCachedMessage(systemPrompt, userMessage, {
     model: 'claude-opus-4-6',
     max_tokens: 1500,
+    budget,
   })
 
   const rawText = response.content

@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { generateDebrief } from '@/lib/live-interview/debrief-generator'
 import { gradeArtifact } from '@/lib/live-interview/artifact-grader'
 import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 
 const INTERVIEW_DIFFICULTY_BASE_XP: Record<string, number> = {
   beginner: 60,
@@ -11,6 +12,21 @@ const INTERVIEW_DIFFICULTY_BASE_XP: Record<string, number> = {
 }
 
 const DEFAULT_INTERVIEW_BASE_XP = 80
+
+function aiBudgetResponse(error: unknown) {
+  if (!(error instanceof AiBudgetExceededError)) return null
+
+  return Response.json(
+    {
+      error: 'limit_reached',
+      feature: 'hatch_ai_cents',
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    },
+    { status: 402 }
+  )
+}
 
 export async function POST(
   request: Request,
@@ -61,6 +77,10 @@ export async function POST(
   }
 
   const session = sessionResult.data
+  if (session.user_id !== user.id) {
+    return new Response('Session not found', { status: 404 })
+  }
+
   if (session.status === 'completed') {
     return Response.json({
       debriefJson: session.debrief_json ?? null,
@@ -74,6 +94,8 @@ export async function POST(
     content: t.content,
     turnIndex: t.turn_index,
   }))
+  const userPlan = await getUserPlanForBudget(user.id)
+  const budget = { userId: user.id, userPlan, route: 'live_interview_debrief' }
 
   // Grade artifact if one was captured during the session
   const calibrationSnap = (session.calibration_snapshot ?? {}) as Record<string, unknown>
@@ -89,8 +111,10 @@ export async function POST(
   let artifactGrading: Awaited<ReturnType<typeof gradeArtifact>> | null = null
   if (artifactSnapshot && process.env.ANTHROPIC_API_KEY) {
     try {
-      artifactGrading = await gradeArtifact(artifactSnapshot)
+      artifactGrading = await gradeArtifact(artifactSnapshot, { ...budget, route: 'live_interview_artifact_grade' })
     } catch (err) {
+      const response = aiBudgetResponse(err)
+      if (response) return response
       console.error('Artifact grading error:', err)
     }
   }
@@ -113,13 +137,21 @@ export async function POST(
       .eq('id', id)
   }
 
-  const debriefResult = await generateDebrief({
-    sessionId: id,
-    turns,
-    calibrationSnapshot: session.calibration_snapshot ?? { archetype: 'Analyst', moveLevels: {} },
-    scenarioRubric: session.scenario_rubric ?? null,
-    challengeId: session.challenge_id ?? null,
-  })
+  let debriefResult
+  try {
+    debriefResult = await generateDebrief({
+      sessionId: id,
+      turns,
+      calibrationSnapshot: session.calibration_snapshot ?? { archetype: 'Analyst', moveLevels: {} },
+      scenarioRubric: session.scenario_rubric ?? null,
+      challengeId: session.challenge_id ?? null,
+      budget,
+    })
+  } catch (err) {
+    const response = aiBudgetResponse(err)
+    if (response) return response
+    throw err
+  }
 
   const duration = Math.floor((Date.now() - new Date(session.started_at).getTime()) / 1000)
 
@@ -199,6 +231,7 @@ export async function POST(
           roundDebriefJson: debriefForDistill,
           roundIndex: sessionRoundIndex,
           discipline: roundDiscipline as import('@/lib/interview-loops/types').LoopDiscipline,
+          budget: { ...budget, route: 'interview_loop_distill' },
         })
 
         const updatedMemory = [...(loop.cross_round_memory ?? []), ...newSignals]
@@ -243,6 +276,7 @@ export async function POST(
             targetCompany: loop.target_company,
             targetRole: loop.target_role,
             calibrationSnapshot: {},
+            budget: { ...budget, route: 'interview_loop_debrief' },
           })
 
           await adminClient

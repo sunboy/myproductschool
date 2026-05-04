@@ -1,6 +1,13 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import Anthropic from '@anthropic-ai/sdk'
 import { applyCoverageCredit, type FlowMove } from '@/lib/live-interview/flow-coverage-credits'
+import {
+  AiBudgetExceededError,
+  assertAiBudget,
+  estimateAnthropicPreflightCents,
+  getUserPlanForBudget,
+  recordAnthropicUsage,
+} from '@/lib/usage/ai-budget'
 
 const VALID_FLOW_MOVES = new Set(['frame', 'list', 'optimize', 'win'])
 const VALID_COMPETENCIES = new Set([
@@ -60,7 +67,7 @@ export async function POST(
 
   const { data: session } = await adminClient
     .from('live_interview_sessions')
-    .select('flow_coverage, flow_coverage_credits, total_turns, status, conversation_memory, calibration_snapshot, scenario_rubric')
+    .select('user_id, flow_coverage, flow_coverage_credits, total_turns, status, conversation_memory, calibration_snapshot, scenario_rubric')
     .eq('id', id)
     .single()
 
@@ -108,10 +115,9 @@ ${rubric.engineerStandout ?? ''}
     ? '\n- rubric_alignment: How well the candidate\'s response aligns with the scenario rubric. "strong" if they hit the core insight, "partial" if they\'re on the right track but incomplete, "surface" if they\'re addressing symptoms not root causes, "off_track" if their reasoning contradicts the scenario\'s key insight. null if not enough to judge.'
     : ''
 
-  const response = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 400,
-    system: `You are an interview analysis engine. Analyze the most recent exchange in a PM interview and return a JSON object. No other text.
+  const model = 'claude-haiku-4-5-20251001'
+  const maxTokens = 400
+  const systemPrompt = `You are an interview analysis engine. Analyze the most recent exchange in a PM interview and return a JSON object. No other text.
 ${scenarioContext}
 Analyze the CANDIDATE's most recent response (not the interviewer's).
 
@@ -131,9 +137,42 @@ Guidelines:
 - signal: A specific observation, not generic praise. "Identified the causal mechanism behind churn" not "Good analysis."${rubricAlignmentGuideline}
 - emotional_beat: How the interviewer should be feeling right now. "intrigued" if the candidate said something unexpected, "challenging" if they gave a weak answer, "delighted" if they nailed something, "concerned" if they're off track.
 - session_phase: "opening" if still in warm-up/first few exchanges, "middle" for the bulk, "closing" if the interviewer is wrapping up, "done" if the interviewer has explicitly ended the session.
-- memory_items: 0-2 items worth remembering for later reference. Concrete claims, contradictions, strong moments, or dodged questions. Empty array if nothing notable.`,
-    messages: [{ role: 'user', content: transcript }],
-  })
+- memory_items: 0-2 items worth remembering for later reference. Concrete claims, contradictions, strong moments, or dodged questions. Empty array if nothing notable.`
+  const sessionUserId = session.user_id as string
+  const userPlan = await getUserPlanForBudget(sessionUserId)
+  const preflightCostCents = estimateAnthropicPreflightCents(model, maxTokens, systemPrompt.length + transcript.length)
+
+  let response
+  try {
+    await assertAiBudget(sessionUserId, userPlan, preflightCostCents)
+    response = await anthropic.messages.create({
+      model,
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: transcript }],
+    })
+    await recordAnthropicUsage({
+      userId: sessionUserId,
+      model,
+      usage: response.usage,
+      fallbackCostCents: preflightCostCents,
+      route: 'live_interview_grade_turn',
+    })
+  } catch (error) {
+    if (error instanceof AiBudgetExceededError) {
+      return Response.json(
+        {
+          error: 'limit_reached',
+          feature: 'hatch_ai_cents',
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+    throw error
+  }
 
   const raw = response.content[0].type === 'text' ? response.content[0].text.trim() : '{}'
 

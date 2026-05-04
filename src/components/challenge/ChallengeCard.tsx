@@ -37,6 +37,7 @@ export function ChallengeCard({
     ? { className: 'relative flex items-center gap-3 p-3 bg-surface-container rounded-lg border border-outline-variant opacity-75 cursor-default' }
     : {
         href: `/workspace/challenges/${challenge.id}`,
+        'data-hatch-sound': 'open',
         className: 'relative flex items-center gap-3 p-3 bg-surface-container rounded-lg border border-outline-variant hover:bg-surface-container-high hover:border-primary/30 transition-all',
       }
 

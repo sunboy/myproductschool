@@ -58,9 +58,10 @@ self.onmessage = async ({ data }) => {
           label: tc.label,
           status: passed ? 'passed' : 'failed',
           hidden: tc.hidden,
-          // Actual rows only included for visible failed tests
-          actual: (!tc.hidden && !passed) ? actualRows : undefined,
-          expected: (!tc.hidden && !passed) ? tc.expected_rows : undefined,
+          // Visible SQL tests can show the user's rows and expected rows in the UI.
+          // Hidden tests intentionally reveal only pass/fail.
+          actual: !tc.hidden ? actualRows : undefined,
+          expected: !tc.hidden ? tc.expected_rows : undefined,
         })
       } catch (err) {
         results.push({

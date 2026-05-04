@@ -2,7 +2,8 @@
 
 import React from 'react'
 import Link from 'next/link'
-import type { ChallengeWithDomain, FlowMove } from '@/lib/types'
+import { appendReturnTo } from '@/lib/navigation/return-to'
+import type { ChallengeWithDomain } from '@/lib/types'
 
 const PARADIGM_STYLE: Record<string, {
   bg: string
@@ -175,15 +176,20 @@ export function ChallengeCard({
   paradigm,
   listView = false,
   locked = false,
+  returnHref,
 }: {
   challenge: ChallengeWithDomain
   paradigm: string
   listView?: boolean
   locked?: boolean
+  returnHref?: string
 }) {
   const style = PARADIGM_STYLE[paradigm] ?? PARADIGM_STYLE.Traditional
   const diff = DIFFICULTY_CONFIG[challenge.difficulty] ?? { label: challenge.difficulty, dot: '#74796e' }
   const attempts = challenge.attempt_count ?? 0
+  const challengePath = `/workspace/challenges/${challenge.slug ?? challenge.id}`
+  const challengeHref = appendReturnTo(challengePath, returnHref)
+  const discussionHref = appendReturnTo(`/challenges/${challenge.slug ?? challenge.id}/discussion`, returnHref)
   const statusIcon = challenge.is_completed
     ? { icon: 'check_circle', fill: 1, color: 'var(--color-primary)' }
     : attempts > 0
@@ -201,7 +207,7 @@ export function ChallengeCard({
 
         {/* Title + description */}
         <div className="flex-1 min-w-0">
-          <Link href={`/workspace/challenges/${challenge.slug ?? challenge.id}`} className="block">
+          <Link href={challengeHref} data-hatch-sound="open" className="block">
             <p className="font-headline font-bold text-[14px] text-on-surface leading-snug truncate group-hover:text-primary transition-colors">
               {challenge.title}
             </p>
@@ -265,7 +271,8 @@ export function ChallengeCard({
           </span>
         ) : (
           <Link
-            href={`/workspace/challenges/${challenge.slug ?? challenge.id}`}
+            href={challengeHref}
+            data-hatch-sound="open"
             className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-full font-label transition-all duration-[120ms] active:scale-95 shrink-0 hover:-translate-y-px"
             style={{ backgroundColor: style.accent, color: '#fff' }}
           >
@@ -328,7 +335,7 @@ export function ChallengeCard({
       </div>
 
       {/* Title */}
-      <Link href={`/workspace/challenges/${challenge.slug ?? challenge.id}`} className="block">
+      <Link href={challengeHref} data-hatch-sound="open" className="block">
         <h3
           className="font-headline font-[600] text-[16px] tracking-[-0.01em] leading-snug transition-colors"
           style={{ color: style.fg, textWrap: 'balance' } as React.CSSProperties}
@@ -348,7 +355,8 @@ export function ChallengeCard({
 
         <div className="flex items-center gap-1.5">
           <Link
-            href={`/challenges/${challenge.slug ?? challenge.id}/discussion`}
+            href={discussionHref}
+            data-hatch-sound="nudge"
             className="p-1.5 rounded-lg transition-colors"
             style={{ color: `${style.fg}80` }}
             title="Discussion"
@@ -362,7 +370,8 @@ export function ChallengeCard({
             </span>
           ) : (
             <Link
-              href={`/workspace/challenges/${challenge.slug ?? challenge.id}`}
+              href={challengeHref}
+              data-hatch-sound="open"
               className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-full font-label transition-all duration-[120ms] active:scale-95 hover:-translate-y-px"
               style={{ backgroundColor: style.accent, color: '#fff' }}
             >

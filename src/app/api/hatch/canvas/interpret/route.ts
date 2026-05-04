@@ -4,6 +4,7 @@ import { join } from 'path'
 import { createCachedMessage } from '@/lib/anthropic/cached-client'
 import { createClient } from '@/lib/supabase/server'
 import { sceneToPrompt, type CanvasScene } from '@/lib/hatch/canvas-scene'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import type { CanvasInterpretResponse, CanvasIntent } from '@/lib/types'
 
 function loadCodingCoachSkill(): string {
@@ -45,6 +46,13 @@ Decision rules:
 - Question words ("what", "why", "is", "should") with NO build verb mean coach.
 - When in doubt and the user references something that should change on the canvas, lean toward build_and_coach.
 - Do NOT use regex on the message. Use intent. The user's phrasing matters less than what they're trying to accomplish.`
+
+const CONTEXT_CANVAS_RULES = `Context Pack + canvas behavior:
+- Treat the Context Pack as the user's working memory: assumptions, constraints, interfaces, and open questions. It is not separate from the diagram.
+- Compare intent vs artifact. If the Context Pack mentions something absent from the canvas, call that out or build the smallest useful canvas change.
+- If the user asks to "build from notes", "turn notes into canvas", or similar, translate only the highest-signal context into concrete canvas elements. Do not dump every note onto the canvas.
+- If Context Pack and canvas conflict, name the conflict directly and suggest the decision the candidate should make.
+- In coach mode, prefer: one observation, one next canvas move, one tradeoff to defend.`
 
 const SYSTEM_DESIGN_RULES = `Domain-specific guidance for system_design challenges:
 - Common gaps to surface in coach mode: missing auth/identity layer, no rate limiting, cache on the write path causing consistency issues, no monitoring/observability, single point of failure, no retry/backoff strategy.
@@ -143,7 +151,7 @@ function buildSystemPrompt(challengeType: string): string {
   }
   const domain =
     challengeType === 'data_modeling' ? DATA_MODELING_RULES : SYSTEM_DESIGN_RULES
-  return [COACH_PERSONA, ROUTING_RULES, domain, ACTION_SCHEMA].join('\n\n')
+  return [COACH_PERSONA, ROUTING_RULES, CONTEXT_CANVAS_RULES, domain, ACTION_SCHEMA].join('\n\n')
 }
 
 interface InterpretBody {
@@ -155,6 +163,7 @@ interface InterpretBody {
   challengeId?: string
   challengeType?: 'system_design' | 'data_modeling' | 'coding' | string
   attemptId?: string
+  context_pack?: string
   // Coding-mode fields (only used when challengeType === 'coding')
   current_code?: string
   current_language?: string
@@ -263,6 +272,7 @@ function buildUserContent(body: InterpretBody): string {
     .join('\n')
   return [
     `# Canvas state\n${sceneText}`,
+    body.context_pack?.trim() ? `# Context Pack\n${body.context_pack.trim()}` : null,
     historyText ? `# Recent conversation\n${historyText}` : null,
     `# User's latest message\n${body.message}`,
   ]
@@ -289,11 +299,13 @@ function normalizeResponse(raw: unknown): CanvasInterpretResponse {
 async function callClaude(
   systemPrompt: string,
   userContent: string,
-  isCodingMode = false
+  isCodingMode = false,
+  budget?: { userId: string; userPlan: string; route: string }
 ): Promise<CanvasInterpretResponse> {
   const response = await createCachedMessage(systemPrompt, userContent, {
     model: 'claude-sonnet-4-6',
     max_tokens: 2000,
+    budget,
   })
   const content = response.content[0]
   if (content.type !== 'text') throw new Error('Non-text response')
@@ -337,6 +349,8 @@ export async function POST(req: NextRequest) {
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  const userPlan = await getUserPlanForBudget(user.id)
+  const budget = { userId: user.id, userPlan, route: 'hatch_canvas_interpret' }
 
   const body = (await req.json()) as InterpretBody
 
@@ -352,16 +366,30 @@ export async function POST(req: NextRequest) {
   try {
     let result: CanvasInterpretResponse
     try {
-      result = await callClaude(systemPrompt, userContent, isCodingMode)
+      result = await callClaude(systemPrompt, userContent, isCodingMode, budget)
     } catch {
       result = await callClaude(
         systemPrompt,
         userContent + '\n\nReturn ONLY valid JSON, no markdown, no prose.',
-        isCodingMode
+        isCodingMode,
+        budget
       )
     }
     return NextResponse.json(result)
   } catch (error) {
+    if (error instanceof AiBudgetExceededError) {
+      return NextResponse.json(
+        {
+          error: 'limit_reached',
+          feature: 'hatch_ai_cents',
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+
     console.error('Canvas interpret error:', error)
     return NextResponse.json({
       intent: 'coach' as const,

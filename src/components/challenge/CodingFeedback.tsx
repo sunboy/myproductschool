@@ -12,6 +12,8 @@ interface CodingFeedbackProps {
   isLoadingGrading?: boolean
   onRetry?: () => void
   onAskHatch?: () => void
+  onNextChallenge?: () => void
+  isSqlMode?: boolean
   correctnessError?: string
   gradingError?: string
 }
@@ -46,16 +48,65 @@ function scoreBg(score: number) {
   return 'bg-error/10 text-error'
 }
 
+function getDisplayedActual(result: RunResult['results'][number]): unknown {
+  return result.actual !== undefined ? result.actual : result.output
+}
+
+function asSqlRows(value: unknown): Record<string, unknown>[] {
+  return Array.isArray(value) ? (value as Record<string, unknown>[]) : []
+}
+
+function SqlMiniTable({ rows }: { rows: Record<string, unknown>[] }) {
+  if (rows.length === 0) {
+    return <div className="rounded-md bg-surface-container-high px-2 py-1.5 text-[10.5px] italic text-on-surface-variant">(no rows)</div>
+  }
+
+  const columns = Array.from(new Set(rows.flatMap((row) => Object.keys(row))))
+  return (
+    <div className="overflow-x-auto rounded-md border border-outline-variant bg-surface">
+      <table className="w-full text-[10.5px]">
+        <thead>
+          <tr className="border-b border-outline-variant bg-surface-container-high">
+            {columns.map((column) => (
+              <th key={column} className="px-2 py-1 text-left font-label font-bold text-on-surface">
+                {column}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.slice(0, 6).map((row, index) => (
+            <tr key={index} className="border-b border-outline-variant/40 last:border-0">
+              {columns.map((column) => (
+                <td key={column} className="whitespace-nowrap px-2 py-1 text-on-surface-variant">
+                  {String(row[column] ?? '')}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {rows.length > 6 && (
+        <div className="border-t border-outline-variant px-2 py-1 font-label text-[10px] text-on-surface-variant">
+          +{rows.length - 6} more rows
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Correctness column ───────────────────────────────────────────────────────
 
 function CorrectnessColumn({
   correctness,
   isLoading,
   error,
+  isSqlMode,
 }: {
   correctness?: RunResult | null
   isLoading?: boolean
   error?: string
+  isSqlMode?: boolean
 }) {
   if (isLoading) {
     return (
@@ -145,16 +196,33 @@ function CorrectnessColumn({
                 )}
                 {/* Expected / Got for visible failures */}
                 {!result.hidden && result.status === 'failed' && result.expected !== undefined && (
-                  <div className="mt-1 text-[10px] font-mono space-y-0.5">
-                    <div>
-                      <span className="text-on-surface-variant">Expected: </span>
-                      <span className="text-primary">{JSON.stringify(result.expected)}</span>
+                  isSqlMode ? (
+                    <div className="mt-2 grid grid-cols-1 gap-2">
+                      <div>
+                        <p className="mb-1 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                          Your output
+                        </p>
+                        <SqlMiniTable rows={asSqlRows(getDisplayedActual(result))} />
+                      </div>
+                      <div>
+                        <p className="mb-1 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                          Expected
+                        </p>
+                        <SqlMiniTable rows={asSqlRows(result.expected)} />
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-on-surface-variant">Got: </span>
-                      <span className="text-error">{JSON.stringify(result.actual)}</span>
+                  ) : (
+                    <div className="mt-1 text-[10px] font-mono space-y-0.5">
+                      <div>
+                        <span className="text-on-surface-variant">Expected: </span>
+                        <span className="text-primary">{JSON.stringify(result.expected)}</span>
+                      </div>
+                      <div>
+                        <span className="text-on-surface-variant">Got: </span>
+                        <span className="text-error">{JSON.stringify(getDisplayedActual(result))}</span>
+                      </div>
                     </div>
-                  </div>
+                  )
                 )}
               </div>
             </div>
@@ -320,7 +388,19 @@ function GradingColumn({
   }
 
   if (!grading) {
-    return <div className="text-sm text-on-surface-variant italic">Grading not available yet.</div>
+    return (
+      <div className="rounded-xl border border-outline-variant bg-surface-container-low p-4">
+        <div className="flex items-start gap-2">
+          <HatchGlyph size={24} state="listening" className="shrink-0 text-primary" />
+          <div>
+            <p className="font-label text-sm font-bold text-on-surface">Hatch feedback is pending</p>
+            <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
+              Your test results are available. If feedback does not appear, return to the editor, make another run, and submit again.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -435,41 +515,103 @@ export function CodingFeedback({
   isLoadingGrading = false,
   onRetry,
   onAskHatch,
+  onNextChallenge,
+  isSqlMode = false,
   correctnessError,
   gradingError,
 }: CodingFeedbackProps) {
+  const allPassed = correctness && correctness.testsTotal > 0 && correctness.testsPassed === correctness.testsTotal
+
   return (
-    <div className="grid grid-cols-2 gap-4 h-full overflow-hidden">
-      {/* Left: Correctness column */}
-      <div
-        className="overflow-y-auto pr-1"
-        data-testid="correctness-column"
-      >
-        <h3 className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant mb-3">
-          Correctness
-        </h3>
-        <CorrectnessColumn
-          correctness={correctness}
-          isLoading={isLoadingCorrectness}
-          error={correctnessError}
-        />
+    <div className="flex h-full flex-col overflow-hidden">
+      <div className="mb-4 shrink-0 rounded-xl border border-outline-variant bg-surface p-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-3">
+            <span
+              className={`material-symbols-outlined mt-0.5 text-[22px] ${allPassed ? 'text-primary' : 'text-tertiary'}`}
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              {allPassed ? 'verified' : 'rule'}
+            </span>
+            <div>
+              <p className="font-label text-sm font-black text-on-surface">
+                {isLoadingGrading ? 'Tests complete. Hatch is reviewing your solution.' : 'Review your result, then choose the next move.'}
+              </p>
+              <p className="mt-0.5 text-xs leading-relaxed text-on-surface-variant">
+                {allPassed
+                  ? 'Everything passed. Skim Hatch feedback, then move on or ask for a sharper follow-up.'
+                  : 'Use the correctness panel to inspect the failing case, ask Hatch, or return to the editor and rerun.'}
+              </p>
+            </div>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-low px-3 py-1.5 font-label text-xs font-bold text-on-surface transition-colors hover:bg-surface-container"
+              >
+                <span className="material-symbols-outlined text-[14px]">edit</span>
+                Back to editor
+              </button>
+            )}
+            {onAskHatch && (
+              <button
+                type="button"
+                onClick={onAskHatch}
+                className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 font-label text-xs font-bold text-on-primary transition-opacity hover:opacity-90"
+              >
+                <HatchGlyph size={15} state="speaking" className="text-on-primary" />
+                Ask Hatch
+              </button>
+            )}
+            {onNextChallenge && (
+              <button
+                type="button"
+                onClick={onNextChallenge}
+                className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary-fixed px-3 py-1.5 font-label text-xs font-bold text-primary transition-colors hover:bg-primary-container"
+              >
+                Next challenge
+                <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Right: Grading column */}
-      <div
-        className="overflow-y-auto pl-1 border-l border-outline-variant/40"
-        data-testid="grading-column"
-      >
-        <h3 className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant mb-3">
-          Hatch Grading
-        </h3>
-        <GradingColumn
-          grading={grading}
-          isLoading={isLoadingGrading}
-          error={gradingError}
-          onAskHatch={onAskHatch}
-          onRetry={onRetry}
-        />
+      <div className="grid min-h-0 flex-1 grid-cols-2 gap-4 overflow-hidden">
+        {/* Left: Correctness column */}
+        <div
+          className="overflow-y-auto pr-1"
+          data-testid="correctness-column"
+        >
+          <h3 className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant mb-3">
+            Correctness
+          </h3>
+          <CorrectnessColumn
+            correctness={correctness}
+            isLoading={isLoadingCorrectness}
+            error={correctnessError}
+            isSqlMode={isSqlMode}
+          />
+        </div>
+
+        {/* Right: Grading column */}
+        <div
+          className="overflow-y-auto pl-1 border-l border-outline-variant/40"
+          data-testid="grading-column"
+        >
+          <h3 className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant mb-3">
+            Hatch Grading
+          </h3>
+          <GradingColumn
+            grading={grading}
+            isLoading={isLoadingGrading}
+            error={gradingError}
+            onAskHatch={onAskHatch}
+            onRetry={onRetry}
+          />
+        </div>
       </div>
     </div>
   )

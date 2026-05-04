@@ -28,8 +28,9 @@ export async function generateLoopDebrief(params: {
   targetCompany: string | null
   targetRole: string | null
   calibrationSnapshot: Record<string, unknown>
+  budget?: { userId: string; userPlan: string; route: string }
 }): Promise<LoopDebriefResult> {
-  const { rounds, crossRoundMemory, targetCompany, targetRole, calibrationSnapshot } = params
+  const { rounds, crossRoundMemory, targetCompany, targetRole, calibrationSnapshot, budget } = params
 
   const userContent = JSON.stringify({
     target: { company: targetCompany, role: targetRole },
@@ -46,6 +47,7 @@ export async function generateLoopDebrief(params: {
   const response = await createCachedMessage(SYSTEM_PROMPT, userContent, {
     model: 'claude-sonnet-4-6',
     max_tokens: 2000,
+    budget,
   })
 
   const raw = response.content[0].type === 'text' ? response.content[0].text : '{}'

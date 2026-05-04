@@ -51,7 +51,7 @@ export const CARD_CATALOG: CardCatalogEntry[] = [
   {
     id: 'leaderboard',
     label: 'Leaderboard',
-    description: 'Your rank among this week\'s cohort',
+    description: 'Your rank among this week\'s practice reps',
     icon: 'leaderboard',
   },
   {

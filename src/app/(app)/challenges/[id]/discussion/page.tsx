@@ -1,19 +1,31 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useParams } from 'next/navigation'
-import Link from 'next/link'
+import { Suspense, useState, useEffect, useCallback } from 'react'
+import { useParams, useSearchParams } from 'next/navigation'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { DiscussionThread } from '@/components/challenge/DiscussionThread'
 import { DiscussionInput } from '@/components/challenge/DiscussionInput'
 import { CommunityStatsPanel } from '@/components/challenge/CommunityStatsPanel'
 import { TopContributorsPanel } from '@/components/challenge/TopContributorsPanel'
 import { RelatedChallengesPanel } from '@/components/challenge/RelatedChallengesPanel'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { appendReturnTo, sanitizeReturnTo } from '@/lib/navigation/return-to'
 import type { ChallengeDiscussion } from '@/lib/types'
 
 export default function ChallengeDiscussionPage() {
+  return (
+    <Suspense fallback={<div className="max-w-7xl mx-auto px-6 py-6 pb-24" />}>
+      <ChallengeDiscussionContent />
+    </Suspense>
+  )
+}
+
+function ChallengeDiscussionContent() {
   const params = useParams()
+  const searchParams = useSearchParams()
   const id = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : ''
+  const returnTo = sanitizeReturnTo(searchParams.get('returnTo'))
+  const challengeHref = appendReturnTo(`/workspace/challenges/${id}`, returnTo)
 
   const [discussions, setDiscussions] = useState<ChallengeDiscussion[]>([])
   const [challengeTitle, setChallengeTitle] = useState<string | null>(null)
@@ -65,14 +77,14 @@ export default function ChallengeDiscussionPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-6 pb-24">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-xs text-on-surface-variant mb-6">
-        <Link href={`/workspace/challenges/${id}`} className="hover:text-primary transition-colors">
-          {challengeTitle ?? 'Challenge'}
-        </Link>
-        <span className="material-symbols-outlined text-[10px]">chevron_right</span>
-        <span className="text-on-surface font-bold">Discussion</span>
-      </nav>
+      <AppBreadcrumbs
+        className="mb-6"
+        items={[
+          { label: 'Practice', href: returnTo ?? '/challenges' },
+          { label: challengeTitle ?? 'Challenge', href: challengeHref },
+          { label: 'Discussion' },
+        ]}
+      />
 
       {/* Header */}
       <div className="mb-8">

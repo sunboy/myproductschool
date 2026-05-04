@@ -1,11 +1,11 @@
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const FEATURES = [
-  { icon: 'all_inclusive',  text: 'Unlimited challenge attempts' },
-  { icon: 'psychology',     text: 'Full Hatch coaching on every step' },
+  { icon: 'fitness_center', text: '80 challenge starts each month' },
+  { icon: 'psychology',     text: 'Fair-use Hatch AI coaching budget' },
   { icon: 'analytics',      text: 'Learner DNA — competency radar' },
-  { icon: 'school',         text: 'All study plans, unlocked' },
-  { icon: 'mic',            text: 'Live AI interview sessions' },
+  { icon: 'school',         text: 'All study plans and autopsies' },
+  { icon: 'mic',            text: '12 AI interview starts each month' },
 ]
 
 interface ProPaywallGateProps {
@@ -100,7 +100,7 @@ export function ProPaywallGate({
               </div>
             </div>
             <p className="font-body text-sm text-white/70 leading-relaxed">
-              Keep going — unlock unlimited access, full coaching, and your Learner DNA fingerprint.
+              Keep going with a serious monthly practice budget, full coaching, and your Learner DNA fingerprint.
             </p>
           </div>
 
@@ -127,18 +127,18 @@ export function ProPaywallGate({
             >
               <div>
                 <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold mb-0.5">
-                  Annual plan
+                  Monthly plan
                 </p>
                 <p className="font-headline font-bold text-on-surface text-lg" style={{ letterSpacing: '-0.02em' }}>
-                  $199 <span className="text-sm font-body font-normal text-on-surface-variant">/ year</span>
+                  $30 <span className="text-sm font-body font-normal text-on-surface-variant">/ mo</span>
                 </p>
-                <p className="font-label text-[10px] text-primary font-semibold">~$16.58/mo — save 43%</p>
+                <p className="font-label text-[10px] text-primary font-semibold">Fair use, backend-configured</p>
               </div>
               <div className="text-right">
                 <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold mb-0.5">
-                  Monthly
+                  Includes
                 </p>
-                <p className="font-body text-sm text-on-surface-variant">$29 / mo</p>
+                <p className="font-body text-sm text-on-surface-variant">Hatch + interviews</p>
               </div>
             </div>
 

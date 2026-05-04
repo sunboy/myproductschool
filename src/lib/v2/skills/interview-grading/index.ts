@@ -9,7 +9,11 @@ import type { InterviewGrade, ChallengeType } from '@/lib/types'
 function buildCanvasSummary(snapshot: Record<string, unknown> | null): string {
   if (!snapshot) return 'No canvas data — user did not draw anything.'
   const elements = (snapshot.elements as unknown[]) ?? []
-  return sceneToPrompt(summarizeScene(elements))
+  const contextPack =
+    typeof snapshot.context_pack === 'string' && snapshot.context_pack.trim()
+      ? `\n\nCONTEXT PACK:\n${snapshot.context_pack.trim()}`
+      : ''
+  return `${sceneToPrompt(summarizeScene(elements))}${contextPack}`
 }
 
 export async function gradeInterviewSession(

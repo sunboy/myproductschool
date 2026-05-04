@@ -22,6 +22,7 @@ export function ActiveFilterPills({ filters, onRemove, onClearAll }: Props) {
       {active.map(({ key, value }) => (
         <span
           key={`${key}-${value}`}
+          title={`${key}: ${value}`}
           className="flex items-center gap-1 bg-primary-fixed text-primary border border-primary/30 rounded-full px-2.5 py-0.5 font-label text-xs"
         >
           {value}

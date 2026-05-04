@@ -55,22 +55,22 @@ export function InterviewPaywallGate({
         </div>
         <div className="px-7 pt-5 pb-7 space-y-4">
           <p className="font-body text-sm text-on-surface-variant leading-relaxed">
-            Pro gives you unlimited live interview sessions with Hatch, full post-session analysis, and access to all company personas.
+            Pro includes 12 AI interview starts each month, fair-use Hatch coaching, post-session analysis, and all company personas.
           </p>
           <div
             className="rounded-xl px-4 py-3.5 flex items-center justify-between"
             style={{ background: '#f0ece4', border: '1px solid rgba(196,200,188,0.4)' }}
           >
             <div>
-              <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold mb-0.5">Annual plan</p>
+              <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold mb-0.5">Monthly plan</p>
               <p className="font-headline font-bold text-on-surface text-lg" style={{ letterSpacing: '-0.02em' }}>
-                $199 <span className="text-sm font-body font-normal text-on-surface-variant">/ year</span>
+                $30 <span className="text-sm font-body font-normal text-on-surface-variant">/ mo</span>
               </p>
-              <p className="font-label text-[10px] text-primary font-semibold">~$16.58/mo — save 43%</p>
+              <p className="font-label text-[10px] text-primary font-semibold">Fair use, not surprise usage</p>
             </div>
             <div className="text-right">
-              <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold mb-0.5">Monthly</p>
-              <p className="font-body text-sm text-on-surface-variant">$29 / mo</p>
+              <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold mb-0.5">Includes</p>
+              <p className="font-body text-sm text-on-surface-variant">Hatch + debriefs</p>
             </div>
           </div>
           <button

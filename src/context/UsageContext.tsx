@@ -6,16 +6,19 @@ export interface FeatureUsage {
   used: number
   limit: number
   windowDays: number
+  unit?: 'count' | 'cents'
 }
 
 export interface UsageData {
   challenges: FeatureUsage
   interviews: FeatureUsage
+  hatchAiCents: FeatureUsage
 }
 
 const DEFAULT_USAGE: UsageData = {
-  challenges: { used: 0, limit: 10, windowDays: 30 },
-  interviews:  { used: 0, limit: 5,  windowDays: 30 },
+  challenges: { used: 0, limit: 3, windowDays: 30, unit: 'count' },
+  interviews:  { used: 0, limit: 1, windowDays: 30, unit: 'count' },
+  hatchAiCents: { used: 0, limit: 35, windowDays: 30, unit: 'cents' },
 }
 
 const UsageContext = createContext<UsageData>(DEFAULT_USAGE)

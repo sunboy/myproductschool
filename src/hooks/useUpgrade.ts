@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-export function useUpgrade(plan: 'annual' | 'monthly' = 'annual') {
+export function useUpgrade(plan: 'annual' | 'monthly' = 'monthly') {
   const [loading, setLoading] = useState(false)
 
   async function startUpgrade() {

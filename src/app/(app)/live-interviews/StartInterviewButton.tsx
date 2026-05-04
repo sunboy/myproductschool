@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { InterviewPaywallGate } from '@/components/paywalls/InterviewPaywallGate'
 import { useIsAtLimit, useUsage } from '@/context/UsageContext'
 import { useUpgrade } from '@/hooks/useUpgrade'
+import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { DISCIPLINE_META, type LiveInterviewDiscipline } from '@/lib/live-interview/disciplines'
 
@@ -43,14 +44,17 @@ export default function StartInterviewButton({
   const [modalRole, setModalRole] = useState(roleId)
   const isAtLimit = useIsAtLimit('interviews')
   const usage = useUsage()
+  const { play } = useHatchSonics()
 
   async function handleClick() {
     if (isAtLimit) {
+      play('nudge')
       setPaywallData({ used: usage.interviews.used, limit: usage.interviews.limit })
       setShowPaywall(true)
       return
     }
 
+    play('submit')
     setLoading(true)
     setSessionError(null)
     try {
@@ -62,6 +66,7 @@ export default function StartInterviewButton({
 
       if (res.status === 402) {
         const data = await res.json()
+        play('nudge')
         setPaywallData({ used: data.used, limit: data.limit })
         setShowPaywall(true)
         setLoading(false)
@@ -79,8 +84,10 @@ export default function StartInterviewButton({
       if (data.companyName) setModalCompany(data.companyName)
       if (data.role) setModalRole(data.role)
       if (data.discipline) setSessionDiscipline(data.discipline)
+      play('success')
       setShowReadyModal(true)
     } catch {
+      play('error')
       setSessionError('Failed to start — please try again.')
     } finally {
       setLoading(false)
@@ -89,6 +96,7 @@ export default function StartInterviewButton({
 
   function handleStartInterview() {
     if (!sessionId) return
+    play('open')
     const params = new URLSearchParams({ autostart: '1' })
     if (modalCompany) params.set('company', modalCompany)
     if (modalRole) params.set('role', modalRole)
@@ -167,7 +175,7 @@ export default function StartInterviewButton({
           >
             {/* Close */}
             <button
-              onClick={() => setShowReadyModal(false)}
+              onClick={() => { play('close'); setShowReadyModal(false) }}
               className="absolute top-4 right-4 flex items-center justify-center rounded-full transition-colors"
               style={{ width: 32, height: 32, background: 'rgba(255,255,255,0.07)' }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.14)' }}
@@ -241,7 +249,7 @@ export default function StartInterviewButton({
                 Start Interview
               </button>
               <button
-                onClick={() => setShowReadyModal(false)}
+                onClick={() => { play('close'); setShowReadyModal(false) }}
                 className="w-full rounded-full py-2.5 font-label text-sm font-semibold transition-colors"
                 style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.05)' }}

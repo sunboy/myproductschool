@@ -23,9 +23,9 @@ export function FloatingNav() {
         </Link>
         <Link
           className="text-sm font-label font-medium text-on-background hover:text-primary-container transition-colors"
-          href="/cohort"
+          href="/live-interviews"
         >
-          Community
+          AI Interviews
         </Link>
         <Link
           className="text-sm font-label font-medium text-on-background hover:text-primary-container transition-colors"

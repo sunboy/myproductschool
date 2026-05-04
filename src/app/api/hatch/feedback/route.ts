@@ -11,6 +11,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { HatchFeedbackSchema, clampFeedbackScores, V2FeedbackSchema, clampV2FeedbackScores } from '@/lib/hatch/feedback-schema'
 import { logEvent } from '@/lib/data/events'
 import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 
 export async function POST(req: NextRequest) {
   const { challengeId: _challengeId, challengeTitle, challengePrompt, response: userResponse, userId, attemptId, attempt_id } = await req.json()
@@ -33,6 +34,10 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const budget = typeof userId === 'string'
+      ? { userId, userPlan: await getUserPlanForBudget(userId), route: 'hatch_feedback' }
+      : undefined
+
     const userContent = buildFeedbackUserPrompt(
       challengeTitle ?? 'Product Challenge',
       challengePrompt ?? '',
@@ -42,6 +47,7 @@ export async function POST(req: NextRequest) {
     const message = await createCachedMessage(HATCH_FEEDBACK_SYSTEM_PROMPT, userContent, {
       model: 'claude-sonnet-4-6',
       max_tokens: 2000,
+      budget,
     })
 
     // Attempt 1: parse and validate
@@ -59,7 +65,7 @@ export async function POST(req: NextRequest) {
         const retryResponse = await createCachedMessage(
           HATCH_FEEDBACK_SYSTEM_PROMPT + '\n\nCRITICAL: Return ONLY a valid JSON object. No markdown, no explanation, no code blocks. Raw JSON only.',
           'The JSON was invalid. Return only the raw JSON object with no surrounding text.\n\nOriginal response:\n' + rawText,
-          { model: 'claude-sonnet-4-6', max_tokens: 1500 }
+          { model: 'claude-sonnet-4-6', max_tokens: 1500, budget }
         )
         const retryText = retryResponse.content[0].type === 'text' ? retryResponse.content[0].text : '{}'
         const retryParsed = JSON.parse(retryText)
@@ -98,6 +104,19 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(parsedFeedback)
   } catch (error) {
+    if (error instanceof AiBudgetExceededError) {
+      return NextResponse.json(
+        {
+          error: 'limit_reached',
+          feature: 'hatch_ai_cents',
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+
     console.error('Hatch feedback error:', error)
     // Fall back to mock on error
     return NextResponse.json(MOCK_FEEDBACK)
@@ -122,6 +141,11 @@ async function handleV2Feedback(attemptId: string, userId: string | undefined, c
 
   if (attemptError || !attempt) {
     return NextResponse.json({ error: 'Attempt not found' }, { status: 404 })
+  }
+  const budget = {
+    userId: attempt.user_id as string,
+    userPlan: await getUserPlanForBudget(attempt.user_id as string),
+    route: 'hatch_feedback_v2',
   }
 
   // Fetch all step_attempts for this attempt
@@ -180,6 +204,7 @@ Return valid JSON only.`
     const message = await createCachedMessage(systemPrompt, userContent, {
       model: 'claude-sonnet-4-6',
       max_tokens: 3000,
+      budget,
     })
 
     const rawText = message.content[0].type === 'text' ? message.content[0].text : '{}'
@@ -218,6 +243,19 @@ Return valid JSON only.`
       return NextResponse.json({ error: 'Failed to parse v2 feedback' }, { status: 500 })
     }
   } catch (error) {
+    if (error instanceof AiBudgetExceededError) {
+      return NextResponse.json(
+        {
+          error: 'limit_reached',
+          feature: 'hatch_ai_cents',
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+
     console.error('Hatch v2 feedback error:', error)
     return NextResponse.json(MOCK_FEEDBACK)
   }

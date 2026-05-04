@@ -61,7 +61,7 @@ export function InterviewLimitModal({
             You&apos;ve used {used} of {limit} free sessions
           </h2>
           <p className="font-body text-sm text-on-surface-variant leading-relaxed mb-6">
-            Your transcript is saved. Upgrade to Pro for unlimited sessions, or end here and review your debrief.
+            Your transcript is saved. Upgrade to Pro for 12 AI interview starts each month, or end here and review your debrief.
           </p>
           <button
             onClick={onUpgrade}

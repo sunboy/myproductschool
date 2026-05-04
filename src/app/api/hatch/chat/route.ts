@@ -5,6 +5,13 @@ import { IS_MOCK } from '@/lib/mock'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getHatchContext, buildHatchContextString } from '@/lib/hatch-context'
+import {
+  AiBudgetExceededError,
+  assertAiBudget,
+  estimateAnthropicPreflightCents,
+  getUserPlanForBudget,
+  recordAnthropicUsage,
+} from '@/lib/usage/ai-budget'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -202,6 +209,8 @@ export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
+    const userPlan = user ? await getUserPlanForBudget(user.id) : null
+    const budget = user && userPlan ? { userId: user.id, userPlan, route: 'hatch_chat' } : null
 
     // Build all context blocks in parallel
     const [hatchCtx, pageContextBlock, recommendedBlock] = await Promise.all([
@@ -262,17 +271,51 @@ Respond conversationally.`
     // Add current user message
     messages.push({ role: 'user', content: message })
 
+    const model = 'claude-sonnet-4-6'
+    const maxTokens = 300
+    const promptCharCount = systemPrompt.length + messages.reduce((sum, msg) => {
+      return sum + (typeof msg.content === 'string' ? msg.content.length : JSON.stringify(msg.content).length)
+    }, 0)
+    const preflightCostCents = estimateAnthropicPreflightCents(model, maxTokens, promptCharCount)
+
+    if (budget) {
+      await assertAiBudget(budget.userId, budget.userPlan, preflightCostCents)
+    }
+
     const response = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 300,
+      model,
+      max_tokens: maxTokens,
       system: systemPrompt,
       messages,
     })
+
+    if (budget) {
+      await recordAnthropicUsage({
+        userId: budget.userId,
+        model,
+        usage: response.usage,
+        fallbackCostCents: preflightCostCents,
+        route: budget.route,
+      })
+    }
 
     const content = response.content[0]
     const reply = content.type === 'text' ? content.text.trim() : null
     return NextResponse.json({ reply })
   } catch (error) {
+    if (error instanceof AiBudgetExceededError) {
+      return NextResponse.json(
+        {
+          error: 'limit_reached',
+          feature: 'hatch_ai_cents',
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+
     console.error('Hatch chat error:', error)
     const fallback = MOCK_REPLIES[Math.floor(Math.random() * MOCK_REPLIES.length)]
     return NextResponse.json({ reply: fallback })

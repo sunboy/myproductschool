@@ -4,13 +4,11 @@ import { getStudyPlanSummaries } from '@/lib/data/study-plans'
 import { getShowcaseProducts } from '@/lib/data/showcase'
 import { getLearnModuleSummaries } from '@/lib/data/learn-modules'
 import { getDomainsWithProgress } from '@/lib/data/domains'
-import { buildStatsMap } from '@/lib/data/challenges'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { ParadigmGrid } from './ParadigmGrid'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { AppTooltip } from '@/components/ui/AppTooltip'
 import { StudyPlanGrid } from './StudyPlanGrid'
-import { DisciplineGrid } from '@/components/explore/DisciplineGrid'
-import { LoopTracksSection } from '@/components/explore/LoopTracksSection'
 
 interface PersonalisedPlan {
   slug: string
@@ -18,22 +16,6 @@ interface PersonalisedPlan {
   description: string | null
   move_tag: string | null
 }
-
-const MOVE_ICON: Record<string, string> = {
-  frame: 'center_focus_strong',
-  list: 'format_list_bulleted',
-  optimize: 'tune',
-  win: 'emoji_events',
-}
-
-const MOVE_LABEL: Record<string, string> = {
-  frame: 'Frame',
-  list: 'List',
-  optimize: 'Optimize',
-  win: 'Win',
-}
-
-/* ── Static data ────────────────────────────────────────────────── */
 
 interface PlanItem {
   title: string
@@ -47,127 +29,70 @@ interface PlanItem {
 }
 
 const PLANS_STATIC: PlanItem[] = [
-  { title: 'Staff Engineer Path',            sub: '6 weeks · All paradigms',        diff: 'Intermediate', color: '#4a7c59', bg: '#cfe3d3', enrolled: 1243,  icon: 'route',       slug: 'staff-engineer-path' },
-  { title: 'AI Product Foundations',         sub: '3 weeks · AI-Assisted + Native', diff: 'Beginner',     color: '#3b6ed4', bg: '#e1ecff', enrolled: 892,   icon: 'smart_toy',   slug: 'ai-product-foundations' },
-  { title: 'Decision-Making Under Pressure', sub: '4 weeks · Traditional',          diff: 'Advanced',     color: '#8b46d4', bg: '#ecdeff', enrolled: 441,   icon: 'bolt',        slug: 'decision-making-under-pressure' },
-  { title: 'From Engineer to PM',            sub: '8 weeks · All',                  diff: 'Beginner',     color: '#c9602a', bg: '#fbe1d0', enrolled: 2104,  icon: 'trending_up', slug: 'from-engineer-to-pm' },
+  { title: 'Staff Engineer Path', sub: '6 weeks', diff: 'Intermediate', color: '#4a7c59', bg: '#dfe7e1', enrolled: 1243, icon: 'route', slug: 'staff-engineer-path' },
+  { title: 'AI Product Foundations', sub: '3 weeks', diff: 'Beginner', color: '#3b6ed4', bg: '#e1ecff', enrolled: 892, icon: 'smart_toy', slug: 'ai-product-foundations' },
+  { title: 'Decision-Making Under Pressure', sub: '4 weeks', diff: 'Advanced', color: '#7a5c2e', bg: '#f3e2b9', enrolled: 441, icon: 'bolt', slug: 'decision-making-under-pressure' },
+  { title: 'From Engineer to PM', sub: '8 weeks', diff: 'Beginner', color: '#5b6f4d', bg: '#cfe3d3', enrolled: 2104, icon: 'trending_up', slug: 'from-engineer-to-pm' },
 ]
-
-/* ── FLOW moves ─────────────────────────────────────────────────── */
-
-const FLOW_MOVES = [
-  { k: 'Frame',    sub: 'Define the right problem',  color: '#4a7c59', bg: '#cfe3d3', icon: 'center_focus_strong' },
-  { k: 'List',     sub: 'Generate quality options',  color: '#6b8275', bg: '#dfe7e1', icon: 'format_list_bulleted' },
-  { k: 'Optimize', sub: 'Pick and sharpen the best', color: '#c9933a', bg: '#f3e2b9', icon: 'tune' },
-  { k: 'Win',      sub: 'Drive durable outcomes',    color: '#a878d6', bg: '#ecdeff', icon: 'emoji_events' },
-] as const
-
-/* ── Module static fallback ─────────────────────────────────────── */
 
 const MODULES_STATIC = [
-  { slug: 'flow-framework',     name: 'The FLOW Framework',     tagline: 'How product decisions get made.',            cover_color: '#1e3528', accent_color: '#7ee099', chapter_count: 8,  est_minutes: 90,  difficulty: 'beginner'     },
-  { slug: 'product-sense',      name: 'Product Sense',          tagline: 'Developing taste and judgment.',             cover_color: '#172240', accent_color: '#7aa7ff', chapter_count: 7,  est_minutes: 75,  difficulty: 'intermediate' },
-  { slug: 'agentic-pm',         name: 'Agentic PM',             tagline: 'Managing AI systems end-to-end.',            cover_color: '#25143a', accent_color: '#c89df5', chapter_count: 6,  est_minutes: 80,  difficulty: 'advanced'     },
-  { slug: 'metrics-tradeoffs',  name: 'Metrics & Trade-offs',   tagline: 'The numbers that drive real decisions.',     cover_color: '#301a0a', accent_color: '#f5a76c', chapter_count: 5,  est_minutes: 60,  difficulty: 'intermediate' },
-  { slug: 'stakeholder-comms',  name: 'Stakeholder Comms',      tagline: 'Making decisions land with the right people.', cover_color: '#1a2034', accent_color: '#85c1e9', chapter_count: 4,  est_minutes: 45,  difficulty: 'beginner'     },
-  { slug: 'strategy-execution', name: 'Strategy & Execution',   tagline: 'Closing the gap between plans and outcomes.', cover_color: '#1a1a1a', accent_color: '#a8d8a8', chapter_count: 6,  est_minutes: 70,  difficulty: 'advanced'     },
+  { slug: 'flow-framework', name: 'The FLOW Framework', tagline: 'How product decisions get made.', cover_color: '#1e3528', accent_color: '#7ee099', chapter_count: 8, est_minutes: 90, difficulty: 'beginner' },
+  { slug: 'product-sense', name: 'Product Sense', tagline: 'Developing taste and judgment.', cover_color: '#172240', accent_color: '#7aa7ff', chapter_count: 7, est_minutes: 75, difficulty: 'intermediate' },
+  { slug: 'agentic-pm', name: 'Agentic PM', tagline: 'Managing AI systems end-to-end.', cover_color: '#25143a', accent_color: '#c89df5', chapter_count: 6, est_minutes: 80, difficulty: 'advanced' },
+  { slug: 'metrics-tradeoffs', name: 'Metrics & Trade-offs', tagline: 'The numbers that drive real decisions.', cover_color: '#301a0a', accent_color: '#f5a76c', chapter_count: 5, est_minutes: 60, difficulty: 'intermediate' },
 ] as const
 
-/* ── Difficulty config (shared with explore cards) ──────────────── */
+const PRIMARY_PATHS = [
+  {
+    title: 'Practice',
+    body: 'Filter challenges by discipline, role, company, difficulty, and format.',
+    href: '/challenges',
+    icon: 'target',
+    accent: '#4a7c59',
+    bg: 'linear-gradient(135deg, #dfe7e1 0%, #f5f1ea 100%)',
+    art: 'practice',
+    tooltip: 'Use this when you know the exact rep you want: SQL, coding, product sense, systems, data, company, or role.',
+  },
+  {
+    title: 'Interview loops',
+    body: 'Run a Hatch-led mock interview across product, systems, data, SQL, and coding.',
+    href: '/live-interviews',
+    icon: 'graphic_eq',
+    accent: '#6d4cc2',
+    bg: 'linear-gradient(135deg, #ecdeff 0%, #f4efe7 100%)',
+    art: 'interview',
+    tooltip: 'Simulate live pressure with Hatch asking follow-ups and scoring your interview moves.',
+  },
+  {
+    title: 'Study plans',
+    body: 'Follow a sequenced plan instead of browsing from scratch.',
+    href: '/explore/plans',
+    icon: 'route',
+    accent: '#c9933a',
+    bg: 'linear-gradient(135deg, #f3e2b9 0%, #f8f0dc 100%)',
+    art: 'plans',
+    tooltip: 'Let Hatch sequence a path across disciplines based on your role and current FLOW profile.',
+  },
+] as const
 
-const DIFFICULTY_CONFIG: Record<string, { label: string; dot: string }> = {
-  warmup:       { label: 'Warm-up',  dot: '#10b981' },
-  standard:     { label: 'Standard', dot: '#f59e0b' },
-  advanced:     { label: 'Advanced', dot: '#ef4444' },
-  staff_plus:   { label: 'Staff+',   dot: '#8b5cf6' },
-  beginner:     { label: 'Easy',     dot: '#10b981' },
-  intermediate: { label: 'Medium',   dot: '#f59e0b' },
-  hard:         { label: 'Hard',     dot: '#ef4444' },
-}
-
-/* ── Domain card palettes & SVG art ─────────────────────────────── */
-
-const DOMAIN_PALETTES = [
-  { bg: '#cfe3d3', accent: '#4a7c59', fg: '#1a2e20' },
-  { bg: '#f3e2b9', accent: '#c9933a', fg: '#3a2a0a' },
-  { bg: '#ecdeff', accent: '#8b46d4', fg: '#2e1458' },
-  { bg: '#e1ecff', accent: '#3b6ed4', fg: '#1a2e58' },
-  { bg: '#fbe1d0', accent: '#c9602a', fg: '#3a1a0a' },
-  { bg: '#dfe7e1', accent: '#6b8275', fg: '#1e2e28' },
-]
-
-function DomainArtWaves({ color }: { color: string }) {
-  return (
-    <svg viewBox="0 0 220 140" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} aria-hidden>
-      {[30, 50, 70, 90, 110, 130].map((y, i) => (
-        <path key={i}
-          d={`M-10 ${y} C 30 ${y - 12}, 80 ${y + 12}, 130 ${y} C 180 ${y - 12}, 210 ${y + 8}, 230 ${y}`}
-          stroke={color} strokeWidth="1.6" fill="none" opacity={0.09 + i * 0.03}
-        />
-      ))}
-    </svg>
-  )
-}
-
-function DomainArtDots({ color }: { color: string }) {
-  const dots: { cx: number; cy: number; r: number; op: number }[] = []
-  for (let r = 0; r < 6; r++) for (let c = 0; c < 8; c++) {
-    const t = (r * 8 + c) / 47
-    dots.push({ cx: 16 + c * 28, cy: 14 + r * 22, r: 1.5 + t * 3, op: 0.07 + t * 0.15 })
-  }
-  return (
-    <svg viewBox="0 0 240 140" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} aria-hidden>
-      {dots.map((d, i) => <circle key={i} cx={d.cx} cy={d.cy} r={d.r} fill={color} opacity={d.op} />)}
-    </svg>
-  )
-}
-
-function DomainArtChevrons({ color }: { color: string }) {
-  return (
-    <svg viewBox="0 0 220 140" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} aria-hidden>
-      {[0, 1, 2, 3].map(i => (
-        <path key={i}
-          d={`M ${40 + i * 36} 130 L ${90 + i * 36} 60 L ${140 + i * 36} 130`}
-          stroke={color} strokeWidth="10" fill="none" strokeLinecap="round"
-          opacity={0.10 + i * 0.03}
-        />
-      ))}
-    </svg>
-  )
-}
-
-function DomainArtCircles({ color }: { color: string }) {
-  return (
-    <svg viewBox="0 0 220 140" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} aria-hidden>
-      {[25, 50, 75, 100, 125].map((r, i) => (
-        <circle key={i} cx={200} cy={20} r={r} stroke={color} strokeWidth="1.2" fill="none" opacity={0.08 + i * 0.03} />
-      ))}
-    </svg>
-  )
-}
-
-const DOMAIN_ARTS = [DomainArtWaves, DomainArtDots, DomainArtChevrons, DomainArtCircles]
-
-/* ── Page ────────────────────────────────────────────────────────── */
+const DOMAIN_THEMES = [
+  { bg: 'linear-gradient(135deg, #dfe7e1 0%, #f7efe2 100%)', accent: '#4a7c59', soft: 'rgba(74,124,89,0.14)' },
+  { bg: 'linear-gradient(135deg, #e1ecff 0%, #f7efe2 100%)', accent: '#3b6ed4', soft: 'rgba(59,110,212,0.13)' },
+  { bg: 'linear-gradient(135deg, #f3e2b9 0%, #fbf3df 100%)', accent: '#c9933a', soft: 'rgba(201,147,58,0.15)' },
+  { bg: 'linear-gradient(135deg, #ecdeff 0%, #f7efe2 100%)', accent: '#7c5fd8', soft: 'rgba(124,95,216,0.13)' },
+  { bg: 'linear-gradient(135deg, #d9efe6 0%, #f7efe2 100%)', accent: '#2f8b74', soft: 'rgba(47,139,116,0.13)' },
+  { bg: 'linear-gradient(135deg, #ffe1d2 0%, #f7efe2 100%)', accent: '#c66a3b', soft: 'rgba(198,106,59,0.13)' },
+] as const
 
 export default async function ExplorePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [studyPlansRaw, showcaseProducts, modulesRaw, domains, challengeCount, personalisedPlan, codingChallenges, systemDesignChallenges, dataModelingChallenges] = await Promise.all([
+  const [studyPlansRaw, showcaseProducts, modulesRaw, domains, personalisedPlan] = await Promise.all([
     getStudyPlanSummaries(4).catch(() => [] as StudyPlan[]),
     getShowcaseProducts().catch(() => [] as AutopsyProduct[]),
-    getLearnModuleSummaries(6).catch(() => [] as LearnModule[]),
+    getLearnModuleSummaries(4).catch(() => [] as LearnModule[]),
     getDomainsWithProgress().catch(() => [] as DomainWithProgress[]),
-    (async () => {
-      try {
-        const { count } = await supabase
-          .from('challenges')
-          .select('id', { count: 'exact', head: true })
-          .eq('is_published', true)
-        return count ?? 0
-      } catch { return 0 }
-    })(),
     (async (): Promise<PersonalisedPlan | null> => {
       if (!user) return null
       try {
@@ -179,850 +104,354 @@ export default async function ExplorePage() {
           .order('enrolled_at', { ascending: false })
           .limit(1)
           .maybeSingle()
-        if (!data) return null
-        const plan = (data as unknown as { study_plans: PersonalisedPlan | null }).study_plans
-        return plan
-      } catch { return null }
-    })(),
-    (async () => {
-      try {
-        const { data } = await supabase
-          .from('challenges')
-          .select('id, title, slug, difficulty, paradigm, challenge_type, prompt_text, company_tags, metadata')
-          .eq('is_published', true)
-          .in('challenge_type', ['sql', 'algorithm'])
-          .order('created_at', { ascending: false })
-          .limit(4)
-        return data ?? []
-      } catch { return [] }
-    })(),
-    (async () => {
-      try {
-        const { data } = await supabase
-          .from('challenges')
-          .select('id, title, slug, difficulty, paradigm, challenge_type, prompt_text, company_tags')
-          .eq('is_published', true)
-          .eq('challenge_type', 'system_design')
-          .order('created_at', { ascending: false })
-          .limit(4)
-        return data ?? []
-      } catch { return [] }
-    })(),
-    (async () => {
-      try {
-        const { data } = await supabase
-          .from('challenges')
-          .select('id, title, slug, difficulty, paradigm, challenge_type, prompt_text, company_tags')
-          .eq('is_published', true)
-          .eq('challenge_type', 'data_modeling')
-          .order('created_at', { ascending: false })
-          .limit(4)
-        return data ?? []
-      } catch { return [] }
+        return (data as unknown as { study_plans: PersonalisedPlan | null } | null)?.study_plans ?? null
+      } catch {
+        return null
+      }
     })(),
   ])
 
-  // Batch fetch attempt stats for inline snippet cards
-  const allSnippetIds = [
-    ...codingChallenges.map((c: { id: string }) => c.id),
-    ...systemDesignChallenges.map((c: { id: string }) => c.id),
-    ...dataModelingChallenges.map((c: { id: string }) => c.id),
-  ]
-
-  const { data: snippetAttempts } =
-    user && allSnippetIds.length > 0
-      ? await supabase
-          .from('challenge_attempts')
-          .select('challenge_id, total_score, status')
-          .eq('user_id', user.id)
-          .in('challenge_id', allSnippetIds)
-      : { data: null }
-
-  const snippetStatsMap = buildStatsMap(
-    allSnippetIds,
-    (snippetAttempts ?? []) as { challenge_id: string; total_score: number | null; status: 'in_progress' | 'completed' | 'abandoned' }[],
-  )
-
-  // Fetch challenge counts per discipline type
-  let disciplineCountRows: { challenge_type: string }[] = []
-  try {
-    const { data } = await supabase
-      .from('challenges')
-      .select('challenge_type')
-      .eq('is_published', true)
-      .in('challenge_type', ['flow', 'freeform', 'quick_take', 'system_design', 'data_modeling', 'sql', 'algorithm'])
-    disciplineCountRows = data ?? []
-  } catch (e) {
-    console.error('discipline count fetch failed', e)
-  }
-
-  const counts: Record<string, number> = {
-    product_sense: 0,
-    system_design: 0,
-    data_modeling: 0,
-    algorithm: 0,
-    sql: 0,
-  }
-  for (const row of disciplineCountRows) {
-    if (['flow', 'freeform', 'quick_take'].includes(row.challenge_type)) {
-      counts.product_sense = (counts.product_sense ?? 0) + 1
-    } else if (row.challenge_type === 'system_design') {
-      counts.system_design = (counts.system_design ?? 0) + 1
-    } else if (row.challenge_type === 'data_modeling') {
-      counts.data_modeling = (counts.data_modeling ?? 0) + 1
-    } else if (row.challenge_type === 'algorithm') {
-      counts.algorithm = (counts.algorithm ?? 0) + 1
-    } else if (row.challenge_type === 'sql') {
-      counts.sql = (counts.sql ?? 0) + 1
-    }
-  }
-
-  // Fetch loop tracks
-  let loopTracks: { id: string; title: string; slug: string; description: string; estimated_hours: number; disciplines: string[] }[] = []
-  try {
-    const { data } = await supabase
-      .from('study_plans')
-      .select('id, title, slug, description, estimated_hours, disciplines')
-      .eq('is_published', true)
-      .eq('track_type' as string, 'loop')
-      .order('created_at', { ascending: true })
-    loopTracks = data ?? []
-  } catch (e) {
-    console.error('loop tracks fetch failed', e)
-  }
-
   const plans: PlanItem[] = studyPlansRaw.length > 0
-    ? studyPlansRaw.map((p, i) => ({
-        title: p.title,
-        sub: `${p.estimated_hours} hrs`,
-        diff: (p as unknown as { difficulty?: string }).difficulty ?? 'Intermediate',
-        color: PLANS_STATIC[i % PLANS_STATIC.length].color,
-        bg: PLANS_STATIC[i % PLANS_STATIC.length].bg,
-        enrolled: (p as unknown as { participant_count?: number }).participant_count ?? 0,
-        icon: PLANS_STATIC[i % PLANS_STATIC.length].icon,
-        slug: p.slug,
+    ? studyPlansRaw.map((plan, index) => ({
+        title: plan.title,
+        sub: `${plan.estimated_hours} hrs`,
+        diff: (plan as unknown as { difficulty?: string }).difficulty ?? 'Intermediate',
+        color: PLANS_STATIC[index % PLANS_STATIC.length].color,
+        bg: PLANS_STATIC[index % PLANS_STATIC.length].bg,
+        enrolled: (plan as unknown as { participant_count?: number }).participant_count ?? 0,
+        icon: PLANS_STATIC[index % PLANS_STATIC.length].icon,
+        slug: plan.slug,
       }))
     : PLANS_STATIC
 
-  const modules = modulesRaw.length > 0 ? modulesRaw : MODULES_STATIC
+  const modules = modulesRaw.length > 0 ? modulesRaw.slice(0, 4) : MODULES_STATIC
+  const autopsies = showcaseProducts.slice(0, 4)
+  const topDomains = domains.slice(0, 6)
 
   return (
-    <div className="animate-fade-in-up max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-7 pb-28">
+    <main className="animate-fade-in-up mx-auto max-w-[1180px] px-4 py-7 pb-24 sm:px-6 lg:px-8">
+      <AppBreadcrumbs
+        className="mb-5"
+        items={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Explore' },
+        ]}
+      />
 
-      {/* ── HERO ─────────────────────────────────────────────── */}
-      <div
-        className="rounded-[32px] relative overflow-hidden mb-12 p-6 sm:p-9 md:p-10"
-        style={{ background: 'linear-gradient(135deg, #1e3528 0%, #14241c 55%, #0e1a14 100%)' }}
-      >
-        {/* Dot grid bg */}
-        <div aria-hidden style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)',
-          backgroundSize: '22px 22px',
-          maskImage: 'radial-gradient(ellipse 70% 100% at 70% 50%, black 40%, transparent 80%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 70% 100% at 70% 50%, black 40%, transparent 80%)',
-        }} />
-        {/* Green glow */}
-        <div aria-hidden style={{
-          position: 'absolute', inset: 0,
-          background: 'radial-gradient(600px 500px at 80% 50%, rgba(78,180,120,0.18), transparent 60%)',
-        }} />
-        <SpiralSVG color="#7ee099" />
-
-        <div style={{ position: 'relative' }}>
-          <div>
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 12,
-              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)',
-              padding: '5px 14px', borderRadius: 999,
-              fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-              color: '#9ee0b8',
-            }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#7ee099', flexShrink: 0 }} />
-              {challengeCount} challenges · 4 paradigms
-            </div>
-            <h1 style={{
-              margin: '0 0 10px',
-              fontFamily: 'var(--font-headline)', fontWeight: 700,
-              fontSize: 40, lineHeight: 1.05, letterSpacing: '-0.025em',
-              color: '#f3ede0',
-            }}>
-              Explore the full<br />
-              <span style={{
-                background: 'linear-gradient(90deg, #7ee099, #c9e86e)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              }}>challenge library.</span>
-            </h1>
-            <p style={{ margin: '0 0 22px', fontSize: 15, lineHeight: 1.55, color: 'rgba(243,237,224,0.72)', maxWidth: 520 }}>
-              Real scenarios from real companies. Pick a paradigm, follow a structured plan, or let Hatch choose for you.
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <Link
-                href="/challenges"
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8,
-                  background: '#f3ede0', color: '#1e1b14',
-                  padding: '10px 20px', borderRadius: 999,
-                  fontWeight: 700, fontSize: 13, textDecoration: 'none',
-                }}
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>explore</span>
-                Browse all {challengeCount}
-              </Link>
-              <Link
-                href="/explore/plans"
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8,
-                  background: 'rgba(255,255,255,0.08)', color: '#f3ede0',
-                  border: '1px solid rgba(255,255,255,0.14)',
-                  padding: '10px 20px', borderRadius: 999,
-                  fontWeight: 700, fontSize: 13, textDecoration: 'none',
-                }}
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>route</span>
-                View study plans
-              </Link>
-              {personalisedPlan ? (
-                <Link
-                  href={`/explore/plans/${personalisedPlan.slug}`}
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 7,
-                    background: 'rgba(126,224,153,0.12)',
-                    border: '1px solid rgba(126,224,153,0.25)',
-                    padding: '10px 16px', borderRadius: 999,
-                    fontWeight: 700, fontSize: 13, textDecoration: 'none',
-                    color: '#7ee099',
-                  }}
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: 15, fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-                  Your plan, built by Hatch
-                </Link>
-              ) : (
-                <Link
-                  href={`/explore/plans/${(['frame-like-a-pm', 'the-list-move', 'optimize-under-pressure', 'win-the-room'] as const)[Math.floor(Math.random() * 4)]}`}
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 7,
-                    background: 'transparent',
-                    border: '1px solid rgba(126,224,153,0.18)',
-                    padding: '10px 16px', borderRadius: 999,
-                    fontWeight: 700, fontSize: 13, textDecoration: 'none',
-                    color: 'rgba(126,224,153,0.7)',
-                  }}
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: 15, fontVariationSettings: "'FILL' 0" }}>auto_awesome</span>
-                  Your first study plan
-                </Link>
-              )}
-            </div>
+      <header className="mb-8 grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
+        <div>
+          <h1 className="font-headline text-[34px] font-bold leading-tight text-on-surface sm:text-[40px]">
+            Explore
+          </h1>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <MetaChip icon="menu_book" label={`${modules.length} guides`} />
+            {autopsies.length > 0 && <MetaChip icon="troubleshoot" label={`${autopsies.length} autopsies`} />}
+            {topDomains.length > 0 && <MetaChip icon="category" label={`${topDomains.length} domains`} />}
           </div>
-
         </div>
-      </div>
 
-      {/* ── BROWSE BY DISCIPLINE ─────────────────────────────── */}
-      <section className="mb-12">
-        <h2 className="font-headline font-bold text-on-surface text-base mb-3">Browse by Discipline</h2>
-        <DisciplineGrid counts={counts} />
+        <AppTooltip
+          label={personalisedPlan ? 'Hatch keeps your current plan ready so you can continue without re-browsing.' : 'Start with practice if Hatch has not generated a plan yet.'}
+          side="bottom"
+          className="flex"
+        >
+          <Link
+            href={personalisedPlan ? `/explore/plans/${personalisedPlan.slug}` : '/challenges'}
+            data-hatch-sound="open"
+            className="group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl border border-primary/20 bg-[#1e3528] p-4 no-underline shadow-[0_18px_44px_-30px_rgba(30,53,40,0.7)] transition-transform hover:-translate-y-0.5"
+          >
+            <PathMiniArt kind="plans" accent="#7ee099" className="absolute -right-4 -bottom-6 h-24 w-32 opacity-35" />
+            <div className="relative min-w-0">
+              <div className="font-label text-[11px] font-bold uppercase tracking-[0.10em] text-[#9ee0b8]">
+                {personalisedPlan ? 'Your plan, built by Hatch' : 'Start here'}
+              </div>
+              <div className="mt-1 truncate font-headline text-base font-bold text-[#f3ede0]">
+                {personalisedPlan?.title ?? 'Find a practice rep'}
+              </div>
+              <div className="mt-1 text-[11px] font-semibold text-[#f3ede0]/55">
+                {personalisedPlan ? 'Role-aware across all disciplines' : 'Hatch will adapt as you practice'}
+              </div>
+            </div>
+            <span className="material-symbols-outlined relative shrink-0 text-[20px] text-[#7ee099] transition-transform group-hover:translate-x-0.5">
+              arrow_forward
+            </span>
+          </Link>
+        </AppTooltip>
+      </header>
+
+      <section className="mb-9 grid grid-cols-1 gap-3 md:grid-cols-3">
+        {PRIMARY_PATHS.map((path) => (
+          <CompactPathCard key={path.title} {...path} />
+        ))}
       </section>
 
-      {/* ── INTERVIEW LOOP TRACKS ─────────────────────────────── */}
-      <div className="mb-12">
-        <LoopTracksSection tracks={loopTracks} />
-      </div>
-
-      {/* ── PARADIGMS ─────────────────────────────────────────── */}
-      <SectionHeading eyebrow="The four formats" title="Formats." href="/challenges" linkLabel="View all challenges" />
-      <ParadigmGrid />
-
-      {/* ── FLOW FRAMEWORK STRIP ─────────────────────────────── */}
-      <div
-        className="rounded-[32px] relative overflow-hidden mb-12 p-6 sm:p-8 md:p-12"
-        style={{ background: '#1e1b14' }}
-      >
-        <div aria-hidden style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          fontFamily: 'var(--font-headline)', fontSize: 200, fontWeight: 800,
-          letterSpacing: '-0.04em', lineHeight: 1,
-          color: '#fff', opacity: 0.03,
-          whiteSpace: 'nowrap', userSelect: 'none', pointerEvents: 'none',
-        }}>FLOW</div>
-
-        <div className="relative grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-8 lg:gap-12 items-center">
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(243,237,224,0.45)', marginBottom: 10 }}>
-              The reasoning framework
-            </div>
-            <h2 style={{ margin: '0 0 14px', fontFamily: 'var(--font-headline)', fontSize: 42, fontWeight: 700, letterSpacing: '-0.025em', color: '#f3ede0', lineHeight: 1.05 }}>
-              The FLOW<br />Framework
-            </h2>
-            <p style={{ margin: '0 0 24px', fontSize: 15, lineHeight: 1.6, color: 'rgba(243,237,224,0.65)' }}>
-              Every HackProduct challenge is structured around four moves that compound into product judgment. The more you practice, the more automatic they become.
-            </p>
-            <Link
-              href="/explore/flow"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 8,
-                background: '#f3ede0', color: '#1e1b14',
-                padding: '14px 24px', borderRadius: 999,
-                fontWeight: 700, fontSize: 15, textDecoration: 'none',
-              }}
-            >
-              Learn how FLOW works
-              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_forward</span>
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3.5">
-            {FLOW_MOVES.map(m => (
-              <div key={m.k} style={{
-                background: m.bg, borderRadius: 24, padding: '22px 20px',
-                position: 'relative', overflow: 'hidden',
-                border: '1px solid rgba(0,0,0,0.04)',
-              }}>
-                <div aria-hidden style={{
-                  position: 'absolute', right: -4, bottom: -8,
-                  fontFamily: 'var(--font-headline)', fontSize: 86, fontWeight: 800,
-                  color: m.color, opacity: 0.10, lineHeight: 1, userSelect: 'none',
-                  letterSpacing: '-0.04em', pointerEvents: 'none',
-                }}>{m.k[0]}</div>
-                <div style={{ position: 'relative' }}>
-                  <div style={{
-                    width: 34, height: 34, borderRadius: 10, background: m.color,
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10,
-                  }}>
-                    <span className="material-symbols-outlined" style={{ color: '#fff', fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 500" }}>{m.icon}</span>
-                  </div>
-                  <div style={{ fontFamily: 'var(--font-headline)', fontSize: 20, fontWeight: 700, letterSpacing: '-0.01em' }}>{m.k}</div>
-                  <div style={{ fontSize: 12.5, color: 'rgba(0,0,0,0.65)', marginTop: 2 }}>{m.sub}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── COURSE MODULES ───────────────────────────────────── */}
-      <SectionHeading eyebrow="Deep learning" title="Guides." href="/explore/modules" linkLabel="All guides" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 mb-12">
-        {modules.map(m => (
-          <Link
-            key={m.slug}
-            href={`/explore/modules/${m.slug}`}
-            style={{
-              display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-              background: m.cover_color,
-              borderRadius: 24,
-              padding: '28px 24px 22px',
-              minHeight: 200,
-              position: 'relative', overflow: 'hidden',
-              textDecoration: 'none',
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}
-          >
-            {/* Faint dot grid */}
-            <div aria-hidden style={{
-              position: 'absolute', inset: 0,
-              backgroundImage: 'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)',
-              backgroundSize: '18px 18px',
-              maskImage: 'radial-gradient(ellipse 80% 80% at 80% 80%, black, transparent)',
-              WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 80% 80%, black, transparent)',
-            }} />
-
-            {/* Chapter count watermark */}
-            <div aria-hidden style={{
-              position: 'absolute', right: -6, bottom: -10,
-              fontFamily: 'var(--font-headline)', fontSize: 100, fontWeight: 800,
-              color: m.accent_color, opacity: 0.07, lineHeight: 1,
-              userSelect: 'none', pointerEvents: 'none', letterSpacing: '-0.04em',
-            }}>{m.chapter_count}</div>
-
-            <div style={{ position: 'relative' }}>
-              {/* Difficulty chip */}
-              <div style={{
-                display: 'inline-flex', alignItems: 'center',
-                background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.12)',
-                padding: '3px 10px', borderRadius: 999, marginBottom: 14,
-                fontSize: 10, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
-                color: m.accent_color,
-              }}>
-                {m.difficulty}
-              </div>
-              <div style={{
-                fontFamily: 'var(--font-headline)', fontSize: 22, fontWeight: 700,
-                letterSpacing: '-0.015em', lineHeight: 1.15, color: '#f3ede0',
-                marginBottom: 6,
-              }}>
-                {m.name}
-              </div>
-              <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.5, color: 'rgba(243,237,224,0.6)' }}>
-                {m.tagline}
-              </div>
-            </div>
-
-            <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 18 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(243,237,224,0.55)' }}>
-                {m.chapter_count} chapters · {m.est_minutes} min
-              </div>
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: 5,
-                background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.14)',
-                color: '#f3ede0', padding: '7px 14px', borderRadius: 999,
-                fontWeight: 700, fontSize: 12.5,
-              }}>
-                Start
-                <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward</span>
-              </div>
-            </div>
-          </Link>
+      <SectionHeading title="Guides" href="/explore/modules" linkLabel="All guides" />
+      <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {modules.map((module) => (
+          <ModuleCard key={module.slug} module={module} />
         ))}
-      </div>
+      </section>
 
-      {/* ── PRODUCT AUTOPSIES ─────────────────────────────────── */}
-      {showcaseProducts.length > 0 && (
+      {autopsies.length > 0 && (
         <>
-          <SectionHeading eyebrow="Case studies" title="Product autopsies." href="/explore/showcase" linkLabel="View all" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-12">
-            {showcaseProducts.slice(0, 4).map(product => {
-              const bg = product.cover_color ?? '#1e1b14'
-              return (
-                <Link
-                  key={product.slug}
-                  href={`/explore/showcase/${product.slug}`}
-                  style={{
-                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                    background: bg, borderRadius: 24, padding: '22px 20px',
-                    minHeight: 180, textDecoration: 'none',
-                    border: '1px solid rgba(255,255,255,0.07)',
-                    position: 'relative', overflow: 'hidden',
-                  }}
-                >
-                  {/* Dark overlay to tame vivid cover colors */}
-                  <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.32)', borderRadius: 24, pointerEvents: 'none' }} />
-
-                  {/* Giant emoji watermark */}
-                  {product.logo_emoji && (
-                    <div aria-hidden style={{
-                      position: 'absolute', right: -4, bottom: -8,
-                      fontSize: 90, lineHeight: 1, opacity: 0.12,
-                      userSelect: 'none', pointerEvents: 'none',
-                    }}>{product.logo_emoji}</div>
-                  )}
-
-                  <div style={{ position: 'relative' }}>
-                    {/* Emoji + industry */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                      {product.logo_emoji && (
-                        <div style={{
-                          width: 40, height: 40, borderRadius: 12,
-                          background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.20)',
-                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 22,
-                        }}>{product.logo_emoji}</div>
-                      )}
-                      {product.industry && (
-                        <div style={{
-                          fontSize: 10, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
-                          color: 'rgba(255,255,255,0.80)',
-                        }}>{product.industry}</div>
-                      )}
-                    </div>
-                    <div style={{
-                      fontFamily: 'var(--font-headline)', fontSize: 20, fontWeight: 700,
-                      letterSpacing: '-0.01em', color: '#ffffff', marginBottom: 4,
-                    }}>{product.name}</div>
-                    <div style={{ fontSize: 12.5, fontWeight: 600, color: 'rgba(255,255,255,0.82)', lineHeight: 1.45 }}>
-                      {product.tagline}
-                    </div>
-                  </div>
-
-                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.70)' }}>
-                      {product.decision_count} decisions
-                    </div>
-                    <div style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 5,
-                      background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.28)',
-                      color: '#ffffff', padding: '6px 12px', borderRadius: 999,
-                      fontWeight: 700, fontSize: 12,
-                    }}>
-                      Explore
-                      <span className="material-symbols-outlined" style={{ fontSize: 13 }}>arrow_forward</span>
-                    </div>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
+          <SectionHeading title="Autopsies" href="/explore/showcase" linkLabel="View all" />
+          <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {autopsies.map((product) => (
+              <AutopsyCard key={product.slug} product={product} />
+            ))}
+          </section>
         </>
       )}
 
-      {/* ── DOMAINS ───────────────────────────────────────────── */}
-      {domains.length > 0 && (
+      {topDomains.length > 0 && (
         <>
-          <SectionHeading eyebrow="Topic areas" title="Explore by domain." href="/domains" linkLabel="All domains" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-12">
-            {domains.slice(0, 8).map((d, i) => {
-              const palette = DOMAIN_PALETTES[i % DOMAIN_PALETTES.length]
-              const DomainArt = DOMAIN_ARTS[i % DOMAIN_ARTS.length]
-              return (
-                <Link
-                  key={d.slug}
-                  href={`/domains/${d.slug}`}
-                  style={{
-                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                    background: palette.bg,
-                    borderRadius: 20,
-                    padding: '18px 18px 16px',
-                    minHeight: 140,
-                    textDecoration: 'none',
-                    border: '1px solid rgba(0,0,0,0.05)',
-                    position: 'relative', overflow: 'hidden',
-                  }}
-                >
-                  {/* SVG art background */}
-                  <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-                    <DomainArt color={palette.accent} />
-                  </div>
-
-                  {/* Progress bar at bottom */}
-                  {d.progress_percentage > 0 && (
-                    <div style={{
-                      position: 'absolute', bottom: 0, left: 0,
-                      height: 3, background: palette.accent,
-                      width: `${d.progress_percentage}%`,
-                      borderRadius: '0 0 0 999px',
-                    }} />
-                  )}
-
-                  <div style={{ position: 'relative' }}>
-                    {d.icon && (
-                      <div style={{
-                        width: 34, height: 34, borderRadius: 10,
-                        background: palette.accent,
-                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                        marginBottom: 10,
-                        boxShadow: `0 3px 10px -3px ${palette.accent}66`,
-                      }}>
-                        <span className="material-symbols-outlined" style={{
-                          fontSize: 18, color: '#fff',
-                          fontVariationSettings: "'FILL' 1, 'wght' 500",
-                        }}>{d.icon}</span>
-                      </div>
-                    )}
-                    <div style={{
-                      fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700,
-                      letterSpacing: '-0.01em', color: palette.fg,
-                      marginBottom: 3,
-                    }}>{d.title}</div>
-                    {d.description && (
-                      <div style={{
-                        fontSize: 12, fontWeight: 600, color: palette.fg, opacity: 0.65,
-                        lineHeight: 1.45,
-                        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}>{d.description}</div>
-                    )}
-                  </div>
-
-                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
-                    <div style={{ fontSize: 11.5, fontWeight: 600, color: palette.fg, opacity: 0.55 }}>
-                      {d.challenge_count} challenges
-                    </div>
-                    {d.progress_percentage > 0 && (
-                      <div style={{ fontSize: 11.5, fontWeight: 700, color: palette.accent }}>
-                        {Math.round(d.progress_percentage)}%
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
+          <SectionHeading title="Domains" href="/domains" linkLabel="All domains" />
+          <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {topDomains.map((domain, index) => (
+              <DomainRow key={domain.slug} domain={domain} index={index} />
+            ))}
+          </section>
         </>
       )}
 
-      {/* ── CODING INTERVIEW CHALLENGES ──────────────────────── */}
-      <div data-testid="section-coding">
-        {codingChallenges.length > 0 ? (
-          <>
-            <SectionHeading eyebrow="Interview prep" title="Coding Interviews." href="/challenges?discipline=algorithm" linkLabel="View all →" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-12">
-              {codingChallenges.map((c) => {
-                const diff = DIFFICULTY_CONFIG[c.difficulty as string] ?? { label: c.difficulty, dot: '#74796e' }
-                const meta = (c as unknown as { metadata?: { language?: string; time_limit_seconds?: number; test_cases?: unknown[] } }).metadata
-                const langLabel = meta?.language === 'sql' ? 'SQL' : meta?.language ?? 'Code'
-                const cStats = snippetStatsMap.get(c.id)
-                const cIcon = cStats?.is_completed
-                  ? { icon: 'check_circle', fill: 1, color: '#4a7c59' }
-                  : (cStats?.attempt_count ?? 0) > 0
-                    ? { icon: 'incomplete_circle', fill: 0, color: '#705c30' }
-                    : null
-                return (
-                  <a
-                    key={c.id}
-                    href={`/workspace/challenges/${c.slug ?? c.id}`}
-                    style={{
-                      display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                      background: '#e8f0e8', borderRadius: 20, padding: '18px 18px 16px',
-                      minHeight: 140, textDecoration: 'none',
-                      border: '1px solid rgba(0,0,0,0.05)',
-                      position: 'relative', overflow: 'hidden',
-                    }}
-                  >
-                    <div style={{ position: 'relative' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
-                        <span className="bg-surface-container-high text-on-surface rounded-full text-xs px-2 py-0.5 font-label font-semibold border border-outline-variant/40">
-                          {c.challenge_type === 'sql' ? 'SQL' : 'Algorithms'}
-                        </span>
-                        <span className="bg-secondary-container text-on-secondary-container rounded-full text-xs px-2 py-0.5 font-label font-semibold">
-                          {langLabel}
-                        </span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#2e4a30' }}>
-                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: diff.dot, display: 'inline-block' }} />
-                          {diff.label}
-                        </span>
-                      </div>
-                      <div style={{ fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700, color: '#1a3020', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
-                        {c.title}
-                      </div>
-                      {cIcon && (
-                        <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <span
-                            className="material-symbols-outlined"
-                            style={{ fontSize: 14, fontVariationSettings: `'FILL' ${cIcon.fill}`, color: cIcon.color }}
-                          >{cIcon.icon}</span>
-                          <span style={{ fontSize: 11, color: cIcon.color, fontWeight: 600 }}>
-                            {cStats?.is_completed ? 'Completed' : `${cStats?.attempt_count} attempt${(cStats?.attempt_count ?? 0) !== 1 ? 's' : ''}`}
-                          </span>
-                        </div>
-                      )}
-                      {(meta?.time_limit_seconds != null || meta?.test_cases != null) && (
-                        <div style={{ fontSize: 11, color: '#3a5a3c', marginTop: 6, display: 'flex', gap: 8 }}>
-                          {meta?.time_limit_seconds != null && (
-                            <span>{Math.round(meta.time_limit_seconds / 60)} min</span>
-                          )}
-                          {meta?.test_cases != null && (
-                            <span>{(meta.test_cases as unknown[]).length} test cases</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
-                      <span style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 4,
-                        background: '#4a7c59', color: '#fff',
-                        padding: '6px 12px', borderRadius: 999,
-                        fontWeight: 700, fontSize: 12,
-                      }}>
-                        Start
-                        <span className="material-symbols-outlined" style={{ fontSize: 13 }}>arrow_forward</span>
-                      </span>
-                    </div>
-                  </a>
-                )
-              })}
-            </div>
-          </>
-        ) : (
-          <>
-            <SectionHeading eyebrow="Interview prep" title="Coding Interviews." href="/challenges?discipline=algorithm" linkLabel="View all →" />
-            <div className="mb-12 rounded-2xl border border-outline-variant/30 bg-surface-container-low p-8 text-center">
-              <span className="material-symbols-outlined text-3xl text-on-surface-variant/40 block mb-2">code</span>
-              <p className="text-sm text-on-surface-variant font-body">No coding challenges yet — check back soon.</p>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* ── SYSTEM DESIGN CHALLENGES ─────────────────────────── */}
-      {systemDesignChallenges.length > 0 && (
-        <>
-          <SectionHeading eyebrow="Interview prep" title="System Design." href="/challenges?type=system_design" linkLabel="View all →" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-12">
-            {systemDesignChallenges.map((c) => {
-              const diff = DIFFICULTY_CONFIG[c.difficulty as string] ?? { label: c.difficulty, dot: '#74796e' }
-              const sdStats = snippetStatsMap.get(c.id)
-              const sdIcon = sdStats?.is_completed
-                ? { icon: 'check_circle', fill: 1, color: '#2d7aa8' }
-                : (sdStats?.attempt_count ?? 0) > 0
-                  ? { icon: 'incomplete_circle', fill: 0, color: '#5a5a80' }
-                  : null
-              return (
-                <a
-                  key={c.id}
-                  href={`/workspace/challenges/${c.slug ?? c.id}`}
-                  style={{
-                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                    background: '#e0f0f8', borderRadius: 20, padding: '18px 18px 16px',
-                    minHeight: 140, textDecoration: 'none',
-                    border: '1px solid rgba(0,0,0,0.05)',
-                    position: 'relative', overflow: 'hidden',
-                  }}
-                >
-                  <div style={{ position: 'relative' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
-                      <span className="bg-secondary-container text-on-secondary-container rounded-full text-xs px-2 py-0.5 font-label">
-                        System Design
-                      </span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#4a6072' }}>
-                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: diff.dot, display: 'inline-block' }} />
-                        {diff.label}
-                      </span>
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700, color: '#1a3048', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
-                      {c.title}
-                    </div>
-                    {sdIcon && (
-                      <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <span
-                          className="material-symbols-outlined"
-                          style={{ fontSize: 14, fontVariationSettings: `'FILL' ${sdIcon.fill}`, color: sdIcon.color }}
-                        >{sdIcon.icon}</span>
-                        <span style={{ fontSize: 11, color: sdIcon.color, fontWeight: 600 }}>
-                          {sdStats?.is_completed ? 'Completed' : `${sdStats?.attempt_count} attempt${(sdStats?.attempt_count ?? 0) !== 1 ? 's' : ''}`}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
-                    <span style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 4,
-                      background: '#2d7aa8', color: '#fff',
-                      padding: '6px 12px', borderRadius: 999,
-                      fontWeight: 700, fontSize: 12,
-                    }}>
-                      Start
-                      <span className="material-symbols-outlined" style={{ fontSize: 13 }}>arrow_forward</span>
-                    </span>
-                  </div>
-                </a>
-              )
-            })}
-          </div>
-        </>
-      )}
-
-      {/* ── DATA MODELING CHALLENGES ──────────────────────────── */}
-      {dataModelingChallenges.length > 0 && (
-        <>
-          <SectionHeading eyebrow="Interview prep" title="Data Modeling." href="/challenges?type=data_modeling" linkLabel="View all →" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-12">
-            {dataModelingChallenges.map((c) => {
-              const diff = DIFFICULTY_CONFIG[c.difficulty as string] ?? { label: c.difficulty, dot: '#74796e' }
-              const dmStats = snippetStatsMap.get(c.id)
-              const dmIcon = dmStats?.is_completed
-                ? { icon: 'check_circle', fill: 1, color: '#8a3c80' }
-                : (dmStats?.attempt_count ?? 0) > 0
-                  ? { icon: 'incomplete_circle', fill: 0, color: '#8a3c80' }
-                  : null
-              return (
-                <a
-                  key={c.id}
-                  href={`/workspace/challenges/${c.slug ?? c.id}`}
-                  style={{
-                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                    background: '#fce8ef', borderRadius: 20, padding: '18px 18px 16px',
-                    minHeight: 140, textDecoration: 'none',
-                    border: '1px solid rgba(0,0,0,0.05)',
-                    position: 'relative', overflow: 'hidden',
-                  }}
-                >
-                  <div style={{ position: 'relative' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
-                      <span className="bg-secondary-container text-on-secondary-container rounded-full text-xs px-2 py-0.5 font-label">
-                        Data Modeling
-                      </span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#603040' }}>
-                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: diff.dot, display: 'inline-block' }} />
-                        {diff.label}
-                      </span>
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-headline)', fontSize: 16, fontWeight: 700, color: '#3a1020', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
-                      {c.title}
-                    </div>
-                    {dmIcon && (
-                      <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <span
-                          className="material-symbols-outlined"
-                          style={{ fontSize: 14, fontVariationSettings: `'FILL' ${dmIcon.fill}`, color: dmIcon.color }}
-                        >{dmIcon.icon}</span>
-                        <span style={{ fontSize: 11, color: dmIcon.color, fontWeight: 600 }}>
-                          {dmStats?.is_completed ? 'Completed' : `${dmStats?.attempt_count} attempt${(dmStats?.attempt_count ?? 0) !== 1 ? 's' : ''}`}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
-                    <span style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 4,
-                      background: '#b83060', color: '#fff',
-                      padding: '6px 12px', borderRadius: 999,
-                      fontWeight: 700, fontSize: 12,
-                    }}>
-                      Start
-                      <span className="material-symbols-outlined" style={{ fontSize: 13 }}>arrow_forward</span>
-                    </span>
-                  </div>
-                </a>
-              )
-            })}
-          </div>
-        </>
-      )}
-
-      {/* ── STUDY PLANS ──────────────────────────────────────── */}
-      <SectionHeading eyebrow="Structured learning" title="Study Plans." href="/explore/plans" linkLabel="All plans" />
+      <SectionHeading title="Study Plans" href="/explore/plans" linkLabel="All plans" />
       <StudyPlanGrid plans={plans} personalisedPlan={personalisedPlan} />
-    </div>
+    </main>
   )
 }
 
-/* ── Shared section heading ─────────────────────────────────────── */
+function MetaChip({ icon, label }: { icon: string; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-md bg-surface-container-low px-2.5 py-1 text-xs font-label font-bold text-on-surface-variant">
+      <span className="material-symbols-outlined text-[14px]">{icon}</span>
+      {label}
+    </span>
+  )
+}
 
-function SectionHeading({ eyebrow, title, href, linkLabel }: {
-  eyebrow: string
+function PathMiniArt({ kind, accent, className = '' }: {
+  kind: string
+  accent: string
+  className?: string
+}) {
+  if (kind === 'interview') {
+    return (
+      <svg viewBox="0 0 160 120" className={className} fill="none" aria-hidden="true">
+        <path d="M28 78 C42 52, 62 44, 80 56 C98 68, 112 34, 134 28" stroke={accent} strokeWidth="8" strokeLinecap="round" />
+        <circle cx="34" cy="82" r="12" fill={accent} opacity="0.24" />
+        <circle cx="80" cy="56" r="16" fill={accent} opacity="0.18" />
+        <rect x="106" y="20" width="34" height="46" rx="17" stroke={accent} strokeWidth="7" opacity="0.48" />
+        <path d="M123 66 V88 M108 88 H138" stroke={accent} strokeWidth="7" strokeLinecap="round" opacity="0.55" />
+      </svg>
+    )
+  }
+
+  if (kind === 'plans') {
+    return (
+      <svg viewBox="0 0 160 120" className={className} fill="none" aria-hidden="true">
+        <path d="M34 88 C50 42, 86 88, 126 36" stroke={accent} strokeWidth="8" strokeLinecap="round" />
+        <circle cx="34" cy="88" r="11" fill={accent} opacity="0.28" />
+        <circle cx="82" cy="70" r="11" fill={accent} opacity="0.20" />
+        <circle cx="126" cy="36" r="13" fill={accent} opacity="0.32" />
+        <path d="M114 36 H126 V24" stroke={accent} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" opacity="0.65" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg viewBox="0 0 160 120" className={className} fill="none" aria-hidden="true">
+      <rect x="28" y="28" width="42" height="42" rx="10" fill={accent} opacity="0.22" />
+      <rect x="88" y="42" width="44" height="44" rx="10" fill={accent} opacity="0.16" />
+      <path d="M48 78 H104 M104 78 L92 66 M104 78 L92 90" stroke={accent} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" opacity="0.62" />
+      <circle cx="48" cy="48" r="8" fill={accent} opacity="0.75" />
+      <circle cx="110" cy="64" r="8" fill={accent} opacity="0.75" />
+    </svg>
+  )
+}
+
+function CompactPathCard({ title, body, href, icon, accent, bg, art, tooltip }: {
+  title: string
+  body: string
+  href: string
+  icon: string
+  accent: string
+  bg: string
+  art: string
+  tooltip: string
+}) {
+  return (
+    <AppTooltip label={tooltip} side="bottom" className="flex">
+      <Link
+        href={href}
+        data-hatch-sound="open"
+        className="group relative flex min-h-[142px] w-full flex-col justify-between overflow-hidden rounded-xl border border-outline-variant/45 p-4 no-underline transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-26px_rgba(46,50,48,0.55)]"
+        style={{ background: bg }}
+      >
+        <PathMiniArt kind={art} accent={accent} className="absolute -right-5 -bottom-7 h-28 w-36" />
+        <span className="relative flex items-start justify-between gap-3">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-white" style={{ background: accent }}>
+            <span className="material-symbols-outlined text-[21px]" style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
+          </span>
+          <span className="material-symbols-outlined text-[16px] text-on-surface-variant transition-transform group-hover:translate-x-0.5">
+            arrow_forward
+          </span>
+        </span>
+        <span className="relative pr-8">
+          <span className="block font-headline text-[17px] font-bold text-on-surface">{title}</span>
+          <span className="mt-1 block text-[12.5px] font-semibold leading-snug text-on-surface-variant">{body}</span>
+        </span>
+      </Link>
+    </AppTooltip>
+  )
+}
+
+function ModuleCard({ module }: { module: Pick<LearnModule, 'slug' | 'name' | 'tagline' | 'cover_color' | 'accent_color' | 'chapter_count' | 'est_minutes' | 'difficulty'> }) {
+  return (
+    <Link
+      href={`/explore/modules/${module.slug}`}
+      data-hatch-sound="open"
+      className="group flex min-h-[150px] flex-col justify-between overflow-hidden rounded-xl p-4 no-underline transition-transform duration-200 hover:-translate-y-0.5"
+      style={{ background: module.cover_color, border: '1px solid rgba(255,255,255,0.08)' }}
+    >
+      <span>
+        <span
+          className="inline-flex rounded-md px-2 py-0.5 text-[10px] font-label font-bold uppercase tracking-[0.08em]"
+          style={{ background: 'rgba(255,255,255,0.10)', color: module.accent_color }}
+        >
+          {module.difficulty}
+        </span>
+        <span className="mt-3 block font-headline text-[18px] font-bold leading-tight text-[#f3ede0]">
+          {module.name}
+        </span>
+        <span className="mt-1 line-clamp-2 block text-[12.5px] font-semibold leading-snug text-[#f3ede0]/65">
+          {module.tagline}
+        </span>
+      </span>
+      <span className="mt-4 flex items-center justify-between text-[12px] font-label font-semibold text-[#f3ede0]/55">
+        <span>{module.chapter_count} chapters · {module.est_minutes} min</span>
+        <span className="material-symbols-outlined text-[15px] transition-transform group-hover:translate-x-0.5" style={{ color: module.accent_color }}>
+          arrow_forward
+        </span>
+      </span>
+    </Link>
+  )
+}
+
+function AutopsyCard({ product }: { product: AutopsyProduct }) {
+  const bg = product.cover_color ?? '#1e1b14'
+
+  return (
+    <Link
+      href={`/explore/showcase/${product.slug}`}
+      data-hatch-sound="open"
+      className="group flex min-h-[136px] flex-col justify-between overflow-hidden rounded-xl p-4 no-underline transition-transform duration-200 hover:-translate-y-0.5"
+      style={{ background: bg, border: '1px solid rgba(255,255,255,0.08)' }}
+    >
+      <span>
+        <span className="flex items-center gap-2">
+          {product.logo_emoji && <span className="text-[22px] leading-none">{product.logo_emoji}</span>}
+          {product.industry && (
+            <span className="font-label text-[10px] font-bold uppercase tracking-[0.08em] text-white/65">
+              {product.industry}
+            </span>
+          )}
+        </span>
+        <span className="mt-3 block font-headline text-[18px] font-bold leading-tight text-white">
+          {product.name}
+        </span>
+        {product.tagline && (
+          <span className="mt-1 line-clamp-2 block text-[12.5px] font-semibold leading-snug text-white/72">
+            {product.tagline}
+          </span>
+        )}
+      </span>
+      <span className="mt-4 flex items-center justify-between text-[12px] font-label font-semibold text-white/62">
+        <span>{product.decision_count} decisions</span>
+        <span className="material-symbols-outlined text-[15px] transition-transform group-hover:translate-x-0.5">
+          arrow_forward
+        </span>
+      </span>
+    </Link>
+  )
+}
+
+function DomainRow({ domain, index }: { domain: DomainWithProgress; index: number }) {
+  const theme = DOMAIN_THEMES[index % DOMAIN_THEMES.length]
+
+  return (
+    <Link
+      href={`/domains/${domain.slug}`}
+      data-hatch-sound="open"
+      className="group relative flex min-h-[112px] items-center gap-3 overflow-hidden rounded-xl border border-outline-variant/45 p-4 no-underline transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-28px_rgba(46,50,48,0.55)]"
+      style={{ background: theme.bg }}
+    >
+      <DomainSketch accent={theme.accent} soft={theme.soft} />
+      <span className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-white shadow-[0_10px_24px_-18px_rgba(0,0,0,0.6)]" style={{ background: theme.accent }}>
+        <span className="material-symbols-outlined text-[21px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+          {domain.icon ?? 'category'}
+        </span>
+      </span>
+      <span className="relative min-w-0 flex-1">
+        <span className="block truncate font-headline text-[15px] font-bold text-on-surface">
+          {domain.title}
+        </span>
+        <span className="mt-0.5 block text-[12px] font-label font-semibold text-on-surface-variant">
+          {domain.challenge_count} challenges
+          {domain.progress_percentage > 0 ? ` · ${Math.round(domain.progress_percentage)}% complete` : ''}
+        </span>
+        <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-white/65">
+          <span
+            className="block h-full rounded-full transition-[width] duration-500"
+            style={{
+              width: `${Math.min(100, Math.max(8, Math.round(domain.progress_percentage || 0)))}%`,
+              background: theme.accent,
+            }}
+          />
+        </span>
+      </span>
+      <span className="material-symbols-outlined relative shrink-0 text-[16px] text-on-surface-variant transition-transform group-hover:translate-x-0.5">
+        arrow_forward
+      </span>
+    </Link>
+  )
+}
+
+function DomainSketch({ accent, soft }: { accent: string; soft: string }) {
+  return (
+    <svg
+      viewBox="0 0 220 120"
+      className="pointer-events-none absolute inset-y-0 right-0 h-full w-44"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle cx="158" cy="22" r="44" fill={soft} />
+      <circle cx="198" cy="92" r="38" fill={soft} />
+      <path d="M92 82 C116 42, 152 90, 196 28" stroke={accent} strokeWidth="7" strokeLinecap="round" opacity="0.16" />
+      <path d="M138 30 H196 V88" stroke={accent} strokeWidth="2" strokeDasharray="5 7" opacity="0.20" />
+      <rect x="132" y="48" width="22" height="22" rx="7" fill={accent} opacity="0.12" />
+      <rect x="170" y="66" width="26" height="26" rx="8" fill={accent} opacity="0.10" />
+    </svg>
+  )
+}
+
+function SectionHeading({ title, href, linkLabel }: {
   title: string
   href: string
   linkLabel: string
 }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 20 }}>
-      <div>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--color-on-surface-muted)', marginBottom: 6 }}>
-          {eyebrow}
-        </div>
-        <h2 style={{ margin: 0, fontFamily: 'var(--font-headline)', fontSize: 38, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1 }}>
-          {title}
-        </h2>
-      </div>
+    <div className="mb-3 flex items-end justify-between gap-4">
+      <h2 className="m-0 font-headline text-[24px] font-bold leading-tight text-on-surface">
+        {title}
+      </h2>
       <Link
         href={href}
-        style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          color: 'var(--color-primary)', fontWeight: 700, fontSize: 13,
-          background: 'transparent', border: 'none', textDecoration: 'none',
-          letterSpacing: '0.04em',
-        }}
+        data-hatch-sound="open"
+        className="inline-flex items-center gap-1 text-xs font-label font-bold text-primary no-underline hover:underline"
       >
-        {linkLabel}{' '}
-        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_forward</span>
+        {linkLabel}
+        <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
       </Link>
     </div>
-  )
-}
-
-/* ── Static SVG (server-renderable) ────────────────────────────── */
-
-function SpiralSVG({ color }: { color: string }) {
-  const pts: string[] = []
-  for (let t = 0; t < 8 * Math.PI; t += 0.08) {
-    const r = 6 + t * 5
-    pts.push(`${130 + r * Math.cos(t)},${100 + r * Math.sin(t)}`)
-  }
-  return (
-    <svg viewBox="0 0 260 200" style={{ position: 'absolute', bottom: -20, right: -20, width: '80%', height: '80%', pointerEvents: 'none', zIndex: 0 }}>
-      <polyline points={pts.join(' ')} stroke={color} strokeWidth="1.8" fill="none" opacity={0.14} />
-    </svg>
   )
 }

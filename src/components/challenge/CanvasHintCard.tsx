@@ -57,26 +57,13 @@ const CONTENT = {
 }
 
 export function CanvasHintCard({ challengeType, forceOpen, onDismiss }: CanvasHintCardProps) {
-  const storageKey = `hatch_canvas_hint_dismissed_${challengeType}`
-
-  const [visible, setVisible] = useState(() => {
-    if (typeof window === 'undefined') return true
-    return localStorage.getItem(storageKey) !== '1'
-  })
+  const [visible, setVisible] = useState(Boolean(forceOpen))
 
   useEffect(() => {
-    if (forceOpen) {
-      setVisible(true)
-    } else if (forceOpen === false) {
-      const dismissed = typeof window !== 'undefined' && localStorage.getItem(storageKey) === '1'
-      if (dismissed) setVisible(false)
-    }
-  }, [forceOpen, storageKey])
+    setVisible(Boolean(forceOpen))
+  }, [forceOpen])
 
   const dismiss = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(storageKey, '1')
-    }
     setVisible(false)
     onDismiss?.()
   }
