@@ -3,6 +3,22 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getHatchContext } from '@/lib/v2/hatch-context'
 import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+
+function aiBudgetResponse(error: unknown) {
+  if (!(error instanceof AiBudgetExceededError)) return null
+
+  return NextResponse.json(
+    {
+      error: 'limit_reached',
+      feature: 'hatch_ai_cents',
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    },
+    { status: 402 }
+  )
+}
 
 export async function POST(
   req: NextRequest,
@@ -11,6 +27,8 @@ export async function POST(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userPlan = await getUserPlanForBudget(user.id)
+  const budget = { userId: user.id, userPlan, route: 'challenge_coaching' }
 
   const { id: challengeId } = await params
   const body = await req.json().catch(() => ({})) as {
@@ -97,11 +115,19 @@ Generate two short paragraphs:
 Tone: Direct, warm. Senior ${roleLabel} mentoring a junior. No filler.
 Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
 
-    const message = await createCachedMessage(systemPrompt, userPrompt, {
-      model: 'claude-sonnet-4-6',
-      max_tokens: 800,
-      thinking: { type: 'adaptive' },
-    })
+    let message
+    try {
+      message = await createCachedMessage(systemPrompt, userPrompt, {
+        model: 'claude-sonnet-4-6',
+        max_tokens: 800,
+        thinking: { type: 'adaptive' },
+        budget,
+      })
+    } catch (error) {
+      const response = aiBudgetResponse(error)
+      if (response) return response
+      throw error
+    }
 
     let rawText = ''
     for (const block of message.content) {
@@ -244,11 +270,19 @@ Generate two short paragraphs:
 Tone: Direct, warm. Senior ${roleLabel} mentoring a junior. No filler.
 Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
 
-  const message = await createCachedMessage(systemPrompt, userPrompt, {
-    model: 'claude-sonnet-4-6',
-    max_tokens: 800,
-    thinking: { type: 'adaptive' },
-  })
+  let message
+  try {
+    message = await createCachedMessage(systemPrompt, userPrompt, {
+      model: 'claude-sonnet-4-6',
+      max_tokens: 800,
+      thinking: { type: 'adaptive' },
+      budget,
+    })
+  } catch (error) {
+    const response = aiBudgetResponse(error)
+    if (response) return response
+    throw error
+  }
 
   // Extract text content from response
   let rawText = ''

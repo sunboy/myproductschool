@@ -1,4 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk'
+import {
+  assertAiBudget,
+  estimateAnthropicPreflightCents,
+  recordAnthropicUsage,
+} from '@/lib/usage/ai-budget'
 
 const client = new Anthropic()
 
@@ -6,6 +11,7 @@ interface CachedMessageOptions {
   model: string
   max_tokens: number
   thinking?: { type: 'enabled'; budget_tokens: number } | { type: 'adaptive' }
+  budget?: { userId: string; userPlan: string; route: string }
 }
 
 /**
@@ -18,7 +24,17 @@ export async function createCachedMessage(
   userContent: string,
   options: CachedMessageOptions
 ) {
-  return client.messages.create({
+  const preflightCostCents = estimateAnthropicPreflightCents(
+    options.model,
+    options.max_tokens,
+    systemPrompt.length + userContent.length
+  )
+
+  if (options.budget) {
+    await assertAiBudget(options.budget.userId, options.budget.userPlan, preflightCostCents)
+  }
+
+  const message = await client.messages.create({
     model: options.model,
     max_tokens: options.max_tokens,
     ...(options.thinking ? { thinking: options.thinking } : {}),
@@ -31,6 +47,18 @@ export async function createCachedMessage(
     ],
     messages: [{ role: 'user' as const, content: userContent }],
   })
+
+  if (options.budget) {
+    await recordAnthropicUsage({
+      userId: options.budget.userId,
+      model: options.model,
+      usage: message.usage,
+      fallbackCostCents: preflightCostCents,
+      route: options.budget.route,
+    })
+  }
+
+  return message
 }
 
 /**
@@ -43,7 +71,17 @@ export async function createCachedMessageMultiSystem(
   userContent: string,
   options: CachedMessageOptions
 ) {
-  return client.messages.create({
+  const preflightCostCents = estimateAnthropicPreflightCents(
+    options.model,
+    options.max_tokens,
+    cachedPrefix.length + dynamicContext.length + userContent.length
+  )
+
+  if (options.budget) {
+    await assertAiBudget(options.budget.userId, options.budget.userPlan, preflightCostCents)
+  }
+
+  const message = await client.messages.create({
     model: options.model,
     max_tokens: options.max_tokens,
     ...(options.thinking ? { thinking: options.thinking } : {}),
@@ -60,6 +98,18 @@ export async function createCachedMessageMultiSystem(
     ],
     messages: [{ role: 'user' as const, content: userContent }],
   })
+
+  if (options.budget) {
+    await recordAnthropicUsage({
+      userId: options.budget.userId,
+      model: options.model,
+      usage: message.usage,
+      fallbackCostCents: preflightCostCents,
+      route: options.budget.route,
+    })
+  }
+
+  return message
 }
 
 export { client as anthropicClient }

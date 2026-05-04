@@ -4,11 +4,13 @@ import Link from 'next/link'
 import { FeedbackAccordion } from '@/components/challenge/FeedbackAccordion'
 import { MentalModelsBreakdown } from '@/components/challenge/MentalModelsBreakdown'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { HatchFeedbackItem } from '@/lib/types'
 import { IS_MOCK } from '@/lib/mock'
+import { appendReturnTo, sanitizeReturnTo } from '@/lib/navigation/return-to'
 
 const dimensionConfig: Record<string, { label: string; icon: string }> = {
   diagnostic_accuracy: { label: 'Diagnostic Accuracy', icon: 'manage_search' },
@@ -23,12 +25,13 @@ function prettifyDimension(key: string): string {
 
 interface FeedbackPageProps {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ attempt?: string }>
+  searchParams: Promise<{ attempt?: string; returnTo?: string }>
 }
 
 export default async function FeedbackPage({ params, searchParams }: FeedbackPageProps) {
   const { id } = await params
-  const { attempt } = await searchParams
+  const { attempt, returnTo: rawReturnTo } = await searchParams
+  const returnTo = sanitizeReturnTo(rawReturnTo)
 
   const challenge = await getChallengeById(id)
   if (!challenge) notFound()
@@ -186,12 +189,24 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
     confidence: p.confidence,
     evidence: p.evidence,
   })) ?? []
+  const challengeHref = appendReturnTo(
+    `/workspace/challenges/${id}${attempt ? `?attempt=${encodeURIComponent(attempt)}` : ''}`,
+    returnTo,
+  )
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-5">
-      {/* Back navigation */}
+      <AppBreadcrumbs
+        className="mb-4"
+        items={[
+          { label: 'Practice', href: returnTo ?? '/challenges' },
+          { label: challenge.title, href: challengeHref },
+          { label: 'Feedback' },
+        ]}
+      />
+
       <div className="flex items-center gap-3 mb-4">
-        <Link href={`/workspace/challenges/${id}`} className="p-2 rounded-lg hover:bg-surface-container transition-colors">
+        <Link href={challengeHref} className="p-2 rounded-lg hover:bg-surface-container transition-colors">
           <span className="material-symbols-outlined text-on-surface-variant">arrow_back</span>
         </Link>
         <span className="text-sm text-on-surface-variant font-label">Back to challenge</span>

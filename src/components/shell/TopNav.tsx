@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { AppTooltip } from '@/components/ui/AppTooltip'
+import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
@@ -31,62 +33,13 @@ function getInitials(name: string | null | undefined): string {
     : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-function LogoMark() {
-  return (
-    <div
-      className="w-8 h-8 flex items-center justify-center shrink-0"
-      style={{
-        borderRadius: '10px',
-        background: 'linear-gradient(135deg, #4a7c59 0%, #264a34 100%)',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)',
-      }}
-    >
-      <svg width={22} height={22} viewBox="0 0 22 22" fill="none">
-        <text
-          x="4" y="16"
-          fontFamily="serif"
-          fontSize="13"
-          fontWeight="bold"
-          fill="#f7ede0"
-          stroke="#f7ede0"
-          strokeWidth="0.3"
-        >
-          HP
-        </text>
-        <circle cx="17" cy="6" r="2" fill="#c9933a" />
-      </svg>
-    </div>
-  )
-}
-
-function GoalRing({ done, total }: { done: number; total: number }) {
-  const size = 20
-  const cx = size / 2
-  const r = (size - 3) / 2
-  const c = 2 * Math.PI * r
-  const pct = Math.min(1, done / Math.max(1, total))
-  return (
-    <svg width={size} height={size} aria-label={`${done}/${total} daily goal`}>
-      <circle cx={cx} cy={cx} r={r} stroke="var(--color-outline-variant)" strokeWidth="2.5" fill="none" />
-      <circle
-        cx={cx} cy={cx} r={r}
-        stroke="var(--color-primary)"
-        strokeWidth="2.5"
-        fill="none"
-        strokeDasharray={`${c * pct} ${c}`}
-        strokeLinecap="round"
-        transform={`rotate(-90 ${cx} ${cx})`}
-      />
-    </svg>
-  )
-}
-
 export function TopNav() {
   const pathname = usePathname()
   const router = useRouter()
   const [profile, setProfile] = useState<ProfileData | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const { muted, toggleMuted } = useHatchSonics()
 
   const fetchProfile = useCallback(() => {
     fetch('/api/profile')
@@ -140,8 +93,6 @@ export function TopNav() {
     router.refresh()
   }
 
-  const dailyDone = profile?.daily_attempts_today ?? 0
-  const dailyTotal = 5
   const streak = profile?.streak_days ?? 0
   const xp = profile?.xp_total ?? 0
 
@@ -183,30 +134,43 @@ export function TopNav() {
             const active = isActive(item)
             const href = item.id === 'home' ? '/dashboard' : item.href
             return (
-              <Link key={item.id} href={href} className="no-underline">
-                <button
-                  className={cn(
-                    'inline-flex items-center gap-[7px] px-4 py-2 rounded-full border-0 whitespace-nowrap cursor-pointer',
-                    'text-[13px] font-bold transition-[background,color] duration-200',
-                    active
-                      ? 'text-white'
-                      : 'hover:bg-[var(--color-surface-container)]',
-                  )}
-                  style={
-                    active
-                      ? { background: 'var(--color-primary)', color: 'var(--color-on-primary)' }
-                      : { color: 'var(--color-on-surface-variant)' }
-                  }
-                >
-                  <span
-                    className="material-symbols-outlined text-[18px]"
-                    style={{ fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0" }}
+              <AppTooltip
+                key={item.id}
+                label={
+                  item.id === 'practice' ? 'Find the right rep by discipline, role, company, and difficulty.'
+                    : item.id === 'interviews' ? 'Run Hatch-led mock loops across product, systems, data, SQL, and coding.'
+                    : item.id === 'progress' ? 'See your FLOW levels, discipline coverage, and readiness signals.'
+                    : item.id === 'explore' ? 'Browse study plans, guides, autopsies, and learning domains.'
+                    : 'Return to your personalized dashboard.'
+                }
+                side="bottom"
+              >
+                <Link href={href} className="no-underline">
+                  <button
+                    data-hatch-sound={active ? undefined : 'open'}
+                    className={cn(
+                      'inline-flex items-center gap-[7px] px-4 py-2 rounded-full border-0 whitespace-nowrap cursor-pointer',
+                      'text-[13px] font-bold transition-[background,color] duration-200',
+                      active
+                        ? 'text-white'
+                        : 'hover:bg-[var(--color-surface-container)]',
+                    )}
+                    style={
+                      active
+                        ? { background: 'var(--color-primary)', color: 'var(--color-on-primary)' }
+                        : { color: 'var(--color-on-surface-variant)' }
+                    }
                   >
-                    {item.icon}
-                  </span>
-                  {item.label}
-                </button>
-              </Link>
+                    <span
+                      className="material-symbols-outlined text-[18px]"
+                      style={{ fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0" }}
+                    >
+                      {item.icon}
+                    </span>
+                    {item.label}
+                  </button>
+                </Link>
+              </AppTooltip>
             )
           })}
         </nav>
@@ -216,34 +180,57 @@ export function TopNav() {
         <div className="flex items-center gap-4">
 
           {/* Streak */}
-          <div
-            className="hidden sm:inline-flex items-center gap-[5px] text-[13px] font-bold"
-            style={{ color: '#c9933a' }}
-            suppressHydrationWarning
-          >
-            <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-              local_fire_department
-            </span>
-            {streak}d
-          </div>
+          <AppTooltip label="Your current practice streak." side="bottom" className="hidden sm:inline-flex">
+            <div
+              className="inline-flex items-center gap-[5px] text-[13px] font-bold"
+              style={{ color: '#c9933a' }}
+              suppressHydrationWarning
+            >
+              <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                local_fire_department
+              </span>
+              {streak}d
+            </div>
+          </AppTooltip>
 
           {/* XP */}
-          <div
-            className="hidden md:inline-flex items-center gap-[5px] text-[13px] font-bold"
-            style={{ color: 'var(--color-primary)' }}
-            suppressHydrationWarning
+          <AppTooltip label="XP grows as you complete reps, interviews, and study plan work." side="bottom" className="hidden md:inline-flex">
+            <div
+              className="inline-flex items-center gap-[5px] text-[13px] font-bold"
+              style={{ color: 'var(--color-primary)' }}
+              suppressHydrationWarning
+            >
+              <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                bolt
+              </span>
+              {xp.toLocaleString()}
+            </div>
+          </AppTooltip>
+
+          <AppTooltip
+            label={muted ? 'Turn Hatch sounds on.' : 'Mute Hatch sounds.'}
+            side="bottom"
+            className="hidden sm:inline-flex"
           >
-            <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-              bolt
-            </span>
-            {xp.toLocaleString()}
-          </div>
+            <button
+              type="button"
+              onClick={toggleMuted}
+              aria-label={muted ? 'Turn Hatch sounds on' : 'Mute Hatch sounds'}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-outline-variant/60 bg-surface-container-low text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            >
+              <span className="material-symbols-outlined text-[17px]" style={{ fontVariationSettings: muted ? "'FILL' 0" : "'FILL' 1" }}>
+                {muted ? 'volume_off' : 'graphic_eq'}
+              </span>
+            </button>
+          </AppTooltip>
 
           {/* Avatar button + dropdown */}
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenuOpen(o => !o)}
+              data-hatch-sound={menuOpen ? 'close' : 'open'}
               aria-label="Account"
+              title="Account and settings"
               className="w-9 h-9 rounded-full border-0 inline-flex items-center justify-center text-white font-bold text-[13px] overflow-hidden hover:opacity-90 transition-opacity focus:outline-none"
               style={{ background: 'linear-gradient(135deg, #4a7c59, #264a34)' }}
             >
@@ -270,6 +257,7 @@ export function TopNav() {
                 )}
                 <Link
                   href="/settings"
+                  data-hatch-sound="open"
                   onClick={() => setMenuOpen(false)}
                   className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-surface-container"
                   style={{ color: 'var(--color-on-surface)' }}
@@ -279,6 +267,7 @@ export function TopNav() {
                 </Link>
                 <button
                   onClick={handleLogout}
+                  data-hatch-sound="close"
                   className="w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-surface-container text-error"
                 >
                   <span className="material-symbols-outlined text-base">logout</span>

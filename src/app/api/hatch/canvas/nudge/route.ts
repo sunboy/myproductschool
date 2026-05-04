@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createCachedMessage } from '@/lib/anthropic/cached-client'
 import { createClient } from '@/lib/supabase/server'
 import { sceneToPrompt, type CanvasScene } from '@/lib/hatch/canvas-scene'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 
 const NUDGE_GATE_MS = 30_000
 const MAX_ELEMENT_COUNT_FOR_NUDGE = 40 // skip if canvas is large; user is mid-deep-work
@@ -49,6 +50,7 @@ export async function POST(req: NextRequest) {
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  const userPlan = await getUserPlanForBudget(user.id)
 
   const body = (await req.json()) as NudgeBody
 
@@ -92,6 +94,7 @@ export async function POST(req: NextRequest) {
     const response = await createCachedMessage(NUDGE_SYSTEM_PROMPT, userContent, {
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 200,
+      budget: { userId: user.id, userPlan, route: 'hatch_canvas_nudge' },
     })
     const content = response.content[0]
     if (content.type !== 'text') {
@@ -108,6 +111,19 @@ export async function POST(req: NextRequest) {
         : null
     return NextResponse.json({ nudge })
   } catch (error) {
+    if (error instanceof AiBudgetExceededError) {
+      return NextResponse.json(
+        {
+          error: 'limit_reached',
+          feature: 'hatch_ai_cents',
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+
     console.error('Nudge error:', error)
     return NextResponse.json({ nudge: null })
   }

@@ -392,7 +392,7 @@ export default function CalibrationPage() {
                 className="text-[15px] text-inverse-on-surface/65 font-body leading-relaxed"
                 style={{ animation: 'calFadeUp 0.5s ease 0.8s both' }}
               >
-                4 questions. 2 minutes.<br />No wrong answers — just honest ones.
+                4 choices. Product, systems, data, SQL, code.<br />No wrong answers — just honest ones.
               </p>
             </div>
             <button
@@ -555,7 +555,7 @@ export default function CalibrationPage() {
                 style={{ opacity: resultsReveal ? 1 : 0, transitionDelay: '1000ms' }}
               >
                 <p className="text-[13px] text-inverse-on-surface/60 font-body text-center">
-                  Stronger product instincts than{' '}
+                  Stronger AI-era builder instincts than{' '}
                   <span className="text-inverse-on-surface font-semibold">{results?.percentile ?? 0}%</span>
                   {' '}of engineers at your stage
                 </p>

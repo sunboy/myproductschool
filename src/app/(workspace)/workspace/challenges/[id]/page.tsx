@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { FlowWorkspaceShell } from '@/components/v2/FlowWorkspaceShell'
 import type { UserRoleV2 } from '@/lib/types'
 import { IS_MOCK } from '@/lib/mock'
+import { sanitizeReturnTo } from '@/lib/navigation/return-to'
 
 async function getNextChallengeInPlan(
   planSlug: string,
@@ -43,7 +44,7 @@ async function getNextChallengeInPlan(
     if (remainingIds.length === 0) return null
 
     // Get completed challenge IDs for this user
-    let completedIds = new Set<string>()
+    const completedIds = new Set<string>()
     if (user) {
       const { data: attempts } = await supabase
         .from('challenge_attempts')
@@ -115,10 +116,10 @@ async function getNextChallengeInCategory(
 
 export default async function ChallengeWorkspacePage({ params, searchParams }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ role?: string; from_plan?: string }>
+  searchParams: Promise<{ role?: string; from_plan?: string; returnTo?: string }>
 }) {
   const { id } = await params
-  const { role, from_plan } = await searchParams
+  const { role, from_plan, returnTo } = await searchParams
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -163,6 +164,7 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
       initialRoleId={roleId}
       fromPlan={from_plan}
       nextChallengeSlug={nextChallengeSlug}
+      returnTo={sanitizeReturnTo(returnTo)}
     />
   )
 }

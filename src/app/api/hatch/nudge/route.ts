@@ -3,6 +3,7 @@ import { HATCH_NUDGE_SYSTEM_PROMPT, MENTAL_MODELS_CONTEXT, buildNudgeUserPrompt 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
 import type { FlowStep } from '@/lib/types'
 
@@ -14,7 +15,7 @@ const MOCK_NUDGES = [
 ]
 
 export async function POST(req: NextRequest) {
-  const { challengeId: _challengeId, challengePrompt, draft, attemptId, step } = await req.json()
+  const { challengePrompt, draft, attemptId, step } = await req.json()
 
   if (!draft?.trim()) {
     return NextResponse.json({ nudge: null })
@@ -25,34 +26,36 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ nudge: randomNudge })
   }
 
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  const userPlan = !authError && user ? await getUserPlanForBudget(user.id) : null
+  const budget = user && userPlan
+    ? { userId: user.id, userPlan, route: 'hatch_nudge' }
+    : undefined
+
   // Nudge rate limiting
-  if (attemptId) {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (attemptId && !authError && user) {
+    const adminClient = createAdminClient()
+    const { count } = await adminClient
+      .from('nudge_usage')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('attempt_id', attemptId)
 
-    if (!authError && user) {
-      const adminClient = createAdminClient()
-      const { count } = await adminClient
-        .from('nudge_usage')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('attempt_id', attemptId)
+    if ((count ?? 0) >= 3) {
+      return NextResponse.json({ error: 'Nudge limit reached', remaining: 0 }, { status: 429 })
+    }
 
-      if ((count ?? 0) >= 3) {
-        return NextResponse.json({ error: 'Nudge limit reached', remaining: 0 }, { status: 429 })
-      }
-
-      // Record nudge usage.
-      // TODO: add a unique constraint on (user_id, attempt_id, nudge_sequence) to eliminate the
-      // TOCTOU race between the count check above and this insert. Until then, concurrent requests
-      // may exceed the limit by one nudge before either insert is committed.
-      try {
-        await adminClient.from('nudge_usage').insert({ user_id: user.id, attempt_id: attemptId })
-      } catch (insertError) {
-        // If insert fails due to a unique constraint violation treat it as rate-limited.
-        console.warn('nudge_usage insert failed (possible race / constraint):', insertError)
-        return NextResponse.json({ error: 'Nudge limit reached', remaining: 0 }, { status: 429 })
-      }
+    // Record nudge usage.
+    // TODO: add a unique constraint on (user_id, attempt_id, nudge_sequence) to eliminate the
+    // TOCTOU race between the count check above and this insert. Until then, concurrent requests
+    // may exceed the limit by one nudge before either insert is committed.
+    try {
+      await adminClient.from('nudge_usage').insert({ user_id: user.id, attempt_id: attemptId })
+    } catch (insertError) {
+      // If insert fails due to a unique constraint violation treat it as rate-limited.
+      console.warn('nudge_usage insert failed (possible race / constraint):', insertError)
+      return NextResponse.json({ error: 'Nudge limit reached', remaining: 0 }, { status: 429 })
     }
   }
 
@@ -71,12 +74,26 @@ export async function POST(req: NextRequest) {
     const message = await createCachedMessage(systemPrompt, userPrompt, {
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 150,
+      budget,
     })
 
     const content = message.content[0]
     const nudge = content.type === 'text' ? content.text.trim() : null
     return NextResponse.json({ nudge })
   } catch (error) {
+    if (error instanceof AiBudgetExceededError) {
+      return NextResponse.json(
+        {
+          error: 'limit_reached',
+          feature: 'hatch_ai_cents',
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+
     console.error('Hatch nudge error:', error)
     return NextResponse.json({ nudge: null })
   }

@@ -9,16 +9,17 @@ import { UpgradeButton } from '@/components/marketing/UpgradeButton'
 
 const FREE_FEATURES = [
   { label: 'Core Methodology Access', included: true },
-  { label: 'Weekly Case Study', included: true },
-  { label: 'Community Forum Access', included: true },
-  { label: 'AI Performance Coach', included: false },
+  { label: '3 Challenge Starts / Month', included: true },
+  { label: 'Starter Hatch AI Budget', included: true },
+  { label: 'AI Interview Practice', included: false },
 ]
 
 const PRO_FEATURES = [
   'Full Methodology Library',
-  'Unlimited AI Coach Sessions',
-  'Proprietary Challenge Sandbox',
-  'Priority 1:1 Support',
+  '80 Challenge Starts / Month',
+  '12 AI Interview Starts / Month',
+  'Fair-Use Hatch AI Budget',
+  'Learner DNA and Failure Patterns',
 ]
 
 const TESTIMONIALS = [
@@ -175,7 +176,7 @@ export default function PricingPage() {
               </h3>
               <div className="flex items-baseline gap-1">
                 <span className="font-headline text-5xl font-extrabold text-on-surface tracking-[-0.02em]">
-                  $49
+                  $30
                 </span>
                 <span className="text-on-surface-variant font-medium">
                   / month

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useHatchContext } from '@/context/HatchContext'
 import type { HatchChatMessage } from '@/context/HatchContext'
+import { useHatchSonics } from '@/hooks/useHatchSonics'
 
 // ── Page context ──────────────────────────────────────────────
 
@@ -112,6 +113,7 @@ export function FloatingHatch() {
   const router = useRouter()
   const hatchCtx = useHatchContext()
   const glyphState = hatchCtx?.state ?? 'idle'
+  const { muted, toggleMuted, play } = useHatchSonics()
 
   // Suppress on the challenge workspace — workspace has its own Hatch affordance
   // (HatchSidePanel for FLOW, CanvasChatPanel for system_design/data_modeling)
@@ -170,6 +172,7 @@ export function FloatingHatch() {
     if (!text || loading) return
 
     const userMsg: HatchChatMessage = { role: 'user', content: text }
+    play('send')
     setMessages(prev => [...prev, userMsg])
     setInput('')
     setLoading(true)
@@ -190,13 +193,15 @@ export function FloatingHatch() {
       })
       const data = res.ok ? await res.json() : null
       const reply = data?.reply ?? "I'm having trouble responding right now. Try again in a moment."
+      play(res.ok ? 'reply' : 'error')
       setMessages(prev => [...prev, { role: 'hatch', content: reply }])
     } catch {
+      play('error')
       setMessages(prev => [...prev, { role: 'hatch', content: "I'm having trouble responding right now. Try again in a moment." }])
     } finally {
       setLoading(false)
     }
-  }, [input, loading, messages, pathname, setMessages])
+  }, [input, loading, messages, pathname, setMessages, play])
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
@@ -208,7 +213,11 @@ export function FloatingHatch() {
   }
 
   function toggleOpen() {
-    setOpen(o => !o)
+    setOpen(o => {
+      const next = !o
+      play(next ? 'open' : 'close')
+      return next
+    })
     setBubble(false)
     setBubbleDismissed(true)
   }
@@ -272,6 +281,16 @@ export function FloatingHatch() {
                   <span className="material-symbols-outlined text-[16px] text-on-surface-variant">delete_sweep</span>
                 </button>
               )}
+              <button
+                onClick={toggleMuted}
+                className="p-1 rounded-lg hover:bg-black/10 transition-colors"
+                aria-label={muted ? 'Turn Hatch sounds on' : 'Mute Hatch sounds'}
+                title={muted ? 'Turn Hatch sounds on' : 'Mute Hatch sounds'}
+              >
+                <span className="material-symbols-outlined text-[16px] text-on-surface-variant">
+                  {muted ? 'volume_off' : 'volume_up'}
+                </span>
+              </button>
               <button
                 onClick={toggleOpen}
                 className="p-1 rounded-lg hover:bg-black/10 transition-colors"

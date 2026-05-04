@@ -20,37 +20,46 @@ interface StudyPlanShape {
   move_sequence: MoveWeek[]
 }
 
+interface ChallengeLite {
+  id: string
+  title: string
+  tags: string[]
+  challenge_type: string | null
+  difficulty?: string | null
+  relevant_roles?: string[] | null
+}
+
 // ── Mock data ─────────────────────────────────────────────────
 
 const MOCK_PLAN = {
   id: 'mock-plan-001',
-  title: '4-Week List Move Bootcamp',
+  title: '4-Week AI-Native Builder Sprint',
   hatch_rationale:
-    'Your list move is at Level 1 — the weakest in your FLOW. This plan sequences 4 challenges that drill breakdown thinking, from structured decomposition to user segmentation.',
+    'Hatch is balancing your weakest FLOW move with a full-stack skill surface: product judgment, system design, data modeling, SQL, and coding.',
   move_sequence: [
     {
       week: 1,
-      focus_move: 'list',
+      focus_move: 'frame',
       challenge_ids: ['c1-notification-fatigue', 'c2-spotify-podcasts'],
-      theme: 'Problem decomposition',
+      theme: 'Product sense: frame the user and business problem',
     },
     {
       week: 2,
       focus_move: 'list',
       challenge_ids: ['c3-airbnb-trust', 'c4-uber-safety'],
-      theme: 'User segmentation',
+      theme: 'Systems and data: enumerate components, grain, and edge cases',
     },
     {
       week: 3,
-      focus_move: 'weigh',
+      focus_move: 'optimize',
       challenge_ids: ['c5-slack-threads', 'c6-netflix-discovery'],
-      theme: 'Trade-off analysis',
+      theme: 'SQL and coding: optimize for correctness, cost, and speed',
     },
     {
       week: 4,
-      focus_move: 'sell',
+      focus_move: 'win',
       challenge_ids: ['c7-twitter-retention'],
-      theme: 'Stakeholder communication',
+      theme: 'Interview pressure: explain decisions under follow-up',
     },
   ],
   status: 'active',
@@ -60,25 +69,68 @@ const MOCK_PLAN = {
 
 function buildFallbackPlan(
   weakestMove: string,
-  challengeIds: string[]
+  challenges: ChallengeLite[],
+  preferredRole: string | null
 ): StudyPlanShape {
-  const moveThemes: Record<string, string[]> = {
-    frame: ['Problem framing', 'Root cause analysis', 'Opportunity sizing', 'North star clarity'],
-    list: ['Problem decomposition', 'User segmentation', 'Feature breakdown', 'System mapping'],
-    weigh: ['Trade-off analysis', 'Prioritisation frameworks', 'Risk evaluation', 'Stakeholder impact'],
-    sell: ['Stakeholder communication', 'Narrative building', 'Exec alignment', 'Influence without authority'],
+  const rolePriority: Record<string, string[]> = {
+    swe: ['algorithm', 'system_design', 'product_sense', 'sql'],
+    data_eng: ['sql', 'data_modeling', 'system_design', 'product_sense'],
+    ml_eng: ['system_design', 'data_modeling', 'product_sense', 'sql'],
+    devops: ['system_design', 'algorithm', 'product_sense', 'data_modeling'],
+    em: ['product_sense', 'system_design', 'data_modeling', 'sql'],
+    founding_eng: ['product_sense', 'algorithm', 'sql', 'system_design'],
+    tech_lead: ['system_design', 'product_sense', 'data_modeling', 'algorithm'],
+    pm: ['product_sense', 'sql', 'system_design', 'data_modeling'],
+    designer: ['product_sense', 'data_modeling', 'sql', 'system_design'],
+    data_scientist: ['sql', 'data_modeling', 'product_sense', 'algorithm'],
   }
-  const themes = moveThemes[weakestMove] ?? ['Core skills', 'Applied thinking', 'Advanced framing', 'Synthesis']
-  const chunks = [0, 2, 4, 6].map((start) => challengeIds.slice(start, start + 2))
+  const productTypes = new Set(['flow', 'freeform', 'quick_take', 'product_sense'])
+  const priority = rolePriority[preferredRole ?? ''] ?? ['product_sense', 'system_design', 'data_modeling', 'sql', 'algorithm']
+  const disciplineOrder = Array.from(new Set([...priority, 'product_sense', 'system_design', 'data_modeling', 'sql', 'algorithm']))
+  const moveOrder = Array.from(new Set([weakestMove, 'frame', 'list', 'optimize', 'win'])).filter(move => ['frame', 'list', 'optimize', 'win'].includes(move))
+  const disciplineLabel: Record<string, string> = {
+    product_sense: 'Product sense',
+    system_design: 'System design',
+    data_modeling: 'Data modeling',
+    sql: 'SQL',
+    algorithm: 'Coding',
+  }
+
+  function matchesDiscipline(challenge: ChallengeLite, discipline: string) {
+    if (discipline === 'product_sense') return productTypes.has(challenge.challenge_type ?? '')
+    return challenge.challenge_type === discipline
+  }
+
+  const used = new Set<string>()
+  const fallbackIds = challenges.map(challenge => challenge.id)
+
+  function pickForDiscipline(discipline: string) {
+    const candidates = challenges.filter(challenge => matchesDiscipline(challenge, discipline) && !used.has(challenge.id))
+    const picked: string[] = []
+    for (const challenge of candidates) {
+      picked.push(challenge.id)
+      if (picked.length >= 2) break
+    }
+    if (picked.length < 2) {
+      for (const id of fallbackIds) {
+        if (!used.has(id)) {
+          picked.push(id)
+          if (picked.length >= 2) break
+        }
+      }
+    }
+    picked.forEach(id => used.add(id))
+    return picked
+  }
 
   return {
-    title: `4-Week ${weakestMove.charAt(0).toUpperCase() + weakestMove.slice(1)} Move Bootcamp`,
-    hatch_rationale: `Your ${weakestMove} move needs the most work right now. This plan sequences challenges to build that specific skill progressively.`,
-    move_sequence: themes.slice(0, 4).map((theme, i) => ({
+    title: '4-Week AI-Native Builder Sprint',
+    hatch_rationale: `Hatch is prioritizing your ${weakestMove} move while still rotating through the disciplines your role needs: product, systems, data, SQL, and coding. The goal is steady improvement without wasting premium AI tokens on unfocused wandering.`,
+    move_sequence: disciplineOrder.slice(0, 4).map((discipline, i) => ({
       week: i + 1,
-      focus_move: weakestMove,
-      challenge_ids: chunks[i] ?? [],
-      theme,
+      focus_move: moveOrder[i % moveOrder.length] ?? weakestMove,
+      challenge_ids: pickForDiscipline(discipline),
+      theme: `${disciplineLabel[discipline] ?? 'Core skills'}: ${moveOrder[i % moveOrder.length] ?? weakestMove} under realistic constraints`,
     })),
   }
 }
@@ -176,17 +228,12 @@ export async function POST(req: NextRequest) {
     getHatchContext(userId),
     admin
       .from('challenges')
-      .select('id, title, tags')
+      .select('id, title, tags, challenge_type, difficulty, relevant_roles')
       .eq('is_published', true)
-      .limit(20),
+      .limit(40),
   ])
 
-  const availableChallenges = (challengesResult.data ?? []) as Array<{
-    id: string
-    title: string
-    tags: string[]
-  }>
-  const challengeIds = availableChallenges.map((c) => c.id)
+  const availableChallenges = (challengesResult.data ?? []) as ChallengeLite[]
 
   // Derive weakest FLOW move
   const weakestFlowMove =
@@ -203,8 +250,9 @@ export async function POST(req: NextRequest) {
 
       const contextString = buildHatchContextString(hatchCtx, 'coaching')
       const challengeList = availableChallenges
-        .map((c) => `${c.id} — "${c.title}" [tags: ${(c.tags ?? []).join(', ')}]`)
+        .map((c) => `${c.id} — "${c.title}" [type: ${c.challenge_type ?? 'unknown'}; difficulty: ${c.difficulty ?? 'unknown'}; roles: ${(c.relevant_roles ?? []).join(', ') || 'any'}; tags: ${(c.tags ?? []).join(', ')}]`)
         .join('\n')
+      const preferredRole = hatchCtx.preferredRole ?? 'not specified'
 
       const userPrompt = [
         contextString,
@@ -212,9 +260,13 @@ export async function POST(req: NextRequest) {
         'Available challenges:',
         challengeList,
         '',
-        'Generate a personalised 4-week study plan for this learner based on their FLOW move levels and competency scores.',
+        `Preferred role: ${preferredRole}.`,
+        'Generate a personalised 4-week HackProduct study plan for this learner based on their role, FLOW move levels, competency scores, and recent patterns.',
+        'The plan must cover multiple disciplines, not only product sense. Rotate intelligently across product sense, system design, data modeling, SQL, and coding based on role fit and weak signals.',
+        'For each week, choose 1-2 challenges. Prefer role-relevant challenges, but keep at least three distinct challenge_type families across the full plan when available.',
+        'Use Hatch\'s product philosophy: maximize learning quality and career lift while avoiding unfocused premium AI usage.',
         'Return JSON only: { "title": string, "hatch_rationale": string, "move_sequence": [{ "week": number, "focus_move": string, "challenge_ids": string[], "theme": string }] }',
-        'Use only challenge_ids from the list above. Each week should have 1-2 challenge_ids.',
+        'Use only challenge_ids from the list above. focus_move must be one of frame, list, optimize, win. Each week should have 1-2 challenge_ids.',
       ].join('\n')
 
       const message = await anthropic.messages.create({
@@ -237,7 +289,7 @@ export async function POST(req: NextRequest) {
 
   // ── Deterministic fallback ────────────────────────────────
   if (!generatedPlan) {
-    generatedPlan = buildFallbackPlan(weakestFlowMove, challengeIds)
+    generatedPlan = buildFallbackPlan(weakestFlowMove, availableChallenges, hatchCtx.preferredRole)
   }
 
   // ── Insert into user_study_plans ──────────────────────────

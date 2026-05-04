@@ -9,7 +9,7 @@ export function FomoBlock() {
         <span className="land-dot-orange" /> Hatch is always on
       </div>
       <h2>Every engineer and PM you compete with<br /><em>is already practicing.</em></h2>
-      <p>Unlimited access to all five disciplines, live AI-run interviews, context-aware coaching, and a leaderboard built around reps. Start now, cancel anytime.</p>
+      <p>Serious access to all five disciplines, live AI-run interviews, context-aware coaching, and a leaderboard built around reps. Start now, cancel anytime.</p>
       <div className="land-fomo-spots">
         <div><b>5</b><span>disciplines</span></div>
         <div><b>24</b><span>hours</span></div>

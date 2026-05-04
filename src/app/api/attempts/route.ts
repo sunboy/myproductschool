@@ -10,15 +10,20 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '5'), 20)
   const includePatterns = searchParams.get('include_patterns') === 'true'
+  const challengeId = searchParams.get('challenge_id')
 
   const admin = createAdminClient()
-  const { data } = await admin
+  let query = admin
     .from('challenge_attempts')
-    .select('id, challenge_id, grade_label, total_score, max_score, completed_at, feedback_json, challenges(title)')
+    .select('id, challenge_id, grade_label, total_score, max_score, completed_at, feedback_json, challenges(title, challenge_type)')
     .eq('user_id', user.id)
     .eq('status', 'completed')
     .order('completed_at', { ascending: false })
     .limit(limit)
+
+  if (challengeId) query = query.eq('challenge_id', challengeId)
+
+  const { data } = await query
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rows = data ?? [] as any[]
@@ -37,12 +42,15 @@ export async function GET(req: NextRequest) {
     rows.map((row: any) => [row.id as string, row.challenge_id as string])
   )
 
-  const [stepAttemptRows, patternRows] = await Promise.all([
+  const [stepAttemptRows, patternRows, gradeRows] = await Promise.all([
     missingFeedbackIds.length > 0
       ? admin.from('step_attempts').select('attempt_id, step, score').in('attempt_id', missingFeedbackIds).then(r => r.data ?? [])
       : Promise.resolve([]),
     includePatterns && rows.length > 0
       ? admin.from('user_failure_patterns').select('attempt_id, pattern_name, created_at').eq('user_id', user.id).in('attempt_id', attemptIds).order('created_at', { ascending: false }).then(r => r.data ?? [])
+      : Promise.resolve([]),
+    rows.length > 0
+      ? admin.from('interview_grades').select('attempt_id, challenge_type, overall_score, graded_at').in('attempt_id', attemptIds).order('graded_at', { ascending: false }).then(r => r.data ?? [])
       : Promise.resolve([]),
   ])
 
@@ -75,25 +83,42 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  const gradeMap = new Map<string, { challenge_type?: string; overall_score?: number }>()
+  for (const grade of gradeRows) {
+    const attemptId = grade.attempt_id as string
+    if (!gradeMap.has(attemptId)) {
+      gradeMap.set(attemptId, {
+        challenge_type: grade.challenge_type as string | undefined,
+        overall_score: typeof grade.overall_score === 'number' ? grade.overall_score : Number(grade.overall_score ?? 0),
+      })
+    }
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const attempts = rows.map((row: any) => {
+    const challenge = Array.isArray(row.challenges) ? row.challenges[0] : row.challenges
+    const persistedGrade = gradeMap.get(row.id as string)
+    const challengeType = (challenge?.challenge_type as string | undefined) ?? persistedGrade?.challenge_type
+    const score = row.total_score ?? persistedGrade?.overall_score ?? null
+    const maxScore = row.max_score ?? (persistedGrade?.overall_score !== undefined ? 5 : null)
     // Use stored feedback_json if present; otherwise synthesize from step_attempts
     const feedbackJson = row.feedback_json ?? (
       stepScoreMap.has(row.id as string) ? {
         step_breakdown: stepScoreMap.get(row.id as string),
         competency_deltas: [],
-        total_score: row.total_score as number ?? 0,
-        max_score: row.max_score as number ?? 3,
+        total_score: score ?? 0,
+        max_score: maxScore ?? 3,
         xp_awarded: 0,
       } : null
     )
     return {
       id: row.id as string,
       challenge_id: row.challenge_id as string,
-      challenge_title: (Array.isArray(row.challenges) ? row.challenges[0]?.title : row.challenges?.title) ?? row.challenge_id,
+      challenge_title: challenge?.title ?? row.challenge_id,
+      challenge_type: challengeType ?? null,
       grade_label: row.grade_label as string | null,
-      score: row.total_score as number | null,
-      max_score: row.max_score as number | null,
+      score,
+      max_score: maxScore,
       submitted_at: row.completed_at as string | null,
       pattern_name: patternMap.get(row.challenge_id as string) ?? null,
       feedback_json: feedbackJson,

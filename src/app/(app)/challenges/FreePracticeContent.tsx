@@ -1,12 +1,24 @@
 import { getChallenges, getFeaturedChallenges } from '@/lib/data/challenges'
-import Link from 'next/link'
 import { ChallengeCard } from './ChallengeCard'
 import { ChallengeSearch } from './ChallengeSearch'
 import { HatchPick } from './HatchPick'
 import { FilteredChallengesView } from './FilteredChallengesView'
+import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 
 export interface FreePracticeContentProps {
-  searchParams: Promise<{ paradigm?: string; role?: string; difficulty?: string; company?: string; tab?: string; view?: string; q?: string; type?: string }>
+  searchParams: Promise<{
+    company?: string
+    difficulty?: string
+    discipline?: string
+    paradigm?: string
+    q?: string
+    role?: string
+    scope?: string
+    tab?: string
+    tag?: string
+    type?: string
+    view?: string
+  }>
 }
 
 const PARADIGM_DISPLAY: Record<string, string> = {
@@ -21,7 +33,19 @@ function getParadigmLabel(paradigm?: string | null): string {
 }
 
 export async function FreePracticeContent({ searchParams }: FreePracticeContentProps) {
-  const { q } = await searchParams
+  const resolvedSearchParams = await searchParams
+  const { q } = resolvedSearchParams
+  const hasActiveFilters = Boolean(
+    q ||
+    resolvedSearchParams.paradigm ||
+    resolvedSearchParams.role ||
+    resolvedSearchParams.difficulty ||
+    resolvedSearchParams.company ||
+    resolvedSearchParams.tag ||
+    resolvedSearchParams.scope ||
+    (resolvedSearchParams.discipline && resolvedSearchParams.discipline !== 'all') ||
+    (resolvedSearchParams.type && resolvedSearchParams.type !== 'all')
+  )
 
   const [challenges, featuredChallenges] = await Promise.all([
     getChallenges({ q }),
@@ -36,16 +60,26 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
   return (
     <div>
       {/* Header */}
-      <div className="mb-5 flex items-center justify-between gap-6">
-        <p className="text-[15px] text-on-surface-variant font-body">Real scenarios from real companies. Pick what fits your role.</p>
-        <ChallengeSearch total={challenges.length} />
+      <div className="mb-6 space-y-4">
+        <AppBreadcrumbs
+          items={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'Practice' },
+          ]}
+        />
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <h1 className="font-headline text-3xl font-bold leading-tight text-on-surface">
+            Practice
+          </h1>
+          <ChallengeSearch total={challenges.length} />
+        </div>
       </div>
 
       {/* Hatch's Pick */}
       <HatchPick />
 
       {/* Featured Challenges — only when editorially pinned challenges exist and no search query */}
-      {featuredChallenges.length > 0 && !q && (
+      {featuredChallenges.length > 0 && !hasActiveFilters && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3.5">
             <div className="flex items-center gap-2.5">

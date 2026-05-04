@@ -2,6 +2,13 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
 import Anthropic from '@anthropic-ai/sdk'
 import { applyCoverageCredit, type FlowMove } from '@/lib/live-interview/flow-coverage-credits'
+import {
+  AiBudgetExceededError,
+  assertAiBudget,
+  estimateAnthropicPreflightCents,
+  getUserPlanForBudget,
+  recordAnthropicUsage,
+} from '@/lib/usage/ai-budget'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -59,12 +66,45 @@ export async function POST(
   ]
 
   // Call Claude with multi-turn messages format
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 300,
-    system: [{ type: 'text', text: session.system_prompt, cache_control: { type: 'ephemeral' } }],
-    messages: conversationMessages,
-  })
+  const model = 'claude-sonnet-4-6'
+  const maxTokens = 300
+  const sessionUserId = session.user_id as string
+  const userPlan = await getUserPlanForBudget(sessionUserId)
+  const systemPrompt = session.system_prompt ?? ''
+  const promptCharCount = systemPrompt.length + conversationMessages.reduce((sum, msg) => sum + msg.content.length, 0)
+  const preflightCostCents = estimateAnthropicPreflightCents(model, maxTokens, promptCharCount)
+
+  let response
+  try {
+    await assertAiBudget(sessionUserId, userPlan, preflightCostCents)
+    response = await anthropic.messages.create({
+      model,
+      max_tokens: maxTokens,
+      system: [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }],
+      messages: conversationMessages,
+    })
+    await recordAnthropicUsage({
+      userId: sessionUserId,
+      model,
+      usage: response.usage,
+      fallbackCostCents: preflightCostCents,
+      route: 'live_interview_turn',
+    })
+  } catch (error) {
+    if (error instanceof AiBudgetExceededError) {
+      return Response.json(
+        {
+          error: 'limit_reached',
+          feature: 'hatch_ai_cents',
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+    throw error
+  }
 
   const rawContent = response.content[0].type === 'text' ? response.content[0].text : ''
   const { cleanContent, signal } = parseGradingSignal(rawContent)

@@ -3,12 +3,14 @@
 
 import { useState, useRef, useEffect } from 'react'
 import type { Discipline } from './DisciplineTabStrip'
+import { AppTooltip } from '@/components/ui/AppTooltip'
 
 export interface FilterState {
   paradigm: string[]
   difficulty: string[]
   role: string[]
   company: string[]
+  tag: string[]
   scope: string[]   // system design only
 }
 
@@ -34,6 +36,15 @@ const DROPDOWNS: DropdownDef[] = [
   { key: 'role', label: 'Role', options: ROLE_OPTIONS, disciplines: [] },
   { key: 'company', label: 'Company', options: COMPANY_OPTIONS, disciplines: [] },
 ]
+
+const DROPDOWN_HELP: Record<FilterKey, string> = {
+  paradigm: 'Choose the operating mode: classic product work, AI-assisted, agentic, or AI-native.',
+  difficulty: 'Match the rep to your current energy: warmup through Staff+ pressure.',
+  role: 'Show scenarios calibrated to the job you are aiming for.',
+  company: 'Practice with the product and systems style of specific companies.',
+  tag: 'Narrow practice to a topic tag from a challenge.',
+  scope: 'System design only: narrow the architecture scale before you start.',
+}
 
 interface Props {
   discipline: Discipline
@@ -66,7 +77,9 @@ function MultiSelectDropdown({
   return (
     <div ref={ref} className="relative">
       <button
+        type="button"
         onClick={() => setOpen((o) => !o)}
+        title={DROPDOWN_HELP[label.toLowerCase() as FilterKey] ?? label}
         className={[
           'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-label text-xs whitespace-nowrap transition-colors',
           hasSelection
@@ -118,28 +131,34 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
       <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-surface-container-low border-b border-outline-variant flex-wrap">
         <span className="font-label text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Filter:</span>
         {visibleDropdowns.map((d) => (
-          <MultiSelectDropdown
+          <AppTooltip key={d.key} label={DROPDOWN_HELP[d.key]} side="bottom">
+            <MultiSelectDropdown
             key={d.key}
             label={d.label}
             options={d.options}
             selected={filters[d.key]}
             onToggle={(v) => toggle(d.key, v)}
-          />
+            />
+          </AppTooltip>
         ))}
         <div className="flex-1" />
         <span className="font-label text-xs text-on-surface-variant">{resultCount} results</span>
         <div className="flex items-center border border-outline-variant rounded-lg overflow-hidden">
           <button
+            type="button"
             onClick={() => listView && onToggleView()}
             className={`px-2 py-1.5 flex items-center transition-colors ${!listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low'}`}
-            title="Grid view"
+            title="Grid view: visual cards for browsing"
+            aria-label="Grid view"
           >
             <span className="material-symbols-outlined text-sm leading-none">grid_view</span>
           </button>
           <button
+            type="button"
             onClick={() => !listView && onToggleView()}
             className={`px-2 py-1.5 flex items-center transition-colors ${listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low'}`}
-            title="List view"
+            title="List view: dense scan mode"
+            aria-label="List view"
           >
             <span className="material-symbols-outlined text-sm leading-none">view_list</span>
           </button>
@@ -149,7 +168,9 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
       {/* Mobile filter bar */}
       <div className="sm:hidden flex items-center gap-2 px-3 py-2 bg-surface-container-low border-b border-outline-variant">
         <button
+          type="button"
           onClick={onOpenMobileSheet}
+          title="Open filters"
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant bg-surface font-label text-xs font-semibold text-on-surface"
         >
           <span className="material-symbols-outlined text-sm leading-none">tune</span>
@@ -158,14 +179,20 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
         <div className="flex-1" />
         <div className="flex items-center border border-outline-variant rounded-lg overflow-hidden">
           <button
+            type="button"
             onClick={() => listView && onToggleView()}
             className={`px-2 py-1.5 flex items-center transition-colors ${!listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low'}`}
+            title="Grid view"
+            aria-label="Grid view"
           >
             <span className="material-symbols-outlined text-sm leading-none">grid_view</span>
           </button>
           <button
+            type="button"
             onClick={() => !listView && onToggleView()}
             className={`px-2 py-1.5 flex items-center transition-colors ${listView ? 'bg-primary-fixed text-primary' : 'bg-surface text-on-surface-variant hover:bg-surface-container-low'}`}
+            title="List view"
+            aria-label="List view"
           >
             <span className="material-symbols-outlined text-sm leading-none">view_list</span>
           </button>

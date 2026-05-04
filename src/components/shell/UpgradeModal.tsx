@@ -10,11 +10,11 @@ const stripePromise = loadStripe(
 )
 
 const FEATURES = [
-  { icon: 'all_inclusive',     text: 'Unlimited challenge attempts' },
-  { icon: 'psychology',        text: 'Full Hatch coaching on every step' },
+  { icon: 'fitness_center',    text: '80 challenge starts/month' },
+  { icon: 'psychology',        text: 'Fair-use Hatch AI budget' },
   { icon: 'analytics',         text: 'Learner DNA — competency radar' },
-  { icon: 'school',            text: 'All study plans, unlocked' },
-  { icon: 'mic',               text: 'Live AI interview sessions' },
+  { icon: 'school',            text: 'Study plans and autopsies' },
+  { icon: 'mic',               text: '12 AI interview starts/month' },
   { icon: 'workspace_premium', text: 'Early access to new features' },
 ]
 
@@ -27,14 +27,14 @@ interface UpgradeModalProps {
 }
 
 export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
-  const [billing, setBilling] = useState<BillingCycle>('annual')
+  const [billing, setBilling] = useState<BillingCycle>('monthly')
   const [checkoutOpen, setCheckoutOpen] = useState(false)
-  const [checkoutBilling, setCheckoutBilling] = useState<BillingCycle>('annual')
+  const [checkoutBilling, setCheckoutBilling] = useState<BillingCycle>('monthly')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const annualSavings = Math.round(((29 * 12 - 199) / (29 * 12)) * 100)
-  const monthlyCost   = (199 / 12).toFixed(2)
+  const annualSavings = Math.round(((30 * 12 - 300) / (30 * 12)) * 100)
+  const monthlyCost   = (300 / 12).toFixed(2)
 
   function handleClose() {
     setCheckoutOpen(false)
@@ -193,7 +193,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                   className="font-headline font-bold text-on-surface tabular-nums"
                   style={{ fontSize: '1.9rem', letterSpacing: '-0.03em', lineHeight: 1 }}
                 >
-                  ${billing === 'annual' ? '199' : '29'}
+                  ${billing === 'annual' ? '300' : '30'}
                 </span>
                 <div className="pb-0.5 space-y-0.5">
                   <p className="font-label text-xs text-on-surface-variant font-semibold">
@@ -241,7 +241,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                     workspace_premium
                   </span>
                 )}
-                {loading ? 'Loading checkout…' : `Unlock Pro — $${billing === 'annual' ? '199/yr' : '29/mo'}`}
+                {loading ? 'Loading checkout…' : `Unlock Pro — $${billing === 'annual' ? '300/yr' : '30/mo'}`}
               </button>
               {error && (
                 <p className="text-center font-body text-[11px] text-error">{error}</p>

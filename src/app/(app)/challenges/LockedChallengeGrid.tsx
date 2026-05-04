@@ -8,9 +8,10 @@ interface LockedChallengeGridProps {
   challenges: ChallengeWithDomain[]
   paradigms: Record<string, string>
   listView: boolean
+  returnHref?: string
 }
 
-export function LockedChallengeGrid({ challenges, paradigms, listView }: LockedChallengeGridProps) {
+export function LockedChallengeGrid({ challenges, paradigms, listView, returnHref }: LockedChallengeGridProps) {
   const isAtLimit = useIsAtLimit('challenges')
 
   return (
@@ -22,6 +23,7 @@ export function LockedChallengeGrid({ challenges, paradigms, listView }: LockedC
           paradigm={paradigms[challenge.id] ?? 'Traditional'}
           listView={listView}
           locked={isAtLimit}
+          returnHref={returnHref}
         />
       ))}
     </>

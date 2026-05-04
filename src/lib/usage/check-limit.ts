@@ -1,53 +1,153 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export type UsageFeature = 'challenges' | 'interviews'
+export type UsageFeature = 'challenges' | 'interviews' | 'hatch_ai_cents'
+export type UsageUnit = 'count' | 'cents'
+export type BillingPlan = 'free' | 'pro'
 
-export type UsageLimitResult =
-  | { allowed: true }
-  | { allowed: false; used: number; limit: number; feature: UsageFeature; windowDays: number }
-
-// In-process cache: { feature → { limitValue, windowDays, fetchedAt } }
-type CacheEntry = { limitValue: number; windowDays: number; fetchedAt: number }
-const limitCache = new Map<UsageFeature, CacheEntry>()
-const CACHE_TTL_MS = 60_000
-
-async function getPlanLimit(
-  feature: UsageFeature
-): Promise<{ limitValue: number; windowDays: number }> {
-  const cached = limitCache.get(feature)
-  if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
-    return { limitValue: cached.limitValue, windowDays: cached.windowDays }
-  }
-
-  const admin = createAdminClient()
-  const { data } = await admin
-    .from('plan_limits')
-    .select('limit_value, window_days')
-    .eq('plan', 'free')
-    .eq('feature', feature)
-    .single()
-
-  const entry: CacheEntry = {
-    limitValue: data?.limit_value ?? 10,
-    windowDays: data?.window_days ?? 30,
-    fetchedAt: Date.now(),
-  }
-  limitCache.set(feature, entry)
-  return { limitValue: entry.limitValue, windowDays: entry.windowDays }
+export interface FeatureUsage {
+  used: number
+  limit: number
+  windowDays: number
+  unit: UsageUnit
 }
 
-export async function checkUsageLimit(
-  userId: string,
-  feature: UsageFeature,
-  userPlan: string
-): Promise<UsageLimitResult> {
-  // Pro users bypass all limits
-  if (userPlan === 'pro') return { allowed: true }
+export interface UsageData {
+  challenges: FeatureUsage
+  interviews: FeatureUsage
+  hatchAiCents: FeatureUsage
+}
 
-  const { limitValue, windowDays } = await getPlanLimit(feature)
+export type UsageLimitResult =
+  | { allowed: true; used: number; limit: number; feature: UsageFeature; windowDays: number; unit: UsageUnit }
+  | { allowed: false; used: number; limit: number; feature: UsageFeature; windowDays: number; unit: UsageUnit }
+
+type LimitRecord = {
+  limitValue: number
+  windowDays: number
+  unit: UsageUnit
+  description: string | null
+  costCeilingCents: number | null
+  fetchedAt: number
+}
+
+const CACHE_TTL_MS = 60_000
+const limitCache = new Map<string, LimitRecord>()
+
+const FALLBACK_LIMITS: Record<BillingPlan, Record<UsageFeature, Omit<LimitRecord, 'fetchedAt'>>> = {
+  free: {
+    challenges: {
+      limitValue: 3,
+      windowDays: 30,
+      unit: 'count',
+      description: 'Free challenge starts per rolling month',
+      costCeilingCents: null,
+    },
+    interviews: {
+      limitValue: 1,
+      windowDays: 30,
+      unit: 'count',
+      description: 'Free AI interview starts per rolling month',
+      costCeilingCents: null,
+    },
+    hatch_ai_cents: {
+      limitValue: 35,
+      windowDays: 30,
+      unit: 'cents',
+      description: 'Free Hatch AI spend budget in cents per rolling month',
+      costCeilingCents: 35,
+    },
+  },
+  pro: {
+    challenges: {
+      limitValue: 80,
+      windowDays: 30,
+      unit: 'count',
+      description: 'Pro challenge starts per rolling month',
+      costCeilingCents: null,
+    },
+    interviews: {
+      limitValue: 12,
+      windowDays: 30,
+      unit: 'count',
+      description: 'Pro AI interview starts per rolling month',
+      costCeilingCents: null,
+    },
+    hatch_ai_cents: {
+      limitValue: 450,
+      windowDays: 30,
+      unit: 'cents',
+      description: 'Pro Hatch AI spend budget in cents per rolling month',
+      costCeilingCents: 600,
+    },
+  },
+}
+
+function normalizePlan(plan: string | null | undefined): BillingPlan {
+  return plan === 'pro' ? 'pro' : 'free'
+}
+
+function fallbackLimit(plan: BillingPlan, feature: UsageFeature): LimitRecord {
+  return {
+    ...FALLBACK_LIMITS[plan][feature],
+    fetchedAt: Date.now(),
+  }
+}
+
+async function getPlanLimit(
+  feature: UsageFeature,
+  planInput: string | null | undefined
+): Promise<LimitRecord> {
+  const plan = normalizePlan(planInput)
+  const cacheKey = `${plan}:${feature}`
+  const cached = limitCache.get(cacheKey)
+  if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) return cached
 
   const admin = createAdminClient()
-  const windowStart = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString()
+  const fallback = fallbackLimit(plan, feature)
+  const { data, error } = await admin
+    .from('plan_limits')
+    .select('limit_value, window_days, unit, description, cost_ceiling_cents')
+    .eq('plan', plan)
+    .eq('feature', feature)
+    .maybeSingle()
+
+  if (error || !data) {
+    limitCache.set(cacheKey, fallback)
+    return fallback
+  }
+
+  const record: LimitRecord = {
+    limitValue: Number.isInteger(data.limit_value) ? data.limit_value : fallback.limitValue,
+    windowDays: Number.isInteger(data.window_days) ? data.window_days : fallback.windowDays,
+    unit: data.unit === 'cents' ? 'cents' : 'count',
+    description: typeof data.description === 'string' ? data.description : fallback.description,
+    costCeilingCents: Number.isInteger(data.cost_ceiling_cents)
+      ? data.cost_ceiling_cents
+      : fallback.costCeilingCents,
+    fetchedAt: Date.now(),
+  }
+
+  limitCache.set(cacheKey, record)
+  return record
+}
+
+async function getUsedQuantity(
+  userId: string,
+  feature: UsageFeature,
+  windowStart: string
+): Promise<number> {
+  const admin = createAdminClient()
+
+  const { data, error } = await admin
+    .from('usage_events')
+    .select('quantity')
+    .eq('user_id', userId)
+    .eq('feature', feature)
+    .gte('created_at', windowStart)
+
+  if (!error && data) {
+    return data.reduce((sum, row) => sum + (Number(row.quantity) || 1), 0)
+  }
 
   const { count } = await admin
     .from('usage_events')
@@ -56,63 +156,69 @@ export async function checkUsageLimit(
     .eq('feature', feature)
     .gte('created_at', windowStart)
 
-  const used = count ?? 0
+  return feature === 'hatch_ai_cents' ? 0 : (count ?? 0)
+}
 
-  if (used >= limitValue) {
-    return { allowed: false, used, limit: limitValue, feature, windowDays }
+async function getFeatureUsage(
+  userId: string,
+  userPlan: string,
+  feature: UsageFeature
+): Promise<FeatureUsage> {
+  const limit = await getPlanLimit(feature, userPlan)
+  const windowStart = new Date(Date.now() - limit.windowDays * 24 * 60 * 60 * 1000).toISOString()
+  const used = await getUsedQuantity(userId, feature, windowStart)
+
+  return {
+    used,
+    limit: limit.limitValue,
+    windowDays: limit.windowDays,
+    unit: limit.unit,
   }
+}
 
-  return { allowed: true }
+export async function checkUsageLimit(
+  userId: string,
+  feature: UsageFeature,
+  userPlan: string,
+  nextQuantity = 1
+): Promise<UsageLimitResult> {
+  const usage = await getFeatureUsage(userId, userPlan, feature)
+  const allowed = usage.used + nextQuantity <= usage.limit
+
+  return {
+    allowed,
+    used: usage.used,
+    limit: usage.limit,
+    feature,
+    windowDays: usage.windowDays,
+    unit: usage.unit,
+  }
 }
 
 export async function recordUsageEvent(
   userId: string,
-  feature: UsageFeature
+  feature: UsageFeature,
+  quantity = 1,
+  metadata: Record<string, unknown> = {}
 ): Promise<void> {
   const admin = createAdminClient()
-  await admin.from('usage_events').insert({ user_id: userId, feature })
+  const estimatedCostCents = feature === 'hatch_ai_cents' ? quantity : 0
+
+  await admin.from('usage_events').insert({
+    user_id: userId,
+    feature,
+    quantity,
+    estimated_cost_cents: estimatedCostCents,
+    metadata,
+  })
 }
 
-export async function getUsageForUser(
-  userId: string,
-  userPlan: string
-): Promise<{
-  challenges: { used: number; limit: number; windowDays: number }
-  interviews: { used: number; limit: number; windowDays: number }
-}> {
-  if (userPlan === 'pro') {
-    return {
-      challenges: { used: 0, limit: Infinity, windowDays: 30 },
-      interviews:  { used: 0, limit: Infinity, windowDays: 30 },
-    }
-  }
-
-  const admin = createAdminClient()
-  const [challengeLimits, interviewLimits] = await Promise.all([
-    getPlanLimit('challenges'),
-    getPlanLimit('interviews'),
+export async function getUsageForUser(userId: string, userPlan: string): Promise<UsageData> {
+  const [challenges, interviews, hatchAiCents] = await Promise.all([
+    getFeatureUsage(userId, userPlan, 'challenges'),
+    getFeatureUsage(userId, userPlan, 'interviews'),
+    getFeatureUsage(userId, userPlan, 'hatch_ai_cents'),
   ])
 
-  const challengeWindow = new Date(Date.now() - challengeLimits.windowDays * 24 * 60 * 60 * 1000).toISOString()
-  const interviewWindow  = new Date(Date.now() - interviewLimits.windowDays  * 24 * 60 * 60 * 1000).toISOString()
-
-  const [{ count: challengeCount }, { count: interviewCount }] = await Promise.all([
-    admin
-      .from('usage_events')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('feature', 'challenges')
-      .gte('created_at', challengeWindow),
-    admin
-      .from('usage_events')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('feature', 'interviews')
-      .gte('created_at', interviewWindow),
-  ])
-
-  return {
-    challenges: { used: challengeCount ?? 0, limit: challengeLimits.limitValue, windowDays: challengeLimits.windowDays },
-    interviews:  { used: interviewCount  ?? 0, limit: interviewLimits.limitValue,  windowDays: interviewLimits.windowDays  },
-  }
+  return { challenges, interviews, hatchAiCents }
 }

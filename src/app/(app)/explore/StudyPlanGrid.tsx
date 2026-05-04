@@ -36,19 +36,13 @@ const MOVE_ICON: Record<string, string> = {
   win: 'emoji_events',
 }
 
-const MOVE_LABEL: Record<string, string> = {
-  frame: 'Frame move',
-  list: 'List move',
-  optimize: 'Optimize move',
-  win: 'Win move',
-}
-
 function StudyPlanCard({ pl }: { pl: PlanItem }) {
   const [hovered, setHovered] = useState(false)
 
   return (
     <Link
       href={`/explore/plans/${pl.slug}`}
+      data-hatch-sound="open"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -56,11 +50,11 @@ function StudyPlanCard({ pl }: { pl: PlanItem }) {
         flexDirection: 'column',
         justifyContent: 'space-between',
         background: pl.bg,
-        borderRadius: 24,
-        padding: '22px 20px',
+        borderRadius: 16,
+        padding: '16px 16px',
         position: 'relative',
         overflow: 'hidden',
-        minHeight: 200,
+        minHeight: 154,
         textDecoration: 'none',
         color: 'inherit',
         border: '1px solid rgba(0,0,0,0.05)',
@@ -77,7 +71,7 @@ function StudyPlanCard({ pl }: { pl: PlanItem }) {
           position: 'absolute',
           right: -6,
           bottom: -6,
-          fontSize: 100,
+          fontSize: 72,
           color: pl.color,
           opacity: 0.10,
           fontVariationSettings: "'FILL' 1, 'wght' 700",
@@ -93,13 +87,13 @@ function StudyPlanCard({ pl }: { pl: PlanItem }) {
       <div style={{ position: 'relative' }}>
         {/* Icon box */}
         <div style={{
-          width: 38, height: 38, borderRadius: 11,
+          width: 32, height: 32, borderRadius: 9,
           background: pl.color,
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          marginBottom: 12,
+          marginBottom: 10,
           boxShadow: `0 4px 14px -4px ${pl.color}66`,
         }}>
-          <span className="material-symbols-outlined" style={{ color: '#fff', fontSize: 20, fontVariationSettings: "'FILL' 1, 'wght' 500" }}>
+          <span className="material-symbols-outlined" style={{ color: '#fff', fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 500" }}>
             {pl.icon}
           </span>
         </div>
@@ -116,7 +110,7 @@ function StudyPlanCard({ pl }: { pl: PlanItem }) {
         {/* Title */}
         <div style={{
           fontFamily: 'var(--font-headline)',
-          fontSize: 18, fontWeight: 700, letterSpacing: '-0.01em', lineHeight: 1.15,
+          fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em', lineHeight: 1.15,
           color: '#1e1b14',
           marginBottom: 4,
         }}>
@@ -141,8 +135,8 @@ function StudyPlanCard({ pl }: { pl: PlanItem }) {
           display: 'inline-flex', alignItems: 'center', gap: 5,
           background: pl.color,
           color: '#fff',
-          padding: '7px 14px', borderRadius: 999,
-          fontWeight: 700, fontSize: 12.5,
+          padding: '6px 11px', borderRadius: 999,
+          fontWeight: 700, fontSize: 12,
         }}>
           Start
           <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward</span>
@@ -156,11 +150,11 @@ function PersonalisedPlanCard({ plan }: { plan: PersonalisedPlan }) {
   const [hovered, setHovered] = useState(false)
   const move = plan.move_tag ?? ''
   const icon = MOVE_ICON[move] ?? 'route'
-  const moveLabel = MOVE_LABEL[move] ?? move
 
   return (
     <Link
       href={`/explore/plans/${plan.slug}`}
+      data-hatch-sound="open"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -168,11 +162,11 @@ function PersonalisedPlanCard({ plan }: { plan: PersonalisedPlan }) {
         flexDirection: 'column',
         justifyContent: 'space-between',
         background: 'linear-gradient(145deg, #1e3528 0%, #152b1e 100%)',
-        borderRadius: 24,
-        padding: '22px 20px',
+        borderRadius: 16,
+        padding: '16px 16px',
         position: 'relative',
         overflow: 'hidden',
-        minHeight: 200,
+        minHeight: 154,
         textDecoration: 'none',
         color: 'inherit',
         border: '1px solid rgba(126,224,153,0.18)',
@@ -196,7 +190,7 @@ function PersonalisedPlanCard({ plan }: { plan: PersonalisedPlan }) {
         className="material-symbols-outlined"
         style={{
           position: 'absolute', right: -6, bottom: -6,
-          fontSize: 100, color: '#7ee099', opacity: 0.08,
+          fontSize: 72, color: '#7ee099', opacity: 0.08,
           fontVariationSettings: "'FILL' 1, 'wght' 700",
           userSelect: 'none', pointerEvents: 'none', lineHeight: 1,
         }}
@@ -215,13 +209,13 @@ function PersonalisedPlanCard({ plan }: { plan: PersonalisedPlan }) {
           color: '#7ee099',
         }}>
           <span className="material-symbols-outlined" style={{ fontSize: 11, fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-          Your plan, built by Hatch
+          Role-aware plan by Hatch
         </div>
 
         {/* Title */}
         <div style={{
           fontFamily: 'var(--font-headline)',
-          fontSize: 18, fontWeight: 700, letterSpacing: '-0.01em', lineHeight: 1.15,
+          fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em', lineHeight: 1.15,
           color: '#f3ede0',
           marginBottom: 4,
         }}>
@@ -229,13 +223,19 @@ function PersonalisedPlanCard({ plan }: { plan: PersonalisedPlan }) {
         </div>
 
         {/* Description */}
-        {plan.description && (
+        {plan.description ? (
           <div style={{
             fontSize: 12.5, fontWeight: 600, color: 'rgba(243,237,224,0.55)', lineHeight: 1.4,
             display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
           }}>
             {plan.description}
+          </div>
+        ) : (
+          <div style={{
+            fontSize: 12.5, fontWeight: 600, color: 'rgba(243,237,224,0.55)', lineHeight: 1.4,
+          }}>
+            Sequenced across product, systems, data, SQL, and coding based on your FLOW profile.
           </div>
         )}
       </div>
@@ -245,8 +245,8 @@ function PersonalisedPlanCard({ plan }: { plan: PersonalisedPlan }) {
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 5,
           background: '#4a7c59', color: '#fff',
-          padding: '7px 14px', borderRadius: 999,
-          fontWeight: 700, fontSize: 12.5,
+          padding: '6px 11px', borderRadius: 999,
+          fontWeight: 700, fontSize: 12,
         }}>
           Continue
           <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward</span>
@@ -258,7 +258,7 @@ function PersonalisedPlanCard({ plan }: { plan: PersonalisedPlan }) {
 
 export function StudyPlanGrid({ plans, personalisedPlan }: { plans: PlanItem[]; personalisedPlan?: PersonalisedPlan | null }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12 }}>
       {personalisedPlan && <PersonalisedPlanCard plan={personalisedPlan} />}
       {plans.map(pl => (
         <StudyPlanCard key={pl.title} pl={pl} />

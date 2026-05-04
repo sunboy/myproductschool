@@ -81,10 +81,11 @@ function Chip({ label, outline, amber }: { label: string; outline?: boolean; amb
 
 // ── Mode card ──────────────────────────────────────────────────────────────────
 function ModeCard({
-  active, onClick, activeStyle, inactiveStyle, hoverStyle, children,
+  active, onClick, activeStyle, inactiveStyle, hoverStyle, sonic = 'nudge', children,
 }: {
   active: boolean
   onClick: () => void
+  sonic?: string
   activeStyle: React.CSSProperties
   inactiveStyle: React.CSSProperties
   hoverStyle: React.CSSProperties
@@ -95,6 +96,7 @@ function ModeCard({
   return (
     <button
       onClick={onClick}
+      data-hatch-sound={active ? undefined : sonic}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -403,7 +405,7 @@ function LoopRow({ loop, active, onClick }: { loop: Loop; active: boolean; onCli
   const inProg = loop.rounds.some((r) => r.status === 'in_progress')
 
   return (
-    <button onClick={onClick} style={{
+    <button onClick={onClick} data-hatch-sound={active ? undefined : 'nudge'} style={{
       width: '100%', textAlign: 'left', border: 'none',
       background: active ? T.surface : 'transparent',
       boxShadow: active ? `0 1px 0 ${T.outlineFaint}, 0 6px 16px -10px rgba(30,27,20,0.18)` : 'none',
@@ -511,6 +513,7 @@ function LoopDetail({ loop, onEdit, onDelete }: { loop: Loop; onEdit?: () => voi
           return (
             <button
               onClick={() => router.push(href)}
+              data-hatch-sound="submit"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
                 padding: '14px 24px', borderRadius: 999, border: 'none', cursor: 'pointer',
@@ -526,6 +529,7 @@ function LoopDetail({ loop, onEdit, onDelete }: { loop: Loop; onEdit?: () => voi
         {isConfigured && (
           <button
             onClick={() => router.push(`/live-interviews/loop/${loop.loopDbId}`)}
+            data-hatch-sound="submit"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               padding: '14px 24px', borderRadius: 999, border: 'none', cursor: 'pointer',
@@ -540,6 +544,7 @@ function LoopDetail({ loop, onEdit, onDelete }: { loop: Loop; onEdit?: () => voi
         {isCompleted && (
           <button
             onClick={() => router.push(`/live-interviews/loop/${loop.loopDbId}`)}
+            data-hatch-sound="nudge"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               padding: '14px 24px', borderRadius: 999, cursor: 'pointer',
@@ -579,12 +584,14 @@ function LoopDetail({ loop, onEdit, onDelete }: { loop: Loop; onEdit?: () => voi
             <>
               <button
                 onClick={() => onEdit?.()}
+                data-hatch-sound="open"
                 style={{ border: 'none', background: 'transparent', color: T.primary, fontWeight: 700, fontSize: 12, cursor: 'pointer', padding: 0 }}
               >
                 Edit
               </button>
               <button
                 onClick={() => onDelete?.()}
+                data-hatch-sound="close"
                 style={{ border: 'none', background: 'transparent', color: '#b83230', fontWeight: 700, fontSize: 12, cursor: 'pointer', padding: 0 }}
               >
                 Delete
@@ -697,7 +704,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: T.primary, marginBottom: 6 }}>{editLoopId ? 'Edit loop' : 'New loop'}</div>
           <h2 style={{ margin: 0, fontFamily: 'var(--font-headline,Literata,Georgia,serif)', fontSize: 26, fontWeight: 600, letterSpacing: '-0.015em', color: T.onSurface }}>{editLoopId ? 'Update configuration' : 'Configure your loop'}</h2>
         </div>
-        <button onClick={onCancel} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: T.onSurfaceMuted, padding: 6 }}>
+        <button onClick={onCancel} data-hatch-sound="close" style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: T.onSurfaceMuted, padding: 6 }}>
           <span className="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -721,7 +728,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
         <label style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 8 }}>Company persona</label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {COMPANIES.map((c) => (
-            <button key={c.name} onClick={() => setSelectedCo(c.name)} style={{
+            <button key={c.name} onClick={() => setSelectedCo(c.name)} data-hatch-sound={selectedCo === c.name ? undefined : 'nudge'} style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '7px 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
               background: selectedCo === c.name ? T.primaryContainer : T.surfaceContainerLow,
@@ -746,7 +753,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
             const on = selectedRounds.includes(r.id)
             const order = selectedRounds.indexOf(r.id)
             return (
-              <button key={r.id} onClick={() => toggleRound(r.id)} style={{
+              <button key={r.id} onClick={() => toggleRound(r.id)} data-hatch-sound="nudge" style={{
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '9px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left',
                 background: on ? T.primaryContainer : T.surfaceContainerLow,
@@ -780,7 +787,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
           <label style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 8 }}>Difficulty</label>
           <div style={{ display: 'flex', gap: 6 }}>
             {Object.entries(DIFF_LABELS).map(([k, label]) => (
-              <button key={k} onClick={() => setDifficulty(k)} style={{
+              <button key={k} onClick={() => setDifficulty(k)} data-hatch-sound={difficulty === k ? undefined : 'nudge'} style={{
                 flex: 1, padding: '8px 0', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700,
                 background: difficulty === k ? T.onSurface : T.surfaceContainerLow,
                 color: difficulty === k ? '#f7ede0' : T.onSurfaceVariant,
@@ -813,11 +820,11 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
           <div style={{ fontSize: 13, fontWeight: 700, color: T.onSurface }}>{selectedRounds.length} rounds · ~{totalMins} min total</div>
           <div style={{ fontSize: 12, color: T.onSurfaceMuted }}>{selectedCo} · {DIFF_LABELS[difficulty]}{voiceMode ? ' · Voice on' : ''}</div>
         </div>
-        <button onClick={onCancel} style={{
+        <button onClick={onCancel} data-hatch-sound="close" style={{
           padding: '8px 16px', borderRadius: 999, cursor: 'pointer', fontSize: 13, fontWeight: 700,
           background: 'transparent', color: T.onSurface, border: `1px solid ${T.outlineVariant}`,
         }}>Cancel</button>
-        <button onClick={handleSave} disabled={selectedRounds.length < 2 || saving} style={{
+        <button onClick={handleSave} data-hatch-sound="submit" disabled={selectedRounds.length < 2 || saving} style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
           padding: '8px 16px', borderRadius: 999, border: 'none', fontSize: 13, fontWeight: 700,
           background: T.btnDarkBg, color: T.btnDarkText,
@@ -964,7 +971,7 @@ function FullLoopPanel() {
               )}
             </>
           )}
-          <button onClick={() => setBuilding(true)} style={{
+          <button onClick={() => setBuilding(true)} data-hatch-sound={building ? undefined : 'open'} style={{
             width: '100%', marginTop: 8,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             padding: '12px 14px', borderRadius: 12,

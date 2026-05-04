@@ -1,144 +1,187 @@
+'use client'
+
 import Link from 'next/link'
+import { useEffect, useRef } from 'react'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
-const FLOW_STEPS = [
-  {
-    icon: 'pentagon',
-    letter: 'F',
-    title: 'Frame',
-    tagline: 'Define the problem',
-    description: 'Break down unclear requests into measurable customer outcomes and business results.',
-  },
-  {
-    icon: 'join_inner',
-    letter: 'L',
-    title: 'List',
-    tagline: 'Find the right angle',
-    description: 'Deploy strategic frameworks to identify overlooked opportunities.',
-  },
-  {
-    icon: 'balance',
-    letter: 'O',
-    title: 'Optimize',
-    tagline: 'Weigh your options',
-    description: 'Make decisive trade-offs balancing velocity, excellence, and scalability.',
-  },
-  {
-    icon: 'emoji_events',
-    letter: 'W',
-    title: 'Win',
-    tagline: 'Sell your solution',
-    description: 'Communicate compelling narrative to secure organizational alignment.',
-  },
-]
+const DISCIPLINES = [
+  { label: 'Coding', icon: 'data_object', color: '#3b6ed4', copy: 'Implement fast, explain clearly' },
+  { label: 'SQL', icon: 'database', color: '#6d4cc2', copy: 'Query the right grain' },
+  { label: 'Product sense', icon: 'psychology', color: '#4a7c59', copy: 'Make sharper product calls' },
+  { label: 'Data modeling', icon: 'account_tree', color: '#7a5c2e', copy: 'Design durable entities' },
+  { label: 'System design', icon: 'hub', color: '#c66a3b', copy: 'Scale with tradeoffs named' },
+] as const
 
-const METHOD_STEPS = [
-  {
-    num: '01',
-    text: 'Receive real-world PM questions from Google, Meta, Stripe, Airbnb',
-  },
-  {
-    num: '02',
-    text: 'Write unguided text responses — no multiple-choice shortcuts',
-  },
-  {
-    num: '03',
-    text: 'Get instant AI feedback referencing the FLOW framework',
-  },
-]
+const FLOW_STEPS = [
+  { letter: 'F', title: 'Frame', icon: 'center_focus_strong', copy: 'What is the real problem?' },
+  { letter: 'L', title: 'List', icon: 'format_list_bulleted', copy: 'What options and edges exist?' },
+  { letter: 'O', title: 'Optimize', icon: 'tune', copy: 'What is the right tradeoff?' },
+  { letter: 'W', title: 'Win', icon: 'emoji_events', copy: 'How do you make it land?' },
+] as const
+
+function SignalMesh() {
+  return (
+    <svg viewBox="0 0 620 360" className="absolute inset-0 h-full w-full" fill="none" aria-hidden="true">
+      <path d="M62 256 C150 70, 282 296, 388 104 C450 -8, 508 88, 566 34" stroke="#8ecf9e" strokeWidth="3" strokeLinecap="round" opacity="0.32" />
+      <path d="M70 82 C170 142, 204 42, 304 116 C404 190, 480 150, 558 232" stroke="#f0c36a" strokeWidth="2" strokeDasharray="8 10" strokeLinecap="round" opacity="0.28" />
+      {[
+        [62, 256, '#8ecf9e'],
+        [180, 132, '#7aa7ff'],
+        [304, 116, '#c89df5'],
+        [388, 104, '#f0c36a'],
+        [558, 232, '#f5a76c'],
+      ].map(([cx, cy, fill], index) => (
+        <g key={index}>
+          <circle cx={Number(cx)} cy={Number(cy)} r="24" fill={String(fill)} opacity="0.12" />
+          <circle cx={Number(cx)} cy={Number(cy)} r="7" fill={String(fill)} />
+        </g>
+      ))}
+    </svg>
+  )
+}
 
 export default function WelcomePage() {
+  const rootRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    let cleanup = () => {}
+
+    import('gsap').then(({ gsap }) => {
+      if (!rootRef.current) return
+      const ctx = gsap.context(() => {
+        gsap.from('[data-gsap="hero"]', {
+          opacity: 0,
+          y: 18,
+          duration: 0.7,
+          ease: 'power3.out',
+          stagger: 0.08,
+        })
+        gsap.from('[data-gsap="discipline"]', {
+          opacity: 0,
+          y: 24,
+          rotate: -2,
+          duration: 0.7,
+          ease: 'back.out(1.4)',
+          stagger: 0.08,
+          delay: 0.35,
+        })
+        gsap.to('[data-gsap="hatch"]', {
+          y: -7,
+          duration: 2.6,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+        })
+      }, rootRef)
+      cleanup = () => ctx.revert()
+    }).catch(() => {})
+
+    return () => cleanup()
+  }, [])
+
   return (
-    <div className="flex flex-col">
-      {/* Hero */}
-      <section className="px-6 pt-16 pb-12 text-center max-w-3xl mx-auto">
-        <div className="flex justify-center mb-6">
-          <HatchGlyph size={48} className="text-primary" state="idle" />
-        </div>
-        <h1 className="font-headline text-4xl md:text-5xl font-bold text-on-surface mb-4">
-          Think like a great PM
-        </h1>
-        <p className="text-lg text-on-surface-variant max-w-xl mx-auto font-body">
-          Daily AI-graded prompts. Modeled after top engineering cultures. No fluffy advice — just substance.
-        </p>
-      </section>
-
-      {/* FLOW Framework */}
-      <section className="px-6 pb-16 max-w-5xl mx-auto w-full">
-        <h2 className="font-headline text-2xl font-bold text-center text-on-surface mb-2">
-          The <span className="bg-gradient-to-r from-primary to-tertiary bg-clip-text text-transparent">FLOW</span> Framework
-        </h2>
-        <p className="text-center text-on-surface-variant mb-8 font-body">
-          A structured method for product thinking
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {FLOW_STEPS.map((step) => (
-            <div
-              key={step.letter}
-              className="bg-surface-container rounded-xl p-6 hover:bg-surface-container-high transition-colors"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center">
-                  <span className="material-symbols-outlined text-primary">{step.icon}</span>
-                </div>
-                <div>
-                  <span className="text-xs font-label font-bold text-primary tracking-wide uppercase">{step.letter}</span>
-                  <h3 className="font-headline font-bold text-on-surface text-sm">{step.title}</h3>
-                </div>
-              </div>
-              <p className="text-sm font-label font-semibold text-on-surface mb-1">{step.tagline}</p>
-              <p className="text-sm text-on-surface-variant font-body">{step.description}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* The FLOW Method — 3 steps */}
-      <section className="px-6 pb-16 max-w-3xl mx-auto w-full">
-        <h2 className="font-headline text-2xl font-bold text-center text-on-surface mb-8">
-          The FLOW Method
-        </h2>
-        <div className="space-y-4">
-          {METHOD_STEPS.map((step) => (
-            <div
-              key={step.num}
-              className="flex items-start gap-4 bg-surface-container-low rounded-xl p-5"
-            >
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                <span className="text-on-primary font-label font-bold text-sm">{step.num}</span>
-              </div>
-              <p className="text-on-surface font-body pt-2">{step.text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="px-6 pb-16 text-center max-w-3xl mx-auto">
-        <Link
-          href="/onboarding/role"
-          className="inline-flex items-center gap-2 bg-primary text-on-primary rounded-full px-8 py-3 font-label font-semibold hover:bg-primary/90 transition-colors"
-        >
-          Start your calibration
-          <span className="material-symbols-outlined text-lg">arrow_forward</span>
-        </Link>
-        <p className="text-sm text-on-surface-variant mt-3 font-body">~5 minutes · No credit card required</p>
-        <p className="mt-4">
-          <Link href="/dashboard" className="text-sm text-primary font-label font-semibold hover:underline">
-            Sign in
+    <div ref={rootRef} className="min-h-screen overflow-hidden bg-background">
+      <header className="fixed top-0 z-40 w-full border-b border-outline-variant/55 bg-background/82 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-5">
+          <Link href="/dashboard" className="flex items-center gap-2 no-underline">
+            <HatchGlyph size={30} state="idle" className="text-primary" />
+            <span className="font-headline text-xl font-black text-primary">HackProduct</span>
           </Link>
-        </p>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-outline-variant px-6 py-6">
-        <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-6 text-sm text-on-surface-variant font-label">
-          <Link href="/privacy" className="hover:text-on-surface transition-colors">Privacy</Link>
-          <Link href="/terms" className="hover:text-on-surface transition-colors">Terms</Link>
-          <Link href="mailto:hello@hackproduct.io" className="hover:text-on-surface transition-colors">Contact</Link>
-          <Link href="/home" className="hover:text-on-surface transition-colors">Manifesto</Link>
+          <Link href="/dashboard" data-hatch-sound="close" className="text-xs font-label font-bold text-primary no-underline hover:underline">
+            Skip for now
+          </Link>
         </div>
-      </footer>
+      </header>
+
+      <main className="relative mx-auto grid min-h-screen max-w-7xl grid-cols-1 items-center gap-10 px-5 pb-16 pt-24 lg:grid-cols-[minmax(0,0.92fr)_minmax(420px,1fr)] lg:px-8">
+        <section className="relative z-10">
+          <div data-gsap="hero" className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/18 bg-primary-fixed/70 px-3 py-1 text-[11px] font-label font-black uppercase tracking-[0.12em] text-primary">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            AI-native skill calibration
+          </div>
+
+          <h1 data-gsap="hero" className="m-0 max-w-3xl font-headline text-[44px] font-black leading-[0.98] tracking-tight text-on-surface sm:text-[60px] lg:text-[72px]">
+            Hatch builds your path across the whole job.
+          </h1>
+
+          <p data-gsap="hero" className="mt-5 max-w-2xl text-base font-semibold leading-relaxed text-on-surface-variant sm:text-lg">
+            Two minutes of choices tells Hatch how you frame, decompose, trade off, and land decisions across product, systems, data, SQL, and code.
+          </p>
+
+          <div data-gsap="hero" className="mt-8 flex flex-wrap gap-3">
+            <Link
+              href="/onboarding/role"
+              data-hatch-sound="open"
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-label font-black text-on-primary no-underline shadow-[0_16px_34px_-22px_rgba(74,124,89,0.85)] transition-transform hover:scale-[1.02] active:scale-95"
+            >
+              Start calibration
+              <span className="material-symbols-outlined text-[17px]">arrow_forward</span>
+            </Link>
+            <Link
+              href="/calibration"
+              data-hatch-sound="open"
+              className="inline-flex items-center gap-2 rounded-full border border-outline-variant bg-surface-container-low px-6 py-3 text-sm font-label font-black text-on-surface no-underline transition-colors hover:bg-surface-container"
+            >
+              Jump to the quest
+              <span className="material-symbols-outlined text-[17px]">bolt</span>
+            </Link>
+          </div>
+
+          <div data-gsap="hero" className="mt-8 grid max-w-2xl grid-cols-2 gap-2 sm:grid-cols-4">
+            {FLOW_STEPS.map(step => (
+              <div key={step.letter} className="rounded-xl border border-outline-variant/55 bg-surface-container-low p-3">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-[11px] font-black text-on-primary">
+                    {step.letter}
+                  </span>
+                  <span className="material-symbols-outlined text-[17px] text-primary">
+                    {step.icon}
+                  </span>
+                </div>
+                <div className="mt-3 font-headline text-sm font-bold text-on-surface">{step.title}</div>
+                <div className="mt-1 text-[11px] font-semibold leading-tight text-on-surface-variant">{step.copy}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="relative min-h-[560px]">
+          <div className="absolute inset-0 rounded-[36px] border border-outline-variant bg-[#1e3528] shadow-[0_30px_90px_-56px_rgba(30,53,40,0.95)]" />
+          <SignalMesh />
+
+          <div data-gsap="hatch" className="absolute left-1/2 top-16 z-10 -translate-x-1/2">
+            <div className="relative">
+              <HatchGlyph size={118} state="celebrating" className="text-primary-fixed-dim drop-shadow-[0_22px_36px_rgba(0,0,0,0.38)]" />
+              <div className="absolute -right-8 top-2 rounded-full border border-white/12 bg-white/10 px-3 py-1 text-[11px] font-label font-black uppercase tracking-[0.10em] text-[#f3ede0] backdrop-blur">
+                Hatch
+              </div>
+            </div>
+          </div>
+
+          <div className="absolute inset-x-5 bottom-5 z-10 grid gap-3 sm:grid-cols-5">
+            {DISCIPLINES.map((discipline) => (
+              <div
+                key={discipline.label}
+                data-gsap="discipline"
+                className="min-h-[128px] rounded-2xl border border-white/10 bg-white/[0.085] p-4 backdrop-blur-md"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="material-symbols-outlined text-[24px]" style={{ color: discipline.color, fontVariationSettings: "'FILL' 1" }}>
+                    {discipline.icon}
+                  </span>
+                  <span className="h-2 w-2 rounded-full" style={{ background: discipline.color }} />
+                </div>
+                <div className="mt-6 font-headline text-[15px] font-bold leading-tight text-[#f3ede0]">
+                  {discipline.label}
+                </div>
+                <div className="mt-1 text-[11px] font-semibold leading-tight text-[#f3ede0]/55">
+                  {discipline.copy}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
     </div>
   )
 }
