@@ -5,12 +5,60 @@ import type { InterviewGrade } from '@/lib/types'
 
 const TEST_STATUSES = new Set<TestResult['status']>(['passed', 'failed', 'error', 'timeout', 'no_solution'])
 
+interface MetadataTestCase {
+  id?: string
+  label?: string
+  hidden?: boolean
+  args?: unknown
+  expected?: unknown
+  expected_rows?: unknown
+  match_mode?: string
+  compare_mode?: string
+}
+
+interface ChallengeMetadata {
+  test_cases?: MetadataTestCase[]
+}
+
 function normalizeStatus(status: unknown): TestResult['status'] {
   const value = String(status ?? '')
   return TEST_STATUSES.has(value as TestResult['status']) ? value as TestResult['status'] : 'failed'
 }
 
-function normalizeTestResults(raw: unknown, attemptId: string): RunResult | null {
+function isGenericTestLabel(label: string, index: number): boolean {
+  const normalized = label.trim().toLowerCase()
+  return normalized === `test ${index + 1}` ||
+    normalized === `test case ${index + 1}` ||
+    normalized === `case ${index + 1}` ||
+    normalized === `tc${index + 1}`
+}
+
+function compactJson(value: unknown): string {
+  try {
+    const text = JSON.stringify(value)
+    return text.length > 80 ? `${text.slice(0, 77)}...` : text
+  } catch {
+    return String(value)
+  }
+}
+
+function getCaseLabel(row: Record<string, unknown>, meta: MetadataTestCase | undefined, index: number): string {
+  const rowLabel = typeof row.label === 'string' ? row.label.trim() : ''
+  const metaLabel = typeof meta?.label === 'string' ? meta.label.trim() : ''
+
+  if (metaLabel && (!rowLabel || isGenericTestLabel(rowLabel, index))) return metaLabel
+  if (rowLabel) return rowLabel
+
+  if (Array.isArray(meta?.args)) return `Case ${index + 1}: input ${compactJson(meta.args)}`
+  if (Array.isArray(meta?.expected_rows)) {
+    const count = meta.expected_rows.length
+    return `Case ${index + 1}: ${count} expected row${count === 1 ? '' : 's'}`
+  }
+
+  return `Case ${index + 1}`
+}
+
+function normalizeTestResults(raw: unknown, attemptId: string, metadata?: ChallengeMetadata): RunResult | null {
   if (!raw || typeof raw !== 'object') return null
 
   const payload = raw as {
@@ -23,22 +71,35 @@ function normalizeTestResults(raw: unknown, attemptId: string): RunResult | null
 
   const testsPassed = Number(payload.tests_passed ?? rows.filter((row) => row.status === 'passed').length)
   const testsTotal = Number(payload.tests_total ?? rows.length)
+  const metadataCases = Array.isArray(metadata?.test_cases) ? metadata.test_cases : []
+  const metadataById = new Map(metadataCases.map((testCase) => [String(testCase.id ?? ''), testCase]))
 
   return {
     runId: `history-${attemptId}`,
     testsPassed: Number.isFinite(testsPassed) ? testsPassed : 0,
     testsTotal: Number.isFinite(testsTotal) ? testsTotal : rows.length,
-    results: rows.map((row, index) => ({
-      id: String(row.id ?? `case-${index + 1}`),
-      label: String(row.label ?? `Test ${index + 1}`),
-      status: normalizeStatus(row.status),
-      hidden: Boolean(row.hidden),
-      output: row.output,
-      expected: row.expected,
-      actual: row.actual,
-      errorMessage: typeof row.errorMessage === 'string' ? row.errorMessage : undefined,
-      durationMs: typeof row.durationMs === 'number' ? row.durationMs : undefined,
-    })),
+    results: rows.map((row, index) => {
+      const id = String(row.id ?? `case-${index + 1}`)
+      const meta = metadataById.get(id) ?? metadataCases[index]
+      const hidden = Boolean(row.hidden ?? meta?.hidden)
+      return {
+        id,
+        label: getCaseLabel(row, meta, index),
+        status: normalizeStatus(row.status),
+        hidden,
+        input: hidden ? undefined : row.input ?? meta?.args,
+        output: row.output,
+        expected: hidden ? row.expected : row.expected ?? meta?.expected_rows ?? meta?.expected,
+        actual: row.actual,
+        matchMode: typeof row.matchMode === 'string'
+          ? row.matchMode
+          : typeof row.match_mode === 'string'
+            ? row.match_mode
+            : meta?.match_mode ?? meta?.compare_mode,
+        errorMessage: typeof row.errorMessage === 'string' ? row.errorMessage : undefined,
+        durationMs: typeof row.durationMs === 'number' ? row.durationMs : undefined,
+      }
+    }),
   }
 }
 
@@ -106,7 +167,7 @@ export async function GET(
 
   const { data: attempt } = await supabase
     .from('challenge_attempts')
-    .select('user_id, final_language, test_results, challenges(challenge_type)')
+    .select('user_id, final_code, final_language, test_results, challenges(challenge_type, metadata)')
     .eq('id', attemptId)
     .single()
   if (!attempt || attempt.user_id !== user.id) {
@@ -123,13 +184,14 @@ export async function GET(
 
   const challenge = Array.isArray(attempt.challenges) ? attempt.challenges[0] : attempt.challenges
   const challengeType = grade?.challenge_type ?? challenge?.challenge_type ?? null
-  const correctness = normalizeTestResults(attempt.test_results, attemptId)
+  const correctness = normalizeTestResults(attempt.test_results, attemptId, (challenge?.metadata ?? {}) as ChallengeMetadata)
 
   if (!grade && !correctness) return NextResponse.json({ error: 'No grade found' }, { status: 404 })
 
   return NextResponse.json({
     grade: toGradePayload(grade ?? null, challengeType),
     challengeType,
+    code: typeof attempt.final_code === 'string' ? attempt.final_code : null,
     language: (attempt.final_language as SupportedLanguage | null) ?? null,
     correctness,
   })

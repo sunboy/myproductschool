@@ -58,6 +58,7 @@ self.onmessage = async ({ data }) => {
           label: tc.label,
           status: passed ? 'passed' : 'failed',
           hidden: tc.hidden,
+          matchMode: tc.match_mode,
           // Visible SQL tests can show the user's rows and expected rows in the UI.
           // Hidden tests intentionally reveal only pass/fail.
           actual: !tc.hidden ? actualRows : undefined,
@@ -69,6 +70,7 @@ self.onmessage = async ({ data }) => {
           label: tc.label,
           status: 'error',
           hidden: tc.hidden,
+          matchMode: tc.match_mode,
           errorMessage: err.message,
         })
       } finally {

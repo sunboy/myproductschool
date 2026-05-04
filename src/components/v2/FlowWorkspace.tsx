@@ -335,6 +335,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [historyCodingFeedback, setHistoryCodingFeedback] = useState<GradingFeedback | null>(null)
   const [historyCodingCorrectness, setHistoryCodingCorrectness] = useState<RunResult | null>(null)
   const [historyCodingLanguage, setHistoryCodingLanguage] = useState<SupportedLanguage | null>(null)
+  const [historySubmittedCode, setHistorySubmittedCode] = useState<string | null>(null)
   const [historyGradeLoading, setHistoryGradeLoading] = useState(false)
   const [canvasScene, setCanvasScene] = useState<{ elements: unknown[]; appState: unknown } | null>(null)
   const [contextPackOpen, setContextPackOpen] = useState(true)
@@ -485,6 +486,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       setHistoryCodingFeedback(null)
       setHistoryCodingCorrectness(null)
       setHistoryCodingLanguage(null)
+      setHistorySubmittedCode(null)
       return
     }
     const record = sessionHistory[selectedHistoryIdx]
@@ -494,11 +496,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     setHistoryCodingFeedback(null)
     setHistoryCodingCorrectness(null)
     setHistoryCodingLanguage(null)
+    setHistorySubmittedCode(null)
     fetch(`/api/attempts/${record.attemptId}/grade`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data: {
         grade?: InterviewGrade | GradingFeedback | null
         challengeType?: string | null
+        code?: string | null
         language?: SupportedLanguage | null
         correctness?: RunResult | null
       } | null) => {
@@ -507,6 +511,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           setHistoryCodingFeedback((data?.grade as GradingFeedback | null) ?? null)
           setHistoryCodingCorrectness(data?.correctness ?? null)
           setHistoryCodingLanguage(data?.language ?? null)
+          setHistorySubmittedCode(data?.code ?? null)
         } else if (data?.grade) {
           setHistoryInterviewGrade(data.grade as InterviewGrade)
         }
@@ -2837,6 +2842,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   <CodingFeedback
                     correctness={historyRecord ? historyCodingCorrectness : lastRunResult}
                     grading={historyRecord ? historyCodingFeedback : codingFeedback}
+                    submittedCode={historyRecord ? historySubmittedCode : currentCode}
+                    language={historyRecord ? historyCodingLanguage : currentLanguage}
                     isLoadingGrading={historyRecord ? false : isLoadingGrading}
                     isSqlMode={historyRecord
                       ? (historyCodingLanguage === 'sql' || historyRecord.challengeType === 'sql')
