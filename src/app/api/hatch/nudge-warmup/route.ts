@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { HATCH_NUDGE_SYSTEM_PROMPT, MENTAL_MODELS_CONTEXT } from '@/lib/hatch/system-prompt'
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
 import type { FlowStep } from '@/lib/types'
 
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     const systemPrompt = HATCH_NUDGE_SYSTEM_PROMPT + '\n\n' + MENTAL_MODELS_CONTEXT
 
     // max_tokens: 1 seeds Anthropic's 5-minute prompt cache at near-zero cost
-    await createCachedMessage(systemPrompt, userPrompt, {
+    await guardedCachedMessage(systemPrompt, userPrompt, {
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 1,
     })
