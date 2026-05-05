@@ -5,8 +5,15 @@ import { createStripeClient } from '@/lib/stripe/config'
 import {
   invoicePeriodEnd,
   planLabelFromInterval,
-  sendBillingEmail,
 } from '@/lib/email/billing'
+import {
+  sendCancellationConfirmedEmail,
+  sendCancellationScheduledEmail,
+  sendPaymentFailedEmail,
+  sendPaymentReceiptEmail,
+  sendPlanChangedEmail,
+  sendSubscriptionReactivatedEmail,
+} from '@/lib/email/transactional'
 
 function subscriptionPlanForStatus(status: Stripe.Subscription.Status): 'free' | 'pro' {
   return status === 'active' || status === 'trialing' ? 'pro' : 'free'
@@ -59,6 +66,32 @@ function invoiceSubscriptionId(invoice: Stripe.Invoice) {
 function invoiceCustomerId(invoice: Stripe.Invoice) {
   const value = invoice.customer
   return typeof value === 'string' ? value : value?.id ?? null
+}
+
+function checkoutCustomerId(session: Stripe.Checkout.Session) {
+  const value = session.customer
+  if (typeof value === 'string') return value
+  return value && !value.deleted ? value.id : null
+}
+
+function checkoutSubscriptionId(session: Stripe.Checkout.Session) {
+  const value = session.subscription
+  return typeof value === 'string' ? value : value?.id ?? null
+}
+
+function checkoutInvoiceId(session: Stripe.Checkout.Session) {
+  const value = session.invoice
+  return typeof value === 'string' ? value : value?.id ?? null
+}
+
+function checkoutPlanLabel(session: Stripe.Checkout.Session) {
+  return session.metadata?.plan === 'annual'
+    ? planLabelFromInterval('year')
+    : planLabelFromInterval('month')
+}
+
+function appReturnUrl(request: NextRequest, path = '/settings') {
+  return new URL(path, process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin).toString()
 }
 
 async function getInvoiceCustomerContact(
@@ -118,17 +151,31 @@ export async function POST(req: NextRequest) {
       const session = event.data.object as Stripe.Checkout.Session
       const userId = session.client_reference_id ?? session.metadata?.user_id
       if (!userId) break
+      const invoiceId = checkoutInvoiceId(session)
+      const invoice = invoiceId ? await stripe.invoices.retrieve(invoiceId) : null
 
       await supabase.from('profiles').update({ plan: 'pro' }).eq('id', userId)
 
       await supabase.from('subscriptions').upsert({
         user_id: userId,
-        stripe_customer_id: session.customer as string ?? null,
-        stripe_subscription_id: session.subscription as string ?? null,
+        stripe_customer_id: checkoutCustomerId(session),
+        stripe_subscription_id: checkoutSubscriptionId(session),
         plan: 'pro',
         status: 'active',
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
+
+      await sendPaymentReceiptEmail(supabase, {
+        dedupeKey: `${event.id}:payment_receipt`,
+        userId,
+        to: session.customer_details?.email ?? session.customer_email,
+        name: session.customer_details?.name,
+        planLabel: checkoutPlanLabel(session),
+        amount: invoice?.amount_paid ?? session.amount_total,
+        currency: invoice?.currency ?? session.currency,
+        periodEnd: invoice ? invoicePeriodEnd(invoice) : null,
+        url: invoice?.hosted_invoice_url ?? appReturnUrl(req),
+      })
 
       break
     }
@@ -182,24 +229,21 @@ export async function POST(req: NextRequest) {
         const currentPrice = priceId
 
         if (previous?.cancel_at_period_end === false && subscription.cancel_at_period_end) {
-          await sendBillingEmail(supabase, {
-            kind: 'cancellation_scheduled',
+          await sendCancellationScheduledEmail(supabase, {
             dedupeKey: `${event.id}:cancellation_scheduled`,
             userId,
             planLabel: planLabelFromInterval(interval),
             periodEnd: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
           })
         } else if (previous?.cancel_at_period_end === true && !subscription.cancel_at_period_end) {
-          await sendBillingEmail(supabase, {
-            kind: 'subscription_reactivated',
+          await sendSubscriptionReactivatedEmail(supabase, {
             dedupeKey: `${event.id}:subscription_reactivated`,
             userId,
             planLabel: planLabelFromInterval(interval),
             periodEnd: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
           })
         } else if (previousPrice && currentPrice && previousPrice !== currentPrice) {
-          await sendBillingEmail(supabase, {
-            kind: 'plan_changed',
+          await sendPlanChangedEmail(supabase, {
             dedupeKey: `${event.id}:plan_changed`,
             userId,
             planLabel: planLabelFromInterval(interval),
@@ -237,10 +281,10 @@ export async function POST(req: NextRequest) {
 
       await supabase.from('profiles').update({ plan: 'free' }).eq('id', userId)
 
-      await sendBillingEmail(supabase, {
-        kind: 'subscription_ended',
-        dedupeKey: `${event.id}:subscription_ended`,
+      await sendCancellationConfirmedEmail(supabase, {
+        dedupeKey: `${event.id}:cancellation_confirmed`,
         userId,
+        url: appReturnUrl(req, '/dashboard'),
       })
       break
     }
@@ -263,23 +307,18 @@ export async function POST(req: NextRequest) {
           .maybeSingle()
         : { data: null }
 
-      const billingReason = invoice.billing_reason
-      const kind = billingReason === 'subscription_create'
-        ? 'premium_signup_receipt'
-        : 'renewal_receipt'
+      if (invoice.billing_reason === 'subscription_create') break
 
-      await sendBillingEmail(supabase, {
-        kind,
-        dedupeKey: `${event.id}:${kind}`,
+      await sendPaymentReceiptEmail(supabase, {
+        dedupeKey: `${event.id}:payment_receipt`,
         userId,
-        customerEmail: contact.email,
-        customerName: contact.name,
+        to: contact.email,
+        name: contact.name,
         planLabel: planLabelFromInterval(subscription?.billing_interval),
-        amountPaid: invoice.amount_paid,
+        amount: invoice.amount_paid,
         currency: invoice.currency,
         periodEnd: invoicePeriodEnd(invoice),
-        invoiceUrl: invoice.hosted_invoice_url,
-        invoicePdf: invoice.invoice_pdf,
+        url: invoice.hosted_invoice_url ?? invoice.invoice_pdf ?? appReturnUrl(req),
       })
       break
     }
@@ -302,19 +341,16 @@ export async function POST(req: NextRequest) {
           .maybeSingle()
         : { data: null }
 
-      await sendBillingEmail(supabase, {
-        kind: 'payment_failed',
+      await sendPaymentFailedEmail(supabase, {
         dedupeKey: `${event.id}:payment_failed`,
         userId,
-        customerEmail: contact.email,
-        customerName: contact.name,
+        to: contact.email,
+        name: contact.name,
         planLabel: planLabelFromInterval(subscription?.billing_interval),
-        amountDue: invoice.amount_due,
+        amount: invoice.amount_due,
         currency: invoice.currency,
         periodEnd: invoicePeriodEnd(invoice),
-        invoiceUrl: invoice.hosted_invoice_url,
-        invoicePdf: invoice.invoice_pdf,
-        hostedPaymentUrl: invoice.hosted_invoice_url,
+        url: invoice.hosted_invoice_url ?? appReturnUrl(req),
       })
       break
     }
