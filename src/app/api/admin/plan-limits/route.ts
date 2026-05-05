@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { AI_PLAN_LIMIT_FEATURES } from '@/lib/usage/assert-plan-limit'
 
 const VALID_PLANS = ['free', 'pro'] as const
-const VALID_FEATURES = ['challenges', 'interviews', 'hatch_ai_cents'] as const
+const VALID_FEATURES = ['challenges', 'interviews', 'hatch_ai_cents', ...AI_PLAN_LIMIT_FEATURES] as const
 const VALID_UNITS = ['count', 'cents'] as const
 
 async function assertAdmin() {
