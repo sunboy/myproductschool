@@ -5,7 +5,15 @@ import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { createClient } from '@/lib/supabase/server'
 import { sceneToPrompt, type CanvasScene } from '@/lib/hatch/canvas-scene'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
 import type { CanvasInterpretResponse, CanvasIntent } from '@/lib/types'
+
+const ROUTE_KEY = 'hatch_canvas_interpret'
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
 
 function loadCodingCoachSkill(): string {
   try {
@@ -349,7 +357,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const userPlan = await getUserPlanForBudget(user.id)
-  const budget = { userId: user.id, userPlan, route: 'hatch_canvas_interpret' }
+  const throttle = await rateLimit({
+    key: `ai:${user.id}:${ROUTE_KEY}`,
+    limit: userPlan === 'pro' ? 15 : 5,
+    windowSec: 60,
+  })
+
+  if (!throttle.allowed) {
+    const retryAfter = retryAfterSeconds(throttle.resetAt)
+    return NextResponse.json(
+      { error: 'rate_limited', retryAfter },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(retryAfter) },
+      }
+    )
+  }
+
+  const budget = { userId: user.id, userPlan, route: ROUTE_KEY }
 
   const body = (await req.json()) as InterpretBody
 
@@ -363,6 +388,8 @@ export async function POST(req: NextRequest) {
   const userContent = buildUserContent(body)
 
   try {
+    await assertPlanLimit(user.id, userPlan, 'hatch_canvas_interprets')
+
     let result: CanvasInterpretResponse
     try {
       result = await callClaude(systemPrompt, userContent, isCodingMode, budget)
@@ -376,6 +403,19 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json(result)
   } catch (error) {
+    if (error instanceof PlanLimitExceeded) {
+      return NextResponse.json(
+        {
+          error: 'limit_reached',
+          feature: error.feature,
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+
     if (error instanceof AiBudgetExceededError) {
       return NextResponse.json(
         {
