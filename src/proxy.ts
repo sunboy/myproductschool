@@ -34,7 +34,8 @@ const MARKETING_ROUTES = [
   '/llms.txt',
   '/llms-full.txt',
 ]
-const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-password']
+const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/magic-link-sent']
+const AUTH_CALLBACK_ROUTES = ['/auth/callback']
 
 // Routes that require a user but NOT a completed profile/onboarding
 const APP_PUBLIC_ROUTES = ['/onboarding', '/welcome', '/role', '/calibration']
@@ -69,11 +70,12 @@ export async function proxy(request: NextRequest) {
   const isMarketing = MARKETING_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isWaitlist  = WAITLIST_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isAuthRoute = AUTH_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
+  const isAuthCallback = AUTH_CALLBACK_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isApi       = pathname.startsWith('/api/')
 
   // Pure marketing routes that never need auth (not / or waitlist which need redirect logic)
   const isPureMarketing = isMarketing && !isRoot && !isWaitlist
-  if (isPureMarketing || isApi) {
+  if (isPureMarketing || isAuthCallback || isApi) {
     return NextResponse.next()
   }
 

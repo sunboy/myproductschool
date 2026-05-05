@@ -12,6 +12,8 @@ interface AuthFormProps {
   mode: 'login' | 'signup'
 }
 
+type AuthMode = 'login' | 'signup' | 'forgot' | 'magic'
+
 const AUTH_DISCIPLINES = [
   { label: 'Coding', icon: 'data_object', color: '#7aa7ff', copy: 'DSA with live execution' },
   { label: 'SQL', icon: 'database', color: '#c89df5', copy: 'Queries against real datasets' },
@@ -121,7 +123,7 @@ function DisciplineSignalBoard() {
 }
 
 export function AuthForm({ mode: initialMode }: AuthFormProps) {
-  const [activeMode, setActiveMode] = useState<'login' | 'signup' | 'forgot'>(initialMode)
+  const [activeMode, setActiveMode] = useState<AuthMode>(initialMode)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -159,7 +161,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     return data as T
   }
 
-  function switchMode(mode: 'login' | 'signup' | 'forgot') {
+  function switchMode(mode: AuthMode) {
     if (mode !== activeMode) play('nudge')
     setActiveMode(mode)
     setError(null)
@@ -208,6 +210,34 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         // Always show success after the server accepts the request.
         setSuccess('Check your email. We sent a password reset link.')
         play('success')
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
+        resetTurnstile()
+        play('error')
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
+
+    if (activeMode === 'magic') {
+      const validation = passwordResetRequestSchema.safeParse({ email })
+      if (!validation.success) {
+        setFieldErrors(zodFieldErrors<'email'>(validation.error))
+        play('error')
+        setLoading(false)
+        return
+      }
+      if (!requireTurnstileToken()) return
+
+      try {
+        await postAuthAction('/api/auth/magic-link', {
+          email: validation.data.email,
+          turnstileToken,
+          redirectTo: `${siteOrigin()}/auth/callback`,
+        })
+        play('success')
+        router.push(`/magic-link-sent?email=${encodeURIComponent(validation.data.email)}`)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
         resetTurnstile()
@@ -396,8 +426,8 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
               boxShadow: '0 16px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)',
             }}
           >
-            {/* Tab switcher — hidden in forgot mode */}
-            {activeMode !== 'forgot' && (
+            {/* Tab switcher — hidden in single-email modes */}
+            {activeMode !== 'forgot' && activeMode !== 'magic' && (
               <div className="flex gap-1 p-1 rounded-full w-fit" style={{ background: 'rgba(255,255,255,0.08)' }}>
                 {(['signup', 'login'] as const).map(m => (
                   <button
@@ -416,8 +446,8 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
               </div>
             )}
 
-            {/* Forgot password mode */}
-            {activeMode === 'forgot' ? (
+            {/* Single-email modes */}
+            {activeMode === 'forgot' || activeMode === 'magic' ? (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <button
@@ -429,9 +459,13 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                     <span className="material-symbols-outlined text-[14px]">arrow_back</span>
                     Back to log in
                   </button>
-                  <p className="font-headline font-bold text-white text-base mb-1">Reset your password</p>
+                  <p className="font-headline font-bold text-white text-base mb-1">
+                    {activeMode === 'forgot' ? 'Reset your password' : 'Email magic link'}
+                  </p>
                   <p className="text-xs font-body" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                    Enter your email and we&apos;ll send a reset link.
+                    {activeMode === 'forgot'
+                      ? 'Enter your email and we\'ll send a reset link.'
+                      : 'Enter your email and we\'ll send a one-time sign-in link.'}
                   </p>
                 </div>
 
@@ -469,7 +503,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                       className="w-full rounded-full py-2.5 font-semibold font-label text-sm transition-all duration-200 active:scale-[0.98] disabled:opacity-50"
                       style={{ background: '#4a7c59', color: '#ffffff' }}
                     >
-                      {loading ? 'Sending...' : 'Send reset link'}
+                      {loading ? 'Sending...' : activeMode === 'forgot' ? 'Send reset link' : 'Send magic link'}
                     </button>
                   </>
                 )}
@@ -575,7 +609,15 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                     </div>
                     {fieldErrors.password && <p className="text-xs text-error">{fieldErrors.password}</p>}
                     {activeMode === 'login' && (
-                      <div className="text-right">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          onClick={() => switchMode('magic')}
+                          className="text-xs font-label transition-colors hover:opacity-80"
+                          style={{ color: 'rgba(255,255,255,0.55)' }}
+                        >
+                          Email me a magic link instead
+                        </button>
                         <button
                           type="button"
                           onClick={() => switchMode('forgot')}
