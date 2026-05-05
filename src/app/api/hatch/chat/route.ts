@@ -1,21 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
 import { HATCH_CHAT_SYSTEM_PROMPT, HATCH_GLOBAL_CHAT_SYSTEM_PROMPT } from '@/lib/hatch/system-prompt'
 import { IS_MOCK } from '@/lib/mock'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getHatchContext, buildHatchContextString } from '@/lib/hatch-context'
-import {
-  AiBudgetExceededError,
-  assertAiBudget,
-  estimateAnthropicPreflightCents,
-  getUserPlanForBudget,
-  recordAnthropicUsage,
-} from '@/lib/usage/ai-budget'
-
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 
 const MOCK_REPLIES = [
   "That's an interesting framing. Can you tell me more about *why* users would behave that way — what's driving their motivation here?",
@@ -34,6 +24,33 @@ interface PageContext {
   pageType: string
   entityId: string | null
   pathname: string
+}
+
+function buildConversationUserContent({
+  challengePrompt,
+  history,
+  message,
+}: {
+  challengePrompt?: string
+  history?: Message[]
+  message: string
+}) {
+  const parts: string[] = []
+
+  if (challengePrompt) {
+    parts.push(`# Challenge context\n${challengePrompt}`)
+  }
+
+  if (history?.length) {
+    const historyText = history
+      .slice(-10)
+      .map((msg) => `${msg.role === 'hatch' ? 'Hatch' : 'User'}: ${msg.content}`)
+      .join('\n')
+    parts.push(`# Recent conversation\n${historyText}`)
+  }
+
+  parts.push(`# User's latest message\n${message}`)
+  return parts.join('\n\n')
 }
 
 /** Fetch 3 recommended challenges for the user based on their weakest competency/move. */
@@ -210,7 +227,7 @@ export async function POST(req: NextRequest) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     const userPlan = user ? await getUserPlanForBudget(user.id) : null
-    const budget = user && userPlan ? { userId: user.id, userPlan, route: 'hatch_chat' } : null
+    const budget = user && userPlan ? { userId: user.id, userPlan, route: 'hatch_chat' } : undefined
 
     // Build all context blocks in parallel
     const [hatchCtx, pageContextBlock, recommendedBlock] = await Promise.all([
@@ -247,60 +264,21 @@ Respond conversationally.`
       systemPrompt += canvasAddendum
     }
 
-    // Build message history
-    const messages: Anthropic.MessageParam[] = []
-
-    // Add challenge context as first Hatch message (challenge workspace mode)
-    if (challengePrompt) {
-      messages.push({
-        role: 'assistant',
-        content: challengePrompt,
-      })
-    }
-
-    // Add conversation history
-    if (history?.length) {
-      for (const msg of history as Message[]) {
-        messages.push({
-          role: msg.role === 'user' ? 'user' : 'assistant',
-          content: msg.content,
-        })
-      }
-    }
-
-    // Add current user message
-    messages.push({ role: 'user', content: message })
-
     const model = 'claude-sonnet-4-6'
     const maxTokens = 300
-    const promptCharCount = systemPrompt.length + messages.reduce((sum, msg) => {
-      return sum + (typeof msg.content === 'string' ? msg.content.length : JSON.stringify(msg.content).length)
-    }, 0)
-    const preflightCostCents = estimateAnthropicPreflightCents(model, maxTokens, promptCharCount)
-
-    if (budget) {
-      await assertAiBudget(budget.userId, budget.userPlan, preflightCostCents)
-    }
-
-    const response = await client.messages.create({
-      model,
-      max_tokens: maxTokens,
-      system: systemPrompt,
-      messages,
+    const userContent = buildConversationUserContent({
+      challengePrompt,
+      history: Array.isArray(history) ? (history as Message[]) : undefined,
+      message,
     })
 
-    if (budget) {
-      await recordAnthropicUsage({
-        userId: budget.userId,
-        model,
-        usage: response.usage,
-        fallbackCostCents: preflightCostCents,
-        route: budget.route,
-      })
-    }
+    const response = await guardedCachedMessage(systemPrompt, userContent, {
+      model,
+      max_tokens: maxTokens,
+      budget,
+    })
 
-    const content = response.content[0]
-    const reply = content.type === 'text' ? content.text.trim() : null
+    const reply = response.sanitized.trim() || null
     return NextResponse.json({ reply })
   } catch (error) {
     if (error instanceof AiBudgetExceededError) {
