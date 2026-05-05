@@ -56,11 +56,22 @@ export const resendVerificationSchema = z.object({
   email: authEmailSchema,
 })
 
+const strongPasswordSchema = z
+  .string()
+  .min(10, 'Use at least 10 characters.')
+  .refine(value => /[\d\W_]/.test(value), 'Add at least one number or symbol.')
+
 export const newPasswordSchema = z.object({
-  password: z
-    .string()
-    .min(10, 'Use at least 10 characters.')
-    .refine(value => /[\d\W_]/.test(value), 'Add at least one number or symbol.'),
+  password: strongPasswordSchema,
+  confirm: z.string().min(1, 'Confirm your password.'),
+}).refine(value => value.password === value.confirm, {
+  path: ['confirm'],
+  message: 'Passwords do not match.',
+})
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required.'),
+  password: strongPasswordSchema,
   confirm: z.string().min(1, 'Confirm your password.'),
 }).refine(value => value.password === value.confirm, {
   path: ['confirm'],

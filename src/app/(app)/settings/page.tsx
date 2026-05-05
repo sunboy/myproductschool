@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { FreemiumUsageSummary } from '@/components/billing/FreemiumUsageSummary'
+import { changePasswordSchema, zodFieldErrors } from '@/lib/auth/validation'
 
 type SubscriptionInfo = {
   plan?: string | null
@@ -48,6 +49,7 @@ type LinkedIdentity = {
 }
 
 type IdentityAction = 'link-google' | 'unlink-google'
+type PasswordField = 'currentPassword' | 'password' | 'confirm'
 
 function formatBillingDate(value?: string | null) {
   if (!value) return 'Not available'
@@ -78,6 +80,16 @@ export default function SettingsPage() {
   const [identitiesLoading, setIdentitiesLoading] = useState(true)
   const [identityAction, setIdentityAction] = useState<IdentityAction | null>(null)
   const [identityError, setIdentityError] = useState<string | null>(null)
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    password: '',
+    confirm: '',
+  })
+  const [passwordFieldErrors, setPasswordFieldErrors] = useState<Partial<Record<PasswordField, string>>>({})
+  const [passwordError, setPasswordError] = useState<string | null>(null)
+  const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null)
+  const [passwordSaving, setPasswordSaving] = useState(false)
+  const [visiblePasswordFields, setVisiblePasswordFields] = useState<Partial<Record<PasswordField, boolean>>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   async function refreshProfile() {
@@ -208,6 +220,52 @@ export default function SettingsPage() {
     }
   }
 
+  function updatePasswordField(field: PasswordField, value: string) {
+    setPasswordForm(current => ({ ...current, [field]: value }))
+    setPasswordFieldErrors(current => ({ ...current, [field]: undefined }))
+    setPasswordError(null)
+    setPasswordSuccess(null)
+  }
+
+  function togglePasswordVisibility(field: PasswordField) {
+    setVisiblePasswordFields(current => ({ ...current, [field]: !current[field] }))
+  }
+
+  async function handlePasswordChange(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setPasswordError(null)
+    setPasswordSuccess(null)
+    setPasswordFieldErrors({})
+
+    const validation = changePasswordSchema.safeParse(passwordForm)
+    if (!validation.success) {
+      setPasswordFieldErrors(zodFieldErrors<PasswordField>(validation.error))
+      return
+    }
+
+    setPasswordSaving(true)
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(validation.data),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        if (res.status === 429) {
+          throw new Error('Too many attempts. Try again in a minute.')
+        }
+        throw new Error(data.error ?? 'Could not change password.')
+      }
+      setPasswordForm({ currentPassword: '', password: '', confirm: '' })
+      setPasswordSuccess('Password updated.')
+    } catch (error) {
+      setPasswordError(error instanceof Error ? error.message : 'Could not change password.')
+    } finally {
+      setPasswordSaving(false)
+    }
+  }
+
   async function runBillingAction(action: string, body: Record<string, unknown> = {}) {
     setBillingAction(action)
     setBillingError(null)
@@ -247,6 +305,32 @@ export default function SettingsPage() {
     ? googleIdentity.identity_data.email
     : null
   const canUnlinkGoogle = !!googleIdentity && linkedIdentities.length > 1
+  const passwordInputClass = 'w-full rounded-xl border border-outline-variant bg-background px-3 py-2 text-sm font-body text-on-surface placeholder:text-on-surface-variant/55 focus:outline-none focus:ring-2 focus:ring-primary/30'
+  const passwordFields: Array<{
+    field: PasswordField
+    label: string
+    placeholder: string
+    autoComplete: string
+  }> = [
+    {
+      field: 'currentPassword',
+      label: 'Current password',
+      placeholder: 'Current password',
+      autoComplete: 'current-password',
+    },
+    {
+      field: 'password',
+      label: 'New password',
+      placeholder: '10+ characters',
+      autoComplete: 'new-password',
+    },
+    {
+      field: 'confirm',
+      label: 'Confirm password',
+      placeholder: 'Same password again',
+      autoComplete: 'new-password',
+    },
+  ]
 
   return (
     <main className="mx-auto max-w-[1060px] px-4 py-7 sm:px-6 lg:px-8">
@@ -403,6 +487,72 @@ export default function SettingsPage() {
               <p className="mt-3 rounded-xl bg-error/10 px-3 py-2 text-sm font-body text-error">{identityError}</p>
             )}
           </div>
+
+          <form onSubmit={handlePasswordChange} className="mt-4 rounded-2xl bg-background/70 px-4 py-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Password</p>
+                <p className="mt-1 text-sm font-body font-semibold text-on-surface">Change your password</p>
+                <p className="mt-1 text-xs font-body text-on-surface-variant">
+                  Use at least 10 characters with a number or symbol.
+                </p>
+              </div>
+              <span className="material-symbols-outlined shrink-0 text-[17px] text-on-surface-variant">password</span>
+            </div>
+
+            <div className="mt-3 space-y-3">
+              {passwordFields.map(({ field, label, placeholder, autoComplete }) => {
+                const visible = Boolean(visiblePasswordFields[field])
+                return (
+                  <div key={field} className="space-y-1.5">
+                    <label htmlFor={`settings-${field}`} className="block text-xs font-label font-bold text-on-surface-variant">
+                      {label}
+                    </label>
+                    <div className="relative">
+                      <input
+                        id={`settings-${field}`}
+                        type={visible ? 'text' : 'password'}
+                        value={passwordForm[field]}
+                        onChange={e => updatePasswordField(field, e.target.value)}
+                        className={`${passwordInputClass} pr-10`}
+                        placeholder={placeholder}
+                        autoComplete={autoComplete}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => togglePasswordVisibility(field)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant transition-colors hover:text-on-surface"
+                        aria-label={visible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
+                      >
+                        <span className="material-symbols-outlined text-[18px]">
+                          {visible ? 'visibility_off' : 'visibility'}
+                        </span>
+                      </button>
+                    </div>
+                    {passwordFieldErrors[field] && (
+                      <p className="text-xs font-body text-error">{passwordFieldErrors[field]}</p>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+
+            {passwordError && (
+              <p className="mt-3 rounded-xl bg-error/10 px-3 py-2 text-sm font-body text-error">{passwordError}</p>
+            )}
+            {passwordSuccess && (
+              <p className="mt-3 rounded-xl bg-primary-fixed px-3 py-2 text-sm font-body font-semibold text-primary">{passwordSuccess}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={passwordSaving}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-label font-bold text-on-primary transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98]"
+            >
+              <span className="material-symbols-outlined text-[17px]">key</span>
+              {passwordSaving ? 'Updating' : 'Update password'}
+            </button>
+          </form>
 
           <button
             onClick={handleLogout}
