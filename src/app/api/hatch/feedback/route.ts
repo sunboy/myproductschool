@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import {
   HATCH_FEEDBACK_SYSTEM_PROMPT,
   HATCH_FEEDBACK_SYSTEM_PROMPT_V2,
@@ -26,8 +27,32 @@ import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
 const ROUTE_KEY = 'hatch_feedback'
 const V2_ROUTE_KEY = 'hatch_feedback_v2'
 
+const RequestSchema = z.object({
+  challengeId: z.string().max(200).nullable().optional(),
+  challengeTitle: z.string().max(1000).nullable().optional(),
+  challengePrompt: z.string().max(50000).nullable().optional(),
+  response: z.string().max(100000).nullable().optional(),
+  attemptId: z.string().uuid().nullable().optional(),
+  attempt_id: z.string().uuid().nullable().optional(),
+}).superRefine((body, ctx) => {
+  if (!body.attempt_id && !body.response?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['response'],
+      message: 'response is required unless attempt_id is provided',
+    })
+  }
+})
+
 function retryAfterSeconds(resetAt: Date) {
   return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
 }
 
 async function getAuthenticatedUserId() {
@@ -93,19 +118,27 @@ function mergeModelBreakdown(
 }
 
 export async function POST(req: NextRequest) {
-  const { challengeId: _challengeId, challengeTitle, challengePrompt, response: userResponse, attemptId, attempt_id } = await req.json()
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+  const { challengeId: _challengeId, challengeTitle, challengePrompt, response: userResponse, attemptId, attempt_id } = body
 
   // V2 path: activated when attempt_id is provided (FLOW-based attempts)
-  const v2AttemptId = attempt_id as string | undefined
+  const v2AttemptId = attempt_id ?? undefined
   if (v2AttemptId) {
-    return handleV2Feedback(v2AttemptId, _challengeId)
+    return handleV2Feedback(v2AttemptId, _challengeId ?? undefined)
   }
 
   // ── V1 path (legacy) ──────────────────────────────────────
-
-  if (!userResponse?.trim()) {
-    return NextResponse.json({ error: 'No response provided' }, { status: 400 })
-  }
 
   // Mock mode: return fixture feedback as a stream
   if (process.env.USE_MOCK_DATA === 'true' || !process.env.ANTHROPIC_API_KEY) {
@@ -144,7 +177,7 @@ export async function POST(req: NextRequest) {
     const userContent = buildFeedbackUserPrompt(
       challengeTitle ?? 'Product Challenge',
       challengePrompt ?? '',
-      userResponse
+      userResponse ?? ''
     )
 
     const message = await guardedCachedMessage(HATCH_FEEDBACK_SYSTEM_PROMPT, userContent, {
