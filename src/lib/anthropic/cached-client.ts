@@ -5,13 +5,18 @@ import {
   recordAnthropicUsage,
 } from '@/lib/usage/ai-budget'
 
-const client = new Anthropic()
+let client: Anthropic | null = null
 
-interface CachedMessageOptions {
+export interface CachedMessageOptions {
   model: string
   max_tokens: number
   thinking?: { type: 'enabled'; budget_tokens: number } | { type: 'adaptive' }
   budget?: { userId: string; userPlan: string; route: string }
+}
+
+export function getAnthropicClient() {
+  if (!client) client = new Anthropic()
+  return client
 }
 
 /**
@@ -34,7 +39,7 @@ export async function createCachedMessage(
     await assertAiBudget(options.budget.userId, options.budget.userPlan, preflightCostCents)
   }
 
-  const message = await client.messages.create({
+  const message = await getAnthropicClient().messages.create({
     model: options.model,
     max_tokens: options.max_tokens,
     ...(options.thinking ? { thinking: options.thinking } : {}),
@@ -81,7 +86,7 @@ export async function createCachedMessageMultiSystem(
     await assertAiBudget(options.budget.userId, options.budget.userPlan, preflightCostCents)
   }
 
-  const message = await client.messages.create({
+  const message = await getAnthropicClient().messages.create({
     model: options.model,
     max_tokens: options.max_tokens,
     ...(options.thinking ? { thinking: options.thinking } : {}),
@@ -112,4 +117,8 @@ export async function createCachedMessageMultiSystem(
   return message
 }
 
-export { client as anthropicClient }
+export const anthropicClient = new Proxy({} as Anthropic, {
+  get(_target, property) {
+    return getAnthropicClient()[property as keyof Anthropic]
+  },
+})
