@@ -486,6 +486,17 @@ export default function SettingsPage() {
             </div>
           </div>
 
+          <Link
+            href="/settings/notifications"
+            className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-background/70 px-4 py-3 transition-colors hover:bg-background"
+          >
+            <div className="min-w-0">
+              <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Notifications</p>
+              <p className="mt-1 text-sm font-body font-semibold text-on-surface">Email and push preferences</p>
+            </div>
+            <span className="material-symbols-outlined shrink-0 text-[17px] text-on-surface-variant">chevron_right</span>
+          </Link>
+
           <form onSubmit={handleEmailChange} className="mt-4 rounded-2xl bg-background/70 px-4 py-3">
             <div className="flex items-start justify-between gap-3">
               <div>
