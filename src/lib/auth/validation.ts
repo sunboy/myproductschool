@@ -48,6 +48,10 @@ export const protectedPasswordResetRequestSchema = passwordResetRequestSchema.ex
   turnstileToken: turnstileTokenSchema,
 })
 
+export const resendVerificationSchema = z.object({
+  email: authEmailSchema,
+})
+
 export const newPasswordSchema = z.object({
   password: z
     .string()

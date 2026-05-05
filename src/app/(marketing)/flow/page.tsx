@@ -505,9 +505,8 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
         if (data.hasSession) {
           router.push('/explore/flow')
         } else {
-          setSuccess("Check your email to confirm your account.")
           resetTurnstile()
-          setLoading(false)
+          router.push(`/verify-email?email=${encodeURIComponent(validation.data.email)}`)
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')

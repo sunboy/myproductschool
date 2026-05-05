@@ -258,9 +258,9 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
           router.push('/onboarding/welcome')
           router.refresh()
         } else {
-          setSuccess('Check your email to confirm your account. You\'ll start with Hatch next.')
           resetTurnstile()
           play('success')
+          router.push(`/verify-email?email=${encodeURIComponent(validation.data.email)}`)
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
