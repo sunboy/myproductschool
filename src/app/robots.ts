@@ -1,4 +1,20 @@
-import { MetadataRoute } from 'next'
+import type { MetadataRoute } from 'next'
+import { canonicalUrl } from '@/lib/seo/site'
+
+const PRIVATE_PATHS = [
+  '/admin/',
+  '/api/',
+  '/dashboard/',
+  '/workspace/',
+  '/settings/',
+  '/profile/',
+  '/progress/',
+  '/history/',
+  '/notes/',
+  '/challenges/',
+  '/live-interviews/',
+  '/simulation/',
+]
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -6,13 +22,18 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin/', '/api/', '/dashboard/', '/settings/'],
+        disallow: PRIVATE_PATHS,
       },
       {
-        userAgent: 'Googlebot',
+        userAgent: ['Googlebot', 'Bingbot', 'OAI-SearchBot', 'ChatGPT-User'],
         allow: '/',
+        disallow: PRIVATE_PATHS,
+      },
+      {
+        userAgent: ['GPTBot', 'Google-Extended', 'CCBot'],
+        disallow: '/',
       },
     ],
-    sitemap: 'https://hackproduct.dev/sitemap.xml',
+    sitemap: canonicalUrl('/sitemap.xml'),
   }
 }

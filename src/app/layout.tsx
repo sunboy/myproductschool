@@ -3,6 +3,7 @@ import { Raleway, Literata } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { PostHogProvider } from "@/components/PostHogProvider";
 import { HatchSonicSurface } from "@/components/shell/HatchSonicSurface";
+import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, imageUrl, SITE_URL } from "@/lib/seo/site";
 import "./globals.css";
 
 const raleway = Raleway({
@@ -17,36 +18,22 @@ const literata = Literata({
   weight: ["400", "600", "700", "800"],
 });
 
-const SITE_URL = 'https://hackproduct.dev'
-
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'HackProduct | Master Product Sense for Tech Careers',
+    default: DEFAULT_TITLE,
     template: '%s | HackProduct',
   },
-  description: 'The platform where engineers, PMs, and students master product sense. Practice real product decisions, get AI-coached feedback, and ace product interviews at Google, Meta, Amazon, and top startups.',
+  description: DEFAULT_DESCRIPTION,
   keywords: [
-    // Core product
-    'product sense', 'product thinking', 'product intuition', 'product management',
-    // Interview prep
+    'AI-native learning platform', 'product-minded engineer', 'product sense', 'product thinking',
+    'system design practice', 'data modeling practice', 'SQL interview practice', 'coding interview practice',
+    'live AI interview practice', 'AI mock interview', 'LeetCode alternative',
     'product manager interview prep', 'PM interview practice', 'product sense interview',
     'Google PM interview', 'Meta PM interview', 'Amazon PM interview', 'FAANG PM interview',
-    'product manager interview questions', 'product design interview', 'product strategy interview',
-    // Engineers
     'software engineer product skills', 'engineer to product manager', 'technical PM',
     'product-minded engineer', 'full stack product thinking', 'engineer PM transition',
-    // Career
-    'tech career growth', 'product career', 'PM career prep', 'tech interview prep',
-    'product manager salary', 'break into product management',
-    // Comparisons / alternatives
-    'LeetCode for product', 'product management practice', 'PM case study practice',
-    'product sense exercises', 'product management training',
-    // Students
-    'APM program prep', 'associate product manager', 'new grad PM', 'MBA PM interview',
-    // Skills
-    'product metrics', 'product strategy', 'user empathy', 'product roadmap',
-    'product prioritization', 'product analytics', 'A/B testing product',
+    'APM program prep', 'associate product manager', 'product analytics', 'A/B testing product',
   ],
   icons: {
     icon: [
@@ -57,18 +44,27 @@ export const metadata: Metadata = {
     apple: '/images/logo.png',
   },
   openGraph: {
-    title: 'HackProduct | Master Product Sense for Tech Careers',
-    description: 'The platform where engineers, PMs, and students master product sense. Practice real product decisions and ace interviews at top tech companies.',
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
     type: 'website',
     siteName: 'HackProduct',
     url: SITE_URL,
     locale: 'en_US',
+    images: [
+      {
+        url: imageUrl(),
+        width: 1200,
+        height: 630,
+        alt: 'HackProduct AI-native learning platform',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'HackProduct | Master Product Sense for Tech Careers',
-    description: 'Practice real product decisions, get AI-coached feedback, and ace product interviews at Google, Meta, Amazon, and top startups.',
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
     creator: '@hackproduct',
+    images: [imageUrl()],
   },
   alternates: {
     canonical: SITE_URL,
