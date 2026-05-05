@@ -37,8 +37,8 @@ const MARKETING_ROUTES = [
 const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/magic-link-sent']
 const AUTH_CALLBACK_ROUTES = ['/auth/callback']
 
-// Routes that require a user but NOT a completed profile/onboarding
-const APP_PUBLIC_ROUTES = ['/onboarding', '/welcome', '/role', '/calibration']
+// Routes that can be reached before onboarding is complete.
+const ONBOARDING_ROUTES = ['/onboarding', '/welcome', '/role', '/calibration', '/results', '/baseline']
 
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
@@ -105,12 +105,22 @@ export async function proxy(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = user
+    ? await supabase
+        .from('profiles')
+        .select('onboarding_completed_at')
+        .eq('id', user.id)
+        .maybeSingle()
+    : { data: null }
+  const hasCompletedOnboarding = Boolean(profile?.onboarding_completed_at)
+  const onboardingTarget = '/onboarding/welcome'
+  const isOnboardingRoute = ONBOARDING_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
 
   // Authenticated users visiting / go straight to dashboard.
   // Unauthenticated visitors see the landing page.
   if (isRoot) {
     if (user) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+      return NextResponse.redirect(new URL(hasCompletedOnboarding ? '/dashboard' : onboardingTarget, request.url))
     }
     return supabaseResponse
   }
@@ -118,7 +128,7 @@ export async function proxy(request: NextRequest) {
   // ── Waitlist routes: redirect logged-in users to dashboard ──
   if (isWaitlist) {
     if (user) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+      return NextResponse.redirect(new URL(hasCompletedOnboarding ? '/dashboard' : onboardingTarget, request.url))
     }
     return supabaseResponse
   }
@@ -128,10 +138,12 @@ export async function proxy(request: NextRequest) {
     if (pathname === '/reset-password') return supabaseResponse
     // Logged-in users hitting auth pages → redirect to dashboard
     if (isAuthRoute) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+      return NextResponse.redirect(new URL(hasCompletedOnboarding ? '/dashboard' : onboardingTarget, request.url))
     }
-    // Authenticated users can access all app routes freely.
-    // Onboarding is optional — dashboard shows CalibrationHero for uncalibrated users.
+    // Deny by default until calibration marks onboarding complete.
+    if (!hasCompletedOnboarding && !isOnboardingRoute) {
+      return NextResponse.redirect(new URL(onboardingTarget, request.url))
+    }
     return supabaseResponse
   }
 
@@ -141,8 +153,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Unauthenticated users on onboarding pages → allow through
-  const isAppPublic = APP_PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
-  if (isAppPublic) {
+  if (isOnboardingRoute) {
     return supabaseResponse
   }
 
