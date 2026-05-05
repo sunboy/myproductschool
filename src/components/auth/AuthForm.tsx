@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { TurnstileWidget, isTurnstileClientEnabled } from '@/components/auth/TurnstileWidget'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { loginSchema, passwordResetRequestSchema, signupSchema, zodFieldErrors } from '@/lib/auth/validation'
 
@@ -125,6 +126,9 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const [turnstileResetSignal, setTurnstileResetSignal] = useState(0)
+  const [website, setWebsite] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -161,6 +165,20 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     setError(null)
     setSuccess(null)
     setFieldErrors({})
+    resetTurnstile()
+  }
+
+  function resetTurnstile() {
+    setTurnstileToken('')
+    setTurnstileResetSignal(value => value + 1)
+  }
+
+  function requireTurnstileToken() {
+    if (!isTurnstileClientEnabled() || turnstileToken) return true
+    setError('Complete the security check.')
+    play('error')
+    setLoading(false)
+    return false
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -179,10 +197,12 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         setLoading(false)
         return
       }
+      if (!requireTurnstileToken()) return
 
       try {
         await postAuthAction('/api/auth/password-reset', {
           email: validation.data.email,
+          turnstileToken,
           redirectTo: `${siteOrigin()}/reset-password`,
         })
         // Always show success after the server accepts the request.
@@ -190,6 +210,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         play('success')
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
+        resetTurnstile()
         play('error')
       } finally {
         setLoading(false)
@@ -223,10 +244,13 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         setLoading(false)
         return
       }
+      if (!requireTurnstileToken()) return
 
       try {
         const data = await postAuthAction<{ hasSession: boolean }>('/api/auth/signup', {
           ...validation.data,
+          turnstileToken,
+          website,
           redirectTo: `${siteOrigin()}/dashboard`,
         })
         if (data.hasSession) {
@@ -235,10 +259,12 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
           router.refresh()
         } else {
           setSuccess('Check your email to confirm your account. You\'ll start with Hatch next.')
+          resetTurnstile()
           play('success')
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
+        resetTurnstile()
         play('error')
       }
     }
@@ -430,6 +456,12 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                       />
                       {fieldErrors.email && <p className="text-xs text-error">{fieldErrors.email}</p>}
                     </div>
+                    <TurnstileWidget
+                      onToken={setTurnstileToken}
+                      resetSignal={turnstileResetSignal}
+                      className="pt-1"
+                      theme="dark"
+                    />
                     {error && <p className="text-xs leading-relaxed" style={{ color: '#f87171' }}>{error}</p>}
                     <button
                       type="submit"
@@ -488,6 +520,14 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                         placeholder="Your name"
                       />
                       {fieldErrors.name && <p className="text-xs text-error">{fieldErrors.name}</p>}
+                      <input
+                        name="website"
+                        hidden
+                        tabIndex={-1}
+                        autoComplete="off"
+                        value={website}
+                        onChange={e => setWebsite(e.target.value)}
+                      />
                     </div>
                   )}
 
@@ -547,6 +587,15 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                       </div>
                     )}
                   </div>
+
+                  {activeMode === 'signup' && (
+                    <TurnstileWidget
+                      onToken={setTurnstileToken}
+                      resetSignal={turnstileResetSignal}
+                      className="pt-1"
+                      theme="dark"
+                    />
+                  )}
 
                   {error && <p className="text-xs leading-relaxed" style={{ color: '#f87171' }}>{error}</p>}
                   {success && <p className="text-xs leading-relaxed" style={{ color: '#86efac' }}>{success}</p>}

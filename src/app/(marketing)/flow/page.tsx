@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { TurnstileWidget, isTurnstileClientEnabled } from '@/components/auth/TurnstileWidget'
 import { createClient } from '@/lib/supabase/client'
 import { loginSchema, signupSchema, zodFieldErrors } from '@/lib/auth/validation'
 import { useRouter } from 'next/navigation'
@@ -413,6 +414,9 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const [turnstileResetSignal, setTurnstileResetSignal] = useState(0)
+  const [website, setWebsite] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -451,6 +455,11 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
     return data as T
   }
 
+  function resetTurnstile() {
+    setTurnstileToken('')
+    setTurnstileResetSignal(value => value + 1)
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -480,20 +489,29 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
         setLoading(false)
         return
       }
+      if (isTurnstileClientEnabled() && !turnstileToken) {
+        setError('Complete the security check.')
+        setLoading(false)
+        return
+      }
 
       try {
         const data = await postAuthAction<{ hasSession: boolean }>('/api/auth/signup', {
           ...validation.data,
+          turnstileToken,
+          website,
           redirectTo: `${window.location.origin}/onboarding/welcome`,
         })
         if (data.hasSession) {
           router.push('/explore/flow')
         } else {
           setSuccess("Check your email to confirm your account.")
+          resetTurnstile()
           setLoading(false)
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
+        resetTurnstile()
         setLoading(false)
       }
     }
@@ -536,7 +554,7 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
             <button
               key={m}
               type="button"
-              onClick={() => { setMode(m); setError(null); setSuccess(null); setFieldErrors({}) }}
+              onClick={() => { setMode(m); setError(null); setSuccess(null); setFieldErrors({}); resetTurnstile() }}
               className={`px-5 py-1.5 rounded-full font-label text-sm font-semibold transition-all ${
                 mode === m ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:text-on-surface'
               }`}
@@ -582,6 +600,14 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
                 className="w-full px-4 py-2.5 bg-surface-container border border-outline-variant rounded-xl text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary transition-colors text-sm"
               />
               {fieldErrors.name && <p className="text-xs text-error">{fieldErrors.name}</p>}
+              <input
+                name="website"
+                hidden
+                tabIndex={-1}
+                autoComplete="off"
+                value={website}
+                onChange={e => setWebsite(e.target.value)}
+              />
             </div>
           )}
           <div className="space-y-1">
@@ -629,6 +655,13 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
             <div className="text-right">
               <a href="/forgot-password" className="font-label text-xs text-primary hover:underline">Forgot password?</a>
             </div>
+          )}
+          {mode === 'signup' && (
+            <TurnstileWidget
+              onToken={setTurnstileToken}
+              resetSignal={turnstileResetSignal}
+              className="pt-1"
+            />
           )}
           {error && <p className="text-xs text-error">{error}</p>}
           {success && <p className="text-xs text-primary">{success}</p>}

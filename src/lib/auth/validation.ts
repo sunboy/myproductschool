@@ -26,6 +26,28 @@ export const passwordResetRequestSchema = z.object({
   email: authEmailSchema,
 })
 
+export const turnstileTokenSchema = z
+  .string()
+  .trim()
+  .max(2048, 'Refresh the security check and try again.')
+  .optional()
+  .default('')
+
+export const honeypotSchema = z
+  .string()
+  .max(500)
+  .optional()
+  .default('')
+
+export const protectedSignupSchema = signupSchema.extend({
+  turnstileToken: turnstileTokenSchema,
+  website: honeypotSchema,
+})
+
+export const protectedPasswordResetRequestSchema = passwordResetRequestSchema.extend({
+  turnstileToken: turnstileTokenSchema,
+})
+
 export const newPasswordSchema = z.object({
   password: z
     .string()

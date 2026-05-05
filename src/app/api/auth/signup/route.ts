@@ -5,7 +5,8 @@ import {
   getClientIp,
   sameOriginRedirect,
 } from '@/lib/auth/rate-limit'
-import { firstZodError, signupSchema } from '@/lib/auth/validation'
+import { firstZodError, protectedSignupSchema } from '@/lib/auth/validation'
+import { isHoneypotFilled, turnstileErrorMessage, verifyTurnstileToken } from '@/lib/security/turnstile'
 
 interface SignupBodyExtras {
   redirectTo?: string
@@ -23,11 +24,15 @@ function rateLimitedResponse(retryAfter: number) {
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({})) as SignupBodyExtras
-  const parsed = signupSchema.safeParse(body)
+  const parsed = protectedSignupSchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: firstZodError(parsed.error) }, { status: 400 })
   }
-  const { email, password, name } = parsed.data
+  const { email, password, name, turnstileToken, website } = parsed.data
+
+  if (isHoneypotFilled(website)) {
+    return NextResponse.json({ error: 'Unable to submit this form.' }, { status: 400 })
+  }
 
   const ip = getClientIp(request)
   const block = await findRateLimitBlock([
@@ -35,6 +40,11 @@ export async function POST(request: Request) {
     { key: `auth:signup:email:${email}`, limit: 3, windowSec: 60 * 60 },
   ])
   if (block) return rateLimitedResponse(block.retryAfter)
+
+  const turnstile = await verifyTurnstileToken({ token: turnstileToken, remoteIp: ip })
+  if (!turnstile.ok) {
+    return NextResponse.json({ error: turnstileErrorMessage(turnstile) }, { status: 400 })
+  }
 
   const supabase = await createClient()
   const { data, error } = await supabase.auth.signUp({

@@ -5,7 +5,8 @@ import {
   getClientIp,
   sameOriginRedirect,
 } from '@/lib/auth/rate-limit'
-import { firstZodError, passwordResetRequestSchema } from '@/lib/auth/validation'
+import { firstZodError, protectedPasswordResetRequestSchema } from '@/lib/auth/validation'
+import { turnstileErrorMessage, verifyTurnstileToken } from '@/lib/security/turnstile'
 
 interface PasswordResetBodyExtras {
   redirectTo?: string
@@ -23,11 +24,11 @@ function rateLimitedResponse(retryAfter: number) {
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({})) as PasswordResetBodyExtras
-  const parsed = passwordResetRequestSchema.safeParse(body)
+  const parsed = protectedPasswordResetRequestSchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: firstZodError(parsed.error) }, { status: 400 })
   }
-  const { email } = parsed.data
+  const { email, turnstileToken } = parsed.data
 
   const ip = getClientIp(request)
   const block = await findRateLimitBlock([
@@ -35,6 +36,11 @@ export async function POST(request: Request) {
     { key: `auth:password-reset:email:${email}`, limit: 3, windowSec: 60 * 60 },
   ])
   if (block) return rateLimitedResponse(block.retryAfter)
+
+  const turnstile = await verifyTurnstileToken({ token: turnstileToken, remoteIp: ip })
+  if (!turnstile.ok) {
+    return NextResponse.json({ error: turnstileErrorMessage(turnstile) }, { status: 400 })
+  }
 
   const supabase = await createClient()
   await supabase.auth.resetPasswordForEmail(email, {

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import { TurnstileWidget, isTurnstileClientEnabled } from '@/components/auth/TurnstileWidget'
 import { passwordResetRequestSchema, zodFieldErrors } from '@/lib/auth/validation'
 
 export default function ForgotPasswordPage() {
@@ -9,6 +10,8 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<'email', string>>>({})
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const [turnstileResetSignal, setTurnstileResetSignal] = useState(0)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -23,11 +26,18 @@ export default function ForgotPasswordPage() {
       return
     }
 
+    if (isTurnstileClientEnabled() && !turnstileToken) {
+      setError('Complete the security check.')
+      setLoading(false)
+      return
+    }
+
     const response = await fetch('/api/auth/password-reset', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: validation.data.email,
+        turnstileToken,
         redirectTo: `${window.location.origin}/reset-password`,
       }),
     })
@@ -38,6 +48,8 @@ export default function ForgotPasswordPage() {
         ? 'Too many attempts. Try again in a minute.'
         : data.error ?? 'Something went wrong. Try again.'
       setError(message)
+      setTurnstileToken('')
+      setTurnstileResetSignal(value => value + 1)
     } else {
       setSent(true)
     }
@@ -69,6 +81,10 @@ export default function ForgotPasswordPage() {
               className="w-full px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-on-surface focus:outline-none focus:border-primary transition-colors"
             />
             {fieldErrors.email && <p className="text-sm text-error">{fieldErrors.email}</p>}
+            <TurnstileWidget
+              onToken={setTurnstileToken}
+              resetSignal={turnstileResetSignal}
+            />
             {error && <p className="text-sm text-error">{error}</p>}
             <button
               type="submit"
