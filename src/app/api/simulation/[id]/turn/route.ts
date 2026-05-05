@@ -1,12 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import Anthropic from '@anthropic-ai/sdk'
 import { HATCH_CHAT_SYSTEM_PROMPT } from '@/lib/hatch/system-prompt'
 import { NextResponse } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
 import { getHatchContext, buildHatchContextString } from '@/lib/hatch-context'
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 
 export async function POST(
   request: Request,
@@ -16,6 +15,7 @@ export async function POST(
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userPlan = await getUserPlanForBudget(user.id)
 
   const { content } = await request.json()
   if (!content?.trim()) return NextResponse.json({ error: 'Content required' }, { status: 400 })
@@ -54,25 +54,38 @@ export async function POST(
   const baseSystemPrompt = HATCH_CHAT_SYSTEM_PROMPT + companyContext + challengeContext
   const systemPrompt = baseSystemPrompt + (candidateContext ? '\n\n## Candidate Profile\n' + candidateContext : '')
 
-  const messages = [
-    ...(existingTurns ?? []).map(t => ({
-      role: t.role === 'hatch' ? 'assistant' as const : 'user' as const,
-      content: t.content,
-    })),
-    { role: 'user' as const, content },
-  ]
+  const conversation = [
+    ...(existingTurns ?? []).map(t => `${t.role === 'hatch' ? 'Interviewer' : 'Candidate'}: ${t.content}`),
+    `Candidate: ${content}`,
+  ].join('\n\n')
 
   let hatchReply: string
   if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
     hatchReply = "That's an interesting perspective. Can you walk me through how you'd measure the success of that approach? What specific metrics would you track in the first 30 days?"
   } else {
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 300,
-      system: systemPrompt,
-      messages,
-    })
-    hatchReply = response.content[0].type === 'text' ? response.content[0].text : ''
+    try {
+      const response = await guardedCachedMessage(systemPrompt, `Interview transcript:\n\n${conversation}`, {
+        model: 'claude-sonnet-4-6',
+        max_tokens: 300,
+        budget: { userId: user.id, userPlan, route: 'simulation_turn' },
+      })
+      hatchReply = response.sanitized
+    } catch (error) {
+      if (error instanceof AiBudgetExceededError) {
+        return NextResponse.json(
+          {
+            error: 'limit_reached',
+            feature: 'hatch_ai_cents',
+            used: error.used,
+            limit: error.limit,
+            windowDays: error.windowDays,
+          },
+          { status: 402 }
+        )
+      }
+
+      throw error
+    }
   }
 
   await adminClient.from('simulation_turns').insert([
