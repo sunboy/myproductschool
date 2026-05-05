@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readFileSync } from 'fs'
 import { join } from 'path'
+import { z, ZodError } from 'zod'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { createClient } from '@/lib/supabase/server'
-import { sceneToPrompt, type CanvasScene } from '@/lib/hatch/canvas-scene'
+import { sceneToPrompt } from '@/lib/hatch/canvas-scene'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
@@ -11,8 +12,86 @@ import type { CanvasInterpretResponse, CanvasIntent } from '@/lib/types'
 
 const ROUTE_KEY = 'hatch_canvas_interpret'
 
+const SceneColumnSchema = z.object({
+  name: z.string().min(1).max(200),
+  type: z.string().max(200).optional(),
+  constraints: z.array(z.enum(['PK', 'FK', 'UNIQUE', 'NOT NULL', 'INDEX'])).max(10),
+  foreignKey: z.object({
+    table: z.string().min(1).max(200),
+    column: z.string().min(1).max(200),
+  }).optional(),
+  raw: z.string().max(1000),
+})
+
+const CanvasSceneSchema = z.object({
+  elementCount: z.number().int().min(0).max(5000),
+  entities: z.array(z.object({
+    id: z.string().min(1).max(200),
+    label: z.string().min(1).max(500),
+    type: z.string().min(1).max(100),
+    x: z.number().finite(),
+    y: z.number().finite(),
+    width: z.number().finite(),
+    height: z.number().finite(),
+    columns: z.array(SceneColumnSchema).max(200),
+  })).max(1000),
+  connections: z.array(z.object({
+    from: z.string().min(1).max(500),
+    to: z.string().min(1).max(500),
+    label: z.string().max(500).optional(),
+  })).max(2000),
+  groups: z.array(z.object({
+    label: z.string().min(1).max(500),
+    members: z.array(z.string().min(1).max(500)).max(1000),
+  })).max(1000),
+  freeText: z.array(z.string().max(5000)).max(1000),
+  foreignKeys: z.array(z.object({
+    from: z.string().min(1).max(200),
+    fromColumn: z.string().min(1).max(200),
+    toTable: z.string().min(1).max(200),
+    toColumn: z.string().min(1).max(200),
+  })).max(1000),
+})
+
+const ChatHistoryMessageSchema = z.object({
+  role: z.enum(['user', 'hatch']),
+  content: z.string().min(1).max(20000),
+})
+
+const RequestSchema = z.object({
+  message: z.string().trim().min(1).max(20000),
+  scene: CanvasSceneSchema.optional(),
+  canvasSummary: z.string().max(20000).optional(),
+  history: z.array(ChatHistoryMessageSchema).max(50).optional(),
+  challengeId: z.string().max(200).optional(),
+  challengeType: z.enum(['system_design', 'data_modeling', 'coding']).optional(),
+  attemptId: z.string().max(200).optional(),
+  context_pack: z.string().max(50000).nullable().optional(),
+  current_code: z.string().max(200000).nullable().optional(),
+  current_language: z.string().max(40).nullable().optional(),
+  last_run_result: z.unknown().optional(),
+  time_elapsed_seconds: z.number().finite().nonnegative().optional(),
+  time_remaining_seconds: z.number().finite().nonnegative().optional(),
+  sql_schema_summary: z.string().max(50000).nullable().optional(),
+  challenge_title: z.string().max(1000).nullable().optional(),
+  problem_statement: z.string().max(50000).nullable().optional(),
+  active_part_id: z.string().max(200).nullable().optional(),
+  active_part_sequence: z.number().int().positive().optional(),
+  active_part_title: z.string().max(1000).nullable().optional(),
+  active_part_prompt: z.string().max(50000).nullable().optional(),
+  active_part_response_type: z.string().max(100).nullable().optional(),
+  active_part_weight_pct: z.number().finite().min(0).max(100).optional(),
+})
+
 function retryAfterSeconds(resetAt: Date) {
   return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
 }
 
 function loadCodingCoachSkill(): string {
@@ -162,33 +241,7 @@ function buildSystemPrompt(challengeType: string): string {
   return [COACH_PERSONA, ROUTING_RULES, CONTEXT_CANVAS_RULES, domain, ACTION_SCHEMA].join('\n\n')
 }
 
-interface InterpretBody {
-  message: string
-  scene?: CanvasScene
-  // Backwards-compat: older clients may still send a string summary.
-  canvasSummary?: string
-  history?: Array<{ role: 'user' | 'hatch'; content: string }>
-  challengeId?: string
-  challengeType?: 'system_design' | 'data_modeling' | 'coding' | string
-  attemptId?: string
-  context_pack?: string
-  // Coding-mode fields (only used when challengeType === 'coding')
-  current_code?: string
-  current_language?: string
-  last_run_result?: unknown
-  time_elapsed_seconds?: number
-  time_remaining_seconds?: number
-  sql_schema_summary?: string
-  challenge_title?: string
-  problem_statement?: string
-  // Multi-part coding context — present when a part is open in the workspace
-  active_part_id?: string
-  active_part_sequence?: number
-  active_part_title?: string
-  active_part_prompt?: string
-  active_part_response_type?: string
-  active_part_weight_pct?: number
-}
+type InterpretBody = z.infer<typeof RequestSchema>
 
 function buildCodingUserContent(body: InterpretBody): string {
   const historyText = (body.history ?? [])
@@ -376,10 +429,17 @@ export async function POST(req: NextRequest) {
 
   const budget = { userId: user.id, userPlan, route: ROUTE_KEY }
 
-  const body = (await req.json()) as InterpretBody
-
-  if (!body.message?.trim()) {
-    return NextResponse.json({ error: 'Missing message' }, { status: 400 })
+  let body: InterpretBody
+  try {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
   const challengeType = body.challengeType ?? 'system_design'
