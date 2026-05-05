@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { newPasswordSchema, zodFieldErrors } from '@/lib/auth/validation'
 
 type Status = 'loading' | 'ready' | 'invalid' | 'success'
 
@@ -12,8 +13,11 @@ export default function ResetPasswordPage() {
   const [status, setStatus] = useState<Status>('loading')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<'password' | 'confirm', string>>>({})
   const router = useRouter()
   const supabase = createClient()
 
@@ -44,12 +48,16 @@ export default function ResetPasswordPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (password !== confirm) {
-      setError('Passwords do not match.')
+    setError(null)
+    setFieldErrors({})
+
+    const validation = newPasswordSchema.safeParse({ password, confirm })
+    if (!validation.success) {
+      setFieldErrors(zodFieldErrors<'password' | 'confirm'>(validation.error))
       return
     }
+
     setSubmitting(true)
-    setError(null)
     const { error } = await supabase.auth.updateUser({ password })
     if (error) {
       setError(error.message)
@@ -135,34 +143,66 @@ export default function ResetPasswordPage() {
               <div>
                 <p className="font-headline font-bold text-white text-base mb-1">Choose a new password</p>
                 <p className="text-xs font-body" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                  Must be at least 8 characters.
+                  Use at least 10 characters with a number or symbol.
                 </p>
               </div>
 
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold font-label" style={{ color: 'rgba(255,255,255,0.75)' }}>New password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required
-                  minLength={8}
-                  className={inputClass}
-                  placeholder="8+ characters"
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={e => {
+                      setPassword(e.target.value)
+                      setFieldErrors(prev => ({ ...prev, password: undefined }))
+                    }}
+                    required
+                    minLength={10}
+                    className={`${inputClass} pr-11`}
+                    placeholder="10+ characters"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(value => !value)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 transition-colors hover:text-white/80"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    <span className="material-symbols-outlined text-[18px]">
+                      {showPassword ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
+                {fieldErrors.password && <p className="text-xs text-error">{fieldErrors.password}</p>}
               </div>
 
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold font-label" style={{ color: 'rgba(255,255,255,0.75)' }}>Confirm password</label>
-                <input
-                  type="password"
-                  value={confirm}
-                  onChange={e => setConfirm(e.target.value)}
-                  required
-                  minLength={8}
-                  className={inputClass}
-                  placeholder="Same password again"
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirm ? 'text' : 'password'}
+                    value={confirm}
+                    onChange={e => {
+                      setConfirm(e.target.value)
+                      setFieldErrors(prev => ({ ...prev, confirm: undefined }))
+                    }}
+                    required
+                    minLength={10}
+                    className={`${inputClass} pr-11`}
+                    placeholder="Same password again"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(value => !value)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 transition-colors hover:text-white/80"
+                    aria-label={showConfirm ? 'Hide password' : 'Show password'}
+                  >
+                    <span className="material-symbols-outlined text-[18px]">
+                      {showConfirm ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
+                {fieldErrors.confirm && <p className="text-xs text-error">{fieldErrors.confirm}</p>}
               </div>
 
               {error && <p className="text-xs leading-relaxed" style={{ color: '#f87171' }}>{error}</p>}

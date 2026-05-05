@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
+import { loginSchema, passwordResetRequestSchema, signupSchema, zodFieldErrors } from '@/lib/auth/validation'
 
 interface AuthFormProps {
   mode: 'login' | 'signup'
@@ -123,9 +124,11 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<'name' | 'email' | 'password', string>>>({})
   const router = useRouter()
   const supabase = createClient()
   const { play } = useHatchSonics()
@@ -143,8 +146,8 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     const data = await response.json().catch(() => ({})) as { error?: string; retryAfter?: number }
 
     if (!response.ok) {
-      if (data.error === 'rate_limited' && typeof data.retryAfter === 'number') {
-        throw new Error(`Slow down. Try again in ${data.retryAfter}s.`)
+      if (data.error === 'rate_limited') {
+        throw new Error('Too many attempts. Try again in a minute.')
       }
       throw new Error(data.error ?? 'Something went wrong. Try again.')
     }
@@ -157,6 +160,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     setActiveMode(mode)
     setError(null)
     setSuccess(null)
+    setFieldErrors({})
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -164,11 +168,21 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     play('submit')
     setLoading(true)
     setError(null)
+    setSuccess(null)
+    setFieldErrors({})
 
     if (activeMode === 'forgot') {
+      const validation = passwordResetRequestSchema.safeParse({ email })
+      if (!validation.success) {
+        setFieldErrors(zodFieldErrors<'email'>(validation.error))
+        play('error')
+        setLoading(false)
+        return
+      }
+
       try {
         await postAuthAction('/api/auth/password-reset', {
-          email,
+          email: validation.data.email,
           redirectTo: `${siteOrigin()}/reset-password`,
         })
         // Always show success after the server accepts the request.
@@ -184,8 +198,16 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     }
 
     if (activeMode === 'login') {
+      const validation = loginSchema.safeParse({ email, password })
+      if (!validation.success) {
+        setFieldErrors(zodFieldErrors<'email' | 'password'>(validation.error))
+        play('error')
+        setLoading(false)
+        return
+      }
+
       try {
-        const data = await postAuthAction<{ onboardingCompleted: boolean }>('/api/auth/login', { email, password })
+        const data = await postAuthAction<{ onboardingCompleted: boolean }>('/api/auth/login', validation.data)
         play('success')
         router.push(data.onboardingCompleted ? '/dashboard' : '/onboarding/welcome')
         router.refresh()
@@ -194,11 +216,17 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         play('error')
       }
     } else {
+      const validation = signupSchema.safeParse({ name, email, password })
+      if (!validation.success) {
+        setFieldErrors(zodFieldErrors<'name' | 'email' | 'password'>(validation.error))
+        play('error')
+        setLoading(false)
+        return
+      }
+
       try {
         const data = await postAuthAction<{ hasSession: boolean }>('/api/auth/signup', {
-          email,
-          password,
-          name,
+          ...validation.data,
           redirectTo: `${siteOrigin()}/dashboard`,
         })
         if (data.hasSession) {
@@ -389,7 +417,18 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                   <>
                     <div className="space-y-1.5">
                       <label className="block text-xs font-semibold font-label" style={{ color: 'rgba(255,255,255,0.75)' }}>Email</label>
-                      <input type="email" value={email} onChange={e => setEmail(e.target.value)} required className={inputClass} placeholder="you@company.com" />
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={e => {
+                          setEmail(e.target.value)
+                          setFieldErrors(prev => ({ ...prev, email: undefined }))
+                        }}
+                        required
+                        className={inputClass}
+                        placeholder="you@company.com"
+                      />
+                      {fieldErrors.email && <p className="text-xs text-error">{fieldErrors.email}</p>}
                     </div>
                     {error && <p className="text-xs leading-relaxed" style={{ color: '#f87171' }}>{error}</p>}
                     <button
@@ -437,18 +476,64 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                   {activeMode === 'signup' && (
                     <div className="space-y-1.5">
                       <label className="block text-xs font-semibold font-label" style={{ color: 'rgba(255,255,255,0.75)' }}>Name</label>
-                      <input type="text" value={name} onChange={e => setName(e.target.value)} required className={inputClass} placeholder="Your name" />
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={e => {
+                          setName(e.target.value)
+                          setFieldErrors(prev => ({ ...prev, name: undefined }))
+                        }}
+                        required
+                        className={inputClass}
+                        placeholder="Your name"
+                      />
+                      {fieldErrors.name && <p className="text-xs text-error">{fieldErrors.name}</p>}
                     </div>
                   )}
 
                   <div className="space-y-1.5">
                     <label className="block text-xs font-semibold font-label" style={{ color: 'rgba(255,255,255,0.75)' }}>Email</label>
-                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} required className={inputClass} placeholder="you@company.com" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={e => {
+                        setEmail(e.target.value)
+                        setFieldErrors(prev => ({ ...prev, email: undefined }))
+                      }}
+                      required
+                      className={inputClass}
+                      placeholder="you@company.com"
+                    />
+                    {fieldErrors.email && <p className="text-xs text-error">{fieldErrors.email}</p>}
                   </div>
 
                   <div className="space-y-1.5">
                     <label className="block text-xs font-semibold font-label" style={{ color: 'rgba(255,255,255,0.75)' }}>Password</label>
-                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} className={inputClass} placeholder="8+ characters" />
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={e => {
+                          setPassword(e.target.value)
+                          setFieldErrors(prev => ({ ...prev, password: undefined }))
+                        }}
+                        required
+                        minLength={activeMode === 'signup' ? 10 : 1}
+                        className={`${inputClass} pr-11`}
+                        placeholder={activeMode === 'signup' ? '10+ characters' : 'Password'}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(value => !value)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 transition-colors hover:text-white/80"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        <span className="material-symbols-outlined text-[18px]">
+                          {showPassword ? 'visibility_off' : 'visibility'}
+                        </span>
+                      </button>
+                    </div>
+                    {fieldErrors.password && <p className="text-xs text-error">{fieldErrors.password}</p>}
                     {activeMode === 'login' && (
                       <div className="text-right">
                         <button

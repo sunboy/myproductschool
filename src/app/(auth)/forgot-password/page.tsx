@@ -1,30 +1,41 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import { passwordResetRequestSchema, zodFieldErrors } from '@/lib/auth/validation'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<'email', string>>>({})
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    setFieldErrors({})
+
+    const validation = passwordResetRequestSchema.safeParse({ email })
+    if (!validation.success) {
+      setFieldErrors(zodFieldErrors<'email'>(validation.error))
+      setLoading(false)
+      return
+    }
+
     const response = await fetch('/api/auth/password-reset', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email,
+        email: validation.data.email,
         redirectTo: `${window.location.origin}/reset-password`,
       }),
     })
     const data = await response.json().catch(() => ({})) as { error?: string; retryAfter?: number }
 
     if (!response.ok) {
-      const message = data.error === 'rate_limited' && typeof data.retryAfter === 'number'
-        ? `Slow down. Try again in ${data.retryAfter}s.`
+      const message = data.error === 'rate_limited'
+        ? 'Too many attempts. Try again in a minute.'
         : data.error ?? 'Something went wrong. Try again.'
       setError(message)
     } else {
@@ -49,11 +60,15 @@ export default function ForgotPasswordPage() {
             <input
               type="email"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={e => {
+                setEmail(e.target.value)
+                setFieldErrors({})
+              }}
               required
               placeholder="you@company.com"
               className="w-full px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-on-surface focus:outline-none focus:border-primary transition-colors"
             />
+            {fieldErrors.email && <p className="text-sm text-error">{fieldErrors.email}</p>}
             {error && <p className="text-sm text-error">{error}</p>}
             <button
               type="submit"

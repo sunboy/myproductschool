@@ -10,10 +10,6 @@ export interface AuthRateLimitBlock {
   retryAfter: number
 }
 
-export function normalizeAuthEmail(email: string) {
-  return email.trim().toLowerCase()
-}
-
 export function getClientIp(request: Request) {
   const forwardedFor = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
   return (

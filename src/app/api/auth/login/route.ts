@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { findRateLimitBlock, getClientIp, normalizeAuthEmail } from '@/lib/auth/rate-limit'
-
-interface LoginBody {
-  email?: string
-  password?: string
-}
+import { findRateLimitBlock, getClientIp } from '@/lib/auth/rate-limit'
+import { firstZodError, loginSchema } from '@/lib/auth/validation'
 
 function rateLimitedResponse(retryAfter: number) {
   return NextResponse.json(
@@ -19,13 +15,12 @@ function rateLimitedResponse(retryAfter: number) {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({})) as LoginBody
-  const email = normalizeAuthEmail(body.email ?? '')
-  const password = body.password ?? ''
-
-  if (!email || !password) {
-    return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
+  const body = await request.json().catch(() => ({}))
+  const parsed = loginSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: firstZodError(parsed.error) }, { status: 400 })
   }
+  const { email, password } = parsed.data
 
   const ip = getClientIp(request)
   const block = await findRateLimitBlock([

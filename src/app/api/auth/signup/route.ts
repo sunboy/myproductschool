@@ -3,14 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 import {
   findRateLimitBlock,
   getClientIp,
-  normalizeAuthEmail,
   sameOriginRedirect,
 } from '@/lib/auth/rate-limit'
+import { firstZodError, signupSchema } from '@/lib/auth/validation'
 
-interface SignupBody {
-  email?: string
-  password?: string
-  name?: string
+interface SignupBodyExtras {
   redirectTo?: string
 }
 
@@ -25,14 +22,12 @@ function rateLimitedResponse(retryAfter: number) {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({})) as SignupBody
-  const email = normalizeAuthEmail(body.email ?? '')
-  const password = body.password ?? ''
-  const name = body.name?.trim() ?? ''
-
-  if (!email || !password) {
-    return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
+  const body = await request.json().catch(() => ({})) as SignupBodyExtras
+  const parsed = signupSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: firstZodError(parsed.error) }, { status: 400 })
   }
+  const { email, password, name } = parsed.data
 
   const ip = getClientIp(request)
   const block = await findRateLimitBlock([

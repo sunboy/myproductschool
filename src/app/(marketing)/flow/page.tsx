@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { createClient } from '@/lib/supabase/client'
+import { loginSchema, signupSchema, zodFieldErrors } from '@/lib/auth/validation'
 import { useRouter } from 'next/navigation'
 
 // ── Types ──────────────────────────────────────────────────────
@@ -411,9 +412,11 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<'name' | 'email' | 'password', string>>>({})
   const router = useRouter()
   const supabase = createClient()
 
@@ -439,8 +442,8 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
     const data = await response.json().catch(() => ({})) as { error?: string; retryAfter?: number }
 
     if (!response.ok) {
-      if (data.error === 'rate_limited' && typeof data.retryAfter === 'number') {
-        throw new Error(`Slow down. Try again in ${data.retryAfter}s.`)
+      if (data.error === 'rate_limited') {
+        throw new Error('Too many attempts. Try again in a minute.')
       }
       throw new Error(data.error ?? 'Something went wrong. Try again.')
     }
@@ -452,21 +455,35 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
     e.preventDefault()
     setLoading(true)
     setError(null)
+    setSuccess(null)
+    setFieldErrors({})
 
     if (mode === 'login') {
+      const validation = loginSchema.safeParse({ email, password })
+      if (!validation.success) {
+        setFieldErrors(zodFieldErrors<'email' | 'password'>(validation.error))
+        setLoading(false)
+        return
+      }
+
       try {
-        await postAuthAction('/api/auth/login', { email, password })
+        await postAuthAction('/api/auth/login', validation.data)
         router.push('/explore/flow')
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
         setLoading(false)
       }
     } else {
+      const validation = signupSchema.safeParse({ name, email, password })
+      if (!validation.success) {
+        setFieldErrors(zodFieldErrors<'name' | 'email' | 'password'>(validation.error))
+        setLoading(false)
+        return
+      }
+
       try {
         const data = await postAuthAction<{ hasSession: boolean }>('/api/auth/signup', {
-          email,
-          password,
-          name,
+          ...validation.data,
           redirectTo: `${window.location.origin}/onboarding/welcome`,
         })
         if (data.hasSession) {
@@ -519,7 +536,7 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
             <button
               key={m}
               type="button"
-              onClick={() => { setMode(m); setError(null); setSuccess(null) }}
+              onClick={() => { setMode(m); setError(null); setSuccess(null); setFieldErrors({}) }}
               className={`px-5 py-1.5 rounded-full font-label text-sm font-semibold transition-all ${
                 mode === m ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:text-on-surface'
               }`}
@@ -552,32 +569,62 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
 
         <form onSubmit={handleSubmit} className="space-y-3">
           {mode === 'signup' && (
+            <div className="space-y-1">
+              <input
+                type="text"
+                value={name}
+                onChange={e => {
+                  setName(e.target.value)
+                  setFieldErrors(prev => ({ ...prev, name: undefined }))
+                }}
+                required
+                placeholder="Your name"
+                className="w-full px-4 py-2.5 bg-surface-container border border-outline-variant rounded-xl text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary transition-colors text-sm"
+              />
+              {fieldErrors.name && <p className="text-xs text-error">{fieldErrors.name}</p>}
+            </div>
+          )}
+          <div className="space-y-1">
             <input
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
+              type="email"
+              value={email}
+              onChange={e => {
+                setEmail(e.target.value)
+                setFieldErrors(prev => ({ ...prev, email: undefined }))
+              }}
               required
-              placeholder="Your name"
+              placeholder="Email"
               className="w-full px-4 py-2.5 bg-surface-container border border-outline-variant rounded-xl text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary transition-colors text-sm"
             />
-          )}
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            placeholder="Email"
-            className="w-full px-4 py-2.5 bg-surface-container border border-outline-variant rounded-xl text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary transition-colors text-sm"
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            minLength={8}
-            placeholder="Password"
-            className="w-full px-4 py-2.5 bg-surface-container border border-outline-variant rounded-xl text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary transition-colors text-sm"
-          />
+            {fieldErrors.email && <p className="text-xs text-error">{fieldErrors.email}</p>}
+          </div>
+          <div className="space-y-1">
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => {
+                  setPassword(e.target.value)
+                  setFieldErrors(prev => ({ ...prev, password: undefined }))
+                }}
+                required
+                minLength={mode === 'signup' ? 10 : 1}
+                placeholder={mode === 'signup' ? '10+ characters' : 'Password'}
+                className="w-full px-4 py-2.5 pr-11 bg-surface-container border border-outline-variant rounded-xl text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary transition-colors text-sm"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(value => !value)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant transition-colors hover:text-on-surface"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  {showPassword ? 'visibility_off' : 'visibility'}
+                </span>
+              </button>
+            </div>
+            {fieldErrors.password && <p className="text-xs text-error">{fieldErrors.password}</p>}
+          </div>
           {mode === 'login' && (
             <div className="text-right">
               <a href="/forgot-password" className="font-label text-xs text-primary hover:underline">Forgot password?</a>
@@ -623,7 +670,6 @@ function HatchRail({ message, visible }: { message: string; visible: boolean }) 
 
 // ── Main page ──────────────────────────────────────────────────
 export default function FlowMarketingPage() {
-  const [activePill, setActivePill] = useState<FlowMove | null>(null)
   const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set())
   const [openWorked, setOpenWorked] = useState<number | null>(null)
   const [authModal, setAuthModal] = useState<string | null>(null) // move label or null
@@ -634,9 +680,6 @@ export default function FlowMarketingPage() {
         const id = entry.target.id
         if (entry.isIntersecting) {
           setVisibleSections(prev => new Set([...prev, id]))
-          if (['frame', 'list', 'optimize', 'win'].includes(id)) {
-            setActivePill(id as FlowMove)
-          }
         }
       })
     }, { threshold: 0.15 })

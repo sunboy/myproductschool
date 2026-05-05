@@ -3,12 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 import {
   findRateLimitBlock,
   getClientIp,
-  normalizeAuthEmail,
   sameOriginRedirect,
 } from '@/lib/auth/rate-limit'
+import { firstZodError, passwordResetRequestSchema } from '@/lib/auth/validation'
 
-interface PasswordResetBody {
-  email?: string
+interface PasswordResetBodyExtras {
   redirectTo?: string
 }
 
@@ -23,12 +22,12 @@ function rateLimitedResponse(retryAfter: number) {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({})) as PasswordResetBody
-  const email = normalizeAuthEmail(body.email ?? '')
-
-  if (!email) {
-    return NextResponse.json({ error: 'Email is required' }, { status: 400 })
+  const body = await request.json().catch(() => ({})) as PasswordResetBodyExtras
+  const parsed = passwordResetRequestSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: firstZodError(parsed.error) }, { status: 400 })
   }
+  const { email } = parsed.data
 
   const ip = getClientIp(request)
   const block = await findRateLimitBlock([
