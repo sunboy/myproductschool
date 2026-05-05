@@ -3,6 +3,14 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { buildCoverageNote } from '@/lib/live-interview/system-prompt'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
+
+const ROUTE_KEY = 'live_interview_chat'
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
 
 export async function POST(
   request: Request,
@@ -90,16 +98,47 @@ export async function POST(
   const model = 'claude-sonnet-4-6'
   const maxTokens = 600
   const userPlan = await getUserPlanForBudget(user.id)
+  const throttle = await rateLimit({
+    key: `ai:${user.id}:${ROUTE_KEY}`,
+    limit: userPlan === 'pro' ? 15 : 5,
+    windowSec: 60,
+  })
+
+  if (!throttle.allowed) {
+    const retryAfter = retryAfterSeconds(throttle.resetAt)
+    return Response.json(
+      { error: 'rate_limited', retryAfter },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(retryAfter) },
+      }
+    )
+  }
 
   let reply = ''
   try {
+    await assertPlanLimit(user.id, userPlan, 'live_interview_turns')
+
     const response = await guardedCachedMessage(fullSystemPrompt, `Interview transcript:\n\n${conversation}`, {
       model,
       max_tokens: maxTokens,
-      budget: { userId: user.id, userPlan, route: 'live_interview_chat' },
+      budget: { userId: user.id, userPlan, route: ROUTE_KEY },
     })
     reply = response.sanitized
   } catch (error) {
+    if (error instanceof PlanLimitExceeded) {
+      return Response.json(
+        {
+          error: 'limit_reached',
+          feature: error.feature,
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+
     if (error instanceof AiBudgetExceededError) {
       return Response.json(
         {
