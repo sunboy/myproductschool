@@ -6,21 +6,25 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
 
 const MOCK_REFLECTION =
   "You've been showing strong diagnostic precision, your frame move is your biggest strength right now. Keep pushing your weigh move next, that's where your next level is hiding."
 
-const MOCK_USER_ID = 'mock-user-id'
+const ROUTE_KEY = 'hatch_growth_reflection'
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
 
 export async function POST() {
   // ── Auth ──────────────────────────────────────────────────────
-  let userId: string
-  let budgetUserId: string | null = null
-
   if (IS_MOCK) {
     return NextResponse.json({ reflection: MOCK_REFLECTION })
   }
 
+  let userId: string
   try {
     const supabase = await createClient()
     const {
@@ -29,13 +33,11 @@ export async function POST() {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      userId = MOCK_USER_ID
-    } else {
-      userId = user.id
-      budgetUserId = user.id
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    userId = user.id
   } catch {
-    userId = MOCK_USER_ID
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   // ── Hatch context ─────────────────────────────────────────────
@@ -71,13 +73,30 @@ export async function POST() {
     reflection = `You're making steady progress. Focus on ${weakest} as your next growth area, it's where consistent practice will pay off most.`
   } else {
     try {
+      const userPlan = await getUserPlanForBudget(userId)
+      const throttle = await rateLimit({
+        key: `ai:${userId}:${ROUTE_KEY}`,
+        limit: userPlan === 'pro' ? 15 : 5,
+        windowSec: 60,
+      })
+
+      if (!throttle.allowed) {
+        const retryAfter = retryAfterSeconds(throttle.resetAt)
+        return NextResponse.json(
+          { error: 'rate_limited', retryAfter },
+          {
+            status: 429,
+            headers: { 'Retry-After': String(retryAfter) },
+          }
+        )
+      }
+
+      await assertPlanLimit(userId, userPlan, 'hatch_chat_msgs')
+
       const contextString = buildHatchContextString(hatchCtx, 'coaching')
       const userPrompt =
         contextString +
         '\n\nWrite a growth reflection for this learner. Use 2 short paragraphs: one naming a specific strength, one naming the specific growth area and what to do next. Keep each paragraph to 2 sentences. Use the learner\'s first name if known. Be direct and specific. No filler. Return JSON: {"reflection": "..."}'
-      const budget = budgetUserId
-        ? { userId: budgetUserId, userPlan: await getUserPlanForBudget(budgetUserId), route: 'hatch_growth_reflection' }
-        : undefined
 
       const message = await guardedCachedMessage(
         `You are Hatch, a product thinking coach at HackProduct.\n\n${HATCH_VOICE}\n\nRespond only with a JSON object like: {"reflection": "..."}, no markdown, no extra text. The reflection value must use "\\n\\n" between the two paragraphs.`,
@@ -85,7 +104,7 @@ export async function POST() {
         {
           model: 'claude-sonnet-4-6',
           max_tokens: 300,
-          budget,
+          budget: { userId, userPlan, route: ROUTE_KEY },
         }
       )
 
@@ -96,6 +115,19 @@ export async function POST() {
       }
       reflection = parsed.reflection
     } catch (error) {
+      if (error instanceof PlanLimitExceeded) {
+        return NextResponse.json(
+          {
+            error: 'limit_reached',
+            feature: error.feature,
+            used: error.used,
+            limit: error.limit,
+            windowDays: error.windowDays,
+          },
+          { status: 402 }
+        )
+      }
+
       if (error instanceof AiBudgetExceededError) {
         return NextResponse.json(
           {
