@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { FreemiumUsageSummary } from '@/components/billing/FreemiumUsageSummary'
-import { changePasswordSchema, zodFieldErrors } from '@/lib/auth/validation'
+import { changePasswordSchema, emailChangeSchema, zodFieldErrors } from '@/lib/auth/validation'
 
 type SubscriptionInfo = {
   plan?: string | null
@@ -49,6 +49,7 @@ type LinkedIdentity = {
 }
 
 type IdentityAction = 'link-google' | 'unlink-google'
+type EmailChangeField = 'email' | 'currentPassword'
 type PasswordField = 'currentPassword' | 'password' | 'confirm'
 
 function formatBillingDate(value?: string | null) {
@@ -90,6 +91,15 @@ export default function SettingsPage() {
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null)
   const [passwordSaving, setPasswordSaving] = useState(false)
   const [visiblePasswordFields, setVisiblePasswordFields] = useState<Partial<Record<PasswordField, boolean>>>({})
+  const [emailChangeForm, setEmailChangeForm] = useState({
+    email: '',
+    currentPassword: '',
+  })
+  const [emailChangeFieldErrors, setEmailChangeFieldErrors] = useState<Partial<Record<EmailChangeField, string>>>({})
+  const [emailChangeError, setEmailChangeError] = useState<string | null>(null)
+  const [emailChangeSuccess, setEmailChangeSuccess] = useState<string | null>(null)
+  const [emailChangeSaving, setEmailChangeSaving] = useState(false)
+  const [showEmailChangePassword, setShowEmailChangePassword] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   async function refreshProfile() {
@@ -229,6 +239,49 @@ export default function SettingsPage() {
 
   function togglePasswordVisibility(field: PasswordField) {
     setVisiblePasswordFields(current => ({ ...current, [field]: !current[field] }))
+  }
+
+  function updateEmailChangeField(field: EmailChangeField, value: string) {
+    setEmailChangeForm(current => ({ ...current, [field]: value }))
+    setEmailChangeFieldErrors(current => ({ ...current, [field]: undefined }))
+    setEmailChangeError(null)
+    setEmailChangeSuccess(null)
+  }
+
+  async function handleEmailChange(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setEmailChangeError(null)
+    setEmailChangeSuccess(null)
+    setEmailChangeFieldErrors({})
+
+    const validation = emailChangeSchema.safeParse(emailChangeForm)
+    if (!validation.success) {
+      setEmailChangeFieldErrors(zodFieldErrors<EmailChangeField>(validation.error))
+      return
+    }
+
+    setEmailChangeSaving(true)
+    try {
+      const redirectTo = `${window.location.origin}/auth/callback?next=/settings`
+      const res = await fetch('/api/auth/request-email-change', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...validation.data, redirectTo }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        if (res.status === 429) {
+          throw new Error('Too many attempts. Try again in a minute.')
+        }
+        throw new Error(data.error ?? 'Could not request email change.')
+      }
+      setEmailChangeForm({ email: '', currentPassword: '' })
+      setEmailChangeSuccess(`Check ${validation.data.email} for confirmation.`)
+    } catch (error) {
+      setEmailChangeError(error instanceof Error ? error.message : 'Could not request email change.')
+    } finally {
+      setEmailChangeSaving(false)
+    }
   }
 
   async function handlePasswordChange(e: React.FormEvent<HTMLFormElement>) {
@@ -432,6 +485,82 @@ export default function SettingsPage() {
               <span className="material-symbols-outlined shrink-0 text-[17px] text-on-surface-variant">lock</span>
             </div>
           </div>
+
+          <form onSubmit={handleEmailChange} className="mt-4 rounded-2xl bg-background/70 px-4 py-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Email change</p>
+                <p className="mt-1 text-sm font-body font-semibold text-on-surface">Request a new sign-in email</p>
+              </div>
+              <span className="material-symbols-outlined shrink-0 text-[17px] text-on-surface-variant">alternate_email</span>
+            </div>
+
+            <div className="mt-3 space-y-3">
+              <div className="space-y-1.5">
+                <label htmlFor="settings-new-email" className="block text-xs font-label font-bold text-on-surface-variant">
+                  New email
+                </label>
+                <input
+                  id="settings-new-email"
+                  type="email"
+                  value={emailChangeForm.email}
+                  onChange={e => updateEmailChangeField('email', e.target.value)}
+                  className={passwordInputClass}
+                  placeholder={email ?? 'name@example.com'}
+                  autoComplete="email"
+                />
+                {emailChangeFieldErrors.email && (
+                  <p className="text-xs font-body text-error">{emailChangeFieldErrors.email}</p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="settings-email-current-password" className="block text-xs font-label font-bold text-on-surface-variant">
+                  Current password
+                </label>
+                <div className="relative">
+                  <input
+                    id="settings-email-current-password"
+                    type={showEmailChangePassword ? 'text' : 'password'}
+                    value={emailChangeForm.currentPassword}
+                    onChange={e => updateEmailChangeField('currentPassword', e.target.value)}
+                    className={`${passwordInputClass} pr-10`}
+                    placeholder="Current password"
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowEmailChangePassword(value => !value)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant transition-colors hover:text-on-surface"
+                    aria-label={showEmailChangePassword ? 'Hide current password' : 'Show current password'}
+                  >
+                    <span className="material-symbols-outlined text-[18px]">
+                      {showEmailChangePassword ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
+                {emailChangeFieldErrors.currentPassword && (
+                  <p className="text-xs font-body text-error">{emailChangeFieldErrors.currentPassword}</p>
+                )}
+              </div>
+            </div>
+
+            {emailChangeError && (
+              <p className="mt-3 rounded-xl bg-error/10 px-3 py-2 text-sm font-body text-error">{emailChangeError}</p>
+            )}
+            {emailChangeSuccess && (
+              <p className="mt-3 rounded-xl bg-primary-fixed px-3 py-2 text-sm font-body font-semibold text-primary">{emailChangeSuccess}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={emailChangeSaving}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-outline-variant/70 px-4 py-3 text-sm font-label font-bold text-on-surface transition-colors hover:bg-background disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98]"
+            >
+              <span className="material-symbols-outlined text-[17px]">outgoing_mail</span>
+              {emailChangeSaving ? 'Sending' : 'Send confirmation'}
+            </button>
+          </form>
 
           <div className="mt-4 rounded-2xl bg-background/70 px-4 py-3">
             <div className="flex items-center justify-between gap-3">

@@ -32,6 +32,8 @@ The app routes new password signups to `/verify-email?email=...` and uses `/api/
 
 For Google sign-in, enable the Google provider and add `/auth/callback` to the allowed redirect URLs. Supabase stores linked sign-in methods in Auth identities; keep automatic same-email identity linking enabled, and enable manual identity linking when the Settings page exposes "Connect Google".
 
+For in-app email changes, keep email confirmation enabled so `supabase.auth.updateUser({ email })` sends a confirmation link before the new address becomes active.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

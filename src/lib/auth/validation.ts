@@ -56,6 +56,11 @@ export const resendVerificationSchema = z.object({
   email: authEmailSchema,
 })
 
+export const emailChangeSchema = z.object({
+  email: authEmailSchema,
+  currentPassword: z.string().min(1, 'Current password is required.'),
+})
+
 const strongPasswordSchema = z
   .string()
   .min(10, 'Use at least 10 characters.')
