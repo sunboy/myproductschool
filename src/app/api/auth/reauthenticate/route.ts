@@ -9,6 +9,11 @@ import {
   REAUTH_COOKIE_NAME,
   REAUTH_MAX_AGE_SECONDS,
 } from '@/lib/auth/reauth'
+import { z, ZodError } from 'zod'
+
+const RequestSchema = z.object({
+  password: z.string().min(1, 'Current password is required.'),
+})
 
 function rateLimitedResponse(retryAfter: number) {
   return NextResponse.json(
@@ -20,14 +25,31 @@ function rateLimitedResponse(retryAfter: number) {
   )
 }
 
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
+
 export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await request.json().catch(() => ({})) as { password?: unknown }
-  const password = typeof body.password === 'string' ? body.password : ''
-  if (!password) return NextResponse.json({ error: 'Current password is required.' }, { status: 400 })
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+  const { password } = body
   if (!user.email) return NextResponse.json({ error: 'Password reauthentication is not available for this account.' }, { status: 400 })
 
   const ip = getClientIp(request)
