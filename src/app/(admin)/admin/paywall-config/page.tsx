@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { BILLING_PLANS, formatPlanPrice } from '@/lib/billing/plans'
 
 type UsageUnit = 'count' | 'cents'
 
@@ -51,6 +52,7 @@ export default function PaywallConfigPage() {
   const [editing, setEditing] = useState<Record<string, LimitEdit>>({})
   const [saving, setSaving] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const monthlyPlan = BILLING_PLANS.monthly
 
   useEffect(() => {
     fetch('/api/admin/plan-limits')
@@ -119,7 +121,7 @@ export default function PaywallConfigPage() {
         </div>
         <div className="rounded-2xl bg-primary/10 px-4 py-3 text-right">
           <p className="font-label text-[10px] font-bold uppercase tracking-[0.16em] text-primary">Pro target</p>
-          <p className="font-headline text-xl font-bold text-on-surface">$30/mo</p>
+          <p className="font-headline text-xl font-bold text-on-surface">{formatPlanPrice(monthlyPlan)}/mo</p>
           <p className="font-body text-xs text-on-surface-variant">Keep AI COGS under $6</p>
         </div>
       </div>

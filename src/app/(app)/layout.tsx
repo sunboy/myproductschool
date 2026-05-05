@@ -6,6 +6,7 @@ import { BottomTabs } from '@/components/shell/BottomTabs'
 import { FloatingHatch } from '@/components/shell/FloatingHatch'
 import { UpgradeModal } from '@/components/shell/UpgradeModal'
 import { HatchProvider } from '@/context/HatchContext'
+import { UsageProvider } from '@/context/UsageContext'
 import { createClient } from '@/lib/supabase/client'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -28,19 +29,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <HatchProvider>
-      <div className="min-h-screen bg-background">
-        <TopNav />
-        <main className="pb-20 md:pb-8">
-          {children}
-        </main>
-        <BottomTabs />
-        <FloatingHatch />
-        <UpgradeModal
-          open={upgradeOpen}
-          onClose={() => setUpgradeOpen(false)}
-          userId={userId}
-        />
-      </div>
+      <UsageProvider>
+        <div className="min-h-screen bg-background">
+          <TopNav />
+          <main className="pb-20 md:pb-8">
+            {children}
+          </main>
+          <BottomTabs />
+          <FloatingHatch />
+          <UpgradeModal
+            open={upgradeOpen}
+            onClose={() => setUpgradeOpen(false)}
+            userId={userId}
+          />
+        </div>
+      </UsageProvider>
     </HatchProvider>
   )
 }

@@ -1,4 +1,5 @@
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { BILLING_PLANS, formatPlanPrice } from '@/lib/billing/plans'
 
 const FEATURES = [
   { icon: 'fitness_center', text: '80 challenge starts each month' },
@@ -19,6 +20,8 @@ export function ProPaywallGate({
   completedCount = 3,
   onUpgrade,
 }: ProPaywallGateProps) {
+  const monthlyPlan = BILLING_PLANS.monthly
+
   return (
     <div className="fixed inset-0 z-0 overflow-hidden">
 
@@ -130,7 +133,7 @@ export function ProPaywallGate({
                   Monthly plan
                 </p>
                 <p className="font-headline font-bold text-on-surface text-lg" style={{ letterSpacing: '-0.02em' }}>
-                  $30 <span className="text-sm font-body font-normal text-on-surface-variant">/ mo</span>
+                  {formatPlanPrice(monthlyPlan)} <span className="text-sm font-body font-normal text-on-surface-variant">/ mo</span>
                 </p>
                 <p className="font-label text-[10px] text-primary font-semibold">Fair use, backend-configured</p>
               </div>

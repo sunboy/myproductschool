@@ -4,6 +4,7 @@ import { ChallengeSearch } from './ChallengeSearch'
 import { HatchPick } from './HatchPick'
 import { FilteredChallengesView } from './FilteredChallengesView'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { BillingUsageFromProfile } from '@/components/billing/BillingUsageFromProfile'
 
 export interface FreePracticeContentProps {
   searchParams: Promise<{
@@ -77,6 +78,8 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
 
       {/* Hatch's Pick */}
       <HatchPick />
+
+      <BillingUsageFromProfile className="mb-6" />
 
       {/* Featured Challenges — only when editorially pinned challenges exist and no search query */}
       {featuredChallenges.length > 0 && !hasActiveFilters && (

@@ -26,6 +26,7 @@ import { AchievementsCard, ICON_COLOR_MAP, ICON_MAP } from '@/components/dashboa
 import { StreakCalendarCard } from '@/components/dashboard/cards/StreakCalendarCard'
 import { PausedLoopCard } from '@/components/live-interviews/PausedLoopCard'
 import { DisciplineExplorer } from '@/components/flow-disciplines'
+import { BillingDashboardNudge } from '@/components/billing/BillingDashboardNudge'
 import type { UserInterview } from '@/lib/data/dashboard'
 import type { InterviewLoop, LoopRound } from '@/lib/interview-loops/types'
 import { difficultyLabel } from '@/lib/utils'
@@ -201,13 +202,14 @@ export default async function DashboardPage() {
   let isCalibrated = false
   let lastAttemptDate: string | null = null
   let dailyDone = 0
+  let plan: string | null = 'free'
 
   if (user) {
     const today = new Date().toISOString().split('T')[0]
     const [{ data: profile }, { data: lastAttempt }, { count: dailyCount }] = await Promise.all([
       supabase
         .from('profiles')
-        .select('display_name, onboarding_completed_at, streak_days, xp_total, interview_date')
+        .select('display_name, onboarding_completed_at, streak_days, xp_total, interview_date, plan')
         .eq('id', user.id)
         .single(),
       supabase
@@ -232,6 +234,7 @@ export default async function DashboardPage() {
     isCalibrated = !!profile?.onboarding_completed_at
     lastAttemptDate = lastAttempt?.created_at ? lastAttempt.created_at.split('T')[0] : null
     dailyDone = dailyCount ?? 0
+    plan = profile?.plan ?? 'free'
   }
 
   const userId = user?.id ?? ''
@@ -495,6 +498,8 @@ export default async function DashboardPage() {
               }
               studyPlanHref={enrolledPlans.length > 0 ? `/explore/plans/${enrolledPlans[0].slug}` : '/explore/plans'}
             />
+
+            <BillingDashboardNudge plan={plan} />
 
             <HatchOperatingSystemCard />
 

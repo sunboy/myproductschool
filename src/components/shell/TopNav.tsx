@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 import { cn } from '@/lib/utils'
+import { FreemiumUsageSummary } from '@/components/billing/FreemiumUsageSummary'
 
 const NAV_ITEMS = [
   { id: 'home',       href: '/',               icon: 'home',          label: 'Home'       },
@@ -23,6 +24,12 @@ interface ProfileData {
   avatar_url: string | null
   plan: string | null
   daily_attempts_today?: number
+  subscription?: {
+    status?: string | null
+    current_period_end?: string | null
+    billing_interval?: string | null
+    cancel_at_period_end?: boolean | null
+  } | null
 }
 
 function getInitials(name: string | null | undefined): string {
@@ -55,6 +62,7 @@ export function TopNav() {
           avatar_url: data.avatar_url ?? null,
           plan: data.plan ?? null,
           daily_attempts_today: data.daily_attempts_today ?? 0,
+          subscription: data.subscription ?? null,
         })
       })
       .catch(() => {})
@@ -95,6 +103,7 @@ export function TopNav() {
 
   const streak = profile?.streak_days ?? 0
   const xp = profile?.xp_total ?? 0
+  const isPro = profile?.plan === 'pro'
 
   function isActive(item: typeof NAV_ITEMS[0]) {
     if (item.id === 'home') return pathname === '/' || pathname === '/dashboard'
@@ -242,7 +251,7 @@ export function TopNav() {
 
             {menuOpen && (
               <div
-                className="absolute right-0 top-12 w-48 rounded-xl shadow-lg py-1 z-50 border"
+                className="absolute right-0 top-12 w-[310px] rounded-xl shadow-lg py-1 z-50 border"
                 style={{
                   background: 'var(--color-background)',
                   borderColor: 'var(--color-outline-variant)',
@@ -253,8 +262,16 @@ export function TopNav() {
                     <p className="text-xs font-bold truncate" style={{ color: 'var(--color-on-surface)' }}>
                       {profile.display_name}
                     </p>
+                    <p className="mt-0.5 text-[11px] font-label font-semibold text-on-surface-variant">
+                      {isPro
+                        ? `Pro${profile.subscription?.billing_interval === 'year' ? ' annual' : ' monthly'}`
+                        : 'Free plan'}
+                    </p>
                   </div>
                 )}
+                <div className="px-3 py-2">
+                  <FreemiumUsageSummary plan={profile?.plan} compact />
+                </div>
                 <Link
                   href="/settings"
                   data-hatch-sound="open"

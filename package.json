@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "stripe:branding": "npx tsx scripts/stripe-branding.ts",
+    "stripe:test-flow": "npx tsx scripts/stripe-test-flow.ts",
     "test:scene": "npx tsx scripts/test-canvas-scene.ts",
     "test:canvas-e2e": "npx playwright test e2e/canvas-coach.spec.ts",
     "test:canvas-judge": "npx tsx scripts/test-canvas-judge.ts",

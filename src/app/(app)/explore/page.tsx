@@ -9,7 +9,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { StudyPlanGrid } from './StudyPlanGrid'
-import { type Discipline } from '@/lib/data/taxonomy'
+import { getCompanyLabel } from '@/lib/data/taxonomy'
 
 interface PersonalisedPlan {
   slug: string
@@ -29,14 +29,9 @@ interface CuratedChallenge {
   technique_tags: string[] | null
 }
 
-interface CompanyRow {
+interface CompanyChallengeGroup {
   company: string
   challenges: CuratedChallenge[]
-}
-
-interface DisciplineRow {
-  discipline: Discipline
-  techniques: Array<{ slug: string; count: number }>
 }
 
 interface PlanItem {
@@ -110,7 +105,7 @@ export default async function ExplorePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [studyPlansRaw, showcaseProducts, modulesRaw, domains, personalisedPlan, realInterviewChallenges, topCompanyChallenges, topTechniquesPerDiscipline] = await Promise.all([
+  const [studyPlansRaw, showcaseProducts, modulesRaw, domains, personalisedPlan, topCompanyChallenges] = await Promise.all([
     getStudyPlanSummaries(4).catch(() => [] as StudyPlan[]),
     getShowcaseProducts().catch(() => [] as AutopsyProduct[]),
     getLearnModuleSummaries(4).catch(() => [] as LearnModule[]),
@@ -131,25 +126,8 @@ export default async function ExplorePage() {
         return null
       }
     })(),
-    // Curated row 1: Real interview questions (is_real_interview=true, non-empty company_tags first)
-    (async (): Promise<CuratedChallenge[]> => {
-      try {
-        const admin = createAdminClient()
-        const { data } = await admin
-          .from('challenges')
-          .select('id, title, slug, difficulty, challenge_type, company_tags, topic_tags, technique_tags')
-          .eq('is_published', true)
-          .eq('is_real_interview', true)
-          .order('created_at', { ascending: false })
-          .limit(12)
-        const rows = (data ?? []) as CuratedChallenge[]
-        // Sort: challenges with company_tags first
-        rows.sort((a, b) => ((b.company_tags?.length ?? 0) - (a.company_tags?.length ?? 0)))
-        return rows.slice(0, 8)
-      } catch { return [] }
-    })(),
-    // Curated row 2: Top 4 companies by real interview challenge count → each with up to 5 challenges
-    (async (): Promise<CompanyRow[]> => {
+    // Curated group: Top companies by real interview challenge count, each with a compact question list.
+    (async (): Promise<CompanyChallengeGroup[]> => {
       try {
         const admin = createAdminClient()
         const { data } = await admin
@@ -175,47 +153,6 @@ export default async function ExplorePage() {
           company,
           challenges: challenges.slice(0, 5),
         }))
-      } catch { return [] }
-    })(),
-    // Curated row 3: Top techniques per discipline (count challenges using each technique)
-    (async (): Promise<DisciplineRow[]> => {
-      try {
-        const admin = createAdminClient()
-        const { data } = await admin
-          .from('challenges')
-          .select('challenge_type, technique_tags')
-          .eq('is_published', true)
-          .not('technique_tags', 'eq', '{}')
-        const rows = (data ?? []) as Array<{ challenge_type: string; technique_tags: string[] }>
-        // Map challenge_type → discipline
-        const TYPE_TO_DISC: Record<string, Discipline> = {
-          flow: 'product_sense', freeform: 'product_sense', quick_take: 'product_sense',
-          system_design: 'system_design', data_modeling: 'data_modeling', sql: 'sql',
-          algorithm: 'coding', coding: 'coding', ai_engineering: 'ai_engineering',
-        }
-        // Count technique occurrences per discipline
-        const discTechCount = new Map<Discipline, Map<string, number>>()
-        for (const row of rows) {
-          const disc = TYPE_TO_DISC[row.challenge_type]
-          if (!disc) continue
-          if (!discTechCount.has(disc)) discTechCount.set(disc, new Map())
-          const techMap = discTechCount.get(disc)!
-          for (const tech of (row.technique_tags ?? [])) {
-            techMap.set(tech, (techMap.get(tech) ?? 0) + 1)
-          }
-        }
-        // Build result: top 5 techniques per discipline
-        const result: DisciplineRow[] = []
-        for (const [disc, techMap] of discTechCount.entries()) {
-          const techniques = [...techMap.entries()]
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5)
-            .map(([slug, count]) => ({ slug, count }))
-          if (techniques.length > 0) result.push({ discipline: disc, techniques })
-        }
-        // Sort disciplines alphabetically for stability
-        result.sort((a, b) => a.discipline.localeCompare(b.discipline))
-        return result
       } catch { return [] }
     })(),
   ])
@@ -323,79 +260,9 @@ export default async function ExplorePage() {
         </>
       )}
 
-      {/* Curated row 1: Real interview questions */}
-      {realInterviewChallenges.length > 0 && (
-        <>
-          <SectionHeading
-            title="Real interview questions"
-            href="/challenges?real_interview=true"
-            linkLabel="See all"
-          />
-          <div className="mb-10 flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-            {realInterviewChallenges.map(c => (
-              <CuratedChallengeCard key={c.id} challenge={c} showVerifiedBadge />
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Curated row 2: Asked at {company} */}
+      {/* Curated group: real interview questions */}
       {topCompanyChallenges.length > 0 && (
-        <>
-          {topCompanyChallenges.map(({ company, challenges }) => (
-            <div key={company}>
-              <SectionHeading
-                title={`Asked at ${company.charAt(0).toUpperCase() + company.slice(1)}`}
-                href={`/challenges?company=${company}`}
-                linkLabel="See all"
-              />
-              <div className="mb-10 flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                {challenges.map(c => (
-                  <CuratedChallengeCard key={c.id} challenge={c} />
-                ))}
-              </div>
-            </div>
-          ))}
-        </>
-      )}
-
-      {/* Curated row 3: Top techniques per discipline */}
-      {topTechniquesPerDiscipline.length > 0 && (
-        <>
-          <SectionHeading
-            title="Top techniques per discipline"
-            href="/challenges"
-            linkLabel="Browse all"
-          />
-          <div className="mb-10 flex flex-col gap-4">
-            {topTechniquesPerDiscipline.map(({ discipline, techniques }) => (
-              <div key={discipline}>
-                <p className="mb-2 font-label text-sm font-semibold capitalize text-on-surface-variant">
-                  {{
-                    coding: 'Coding', system_design: 'System Design',
-                    data_modeling: 'Data Modeling', sql: 'SQL',
-                    product_sense: 'Product Sense', ai_engineering: 'AI Engineering',
-                  }[discipline] ?? discipline}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {techniques.map(({ slug, count }) => (
-                    <Link
-                      key={slug}
-                      href={`/challenges?technique=${slug}`}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-surface-container-high px-3 py-1.5 text-sm font-label font-medium text-on-surface-variant transition-colors hover:bg-primary-container hover:text-on-primary-container"
-                    >
-                      <span className="material-symbols-outlined text-[14px]">category</span>
-                      {slug}
-                      <span className="ml-1 rounded-full bg-surface-container-highest px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-on-surface-variant">
-                        {count}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
+        <RealInterviewSpotlight companyGroups={topCompanyChallenges} />
       )}
 
       <SectionHeading title="Study Plans" href="/explore/plans" linkLabel="All plans" />
@@ -618,58 +485,193 @@ function DomainSketch({ accent, soft }: { accent: string; soft: string }) {
   )
 }
 
-function CuratedChallengeCard({ challenge, showVerifiedBadge = false }: {
+function RealInterviewSpotlight({ companyGroups }: { companyGroups: CompanyChallengeGroup[] }) {
+  const questionCount = companyGroups.reduce((total, group) => total + group.challenges.length, 0)
+
+  return (
+    <section
+      className="mb-10 overflow-hidden rounded-xl border border-primary/18 bg-surface-container-low p-4 shadow-[0_22px_52px_-42px_rgba(30,53,40,0.62)] sm:p-5"
+      style={{
+        background:
+          'linear-gradient(135deg, rgba(74,124,89,0.12) 0%, rgba(255,255,255,0.42) 48%, rgba(201,147,58,0.10) 100%)',
+      }}
+    >
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-primary-fixed px-2 py-1 font-label text-[11px] font-bold text-primary">
+            <span className="material-symbols-outlined text-[14px]">verified</span>
+            Real interviews
+          </span>
+          <h2 className="mt-2 font-headline text-[25px] font-bold leading-tight text-on-surface">
+            Asked at top companies
+          </h2>
+          <p className="mt-1 font-label text-[12px] font-semibold text-on-surface-variant">
+            {questionCount} questions across {companyGroups.length} company loops
+          </p>
+        </div>
+        <Link
+          href="/challenges?real_interview=1"
+          data-hatch-sound="open"
+          className="inline-flex w-fit items-center gap-1 rounded-md bg-white/60 px-3 py-2 font-label text-xs font-bold text-primary no-underline ring-1 ring-primary/15 transition-colors hover:bg-primary-container hover:text-on-primary-container"
+        >
+          Browse all
+          <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {companyGroups.map(({ company, challenges }) => (
+          <AskedAtCompanyGroup key={company} company={company} challenges={challenges} />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function AskedAtCompanyGroup({ company, challenges }: CompanyChallengeGroup) {
+  const companyLabel = getCompanyDisplayName(company)
+  const companyVisual = getCompanyVisual(company)
+  const visibleChallenges = challenges.slice(0, 3)
+  const hiddenCount = Math.max(0, challenges.length - visibleChallenges.length)
+
+  return (
+    <article
+      className="group relative flex min-h-[188px] flex-col overflow-hidden rounded-lg border border-outline-variant/35 bg-surface-container-low p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_18px_34px_-30px_rgba(46,50,48,0.58)]"
+      style={{
+        background: `linear-gradient(135deg, ${companyVisual.soft} 0%, rgba(255,255,255,0.34) 46%, transparent 100%)`,
+      }}
+    >
+      <span
+        className="pointer-events-none absolute inset-x-0 top-0 h-1"
+        style={{ background: companyVisual.accent }}
+        aria-hidden="true"
+      />
+      <span
+        className="pointer-events-none absolute -right-8 top-0 h-full w-24 opacity-[0.08]"
+        style={{
+          backgroundImage: `repeating-linear-gradient(135deg, ${companyVisual.accent} 0 2px, transparent 2px 10px)`,
+        }}
+        aria-hidden="true"
+      />
+
+      <div className="relative flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md font-headline text-[15px] font-bold text-white shadow-[0_10px_22px_-18px_rgba(0,0,0,0.7)]"
+            style={{ background: companyVisual.accent }}
+            aria-hidden="true"
+          >
+            {getCompanyMark(companyLabel)}
+          </span>
+          <span className="min-w-0">
+            <h3 className="truncate font-headline text-[17px] font-bold leading-tight text-on-surface">
+              {companyLabel}
+            </h3>
+            <span className="mt-0.5 block font-label text-[11px] font-semibold text-on-surface-variant">
+              {challenges.length} real interview {challenges.length === 1 ? 'question' : 'questions'}
+            </span>
+          </span>
+        </div>
+        <Link
+          href={`/challenges?company=${company}`}
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/55 text-on-surface-variant no-underline ring-1 ring-outline-variant/40 transition-colors hover:bg-primary-container hover:text-on-primary-container"
+          aria-label={`Browse ${companyLabel} questions`}
+          data-hatch-sound="open"
+        >
+          <span className="material-symbols-outlined text-[17px]">arrow_forward</span>
+        </Link>
+      </div>
+
+      <div className="relative mt-3 flex flex-1 flex-col gap-1.5">
+        {visibleChallenges.map((challenge, index) => (
+          <AskedAtChallengeRow
+            key={challenge.id}
+            challenge={challenge}
+            index={index}
+            accent={companyVisual.accent}
+          />
+        ))}
+      </div>
+
+      {hiddenCount > 0 && (
+        <Link
+          href={`/challenges?company=${company}`}
+          className="relative mt-2 inline-flex w-fit items-center gap-1 rounded-md px-1 py-0.5 font-label text-[11px] font-bold text-on-surface-variant no-underline transition-colors hover:text-primary"
+          data-hatch-sound="open"
+        >
+          +{hiddenCount} more
+          <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+        </Link>
+      )}
+    </article>
+  )
+}
+
+function AskedAtChallengeRow({ challenge, index, accent }: {
   challenge: CuratedChallenge
-  showVerifiedBadge?: boolean
+  index: number
+  accent: string
 }) {
   const href = `/challenges/${challenge.slug ?? challenge.id}`
-  const difficultyColors: Record<string, string> = {
-    warmup: 'bg-primary-fixed text-primary',
-    standard: 'bg-secondary-container text-on-secondary-container',
-    advanced: 'bg-tertiary-container text-tertiary',
-    staff_plus: 'bg-inverse-surface text-inverse-on-surface',
-  }
-  const diffColor = difficultyColors[challenge.difficulty] ?? 'bg-surface-container-high text-on-surface-variant'
-  const firstTopic = challenge.topic_tags?.[0]
-  const firstTechnique = challenge.technique_tags?.[0]
+  const detail = challenge.technique_tags?.[0] ?? challenge.topic_tags?.[0] ?? challenge.challenge_type.replace(/_/g, ' ')
+
   return (
     <Link
       href={href}
-      className="group flex w-56 shrink-0 flex-col gap-2 rounded-xl bg-surface-container p-4 transition-shadow hover:shadow-md"
+      className="group/row flex min-h-[38px] items-center gap-2.5 rounded-md bg-white/42 px-2 py-1.5 no-underline ring-1 ring-outline-variant/20 transition-colors hover:bg-white/70 hover:ring-primary/20"
+      data-hatch-sound="open"
     >
-      <div className="flex items-start justify-between gap-2">
-        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${diffColor}`}>
-          {challenge.difficulty}
+      <span
+        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] font-label text-[10px] font-bold tabular-nums text-white"
+        style={{ background: accent }}
+        aria-hidden="true"
+      >
+        {index + 1}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-body text-[13px] font-semibold leading-snug text-on-surface transition-colors group-hover/row:text-primary">
+          {challenge.title}
         </span>
-        {showVerifiedBadge && (
-          <span className="inline-flex items-center gap-0.5 rounded-full bg-primary-fixed px-2 py-0.5 text-[10px] font-semibold text-primary">
-            <span className="material-symbols-outlined text-[11px]">verified</span>
-            Real
-          </span>
-        )}
-      </div>
-      <p className="line-clamp-2 font-body text-sm font-semibold leading-snug text-on-surface group-hover:text-primary">
-        {challenge.title}
-      </p>
-      {(challenge.company_tags ?? []).length > 0 && (
-        <p className="font-label text-[11px] uppercase tracking-wide text-on-surface-variant">
-          {challenge.company_tags![0]}
-        </p>
-      )}
-      <div className="mt-auto flex flex-wrap gap-1">
-        {firstTopic && (
-          <span className="rounded-full bg-surface-container-high px-2 py-0.5 font-label text-[10px] text-on-surface-variant">
-            {firstTopic}
-          </span>
-        )}
-        {firstTechnique && (
-          <span className="rounded-full bg-surface-container-high px-2 py-0.5 font-label text-[10px] text-on-surface-variant">
-            {firstTechnique}
-          </span>
-        )}
-      </div>
+        <span className="mt-0.5 block truncate font-label text-[10.5px] font-semibold capitalize text-on-surface-variant">
+          {challenge.difficulty.replace(/_/g, ' ')} · {detail.replace(/_/g, ' ')}
+        </span>
+      </span>
+      <span className="material-symbols-outlined shrink-0 text-[14px] text-on-surface-variant transition-transform group-hover/row:translate-x-0.5 group-hover/row:text-primary">
+        chevron_right
+      </span>
     </Link>
   )
+}
+
+function getCompanyDisplayName(company: string) {
+  return getCompanyLabel(company) ?? company
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+function getCompanyMark(label: string) {
+  const words = label.split(/\s+/).filter(Boolean)
+  const mark = words.length > 1
+    ? `${words[0]?.[0] ?? ''}${words[1]?.[0] ?? ''}`
+    : label.slice(0, 2)
+
+  return mark.toUpperCase()
+}
+
+function getCompanyVisual(company: string) {
+  const palette = [
+    { accent: '#4a7c59', soft: 'rgba(74,124,89,0.10)' },
+    { accent: '#7a5c2e', soft: 'rgba(201,147,58,0.13)' },
+    { accent: '#3b6ed4', soft: 'rgba(59,110,212,0.10)' },
+    { accent: '#6d4cc2', soft: 'rgba(109,76,194,0.10)' },
+    { accent: '#2f8b74', soft: 'rgba(47,139,116,0.10)' },
+    { accent: '#c66a3b', soft: 'rgba(198,106,59,0.11)' },
+  ]
+  const hash = [...company].reduce((sum, char) => sum + char.charCodeAt(0), 0)
+
+  return palette[hash % palette.length]
 }
 
 function SectionHeading({ title, href, linkLabel }: {

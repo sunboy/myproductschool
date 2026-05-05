@@ -1,5 +1,6 @@
 import { MOCK_LIVE_INTERVIEW_PERSONAS } from '@/lib/mock-live-interviews'
 import { UsageProvider } from '@/context/UsageContext'
+import { BillingUsageFromProfile } from '@/components/billing/BillingUsageFromProfile'
 import { LiveInterviewsShell } from './LiveInterviewsShell'
 import {
   challengeTypeToDiscipline,
@@ -138,6 +139,8 @@ export default async function LiveInterviewsPage() {
             </div>
           </div>
         </section>
+
+        <BillingUsageFromProfile />
 
         <LiveInterviewsShell personas={personas} scenarios={scenarios} />
       </div>

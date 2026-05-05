@@ -6,6 +6,7 @@ import { FloatingNav } from '@/components/marketing/FloatingNav'
 import { GradientFooter } from '@/components/marketing/GradientFooter'
 import { LogoMarquee } from '@/components/marketing/LogoMarquee'
 import { UpgradeButton } from '@/components/marketing/UpgradeButton'
+import { BILLING_PLANS, formatPlanPrice } from '@/lib/billing/plans'
 
 const FREE_FEATURES = [
   { label: 'Core Methodology Access', included: true },
@@ -76,6 +77,7 @@ const FAQS = [
 
 export default function PricingPage() {
   const [openFaq, setOpenFaq] = useState(0)
+  const monthlyPlan = BILLING_PLANS.monthly
 
   return (
     <div className="min-h-screen bg-background font-body text-on-surface">
@@ -176,7 +178,7 @@ export default function PricingPage() {
               </h3>
               <div className="flex items-baseline gap-1">
                 <span className="font-headline text-5xl font-extrabold text-on-surface tracking-[-0.02em]">
-                  $30
+                  {formatPlanPrice(monthlyPlan)}
                 </span>
                 <span className="text-on-surface-variant font-medium">
                   / month
