@@ -24,6 +24,7 @@ interface BaseTransactionalInput {
   userId?: string | null
   to?: string | null
   name?: string | null
+  unsubscribeUrl?: string | null
 }
 
 interface LinkEmailInput extends BaseTransactionalInput {
@@ -173,6 +174,7 @@ function renderHtmlEmail(input: TransactionalEmailPayload) {
         </div>
         <p style="margin:18px 0 0;color:#74796e;font-size:12px;line-height:1.6;">
           You are receiving this because you have a HackProduct account.
+          ${input.unsubscribeUrl ? `<br /><a href="${escapeHtml(input.unsubscribeUrl)}" style="color:#2d5a3d;text-decoration:underline;">Unsubscribe</a>` : ''}
         </p>
       </div>
     </div>
@@ -187,6 +189,7 @@ function renderTextEmail(input: TransactionalEmailPayload) {
     input.body,
     input.detail ?? null,
     input.ctaUrl && input.ctaLabel ? `${input.ctaLabel}: ${input.ctaUrl}` : null,
+    input.unsubscribeUrl ? `Unsubscribe: ${input.unsubscribeUrl}` : null,
   ].filter(Boolean)
 
   return parts.join('\n')
