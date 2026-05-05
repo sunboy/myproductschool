@@ -3,9 +3,12 @@ import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { createClient } from '@/lib/supabase/server'
 import { sceneToPrompt, type CanvasScene } from '@/lib/hatch/canvas-scene'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
 
 const NUDGE_GATE_MS = 30_000
 const MAX_ELEMENT_COUNT_FOR_NUDGE = 40 // skip if canvas is large; user is mid-deep-work
+const ROUTE_KEY = 'hatch_canvas_nudge'
 
 const NUDGE_SYSTEM_PROMPT = `You are Hatch, a system design / data modeling interview coach.
 The user just added something to their canvas. You may interject with ONE short observation if it's worth saying.
@@ -42,6 +45,10 @@ interface NudgeBody {
 
 const MAX_NUDGES_PER_ATTEMPT = 5
 
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const {
@@ -51,6 +58,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const userPlan = await getUserPlanForBudget(user.id)
+  const throttle = await rateLimit({
+    key: `ai:${user.id}:${ROUTE_KEY}`,
+    limit: userPlan === 'pro' ? 15 : 5,
+    windowSec: 60,
+  })
+
+  if (!throttle.allowed) {
+    const retryAfter = retryAfterSeconds(throttle.resetAt)
+    return NextResponse.json(
+      { error: 'rate_limited', retryAfter },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(retryAfter) },
+      }
+    )
+  }
 
   const body = (await req.json()) as NudgeBody
 
@@ -91,10 +114,12 @@ export async function POST(req: NextRequest) {
   ].join('\n\n')
 
   try {
+    await assertPlanLimit(user.id, userPlan, 'hatch_nudges')
+
     const response = await guardedCachedMessage(NUDGE_SYSTEM_PROMPT, userContent, {
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 200,
-      budget: { userId: user.id, userPlan, route: 'hatch_canvas_nudge' },
+      budget: { userId: user.id, userPlan, route: ROUTE_KEY },
     })
     if (!response.sanitized) {
       return NextResponse.json({ nudge: null })
@@ -110,6 +135,19 @@ export async function POST(req: NextRequest) {
         : null
     return NextResponse.json({ nudge })
   } catch (error) {
+    if (error instanceof PlanLimitExceeded) {
+      return NextResponse.json(
+        {
+          error: 'limit_reached',
+          feature: error.feature,
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+
     if (error instanceof AiBudgetExceededError) {
       return NextResponse.json(
         {
