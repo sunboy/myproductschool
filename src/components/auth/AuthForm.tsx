@@ -134,6 +134,24 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     return process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin
   }
 
+  async function postAuthAction<T>(path: string, payload: Record<string, unknown>): Promise<T> {
+    const response = await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    const data = await response.json().catch(() => ({})) as { error?: string; retryAfter?: number }
+
+    if (!response.ok) {
+      if (data.error === 'rate_limited' && typeof data.retryAfter === 'number') {
+        throw new Error(`Slow down. Try again in ${data.retryAfter}s.`)
+      }
+      throw new Error(data.error ?? 'Something went wrong. Try again.')
+    }
+
+    return data as T
+  }
+
   function switchMode(mode: 'login' | 'signup' | 'forgot') {
     if (mode !== activeMode) play('nudge')
     setActiveMode(mode)
@@ -148,59 +166,52 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     setError(null)
 
     if (activeMode === 'forgot') {
-      await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${siteOrigin()}/reset-password`,
-      })
-      // Always show success (don't reveal whether email exists)
-      setSuccess('Check your email. We sent a password reset link.')
-      play('success')
-      setLoading(false)
+      try {
+        await postAuthAction('/api/auth/password-reset', {
+          email,
+          redirectTo: `${siteOrigin()}/reset-password`,
+        })
+        // Always show success after the server accepts the request.
+        setSuccess('Check your email. We sent a password reset link.')
+        play('success')
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
+        play('error')
+      } finally {
+        setLoading(false)
+      }
       return
     }
 
     if (activeMode === 'login') {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) {
-        setError(error.message)
-        play('error')
-      } else {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('onboarding_completed_at, display_name')
-          .eq('id', data.user.id)
-          .single()
-        const meta = data.user.user_metadata
-        const metaName = meta?.display_name ?? meta?.full_name ?? meta?.name ?? null
-        if (!profile?.display_name && metaName) {
-          await fetch('/api/profile', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ display_name: metaName }),
-          })
-        }
+      try {
+        const data = await postAuthAction<{ onboardingCompleted: boolean }>('/api/auth/login', { email, password })
         play('success')
-        router.push(profile?.onboarding_completed_at ? '/dashboard' : '/onboarding/welcome')
+        router.push(data.onboardingCompleted ? '/dashboard' : '/onboarding/welcome')
         router.refresh()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
+        play('error')
       }
     } else {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { display_name: name },
-          emailRedirectTo: `${siteOrigin()}/dashboard`,
+      try {
+        const data = await postAuthAction<{ hasSession: boolean }>('/api/auth/signup', {
+          email,
+          password,
+          name,
+          redirectTo: `${siteOrigin()}/dashboard`,
+        })
+        if (data.hasSession) {
+          play('success')
+          router.push('/onboarding/welcome')
+          router.refresh()
+        } else {
+          setSuccess('Check your email to confirm your account. You\'ll start with Hatch next.')
+          play('success')
         }
-      })
-      if (error) {
-        setError(error.message)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
         play('error')
-      } else if (data.session) {
-        play('success')
-        router.push('/onboarding/welcome')
-        router.refresh()
-      } else {
-        setSuccess('Check your email to confirm your account. You\'ll start with Hatch next.')
-        play('success')
       }
     }
     setLoading(false)

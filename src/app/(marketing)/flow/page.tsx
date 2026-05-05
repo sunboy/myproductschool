@@ -430,35 +430,53 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
     }
   }, [handleKeyDown])
 
+  async function postAuthAction<T>(path: string, payload: Record<string, unknown>): Promise<T> {
+    const response = await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    const data = await response.json().catch(() => ({})) as { error?: string; retryAfter?: number }
+
+    if (!response.ok) {
+      if (data.error === 'rate_limited' && typeof data.retryAfter === 'number') {
+        throw new Error(`Slow down. Try again in ${data.retryAfter}s.`)
+      }
+      throw new Error(data.error ?? 'Something went wrong. Try again.')
+    }
+
+    return data as T
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
     if (mode === 'login') {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) {
-        setError(error.message)
-        setLoading(false)
-      } else {
+      try {
+        await postAuthAction('/api/auth/login', { email, password })
         router.push('/explore/flow')
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
+        setLoading(false)
       }
     } else {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { display_name: name },
-          emailRedirectTo: `${window.location.origin}/onboarding/welcome`,
+      try {
+        const data = await postAuthAction<{ hasSession: boolean }>('/api/auth/signup', {
+          email,
+          password,
+          name,
+          redirectTo: `${window.location.origin}/onboarding/welcome`,
+        })
+        if (data.hasSession) {
+          router.push('/explore/flow')
+        } else {
+          setSuccess("Check your email to confirm your account.")
+          setLoading(false)
         }
-      })
-      if (error) {
-        setError(error.message)
-        setLoading(false)
-      } else if (data.session) {
-        router.push('/explore/flow')
-      } else {
-        setSuccess("Check your email to confirm your account.")
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
         setLoading(false)
       }
     }

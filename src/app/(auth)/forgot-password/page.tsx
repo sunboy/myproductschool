@@ -1,21 +1,35 @@
 'use client'
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
-  const supabase = createClient()
+  const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+    setError(null)
+    const response = await fetch('/api/auth/password-reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        redirectTo: `${window.location.origin}/reset-password`,
+      }),
     })
-    setSent(true)
+    const data = await response.json().catch(() => ({})) as { error?: string; retryAfter?: number }
+
+    if (!response.ok) {
+      const message = data.error === 'rate_limited' && typeof data.retryAfter === 'number'
+        ? `Slow down. Try again in ${data.retryAfter}s.`
+        : data.error ?? 'Something went wrong. Try again.'
+      setError(message)
+    } else {
+      setSent(true)
+    }
     setLoading(false)
   }
 
@@ -40,6 +54,7 @@ export default function ForgotPasswordPage() {
               placeholder="you@company.com"
               className="w-full px-4 py-3 bg-surface-container border border-outline-variant rounded-xl text-on-surface focus:outline-none focus:border-primary transition-colors"
             />
+            {error && <p className="text-sm text-error">{error}</p>}
             <button
               type="submit"
               disabled={loading}
