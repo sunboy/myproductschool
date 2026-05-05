@@ -8,11 +8,23 @@ import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
+import { z, ZodError } from 'zod'
 
 const ROUTE_KEY = 'simulation_turn'
 
+const RequestSchema = z.object({
+  content: z.string().trim().min(1).max(20000),
+})
+
 function retryAfterSeconds(resetAt: Date) {
   return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
 }
 
 export async function POST(
@@ -25,8 +37,19 @@ export async function POST(
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const userPlan = await getUserPlanForBudget(user.id)
 
-  const { content } = await request.json()
-  if (!content?.trim()) return NextResponse.json({ error: 'Content required' }, { status: 400 })
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+  const { content } = body
   const shouldCallModel = !IS_MOCK && Boolean(process.env.ANTHROPIC_API_KEY)
 
   if (shouldCallModel) {
