@@ -15,6 +15,13 @@ import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
+import {
+  buildCompetencySignal,
+  computeChallengeCompetencyRollup,
+  type CompetencySignalInput,
+  type MentalModelBreakdownItem,
+} from '@/lib/scoring/competency-rollup'
+import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
 
 const ROUTE_KEY = 'hatch_feedback'
 const V2_ROUTE_KEY = 'hatch_feedback_v2'
@@ -60,6 +67,29 @@ function planLimitResponse(error: PlanLimitExceeded) {
     },
     { status: 402 }
   )
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+}
+
+function mergeModelBreakdown(
+  rollupBreakdown: MentalModelBreakdownItem[],
+  modelBreakdown: Array<{ competency?: string; demonstrated?: string; missed?: string; score?: number }> | undefined
+) {
+  return rollupBreakdown.map((item, index) => {
+    const modelItem = modelBreakdown?.[index]
+    if (!modelItem) return item
+    return {
+      ...item,
+      competency: modelItem.competency ?? item.competency,
+      demonstrated: modelItem.demonstrated?.trim() || item.demonstrated,
+      missed: modelItem.missed?.trim() || item.missed,
+      score: typeof modelItem.score === 'number' ? Math.round(modelItem.score) : item.score,
+    }
+  })
 }
 
 export async function POST(req: NextRequest) {
@@ -218,7 +248,7 @@ async function handleV2Feedback(attemptId: string, challengeId: string | undefin
   // Fetch attempt with challenge info
   const { data: attempt, error: attemptError } = await admin
     .from('challenge_attempts')
-    .select('id, challenge_id, user_id, role_id')
+    .select('id, challenge_id, user_id, role_id, feedback_json')
     .eq('id', attemptId)
     .eq('user_id', authenticatedUserId)
     .single()
@@ -235,13 +265,34 @@ async function handleV2Feedback(attemptId: string, challengeId: string | undefin
   // Fetch all step_attempts for this attempt
   const { data: stepAttempts, error: stepsError } = await admin
     .from('step_attempts')
-    .select('step, question_id, selected_option_id, user_text, competency_signal')
+    .select('step, question_id, selected_option_id, user_text, score, competencies_demonstrated, quality_label, grading_explanation, competency_signal')
     .eq('attempt_id', attemptId)
     .order('created_at', { ascending: true })
 
   if (stepsError || !stepAttempts?.length) {
     return NextResponse.json({ error: 'No step attempts found' }, { status: 404 })
   }
+
+  const questionIds = stepAttempts
+    .map((attempt) => attempt.question_id)
+    .filter((questionId): questionId is string => typeof questionId === 'string' && questionId.length > 0)
+
+  const { data: questionRows } = questionIds.length > 0
+    ? await admin
+        .from('step_questions')
+        .select('id, grading_weight_within_step, target_competencies')
+        .in('id', questionIds)
+    : { data: [] }
+
+  const questionMetaMap = new Map<string, { weight: number; targetCompetencies: string[] }>(
+    (questionRows ?? []).map((question: { id: string; grading_weight_within_step?: number | null; target_competencies?: string[] | null }) => [
+      question.id,
+      {
+        weight: question.grading_weight_within_step ?? 1,
+        targetCompetencies: question.target_competencies ?? [],
+      },
+    ])
+  )
 
   // Fetch challenge context
   const { data: challenge } = await admin
@@ -300,6 +351,87 @@ Return valid JSON only.`
       const validated = V2FeedbackSchema.safeParse(parsed)
 
       const feedback = validated.success ? clampV2FeedbackScores(validated.data) : parsed
+      const feedbackSteps = Array.isArray(feedback.steps) ? feedback.steps : []
+      const signalByStep = new Map<string, CompetencySignalInput['competency_signal']>()
+
+      for (const stepFeedback of feedbackSteps) {
+        if (!stepFeedback || typeof stepFeedback !== 'object') continue
+        const step = String(stepFeedback.step ?? '')
+        const weightedScore = typeof stepFeedback.weighted_score === 'number'
+          ? stepFeedback.weighted_score * FLOW_MAX_SCORE
+          : undefined
+        const stepSummary = typeof stepFeedback.step_summary === 'string' ? stepFeedback.step_summary : null
+        const signalRaw = stepFeedback.competency_signal && typeof stepFeedback.competency_signal === 'object'
+          ? stepFeedback.competency_signal as { primary?: string; competency?: string; signal?: string; framework_hint?: string }
+          : null
+        const signal = buildCompetencySignal({
+          step,
+          score: weightedScore,
+          grading_explanation: stepSummary,
+          competency_signal: signalRaw
+            ? {
+                competency: signalRaw.competency ?? signalRaw.primary,
+                primary: signalRaw.primary,
+                signal: signalRaw.signal,
+                framework_hint: signalRaw.framework_hint,
+              }
+            : null,
+        })
+        signalByStep.set(step, signal)
+      }
+
+      for (const [step, signal] of signalByStep.entries()) {
+        await admin
+          .from('step_attempts')
+          .update({ competency_signal: signal })
+          .eq('attempt_id', attemptId)
+          .eq('step', step)
+          .is('competency_signal', null)
+      }
+
+      const rollupRows: CompetencySignalInput[] = stepAttempts.map((row: {
+        step: string
+        question_id: string
+        score: number | null
+        competencies_demonstrated?: string[] | null
+        quality_label?: string | null
+        grading_explanation?: string | null
+        competency_signal?: CompetencySignalInput['competency_signal']
+      }) => {
+        const questionMeta = questionMetaMap.get(row.question_id)
+        return {
+          step: row.step,
+          score: row.score ?? 0,
+          weight: questionMeta?.weight ?? 1,
+          target_competencies: questionMeta?.targetCompetencies ?? [],
+          competencies_demonstrated: row.competencies_demonstrated ?? [],
+          grading_explanation: row.grading_explanation ?? null,
+          quality_label: row.quality_label ?? null,
+          competency_signal: signalByStep.get(row.step) ?? row.competency_signal ?? null,
+        }
+      })
+      const rollup = computeChallengeCompetencyRollup(rollupRows)
+      const mentalModelsBreakdown = mergeModelBreakdown(
+        rollup.mentalModelsBreakdown,
+        Array.isArray(feedback.mental_models_breakdown) ? feedback.mental_models_breakdown : undefined
+      )
+
+      await admin
+        .from('challenge_attempts')
+        .update({
+          mental_models_breakdown: mentalModelsBreakdown,
+          primary_competency: rollup.primaryCompetency,
+          weakest_competency: rollup.weakestCompetency,
+          feedback_json: {
+            ...asRecord(attempt.feedback_json),
+            hatch_feedback: feedback,
+            mental_models_breakdown: mentalModelsBreakdown,
+            primary_competency: rollup.primaryCompetency,
+            weakest_competency: rollup.weakestCompetency,
+            competency_scores: rollup.competencyScores,
+          },
+        })
+        .eq('id', attemptId)
 
       // Persist detected patterns
       if (feedback.detected_patterns?.length) {
@@ -322,7 +454,13 @@ Return valid JSON only.`
 
       logEvent(authenticatedUserId, 'session.feedback_generated', { attempt_id: attemptId, challenge_id: challengeId ?? attempt.challenge_id, version: 'v2' })
 
-      return NextResponse.json({ ...feedback, version: 'v2' })
+      return NextResponse.json({
+        ...feedback,
+        mental_models_breakdown: mentalModelsBreakdown,
+        primary_competency: rollup.primaryCompetency,
+        weakest_competency: rollup.weakestCompetency,
+        version: 'v2',
+      })
     } catch {
       return NextResponse.json({ error: 'Failed to parse v2 feedback' }, { status: 500 })
     }

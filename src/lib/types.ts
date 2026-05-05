@@ -603,7 +603,9 @@ export interface ChallengeAttemptV2 {
   current_step: FlowStep | 'done'; current_question_sequence: number
   time_spent_seconds: number; is_replay: boolean
   started_at: string; completed_at: string | null
-  mental_models_breakdown?: Array<{ step: string; competency: string; reasoning_move: string; demonstrated: string; missed: string }> | null
+  mental_models_breakdown?: Array<{ step: string; competency: string; reasoning_move: string; demonstrated: string; missed: string; framework_hint?: string; score?: number }> | null
+  primary_competency?: string | null
+  weakest_competency?: string | null
   canvas_final_snapshot?: Record<string, unknown>
   draft_snapshot?: Record<string, unknown>
   draft_updated_at?: string

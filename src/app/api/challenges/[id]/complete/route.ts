@@ -8,7 +8,12 @@ import { updateCompetencies } from '@/lib/v2/skills/competency-updater'
 import { analyzeTrend } from '@/lib/v2/skills/trend-analyzer'
 import type { FlowStep, LearnerCompetency, RoleLens } from '@/lib/types'
 import { applyMoveLevelXp } from '@/lib/data/move-levels-update'
-import { MOVE_XP_MULTIPLIER } from '@/lib/scoring/flow-scale'
+import { FLOW_MAX_SCORE, MOVE_XP_MULTIPLIER } from '@/lib/scoring/flow-scale'
+import {
+  computeChallengeCompetencyRollup,
+  competenciesForSignalInput,
+  type CompetencySignalInput,
+} from '@/lib/scoring/competency-rollup'
 
 export async function POST(
   req: NextRequest,
@@ -42,10 +47,9 @@ export async function POST(
 
   const { id: challengeId } = await params
   const body = await req.json()
-  const { attempt_id, from_plan, step_signals } = body as {
+  const { attempt_id, from_plan } = body as {
     attempt_id: string
     from_plan?: string
-    step_signals?: Array<{ step: string; quality_label: string; hatch_signal: string | null; framework_hint: string | null }>
   }
 
   if (!attempt_id) {
@@ -90,8 +94,14 @@ export async function POST(
     return NextResponse.json({ error: 'Failed to fetch question weights' }, { status: 500 })
   }
 
-  const questionWeightMap = new Map<string, number>(
-    (questions ?? []).map((q: { id: string; grading_weight_within_step: number }) => [q.id, q.grading_weight_within_step])
+  const questionMetaMap = new Map<string, { weight: number; targetCompetencies: string[] }>(
+    (questions ?? []).map((q: { id: string; grading_weight_within_step: number; target_competencies?: string[] | null }) => [
+      q.id,
+      {
+        weight: q.grading_weight_within_step,
+        targetCompetencies: q.target_competencies ?? [],
+      },
+    ])
   )
 
   // Group by step and compute per-step scores
@@ -101,7 +111,7 @@ export async function POST(
     const existing = stepMap.get(step) ?? []
     existing.push({
       score: row.score ?? 0,
-      weight: questionWeightMap.get(row.question_id) ?? 1,
+      weight: questionMetaMap.get(row.question_id)?.weight ?? 1,
     })
     stepMap.set(step, existing)
   }
@@ -111,6 +121,32 @@ export async function POST(
     const step_score = calculateStepScore(scores)
     stepResults.push({ step, step_score })
   }
+
+  type AttemptRowForSignals = {
+    question_id: string
+    step: string
+    score: number | null
+    competencies_demonstrated?: string[] | null
+    quality_label?: string | null
+    grading_explanation?: string | null
+    competency_signal?: CompetencySignalInput['competency_signal']
+  }
+
+  const competencySignalRows: CompetencySignalInput[] = attemptRows.map((row: AttemptRowForSignals) => {
+    const questionMeta = questionMetaMap.get(row.question_id)
+    return {
+      step: row.step,
+      score: row.score ?? 0,
+      weight: questionMeta?.weight ?? 1,
+      target_competencies: questionMeta?.targetCompetencies ?? [],
+      competencies_demonstrated: row.competencies_demonstrated ?? [],
+      grading_explanation: row.grading_explanation ?? null,
+      quality_label: row.quality_label ?? null,
+      competency_signal: row.competency_signal ?? null,
+    }
+  })
+
+  const competencyRollup = computeChallengeCompetencyRollup(competencySignalRows)
 
   // Fetch role lens for this attempt
   const { data: roleLens, error: roleLensError } = await admin
@@ -134,19 +170,15 @@ export async function POST(
 
   const currentCompetencies: LearnerCompetency[] = existingCompetencies ?? []
 
-  // Build stepResults for competency update (include competencies_demonstrated and step_weight)
-  const stepResultsForUpdate = attemptRows.map((row: {
-    question_id: string
-    step: string
-    score: number | null
-    competencies_demonstrated: string[]
-  }) => {
+  // Build stepResults for competency update, using target competencies first so
+  // weak answers still move the right mental-model dimension.
+  const stepResultsForUpdate = competencySignalRows.map((row) => {
     // Get the step weight from roleLens
     const step = row.step as FlowStep
     const stepWeightKey = `${step}_weight` as keyof Pick<RoleLens, 'frame_weight' | 'list_weight' | 'optimize_weight' | 'win_weight'>
     return {
       score: row.score ?? 0,
-      competencies_demonstrated: row.competencies_demonstrated ?? [],
+      competencies_demonstrated: competenciesForSignalInput(row),
       step_weight: roleLens[stepWeightKey] ?? 1.0,
     }
   })
@@ -156,17 +188,16 @@ export async function POST(
     currentCompetencies,
     stepResultsForUpdate,
     roleLens as RoleLens,
+    FLOW_MAX_SCORE,
   )
 
   // Upsert updated competencies to learner_competencies table, with trend data
   if (updatedCompetencies.length > 0) {
     await admin.from('learner_competencies').upsert(
       updatedCompetencies.map((c) => {
-        const scores = attemptRows
-          .filter((r: { competencies_demonstrated: string[] }) =>
-            r.competencies_demonstrated?.includes(c.competency)
-          )
-          .map((r: { score: number | null }) => r.score ?? 0)
+        const scores = competencySignalRows
+          .filter((row) => competenciesForSignalInput(row).includes(c.competency))
+          .map((row) => row.score ?? 0)
         const { trend, slope } = analyzeTrend(scores)
         return { ...c, user_id: userId, trend, trend_slope: slope }
       }),
@@ -319,19 +350,31 @@ export async function POST(
       max_score,
       grade_label,
       completed_at: new Date().toISOString(),
-      feedback_json: { step_breakdown, step_signals: stepSignalsFromDB, competency_deltas: deltaEntries, grade_label, total_score, max_score, xp_awarded: xp_earned },
+      mental_models_breakdown: competencyRollup.mentalModelsBreakdown,
+      primary_competency: competencyRollup.primaryCompetency,
+      weakest_competency: competencyRollup.weakestCompetency,
+      feedback_json: {
+        step_breakdown,
+        step_signals: stepSignalsFromDB,
+        competency_deltas: deltaEntries,
+        mental_models_breakdown: competencyRollup.mentalModelsBreakdown,
+        primary_competency: competencyRollup.primaryCompetency,
+        weakest_competency: competencyRollup.weakestCompetency,
+        competency_scores: competencyRollup.competencyScores,
+        grade_label,
+        total_score,
+        max_score,
+        xp_awarded: xp_earned,
+      },
     })
     .eq('id', attempt_id)
 
   const topDelta = deltaEntries.length > 0
     ? [...deltaEntries].sort((a, b) => (b.after - b.before) - (a.after - a.before))[0]
     : null
-  const watchDelta = deltaEntries.length > 0
-    ? deltaEntries[deltaEntries.length - 1]
-    : null
 
   const contentStr = topDelta && topDelta.after > topDelta.before
-    ? `Completed "${challengeTitle}": ${grade_label} (${total_score.toFixed(2)}/${max_score.toFixed(2)}). Top competency shown: ${topDelta.competency}. Watch: ${watchDelta?.competency ?? 'keep practising'}.`
+    ? `Completed "${challengeTitle}": ${grade_label} (${total_score.toFixed(2)}/${max_score.toFixed(2)}). Top competency shown: ${competencyRollup.primaryCompetency}. Watch: ${competencyRollup.weakestCompetency}.`
     : `Completed "${challengeTitle}": ${grade_label} (${total_score.toFixed(2)}/${max_score.toFixed(2)}).`
 
   await admin.from('hatch_context').insert({
@@ -342,5 +385,16 @@ export async function POST(
     created_at: new Date().toISOString(),
   })
 
-  return NextResponse.json({ total_score, max_score, grade_label, xp_awarded: xp_earned, competency_deltas: deltaEntries, step_breakdown, step_signals: stepSignalsFromDB })
+  return NextResponse.json({
+    total_score,
+    max_score,
+    grade_label,
+    xp_awarded: xp_earned,
+    competency_deltas: deltaEntries,
+    step_breakdown,
+    step_signals: stepSignalsFromDB,
+    mental_models_breakdown: competencyRollup.mentalModelsBreakdown,
+    primary_competency: competencyRollup.primaryCompetency,
+    weakest_competency: competencyRollup.weakestCompetency,
+  })
 }
