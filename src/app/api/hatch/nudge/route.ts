@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import { HATCH_NUDGE_SYSTEM_PROMPT, MENTAL_MODELS_CONTEXT, buildNudgeUserPrompt } from '@/lib/hatch/system-prompt'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -17,13 +18,38 @@ const MOCK_NUDGES = [
 ]
 
 const ROUTE_KEY = 'hatch_nudge'
+const RequestSchema = z.object({
+  challengePrompt: z.string().max(20000).nullable().optional(),
+  draft: z.string().max(50000).nullable().optional(),
+  attemptId: z.string().uuid().nullable().optional(),
+  step: z.enum(['frame', 'list', 'optimize', 'win']).nullable().optional(),
+})
 
 function retryAfterSeconds(resetAt: Date) {
   return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
 }
 
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
+
 export async function POST(req: NextRequest) {
-  const { challengePrompt, draft, attemptId, step } = await req.json()
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+  const { challengePrompt, draft, attemptId, step } = body
 
   if (!draft?.trim()) {
     return NextResponse.json({ nudge: null })
@@ -106,8 +132,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const validSteps = ['frame', 'list', 'optimize', 'win']
-    const flowStep = validSteps.includes(step) ? (step as FlowStep) : undefined
+    const flowStep: FlowStep | undefined = step ?? undefined
 
     let userPrompt = buildNudgeUserPrompt(challengePrompt ?? '', draft)
     if (flowStep) {
