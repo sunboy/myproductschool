@@ -8,11 +8,21 @@ import type { CanvasScene } from '@/lib/hatch/canvas-scene'
 import type { CanvasInterpretResponse, InterviewGrade } from '@/lib/types'
 import { useHatchDockState } from '@/hooks/useHatchDockState'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
+import { ChallengePaywallGate } from '@/components/paywalls/ChallengePaywallGate'
+import { useUpgrade } from '@/hooks/useUpgrade'
 
 interface ChatMessage {
   role: 'user' | 'hatch'
   content: string
   kind?: 'canvas_action' | 'chat' | 'nudge'
+}
+
+interface LimitErrorPayload {
+  error?: string
+  feature?: string
+  used?: number
+  limit?: number
+  retryAfter?: number
 }
 
 interface CanvasChatPanelProps {
@@ -115,6 +125,7 @@ export function CanvasChatPanel({
 }: CanvasChatPanelProps) {
   const { mode, panelWidth, setMode, setPanelWidth, MIN_WIDTH, MAX_WIDTH } = useHatchDockState('canvas')
   const { muted, toggleMuted, play } = useHatchSonics()
+  const { startUpgrade } = useUpgrade()
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -125,6 +136,8 @@ export function CanvasChatPanel({
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [retryAfter, setRetryAfter] = useState<number | null>(null)
+  const [limitGate, setLimitGate] = useState<{ feature: string; used: number; limit: number } | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null)
   const lastQueuedPromptIdRef = useRef<string | null>(null)
@@ -133,6 +146,13 @@ export function CanvasChatPanel({
     ? null
     : `${scene.entities.length} ${challengeType === 'data_modeling' ? 'tables' : 'nodes'} · ${scene.connections.length} ${challengeType === 'data_modeling' ? 'links' : 'flows'}`
   const starterPrompts = getExamplePrompts(challengeType, currentLanguage)
+  const isThrottled = retryAfter != null && retryAfter > 0
+  const inputDisabled = isLoading || isThrottled
+  const inputPlaceholder = isThrottled
+    ? `Slow down. Try again in ${retryAfter}s.`
+    : challengeType === 'coding'
+      ? "Ask Hatch about your code…"
+      : "Ask Hatch, or tell it what to draw from your notes…"
 
   // Suppress unused variable warnings — grade is reserved for future use; isOpen kept for callers
   void grade
@@ -159,8 +179,20 @@ export function CanvasChatPanel({
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  useEffect(() => {
+    if (!isThrottled) return
+    const interval = window.setInterval(() => {
+      setRetryAfter((current) => {
+        if (!current || current <= 1) return null
+        return current - 1
+      })
+    }, 1000)
+
+    return () => window.clearInterval(interval)
+  }, [isThrottled])
+
   const sendMessage = useCallback(async (text: string) => {
-    if (!text.trim() || isLoading) return
+    if (!text.trim() || isLoading || isThrottled) return
     const userMsg: ChatMessage = { role: 'user', content: text, kind: 'chat' }
     play('send')
     setMessages((prev) => [...prev, userMsg])
@@ -202,7 +234,44 @@ export function CanvasChatPanel({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...baseBody, ...codingBody }),
       })
-      if (!res.ok) throw new Error('coach call failed')
+      if (!res.ok) {
+        const errorPayload = await res.json().catch(() => ({})) as LimitErrorPayload
+        if (res.status === 402 && errorPayload.error === 'limit_reached') {
+          setLimitGate({
+            feature: errorPayload.feature ?? 'hatch_canvas_interprets',
+            used: errorPayload.used ?? errorPayload.limit ?? 0,
+            limit: errorPayload.limit ?? 0,
+          })
+          play('error')
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: 'hatch',
+              content: 'You have hit the free Hatch canvas review limit. Upgrade to keep coaching available.',
+              kind: 'chat',
+            },
+          ])
+          return
+        }
+
+        if (res.status === 429) {
+          const retryHeader = Number(res.headers.get('Retry-After'))
+          const seconds = errorPayload.retryAfter ?? (Number.isFinite(retryHeader) && retryHeader > 0 ? retryHeader : 30)
+          setRetryAfter(seconds)
+          play('error')
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: 'hatch',
+              content: `Slow down. Try again in ${seconds}s.`,
+              kind: 'chat',
+            },
+          ])
+          return
+        }
+
+        throw new Error('coach call failed')
+      }
       const data = (await res.json()) as CanvasInterpretResponse
       const willBuild = data.actions.length > 0 && !!onCanvasActions
       if (willBuild && onCanvasActions) {
@@ -234,7 +303,7 @@ export function CanvasChatPanel({
       currentCode, currentLanguage, lastRunResult, timeElapsed, timeRemaining,
       challengeTitle, problemStatement,
       activePartId, activePartSequence, activePartTitle, activePartPrompt,
-      activePartResponseType, activePartWeightPct, play])
+      activePartResponseType, activePartWeightPct, play, isThrottled])
 
   useEffect(() => {
     if (!queuedPrompt || queuedPrompt.id === lastQueuedPromptIdRef.current) return
@@ -285,12 +354,13 @@ export function CanvasChatPanel({
 
   if (mode === 'docked') {
     return (
-      <div
-        data-testid="hatch-chat-panel"
-        data-hatch-target="workspace-hatch-chat"
-        style={{ width: panelWidth, minWidth: MIN_WIDTH, maxWidth: MAX_WIDTH }}
-        className="relative flex flex-col border-l border-outline-variant bg-surface-container h-full overflow-hidden shrink-0"
-      >
+      <>
+        <div
+          data-testid="hatch-chat-panel"
+          data-hatch-target="workspace-hatch-chat"
+          style={{ width: panelWidth, minWidth: MIN_WIDTH, maxWidth: MAX_WIDTH }}
+          className="relative flex flex-col border-l border-outline-variant bg-surface-container h-full overflow-hidden shrink-0"
+        >
         {/* Drag handle */}
         <div
           onMouseDown={startResize}
@@ -404,28 +474,45 @@ export function CanvasChatPanel({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={challengeType === 'coding' ? "Ask Hatch about your code…" : "Ask Hatch, or tell it what to draw from your notes…"}
+                disabled={inputDisabled}
+                placeholder={inputPlaceholder}
                 rows={2}
-                className="flex-1 resize-none rounded-lg bg-surface-container border border-outline-variant text-on-surface text-sm px-3 py-2 font-body placeholder:text-on-surface-variant focus:outline-none focus:border-primary"
+                className="flex-1 resize-none rounded-lg bg-surface-container border border-outline-variant text-on-surface text-sm px-3 py-2 font-body placeholder:text-on-surface-variant focus:outline-none focus:border-primary disabled:opacity-60"
               />
               <div className="flex flex-col gap-1">
-                <VoiceInputButton onTranscript={sendMessage} disabled={isLoading} />
+                <VoiceInputButton onTranscript={sendMessage} disabled={inputDisabled} />
                 <button
                   onClick={() => sendMessage(input)}
-                  disabled={isLoading || !input.trim()}
+                  disabled={inputDisabled || !input.trim()}
                   className="p-2 rounded-full bg-primary text-on-primary disabled:opacity-40 hover:opacity-90 transition-opacity"
                 >
                   <span className="material-symbols-outlined text-[18px]">send</span>
                 </button>
               </div>
             </div>
+            {isThrottled && (
+              <p className="mt-2 font-body text-xs text-on-surface-variant">
+                Slow down. Try again in {retryAfter}s.
+              </p>
+            )}
           </div>
         )}
-      </div>
+        </div>
+        {limitGate && (
+          <ChallengePaywallGate
+            used={limitGate.used}
+            limit={limitGate.limit}
+            feature={limitGate.feature}
+            onUpgrade={startUpgrade}
+            onDismiss={() => setLimitGate(null)}
+          />
+        )}
+      </>
     )
   }
 
   return (
+    <>
     <div data-testid="hatch-chat-panel" data-hatch-target="workspace-hatch-chat" className="absolute bottom-4 right-4 z-20 flex flex-col w-80 h-[480px] max-h-[calc(100%-2rem)] border border-outline-variant rounded-xl bg-surface-container shadow-2xl overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-outline-variant bg-surface-container-high">
@@ -546,23 +633,39 @@ export function CanvasChatPanel({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={challengeType === 'coding' ? "Ask Hatch about your code…" : "Ask Hatch, or tell it what to draw from your notes…"}
+              disabled={inputDisabled}
+              placeholder={inputPlaceholder}
               rows={2}
-              className="flex-1 resize-none rounded-lg bg-surface-container border border-outline-variant text-on-surface text-sm px-3 py-2 font-body placeholder:text-on-surface-variant focus:outline-none focus:border-primary"
+              className="flex-1 resize-none rounded-lg bg-surface-container border border-outline-variant text-on-surface text-sm px-3 py-2 font-body placeholder:text-on-surface-variant focus:outline-none focus:border-primary disabled:opacity-60"
             />
             <div className="flex flex-col gap-1">
-              <VoiceInputButton onTranscript={sendMessage} disabled={isLoading} />
+              <VoiceInputButton onTranscript={sendMessage} disabled={inputDisabled} />
               <button
                 onClick={() => sendMessage(input)}
-                disabled={isLoading || !input.trim()}
+                disabled={inputDisabled || !input.trim()}
                 className="p-2 rounded-full bg-primary text-on-primary disabled:opacity-40 hover:opacity-90 transition-opacity"
               >
                 <span className="material-symbols-outlined text-[18px]">send</span>
               </button>
             </div>
           </div>
+          {isThrottled && (
+            <p className="mt-2 font-body text-xs text-on-surface-variant">
+              Slow down. Try again in {retryAfter}s.
+            </p>
+          )}
         </div>
       )}
     </div>
+    {limitGate && (
+      <ChallengePaywallGate
+        used={limitGate.used}
+        limit={limitGate.limit}
+        feature={limitGate.feature}
+        onUpgrade={startUpgrade}
+        onDismiss={() => setLimitGate(null)}
+      />
+    )}
+    </>
   )
 }

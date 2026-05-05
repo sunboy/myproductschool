@@ -14,20 +14,76 @@ const FEATURES = [
 interface ChallengePaywallGateProps {
   used: number
   limit: number
+  feature?: string
   challengeTitle?: string
   onUpgrade?: () => void
   onDismiss?: () => void
 }
 
+const FEATURE_COPY: Record<string, { icon: string; eyebrow: string; headline: string; detail: string }> = {
+  hatch_chat_msgs: {
+    icon: 'psychology',
+    eyebrow: 'Hatch coaching limit',
+    headline: 'You have used your free Hatch coaching messages.',
+    detail: 'Pro keeps Hatch available across chat, reviews, and planning.',
+  },
+  hatch_nudges: {
+    icon: 'tips_and_updates',
+    eyebrow: 'Hatch nudge limit',
+    headline: 'You have used your free Hatch nudges.',
+    detail: 'Pro keeps timely hints available while you work through reps.',
+  },
+  hatch_canvas_interprets: {
+    icon: 'draw',
+    eyebrow: 'Canvas coaching limit',
+    headline: 'You have used your free Hatch canvas reviews.',
+    detail: 'Pro keeps Hatch available for diagrams, schemas, and code feedback.',
+  },
+  simulation_turns: {
+    icon: 'forum',
+    eyebrow: 'Simulation limit',
+    headline: 'You have used your free simulation turns.',
+    detail: 'Pro gives you more reps for realistic interview practice.',
+  },
+  live_interview_turns: {
+    icon: 'mic',
+    eyebrow: 'Live interview limit',
+    headline: 'You have used your free live interview turns.',
+    detail: 'Pro gives you more live interview practice with Hatch.',
+  },
+  quick_takes: {
+    icon: 'bolt',
+    eyebrow: 'Quick take limit',
+    headline: 'You have used your free quick takes.',
+    detail: 'Pro keeps quick feedback available for short daily reps.',
+  },
+  ai_grading_runs: {
+    icon: 'rate_review',
+    eyebrow: 'Review limit',
+    headline: 'You have used your free Hatch reviews.',
+    detail: 'Pro keeps grading and debriefs available across your practice.',
+  },
+}
+
+function copyForFeature(feature?: string) {
+  return feature ? FEATURE_COPY[feature] : null
+}
+
 export function ChallengePaywallGate({
   used,
   limit,
+  feature,
   onUpgrade,
   onDismiss,
 }: ChallengePaywallGateProps) {
 
-  const progressPct = Math.min((used / limit) * 100, 100)
+  const safeLimit = Math.max(limit, 1)
+  const progressPct = Math.min((used / safeLimit) * 100, 100)
   const monthlyPlan = BILLING_PLANS.monthly
+  const featureCopy = copyForFeature(feature)
+  const eyebrow = featureCopy?.eyebrow ?? 'HackProduct Pro'
+  const headline = featureCopy?.headline ?? `You've used ${used} of ${limit} free challenges.`
+  const detail = featureCopy?.detail ?? 'Monthly limit reached'
 
   return (
     <div className="fixed inset-0 z-50">
@@ -56,10 +112,10 @@ export function ChallengePaywallGate({
               <HatchGlyph size={40} state="idle" className="text-white shrink-0" />
               <div>
                 <p className="font-label text-[11px] uppercase tracking-[0.18em] font-bold text-white/60">
-                  HackProduct Pro
+                  {eyebrow}
                 </p>
                 <p className="font-headline font-bold text-white text-lg leading-tight" style={{ letterSpacing: '-0.02em' }}>
-                  You&apos;ve used {used} of {limit} free challenges.
+                  {headline}
                 </p>
               </div>
             </div>
@@ -70,7 +126,7 @@ export function ChallengePaywallGate({
               />
             </div>
             <p className="font-body text-xs text-white/60 mt-2">
-              {limit - used === 0 ? 'Monthly limit reached' : `${limit - used} remaining this month`}
+              {safeLimit - used <= 0 ? detail : `${safeLimit - used} remaining this month`}
             </p>
           </div>
 
