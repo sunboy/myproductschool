@@ -5,6 +5,14 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
+
+const ROUTE_KEY = 'personalised_study_plan_generate'
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
 
 // ── Types ─────────────────────────────────────────────────────
 
@@ -211,6 +219,44 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  const userPlan = await getUserPlanForBudget(userId)
+  if (process.env.ANTHROPIC_API_KEY) {
+    const throttle = await rateLimit({
+      key: `ai:${userId}:${ROUTE_KEY}`,
+      limit: userPlan === 'pro' ? 15 : 5,
+      windowSec: 60,
+    })
+
+    if (!throttle.allowed) {
+      const retryAfter = retryAfterSeconds(throttle.resetAt)
+      return NextResponse.json(
+        { error: 'rate_limited', retryAfter },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(retryAfter) },
+        }
+      )
+    }
+
+    try {
+      await assertPlanLimit(userId, userPlan, 'hatch_chat_msgs')
+    } catch (error) {
+      if (error instanceof PlanLimitExceeded) {
+        return NextResponse.json(
+          {
+            error: 'limit_reached',
+            feature: error.feature,
+            used: error.used,
+            limit: error.limit,
+            windowDays: error.windowDays,
+          },
+          { status: 402 }
+        )
+      }
+      throw error
+    }
+  }
+
   // ── Archive existing active plan if force=true ────────────
   if (force) {
     try {
@@ -274,7 +320,7 @@ export async function POST(req: NextRequest) {
         {
           model: 'claude-sonnet-4-6',
           max_tokens: 800,
-          budget: { userId, userPlan: await getUserPlanForBudget(userId), route: 'personalised_study_plan_generate' },
+          budget: { userId, userPlan, route: ROUTE_KEY },
         }
       )
 
