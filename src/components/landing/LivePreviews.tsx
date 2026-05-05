@@ -1,304 +1,428 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import type { CSSProperties } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
-export function LivePreview_Practice() {
-  const fullAnswer = "Spotify's session drop is likely a discovery problem: users land but don't find what they want. I'd frame this as a recommendation relevance issue first, then check…"
+const DISCIPLINES = [
+  { name: 'Product Sense', short: 'PS', score: 86, color: '#2563eb' },
+  { name: 'System Design', short: 'SD', score: 79, color: '#111827' },
+  { name: 'Data Modeling', short: 'DM', score: 72, color: '#16a34a' },
+  { name: 'SQL', short: 'SQL', score: 81, color: '#d97706' },
+  { name: 'Coding', short: 'CODE', score: 76, color: '#0891b2' },
+  { name: 'PM Loop', short: 'PM', score: 68, color: '#7c3aed' },
+]
+
+const TASKS = [
+  { title: 'Spotify session drop', type: 'Product Sense', state: 'Live coach' },
+  { title: '50M notification service', type: 'System Design', state: 'Rubric ready' },
+  { title: 'Cohort retention query', type: 'SQL', state: 'Needs rewrite' },
+  { title: 'Multi-tenant billing model', type: 'Data Modeling', state: 'Strong frame' },
+]
+
+export function ProductCommandCenter() {
+  const [active, setActive] = useState(0)
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActive((value) => (value + 1) % TASKS.length)
+    }, 2400)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  const task = TASKS[active]
+
+  return (
+    <div className="hp-product hp-product--hero" aria-label="HackProduct product preview">
+      <div className="hp-product-top">
+        <div className="hp-product-brand">
+          <span className="hp-brand-mark">H</span>
+          <span>HackProduct</span>
+        </div>
+        <div className="hp-command-input">Ask Hatch to build my interview plan</div>
+        <div className="hp-status-dot">Live</div>
+      </div>
+
+      <div className="hp-product-shell">
+        <aside className="hp-product-rail">
+          {['Home', 'Practice', 'Coach', 'Review', 'Progress'].map((item, index) => (
+            <div key={item} className={`hp-rail-item ${index === 1 ? 'is-active' : ''}`}>
+              <span />
+              {item}
+            </div>
+          ))}
+        </aside>
+
+        <div className="hp-product-main">
+          <div className="hp-hero-grid">
+            <section className="hp-coach-card">
+              <div className="hp-coach-orb">
+                <span />
+                <span />
+                <span />
+                <HatchGlyph size={54} state="speaking" />
+              </div>
+              <div>
+                <p className="hp-mini-label">Hatch is running</p>
+                <h3>{task.title}</h3>
+                <p>{task.type} practice, live follow-ups, and receipts on every answer.</p>
+              </div>
+              <div className="hp-mini-progress">
+                <span style={{ width: `${64 + active * 7}%` }} />
+              </div>
+            </section>
+
+            <section className="hp-task-stack">
+              <div className="hp-section-title">Interview queue</div>
+              {TASKS.map((item, index) => (
+                <button
+                  key={item.title}
+                  className={`hp-task-row ${active === index ? 'is-active' : ''}`}
+                  onClick={() => setActive(index)}
+                >
+                  <span className="hp-task-index">{index + 1}</span>
+                  <span>
+                    <b>{item.title}</b>
+                    <small>{item.type}</small>
+                  </span>
+                  <em>{item.state}</em>
+                </button>
+              ))}
+            </section>
+          </div>
+
+          <div className="hp-discipline-strip">
+            {DISCIPLINES.map((discipline, index) => (
+              <div key={discipline.name} className="hp-discipline-mini" style={{ animationDelay: `${index * 90}ms` }}>
+                <span style={{ background: discipline.color }}>{discipline.short}</span>
+                <b>{discipline.score}</b>
+                <small>{discipline.name}</small>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function OrchestrationMap() {
+  const [active, setActive] = useState(0)
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActive((value) => (value + 1) % DISCIPLINES.length)
+    }, 1800)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  return (
+    <div className="hp-orchestration-art" aria-label="AI coach orchestration map">
+      <div className="hp-orbit-center">
+        <div className="hp-orbit-avatar">
+          <HatchGlyph size={48} state="reviewing" />
+        </div>
+        <p>Hatch coach</p>
+        <span>shared memory + rubric</span>
+      </div>
+
+      <div className="hp-orbit-ring" />
+      {DISCIPLINES.map((discipline, index) => (
+        <button
+          key={discipline.name}
+          className={`hp-orbit-node hp-orbit-node--${index + 1} ${active === index ? 'is-active' : ''}`}
+          onClick={() => setActive(index)}
+          style={{ '--node-color': discipline.color } as CSSProperties}
+        >
+          <span>{discipline.short}</span>
+          <b>{discipline.name}</b>
+        </button>
+      ))}
+
+      <div className="hp-orbit-note">
+        <b>{DISCIPLINES[active].name}</b>
+        <span>Next prompt, rubric, and follow-up generated from your weak move.</span>
+      </div>
+    </div>
+  )
+}
+
+export function CurriculumStack() {
+  const chapters = [
+    ['Chapter I', 'Frame ambiguous product problems', 'Define user, metric, and scope before ideas.'],
+    ['Chapter II', 'Build technical judgment', 'Systems, data models, APIs, SQL, and trade-offs.'],
+    ['Chapter III', 'Practice live pressure', 'Voice interviews, interruptions, clarifying questions.'],
+    ['Chapter IV', 'Review like a hiring panel', 'Receipts, weakness drills, and progress loops.'],
+  ]
+
+  return (
+    <div className="hp-curriculum-art">
+      {chapters.map(([label, title, body], index) => (
+        <article key={label} className="hp-chapter-card" style={{ '--chapter-index': index } as CSSProperties}>
+          <div>
+            <span>{label}</span>
+            <h3>{title}</h3>
+          </div>
+          <p>{body}</p>
+          <Link href="/study-plans">Read chapter {index + 1}</Link>
+        </article>
+      ))}
+    </div>
+  )
+}
+
+export function RoadmapPreview() {
+  const stages = [
+    { name: 'Diagnostic', done: 3, total: 3 },
+    { name: 'Product Sense', done: 4, total: 6 },
+    { name: 'Systems', done: 2, total: 5 },
+    { name: 'Panel Ready', done: 0, total: 4 },
+  ]
+
+  return (
+    <div className="hp-preview hp-roadmap-preview">
+      <div className="hp-preview-head">
+        <span>Interview roadmap</span>
+        <b>Senior PM loop</b>
+      </div>
+      <div className="hp-roadmap-lanes">
+        {stages.map((stage, index) => (
+          <div key={stage.name} className="hp-roadmap-stage">
+            <div className="hp-roadmap-count">{stage.done}/{stage.total}</div>
+            <h4>{stage.name}</h4>
+            <div className="hp-roadmap-bars">
+              {Array.from({ length: stage.total }).map((_, itemIndex) => (
+                <span key={itemIndex} className={itemIndex < stage.done ? 'is-done' : ''} />
+              ))}
+            </div>
+            <p>{index === 0 ? 'Baseline complete' : index === 1 ? 'Weakest move: List' : index === 2 ? 'Trade-offs queued' : 'Mock panel locked'}</p>
+          </div>
+        ))}
+      </div>
+      <div className="hp-roadmap-footer">
+        <span>Next task</span>
+        <b>Diagnose a marketplace liquidity drop</b>
+        <button>Start rep</button>
+      </div>
+    </div>
+  )
+}
+
+export function PracticeWorkbench() {
+  const fullAnswer = "I would frame this as a discovery quality problem first: session length moved while DAU stayed stable, so I need to split users by entry point, intent, and recommendation surface before naming a fix."
   const [typed, setTyped] = useState('')
 
   useEffect(() => {
     if (typed.length >= fullAnswer.length) {
-      const t = setTimeout(() => setTyped(''), 2200)
-      return () => clearTimeout(t)
+      const reset = window.setTimeout(() => setTyped(''), 1800)
+      return () => window.clearTimeout(reset)
     }
-    const t = setTimeout(() => setTyped(fullAnswer.slice(0, typed.length + 1)), 28 + Math.random() * 30)
-    return () => clearTimeout(t)
+    const timer = window.setTimeout(() => {
+      setTyped(fullAnswer.slice(0, typed.length + 1))
+    }, 22)
+    return () => window.clearTimeout(timer)
   }, [typed, fullAnswer])
 
-  const score = Math.min(82, Math.round((typed.length / fullAnswer.length) * 82))
-
   return (
-    <div className="lp-frame lp-cream">
-      <div className="lp-tabs">
-        <div className="lp-tab lp-tab--active">Spotify · 15% Drop</div>
-        <div className="lp-tab">+ New scratch</div>
-        <div style={{ flex: 1 }} />
-        <div className="lp-pill lp-pill--amber">⏱ 12:48</div>
-      </div>
-      <div className="lp-practice-grid">
-        <div className="lp-panel">
-          <div className="lp-panel-head">
-            <span className="lp-tag lp-tag--ai-native">AI-Native</span>
-            <span className="lp-tag lp-tag--frame">Frame</span>
-          </div>
-          <h4 className="lp-h">Spotify&apos;s 15% session drop</h4>
-          <p className="lp-p">DAU is steady but average session length has fallen 15% over 6 weeks. Eng says nothing changed. PM says retention looks fine. <b>Where do you start?</b></p>
-          <div className="lp-mini-stat">
-            <div><b>6.4M</b><span>DAU</span></div>
-            <div><b>−15%</b><span>session</span></div>
-            <div><b>0</b><span>incidents</span></div>
-          </div>
+    <div className="hp-preview hp-practice-preview">
+      <div className="hp-practice-prompt">
+        <span>Product Sense</span>
+        <h4>Spotify session length dropped 15%</h4>
+        <p>DAU is flat. No incidents. Premium conversion is unchanged. Where do you start?</p>
+        <div className="hp-signal-row">
+          <b>-15%</b>
+          <b>6 weeks</b>
+          <b>0 incidents</b>
         </div>
-        <div className="lp-panel lp-panel--white">
-          <div className="lp-answer-head"><span>Your answer</span></div>
-          <div className="lp-textarea">{typed}<span className="lp-caret" /></div>
-          {typed.length > 60 && (
-            <div className="lp-luma-coach anim-fade-up">
-              <HatchGlyph size={24} state="reviewing" />
-              <div><b>Strong frame.</b> Now <i>list</i>: what are 3 hypotheses?</div>
-            </div>
-          )}
-          <div className="lp-score">
-            <div className="lp-score-head"><span>Frame score</span><b>{score}/100</b></div>
-            <div className="lp-score-bar"><div style={{ width: `${score}%` }} /></div>
-          </div>
+      </div>
+      <div className="hp-practice-answer">
+        <div className="hp-answer-label">Your live answer</div>
+        <p>{typed}<span className="hp-caret" /></p>
+        <div className="hp-coach-nudge">
+          <HatchGlyph size={24} state="reviewing" />
+          <span>Good frame. Now list three hypotheses in priority order.</span>
         </div>
       </div>
     </div>
   )
 }
 
-export function LivePreview_LiveInterview() {
-  const lines = [
-    { who: 'luma', text: 'How would you measure success for this feature?' },
-    { who: 'you',  text: "I'd start with adoption: what % of eligible users try it…" },
-    { who: 'luma', text: 'Good. Now, how would you separate adoption from value?' },
-  ]
-  const [shown, setShown] = useState(0)
-  useEffect(() => {
-    const t = setInterval(() => setShown(s => (s + 1) % (lines.length + 1)), 2400)
-    return () => clearInterval(t)
-  }, [lines.length])
-
-  return (
-    <div className="lp-frame lp-dark">
-      <div className="lp-iv-head">
-        <div className="lp-iv-dot" /> LIVE · Mock interview · Senior PM
-        <div style={{ flex: 1 }} />
-        <span className="lp-iv-time">14:22</span>
-      </div>
-      <div className="lp-iv-stage">
-        <div className="lp-iv-orb">
-          <div className="lp-iv-rings"><span /><span /><span /></div>
-          <HatchGlyph size={64} state="speaking" />
-          <div className="lp-iv-name">Hatch · Senior PM Interviewer</div>
-        </div>
-        <div className="lp-iv-wave" aria-hidden>
-          {Array.from({ length: 28 }).map((_, i) => (
-            <span key={i} style={{ animationDelay: `${i * 60}ms`, height: 8 + Math.abs(Math.sin(i * 0.7)) * 28 }} />
-          ))}
-        </div>
-        <div className="lp-iv-transcript">
-          {lines.slice(0, shown).map((l, i) => (
-            <div key={i} className={`lp-iv-line lp-iv-line--${l.who} anim-fade-up`}>
-              <span className="lp-iv-who">{l.who === 'luma' ? 'Hatch' : 'You'}</span>
-              <span>{l.text}</span>
-            </div>
-          ))}
-          {shown < lines.length && (
-            <div className="lp-iv-typing"><span /><span /><span /></div>
-          )}
-        </div>
-      </div>
-      <div className="lp-iv-controls">
-        <button className="lp-iv-btn lp-iv-btn--mic">🎙 Speaking</button>
-        <button className="lp-iv-btn">Pause</button>
-        <button className="lp-iv-btn lp-iv-btn--end">End interview</button>
-      </div>
-    </div>
-  )
-}
-
-export function LivePreview_StudyPlans() {
-  const plans = [
-    { id: 'ai',     title: 'AI-Native PM',    weeks: 6, role: 'PMs at AI-first companies', color: '#e37d4a', soft: '#fbe1d0', scenarios: 42 },
-    { id: 'growth', title: 'Growth Loops',    weeks: 4, role: 'B2C product leaders',        color: '#a878d6', soft: '#ecdeff', scenarios: 28 },
-    { id: 'agent',  title: 'Agentic Products',weeks: 5, role: 'Builders shipping agents',   color: '#4a7c59', soft: '#cfe3d3', scenarios: 36 },
-  ]
-  const [selected, setSelected] = useState('agent')
-  const sel = plans.find(p => p.id === selected)!
-
-  return (
-    <div className="lp-frame lp-cream">
-      <div className="lp-sp-head">
-        <h4 className="lp-h" style={{ margin: 0 }}>Study plans, calibrated to your role</h4>
-        <span className="lp-pill">14 plans</span>
-      </div>
-      <div className="lp-sp-grid">
-        {plans.map(p => (
-          <button
-            key={p.id}
-            className="lp-sp-card"
-            style={selected === p.id ? { borderColor: p.color, background: p.soft } : undefined}
-            onClick={() => setSelected(p.id)}
-          >
-            <div className="lp-sp-tile" style={{ background: p.color }}>
-              {p.title.split(' ').map(w => w[0]).join('').slice(0, 2)}
-            </div>
-            <div>
-              <div className="lp-sp-title">{p.title}</div>
-              <div className="lp-sp-sub">{p.weeks} weeks · {p.scenarios} scenarios</div>
-            </div>
-          </button>
-        ))}
-      </div>
-      <div className="lp-sp-detail" style={{ background: sel.soft }}>
-        <div>
-          <div className="lp-sp-detail-eyebrow">Selected · for {sel.role}</div>
-          <div className="lp-sp-detail-h" style={{ color: sel.color }}>{sel.title}</div>
-          <div className="lp-sp-weeks">
-            {Array.from({ length: sel.weeks }).map((_, i) => (
-              <div key={i} className="lp-sp-week">
-                <div className="lp-sp-week-bar" style={{ background: i < 2 ? sel.color : 'rgba(0,0,0,0.1)' }} />
-                <div className="lp-sp-week-label">W{i + 1}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <button className="lp-cta-pill" style={{ background: sel.color }}>Start plan →</button>
-      </div>
-    </div>
-  )
-}
-
-export function LivePreview_LumaCoach() {
-  const convo = [
-    { who: 'you',  text: "I'm stuck framing this. The metric moved but I don't know which lever caused it." },
-    { who: 'luma', text: "Stuck is fine. Let's narrow. Which metric, and what timeframe?", chips: ['Session length', 'Conversion', 'Retention'] },
-    { who: 'you',  text: 'Session length, last 6 weeks.' },
-    { who: 'luma', text: "Three quick hypotheses you'd bet on. Go." },
-  ]
-  const [step, setStep] = useState(1)
-  useEffect(() => {
-    const t = setInterval(() => setStep(s => s >= convo.length ? 1 : s + 1), 2200)
-    return () => clearInterval(t)
-  }, [convo.length])
-
-  return (
-    <div className="lp-frame lp-cream lp-coach">
-      <div className="lp-coach-head">
-        <HatchGlyph size={32} state="reviewing" />
-        <div>
-          <div className="lp-coach-title">Ask Hatch</div>
-          <div className="lp-coach-sub">Always-on · context-aware · brutally specific</div>
-        </div>
-        <span className="lp-pill lp-pill--green">● online</span>
-      </div>
-      <div className="lp-coach-stream">
-        {convo.slice(0, step).map((m, i) => (
-          <div key={i} className={`lp-msg lp-msg--${m.who} anim-fade-up`}>
-            {m.who === 'luma' && <HatchGlyph size={24} state="idle" />}
-            <div>
-              <div className="lp-msg-bubble">{m.text}</div>
-              {m.chips && (
-                <div className="lp-msg-chips">
-                  {m.chips.map(c => <button key={c} className="lp-chip">{c}</button>)}
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-        {step < convo.length && (
-          <div className="lp-msg lp-msg--luma">
-            <HatchGlyph size={24} state="reviewing" />
-            <div className="lp-msg-bubble lp-typing"><span /><span /><span /></div>
-          </div>
-        )}
-      </div>
-      <div className="lp-coach-input">
-        <input placeholder="Ask Hatch anything…" disabled />
-        <button>↑</button>
-      </div>
-    </div>
-  )
-}
-
-export function LivePreview_Grading() {
-  const [tab, setTab] = useState('frame')
+export function FeedbackConsole() {
   const tabs = [
-    { id: 'frame', label: 'Frame',    score: 82, color: '#4a7c59' },
-    { id: 'list',  label: 'List',     score: 64, color: '#6b8275' },
-    { id: 'opt',   label: 'Optimize', score: 71, color: '#c9933a' },
-    { id: 'win',   label: 'Win',      score: 58, color: '#a878d6' },
+    { id: 'frame', label: 'Frame', score: 86, color: '#2563eb' },
+    { id: 'list', label: 'List', score: 62, color: '#16a34a' },
+    { id: 'optimize', label: 'Optimize', score: 74, color: '#d97706' },
+    { id: 'win', label: 'Win', score: 69, color: '#7c3aed' },
   ]
-  const t = tabs.find(x => x.id === tab)!
-  const c = 2 * Math.PI * 44
-
-  const rubricMap: Record<string, Array<{ k: string; got: boolean; note?: string }>> = {
-    frame: [
-      { k: 'Picked the right problem',  got: true,  note: 'You called out discovery vs. supply.' },
-      { k: 'Defined success up front',  got: true,  note: 'Clear: session length, leading indicator.' },
-      { k: 'Named your assumption',     got: false, note: "'no eng changes' is a claim, not a fact." },
-    ],
-    list: [
-      { k: 'Covered demand & supply',   got: true },
-      { k: 'Considered seasonality',    got: false, note: 'World Cup happened in week 3.' },
-      { k: 'Ranked by reversibility',   got: false },
-    ],
-    opt: [
-      { k: 'Picked one to test first',  got: true },
-      { k: 'Sized the bet',             got: true },
-      { k: 'Defined kill criteria',     got: false },
-    ],
-    win: [
-      { k: 'Connected to revenue',      got: true },
-      { k: 'Wrote the ship/no-ship rule', got: false },
-      { k: "Pre-mortem'd the risk",     got: false },
-    ],
-  }
-  const rubric = rubricMap[tab]
+  const [active, setActive] = useState(tabs[0].id)
+  const tab = tabs.find((item) => item.id === active) ?? tabs[0]
 
   return (
-    <div className="lp-frame lp-cream">
-      <div className="lp-grade-head">
-        <span className="lp-tag lp-tag--ai-native">Graded · AI-Native challenge</span>
-        <h4 className="lp-h" style={{ margin: '6px 0 0' }}>Spotify&apos;s 15% session drop</h4>
-      </div>
-      <div className="lp-grade-body">
-        <div className="lp-grade-ring">
-          <svg viewBox="0 0 100 100" width="160" height="160">
-            <circle cx="50" cy="50" r="44" stroke="rgba(0,0,0,0.08)" strokeWidth="6" fill="none" />
-            <circle
-              cx="50" cy="50" r="44"
-              stroke={t.color} strokeWidth="6" fill="none"
-              strokeDasharray={`${(t.score / 100) * c} ${c}`}
-              strokeLinecap="round"
-              transform="rotate(-90 50 50)"
-              style={{ transition: 'stroke-dasharray 700ms cubic-bezier(.2,.8,.2,1), stroke 300ms' }}
-            />
-          </svg>
-          <div className="lp-grade-score">
-            <div className="lp-grade-num" style={{ color: t.color }}>{t.score}</div>
-            <div className="lp-grade-of">{t.label} score</div>
-          </div>
+    <div className="hp-preview hp-feedback-preview">
+      <div className="hp-feedback-ring" style={{ '--score-color': tab.color } as CSSProperties}>
+        <svg viewBox="0 0 120 120" aria-hidden>
+          <circle cx="60" cy="60" r="50" />
+          <circle cx="60" cy="60" r="50" style={{ strokeDasharray: `${tab.score * 3.14} 314` }} />
+        </svg>
+        <div>
+          <b>{tab.score}</b>
+          <span>{tab.label}</span>
         </div>
-        <div className="lp-grade-rubric">
-          <div className="lp-grade-tabs">
-            {tabs.map(x => (
-              <button
-                key={x.id}
-                className={`lp-grade-tab ${tab === x.id ? 'lp-grade-tab--active' : ''}`}
-                onClick={() => setTab(x.id)}
-                style={tab === x.id ? { color: x.color, borderColor: x.color } : undefined}
-              >
-                {x.label} <b>{x.score}</b>
-              </button>
-            ))}
+      </div>
+      <div className="hp-feedback-main">
+        <div className="hp-feedback-tabs">
+          {tabs.map((item) => (
+            <button
+              key={item.id}
+              className={item.id === active ? 'is-active' : ''}
+              onClick={() => setActive(item.id)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+        <div className="hp-receipt-list">
+          <div className="is-good">
+            <span />
+            <b>Defined the metric before jumping to ideas.</b>
+            <small>Line 2 earned the point.</small>
           </div>
-          <div className="lp-grade-list" key={tab}>
-            {rubric.map((r, i) => (
-              <div key={i} className={`lp-grade-row ${r.got ? 'lp-grade-row--got' : 'lp-grade-row--miss'} anim-fade-up`} style={{ animationDelay: `${i * 60}ms` }}>
-                <div className="lp-grade-mark">{r.got ? '✓' : '—'}</div>
-                <div>
-                  <div className="lp-grade-k">{r.k}</div>
-                  {r.note && <div className="lp-grade-note">{r.note}</div>}
-                </div>
-              </div>
-            ))}
+          <div>
+            <span />
+            <b>Missed a seasonality check.</b>
+            <small>World Cup week needs a counterfactual.</small>
+          </div>
+          <div className="is-good">
+            <span />
+            <b>Clear recommendation.</b>
+            <small>Specific owner, date, and kill criteria.</small>
           </div>
         </div>
       </div>
     </div>
   )
 }
+
+export function AnalyticsBoard() {
+  const bars = [72, 88, 56, 81, 68, 92, 77, 63]
+
+  return (
+    <div className="hp-preview hp-analytics-preview">
+      <div className="hp-analytics-score">
+        <span>ProductIQ</span>
+        <b>784</b>
+        <small>+92 this month</small>
+      </div>
+      <div className="hp-analytics-chart">
+        {bars.map((height, index) => (
+          <span key={index} style={{ height: `${height}%`, animationDelay: `${index * 80}ms` }} />
+        ))}
+      </div>
+      <div className="hp-analytics-table">
+        {DISCIPLINES.slice(0, 4).map((discipline) => (
+          <div key={discipline.name}>
+            <span style={{ background: discipline.color }} />
+            <b>{discipline.name}</b>
+            <em>{discipline.score}</em>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export function ToolsSystemPreview() {
+  const tools = ['Calendar', 'Voice room', 'Rubric engine', 'Study plan', 'Notes', 'Replay', 'Weakness drills', 'LLM context']
+
+  return (
+    <div className="hp-tools-art">
+      <div className="hp-tool-rail">
+        {tools.map((tool, index) => (
+          <button key={tool} style={{ animationDelay: `${index * 70}ms` }}>{tool}</button>
+        ))}
+      </div>
+      <div className="hp-tool-window hp-tool-window--primary">
+        <div className="hp-tool-window-head">
+          <span />
+          <span />
+          <span />
+          <b>Hatch task</b>
+        </div>
+        <h3>Create a five-day prep sprint for Meta Product Sense</h3>
+        <div className="hp-tool-steps">
+          <span className="is-done">Pull recent scores</span>
+          <span className="is-done">Select weak FLOW moves</span>
+          <span>Generate live prompts</span>
+          <span>Schedule debrief</span>
+        </div>
+      </div>
+      <div className="hp-tool-window hp-tool-window--secondary">
+        <b>Approval needed</b>
+        <p>Replace tomorrow&apos;s SQL drill with marketplace diagnosis?</p>
+        <div>
+          <button>Approve</button>
+          <button>Adjust</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const ROLE_GRID = [
+  'STAFFPMLOOP',
+  'SQLAIDATAQ',
+  'PLATFORMER',
+  'GROWTHBETA',
+  'SYSTEMFLOW',
+  'MOBILECASE',
+  'MARKETDEEP',
+  'FOUNDEROPS',
+]
+
+const WORD_CELLS = new Set([
+  '0-0', '0-1', '0-2', '0-3', '0-4', '0-5', '0-6',
+  '1-0', '1-1', '1-2', '1-3', '1-4', '1-5', '1-6',
+  '2-0', '2-1', '2-2', '2-3', '2-4', '2-5', '2-6', '2-7',
+  '3-0', '3-1', '3-2', '3-3', '3-4', '3-5',
+  '4-0', '4-1', '4-2', '4-3', '4-4', '4-5',
+  '5-0', '5-1', '5-2', '5-3', '5-4', '5-5',
+  '6-0', '6-1', '6-2', '6-3', '6-4', '6-5',
+  '7-0', '7-1', '7-2', '7-3', '7-4', '7-5', '7-6',
+])
+
+export function RoleWordSearch() {
+  const cells = useMemo(() => ROLE_GRID.flatMap((row, rowIndex) => (
+    row.split('').map((letter, colIndex) => ({
+      id: `${rowIndex}-${colIndex}`,
+      letter,
+    }))
+  )), [])
+
+  return (
+    <div className="hp-wordsearch-art">
+      <div className="hp-word-grid" aria-label="Role and industry word search">
+        {cells.map((cell, index) => (
+          <span
+            key={cell.id}
+            className={WORD_CELLS.has(cell.id) ? 'is-highlighted' : ''}
+            style={{ animationDelay: `${index * 18}ms` }}
+          >
+            {cell.letter}
+          </span>
+        ))}
+      </div>
+      <div className="hp-word-tags">
+        {['Staff PM', 'SQL + Data', 'Platform', 'Growth', 'Systems', 'Mobile', 'Marketplace', 'Founder'].map((word) => (
+          <b key={word}>{word}</b>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export const LivePreview_Practice = PracticeWorkbench
+export const LivePreview_LiveInterview = PracticeWorkbench
+export const LivePreview_StudyPlans = RoadmapPreview
+export const LivePreview_LumaCoach = ToolsSystemPreview
+export const LivePreview_Grading = FeedbackConsole

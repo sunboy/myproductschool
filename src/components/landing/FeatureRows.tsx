@@ -1,114 +1,73 @@
 import Link from 'next/link'
 import {
-  LivePreview_Practice,
-  LivePreview_LiveInterview,
-  LivePreview_StudyPlans,
-  LivePreview_LumaCoach,
-  LivePreview_Grading,
+  AnalyticsBoard,
+  FeedbackConsole,
+  PracticeWorkbench,
+  RoadmapPreview,
 } from './LivePreviews'
 
-interface FeatureRowProps {
-  num: string
-  eyebrow: string
-  title: string
-  titleEm: string
-  body: string
-  bullets: string[]
-  link: string
-  href: string
-  reverse?: boolean
-  children: React.ReactNode
-}
-
-function FeatureRow({ num, eyebrow, title, titleEm, body, bullets, link, href, reverse, children }: FeatureRowProps) {
-  return (
-    <div className={`land-feature ${reverse ? 'land-feature--reverse' : ''}`}>
-      <div className="land-feature-copy">
-        <div className="land-feature-num">{num} · {eyebrow}</div>
-        <h3 className="land-feature-h">{title} <em>{titleEm}</em></h3>
-        <p className="land-feature-p">{body}</p>
-        <ul className="land-feature-bullets">
-          {bullets.map((b, i) => <li key={i}>{b}</li>)}
-        </ul>
-        <a href={href} className="land-feature-link">{link} →</a>
-      </div>
-      <div className="land-feature-stage">
-        <div className="land-feature-stage-chrome">
-          <span /><span /><span />
-          <span className="land-feature-stage-chrome-url">
-            hackproduct.app/{eyebrow.toLowerCase().replace(/\s+/g, '-')}
-          </span>
-        </div>
-        <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex' }}>
-          {children}
-        </div>
-        <span className="land-live-tag">
-          <span className="land-dot-orange" /> Live
-        </span>
-      </div>
-    </div>
-  )
-}
+const FEATURES = [
+  {
+    id: 'build',
+    image: 'I',
+    title: 'A full roadmap tailored to your interview loop',
+    body: "When prep feels fuzzy, HackProduct turns your target role into sequenced tasks: diagnostics, weak moves, live reps, and review blocks.",
+    link: 'Learn how to start',
+    href: '/study-plans',
+    visual: <RoadmapPreview />,
+  },
+  {
+    id: 'practice',
+    image: 'II',
+    title: 'Build interview answers with specialist AI coaches',
+    body: 'Practice with product, systems, SQL, data modeling, and coding coaches that ask the follow-up your interviewer would ask.',
+    link: 'Learn how to build',
+    href: '/practice',
+    visual: <PracticeWorkbench />,
+  },
+  {
+    id: 'review',
+    image: 'III',
+    title: 'Review every answer with receipts, not vibes',
+    body: 'Hatch scores the FLOW moves, highlights the sentence that earned or lost the point, and queues the next drill.',
+    link: 'Learn how to review',
+    href: '/skills',
+    visual: <FeedbackConsole />,
+  },
+  {
+    id: 'scale',
+    image: 'IV',
+    title: 'Scale from daily reps to hiring-panel readiness',
+    body: 'Progress analytics show which disciplines are compounding, which weak moves still leak points, and where to spend the next session.',
+    link: 'Learn how to scale',
+    href: '/progress',
+    visual: <AnalyticsBoard />,
+  },
+]
 
 export function FeatureRows() {
   return (
-    <section id="features" className="land-section">
-      <div className="land-section-inner">
-        <div className="land-section-eyebrow">The product</div>
-        <h2 className="land-section-h">Five rooms. <em>One operating system</em> for clear thinking.</h2>
-        <p className="land-section-sub">Every screen below is live. Click around. These aren&apos;t screenshots.</p>
+    <section className="land-agent-section">
+      <div className="land-agent-intro">
+        <h2>Build real interview judgment with the help of specialized coaches</h2>
+        <p>From your first product-sense case to a final staff panel, HackProduct supports the whole loop.</p>
+      </div>
 
-        <FeatureRow
-          num="01" eyebrow="Practice"
-          title="Drill the move," titleEm="not the trivia."
-          body="Spotify dropped 15% session length. World Cup, or the new home feed? Pick a real scenario, write your answer, watch Hatch score your Frame in real time."
-          bullets={['420+ scenarios across 14 paradigms', 'Hatch reacts as you type, no waiting', 'Frame · List · Optimize · Win, every drill']}
-          link="Browse scenarios" href="/challenges"
-        >
-          <LivePreview_Practice />
-        </FeatureRow>
-
-        <FeatureRow
-          num="02" eyebrow="Live AI Interview"
-          title="The mock interview that" titleEm="actually pushes back."
-          body="Voice-to-voice with Hatch. It interrupts when you wave hands, asks the follow-up your interviewer would, and grades you against the real rubric staff PMs use."
-          bullets={['Senior, Staff, or APM difficulty; switches mid-call', 'Live transcript + rubric scoring', 'Replay any answer, hear what to fix']}
-          link="Try a 5-min interview" href="/live-interviews"
-          reverse
-        >
-          <LivePreview_LiveInterview />
-        </FeatureRow>
-
-        <FeatureRow
-          num="03" eyebrow="Study Plans"
-          title="Six weeks." titleEm="A new lens on product."
-          body="Pick the plan that matches what you're shipping next. Each week ladders specific moves into the next, with scenarios that reuse what you just learned."
-          bullets={['AI-Native, Growth Loops, Agentic, Marketplaces, B2B SaaS, +9 more', 'Built by PMs who actually shipped these things', 'Adapts week-to-week based on your scores']}
-          link="See all plans" href="/prep/study-plans"
-        >
-          <LivePreview_StudyPlans />
-        </FeatureRow>
-
-        <FeatureRow
-          num="04" eyebrow="Hatch Coaching"
-          title="Always-on coach," titleEm="brutally specific."
-          body="Stuck? Ask Hatch. It's seen every scenario, knows your last 50 reps, and refuses to let you off the hook with vague answers."
-          bullets={["Context-aware: knows what screen you're on", 'Pushes back on hand-waving, like a great mentor would', 'Explains the rubric, not just the score']}
-          link="Talk to Hatch" href="/dashboard"
-          reverse
-        >
-          <LivePreview_LumaCoach />
-        </FeatureRow>
-
-        <FeatureRow
-          num="05" eyebrow="Grading"
-          title="The rubric your" titleEm="future hiring panel uses."
-          body="Every answer scored across the four FLOW moves with a transparent rubric. See exactly which sub-skill broke down, and what to drill next."
-          bullets={['Move-by-move radial score', 'Receipts: which sentences earned points', "One-tap 'drill this weakness' for every miss"]}
-          link="See sample report" href="/dashboard"
-        >
-          <LivePreview_Grading />
-        </FeatureRow>
+      <div className="land-agent-flow">
+        {FEATURES.map((feature) => (
+          <article key={feature.id} id={feature.id} className="land-agent-row">
+            <div className="land-agent-copy">
+              <div className="land-agent-icon">{feature.image}</div>
+              <h3>{feature.title}</h3>
+              <p>{feature.body}</p>
+              <Link href={feature.href}>{feature.link}</Link>
+            </div>
+            <div className="land-agent-divider" aria-hidden />
+            <div className="land-agent-visual">
+              {feature.visual}
+            </div>
+          </article>
+        ))}
       </div>
     </section>
   )
