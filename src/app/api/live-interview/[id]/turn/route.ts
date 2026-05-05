@@ -1,8 +1,17 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
 import { applyCoverageCredit, type FlowMove } from '@/lib/live-interview/flow-coverage-credits'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
+
+const ROUTE_KEY = 'live_interview_turn'
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
 
 export async function POST(
   request: Request,
@@ -22,6 +31,10 @@ export async function POST(
     })
   }
 
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) return new Response('Unauthorized', { status: 401 })
+
   const body = await request.json()
   const messages: Array<{ role: string; content: string }> = body.messages ?? []
 
@@ -31,6 +44,7 @@ export async function POST(
     .from('live_interview_sessions')
     .select('*')
     .eq('id', id)
+    .eq('user_id', user.id)
     .single()
 
   if (!session || session.status !== 'active') {
@@ -56,19 +70,51 @@ export async function POST(
   // Call Claude with multi-turn messages format
   const model = 'claude-sonnet-4-6'
   const maxTokens = 300
-  const sessionUserId = session.user_id as string
+  const sessionUserId = user.id
   const userPlan = await getUserPlanForBudget(sessionUserId)
+  const throttle = await rateLimit({
+    key: `ai:${sessionUserId}:${ROUTE_KEY}`,
+    limit: userPlan === 'pro' ? 15 : 5,
+    windowSec: 60,
+  })
+
+  if (!throttle.allowed) {
+    const retryAfter = retryAfterSeconds(throttle.resetAt)
+    return Response.json(
+      { error: 'rate_limited', retryAfter },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(retryAfter) },
+      }
+    )
+  }
+
   const systemPrompt = session.system_prompt ?? ''
 
   let rawContent = ''
   try {
+    await assertPlanLimit(sessionUserId, userPlan, 'live_interview_turns')
+
     const response = await guardedCachedMessage(systemPrompt, `Interview transcript:\n\n${conversation}`, {
       model,
       max_tokens: maxTokens,
-      budget: { userId: sessionUserId, userPlan, route: 'live_interview_turn' },
+      budget: { userId: sessionUserId, userPlan, route: ROUTE_KEY },
     })
     rawContent = response.sanitized
   } catch (error) {
+    if (error instanceof PlanLimitExceeded) {
+      return Response.json(
+        {
+          error: 'limit_reached',
+          feature: error.feature,
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+
     if (error instanceof AiBudgetExceededError) {
       return Response.json(
         {
