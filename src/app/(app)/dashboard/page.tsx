@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { CalibrationHero } from './CalibrationHero'
+import { HatchIntroTour } from '@/components/onboarding/HatchIntroTour'
 import { UpgradedBanner } from '@/components/dashboard/UpgradedBanner'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -196,13 +197,14 @@ export default async function DashboardPage() {
   let lastAttemptDate: string | null = null
   let dailyDone = 0
   let plan: string | null = 'free'
+  let hasSeenHatchIntro = true
 
   if (user) {
     const today = new Date().toISOString().split('T')[0]
     const [{ data: profile }, { data: lastAttempt }, { count: dailyCount }] = await Promise.all([
       supabase
         .from('profiles')
-        .select('display_name, onboarding_completed_at, streak_days, xp_total, interview_date, plan')
+        .select('display_name, onboarding_completed_at, streak_days, xp_total, interview_date, plan, has_seen_hatch_intro')
         .eq('id', user.id)
         .single(),
       supabase
@@ -228,6 +230,7 @@ export default async function DashboardPage() {
     lastAttemptDate = lastAttempt?.created_at ? lastAttempt.created_at.split('T')[0] : null
     dailyDone = dailyCount ?? 0
     plan = profile?.plan ?? 'free'
+    hasSeenHatchIntro = profile?.has_seen_hatch_intro ?? false
   }
 
   const userId = user?.id ?? ''
@@ -468,6 +471,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7">
+      <HatchIntroTour show={Boolean(userId && isCalibrated && !hasSeenHatchIntro)} />
 
       <Suspense fallback={null}>
         <UpgradedBanner />
