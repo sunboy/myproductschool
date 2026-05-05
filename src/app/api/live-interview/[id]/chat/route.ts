@@ -1,14 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { buildCoverageNote } from '@/lib/live-interview/system-prompt'
-import Anthropic from '@anthropic-ai/sdk'
-import {
-  AiBudgetExceededError,
-  assertAiBudget,
-  estimateAnthropicPreflightCents,
-  getUserPlanForBudget,
-  recordAnthropicUsage,
-} from '@/lib/usage/ai-budget'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 
 export async function POST(
   request: Request,
@@ -19,7 +13,7 @@ export async function POST(
   // Mock mode
   if (process.env.USE_MOCK_DATA === 'true') {
     return Response.json({
-      reply: "Hold on — you jumped straight to a solution. What's the actual problem here? If I asked the user, what would they say is broken?",
+      reply: "Hold on, you jumped straight to a solution. What's the actual problem here? If I asked the user, what would they say is broken?",
     })
   }
 
@@ -31,9 +25,8 @@ export async function POST(
   if (!message?.trim()) return new Response('Bad Request', { status: 400 })
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 503 })
+    return Response.json({ error: 'Hatch ran into a problem. Try again.' }, { status: 503 })
   }
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
   const adminClient = createAdminClient()
 
@@ -58,14 +51,10 @@ export async function POST(
   if (turnsError) return new Response('Internal Server Error', { status: 500 })
   const nextIndex = count ?? 0
 
-  // Build conversation messages
-  const conversationMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [
-    ...(turnsData ?? []).map((t) => ({
-      role: (t.role === 'hatch' ? 'assistant' : 'user') as 'user' | 'assistant',
-      content: t.content,
-    })),
-    { role: 'user' as const, content: message.trim() },
-  ]
+  const conversation = [
+    ...(turnsData ?? []).map((t) => `${t.role === 'hatch' ? 'Interviewer' : 'Candidate'}: ${t.content}`),
+    `Candidate: ${message.trim()}`,
+  ].join('\n\n')
 
   // Build dynamic context to inject alongside the stored system prompt
   const dynamicContext: string[] = []
@@ -78,7 +67,7 @@ export async function POST(
   const memory = (session.conversation_memory ?? []) as string[]
   if (memory.length > 0) {
     dynamicContext.push(
-      `[THINGS THE CANDIDATE HAS SAID]\n${memory.map((m) => `- ${m}`).join('\n')}\nReference these when relevant — especially contradictions.`
+      `[THINGS THE CANDIDATE HAS SAID]\n${memory.map((m) => `- ${m}`).join('\n')}\nReference these when relevant, especially contradictions.`
     )
   }
 
@@ -101,25 +90,15 @@ export async function POST(
   const model = 'claude-sonnet-4-6'
   const maxTokens = 600
   const userPlan = await getUserPlanForBudget(user.id)
-  const promptCharCount = fullSystemPrompt.length + conversationMessages.reduce((sum, msg) => sum + msg.content.length, 0)
-  const preflightCostCents = estimateAnthropicPreflightCents(model, maxTokens, promptCharCount)
 
-  let response
+  let reply = ''
   try {
-    await assertAiBudget(user.id, userPlan, preflightCostCents)
-    response = await anthropic.messages.create({
+    const response = await guardedCachedMessage(fullSystemPrompt, `Interview transcript:\n\n${conversation}`, {
       model,
       max_tokens: maxTokens,
-      system: [{ type: 'text', text: fullSystemPrompt, cache_control: { type: 'ephemeral' } }],
-      messages: conversationMessages,
+      budget: { userId: user.id, userPlan, route: 'live_interview_chat' },
     })
-    await recordAnthropicUsage({
-      userId: user.id,
-      model,
-      usage: response.usage,
-      fallbackCostCents: preflightCostCents,
-      route: 'live_interview_chat',
-    })
+    reply = response.sanitized
   } catch (error) {
     if (error instanceof AiBudgetExceededError) {
       return Response.json(
@@ -135,8 +114,6 @@ export async function POST(
     }
     throw error
   }
-
-  const reply = response.content[0].type === 'text' ? response.content[0].text : ''
 
   // Save both turns to DB
   const { error: insertError } = await adminClient.from('live_interview_turns').insert([
