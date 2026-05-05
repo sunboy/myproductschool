@@ -8,7 +8,6 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import {
   getHotChallenges,
   getLeaderboardPeek,
-  getMoveLevel,
   getLatestInterview,
 } from '@/lib/data/dashboard'
 import { getEnrolledPlans } from '@/lib/data/study-plans'
@@ -73,13 +72,6 @@ function getPersonalizedGreeting(displayName: string, streakDays: number, lastAt
   if (!lastAttemptDate || streakDays === 0) return `Welcome back, ${displayName}! Ready to get back into it?`
   return `${base}, ${displayName}!`
 }
-
-function getDailyGoalMessage(dailyDone: number): string {
-  if (dailyDone === 0) return 'Try a challenge — hit your daily goal of 5.'
-  if (dailyDone >= 5) return 'Daily goal hit! You\'re ahead of most learners today.'
-  return `${dailyDone} done today, ${5 - dailyDone} to go for your daily goal.`
-}
-
 
 function LockedMoveLevels() {
   const moves = ['Frame', 'List', 'Optimize', 'Win']
@@ -241,10 +233,9 @@ export default async function DashboardPage() {
   const userId = user?.id ?? ''
   const adminClient = createAdminClient()
 
-  const [hotChallenges, leaderboard, moveLevels, enrolledPlans, latestInterview] = await Promise.all([
+  const [hotChallenges, leaderboard, enrolledPlans, latestInterview] = await Promise.all([
     getHotChallenges(),
     userId ? getLeaderboardPeek(userId) : [],
-    userId ? getMoveLevel(userId) : [],
     userId ? getEnrolledPlans(userId) : [],
     userId ? getLatestInterview(userId) : null,
   ])
@@ -472,6 +463,8 @@ export default async function DashboardPage() {
   const interviews: UserInterview[] = interviewDate
     ? [{ id: '0', user_id: userId, company: null, role: null, round: null, interview_date: interviewDate, notes: null, created_at: interviewDate }]
     : []
+  const hasFollowUpCards = Boolean(latestInterview || enrolledPlans.length > 0)
+  const showSplitFollowUps = Boolean(latestInterview && enrolledPlans.length > 0)
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7">
@@ -526,11 +519,12 @@ export default async function DashboardPage() {
             {/* FLOW Move Levels */}
             <FlowMoveLevelsCard levels={allMoveLevels} />
 
-            {/* Latest Interview — conditional on having a completed debrief */}
-            {latestInterview && <LatestInterviewCard data={latestInterview} />}
-
-            {/* Enrolled Study Plans */}
-            {enrolledPlans.length > 0 && <EnrolledPlansCard plans={enrolledPlans} />}
+            {hasFollowUpCards && (
+              <div className={`grid grid-cols-1 gap-4 ${showSplitFollowUps ? 'xl:grid-cols-2' : 'xl:max-w-[640px]'}`}>
+                {latestInterview && <LatestInterviewCard data={latestInterview} />}
+                {enrolledPlans.length > 0 && <EnrolledPlansCard plans={enrolledPlans} />}
+              </div>
+            )}
 
             {/* Secondary row */}
             <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">

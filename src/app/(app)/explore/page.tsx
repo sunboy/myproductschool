@@ -175,18 +175,21 @@ export default async function ExplorePage() {
   const topDomains = domains.slice(0, 6)
 
   return (
-    <main className="animate-fade-in-up mx-auto max-w-[1180px] px-4 py-7 pb-24 sm:px-6 lg:px-8">
+    <main className="animate-fade-in-up relative isolate mx-auto max-w-[1240px] px-4 py-7 pb-24 sm:px-6 lg:px-8">
+      <ExplorePageBackdrop />
+
       <AppBreadcrumbs
-        className="mb-5"
+        className="relative mb-5"
         items={[
           { label: 'Dashboard', href: '/dashboard' },
           { label: 'Explore' },
         ]}
       />
 
-      <header className="mb-8 grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
-        <div>
-          <h1 className="font-headline text-[34px] font-bold leading-tight text-on-surface sm:text-[40px]">
+      <header className="relative mb-8 grid overflow-hidden rounded-[26px] border border-outline-variant/35 bg-surface-container-low/85 p-5 shadow-[0_24px_70px_-58px_rgba(46,50,48,0.7)] backdrop-blur-sm sm:p-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
+        <ExploreHeroPattern />
+        <div className="relative">
+          <h1 className="font-headline text-[36px] font-bold leading-tight text-on-surface sm:text-[44px]">
             Explore
           </h1>
           <div className="mt-4 flex flex-wrap gap-2">
@@ -204,18 +207,19 @@ export default async function ExplorePage() {
           <Link
             href={personalisedPlan ? `/explore/plans/${personalisedPlan.slug}` : '/challenges'}
             data-hatch-sound="open"
-            className="group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl border border-primary/20 bg-[#1e3528] p-4 no-underline shadow-[0_18px_44px_-30px_rgba(30,53,40,0.7)] transition-transform hover:-translate-y-0.5"
+            className="group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-xl border border-[#7ee099]/20 bg-[#1e3528] p-4 no-underline shadow-[0_22px_48px_-30px_rgba(30,53,40,0.85)] transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_30px_62px_-34px_rgba(30,53,40,0.95)]"
           >
-            <PathMiniArt kind="plans" accent="#7ee099" className="absolute -right-4 -bottom-6 h-24 w-32 opacity-35" />
+            <DarkPathTexture accent="#7ee099" />
+            <PathMiniArt kind="plans" accent="#7ee099" className="absolute -right-4 -bottom-6 h-24 w-32 opacity-30 transition-transform duration-500 group-hover:scale-105" />
             <div className="relative min-w-0">
               <div className="font-label text-[11px] font-bold uppercase tracking-[0.10em] text-[#9ee0b8]">
-                {personalisedPlan ? 'Your plan, built by Hatch' : 'Start here'}
+                {personalisedPlan ? 'Current plan' : 'Start here'}
               </div>
               <div className="mt-1 truncate font-headline text-base font-bold text-[#f3ede0]">
                 {personalisedPlan?.title ?? 'Find a practice rep'}
               </div>
               <div className="mt-1 text-[11px] font-semibold text-[#f3ede0]/55">
-                {personalisedPlan ? 'Role-aware across all disciplines' : 'Hatch will adapt as you practice'}
+                {personalisedPlan ? 'Continue where you left off' : 'Hatch will adapt as you practice'}
               </div>
             </div>
             <span className="material-symbols-outlined relative shrink-0 text-[20px] text-[#7ee099] transition-transform group-hover:translate-x-0.5">
@@ -226,15 +230,15 @@ export default async function ExplorePage() {
       </header>
 
       <section className="mb-9 grid grid-cols-1 gap-3 md:grid-cols-3">
-        {PRIMARY_PATHS.map((path) => (
-          <CompactPathCard key={path.title} {...path} />
+        {PRIMARY_PATHS.map((path, index) => (
+          <CompactPathCard key={path.title} {...path} index={index} />
         ))}
       </section>
 
       <SectionHeading title="Guides" href="/explore/modules" linkLabel="All guides" />
       <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {modules.map((module) => (
-          <ModuleCard key={module.slug} module={module} />
+        {modules.map((module, index) => (
+          <ModuleCard key={module.slug} module={module} index={index} />
         ))}
       </section>
 
@@ -242,8 +246,8 @@ export default async function ExplorePage() {
         <>
           <SectionHeading title="Autopsies" href="/explore/showcase" linkLabel="View all" />
           <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {autopsies.map((product) => (
-              <AutopsyCard key={product.slug} product={product} />
+            {autopsies.map((product, index) => (
+              <AutopsyCard key={product.slug} product={product} index={index} />
             ))}
           </section>
         </>
@@ -271,9 +275,52 @@ export default async function ExplorePage() {
   )
 }
 
+function ExplorePageBackdrop() {
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[760px] overflow-hidden" aria-hidden="true">
+      <div
+        className="absolute inset-x-[-8%] top-[-120px] h-[520px] opacity-80"
+        style={{
+          background:
+            'radial-gradient(720px 260px at 18% 22%, rgba(74,124,89,0.12), transparent 62%), radial-gradient(620px 260px at 88% 12%, rgba(201,147,58,0.12), transparent 64%)',
+        }}
+      />
+      <svg className="absolute left-1/2 top-0 h-[460px] w-[1100px] -translate-x-1/2 opacity-[0.18]" viewBox="0 0 1100 460" fill="none">
+        <path d="M56 216 C186 118, 302 316, 458 180 S752 80, 1032 220" stroke="#4a7c59" strokeWidth="1.5" strokeDasharray="8 12" />
+        <path d="M38 312 C202 188, 356 388, 532 246 S802 140, 1068 294" stroke="#c9933a" strokeWidth="1.2" strokeDasharray="5 13" />
+        <path d="M154 96 C300 34, 380 188, 516 122 S764 20, 942 92" stroke="#3b6ed4" strokeWidth="1" strokeDasharray="4 14" />
+        <circle cx="178" cy="152" r="5" fill="#4a7c59" />
+        <circle cx="704" cy="96" r="5" fill="#c9933a" />
+        <circle cx="940" cy="238" r="5" fill="#3b6ed4" />
+      </svg>
+    </div>
+  )
+}
+
+function ExploreHeroPattern() {
+  return (
+    <svg className="pointer-events-none absolute inset-y-0 right-0 h-full w-[58%] opacity-[0.16]" viewBox="0 0 620 260" fill="none" aria-hidden="true">
+      <path d="M40 192 C114 86, 204 224, 294 116 S472 58, 590 132" stroke="#4a7c59" strokeWidth="8" strokeLinecap="round" opacity="0.18" />
+      <path d="M92 52 H524 M92 92 H424 M92 132 H560 M92 172 H380" stroke="#2e3230" strokeWidth="1" strokeDasharray="4 10" opacity="0.36" />
+      <rect x="388" y="50" width="86" height="60" rx="16" fill="#4a7c59" opacity="0.12" />
+      <rect x="468" y="132" width="72" height="72" rx="18" fill="#c9933a" opacity="0.12" />
+      <circle cx="302" cy="110" r="34" fill="#3b6ed4" opacity="0.10" />
+    </svg>
+  )
+}
+
+function DarkPathTexture({ accent }: { accent: string }) {
+  return (
+    <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-30" viewBox="0 0 420 150" fill="none" aria-hidden="true">
+      <path d="M-12 116 C80 42, 142 162, 230 78 S340 32, 434 88" stroke={accent} strokeWidth="1.4" strokeDasharray="7 10" opacity="0.45" />
+      <path d="M18 42 H386 M46 74 H312 M82 106 H410" stroke="#f3ede0" strokeWidth="1" strokeDasharray="2 12" opacity="0.18" />
+    </svg>
+  )
+}
+
 function MetaChip({ icon, label }: { icon: string; label: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-md bg-surface-container-low px-2.5 py-1 text-xs font-label font-bold text-on-surface-variant">
+    <span className="inline-flex items-center gap-1.5 rounded-md border border-outline-variant/30 bg-background/70 px-2.5 py-1 text-xs font-label font-bold text-on-surface-variant shadow-[0_8px_20px_-18px_rgba(46,50,48,0.65)]">
       <span className="material-symbols-outlined text-[14px]">{icon}</span>
       {label}
     </span>
@@ -320,7 +367,7 @@ function PathMiniArt({ kind, accent, className = '' }: {
   )
 }
 
-function CompactPathCard({ title, body, href, icon, accent, bg, art, tooltip }: {
+function CompactPathCard({ title, body, href, icon, accent, bg, art, tooltip, index }: {
   title: string
   body: string
   href: string
@@ -329,18 +376,24 @@ function CompactPathCard({ title, body, href, icon, accent, bg, art, tooltip }: 
   bg: string
   art: string
   tooltip: string
+  index: number
 }) {
   return (
     <AppTooltip label={tooltip} side="bottom" className="flex">
       <Link
         href={href}
         data-hatch-sound="open"
-        className="group relative flex min-h-[142px] w-full flex-col justify-between overflow-hidden rounded-xl border border-outline-variant/45 p-4 no-underline transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-26px_rgba(46,50,48,0.55)]"
-        style={{ background: bg }}
+        className="animate-fade-in-up group relative flex min-h-[148px] w-full flex-col justify-between overflow-hidden rounded-xl border border-outline-variant/35 p-4 no-underline shadow-[0_16px_36px_-30px_rgba(46,50,48,0.70)] ring-1 ring-white/35 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_28px_54px_-34px_rgba(46,50,48,0.82)]"
+        style={{ background: bg, animationDelay: `${index * 70}ms` }}
       >
-        <PathMiniArt kind={art} accent={accent} className="absolute -right-5 -bottom-7 h-28 w-36" />
+        <span
+          className="pointer-events-none absolute inset-0 opacity-[0.13]"
+          style={{ backgroundImage: `repeating-linear-gradient(135deg, ${accent} 0 1px, transparent 1px 12px)` }}
+          aria-hidden="true"
+        />
+        <PathMiniArt kind={art} accent={accent} className="absolute -right-5 -bottom-7 h-28 w-36 opacity-80 transition-transform duration-500 group-hover:scale-105" />
         <span className="relative flex items-start justify-between gap-3">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-white" style={{ background: accent }}>
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-white shadow-[0_12px_26px_-18px_rgba(0,0,0,0.75)]" style={{ background: accent }}>
             <span className="material-symbols-outlined text-[21px]" style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
           </span>
           <span className="material-symbols-outlined text-[16px] text-on-surface-variant transition-transform group-hover:translate-x-0.5">
@@ -356,15 +409,30 @@ function CompactPathCard({ title, body, href, icon, accent, bg, art, tooltip }: 
   )
 }
 
-function ModuleCard({ module }: { module: Pick<LearnModule, 'slug' | 'name' | 'tagline' | 'cover_color' | 'accent_color' | 'chapter_count' | 'est_minutes' | 'difficulty'> }) {
+function ModuleTexture({ accent }: { accent: string }) {
+  return (
+    <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-35 transition-transform duration-500 group-hover:scale-[1.03]" viewBox="0 0 260 180" fill="none" aria-hidden="true">
+      <path d="M-12 126 C42 72, 92 160, 148 88 S228 40, 282 92" stroke={accent} strokeWidth="5" strokeLinecap="round" opacity="0.18" />
+      <path d="M28 38 H232 M48 72 H178 M22 106 H238" stroke="#ffffff" strokeWidth="1" strokeDasharray="3 10" opacity="0.18" />
+      <circle cx="210" cy="48" r="30" fill={accent} opacity="0.10" />
+      <rect x="168" y="104" width="48" height="48" rx="14" fill={accent} opacity="0.08" />
+    </svg>
+  )
+}
+
+function ModuleCard({ module, index }: {
+  module: Pick<LearnModule, 'slug' | 'name' | 'tagline' | 'cover_color' | 'accent_color' | 'chapter_count' | 'est_minutes' | 'difficulty'>
+  index: number
+}) {
   return (
     <Link
       href={`/explore/modules/${module.slug}`}
       data-hatch-sound="open"
-      className="group flex min-h-[150px] flex-col justify-between overflow-hidden rounded-xl p-4 no-underline transition-transform duration-200 hover:-translate-y-0.5"
-      style={{ background: module.cover_color, border: '1px solid rgba(255,255,255,0.08)' }}
+      className="animate-fade-in-up group relative flex min-h-[158px] flex-col justify-between overflow-hidden rounded-xl p-4 no-underline shadow-[0_20px_42px_-30px_rgba(20,24,22,0.9)] transition-[box-shadow,transform] duration-300 hover:-translate-y-1 hover:shadow-[0_30px_56px_-32px_rgba(20,24,22,0.98)]"
+      style={{ background: module.cover_color, border: '1px solid rgba(255,255,255,0.10)', animationDelay: `${index * 60}ms` }}
     >
-      <span>
+      <ModuleTexture accent={module.accent_color} />
+      <span className="relative">
         <span
           className="inline-flex rounded-md px-2 py-0.5 text-[10px] font-label font-bold uppercase tracking-[0.08em]"
           style={{ background: 'rgba(255,255,255,0.10)', color: module.accent_color }}
@@ -378,7 +446,7 @@ function ModuleCard({ module }: { module: Pick<LearnModule, 'slug' | 'name' | 't
           {module.tagline}
         </span>
       </span>
-      <span className="mt-4 flex items-center justify-between text-[12px] font-label font-semibold text-[#f3ede0]/55">
+      <span className="relative mt-4 flex items-center justify-between text-[12px] font-label font-semibold text-[#f3ede0]/55">
         <span>{module.chapter_count} chapters · {module.est_minutes} min</span>
         <span className="material-symbols-outlined text-[15px] transition-transform group-hover:translate-x-0.5" style={{ color: module.accent_color }}>
           arrow_forward
@@ -388,17 +456,18 @@ function ModuleCard({ module }: { module: Pick<LearnModule, 'slug' | 'name' | 't
   )
 }
 
-function AutopsyCard({ product }: { product: AutopsyProduct }) {
+function AutopsyCard({ product, index }: { product: AutopsyProduct; index: number }) {
   const bg = product.cover_color ?? '#1e1b14'
 
   return (
     <Link
       href={`/explore/showcase/${product.slug}`}
       data-hatch-sound="open"
-      className="group flex min-h-[136px] flex-col justify-between overflow-hidden rounded-xl p-4 no-underline transition-transform duration-200 hover:-translate-y-0.5"
-      style={{ background: bg, border: '1px solid rgba(255,255,255,0.08)' }}
+      className="animate-fade-in-up group relative flex min-h-[142px] flex-col justify-between overflow-hidden rounded-xl p-4 no-underline shadow-[0_20px_42px_-30px_rgba(20,24,22,0.9)] transition-[box-shadow,transform] duration-300 hover:-translate-y-1 hover:shadow-[0_30px_56px_-32px_rgba(20,24,22,0.98)]"
+      style={{ background: bg, border: '1px solid rgba(255,255,255,0.10)', animationDelay: `${index * 60}ms` }}
     >
-      <span>
+      <ModuleTexture accent="#f3ede0" />
+      <span className="relative">
         <span className="flex items-center gap-2">
           {product.logo_emoji && <span className="text-[22px] leading-none">{product.logo_emoji}</span>}
           {product.industry && (
@@ -416,7 +485,7 @@ function AutopsyCard({ product }: { product: AutopsyProduct }) {
           </span>
         )}
       </span>
-      <span className="mt-4 flex items-center justify-between text-[12px] font-label font-semibold text-white/62">
+      <span className="relative mt-4 flex items-center justify-between text-[12px] font-label font-semibold text-white/62">
         <span>{product.decision_count} decisions</span>
         <span className="material-symbols-outlined text-[15px] transition-transform group-hover:translate-x-0.5">
           arrow_forward
@@ -433,8 +502,8 @@ function DomainRow({ domain, index }: { domain: DomainWithProgress; index: numbe
     <Link
       href={`/domains/${domain.slug}`}
       data-hatch-sound="open"
-      className="group relative flex min-h-[112px] items-center gap-3 overflow-hidden rounded-xl border border-outline-variant/45 p-4 no-underline transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-28px_rgba(46,50,48,0.55)]"
-      style={{ background: theme.bg }}
+      className="animate-fade-in-up group relative flex min-h-[112px] items-center gap-3 overflow-hidden rounded-xl border border-outline-variant/35 p-4 no-underline shadow-[0_16px_38px_-32px_rgba(46,50,48,0.72)] ring-1 ring-white/35 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_26px_52px_-34px_rgba(46,50,48,0.82)]"
+      style={{ background: theme.bg, animationDelay: `${index * 55}ms` }}
     >
       <DomainSketch accent={theme.accent} soft={theme.soft} />
       <span className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-white shadow-[0_10px_24px_-18px_rgba(0,0,0,0.6)]" style={{ background: theme.accent }}>
@@ -490,15 +559,19 @@ function RealInterviewSpotlight({ companyGroups }: { companyGroups: CompanyChall
 
   return (
     <section
-      className="mb-10 overflow-hidden rounded-xl border border-primary/18 bg-surface-container-low p-4 shadow-[0_22px_52px_-42px_rgba(30,53,40,0.62)] sm:p-5"
+      className="relative mb-10 overflow-hidden rounded-[22px] border border-primary/18 bg-surface-container-low p-4 shadow-[0_28px_72px_-54px_rgba(30,53,40,0.72)] sm:p-5"
       style={{
         background:
           'linear-gradient(135deg, rgba(74,124,89,0.12) 0%, rgba(255,255,255,0.42) 48%, rgba(201,147,58,0.10) 100%)',
       }}
     >
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.18]" viewBox="0 0 1040 360" fill="none" aria-hidden="true">
+        <path d="M-28 272 C180 90, 300 350, 498 178 S792 82, 1078 218" stroke="#4a7c59" strokeWidth="2" strokeDasharray="9 14" />
+        <path d="M92 74 H964 M126 122 H760 M56 172 H1012" stroke="#2e3230" strokeWidth="1" strokeDasharray="3 13" />
+      </svg>
+      <div className="relative mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-md bg-primary-fixed px-2 py-1 font-label text-[11px] font-bold text-primary">
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-background/60 px-2 py-1 font-label text-[11px] font-bold text-primary ring-1 ring-primary/15">
             <span className="material-symbols-outlined text-[14px]">verified</span>
             Real interviews
           </span>
@@ -519,7 +592,7 @@ function RealInterviewSpotlight({ companyGroups }: { companyGroups: CompanyChall
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div className="relative grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
         {companyGroups.map(({ company, challenges }) => (
           <AskedAtCompanyGroup key={company} company={company} challenges={challenges} />
         ))}
@@ -536,7 +609,7 @@ function AskedAtCompanyGroup({ company, challenges }: CompanyChallengeGroup) {
 
   return (
     <article
-      className="group relative flex min-h-[188px] flex-col overflow-hidden rounded-lg border border-outline-variant/35 bg-surface-container-low p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_18px_34px_-30px_rgba(46,50,48,0.58)]"
+      className="group relative flex min-h-[188px] flex-col overflow-hidden rounded-lg border border-outline-variant/35 bg-surface-container-low p-3.5 shadow-[0_16px_34px_-31px_rgba(46,50,48,0.68)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_26px_50px_-34px_rgba(46,50,48,0.82)]"
       style={{
         background: `linear-gradient(135deg, ${companyVisual.soft} 0%, rgba(255,255,255,0.34) 46%, transparent 100%)`,
       }}
@@ -618,7 +691,7 @@ function AskedAtChallengeRow({ challenge, index, accent }: {
   return (
     <Link
       href={href}
-      className="group/row flex min-h-[38px] items-center gap-2.5 rounded-md bg-white/42 px-2 py-1.5 no-underline ring-1 ring-outline-variant/20 transition-colors hover:bg-white/70 hover:ring-primary/20"
+      className="group/row flex min-h-[38px] items-center gap-2.5 rounded-md bg-white/50 px-2 py-1.5 no-underline shadow-[0_8px_18px_-18px_rgba(46,50,48,0.8)] ring-1 ring-outline-variant/20 transition-[background-color,box-shadow] hover:bg-white/76 hover:shadow-[0_12px_24px_-19px_rgba(46,50,48,0.9)] hover:ring-primary/20"
       data-hatch-sound="open"
     >
       <span
@@ -681,13 +754,16 @@ function SectionHeading({ title, href, linkLabel }: {
 }) {
   return (
     <div className="mb-3 flex items-end justify-between gap-4">
-      <h2 className="m-0 font-headline text-[24px] font-bold leading-tight text-on-surface">
-        {title}
-      </h2>
+      <div className="flex items-center gap-2.5">
+        <span className="h-3 w-3 rounded-sm bg-primary/80 shadow-[0_8px_16px_-10px_rgba(74,124,89,0.75)]" />
+        <h2 className="m-0 font-headline text-[24px] font-bold leading-tight text-on-surface">
+          {title}
+        </h2>
+      </div>
       <Link
         href={href}
         data-hatch-sound="open"
-        className="inline-flex items-center gap-1 text-xs font-label font-bold text-primary no-underline hover:underline"
+        className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-label font-bold text-primary no-underline transition-colors hover:bg-primary-fixed"
       >
         {linkLabel}
         <span className="material-symbols-outlined text-[14px]">arrow_forward</span>

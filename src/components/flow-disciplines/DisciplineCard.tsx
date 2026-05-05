@@ -33,15 +33,19 @@ export function DisciplineCard({
   const rotationTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const initialIdx = ALL_DISCIPLINES.findIndex(d => d.id === initialDiscipline)
+  const initialResolvedIdx = Math.max(0, initialIdx)
+  const initialResolvedDiscipline = ALL_DISCIPLINES[initialResolvedIdx]
   const [currentIdx, setCurrentIdx] = useState(Math.max(0, initialIdx))
   const [isHovered, setIsHovered] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
-  const [reasoningText, setReasoningText] = useState(ALL_DISCIPLINES[Math.max(0, initialIdx)].steps[0].reasoningMove)
+  const [activeStepIdx, setActiveStepIdx] = useState(0)
+  const [reasoningText, setReasoningText] = useState(initialResolvedDiscipline.learnerExplanation.stepMeanings.F)
   const [isVisible, setIsVisible] = useState(true)
   const currentIdxRef = useRef(currentIdx)
   currentIdxRef.current = currentIdx
 
   const currentDiscipline: Discipline = ALL_DISCIPLINES[currentIdx]
+  const activeStep = currentDiscipline.steps[activeStepIdx] ?? currentDiscipline.steps[0]
 
   const prefersReducedMotion = useCallback(() => {
     if (typeof window === 'undefined') return false
@@ -50,8 +54,15 @@ export function DisciplineCard({
 
   const burstNode = useCallback((stepIdx: number, discipline: Discipline) => {
     if (prefersReducedMotion()) return
-    setReasoningText(discipline.steps[stepIdx]?.reasoningMove ?? '')
+    const step = discipline.steps[stepIdx] ?? discipline.steps[0]
+    setActiveStepIdx(stepIdx)
+    setReasoningText(discipline.learnerExplanation.stepMeanings[step.id])
   }, [prefersReducedMotion])
+
+  useEffect(() => {
+    const step = currentDiscipline.steps[activeStepIdx] ?? currentDiscipline.steps[0]
+    setReasoningText(currentDiscipline.learnerExplanation.stepMeanings[step.id])
+  }, [activeStepIdx, currentDiscipline])
 
   const buildPulseTimeline = useCallback(() => {
     if (typeof window === 'undefined') return null
@@ -198,7 +209,7 @@ export function DisciplineCard({
       ref={cardRef}
       role="button"
       tabIndex={0}
-      aria-label="Open FLOW framework explorer"
+      aria-label="Open FLOW discipline map"
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       onMouseEnter={() => setIsHovered(true)}
@@ -214,7 +225,7 @@ export function DisciplineCard({
           : '0 0 0 1px rgba(212, 165, 116, 0.04), 0 30px 80px -30px rgba(0,0,0,0.85), 0 8px 24px -8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)',
         width: '100%',
         minHeight: 0,
-        padding: '20px 32px 20px',
+        padding: '22px 32px 20px',
         willChange: 'transform',
       }}
     >
@@ -254,50 +265,49 @@ export function DisciplineCard({
         ))}
       </div>
 
-      {/* Two-column layout: title left (25%) + circuit right (75%) */}
-      <div className="relative z-10 flex items-center gap-0" style={{ minHeight: 140 }}>
-
-        {/* Left: title column */}
-        <div className="flex flex-col justify-center shrink-0" style={{ width: '28%', paddingRight: 16 }}>
+      <div className="relative z-10 flex flex-col gap-5 md:flex-row md:items-center" style={{ minHeight: 168 }}>
+        {/* Left: explanation column */}
+        <div className="flex flex-col justify-center shrink-0 md:w-[35%]" style={{ paddingRight: 16 }}>
           <div
             className="font-label font-medium uppercase mb-2"
             style={{
               fontFamily: 'monospace',
               fontSize: 9.5,
               color: '#d4a574',
-              letterSpacing: '2.4px',
+              letterSpacing: '2px',
               opacity: 0.85,
             }}
           >
-            Learn the framework
+            FLOW across disciplines
           </div>
           <div
             className="font-headline font-medium transition-opacity duration-300"
             style={{
-              fontSize: 26,
+              fontSize: 25,
               color: '#f5f0e6',
-              letterSpacing: '0.3px',
-              lineHeight: 1.1,
+              letterSpacing: 0,
+              lineHeight: 1.05,
               opacity: isVisible ? 1 : 0,
             }}
           >
-            {currentDiscipline.name}
+            One reasoning loop. Different interview arenas.
           </div>
           <div
-            className="mt-2 transition-opacity duration-300"
+            className="mt-3 transition-opacity duration-300"
             style={{
-              fontStyle: 'italic',
-              fontSize: 12.5,
-              color: 'rgba(245, 240, 230, 0.55)',
+              fontSize: 13,
+              lineHeight: 1.5,
+              color: 'rgba(245, 240, 230, 0.68)',
               opacity: isVisible ? 1 : 0,
             }}
           >
-            {currentDiscipline.tagline}
+            <span style={{ color: '#ffc580', fontWeight: 700 }}>{currentDiscipline.name}:</span>{' '}
+            {currentDiscipline.learnerExplanation.plainPurpose}
           </div>
         </div>
 
         {/* Right: circuit + reasoning */}
-        <div className="flex flex-col flex-1 min-w-0" style={{ paddingLeft: 16 }}>
+        <div className="flex flex-col flex-1 min-w-0" style={{ paddingLeft: 8 }}>
           {/* FLOW circuit */}
           <div className="relative w-full" style={{ height: 110 }}>
             <svg
@@ -340,7 +350,15 @@ export function DisciplineCard({
               {/* Nodes */}
               {NODE_XS.map((x, i) => (
                 <g key={i}>
-                  <circle cx={x} cy="45" r="30" fill="#1f362d" stroke="#d4a574" strokeWidth="1.4" />
+                  <circle
+                    cx={x}
+                    cy="45"
+                    r="30"
+                    fill="#1f362d"
+                    stroke={activeStepIdx === i ? '#ffc580' : '#d4a574'}
+                    strokeWidth={activeStepIdx === i ? '2' : '1.4'}
+                    opacity={activeStepIdx === i ? '1' : '0.78'}
+                  />
                   <text
                     x={x}
                     y="53"
@@ -348,7 +366,7 @@ export function DisciplineCard({
                     fontFamily="monospace"
                     fontSize="22"
                     fontWeight="700"
-                    fill="#d4a574"
+                    fill={activeStepIdx === i ? '#ffc580' : '#d4a574'}
                     letterSpacing="0.5"
                   >
                     {STEP_LABELS[i]}
@@ -372,7 +390,7 @@ export function DisciplineCard({
                   fontSize="16"
                   fontWeight="600"
                   fill="#d4a574"
-                  opacity="0.75"
+                  opacity={activeStep?.name.toUpperCase() === label ? '0.95' : '0.68'}
                   letterSpacing="1.5"
                 >
                   {label}
@@ -381,14 +399,13 @@ export function DisciplineCard({
             </svg>
           </div>
 
-          {/* Reasoning text */}
+          {/* Step meaning */}
           <div
             style={{
-              fontStyle: 'italic',
               fontSize: 13,
               lineHeight: 1.45,
               color: '#f5f0e6',
-              height: 32,
+              minHeight: 42,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -396,6 +413,10 @@ export function DisciplineCard({
             }}
           >
             <span className="transition-opacity duration-300" style={{ opacity: isVisible ? 0.88 : 0 }}>
+              <span style={{ color: '#ffc580', fontFamily: 'monospace', fontSize: 11, fontWeight: 700, letterSpacing: 1.2 }}>
+                {activeStep.name}
+              </span>
+              <span style={{ color: 'rgba(245,240,230,0.45)' }}> - </span>
               {reasoningText}
             </span>
           </div>
@@ -404,7 +425,7 @@ export function DisciplineCard({
 
       {/* Footer */}
       <div
-        className="absolute bottom-4 left-8 right-8 flex justify-between items-center z-10"
+        className="relative z-10 mt-5 flex flex-wrap justify-between gap-3 items-center"
         style={{
           fontFamily: 'monospace',
           fontSize: 9.5,
@@ -413,19 +434,18 @@ export function DisciplineCard({
           textTransform: 'uppercase',
         }}
       >
-        <div className="flex gap-2.5 items-center">
-          <span>{currentDiscipline.traditions.length} TRADITIONS</span>
-          <div
-            className="rounded-full"
-            style={{ width: 3, height: 3, background: '#d4a574', opacity: 0.7 }}
-          />
-          <span>{currentDiscipline.competencies.length} COMPETENCIES</span>
+        <div className="flex gap-2 items-center">
+          <span>SOURCES</span>
+          <span style={{ color: '#d4a574', opacity: 0.72 }}>→</span>
+          <span>SKILLS</span>
+          <span style={{ color: '#d4a574', opacity: 0.72 }}>→</span>
+          <span>FLOW MOVES</span>
         </div>
         <div
           className="flex items-center gap-1.5 transition-all duration-300"
           style={{ color: '#d4a574', gap: isHovered ? 10 : 6 }}
         >
-          <span>EXPLORE</span>
+          <span>OPEN MAP</span>
           <svg
             width="14"
             height="9"

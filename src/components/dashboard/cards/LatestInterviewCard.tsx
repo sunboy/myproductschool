@@ -18,77 +18,82 @@ export function LatestInterviewCard({ data }: LatestInterviewCardProps) {
   const scoreDisplay = data.overallScore.toFixed(1)
 
   return (
-    <div className="rounded-2xl p-6 bg-surface border border-outline-variant/30 flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <h3 className="font-headline text-xl font-medium tracking-tight">Latest interview</h3>
-          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-            {data.companyName && (
-              <span className="rounded-full px-2.5 py-0.5 font-label text-xs font-semibold bg-primary-container text-on-primary-container">
-                {data.companyName}
-              </span>
-            )}
-            {data.scenarioTitle && (
-              <span className="font-label text-xs text-on-surface-variant truncate">
-                {data.scenarioTitle}
-              </span>
-            )}
-          </div>
+    <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-[#edf5e9] p-4 shadow-[0_18px_46px_-38px_rgba(38,74,52,0.78)]">
+      <svg className="pointer-events-none absolute inset-y-0 right-0 h-full w-44 opacity-[0.16]" viewBox="0 0 220 150" fill="none" aria-hidden="true">
+        <path d="M40 112 C74 52, 116 126, 176 42" stroke="#4a7c59" strokeWidth="7" strokeLinecap="round" />
+        <path d="M114 34 H184 V102" stroke="#2e3230" strokeWidth="1.5" strokeDasharray="5 8" />
+        <circle cx="176" cy="42" r="24" fill="#4a7c59" opacity="0.25" />
+        <rect x="126" y="84" width="46" height="42" rx="14" fill="#c9933a" opacity="0.22" />
+      </svg>
+
+      <div className="relative flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="h-8 w-1.5 shrink-0 rounded-full bg-primary shadow-[0_10px_20px_-14px_rgba(74,124,89,0.95)]" />
+          <h3 className="truncate font-headline text-[17px] font-semibold leading-tight text-on-surface">
+            Latest interview
+          </h3>
         </div>
         <Link
           href={`/live-interviews/${data.sessionId}/debrief`}
-          className="flex items-center gap-1 text-xs font-label font-bold uppercase tracking-wider text-primary shrink-0"
+          className="flex shrink-0 items-center gap-1 rounded-md bg-white/55 px-2 py-1 text-[11px] font-label font-bold text-primary ring-1 ring-primary/10 transition-colors hover:bg-white"
         >
-          Debrief{' '}
-          <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+          Debrief
+          <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
         </Link>
       </div>
 
-      {/* Score hero */}
-      <div className="flex items-end gap-3">
-        <div className="font-headline text-5xl font-semibold tracking-tight leading-none text-on-surface">
-          {scoreDisplay}
+      <div className="relative mt-3 grid gap-3 sm:grid-cols-[8.5rem_1fr]">
+        <div className="rounded-xl bg-[#203b2b] px-3 py-2.5 text-[#f7f1e6] shadow-[0_16px_30px_-22px_rgba(20,48,32,0.95)]">
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-headline text-[32px] font-semibold leading-none tabular-nums">
+              {scoreDisplay}
+            </span>
+            <span className="font-label text-xs font-bold text-[#f7f1e6]/62">
+              / {FLOW_MAX_SCORE}
+            </span>
+          </div>
+          {data.grade && (
+            <span
+              className="mt-2 inline-flex rounded-md px-2 py-0.5 font-label text-[11px] font-extrabold"
+              style={{ background: colors.bg, color: colors.text }}
+            >
+              {data.grade}
+            </span>
+          )}
         </div>
-        <div className="font-label text-sm text-on-surface-variant pb-1">
-          / {FLOW_MAX_SCORE}
-        </div>
-        {data.grade && (
-          <span
-            className="ml-auto rounded-full px-3 py-1 font-label text-xs font-bold mb-1"
-            style={{ background: colors.bg, color: colors.text }}
-          >
-            {data.grade}
-          </span>
-        )}
-      </div>
 
-      {/* Strength + growth */}
-      {(data.topStrength || data.topGrowth) && (
-        <div className="flex flex-col gap-2 pt-1">
-          {data.topStrength && (
-            <div className="flex items-start gap-2">
-              <span
-                className="material-symbols-outlined text-primary text-[18px] mt-0.5 shrink-0"
-                style={{ fontVariationSettings: "'FILL' 1" }}
-              >
-                trending_up
-              </span>
-              <p className="font-body text-sm text-on-surface leading-snug">{data.topStrength}</p>
-            </div>
-          )}
-          {data.topGrowth && (
-            <div className="flex items-start gap-2">
-              <span
-                className="material-symbols-outlined text-tertiary text-[18px] mt-0.5 shrink-0"
-                style={{ fontVariationSettings: "'FILL' 1" }}
-              >
-                lightbulb
-              </span>
-              <p className="font-body text-sm text-on-surface-variant leading-snug">{data.topGrowth}</p>
+        <div className="min-w-0 space-y-2">
+          <div className="min-w-0 rounded-xl bg-white/50 px-3 py-2 ring-1 ring-primary/10">
+            {data.companyName && (
+              <div className="font-label text-[12px] font-extrabold leading-tight text-on-surface">
+                {data.companyName}
+              </div>
+            )}
+            {data.scenarioTitle && (
+              <div className="mt-0.5 truncate font-label text-[11px] font-semibold leading-tight text-on-surface-variant">
+                {data.scenarioTitle}
+              </div>
+            )}
+          </div>
+
+          {(data.topStrength || data.topGrowth) && (
+            <div className="grid gap-1.5">
+              {data.topStrength && (
+                <div className="grid grid-cols-[3px_1fr] gap-2 rounded-lg bg-white/40 px-2.5 py-1.5">
+                  <span className="mt-1 h-4 rounded-full bg-primary" />
+                  <p className="line-clamp-2 font-body text-[12px] font-semibold leading-snug text-on-surface">{data.topStrength}</p>
+                </div>
+              )}
+              {data.topGrowth && (
+                <div className="grid grid-cols-[3px_1fr] gap-2 rounded-lg bg-[#f5e2bc]/60 px-2.5 py-1.5">
+                  <span className="mt-1 h-4 rounded-full bg-tertiary" />
+                  <p className="line-clamp-2 font-body text-[12px] font-semibold leading-snug text-on-surface-variant">{data.topGrowth}</p>
+                </div>
+              )}
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   )
 }

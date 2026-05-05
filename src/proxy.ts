@@ -13,7 +13,27 @@ const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist', '/hatch-preview']
 // Marketing / auth pages — accessible without any session.
 // These short-circuit BEFORE we talk to Supabase so they can
 // never be blocked by an auth-service hiccup.
-const MARKETING_ROUTES = ['/', '/waitlist', '/waitlist-quick', '/waitlist-flow', '/pricing', '/flow', '/hatch-preview', '/home']
+const MARKETING_ROUTES = [
+  '/',
+  '/waitlist',
+  '/waitlist-quick',
+  '/waitlist-flow',
+  '/pricing',
+  '/flow',
+  '/hatch-preview',
+  '/home',
+  '/skills',
+  '/companies',
+  '/study-plans',
+  '/practice',
+  '/glossary',
+  '/interviews',
+  '/alternatives',
+  '/robots.txt',
+  '/sitemap.xml',
+  '/llms.txt',
+  '/llms-full.txt',
+]
 const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-password']
 
 // Routes that require a user but NOT a completed profile/onboarding
@@ -61,7 +81,7 @@ export async function proxy(request: NextRequest) {
   // This MUST use the full supabaseResponse + setAll pattern so that token
   // refresh works correctly. A lightweight client with setAll(){} no-op causes
   // getUser() / getSession() to return null when the access token needs refreshing.
-  let supabaseResponse = NextResponse.next({ request })
+  const supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

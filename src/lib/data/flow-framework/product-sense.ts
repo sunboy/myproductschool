@@ -5,6 +5,17 @@ export const productSense: Discipline = {
   name: 'Product Sense',
   tagline: 'How users decide',
   tabLabel: 'Product Sense',
+  learnerExplanation: {
+    plainPurpose: 'Use FLOW to turn messy user and business prompts into a framed problem, options, trade-offs, and a measurable recommendation.',
+    examplePrompt: 'DAU dropped 15% overnight. How would you diagnose it and decide what to do?',
+    stepMeanings: {
+      F: 'Define the user and business problem before choosing a fix.',
+      L: 'Name the stakeholders, options, and what each one needs.',
+      O: 'Choose the option whose trade-off best fits the goal.',
+      W: 'Commit to a measurable recommendation and how you will know if it failed.',
+    },
+    practiceOutcome: 'Practice builds product judgment that can be explained, scored, and repeated under interview pressure.',
+  },
   traditions: [
     {
       id: 't1',

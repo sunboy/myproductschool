@@ -40,10 +40,18 @@ export function DisciplineExplorerModal({
     setActiveDisciplineId(initialDisciplineId)
   }, [initialDisciplineId])
 
+  useEffect(() => {
+    if (!isOpen) return
+    setActiveNodeId(null)
+    setActiveNodeType(null)
+    setFocusedStep(null)
+  }, [isOpen])
+
   // Reset node selection when discipline changes
   useEffect(() => {
     setActiveNodeId(null)
     setActiveNodeType(null)
+    setFocusedStep(null)
   }, [activeDisciplineId])
 
   // Scroll lock + focus trap
@@ -138,41 +146,41 @@ export function DisciplineExplorerModal({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 24, scale: 0.98 }}
               transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-x-4 top-[5vh] bottom-[5vh] z-50 mx-auto flex flex-col rounded-2xl overflow-hidden shadow-2xl"
-              style={{ maxWidth: 1120, background: '#1a2f26', border: '1px solid rgba(212,165,116,0.2)' }}
+              className="fixed inset-x-2 top-[2vh] bottom-[2vh] z-50 mx-auto flex flex-col overflow-hidden rounded-2xl shadow-2xl sm:inset-x-4 sm:top-[4vh] sm:bottom-[4vh]"
+              style={{ maxWidth: 1180, background: '#1a2f26', border: '1px solid rgba(212,165,116,0.2)' }}
             >
               {/* Discipline tab bar */}
               <div
-                className="flex items-center gap-0.5 px-4 pt-3 pb-0 shrink-0"
+                className="flex items-end gap-1.5 px-3 pt-2 pb-0 shrink-0"
                 style={{ background: '#162620', borderBottom: '1px solid rgba(212,165,116,0.15)' }}
               >
-                {ALL_DISCIPLINES.map((d) => (
-                  <button
-                    key={d.id}
-                    type="button"
-                    onClick={() => setActiveDisciplineId(d.id)}
-                    className="font-label text-[15px] px-4 py-2.5 rounded-t-lg transition-all duration-200 border-b-2 -mb-px"
-                    style={
-                      activeDisciplineId === d.id
-                        ? { borderColor: '#d4a574', color: '#ffc580', background: '#1a2f26', fontWeight: 600 }
-                        : { borderColor: 'transparent', color: 'rgba(245,240,230,0.45)' }
-                    }
-                  >
-                    {d.tabLabel ?? d.name}
-                  </button>
-                ))}
+                <div className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto">
+                  {ALL_DISCIPLINES.map((d) => (
+                    <button
+                      key={d.id}
+                      type="button"
+                      onClick={() => setActiveDisciplineId(d.id)}
+                      className="font-label text-[13px] px-3 py-1.5 rounded-t-md transition-all duration-200 border-b-2 -mb-px whitespace-nowrap"
+                      style={
+                        activeDisciplineId === d.id
+                          ? { borderColor: '#d4a574', color: '#ffc580', background: '#1a2f26', fontWeight: 600 }
+                          : { borderColor: 'transparent', color: 'rgba(245,240,230,0.45)' }
+                      }
+                    >
+                      {d.tabLabel ?? d.name}
+                    </button>
+                  ))}
+                </div>
 
-                {/* Spacer + close */}
-                <div className="flex-1" />
                 <button
                   ref={closeButtonRef}
                   type="button"
                   onClick={onClose}
-                  className="mb-1 p-2 rounded-full transition-colors duration-150 focus-visible:outline-2"
+                  className="mb-0.5 p-1.5 rounded-full transition-colors duration-150 focus-visible:outline-2"
                   style={{ color: 'rgba(245,240,230,0.45)' }}
                   aria-label="Close discipline explorer"
                 >
-                  <span className="material-symbols-outlined text-xl" aria-hidden="true">
+                  <span className="material-symbols-outlined text-[19px]" aria-hidden="true">
                     close
                   </span>
                 </button>
@@ -186,20 +194,36 @@ export function DisciplineExplorerModal({
               />
 
               {/* Main content: Circuit + InfoPanel */}
-              <div className="flex flex-1 overflow-hidden">
-                {/* Circuit — takes majority of width */}
-                <div className="flex-1 overflow-auto p-4 flex items-center justify-center" style={{ background: '#1a2f26' }}>
-                  <Circuit
-                    discipline={activeDiscipline}
-                    activeNodeId={activeNodeId}
-                    onNodeClick={handleNodeClick}
-                  />
+              <div className="grid min-h-0 flex-1 grid-rows-[minmax(250px,54%)_minmax(0,1fr)] overflow-hidden lg:grid-cols-[minmax(0,1fr)_288px] lg:grid-rows-none">
+                <div className="min-h-0 overflow-hidden p-2.5 sm:p-3" style={{ background: '#1a2f26' }}>
+                  <div
+                    className="flex h-full min-h-0 flex-col rounded-xl"
+                    style={{
+                      background: 'radial-gradient(circle at 50% 50%, rgba(212,165,116,0.08), rgba(22,38,32,0.08) 48%, rgba(22,38,32,0.18) 100%)',
+                      border: '1px solid rgba(212,165,116,0.14)',
+                    }}
+                  >
+                    <div
+                      className="grid shrink-0 grid-cols-3 gap-2 px-3 py-2 font-label text-[10px] font-bold uppercase tracking-[0.14em] sm:px-4"
+                      style={{ color: 'rgba(212,165,116,0.62)' }}
+                    >
+                      <span>Source ideas</span>
+                      <span className="text-center">Trainable skills</span>
+                      <span className="text-right">Scored FLOW moves</span>
+                    </div>
+                    <div className="min-h-0 flex-1 px-1 pb-2 sm:px-2">
+                      <Circuit
+                        discipline={activeDiscipline}
+                        activeNodeId={activeNodeId}
+                        onNodeClick={handleNodeClick}
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                {/* Info panel — fixed-width sidebar */}
                 <div
-                  className="w-80 shrink-0 overflow-y-auto p-5"
-                  style={{ background: '#162620', borderLeft: '1px solid rgba(212,165,116,0.15)' }}
+                  className="min-h-0 overflow-y-auto p-4 lg:w-72"
+                  style={{ background: '#162620', borderLeft: '1px solid rgba(212,165,116,0.15)', borderTop: '1px solid rgba(212,165,116,0.15)' }}
                 >
                   <InfoPanel
                     discipline={activeDiscipline}

@@ -1,6 +1,3 @@
-'use client'
-
-import { useState } from 'react'
 import Link from 'next/link'
 
 interface PlanItem {
@@ -21,8 +18,6 @@ interface PersonalisedPlan {
   move_tag: string | null
 }
 
-const TR = '200ms cubic-bezier(0.2, 0.8, 0.2, 1)'
-
 const DIFF_COLOR: Record<string, string> = {
   Beginner: '#4a7c59',
   Intermediate: '#c9933a',
@@ -36,118 +31,65 @@ const MOVE_ICON: Record<string, string> = {
   win: 'emoji_events',
 }
 
-function StudyPlanCard({ pl }: { pl: PlanItem }) {
-  const [hovered, setHovered] = useState(false)
+function PlanTexture({ color, dark = false }: { color: string; dark?: boolean }) {
+  return (
+    <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-30 transition-transform duration-500 group-hover:scale-[1.03]" viewBox="0 0 260 180" fill="none" aria-hidden="true">
+      <path d="M-18 132 C38 70, 96 166, 152 90 S230 38, 282 92" stroke={color} strokeWidth="5" strokeLinecap="round" opacity={dark ? '0.25' : '0.16'} />
+      <path d="M28 42 H232 M52 76 H176 M24 112 H238" stroke={dark ? '#f3ede0' : '#2e3230'} strokeWidth="1" strokeDasharray="3 10" opacity={dark ? '0.18' : '0.12'} />
+      <circle cx="214" cy="48" r="30" fill={color} opacity={dark ? '0.10' : '0.12'} />
+      <rect x="166" y="108" width="48" height="48" rx="14" fill={color} opacity={dark ? '0.08' : '0.10'} />
+    </svg>
+  )
+}
 
+function StudyPlanCard({ pl, index }: { pl: PlanItem; index: number }) {
   return (
     <Link
       href={`/explore/plans/${pl.slug}`}
       data-hatch-sound="open"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        background: pl.bg,
-        borderRadius: 16,
-        padding: '16px 16px',
-        position: 'relative',
-        overflow: 'hidden',
-        minHeight: 154,
-        textDecoration: 'none',
-        color: 'inherit',
-        border: '1px solid rgba(0,0,0,0.05)',
-        transition: `transform ${TR}, box-shadow ${TR}`,
-        transform: hovered ? 'translateY(-3px)' : 'none',
-        boxShadow: hovered ? '0 16px 40px -16px rgba(0,0,0,0.22)' : '0 2px 12px -4px rgba(0,0,0,0.08)',
-      }}
+      className="animate-fade-in-up group relative flex min-h-[164px] flex-col justify-between overflow-hidden rounded-xl border border-outline-variant/35 p-4 no-underline shadow-[0_18px_42px_-34px_rgba(46,50,48,0.78)] ring-1 ring-white/35 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_30px_58px_-36px_rgba(46,50,48,0.9)]"
+      style={{ background: pl.bg, animationDelay: `${index * 60}ms` }}
     >
-      {/* Watermark icon */}
-      <span
-        aria-hidden
-        className="material-symbols-outlined"
-        style={{
-          position: 'absolute',
-          right: -6,
-          bottom: -6,
-          fontSize: 72,
-          color: pl.color,
-          opacity: 0.10,
-          fontVariationSettings: "'FILL' 1, 'wght' 700",
-          userSelect: 'none',
-          pointerEvents: 'none',
-          lineHeight: 1,
-        }}
-      >
-        {pl.icon}
-      </span>
+      <PlanTexture color={pl.color} />
 
-      {/* Top section */}
-      <div style={{ position: 'relative' }}>
-        {/* Icon box */}
-        <div style={{
-          width: 32, height: 32, borderRadius: 9,
-          background: pl.color,
-          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          marginBottom: 10,
-          boxShadow: `0 4px 14px -4px ${pl.color}66`,
-        }}>
-          <span className="material-symbols-outlined" style={{ color: '#fff', fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 500" }}>
-            {pl.icon}
+      <div className="relative">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-white shadow-[0_12px_24px_-18px_rgba(0,0,0,0.72)]" style={{ background: pl.color }}>
+            <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1, 'wght' 500" }}>
+              {pl.icon}
+            </span>
+          </span>
+          <span
+            className="rounded-md bg-white/52 px-2 py-0.5 font-label text-[10px] font-extrabold uppercase tracking-[0.08em] ring-1 ring-black/5"
+            style={{ color: DIFF_COLOR[pl.diff] ?? pl.color }}
+          >
+            {pl.diff}
           </span>
         </div>
 
-        {/* Difficulty eyebrow */}
-        <div style={{
-          fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
-          color: DIFF_COLOR[pl.diff] ?? pl.color,
-          marginBottom: 5,
-        }}>
-          {pl.diff}
-        </div>
-
-        {/* Title */}
-        <div style={{
-          fontFamily: 'var(--font-headline)',
-          fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em', lineHeight: 1.15,
-          color: '#1e1b14',
-          marginBottom: 4,
-        }}>
+        <div className="font-headline text-[17px] font-bold leading-tight text-[#1e1b14]">
           {pl.title}
         </div>
-
-        {/* Sub label */}
-        <div style={{ fontSize: 12.5, fontWeight: 600, color: 'rgba(0,0,0,0.55)', lineHeight: 1.4 }}>
+        <div className="mt-1 text-[12.5px] font-label font-semibold leading-snug text-black/55">
           {pl.sub}
         </div>
       </div>
 
-      {/* Bottom row */}
-      <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 14, color: 'rgba(0,0,0,0.45)', fontVariationSettings: "'FILL' 1" }}>group</span>
-          <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.50)' }}>
-            {pl.enrolled.toLocaleString()}
-          </span>
-        </div>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 5,
-          background: pl.color,
-          color: '#fff',
-          padding: '6px 11px', borderRadius: 999,
-          fontWeight: 700, fontSize: 12,
-        }}>
+      <div className="relative mt-5 flex items-center justify-between gap-3">
+        <span className="inline-flex items-center gap-1.5 font-label text-[12px] font-bold text-black/50">
+          <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>group</span>
+          {pl.enrolled.toLocaleString()}
+        </span>
+        <span className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 font-label text-[12px] font-extrabold text-white shadow-[0_10px_20px_-16px_rgba(0,0,0,0.75)]" style={{ background: pl.color }}>
           Start
-          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward</span>
-        </div>
+          <span className="material-symbols-outlined text-[14px] transition-transform group-hover:translate-x-0.5">arrow_forward</span>
+        </span>
       </div>
     </Link>
   )
 }
 
 function PersonalisedPlanCard({ plan }: { plan: PersonalisedPlan }) {
-  const [hovered, setHovered] = useState(false)
   const move = plan.move_tag ?? ''
   const icon = MOVE_ICON[move] ?? 'route'
 
@@ -155,102 +97,35 @@ function PersonalisedPlanCard({ plan }: { plan: PersonalisedPlan }) {
     <Link
       href={`/explore/plans/${plan.slug}`}
       data-hatch-sound="open"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        background: 'linear-gradient(145deg, #1e3528 0%, #152b1e 100%)',
-        borderRadius: 16,
-        padding: '16px 16px',
-        position: 'relative',
-        overflow: 'hidden',
-        minHeight: 154,
-        textDecoration: 'none',
-        color: 'inherit',
-        border: '1px solid rgba(126,224,153,0.18)',
-        transition: `transform ${TR}, box-shadow ${TR}`,
-        transform: hovered ? 'translateY(-3px)' : 'none',
-        boxShadow: hovered
-          ? '0 16px 40px -16px rgba(74,124,89,0.40)'
-          : '0 2px 12px -4px rgba(74,124,89,0.15)',
-      }}
+      className="animate-fade-in-up group relative flex min-h-[164px] flex-col justify-between overflow-hidden rounded-xl border border-[#7ee099]/20 bg-[#1e3528] p-4 no-underline shadow-[0_24px_50px_-34px_rgba(30,53,40,0.95)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-[#7ee099]/35 hover:shadow-[0_34px_66px_-38px_rgba(30,53,40,1)]"
     >
-      {/* Subtle glow */}
-      <div aria-hidden style={{
-        position: 'absolute', inset: 0,
-        background: 'radial-gradient(300px 200px at 80% 110%, rgba(126,224,153,0.12), transparent 70%)',
-        pointerEvents: 'none',
-      }} />
+      <PlanTexture color="#7ee099" dark />
 
-      {/* Watermark icon */}
-      <span
-        aria-hidden
-        className="material-symbols-outlined"
-        style={{
-          position: 'absolute', right: -6, bottom: -6,
-          fontSize: 72, color: '#7ee099', opacity: 0.08,
-          fontVariationSettings: "'FILL' 1, 'wght' 700",
-          userSelect: 'none', pointerEvents: 'none', lineHeight: 1,
-        }}
-      >
-        {icon}
-      </span>
-
-      {/* Top section */}
-      <div style={{ position: 'relative' }}>
-        {/* Your plan badge */}
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 5,
-          background: 'rgba(126,224,153,0.14)', border: '1px solid rgba(126,224,153,0.22)',
-          borderRadius: 999, padding: '3px 10px', marginBottom: 12,
-          fontSize: 10, fontWeight: 800, letterSpacing: '0.07em', textTransform: 'uppercase',
-          color: '#7ee099',
-        }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 11, fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-          Role-aware plan by Hatch
+      <div className="relative">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#4a7c59] text-white shadow-[0_12px_24px_-18px_rgba(0,0,0,0.78)]">
+            <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1, 'wght' 500" }}>
+              {icon}
+            </span>
+          </span>
+          <span className="rounded-md bg-[#7ee099]/12 px-2 py-0.5 font-label text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#9ee0b8] ring-1 ring-[#7ee099]/18">
+            Your plan
+          </span>
         </div>
 
-        {/* Title */}
-        <div style={{
-          fontFamily: 'var(--font-headline)',
-          fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em', lineHeight: 1.15,
-          color: '#f3ede0',
-          marginBottom: 4,
-        }}>
+        <div className="font-headline text-[17px] font-bold leading-tight text-[#f3ede0]">
           {plan.title}
         </div>
-
-        {/* Description */}
-        {plan.description ? (
-          <div style={{
-            fontSize: 12.5, fontWeight: 600, color: 'rgba(243,237,224,0.55)', lineHeight: 1.4,
-            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }}>
-            {plan.description}
-          </div>
-        ) : (
-          <div style={{
-            fontSize: 12.5, fontWeight: 600, color: 'rgba(243,237,224,0.55)', lineHeight: 1.4,
-          }}>
-            Sequenced across product, systems, data, SQL, and coding based on your FLOW profile.
-          </div>
-        )}
+        <div className="mt-1 line-clamp-2 text-[12.5px] font-label font-semibold leading-snug text-[#f3ede0]/58">
+          {plan.description ?? 'Sequenced across product, systems, data, SQL, and coding based on your FLOW profile.'}
+        </div>
       </div>
 
-      {/* Bottom row */}
-      <div style={{ position: 'relative', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 16 }}>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 5,
-          background: '#4a7c59', color: '#fff',
-          padding: '6px 11px', borderRadius: 999,
-          fontWeight: 700, fontSize: 12,
-        }}>
+      <div className="relative mt-5 flex justify-end">
+        <span className="inline-flex items-center gap-1 rounded-md bg-[#4a7c59] px-2.5 py-1 font-label text-[12px] font-extrabold text-white shadow-[0_10px_20px_-16px_rgba(0,0,0,0.78)]">
           Continue
-          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward</span>
-        </div>
+          <span className="material-symbols-outlined text-[14px] transition-transform group-hover:translate-x-0.5">arrow_forward</span>
+        </span>
       </div>
     </Link>
   )
@@ -258,10 +133,10 @@ function PersonalisedPlanCard({ plan }: { plan: PersonalisedPlan }) {
 
 export function StudyPlanGrid({ plans, personalisedPlan }: { plans: PlanItem[]; personalisedPlan?: PersonalisedPlan | null }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12 }}>
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
       {personalisedPlan && <PersonalisedPlanCard plan={personalisedPlan} />}
-      {plans.map(pl => (
-        <StudyPlanCard key={pl.title} pl={pl} />
+      {plans.map((pl, index) => (
+        <StudyPlanCard key={pl.title} pl={pl} index={index + (personalisedPlan ? 1 : 0)} />
       ))}
     </div>
   )

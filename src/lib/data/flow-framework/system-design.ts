@@ -5,6 +5,17 @@ export const systemDesign: Discipline = {
   name: 'System Design',
   tagline: 'How systems scale',
   tabLabel: 'System Design',
+  learnerExplanation: {
+    plainPurpose: 'Use FLOW to turn open-ended architecture prompts into scoped constraints, components, trade-offs, and a defensible design.',
+    examplePrompt: 'Design a notifications system for 100M users with retries, latency targets, and failure handling.',
+    stepMeanings: {
+      F: 'Set scale, read/write patterns, latency, and consistency needs before drawing boxes.',
+      L: 'Map the components, data flows, dependencies, and failure boundaries.',
+      O: 'Pick caching, consistency, partitioning, and cost trade-offs deliberately.',
+      W: 'Defend the architecture, scaling path, failure behavior, and open questions.',
+    },
+    practiceOutcome: 'Practice builds architecture judgment that stays clear when the prompt is broad and the constraints are incomplete.',
+  },
   traditions: [
     {
       id: 't1',
