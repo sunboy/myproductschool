@@ -1,16 +1,8 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
-import Anthropic from '@anthropic-ai/sdk'
 import { applyCoverageCredit, type FlowMove } from '@/lib/live-interview/flow-coverage-credits'
-import {
-  AiBudgetExceededError,
-  assertAiBudget,
-  estimateAnthropicPreflightCents,
-  getUserPlanForBudget,
-  recordAnthropicUsage,
-} from '@/lib/usage/ai-budget'
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 
 export async function POST(
   request: Request,
@@ -56,14 +48,10 @@ export async function POST(
 
   const turnCount = count ?? 0
 
-  // Build conversation messages from turns table
-  const conversationMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [
-    ...(turns ?? []).map((t) => ({
-      role: (t.role === 'hatch' ? 'assistant' : 'user') as 'user' | 'assistant',
-      content: t.content,
-    })),
-    { role: 'user' as const, content: lastUserMsg },
-  ]
+  const conversation = [
+    ...(turns ?? []).map((t) => `${t.role === 'hatch' ? 'Interviewer' : 'Candidate'}: ${t.content}`),
+    `Candidate: ${lastUserMsg}`,
+  ].join('\n\n')
 
   // Call Claude with multi-turn messages format
   const model = 'claude-sonnet-4-6'
@@ -71,25 +59,15 @@ export async function POST(
   const sessionUserId = session.user_id as string
   const userPlan = await getUserPlanForBudget(sessionUserId)
   const systemPrompt = session.system_prompt ?? ''
-  const promptCharCount = systemPrompt.length + conversationMessages.reduce((sum, msg) => sum + msg.content.length, 0)
-  const preflightCostCents = estimateAnthropicPreflightCents(model, maxTokens, promptCharCount)
 
-  let response
+  let rawContent = ''
   try {
-    await assertAiBudget(sessionUserId, userPlan, preflightCostCents)
-    response = await anthropic.messages.create({
+    const response = await guardedCachedMessage(systemPrompt, `Interview transcript:\n\n${conversation}`, {
       model,
       max_tokens: maxTokens,
-      system: [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }],
-      messages: conversationMessages,
+      budget: { userId: sessionUserId, userPlan, route: 'live_interview_turn' },
     })
-    await recordAnthropicUsage({
-      userId: sessionUserId,
-      model,
-      usage: response.usage,
-      fallbackCostCents: preflightCostCents,
-      route: 'live_interview_turn',
-    })
+    rawContent = response.sanitized
   } catch (error) {
     if (error instanceof AiBudgetExceededError) {
       return Response.json(
@@ -106,7 +84,6 @@ export async function POST(
     throw error
   }
 
-  const rawContent = response.content[0].type === 'text' ? response.content[0].text : ''
   const { cleanContent, signal } = parseGradingSignal(rawContent)
 
   // Save turns and update session in parallel.
