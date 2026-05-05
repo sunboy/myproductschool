@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { createClient } from '@/lib/supabase/server'
 import { sceneToPrompt, type CanvasScene } from '@/lib/hatch/canvas-scene'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
@@ -91,16 +91,15 @@ export async function POST(req: NextRequest) {
   ].join('\n\n')
 
   try {
-    const response = await createCachedMessage(NUDGE_SYSTEM_PROMPT, userContent, {
+    const response = await guardedCachedMessage(NUDGE_SYSTEM_PROMPT, userContent, {
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 200,
       budget: { userId: user.id, userPlan, route: 'hatch_canvas_nudge' },
     })
-    const content = response.content[0]
-    if (content.type !== 'text') {
+    if (!response.sanitized) {
       return NextResponse.json({ nudge: null })
     }
-    const cleaned = content.text
+    const cleaned = response.sanitized
       .trim()
       .replace(/^```(?:json)?\s*/i, '')
       .replace(/\s*```$/i, '')
