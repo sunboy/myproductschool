@@ -66,32 +66,32 @@ function getInitialMessage(challengeType: 'system_design' | 'data_modeling' | 'c
   return "I'm here to help you design this system. You can draw by hand, type here, or speak — I'll help build and critique your diagram."
 }
 
-function getExamplePrompts(challengeType: 'system_design' | 'data_modeling' | 'coding', language?: string): string[] {
+function getSuggestionPrompts(challengeType: 'system_design' | 'data_modeling' | 'coding', language?: string): string[] {
   if (challengeType === 'coding') {
     if (language === 'sql') {
       return [
-        "Can you explain the schema?",
-        "What kind of JOIN do I need here?",
-        "How do I aggregate by user?",
+        "What's the strongest query move I'm missing?",
+        'Compare my SQL to a top response.',
+        "What's the trade-off in this join or aggregation?",
       ]
     }
     return [
-      "What approach should I take?",
-      "What edge cases should I think about?",
-      "Walk me through the time complexity",
+      "What's the strongest implementation move I'm missing?",
+      'Compare my approach to a top response.',
+      "What's the trade-off in this complexity choice?",
     ]
   }
   if (challengeType === 'data_modeling') {
     return [
-      'What is missing from this schema?',
-      'Turn my context notes into tables',
-      'Check keys, cardinality, and indexes',
+      "What's the strongest schema move I'm missing?",
+      'Compare my model to a top response.',
+      "What's the trade-off in this relationship?",
     ]
   }
   return [
-    'What is missing from this design?',
-    'Turn my context notes into components',
-    'Stress-test the failure modes',
+    "What's the strongest system move I'm missing?",
+    'Compare my design to a top response.',
+    "What's the trade-off here?",
   ]
 }
 
@@ -145,7 +145,7 @@ export function CanvasChatPanel({
   const canvasStatusLabel = challengeType === 'coding'
     ? null
     : `${scene.entities.length} ${challengeType === 'data_modeling' ? 'tables' : 'nodes'} · ${scene.connections.length} ${challengeType === 'data_modeling' ? 'links' : 'flows'}`
-  const starterPrompts = getExamplePrompts(challengeType, currentLanguage)
+  const suggestionPrompts = getSuggestionPrompts(challengeType, currentLanguage)
   const isThrottled = retryAfter != null && retryAfter > 0
   const inputDisabled = isLoading || isThrottled
   const inputPlaceholder = isThrottled
@@ -442,9 +442,9 @@ export function CanvasChatPanel({
               </div>
             </div>
           ))}
-          {starterPrompts.length > 0 && messages.length === 1 && !isLoading && (
+          {suggestionPrompts.length > 0 && messages.length === 1 && !isLoading && (
             <div className="flex flex-col gap-1.5 mt-2">
-              {starterPrompts.map((prompt) => (
+              {suggestionPrompts.map((prompt) => (
                 <button
                   key={prompt}
                   onClick={() => sendMessage(prompt)}
@@ -599,10 +599,10 @@ export function CanvasChatPanel({
             </div>
           </div>
         ))}
-        {/* Example prompts — shown in coding mode when chat is at initial state */}
-        {starterPrompts.length > 0 && messages.length === 1 && !isLoading && (
+        {/* Suggestion chips shown while the Hatch thread is still empty. */}
+        {suggestionPrompts.length > 0 && messages.length === 1 && !isLoading && (
           <div className="flex flex-col gap-1.5 mt-2">
-            {starterPrompts.map((prompt) => (
+            {suggestionPrompts.map((prompt) => (
               <button
                 key={prompt}
                 onClick={() => sendMessage(prompt)}
