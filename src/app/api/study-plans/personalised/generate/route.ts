@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
 import { IS_MOCK } from '@/lib/mock'
 import { getHatchContext, buildHatchContextString } from '@/lib/hatch-context'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 
 // ── Types ─────────────────────────────────────────────────────
 
@@ -33,7 +34,7 @@ interface ChallengeLite {
 
 const MOCK_PLAN = {
   id: 'mock-plan-001',
-  title: '4-Week AI-Native Builder Sprint',
+  title: '4-Week Builder Sprint',
   hatch_rationale:
     'Hatch is balancing your weakest FLOW move with a full-stack skill surface: product judgment, system design, data modeling, SQL, and coding.',
   move_sequence: [
@@ -124,8 +125,8 @@ function buildFallbackPlan(
   }
 
   return {
-    title: '4-Week AI-Native Builder Sprint',
-    hatch_rationale: `Hatch is prioritizing your ${weakestMove} move while still rotating through the disciplines your role needs: product, systems, data, SQL, and coding. The goal is steady improvement without wasting premium AI tokens on unfocused wandering.`,
+    title: '4-Week Builder Sprint',
+    hatch_rationale: `Hatch is prioritizing your ${weakestMove} move while still rotating through the disciplines your role needs: product, systems, data, SQL, and coding. The goal is steady improvement without unfocused practice.`,
     move_sequence: disciplineOrder.slice(0, 4).map((discipline, i) => ({
       week: i + 1,
       focus_move: moveOrder[i % moveOrder.length] ?? weakestMove,
@@ -135,7 +136,7 @@ function buildFallbackPlan(
   }
 }
 
-// ── Validate Claude response shape ───────────────────────────
+// ── Validate generated response shape ────────────────────────
 
 function isValidPlan(obj: unknown): obj is StudyPlanShape {
   if (!obj || typeof obj !== 'object') return false
@@ -187,7 +188,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     force = Boolean(body?.force)
   } catch {
-    // No body or invalid JSON — treat as force=false
+    // No body or invalid JSON; treat as force=false
   }
 
   const admin = createAdminClient()
@@ -206,7 +207,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ plan: existing })
       }
     } catch {
-      // No active plan found — proceed to generate
+      // No active plan found; proceed to generate
     }
   }
 
@@ -219,7 +220,7 @@ export async function POST(req: NextRequest) {
         .eq('user_id', userId)
         .eq('status', 'active')
     } catch {
-      // Non-fatal — proceed even if archiving fails
+      // Non-fatal; proceed even if archiving fails
     }
   }
 
@@ -241,16 +242,14 @@ export async function POST(req: NextRequest) {
       ? [...hatchCtx.moveLevels].sort((a, b) => a.level - b.level)[0].move
       : 'frame'
 
-  // ── Generate plan via Claude ──────────────────────────────
+  // ── Generate plan via Hatch ───────────────────────────────
   let generatedPlan: StudyPlanShape | null = null
 
   if (process.env.ANTHROPIC_API_KEY) {
     try {
-      const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
       const contextString = buildHatchContextString(hatchCtx, 'coaching')
       const challengeList = availableChallenges
-        .map((c) => `${c.id} — "${c.title}" [type: ${c.challenge_type ?? 'unknown'}; difficulty: ${c.difficulty ?? 'unknown'}; roles: ${(c.relevant_roles ?? []).join(', ') || 'any'}; tags: ${(c.tags ?? []).join(', ')}]`)
+        .map((c) => `${c.id} - "${c.title}" [type: ${c.challenge_type ?? 'unknown'}; difficulty: ${c.difficulty ?? 'unknown'}; roles: ${(c.relevant_roles ?? []).join(', ') || 'any'}; tags: ${(c.tags ?? []).join(', ')}]`)
         .join('\n')
       const preferredRole = hatchCtx.preferredRole ?? 'not specified'
 
@@ -264,25 +263,40 @@ export async function POST(req: NextRequest) {
         'Generate a personalised 4-week HackProduct study plan for this learner based on their role, FLOW move levels, competency scores, and recent patterns.',
         'The plan must cover multiple disciplines, not only product sense. Rotate intelligently across product sense, system design, data modeling, SQL, and coding based on role fit and weak signals.',
         'For each week, choose 1-2 challenges. Prefer role-relevant challenges, but keep at least three distinct challenge_type families across the full plan when available.',
-        'Use Hatch\'s product philosophy: maximize learning quality and career lift while avoiding unfocused premium AI usage.',
+        'Use Hatch\'s product philosophy: maximize learning quality and career lift while avoiding unfocused practice.',
         'Return JSON only: { "title": string, "hatch_rationale": string, "move_sequence": [{ "week": number, "focus_move": string, "challenge_ids": string[], "theme": string }] }',
         'Use only challenge_ids from the list above. focus_move must be one of frame, list, optimize, win. Each week should have 1-2 challenge_ids.',
       ].join('\n')
 
-      const message = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 800,
-        system: 'You are Hatch. Respond only with a JSON object, no markdown.',
-        messages: [{ role: 'user', content: userPrompt }],
-      })
+      const message = await guardedCachedMessage(
+        'You are Hatch. Respond only with a JSON object, no markdown.',
+        userPrompt,
+        {
+          model: 'claude-sonnet-4-6',
+          max_tokens: 800,
+          budget: { userId, userPlan: await getUserPlanForBudget(userId), route: 'personalised_study_plan_generate' },
+        }
+      )
 
-      const rawText =
-        message.content[0].type === 'text' ? message.content[0].text : ''
+      const rawText = message.sanitized
       const parsed: unknown = JSON.parse(rawText)
       if (isValidPlan(parsed)) {
         generatedPlan = parsed
       }
-    } catch {
+    } catch (error) {
+      if (error instanceof AiBudgetExceededError) {
+        return NextResponse.json(
+          {
+            error: 'limit_reached',
+            feature: 'hatch_ai_cents',
+            used: error.used,
+            limit: error.limit,
+            windowDays: error.windowDays,
+          },
+          { status: 402 }
+        )
+      }
+
       // Fall through to deterministic fallback
     }
   }
