@@ -1,9 +1,17 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { applyCoverageCredit, type FlowMove } from '@/lib/live-interview/flow-coverage-credits'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
 
 const VALID_FLOW_MOVES = new Set(['frame', 'list', 'optimize', 'win'])
+const ROUTE_KEY = 'live_interview_analyze'
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
 
 interface ArtifactSnapshot {
   type: 'canvas' | 'editor'
@@ -24,6 +32,10 @@ export async function POST(
     return Response.json({ ok: false, error: 'Hatch ran into a problem. Try again.' }, { status: 503 })
   }
 
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) return new Response('Unauthorized', { status: 401 })
+
   const { content, role, artifactSnapshot, turnIndex } = await request.json() as {
     content: string
     role: string
@@ -42,6 +54,7 @@ export async function POST(
     .from('live_interview_sessions')
     .select('user_id, flow_coverage, flow_coverage_credits, total_turns, status')
     .eq('id', id)
+    .eq('user_id', user.id)
     .single()
 
   if (!session || session.status !== 'active') {
@@ -49,8 +62,25 @@ export async function POST(
   }
 
   const model = 'claude-haiku-4-5-20251001'
-  const sessionUserId = session.user_id as string
+  const sessionUserId = user.id
   const userPlan = await getUserPlanForBudget(sessionUserId)
+  const throttle = await rateLimit({
+    key: `ai:${sessionUserId}:${ROUTE_KEY}`,
+    limit: userPlan === 'pro' ? 15 : 5,
+    windowSec: 60,
+  })
+
+  if (!throttle.allowed) {
+    const retryAfter = retryAfterSeconds(throttle.resetAt)
+    return Response.json(
+      { error: 'rate_limited', retryAfter },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(retryAfter) },
+      }
+    )
+  }
+
   const flowMaxTokens = 50
   const flowSystemPrompt = `Classify the following interview response into exactly one FLOW move. Reply with ONLY one word: frame, list, optimize, win, or none.
 
@@ -73,34 +103,49 @@ If nothing notable, reply "none".`
     artifactRequest = { system: artifactSystemPrompt, userContent: artifactUserContent, maxTokens: 60 }
   }
 
-  // Run FLOW move classification and artifact analysis in parallel when both are needed
-  const flowPromise = guardedCachedMessage(flowSystemPrompt, content, {
-    model,
-    max_tokens: flowMaxTokens,
-    budget: { userId: sessionUserId, userPlan, route: 'live_interview_analyze_flow' },
-  })
-
-  const artifactPromise: Promise<string | null> = artifactSnapshot
-    ? (async () => {
-        if (!artifactRequest) return null
-
-        const artifactResponse = await guardedCachedMessage(artifactRequest.system, artifactRequest.userContent, {
-          model,
-          max_tokens: artifactRequest.maxTokens,
-          budget: { userId: sessionUserId, userPlan, route: 'live_interview_analyze_artifact' },
-        })
-
-        const raw = artifactResponse.sanitized.trim()
-        if (raw && raw.toLowerCase() !== 'none') return raw
-        return null
-      })()
-    : Promise.resolve(null)
-
   let flowResponse
   let artifactSignal: string | null
   try {
+    await assertPlanLimit(sessionUserId, userPlan, 'ai_grading_runs')
+
+    const flowPromise = guardedCachedMessage(flowSystemPrompt, content, {
+      model,
+      max_tokens: flowMaxTokens,
+      budget: { userId: sessionUserId, userPlan, route: 'live_interview_analyze_flow' },
+    })
+
+    const artifactPromise: Promise<string | null> = artifactSnapshot
+      ? (async () => {
+          if (!artifactRequest) return null
+
+          const artifactResponse = await guardedCachedMessage(artifactRequest.system, artifactRequest.userContent, {
+            model,
+            max_tokens: artifactRequest.maxTokens,
+            budget: { userId: sessionUserId, userPlan, route: 'live_interview_analyze_artifact' },
+          })
+
+          const raw = artifactResponse.sanitized.trim()
+          if (raw && raw.toLowerCase() !== 'none') return raw
+          return null
+        })()
+      : Promise.resolve(null)
+
+    // Run FLOW move classification and artifact analysis in parallel when both are needed.
     ;[flowResponse, artifactSignal] = await Promise.all([flowPromise, artifactPromise])
   } catch (error) {
+    if (error instanceof PlanLimitExceeded) {
+      return Response.json(
+        {
+          error: 'limit_reached',
+          feature: error.feature,
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+
     if (error instanceof AiBudgetExceededError) {
       return Response.json(
         {
