@@ -4,6 +4,14 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getHatchContext } from '@/lib/v2/hatch-context'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
+
+const ROUTE_KEY = 'challenge_coaching'
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
 
 function aiBudgetResponse(error: unknown) {
   if (!(error instanceof AiBudgetExceededError)) return null
@@ -20,6 +28,21 @@ function aiBudgetResponse(error: unknown) {
   )
 }
 
+function planLimitResponse(error: unknown) {
+  if (!(error instanceof PlanLimitExceeded)) return null
+
+  return NextResponse.json(
+    {
+      error: 'limit_reached',
+      feature: error.feature,
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    },
+    { status: 402 }
+  )
+}
+
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -28,7 +51,24 @@ export async function POST(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const userPlan = await getUserPlanForBudget(user.id)
-  const budget = { userId: user.id, userPlan, route: 'challenge_coaching' }
+  const throttle = await rateLimit({
+    key: `ai:${user.id}:${ROUTE_KEY}`,
+    limit: userPlan === 'pro' ? 15 : 5,
+    windowSec: 60,
+  })
+
+  if (!throttle.allowed) {
+    const retryAfter = retryAfterSeconds(throttle.resetAt)
+    return NextResponse.json(
+      { error: 'rate_limited', retryAfter },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(retryAfter) },
+      }
+    )
+  }
+
+  const budget = { userId: user.id, userPlan, route: ROUTE_KEY }
 
   const { id: challengeId } = await params
   const body = await req.json().catch(() => ({})) as {
@@ -117,6 +157,7 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
 
     let message
     try {
+      await assertPlanLimit(user.id, userPlan, 'hatch_chat_msgs')
       message = await guardedCachedMessage(systemPrompt, userPrompt, {
         model: 'claude-sonnet-4-6',
         max_tokens: 800,
@@ -124,6 +165,8 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
         budget,
       })
     } catch (error) {
+      const planResponse = planLimitResponse(error)
+      if (planResponse) return planResponse
       const response = aiBudgetResponse(error)
       if (response) return response
       throw error
@@ -269,6 +312,7 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
 
   let message
   try {
+    await assertPlanLimit(user.id, userPlan, 'hatch_chat_msgs')
     message = await guardedCachedMessage(systemPrompt, userPrompt, {
       model: 'claude-sonnet-4-6',
       max_tokens: 800,
@@ -276,6 +320,8 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
       budget,
     })
   } catch (error) {
+    const planResponse = planLimitResponse(error)
+    if (planResponse) return planResponse
     const response = aiBudgetResponse(error)
     if (response) return response
     throw error
