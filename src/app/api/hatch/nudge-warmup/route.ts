@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import { HATCH_NUDGE_SYSTEM_PROMPT, MENTAL_MODELS_CONTEXT } from '@/lib/hatch/system-prompt'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
@@ -8,9 +9,19 @@ import { rateLimit } from '@/lib/security/rate-limit'
 import type { FlowStep } from '@/lib/types'
 
 const ROUTE_KEY = 'hatch_nudge_warmup'
+const RequestSchema = z.object({
+  step: z.enum(['frame', 'list', 'optimize', 'win']).optional(),
+})
 
 function retryAfterSeconds(resetAt: Date) {
   return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
 }
 
 export async function POST(req: NextRequest) {
@@ -42,11 +53,21 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  let body: z.infer<typeof RequestSchema>
   try {
-    const { step } = await req.json()
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { ok: false, error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ ok: false, error: 'Invalid JSON body' }, { status: 400 })
+  }
 
-    const validSteps = ['frame', 'list', 'optimize', 'win']
-    const flowStep = validSteps.includes(step) ? (step as FlowStep) : undefined
+  try {
+    const flowStep = body.step as FlowStep | undefined
 
     let userPrompt = 'Warmup call — priming prompt cache.'
     if (flowStep) {
