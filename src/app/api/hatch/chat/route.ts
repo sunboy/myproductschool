@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import { HATCH_CHAT_SYSTEM_PROMPT, HATCH_GLOBAL_CHAT_SYSTEM_PROMPT } from '@/lib/hatch/system-prompt'
 import { IS_MOCK } from '@/lib/mock'
 import { createClient } from '@/lib/supabase/server'
@@ -10,9 +11,36 @@ import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limi
 import { rateLimit } from '@/lib/security/rate-limit'
 
 const ROUTE_KEY = 'hatch_chat'
+const MessageSchema = z.object({
+  role: z.enum(['user', 'hatch']),
+  content: z.string().min(1).max(20000),
+})
+
+const PageContextSchema = z.object({
+  pageType: z.string().min(1).max(80),
+  entityId: z.string().max(200).nullable(),
+  pathname: z.string().min(1).max(1000),
+})
+
+const RequestSchema = z.object({
+  challengeId: z.string().max(200).nullable().optional(),
+  challengePrompt: z.string().max(50000).nullable().optional(),
+  message: z.string().trim().min(1).max(20000),
+  history: z.array(MessageSchema).max(50).optional(),
+  pageContext: PageContextSchema.optional(),
+  challengeType: z.enum(['system_design', 'data_modeling', 'coding']).nullable().optional(),
+  canvasSummary: z.string().max(20000).nullable().optional(),
+})
 
 function retryAfterSeconds(resetAt: Date) {
   return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
 }
 
 const MOCK_REPLIES = [
@@ -220,11 +248,19 @@ async function buildPageContextBlock(pageContext: PageContext): Promise<string> 
 }
 
 export async function POST(req: NextRequest) {
-  const { challengeId, challengePrompt, message, history, pageContext, challengeType, canvasSummary } = await req.json()
-
-  if (!message?.trim()) {
-    return NextResponse.json({ reply: null })
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
+  const { challengeId, challengePrompt, message, history, pageContext, challengeType, canvasSummary } = body
 
   if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
     const reply = MOCK_REPLIES[Math.floor(Math.random() * MOCK_REPLIES.length)]
@@ -259,7 +295,7 @@ export async function POST(req: NextRequest) {
     // Build all context blocks in parallel
     const [hatchCtx, pageContextBlock, recommendedBlock] = await Promise.all([
       getHatchContext(user.id),
-      pageContext ? buildPageContextBlock(pageContext as PageContext) : Promise.resolve(''),
+      pageContext ? buildPageContextBlock(pageContext) : Promise.resolve(''),
       buildRecommendedChallengesBlock(user.id),
     ])
 
@@ -294,8 +330,8 @@ Respond conversationally.`
     const model = 'claude-sonnet-4-6'
     const maxTokens = 300
     const userContent = buildConversationUserContent({
-      challengePrompt,
-      history: Array.isArray(history) ? (history as Message[]) : undefined,
+      challengePrompt: challengePrompt ?? undefined,
+      history,
       message,
     })
 
