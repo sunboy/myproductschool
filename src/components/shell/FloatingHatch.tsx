@@ -1,12 +1,17 @@
 'use client'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useRef, useCallback } from 'react'
+import type { CSSProperties, Dispatch, SetStateAction } from 'react'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { HatchChoreography } from '@/components/shell/HatchChoreography'
 import { useHatchContext } from '@/context/HatchContext'
-import type { HatchChatMessage } from '@/context/HatchContext'
+import type { HatchChatMessage, HatchCue } from '@/context/HatchContext'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
 
 // ── Page context ──────────────────────────────────────────────
+
+const EMPTY_MESSAGES: HatchChatMessage[] = []
+const noopSetMessages: Dispatch<SetStateAction<HatchChatMessage[]>> = () => undefined
 
 const PAGE_PROMPTS: { pattern: RegExp; message: string }[] = [
   { pattern: /^\/workspace\/challenges\//, message: "Need a nudge on your approach?" },
@@ -112,6 +117,8 @@ export function FloatingHatch() {
   const pathname = usePathname()
   const router = useRouter()
   const hatchCtx = useHatchContext()
+  const activeCue = hatchCtx?.activeCue ?? null
+  const clearCue = hatchCtx?.clearCue
   const glyphState = hatchCtx?.state ?? 'idle'
   const { muted, toggleMuted, play } = useHatchSonics()
 
@@ -120,14 +127,15 @@ export function FloatingHatch() {
   const isInWorkspace = /^\/workspace\/challenges\/[^/]+/.test(pathname)
 
   // Chat messages live in context so they persist across page navigations
-  const messages: HatchChatMessage[] = hatchCtx?.chatMessages ?? []
-  const setMessages = hatchCtx?.setChatMessages ?? (() => {})
+  const messages = hatchCtx?.chatMessages ?? EMPTY_MESSAGES
+  const setMessages = hatchCtx?.setChatMessages ?? noopSetMessages
 
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [bubble, setBubble] = useState(false)
   const [bubbleDismissed, setBubbleDismissed] = useState(false)
+  const [markerPosition, setMarkerPosition] = useState<CSSProperties | null>(null)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -149,6 +157,76 @@ export function FloatingHatch() {
     const t = setTimeout(() => setBubble(false), 6000)
     return () => clearTimeout(t)
   }, [bubble])
+
+  useEffect(() => {
+    if (!activeCue?.autoHideMs || !clearCue) return
+    const timer = setTimeout(() => clearCue(), activeCue.autoHideMs)
+    return () => clearTimeout(timer)
+  }, [activeCue?.autoHideMs, activeCue?.id, clearCue])
+
+  useEffect(() => {
+    const highlighted = new Set<Element>()
+    let scrolledTargetIntoView = false
+
+    function clearHighlights() {
+      highlighted.forEach((el) => el.classList.remove('hatch-target-highlight'))
+      highlighted.clear()
+    }
+
+    if (!activeCue?.target || typeof window === 'undefined') {
+      setMarkerPosition(null)
+      return clearHighlights
+    }
+
+    const selector = `[data-hatch-target="${CSS.escape(activeCue.target)}"]`
+    const target = document.querySelector<HTMLElement>(selector)
+    if (!target) {
+      setMarkerPosition(null)
+      return clearHighlights
+    }
+
+    target.classList.add('hatch-target-highlight')
+    highlighted.add(target)
+
+    const keepTargetReachable = () => {
+      const rect = target.getBoundingClientRect()
+      const offscreen = rect.bottom < 72 || rect.top > window.innerHeight - 72
+      if (offscreen && activeCue.source === 'tour' && !scrolledTargetIntoView) {
+        scrolledTargetIntoView = true
+        target.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' })
+        return
+      }
+      if (offscreen) {
+        setMarkerPosition(null)
+        return
+      }
+
+      const markerWidth = 34
+      const left = Math.max(14, Math.min(window.innerWidth - markerWidth - 14, rect.left + rect.width / 2 - markerWidth / 2))
+      const placeBelow = rect.top < 120
+      const top = placeBelow
+        ? Math.min(window.innerHeight - 58, rect.bottom + 12)
+        : Math.max(78, rect.top - 46)
+
+      setMarkerPosition({
+        left,
+        top,
+      })
+    }
+
+    keepTargetReachable()
+    target.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' })
+    if (activeCue.source === 'tour') play('nudge')
+    window.addEventListener('resize', keepTargetReachable)
+    window.addEventListener('scroll', keepTargetReachable, true)
+
+    return () => {
+      window.removeEventListener('resize', keepTargetReachable)
+      window.removeEventListener('scroll', keepTargetReachable, true)
+      clearHighlights()
+      setMarkerPosition(null)
+    }
+  }, [activeCue?.id, activeCue?.source, activeCue?.target, play])
 
   // Focus input when opened
   useEffect(() => {
@@ -228,17 +306,109 @@ export function FloatingHatch() {
     setBubbleDismissed(true)
   }
 
+  function runCueAction(cue: HatchCue) {
+    const cta = cue.cta
+    if (cta?.href) {
+      hatchCtx?.clearCue()
+      router.push(cta.href)
+      return
+    }
+    if (cta?.event) {
+      window.dispatchEvent(new CustomEvent(cta.event, { detail: { cue } }))
+      hatchCtx?.clearCue()
+      return
+    }
+
+    switch (cta?.action) {
+      case 'start-tour':
+        play('open')
+        setOpen(false)
+        setBubble(false)
+        hatchCtx?.startTour()
+        return
+      case 'next-tour-step':
+        hatchCtx?.nextTourStep()
+        return
+      case 'complete-tour':
+        play('success')
+        hatchCtx?.completeTour()
+        return
+      case 'skip-tour':
+        hatchCtx?.skipTour()
+        return
+      case 'open-workspace-chat':
+        window.dispatchEvent(new CustomEvent('open-hatch-workspace', { detail: { cue } }))
+        hatchCtx?.clearCue()
+        return
+      case 'open-chat':
+        if (isInWorkspace) {
+          window.dispatchEvent(new CustomEvent('open-hatch-workspace', { detail: { cue } }))
+          hatchCtx?.clearCue()
+          return
+        }
+        play('open')
+        setOpen(true)
+        setBubble(false)
+        hatchCtx?.clearCue()
+        return
+      default:
+        if (isInWorkspace) {
+          window.dispatchEvent(new CustomEvent('open-hatch-workspace', { detail: { cue } }))
+          hatchCtx?.clearCue()
+          return
+        }
+        toggleOpen()
+    }
+  }
+
+  function handleCuePrimary() {
+    if (!activeCue) {
+      toggleOpen()
+      return
+    }
+    runCueAction(activeCue)
+  }
+
+  function dismissCue(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (activeCue?.source === 'tour') {
+      hatchCtx?.skipTour()
+      return
+    }
+    hatchCtx?.dismissCue({ snooze: true })
+  }
+
   const contextMessage = (hatchCtx?.message && hatchCtx.message.length > 0)
     ? hatchCtx.message
     : getPagePrompt(pathname)
 
-  const showBubble = bubble && !bubbleDismissed && !open && messages.length === 0
+  const cueMessage = activeCue?.message ?? contextMessage
+  const showBubble = !open && (
+    Boolean(activeCue) ||
+    (bubble && !bubbleDismissed && messages.length === 0)
+  )
   const isWorkspace = pathname.startsWith('/workspace')
+  const wrapperPositionClass = `right-5 ${isWorkspace ? 'bottom-20' : 'bottom-5'}`
+  const currentAnimation = activeCue?.animation ?? (open ? 'listening' : 'idle-hover')
+  const currentGlyphState = open ? 'listening' : activeCue?.state ?? glyphState
 
-  if (isInWorkspace) return null
+  if (isInWorkspace && !activeCue) return null
 
   return (
-    <div className={`fixed right-5 z-40 flex flex-col items-end gap-2 pointer-events-none ${isWorkspace ? 'bottom-20' : 'bottom-5'}`}>
+    <div
+      data-testid="floating-hatch"
+      className={`fixed z-[60] flex flex-col items-end gap-2 pointer-events-none ${wrapperPositionClass}`}
+    >
+      {markerPosition && (
+        <div
+          data-testid="hatch-target-marker"
+          className="fixed z-50 pointer-events-none flex h-8 w-8 items-center justify-center rounded-full hatch-target-marker"
+          style={markerPosition}
+          aria-hidden="true"
+        >
+          <span className="material-symbols-outlined text-[18px] leading-none">ads_click</span>
+        </div>
+      )}
 
       {/* ── Floating chat panel ── */}
       {open && (
@@ -309,6 +479,20 @@ export function FloatingHatch() {
                 <p className="text-xs text-on-surface-variant text-center leading-relaxed px-4">
                   {contextMessage}
                 </p>
+                {!isInWorkspace && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false)
+                      setBubble(false)
+                      hatchCtx?.startTour()
+                    }}
+                    className="mt-1 inline-flex items-center gap-1 rounded-full border border-outline-variant px-3 py-1.5 text-[11px] font-label font-bold text-primary hover:bg-primary-fixed"
+                  >
+                    Show me around
+                    <span className="material-symbols-outlined text-[13px]">route</span>
+                  </button>
+                )}
               </div>
             )}
 
@@ -377,9 +561,10 @@ export function FloatingHatch() {
       {/* ── Contextual bubble ── */}
       {showBubble && (
         <div
-          className="relative cursor-pointer select-none pointer-events-auto"
-          style={{ maxWidth: 220, animation: 'hatchFadeUp 0.2s ease both' }}
-          onClick={toggleOpen}
+          className={`relative select-none pointer-events-auto ${activeCue ? 'cursor-default' : 'cursor-pointer'}`}
+          style={{ maxWidth: activeCue ? 260 : 220, animation: 'hatchFadeUp 0.2s ease both' }}
+          onClick={activeCue ? undefined : toggleOpen}
+          data-testid={activeCue ? 'hatch-cue-bubble' : 'hatch-page-bubble'}
         >
           <div
             className="rounded-2xl rounded-br-sm px-3 py-2 text-xs leading-relaxed font-label shadow-md"
@@ -388,14 +573,32 @@ export function FloatingHatch() {
               color: 'var(--color-inverse-on-surface)',
             }}
           >
-            {contextMessage}
+            <p className="m-0 font-label text-[12px] leading-relaxed">
+              {cueMessage}
+            </p>
+            {activeCue?.cta && (
+              <button
+                type="button"
+                data-testid="hatch-cue-action"
+                onClick={handleCuePrimary}
+                className="mt-2 inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-label text-[11px] font-extrabold transition-transform active:scale-95"
+                style={{
+                  background: 'rgba(255,255,255,0.14)',
+                  border: '1px solid rgba(255,255,255,0.18)',
+                  color: 'var(--color-inverse-on-surface)',
+                }}
+              >
+                {activeCue.cta.label}
+                <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+              </button>
+            )}
           </div>
           <div
             className="absolute -bottom-1.5 right-5 w-3 h-3 rotate-45"
             style={{ background: 'var(--color-inverse-surface)' }}
           />
           <button
-            onClick={dismissBubble}
+            onClick={activeCue ? dismissCue : dismissBubble}
             className="absolute -top-2 -right-2 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
             style={{ background: 'var(--color-surface-container-highest)', color: 'var(--color-on-surface-variant)' }}
             aria-label="Dismiss"
@@ -407,7 +610,7 @@ export function FloatingHatch() {
 
       {/* ── FAB ── */}
       <button
-        onClick={toggleOpen}
+        onClick={activeCue ? handleCuePrimary : toggleOpen}
         className="pointer-events-auto rounded-2xl flex items-center justify-center relative transition-transform active:scale-95 hover:scale-105"
         style={{
           width: 52,
@@ -419,8 +622,11 @@ export function FloatingHatch() {
           boxShadow: '0 6px 24px -6px rgba(36,62,40,0.45)',
         }}
         aria-label={open ? 'Close Hatch' : 'Ask Hatch'}
+        data-testid="hatch-fab"
       >
-        <HatchGlyph size={36} state={open ? 'listening' : glyphState} className="text-white" />
+        <HatchChoreography animation={currentAnimation}>
+          <HatchGlyph size={36} state={currentGlyphState} className="text-white" />
+        </HatchChoreography>
         {/* Unread dot when chat has messages and panel is closed */}
         {!open && messages.length > 0 && (
           <span

@@ -272,6 +272,7 @@ export function CanvasChatPanel({
   if (mode === 'closed') {
     return (
       <button
+        data-hatch-target="workspace-hatch-chat"
         onClick={() => { play('open'); setMode('floating'); onToggle() }}
         className="absolute bottom-4 right-4 z-20 flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-on-primary shadow-lg hover:shadow-xl hover:scale-105 transition-all"
         title="Open Hatch chat"
@@ -286,6 +287,7 @@ export function CanvasChatPanel({
     return (
       <div
         data-testid="hatch-chat-panel"
+        data-hatch-target="workspace-hatch-chat"
         style={{ width: panelWidth, minWidth: MIN_WIDTH, maxWidth: MAX_WIDTH }}
         className="relative flex flex-col border-l border-outline-variant bg-surface-container h-full overflow-hidden shrink-0"
       >
@@ -424,7 +426,7 @@ export function CanvasChatPanel({
   }
 
   return (
-    <div data-testid="hatch-chat-panel" className="absolute bottom-4 right-4 z-20 flex flex-col w-80 h-[480px] max-h-[calc(100%-2rem)] border border-outline-variant rounded-xl bg-surface-container shadow-2xl overflow-hidden">
+    <div data-testid="hatch-chat-panel" data-hatch-target="workspace-hatch-chat" className="absolute bottom-4 right-4 z-20 flex flex-col w-80 h-[480px] max-h-[calc(100%-2rem)] border border-outline-variant rounded-xl bg-surface-container shadow-2xl overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-outline-variant bg-surface-container-high">
         <div className="flex items-center gap-2">

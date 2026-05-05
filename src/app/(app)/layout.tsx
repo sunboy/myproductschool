@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { TopNav } from '@/components/shell/TopNav'
 import { BottomTabs } from '@/components/shell/BottomTabs'
 import { FloatingHatch } from '@/components/shell/FloatingHatch'
+import { HatchDirector } from '@/components/shell/HatchDirector'
 import { UpgradeModal } from '@/components/shell/UpgradeModal'
 import { HatchProvider } from '@/context/HatchContext'
 import { UsageProvider } from '@/context/UsageContext'
@@ -36,6 +37,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {children}
           </main>
           <BottomTabs />
+          <HatchDirector />
           <FloatingHatch />
           <UpgradeModal
             open={upgradeOpen}

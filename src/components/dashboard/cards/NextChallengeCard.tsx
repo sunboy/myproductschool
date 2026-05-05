@@ -12,7 +12,7 @@ interface NextChallengeCardProps {
 
 export function NextChallengeCard({ title, domain, difficulty, challengeId, hatchInsight }: NextChallengeCardProps) {
   return (
-    <div className="bg-surface-container-low rounded-2xl p-5 flex flex-col gap-3 border border-outline-variant/30">
+    <div className="bg-surface-container-low rounded-2xl p-5 flex flex-col gap-3 border border-outline-variant/30" data-hatch-target="dashboard-next-challenge">
       <div className="flex items-center gap-2">
         <HatchGlyph size={22} state="idle" />
         <span className="text-[10px] font-bold text-primary uppercase tracking-widest font-label">For you</span>
@@ -39,6 +39,7 @@ export function NextChallengeCard({ title, domain, difficulty, challengeId, hatc
 
       <Link
         href={`/workspace/challenges/${challengeId}`}
+        data-hatch-target="dashboard-next-challenge-start"
         className="bg-on-surface text-inverse-on-surface rounded-full px-5 py-2 text-sm font-label font-semibold text-center hover:bg-on-surface/85 active:scale-95 transition-all duration-150"
       >
         Start Challenge

@@ -465,6 +465,138 @@ body::before {
   to   { transform: rotate(360deg); }
 }
 
+/* Proactive Hatch choreography */
+.hatch-choreography {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: 50% 72%;
+  will-change: transform, filter;
+}
+
+.hatch-motion-idle-hover,
+.hatch-motion-observing {
+  animation: hatch-float 4.5s ease-in-out infinite;
+}
+
+@keyframes hatch-wake {
+  0% { transform: translateY(0) scale(0.92) rotate(-3deg); }
+  35% { transform: translateY(-8px) scale(1.08) rotate(4deg); }
+  70% { transform: translateY(1px) scale(0.98) rotate(-2deg); }
+  100% { transform: translateY(0) scale(1) rotate(0); }
+}
+
+@keyframes hatch-peek {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  35% { transform: translateX(-6px) rotate(-7deg); }
+  70% { transform: translateX(4px) rotate(5deg); }
+}
+
+@keyframes hatch-point {
+  0%, 100% { transform: translateX(0) translateY(0) rotate(0); filter: drop-shadow(0 0 0 rgba(126,224,153,0)); }
+  45% { transform: translateX(-7px) translateY(-2px) rotate(-10deg); filter: drop-shadow(0 6px 10px rgba(126,224,153,0.35)); }
+}
+
+@keyframes hatch-guide {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  25% { transform: translateY(-7px) rotate(5deg); }
+  50% { transform: translateY(0) rotate(-4deg); }
+  75% { transform: translateY(-4px) rotate(3deg); }
+}
+
+@keyframes hatch-dance {
+  0%, 100% { transform: translateY(0) rotate(0) scale(1); }
+  20% { transform: translateY(-5px) rotate(-8deg) scale(1.03); }
+  40% { transform: translateY(0) rotate(7deg) scale(0.98); }
+  60% { transform: translateY(-4px) rotate(8deg) scale(1.03); }
+  80% { transform: translateY(0) rotate(-5deg) scale(1); }
+}
+
+@keyframes hatch-stuck-check {
+  0%, 100% { transform: translateY(0) rotate(0); filter: drop-shadow(0 0 0 rgba(201,147,58,0)); }
+  30% { transform: translateY(-2px) rotate(-5deg); filter: drop-shadow(0 0 8px rgba(201,147,58,0.45)); }
+  65% { transform: translateY(1px) rotate(5deg); }
+}
+
+@keyframes hatch-marker-pop {
+  0%, 100% { transform: translateY(0) scale(1); }
+  45% { transform: translateY(-3px) scale(1.08); }
+}
+
+.hatch-motion-wake,
+.hatch-motion-wave,
+.hatch-motion-land {
+  animation: hatch-wake 900ms cubic-bezier(.2,.8,.2,1) both;
+}
+.hatch-motion-peek { animation: hatch-peek 2.4s ease-in-out infinite; }
+.hatch-motion-point,
+.hatch-motion-lead {
+  animation: hatch-point 1.8s ease-in-out infinite;
+}
+.hatch-motion-guide,
+.hatch-motion-listening,
+.hatch-motion-thinking,
+.hatch-motion-reviewing {
+  animation: hatch-guide 2.6s ease-in-out infinite;
+}
+.hatch-motion-dance,
+.hatch-motion-celebrating,
+.hatch-motion-nudging {
+  animation: hatch-dance 1.3s ease-in-out infinite;
+}
+.hatch-motion-spin,
+.hatch-motion-drawing {
+  animation: spin 1.1s cubic-bezier(.45,.05,.55,.95) infinite;
+}
+.hatch-motion-stuck-check,
+.hatch-motion-caution {
+  animation: hatch-stuck-check 2.1s ease-in-out infinite;
+}
+
+.hatch-target-highlight {
+  position: relative;
+  outline: 2px solid rgba(126, 224, 153, 0.78);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 7px rgba(126, 224, 153, 0.13), 0 10px 30px rgba(38, 74, 52, 0.14);
+  transition: outline-color 180ms ease, box-shadow 180ms ease;
+  z-index: 1;
+}
+
+.hatch-target-marker {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border: 2px solid var(--color-surface);
+  box-shadow: 0 10px 24px rgba(38, 74, 52, 0.26), 0 0 0 8px rgba(126, 224, 153, 0.16);
+  animation: hatch-marker-pop 1.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hatch-choreography,
+  .hatch-motion-idle-hover,
+  .hatch-motion-observing,
+  .hatch-motion-wake,
+  .hatch-motion-wave,
+  .hatch-motion-land,
+  .hatch-motion-peek,
+  .hatch-motion-point,
+  .hatch-motion-lead,
+  .hatch-motion-guide,
+  .hatch-motion-listening,
+  .hatch-motion-thinking,
+  .hatch-motion-reviewing,
+  .hatch-motion-dance,
+  .hatch-motion-celebrating,
+  .hatch-motion-nudging,
+  .hatch-motion-spin,
+  .hatch-motion-drawing,
+  .hatch-motion-stuck-check,
+  .hatch-motion-caution,
+  .hatch-target-marker {
+    animation: none;
+    transform: none;
+  }
+}
+
 .scrollbar-none {
   scrollbar-width: none;
   -ms-overflow-style: none;

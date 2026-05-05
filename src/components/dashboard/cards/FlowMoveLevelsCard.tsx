@@ -36,7 +36,7 @@ export function FlowMoveLevelsCard({ levels = [] }: FlowMoveLevelsCardProps) {
   })
 
   return (
-    <div className="rounded-2xl p-6 bg-surface border border-outline-variant/30">
+    <div className="rounded-2xl p-6 bg-surface border border-outline-variant/30" data-hatch-target="dashboard-flow-levels">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="font-headline text-xl font-medium tracking-tight">FLOW Levels</h3>

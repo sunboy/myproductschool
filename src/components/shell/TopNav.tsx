@@ -157,6 +157,7 @@ export function TopNav() {
                 <Link href={href} className="no-underline">
                   <button
                     data-hatch-sound={active ? undefined : 'open'}
+                    data-hatch-target={item.id === 'home' ? 'nav-dashboard' : `nav-${item.id}`}
                     className={cn(
                       'inline-flex items-center gap-[7px] px-4 py-2 rounded-full border-0 whitespace-nowrap cursor-pointer',
                       'text-[13px] font-bold transition-[background,color] duration-200',

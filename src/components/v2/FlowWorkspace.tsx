@@ -406,6 +406,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [hatchMessage, setHatchMessage] = useState('Ready when you are. Pick the option that fits best.')
   const [hatchState, setHatchState] = useState<'idle' | 'listening' | 'reviewing' | 'speaking'>('idle')
   const hatchCtx = useHatchContext()
+  const emitHatchCue = hatchCtx?.emitCue
+  const activeHatchCue = hatchCtx?.activeCue
   const { play: playHatchSound } = useHatchSonics()
 
   // Sync local hatch state to FloatingHatch context
@@ -679,6 +681,23 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     })
   }, [])
 
+  useEffect(() => {
+    function handleOpenWorkspaceHatch(event: Event) {
+      if (isInterviewChallenge) {
+        const detail = (event as CustomEvent<{ cue?: { message?: string } }>).detail
+        const prompt = detail?.cue?.message
+          ? `Help me with this: ${detail.cue.message}`
+          : "I'm stuck. Give me one useful nudge."
+        queueHatchPrompt(prompt, false)
+        return
+      }
+      setHintOpen(true)
+    }
+
+    window.addEventListener('open-hatch-workspace', handleOpenWorkspaceHatch)
+    return () => window.removeEventListener('open-hatch-workspace', handleOpenWorkspaceHatch)
+  }, [isInterviewChallenge, queueHatchPrompt])
+
   // Load library once API is ready, capture items for the executor
   useEffect(() => {
     if (!excalidrawApiRef.current) return
@@ -696,6 +715,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const nudgeCountRef = useRef<number>(0)
   const pendingDeltaRef = useRef<number>(0)
   const nudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const chatPanelOpenRef = useRef(chatPanelOpen)
+  const lastWorkspaceProgressRef = useRef(Date.now())
+  const lastWorkspaceCueRef = useRef(0)
+
+  useEffect(() => {
+    chatPanelOpenRef.current = chatPanelOpen
+  }, [chatPanelOpen])
 
   const requestNudge = useCallback(async (added: number) => {
     if (!isCanvasChallenge || !attemptId) return
@@ -724,14 +750,88 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         if (data.nudge) {
           lastNudgeAtRef.current = Date.now()
           nudgeCountRef.current += 1
-          setProactiveNudge({ id: `n-${Date.now()}`, text: data.nudge })
-          if (!chatPanelOpen) setChatPanelOpen(true)
+          if (chatPanelOpenRef.current) {
+            setProactiveNudge({ id: `n-${Date.now()}`, text: data.nudge })
+          }
+          emitHatchCue?.({
+            id: `canvas-nudge-${Date.now()}`,
+            surface: 'workspace',
+            message: data.nudge,
+            state: 'intrigued',
+            animation: 'nudging',
+            target: 'workspace-hatch-chat',
+            source: 'nudge',
+            priority: 6,
+            cooldownKey: `canvas-nudge:${attemptId}`,
+            cta: { label: 'Open Hatch', action: 'open-workspace-chat' },
+          }, { force: true })
         }
       } catch { /* swallow */ }
     }, 4000)
   // chatPanelOpen intentionally excluded — we only want the snapshot at fire time, not retriggers
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCanvasChallenge, attemptId, scene, apiChallengeType, isApiMode, props])
+  }, [isCanvasChallenge, attemptId, scene, apiChallengeType, isApiMode, props, emitHatchCue])
+
+  useEffect(() => {
+    lastWorkspaceProgressRef.current = Date.now()
+  }, [
+    activePartId,
+    canvasScene,
+    confidence,
+    contextPackText,
+    currentCode,
+    currentLanguage,
+    currentStep,
+    lastRunResult,
+    phase,
+    questionIdx,
+    reasoning,
+    selectedOptionId,
+  ])
+
+  useEffect(() => {
+    if (!emitHatchCue || phase !== 'question') return
+
+    const timer = window.setInterval(() => {
+      if (activeHatchCue) return
+      const now = Date.now()
+      if (now - lastWorkspaceProgressRef.current < 90_000) return
+      if (now - lastWorkspaceCueRef.current < 120_000) return
+
+      lastWorkspaceCueRef.current = now
+      const workspaceKind = isCanvasChallenge
+        ? apiChallengeType === 'data_modeling' ? 'data model' : 'system design'
+        : isCodingChallenge ? 'code' : 'answer'
+      const target = isInterviewChallenge ? 'workspace-hatch-chat' : 'workspace-answer-area'
+      const cta = isInterviewChallenge
+        ? { label: 'Open Hatch', action: 'open-workspace-chat' as const }
+        : { label: 'Show a hint', action: 'open-workspace-chat' as const }
+
+      emitHatchCue({
+        surface: 'workspace',
+        message: `Looks like the ${workspaceKind} has gone quiet. Want a thread to pull on?`,
+        state: 'intrigued',
+        animation: 'stuck-check',
+        target,
+        source: 'workspace',
+        priority: 5,
+        cooldownKey: `workspace-stuck:${attemptId ?? challengeId}`,
+        cta,
+      })
+    }, 10_000)
+
+    return () => window.clearInterval(timer)
+  }, [
+    activeHatchCue,
+    apiChallengeType,
+    attemptId,
+    challengeId,
+    emitHatchCue,
+    isCanvasChallenge,
+    isCodingChallenge,
+    isInterviewChallenge,
+    phase,
+  ])
 
   // Autosave canvas snapshot and Context Pack every 10s when changed
   useEffect(() => {
@@ -3289,6 +3389,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     challengeId={isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''}
                     challengeType="coding"
                     scene={scene}
+                    queuedPrompt={queuedHatchPrompt}
                     isOpen={chatPanelOpen}
                     onToggle={() => setChatPanelOpen((v) => !v)}
                     onCanvasActions={() => { /* no-op: coding mode doesn't execute canvas actions */ }}
@@ -3355,7 +3456,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             ) : (isApiMode && stepError) ? (
               <p className="font-body text-error text-sm text-center">{stepError}</p>
             ) : currentQuestion ? (
-              <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-outline-faint)', borderRadius: 14, padding: '18px 20px' }}>
+              <div data-hatch-target="workspace-answer-area" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-outline-faint)', borderRadius: 14, padding: '18px 20px' }}>
                 <StepQuestion
                   question={currentQuestion}
                   responseType={currentQuestion.response_type}

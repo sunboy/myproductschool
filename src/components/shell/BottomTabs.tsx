@@ -22,6 +22,12 @@ export function BottomTabs() {
             <Link
               key={tab.href}
               href={tab.href}
+              data-hatch-target={
+                tab.href === '/dashboard' ? 'nav-dashboard'
+                  : tab.href === '/challenges' ? 'nav-practice'
+                  : tab.href === '/live-interviews' ? 'nav-interviews'
+                  : `nav-${tab.href.slice(1)}`
+              }
               className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 px-1 ${
                 active ? 'bg-primary-fixed text-primary rounded-2xl mx-0.5 px-3 py-1' : 'text-on-surface-variant'
               }`}

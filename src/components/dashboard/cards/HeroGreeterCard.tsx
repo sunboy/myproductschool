@@ -38,6 +38,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
 
   return (
     <div
+      data-hatch-target="dashboard-hero"
       className="relative rounded-3xl overflow-hidden"
       style={{
         background: 'linear-gradient(to right, #0f2118 0%, #3e6a4b 100%)',
@@ -135,6 +136,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
         <div className="flex gap-2.5 mt-5">
           <Link
             href={sessionHref}
+            data-hatch-target="dashboard-session"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-full font-label font-bold text-sm"
             style={{ background: '#f3ede0', color: '#1e1b14' }}
           >
@@ -143,6 +145,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
           </Link>
           <Link
             href={studyPlanHref}
+            data-hatch-target="dashboard-study-plan"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-full font-label font-bold text-sm"
             style={{
               background: 'rgba(255,255,255,0.06)',

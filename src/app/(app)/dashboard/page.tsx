@@ -143,6 +143,7 @@ function HatchOperatingSystemCard() {
     <section
       className="rounded-[24px] border border-outline-variant/50 bg-surface-container-low p-4 sm:p-5"
       aria-label="Hatch operating system"
+      data-hatch-target="dashboard-hatch-os"
     >
       <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
         <div>

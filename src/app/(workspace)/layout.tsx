@@ -6,6 +6,7 @@ import { TopNav } from '@/components/shell/TopNav'
 import { BottomTabs } from '@/components/shell/BottomTabs'
 import { StudyPlanIndexPanel } from '@/components/shell/StudyPlanIndexPanel'
 import { FloatingHatch } from '@/components/shell/FloatingHatch'
+import { HatchDirector } from '@/components/shell/HatchDirector'
 import { HatchProvider } from '@/context/HatchContext'
 
 function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
@@ -26,6 +27,7 @@ function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
           </main>
         </div>
         <BottomTabs />
+        <HatchDirector />
         <FloatingHatch />
       </div>
     </HatchProvider>
