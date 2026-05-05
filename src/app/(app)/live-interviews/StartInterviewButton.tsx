@@ -76,10 +76,6 @@ export default function StartInterviewButton({
       if (!res.ok) throw new Error('Failed to start interview')
       const data = await res.json()
       setSessionId(data.sessionId)
-      // Stash systemPrompt so the interview page can read it in autostart mode
-      if (data.sessionId && data.systemPrompt) {
-        sessionStorage.setItem(`hatch_prompt_${data.sessionId}`, data.systemPrompt)
-      }
       // Cache company/role/discipline for modal display and URL params
       if (data.companyName) setModalCompany(data.companyName)
       if (data.role) setModalRole(data.role)

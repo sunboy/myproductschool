@@ -7,7 +7,7 @@ const COMPANIES = [
   { name: 'Airbnb', icon: 'home', slug: 'airbnb' },
   { name: 'Uber', icon: 'local_taxi', slug: 'uber' },
   { name: 'DoorDash', icon: 'delivery_dining', slug: 'doordash' },
-  { name: 'Anthropic', icon: 'psychology', slug: 'anthropic' },
+  { name: 'Microsoft', icon: 'window', slug: 'microsoft' },
   { name: 'Notion', icon: 'description', slug: 'notion' },
   { name: 'Figma', icon: 'palette', slug: 'figma' },
   { name: 'Linear', icon: 'linear_scale', slug: 'linear' },

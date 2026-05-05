@@ -74,7 +74,6 @@ export async function POST(request: Request) {
 
   return Response.json({
     sessionId: session?.id,
-    systemPrompt: built.systemPrompt,
     companyName: built.companyName,
     role: roleId ?? 'PM',
     scenarioTitle: built.scenarioTitle,

@@ -299,7 +299,7 @@ const DISCIPLINE_LABELS: Record<LoopDiscipline, string> = {
 }
 
 const COMPANY_ICONS: Record<string, string> = {
-  Airbnb: 'home', Anthropic: 'psychology', Figma: 'design_services',
+  Airbnb: 'home', Netflix: 'movie', Figma: 'design_services',
   Google: 'search', Meta: 'groups', Notion: 'description',
   Stripe: 'credit_card', Uber: 'local_taxi',
 }
@@ -577,7 +577,7 @@ function LoopDetail({ loop, onEdit, onDelete }: { loop: Loop; onEdit?: () => voi
       }}>
         <span className="material-symbols-outlined" style={{ fontSize: 18, color: T.onSurfaceMuted }}>tune</span>
         <span style={{ fontSize: 12, color: T.onSurfaceVariant }}>
-          Persona: <b>{loop.company}</b> · Difficulty <b>Staff+</b> · Voice mode on · Auto-save every round
+          Persona: <b>{loop.company}</b> · Difficulty <b>Staff+</b> · Chat mode · Auto-save every round
         </span>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
           {loop.status === 'configured' && (
@@ -613,7 +613,7 @@ const ROUND_OPTIONS = [
 ]
 
 const COMPANIES = [
-  { name: 'Airbnb', icon: 'home' }, { name: 'Anthropic', icon: 'psychology' },
+  { name: 'Airbnb', icon: 'home' }, { name: 'Netflix', icon: 'movie' },
   { name: 'Figma', icon: 'design_services' }, { name: 'Google', icon: 'search' },
   { name: 'Meta', icon: 'groups' }, { name: 'Notion', icon: 'description' },
   { name: 'Stripe', icon: 'credit_card' }, { name: 'Uber', icon: 'local_taxi' },
@@ -662,7 +662,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
     if (initialDifficulty) return DIFF_LABEL_TO_KEY[initialDifficulty] ?? initialDifficulty
     return 'advanced'
   })
-  const [voiceMode, setVoiceMode] = useState(true)
+  const voiceMode = false
   const [name, setName] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -798,9 +798,9 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
         <div>
           <label style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 8 }}>Options</label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: T.onSurface }}>
-              <input type="checkbox" checked={voiceMode} onChange={(e) => setVoiceMode(e.target.checked)} style={{ accentColor: T.primary, width: 15, height: 15 }} />
-              Voice mode on
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'not-allowed', fontSize: 13, color: T.onSurfaceMuted }}>
+              <input type="checkbox" checked={voiceMode} readOnly disabled style={{ accentColor: T.primary, width: 15, height: 15 }} />
+              Chat mode
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: T.onSurface }}>
               <input type="checkbox" defaultChecked style={{ accentColor: T.primary, width: 15, height: 15 }} />
@@ -818,7 +818,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
       }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: T.onSurface }}>{selectedRounds.length} rounds · ~{totalMins} min total</div>
-          <div style={{ fontSize: 12, color: T.onSurfaceMuted }}>{selectedCo} · {DIFF_LABELS[difficulty]}{voiceMode ? ' · Voice on' : ''}</div>
+          <div style={{ fontSize: 12, color: T.onSurfaceMuted }}>{selectedCo} · {DIFF_LABELS[difficulty]} · Chat mode</div>
         </div>
         <button onClick={onCancel} data-hatch-sound="close" style={{
           padding: '8px 16px', borderRadius: 999, cursor: 'pointer', fontSize: 13, fontWeight: 700,
@@ -853,7 +853,7 @@ const MOCK_LOOPS: Loop[] = [
     ],
   },
   {
-    id: 'lp2', loopDbId: 'lp2', name: 'Anthropic — Staff PM loop', company: 'Anthropic', icon: 'psychology',
+    id: 'lp2', loopDbId: 'lp2', name: 'Netflix - Staff PM loop', company: 'Netflix', icon: 'movie',
     status: 'configured',
     lastActive: 'Configured Apr 22', totalMins: 140,
     rounds: [
@@ -1230,7 +1230,7 @@ export function LiveInterviewsShell({
         gap: 10,
       }}>
         {[
-          { icon: 'graphic_eq', label: 'Voice pressure', sub: 'Natural probing, no scheduling' },
+          { icon: 'forum', label: 'Live pressure', sub: 'Fast probing, no scheduling' },
           { icon: 'draw', label: 'Artifacts watched', sub: 'Canvas, schema, code, SQL' },
           { icon: 'memory', label: 'Round memory', sub: 'Signals carry into the loop' },
           { icon: 'summarize', label: 'Debrief engine', sub: 'Scores, transcript, next drills' },

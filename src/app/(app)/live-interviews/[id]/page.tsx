@@ -417,6 +417,8 @@ function CtrlBtn({
 }
 
 // ─── Main Page ───
+const ENABLE_DIRECT_VOICE_AGENT = false
+
 export default function SessionPage({
   params,
   searchParams,
@@ -431,7 +433,6 @@ export default function SessionPage({
   const { isPro, isAdmin } = useEntitlements()
 
   const [sessionId, setSessionId] = useState<string>(IS_MOCK ? 'mock-session-id' : id)
-  const [systemPrompt, setSystemPrompt] = useState('')
   const [companyName, setCompanyName] = useState(IS_MOCK ? MOCK_LIVE_SESSION.companyName ?? '' : '')
   const [roleName, setRoleName] = useState(IS_MOCK ? MOCK_LIVE_SESSION.role ?? '' : '')
   const [scenarioTitle, setScenarioTitle] = useState<string | null>(null)
@@ -535,19 +536,13 @@ export default function SessionPage({
       // Session already exists; company/role passed via query params
       setCompanyName(company ?? '')
       setRoleName(roleParam ?? '')
-      // Recover systemPrompt stashed by StartInterviewButton before navigation
-      const stored = sessionStorage.getItem(`hatch_prompt_${id}`)
-      if (stored) {
-        setSystemPrompt(stored)
-        sessionStorage.removeItem(`hatch_prompt_${id}`)
-      }
       setInterviewPhase('active')
       setInterviewStartedAt(Date.now())
       return
     }
 
-    // Resume path — loop_id present and no autostart means the user is
-    // returning to a paused round. Hit /resume to rebuild the system prompt
+    // Resume path: loop_id present and no autostart means the user is
+    // returning to a paused round. Hit /resume to rebuild session instructions
     // against current move levels before going active.
     if (loopIdParam) {
       let cancelled = false
@@ -557,7 +552,6 @@ export default function SessionPage({
           if (!res.ok) return
           const data = await res.json()
           if (cancelled) return
-          if (data.systemPrompt) setSystemPrompt(data.systemPrompt)
           if (data.session?.company_id) setCompanyName(company ?? data.session.company_id)
           else setCompanyName(company ?? '')
           setRoleName(roleParam ?? '')
@@ -585,7 +579,6 @@ export default function SessionPage({
         const data = await res.json()
         if (cancelled) return
         setSessionId(data.sessionId)
-        setSystemPrompt(data.systemPrompt ?? '')
         setCompanyName(data.companyName ?? company ?? '')
         setRoleName(data.role ?? roleParam ?? '')
         setScenarioTitle(data.scenarioTitle ?? null)
@@ -1967,19 +1960,20 @@ export default function SessionPage({
         </form>
       </div>
 
-      {/* Deepgram Voice */}
-      <DeepgramVoiceSession
-        sessionId={sessionId}
-        systemPrompt={systemPrompt}
-        isMuted={isMuted}
-        onTranscript={handleTranscript}
-        onAgentSpeaking={handleAgentSpeaking}
-        onAgentDoneSpeaking={handleAgentDoneSpeaking}
-        onConnected={handleConnected}
-        onError={handleVoiceError}
-        onAnalyserReady={(analyser) => talkingHeadRef.current?.setAnalyser(analyser)}
-        disabled={IS_MOCK || interviewPhase !== 'active'}
-      />
+      {ENABLE_DIRECT_VOICE_AGENT && (
+        <DeepgramVoiceSession
+          sessionId={sessionId}
+          systemPrompt=""
+          isMuted={isMuted}
+          onTranscript={handleTranscript}
+          onAgentSpeaking={handleAgentSpeaking}
+          onAgentDoneSpeaking={handleAgentDoneSpeaking}
+          onConnected={handleConnected}
+          onError={handleVoiceError}
+          onAnalyserReady={(analyser) => talkingHeadRef.current?.setAnalyser(analyser)}
+          disabled={IS_MOCK || interviewPhase !== 'active'}
+        />
+      )}
 
       {/* Interview limit modal */}
       {showLimitModal && (

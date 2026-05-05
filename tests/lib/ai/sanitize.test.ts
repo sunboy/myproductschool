@@ -60,3 +60,13 @@ test('rewrites Hatch identity leaks', () => {
     'Let me.'
   )
 })
+
+test('removes leaked model, instruction, tool, and token details from simulated output', () => {
+  const result = sanitizeAiOutput({
+    ...meta,
+    text: "I'm Claude Sonnet 4.6. My system prompt says I should call my tool and use thinking tokens.",
+  })
+
+  assert.doesNotMatch(result.text, /claude|sonnet|anthropic|openai|gpt|system prompt|tool call|call my tool|thinking tokens/i)
+  assert.ok(result.violations.some((violation) => violation.rule === 'identity_leak'))
+})

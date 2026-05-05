@@ -1008,7 +1008,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep, attemptId, phase, isApiMode])
 
-  // Warm Anthropic's prompt cache for nudges on each step entry (best-effort)
+  // Warm the prompt cache for nudges on each step entry (best-effort)
   useEffect(() => {
     if (!isApiMode || !challengeId) return
     fetch('/api/hatch/nudge-warmup', {

@@ -13,7 +13,7 @@ import { COMPANY_DIRECTORIES, itemListJsonLd } from '@/lib/seo/directory-content
 export const metadata: Metadata = buildMetadata({
   title: 'Company Interview Prep Directory | HackProduct',
   description:
-    'Browse company-specific interview prep for Meta, Google, Amazon, Stripe, OpenAI, and AI-era product-minded technical roles.',
+    'Browse company-specific interview prep for Meta, Google, Amazon, Stripe, Microsoft, and product-minded technical roles.',
   path: '/companies',
   keywords: ['company interview prep', 'Meta product sense interview', 'Google system design interview', 'Stripe engineering interview'],
 })

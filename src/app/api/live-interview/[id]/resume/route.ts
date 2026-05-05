@@ -50,7 +50,7 @@ export async function POST(
 
   const now = new Date().toISOString()
 
-  // Rebuild the system prompt from current move_levels / competencies / failure
+  // Rebuild the session instructions from current move_levels / competencies / failure
   // patterns so a long-paused session reflects the user's latest state.
   const built = await buildPromptFromSession({
     adminClient,
@@ -94,7 +94,6 @@ export async function POST(
   return Response.json({
     session: refreshed,
     resumedAt: now,
-    systemPrompt: built.systemPrompt,
     discipline: built.effectiveDiscipline,
   })
 }
