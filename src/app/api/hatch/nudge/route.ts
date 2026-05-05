@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { HATCH_NUDGE_SYSTEM_PROMPT, MENTAL_MODELS_CONTEXT, buildNudgeUserPrompt } from '@/lib/hatch/system-prompt'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
 import type { FlowStep } from '@/lib/types'
@@ -71,14 +71,13 @@ export async function POST(req: NextRequest) {
 
     const systemPrompt = HATCH_NUDGE_SYSTEM_PROMPT + '\n\n' + MENTAL_MODELS_CONTEXT
 
-    const message = await createCachedMessage(systemPrompt, userPrompt, {
+    const message = await guardedCachedMessage(systemPrompt, userPrompt, {
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 150,
       budget,
     })
 
-    const content = message.content[0]
-    const nudge = content.type === 'text' ? content.text.trim() : null
+    const nudge = message.sanitized.trim() || null
     return NextResponse.json({ nudge })
   } catch (error) {
     if (error instanceof AiBudgetExceededError) {
