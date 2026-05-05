@@ -8,18 +8,67 @@ import {
 } from '@/lib/hatch/system-prompt'
 import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { HatchFeedbackSchema, clampFeedbackScores, V2FeedbackSchema, clampV2FeedbackScores } from '@/lib/hatch/feedback-schema'
 import { logEvent } from '@/lib/data/events'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
+
+const ROUTE_KEY = 'hatch_feedback'
+const V2_ROUTE_KEY = 'hatch_feedback_v2'
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
+async function getAuthenticatedUserId() {
+  const supabase = await createClient()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error || !user) return null
+  return user.id
+}
+
+async function throttleFeedback(userId: string, userPlan: string) {
+  const throttle = await rateLimit({
+    key: `ai:${userId}:${ROUTE_KEY}`,
+    limit: userPlan === 'pro' ? 15 : 5,
+    windowSec: 60,
+  })
+
+  if (throttle.allowed) return null
+
+  const retryAfter = retryAfterSeconds(throttle.resetAt)
+  return NextResponse.json(
+    { error: 'rate_limited', retryAfter },
+    {
+      status: 429,
+      headers: { 'Retry-After': String(retryAfter) },
+    }
+  )
+}
+
+function planLimitResponse(error: PlanLimitExceeded) {
+  return NextResponse.json(
+    {
+      error: 'limit_reached',
+      feature: error.feature,
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    },
+    { status: 402 }
+  )
+}
 
 export async function POST(req: NextRequest) {
-  const { challengeId: _challengeId, challengeTitle, challengePrompt, response: userResponse, userId, attemptId, attempt_id } = await req.json()
+  const { challengeId: _challengeId, challengeTitle, challengePrompt, response: userResponse, attemptId, attempt_id } = await req.json()
 
   // V2 path: activated when attempt_id is provided (FLOW-based attempts)
   const v2AttemptId = attempt_id as string | undefined
   if (v2AttemptId) {
-    return handleV2Feedback(v2AttemptId, userId, _challengeId)
+    return handleV2Feedback(v2AttemptId, _challengeId)
   }
 
   // ── V1 path (legacy) ──────────────────────────────────────
@@ -33,10 +82,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(MOCK_FEEDBACK_FULL)
   }
 
+  const authenticatedUserId = await getAuthenticatedUserId()
+  if (!authenticatedUserId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const userPlan = await getUserPlanForBudget(authenticatedUserId)
+  const throttleResponse = await throttleFeedback(authenticatedUserId, userPlan)
+  if (throttleResponse) return throttleResponse
+
   try {
-    const budget = typeof userId === 'string'
-      ? { userId, userPlan: await getUserPlanForBudget(userId), route: 'hatch_feedback' }
-      : undefined
+    const supabaseAdmin = createAdminClient()
+    const ownedAttemptId = typeof attemptId === 'string' ? attemptId : null
+    if (ownedAttemptId) {
+      const { data: ownedAttempt } = await supabaseAdmin
+        .from('challenge_attempts')
+        .select('id')
+        .eq('id', ownedAttemptId)
+        .eq('user_id', authenticatedUserId)
+        .maybeSingle()
+
+      if (!ownedAttempt) {
+        return NextResponse.json({ error: 'Attempt not found' }, { status: 404 })
+      }
+    }
+
+    await assertPlanLimit(authenticatedUserId, userPlan, 'ai_grading_runs')
+
+    const budget = { userId: authenticatedUserId, userPlan, route: ROUTE_KEY }
 
     const userContent = buildFeedbackUserPrompt(
       challengeTitle ?? 'Product Challenge',
@@ -77,13 +150,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Persist detected patterns to DB
-    if (parsedFeedback.detected_patterns?.length && userId) {
+    if (parsedFeedback.detected_patterns?.length) {
       try {
-        const supabaseAdmin = createAdminClient()
         await supabaseAdmin.from('user_failure_patterns').insert(
           parsedFeedback.detected_patterns.map((p: { pattern_id: string; pattern_name: string; confidence: number; evidence: string; question?: string }) => ({
-            user_id: userId,
-            attempt_id: attemptId ?? null,
+            user_id: authenticatedUserId,
+            attempt_id: ownedAttemptId,
             pattern_id: p.pattern_id,
             pattern_name: p.pattern_name,
             confidence: p.confidence,
@@ -98,12 +170,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Log feedback generated event
-    if (userId) {
-      logEvent(userId, 'session.feedback_generated', { attempt_id: attemptId ?? null, challenge_id: _challengeId ?? null })
-    }
+    logEvent(authenticatedUserId, 'session.feedback_generated', { attempt_id: ownedAttemptId, challenge_id: _challengeId ?? null })
 
     return NextResponse.json(parsedFeedback)
   } catch (error) {
+    if (error instanceof PlanLimitExceeded) {
+      return planLimitResponse(error)
+    }
+
     if (error instanceof AiBudgetExceededError) {
       return NextResponse.json(
         {
@@ -125,10 +199,19 @@ export async function POST(req: NextRequest) {
 
 // ── V2 Feedback Handler (FLOW-based) ──────────────────────────
 
-async function handleV2Feedback(attemptId: string, userId: string | undefined, challengeId: string | undefined) {
+async function handleV2Feedback(attemptId: string, challengeId: string | undefined) {
   if (process.env.USE_MOCK_DATA === 'true' || !process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(MOCK_FEEDBACK_FULL)
   }
+
+  const authenticatedUserId = await getAuthenticatedUserId()
+  if (!authenticatedUserId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const userPlan = await getUserPlanForBudget(authenticatedUserId)
+  const throttleResponse = await throttleFeedback(authenticatedUserId, userPlan)
+  if (throttleResponse) return throttleResponse
 
   const admin = createAdminClient()
 
@@ -137,15 +220,16 @@ async function handleV2Feedback(attemptId: string, userId: string | undefined, c
     .from('challenge_attempts')
     .select('id, challenge_id, user_id, role_id')
     .eq('id', attemptId)
+    .eq('user_id', authenticatedUserId)
     .single()
 
   if (attemptError || !attempt) {
     return NextResponse.json({ error: 'Attempt not found' }, { status: 404 })
   }
   const budget = {
-    userId: attempt.user_id as string,
-    userPlan: await getUserPlanForBudget(attempt.user_id as string),
-    route: 'hatch_feedback_v2',
+    userId: authenticatedUserId,
+    userPlan,
+    route: V2_ROUTE_KEY,
   }
 
   // Fetch all step_attempts for this attempt
@@ -201,6 +285,8 @@ Return valid JSON only.`
   const systemPrompt = HATCH_CORE_IDENTITY + '\n\n' + MENTAL_MODELS_CONTEXT + '\n\n' + HATCH_FEEDBACK_SYSTEM_PROMPT_V2
 
   try {
+    await assertPlanLimit(authenticatedUserId, userPlan, 'ai_grading_runs')
+
     const message = await guardedCachedMessage(systemPrompt, userContent, {
       model: 'claude-sonnet-4-6',
       max_tokens: 3000,
@@ -216,11 +302,11 @@ Return valid JSON only.`
       const feedback = validated.success ? clampV2FeedbackScores(validated.data) : parsed
 
       // Persist detected patterns
-      if (feedback.detected_patterns?.length && userId) {
+      if (feedback.detected_patterns?.length) {
         try {
           await admin.from('user_failure_patterns').insert(
             feedback.detected_patterns.map((p: { pattern_id: string; pattern_name: string; confidence: number; evidence: string; question?: string }) => ({
-              user_id: userId,
+              user_id: authenticatedUserId,
               attempt_id: attemptId,
               pattern_id: p.pattern_id,
               pattern_name: p.pattern_name,
@@ -234,15 +320,17 @@ Return valid JSON only.`
         }
       }
 
-      if (userId) {
-        logEvent(userId, 'session.feedback_generated', { attempt_id: attemptId, challenge_id: challengeId ?? null, version: 'v2' })
-      }
+      logEvent(authenticatedUserId, 'session.feedback_generated', { attempt_id: attemptId, challenge_id: challengeId ?? attempt.challenge_id, version: 'v2' })
 
       return NextResponse.json({ ...feedback, version: 'v2' })
     } catch {
       return NextResponse.json({ error: 'Failed to parse v2 feedback' }, { status: 500 })
     }
   } catch (error) {
+    if (error instanceof PlanLimitExceeded) {
+      return planLimitResponse(error)
+    }
+
     if (error instanceof AiBudgetExceededError) {
       return NextResponse.json(
         {
