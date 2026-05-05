@@ -1,11 +1,20 @@
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense, useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import {
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
+  ResponsiveContainer,
+  Tooltip,
+} from 'recharts'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
-import type { CareerBenchmark, FlowMove } from '@/lib/types'
+import type { CareerBenchmark, Competency, FlowMove } from '@/lib/types'
 
 function buildLinkedInUrl(moveName: string, level: number): string {
   const now = new Date()
@@ -20,7 +29,48 @@ interface DnaRecommendation {
   reason: string | null
 }
 
+interface DNACompetency {
+  competency: Competency
+  score: number
+  trend: 'improving' | 'declining' | 'steady' | 'insufficient_data'
+}
+
+interface AttemptSummary {
+  id: string
+  challenge_id: string
+  challenge_title: string
+  submitted_at: string | null
+  feedback_json: unknown
+}
+
+interface CompetencyMovement {
+  attemptId: string
+  challengeId: string
+  challengeTitle: string
+  submittedAt: string | null
+  delta: number | null
+}
+
+interface CompetencyRadarDatum {
+  key: Competency
+  label: string
+  shortLabel: string
+  score: number
+  trend: DNACompetency['trend']
+}
+
 const FLOW_MOVES: FlowMove[] = ['frame', 'list', 'weigh', 'sell']
+
+const COMPETENCY_META: Array<{ key: Competency; label: string; shortLabel: string }> = [
+  { key: 'motivation_theory', label: 'Motivation Theory', shortLabel: 'Motivation' },
+  { key: 'cognitive_empathy', label: 'Cognitive Empathy', shortLabel: 'Empathy' },
+  { key: 'taste', label: 'Taste', shortLabel: 'Taste' },
+  { key: 'strategic_thinking', label: 'Strategic Thinking', shortLabel: 'Strategy' },
+  { key: 'creative_execution', label: 'Creative Execution', shortLabel: 'Creative' },
+  { key: 'domain_expertise', label: 'Domain Expertise', shortLabel: 'Domain' },
+]
+
+const COMPETENCY_KEYS = new Set<Competency>(COMPETENCY_META.map(item => item.key))
 
 const MOVE_META: Record<FlowMove, { label: string; icon: string; description: string }> = {
   frame:  { label: 'Frame', icon: 'frame_inspect', description: 'Find the real problem behind the surface complaint' },
@@ -36,22 +86,113 @@ const MOVE_LEVEL_NAMES: Record<FlowMove, string[]> = {
   sell:  ['Sell Finder',  'Sell Builder',  'Sell Strategist',  'Sell Expert',  'Sell Master'],
 }
 
+function toRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+}
+
+function isCompetency(value: unknown): value is Competency {
+  return typeof value === 'string' && COMPETENCY_KEYS.has(value as Competency)
+}
+
+function asNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+function buildRadarData(competencies: DNACompetency[]): CompetencyRadarDatum[] {
+  const scoreMap = new Map(competencies.map(item => [item.competency, item]))
+  return COMPETENCY_META.map(meta => {
+    const competency = scoreMap.get(meta.key)
+    return {
+      key: meta.key,
+      label: meta.label,
+      shortLabel: meta.shortLabel,
+      score: Math.round(Math.max(0, Math.min(100, competency?.score ?? 50))),
+      trend: competency?.trend ?? 'insufficient_data',
+    }
+  })
+}
+
+function buildLastMovementByCompetency(attempts: AttemptSummary[]): Record<Competency, CompetencyMovement | null> {
+  const result = Object.fromEntries(
+    COMPETENCY_META.map(meta => [meta.key, null])
+  ) as Record<Competency, CompetencyMovement | null>
+
+  for (const attempt of attempts) {
+    const feedback = toRecord(attempt.feedback_json)
+    const deltas = Array.isArray(feedback.competency_deltas) ? feedback.competency_deltas : []
+
+    for (const rawDelta of deltas) {
+      const deltaRecord = toRecord(rawDelta)
+      const competency = deltaRecord.competency
+      if (!isCompetency(competency) || result[competency]) continue
+
+      const before = asNumber(deltaRecord.before)
+      const after = asNumber(deltaRecord.after)
+      const explicitDelta = asNumber(deltaRecord.delta)
+      result[competency] = {
+        attemptId: attempt.id,
+        challengeId: attempt.challenge_id,
+        challengeTitle: attempt.challenge_title,
+        submittedAt: attempt.submitted_at,
+        delta: explicitDelta ?? (before != null && after != null ? Math.round((after - before) * 100) / 100 : null),
+      }
+    }
+  }
+
+  return result
+}
+
+function formatDate(value: string | null): string {
+  if (!value) return 'Recent attempt'
+  return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
 function SkillLadderContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { moves } = useMoveLevels()
   const [benchmark, setBenchmark] = useState<CareerBenchmark | null>(null)
   const [recommendation, setRecommendation] = useState<DnaRecommendation | null>(null)
+  const [competencies, setCompetencies] = useState<DNACompetency[]>([])
+  const [recentAttempts, setRecentAttempts] = useState<AttemptSummary[]>([])
 
   useEffect(() => {
-    fetch('/api/career-benchmark')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data) setBenchmark(data) })
-      .catch(() => {})
-    fetch('/api/dna/recommend')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data) setRecommendation(data) })
-      .catch(() => {})
+    let cancelled = false
+
+    async function loadProgressData() {
+      try {
+        const [benchmarkRes, recommendationRes, dnaRes, attemptsRes] = await Promise.all([
+          fetch('/api/career-benchmark'),
+          fetch('/api/dna/recommend'),
+          fetch('/api/dna'),
+          fetch('/api/attempts?limit=20'),
+        ])
+
+        if (cancelled) return
+
+        const [benchmarkData, recommendationData, dnaData, attemptsData] = await Promise.all([
+          benchmarkRes.ok ? benchmarkRes.json() : null,
+          recommendationRes.ok ? recommendationRes.json() : null,
+          dnaRes.ok ? dnaRes.json() : null,
+          attemptsRes.ok ? attemptsRes.json() : null,
+        ])
+
+        if (benchmarkData) setBenchmark(benchmarkData)
+        if (recommendationData) setRecommendation(recommendationData)
+        if (Array.isArray(dnaData?.competencies)) setCompetencies(dnaData.competencies)
+        if (Array.isArray(attemptsData)) setRecentAttempts(attemptsData)
+      } catch {
+        if (!cancelled) {
+          setCompetencies([])
+          setRecentAttempts([])
+        }
+      }
+    }
+
+    void loadProgressData()
+    return () => { cancelled = true }
   }, [])
 
   const moveParam = searchParams.get('move') as FlowMove | null
@@ -68,6 +209,8 @@ function SkillLadderContent() {
   const moveProgress = focusMove?.progress_pct ?? 0
   const moveXp = focusMove?.xp ?? 0
   const userLevel = benchmark?.user_level ?? 'PM-2'
+  const radarData = useMemo(() => buildRadarData(competencies), [competencies])
+  const lastMovementByCompetency = useMemo(() => buildLastMovementByCompetency(recentAttempts), [recentAttempts])
 
   // Other moves for Related Skills sidebar
   const otherMoves = FLOW_MOVES.filter(m => m !== selectedMove)
@@ -279,6 +422,10 @@ function SkillLadderContent() {
 
         {/* Right Column */}
         <div className="lg:col-span-4 space-y-4">
+          <CompetencyRadarPanel
+            data={radarData}
+            lastMovementByCompetency={lastMovementByCompetency}
+          />
 
           {/* Live Credential */}
           <div className="bg-surface-container rounded-xl p-5 border border-outline-variant">
@@ -378,6 +525,113 @@ function SkillLadderContent() {
 }
 
 /* ─── Sub-components ─── */
+
+function CompetencyTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean
+  payload?: Array<{ payload?: CompetencyRadarDatum }>
+}) {
+  if (!active || !payload?.[0]?.payload) return null
+  const item = payload[0].payload
+
+  return (
+    <div className="rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 shadow-sm">
+      <p className="text-xs font-bold text-on-surface">{item.label}</p>
+      <p className="text-[11px] text-on-surface-variant">{item.score}/100</p>
+    </div>
+  )
+}
+
+function CompetencyRadarPanel({
+  data,
+  lastMovementByCompetency,
+}: {
+  data: CompetencyRadarDatum[]
+  lastMovementByCompetency: Record<Competency, CompetencyMovement | null>
+}) {
+  return (
+    <div className="bg-surface-container rounded-xl p-5 border border-outline-variant">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div>
+          <h3 className="text-sm font-bold text-on-surface">Competency radar</h3>
+          <p className="text-[11px] text-on-surface-variant">Six inferred dimensions from completed work.</p>
+        </div>
+        <span className="material-symbols-outlined text-primary">radar</span>
+      </div>
+
+      <div className="h-[300px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart data={data} outerRadius="68%">
+            <PolarGrid stroke="var(--color-outline-variant)" />
+            <PolarAngleAxis
+              dataKey="shortLabel"
+              tick={{
+                fill: 'var(--color-on-surface-variant)',
+                fontSize: 10,
+                fontWeight: 700,
+              }}
+            />
+            <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
+            <Radar
+              name="Score"
+              dataKey="score"
+              stroke="var(--color-primary)"
+              fill="var(--color-primary)"
+              fillOpacity={0.2}
+              strokeWidth={2}
+            />
+            <Tooltip content={<CompetencyTooltip />} />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="space-y-2 pt-2">
+        {COMPETENCY_META.map(meta => {
+          const movement = lastMovementByCompetency[meta.key]
+          return (
+            <div
+              key={meta.key}
+              className="bg-surface-container-low rounded-lg border border-outline-variant/60 p-3"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-on-surface">{meta.label}</p>
+                  {movement ? (
+                    <p className="text-[11px] text-on-surface-variant truncate">
+                      {movement.challengeTitle} · {formatDate(movement.submittedAt)}
+                    </p>
+                  ) : (
+                    <p className="text-[11px] text-on-surface-variant">No completed attempt has moved this yet.</p>
+                  )}
+                </div>
+                {movement?.delta != null ? (
+                  <span className={`text-[11px] font-bold rounded-full px-2 py-0.5 ${
+                    movement.delta >= 0
+                      ? 'bg-primary-fixed text-primary'
+                      : 'bg-secondary-container text-on-secondary-container'
+                  }`}>
+                    {movement.delta >= 0 ? '+' : ''}{movement.delta}
+                  </span>
+                ) : null}
+              </div>
+              {movement ? (
+                <Link
+                  href={`/challenges/${movement.challengeId}/feedback?attempt=${movement.attemptId}`}
+                  className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline"
+                >
+                  Review attempt
+                  <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                </Link>
+              ) : null}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 function CompletedRung({ level, label, tier }: { level: number; label: string; tier: string }) {
   return (
