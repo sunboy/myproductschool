@@ -281,7 +281,7 @@ export default function CalibrationPage() {
     const doSubmit = fetch('/api/onboarding/calibration/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ answers }),
+      body: JSON.stringify({ answers, role: selectedRole ?? undefined }),
     }).then(r => r.ok ? r.json() : null).then(data => {
       if (data) {
         setResults({

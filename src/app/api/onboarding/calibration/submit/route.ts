@@ -1,11 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
-import type { FlowMove } from '@/lib/types'
 import type { OptionQuality } from '@/lib/types'
 import { QUESTIONS } from '@/lib/calibration/questions'
 import { ARCHETYPE_OBSERVATIONS } from '@/lib/calibration/archetypes'
 import { IS_MOCK } from '@/lib/mock'
+import {
+  CalibrationSubmitSchema,
+  buildCalibrationPersistencePayload,
+  type CalibrationMove,
+  type CalibrationScores,
+} from '@/lib/onboarding/calibration-submit'
 
 const TIER_CAPS: Record<OptionQuality, number> = {
   best: 3.0,
@@ -15,16 +20,15 @@ const TIER_CAPS: Record<OptionQuality, number> = {
 }
 
 // 4 questions: index 0=Frame, 1=List, 2=Optimize, 3=Win
-const MOVE_QUESTION_INDEX: Record<string, number> = {
+const MOVE_QUESTION_INDEX: Record<CalibrationMove, number> = {
   frame: 0,
   list: 1,
   optimize: 2,
   win: 3,
 }
 
-function scoreMove(move: string, selectedId: string): number {
+function scoreMove(move: CalibrationMove, selectedId: string): number {
   const idx = MOVE_QUESTION_INDEX[move]
-  if (idx === undefined) return 0
   const question = QUESTIONS[idx]
   if (!question) return 0
   const option = question.options.find(o => o.id === selectedId)
@@ -81,8 +85,18 @@ function scoreToLevel(score: number): number {
   return 1
 }
 
-function weakestMove(scores: Record<string, number>): FlowMove {
-  return (Object.entries(scores).sort(([, a], [, b]) => a - b)[0][0]) as FlowMove
+function weakestMove(scores: CalibrationScores): CalibrationMove {
+  return (Object.entries(scores).sort(([, a], [, b]) => a - b)[0][0]) as CalibrationMove
+}
+
+function firstSupabaseError(results: unknown[]) {
+  for (const result of results) {
+    if (!result || typeof result !== 'object' || !('error' in result)) continue
+    const error = (result as { error?: { message: string } | null }).error
+    if (error) return error
+  }
+
+  return null
 }
 
 // answers: { frame: 'A', list: 'C', optimize: 'B', win: 'A' }
@@ -94,6 +108,8 @@ export async function POST(request: Request) {
       percentile: 78,
       archetype: 'The Strategist',
       archetype_description: 'You frame problems sharply and land recommendations with conviction.',
+      weakness_move: 'optimize',
+      onboarding_completed_at: new Date().toISOString(),
       starting_levels: { frame: 3, list: 2, optimize: 2, win: 3 },
       hatch_observation: "You think in narratives and outcomes first. That's rare.",
       personalised_plan_slug: 'optimize-under-pressure',
@@ -104,14 +120,30 @@ export async function POST(request: Request) {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await request.json()
-  const { answers } = body as { answers: Record<string, string> }
-
-  if (!answers || !answers.frame) {
-    return NextResponse.json({ error: 'answers object with frame/list/optimize/win is required' }, { status: 400 })
+  let body: unknown
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const scores = {
+  const parsed = CalibrationSubmitSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json(
+      {
+        error: 'answers object with frame/list/optimize/win is required',
+        issues: parsed.error.issues.map(issue => ({
+          path: issue.path.join('.'),
+          message: issue.message,
+        })),
+      },
+      { status: 400 }
+    )
+  }
+
+  const { answers, role } = parsed.data
+
+  const scores: CalibrationScores = {
     frame:    scoreMove('frame',    answers.frame    ?? ''),
     list:     scoreMove('list',     answers.list     ?? ''),
     optimize: scoreMove('optimize', answers.optimize ?? ''),
@@ -122,6 +154,7 @@ export async function POST(request: Request) {
   const archetypeResult = deriveArchetype(scores)
   const observation = ARCHETYPE_OBSERVATIONS[archetypeResult.name] ?? ''
   const weak = weakestMove(scores)
+  const now = new Date().toISOString()
 
   const adminClient = createAdminClient()
 
@@ -141,8 +174,31 @@ export async function POST(request: Request) {
     computeRealPercentile(adminClient, avg),
   ])
 
+  if (attemptRes.error) {
+    return NextResponse.json({ error: attemptRes.error.message }, { status: 500 })
+  }
+
+  const persistencePayload = buildCalibrationPersistencePayload({
+    userId: user.id,
+    role,
+    answers,
+    archetype: archetypeResult.name,
+    archetypeDescription: archetypeResult.description,
+    weaknessMove: weak,
+    scores,
+    now,
+  })
+
   // Find personalised plan for weakest move + update percentile in parallel with remaining writes
-  const [personalisedPlanResult] = await Promise.all([
+  const [
+    personalisedPlanResult,
+    percentileUpdateResult,
+    profileUpdateResult,
+    onboardingResponseResult,
+    moveLevelsResult,
+    learnerCompetenciesResult,
+    hatchContextResult,
+  ] = await Promise.all([
     adminClient
       .from('study_plans')
       .select('id, slug')
@@ -159,15 +215,19 @@ export async function POST(request: Request) {
 
     adminClient
       .from('profiles')
-      .update({ archetype: archetypeResult.name, archetype_description: archetypeResult.description })
+      .update(persistencePayload.profileUpdate)
       .eq('id', user.id),
+
+    adminClient
+      .from('onboarding_responses')
+      .upsert(persistencePayload.onboardingResponseUpsert, { onConflict: 'user_id' }),
 
     adminClient
       .from('move_levels')
       .upsert(
         (['frame', 'list', 'optimize', 'win'] as const).map(m => ({
           user_id: user.id,
-          move: m as FlowMove,
+          move: m,
           level: scoreToLevel(scores[m]),
           progress_pct: 0,
           xp: 0,
@@ -185,7 +245,7 @@ export async function POST(request: Request) {
           total_attempts: 0,
           trend: 'steady',
           trend_slope: 0,
-          last_updated: new Date().toISOString(),
+          last_updated: now,
         })),
         { onConflict: 'user_id,competency' }
       ),
@@ -196,10 +256,21 @@ export async function POST(request: Request) {
           context_type: 'calibration',
           content: observation,
           is_active: true,
-          created_at: new Date().toISOString(),
+          created_at: now,
         })
       : Promise.resolve(),
   ])
+
+  const writeError = firstSupabaseError([
+    personalisedPlanResult,
+    percentileUpdateResult,
+    profileUpdateResult,
+    onboardingResponseResult,
+    moveLevelsResult,
+    learnerCompetenciesResult,
+    hatchContextResult,
+  ])
+  if (writeError) return NextResponse.json({ error: writeError.message }, { status: 500 })
 
   // Enroll user in their personalised plan
   const personalisedPlan = personalisedPlanResult.data
@@ -218,6 +289,8 @@ export async function POST(request: Request) {
     percentile,
     archetype: archetypeResult.name,
     archetype_description: archetypeResult.description,
+    weakness_move: weak,
+    onboarding_completed_at: persistencePayload.onboardingCompletedAt,
     starting_levels: {
       frame: scoreToLevel(scores.frame),
       list: scoreToLevel(scores.list),
