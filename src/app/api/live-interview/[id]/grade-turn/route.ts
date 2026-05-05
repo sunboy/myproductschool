@@ -1,7 +1,16 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { applyCoverageCredit, type FlowMove } from '@/lib/live-interview/flow-coverage-credits'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
+
+const ROUTE_KEY = 'live_interview_grade_turn'
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
 
 const VALID_FLOW_MOVES = new Set(['frame', 'list', 'optimize', 'win'])
 const VALID_COMPETENCIES = new Set([
@@ -46,6 +55,10 @@ export async function POST(
     return Response.json({ error: 'Hatch ran into a problem. Try again.' }, { status: 503 })
   }
 
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) return new Response('Unauthorized', { status: 401 })
+
   const { recentTurns, challengeId, turnIndex } = (await request.json()) as {
     recentTurns: Array<{ role: 'user' | 'hatch'; content: string }>
     challengeId?: string | null
@@ -63,6 +76,7 @@ export async function POST(
     .from('live_interview_sessions')
     .select('user_id, flow_coverage, flow_coverage_credits, total_turns, status, conversation_memory, calibration_snapshot, scenario_rubric')
     .eq('id', id)
+    .eq('user_id', user.id)
     .single()
 
   if (!session || session.status !== 'active') {
@@ -130,18 +144,49 @@ Guidelines:
 - emotional_beat: How the interviewer should be feeling right now. "intrigued" if the candidate said something unexpected, "challenging" if they gave a weak answer, "delighted" if they nailed something, "concerned" if they're off track.
 - session_phase: "opening" if still in warm-up/first few exchanges, "middle" for the bulk, "closing" if the interviewer is wrapping up, "done" if the interviewer has explicitly ended the session.
 - memory_items: 0-2 items worth remembering for later reference. Concrete claims, contradictions, strong moments, or dodged questions. Empty array if nothing notable.`
-  const sessionUserId = session.user_id as string
+  const sessionUserId = user.id
   const userPlan = await getUserPlanForBudget(sessionUserId)
+  const throttle = await rateLimit({
+    key: `ai:${sessionUserId}:${ROUTE_KEY}`,
+    limit: userPlan === 'pro' ? 15 : 5,
+    windowSec: 60,
+  })
+
+  if (!throttle.allowed) {
+    const retryAfter = retryAfterSeconds(throttle.resetAt)
+    return Response.json(
+      { error: 'rate_limited', retryAfter },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(retryAfter) },
+      }
+    )
+  }
 
   let raw = '{}'
   try {
+    await assertPlanLimit(sessionUserId, userPlan, 'ai_grading_runs')
+
     const response = await guardedCachedMessage(systemPrompt, transcript, {
       model,
       max_tokens: maxTokens,
-      budget: { userId: sessionUserId, userPlan, route: 'live_interview_grade_turn' },
+      budget: { userId: sessionUserId, userPlan, route: ROUTE_KEY },
     })
     raw = response.sanitized.trim() || '{}'
   } catch (error) {
+    if (error instanceof PlanLimitExceeded) {
+      return Response.json(
+        {
+          error: 'limit_reached',
+          feature: error.feature,
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+
     if (error instanceof AiBudgetExceededError) {
       return Response.json(
         {
