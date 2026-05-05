@@ -1,8 +1,8 @@
 import 'server-only'
 
-import { Resend } from 'resend'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type Stripe from 'stripe'
+import { configuredFromEmail, configuredReplyTo, getResendClient } from '@/lib/email/client'
 
 type BillingEmailKind =
   | 'premium_signup_receipt'
@@ -28,14 +28,6 @@ interface BillingEmailInput {
   invoiceUrl?: string | null
   invoicePdf?: string | null
   hostedPaymentUrl?: string | null
-}
-
-function configuredFromEmail() {
-  return process.env.RESEND_FROM_EMAIL?.trim() || 'HackProduct <billing@hackproduct.com>'
-}
-
-function configuredReplyTo() {
-  return process.env.RESEND_REPLY_TO?.trim() || 'founders@hackproduct.com'
 }
 
 function formatMoney(amount: number | null | undefined, currency: string | null | undefined) {
@@ -186,6 +178,23 @@ function renderEmail(input: BillingEmailInput) {
   `
 }
 
+function renderTextEmail(input: BillingEmailInput) {
+  const copy = emailCopy(input)
+  const name = input.customerName?.trim()
+  const parts = [
+    copy.heading,
+    '',
+    name ? `Hi ${name},` : 'Hi,',
+    copy.body,
+    copy.detail ?? null,
+    input.invoiceUrl ? `View invoice: ${input.invoiceUrl}` : null,
+    input.invoicePdf ? `Invoice PDF: ${input.invoicePdf}` : null,
+    input.hostedPaymentUrl ? `Payment link: ${input.hostedPaymentUrl}` : null,
+  ].filter(Boolean)
+
+  return parts.join('\n')
+}
+
 async function resolveRecipient(admin: SupabaseClient, input: BillingEmailInput) {
   if (input.to) return input.to
   if (input.customerEmail) return input.customerEmail
@@ -208,11 +217,11 @@ async function hasSentBillingEmail(admin: SupabaseClient, dedupeKey: string) {
 
 export async function sendBillingEmail(admin: SupabaseClient, input: BillingEmailInput) {
   const to = await resolveRecipient(admin, input)
-  if (!to || !process.env.RESEND_API_KEY) return
+  const resend = getResendClient()
+  if (!to || !resend) return
   if (await hasSentBillingEmail(admin, input.dedupeKey)) return
 
   const copy = emailCopy(input)
-  const resend = new Resend(process.env.RESEND_API_KEY)
 
   try {
     const { data, error } = await resend.emails.send(
@@ -222,6 +231,7 @@ export async function sendBillingEmail(admin: SupabaseClient, input: BillingEmai
         replyTo: configuredReplyTo(),
         subject: copy.subject,
         html: renderEmail({ ...input, to }),
+        text: renderTextEmail({ ...input, to }),
       },
       { idempotencyKey: input.dedupeKey.slice(0, 256) }
     )
