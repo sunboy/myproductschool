@@ -1,13 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import Anthropic from '@anthropic-ai/sdk'
 import { applyCoverageCredit, type FlowMove } from '@/lib/live-interview/flow-coverage-credits'
-import {
-  AiBudgetExceededError,
-  assertAiBudget,
-  estimateAnthropicPreflightCents,
-  getUserPlanForBudget,
-  recordAnthropicUsage,
-} from '@/lib/usage/ai-budget'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 
 const VALID_FLOW_MOVES = new Set(['frame', 'list', 'optimize', 'win'])
 const VALID_COMPETENCIES = new Set([
@@ -39,7 +33,7 @@ interface GradingResult {
  * Hatch response has already been returned to the user, so latency here
  * does not affect conversational flow.
  *
- * Uses Claude Haiku for speed and cost — this is pure analytical
+ * Uses a fast model for speed and cost. This is pure analytical
  * classification, no personality needed.
  */
 export async function POST(
@@ -49,7 +43,7 @@ export async function POST(
   const { id } = await params
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 503 })
+    return Response.json({ error: 'Hatch ran into a problem. Try again.' }, { status: 503 })
   }
 
   const { recentTurns, challengeId, turnIndex } = (await request.json()) as {
@@ -74,8 +68,6 @@ export async function POST(
   if (!session || session.status !== 'active') {
     return Response.json({ error: 'Session not found or ended' }, { status: 404 })
   }
-
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
   const transcript = recentTurns
     .map((t) => `${t.role === 'hatch' ? 'INTERVIEWER' : 'CANDIDATE'}: ${t.content}`)
@@ -140,24 +132,15 @@ Guidelines:
 - memory_items: 0-2 items worth remembering for later reference. Concrete claims, contradictions, strong moments, or dodged questions. Empty array if nothing notable.`
   const sessionUserId = session.user_id as string
   const userPlan = await getUserPlanForBudget(sessionUserId)
-  const preflightCostCents = estimateAnthropicPreflightCents(model, maxTokens, systemPrompt.length + transcript.length)
 
-  let response
+  let raw = '{}'
   try {
-    await assertAiBudget(sessionUserId, userPlan, preflightCostCents)
-    response = await anthropic.messages.create({
+    const response = await guardedCachedMessage(systemPrompt, transcript, {
       model,
       max_tokens: maxTokens,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: transcript }],
+      budget: { userId: sessionUserId, userPlan, route: 'live_interview_grade_turn' },
     })
-    await recordAnthropicUsage({
-      userId: sessionUserId,
-      model,
-      usage: response.usage,
-      fallbackCostCents: preflightCostCents,
-      route: 'live_interview_grade_turn',
-    })
+    raw = response.sanitized.trim() || '{}'
   } catch (error) {
     if (error instanceof AiBudgetExceededError) {
       return Response.json(
@@ -173,8 +156,6 @@ Guidelines:
     }
     throw error
   }
-
-  const raw = response.content[0].type === 'text' ? response.content[0].text.trim() : '{}'
 
   let parsed: Record<string, unknown>
   try {
