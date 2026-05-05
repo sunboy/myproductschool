@@ -1,19 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import { NextResponse } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
 import { getHatchContext, buildHatchContextString } from '@/lib/hatch-context'
 import { HATCH_VOICE } from '@/lib/hatch/system-prompt'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 
 const MOCK_REFLECTION =
-  "You've been showing strong diagnostic precision — your frame move is your biggest strength right now. Keep pushing your weigh move next: that's where your next level unlock is hiding."
+  "You've been showing strong diagnostic precision, your frame move is your biggest strength right now. Keep pushing your weigh move next, that's where your next level is hiding."
 
 const MOCK_USER_ID = 'mock-user-id'
 
-export async function POST(_req: NextRequest) {
+export async function POST() {
   // ── Auth ──────────────────────────────────────────────────────
   let userId: string
+  let budgetUserId: string | null = null
 
   if (IS_MOCK) {
     return NextResponse.json({ reflection: MOCK_REFLECTION })
@@ -30,6 +32,7 @@ export async function POST(_req: NextRequest) {
       userId = MOCK_USER_ID
     } else {
       userId = user.id
+      budgetUserId = user.id
     }
   } catch {
     userId = MOCK_USER_ID
@@ -65,34 +68,49 @@ export async function POST(_req: NextRequest) {
 
   if (!process.env.ANTHROPIC_API_KEY) {
     const weakest = hatchCtx.weakestCompetency ?? 'your product thinking'
-    reflection = `You're making steady progress. Focus on ${weakest} as your next growth area — it's where consistent practice will pay off most.`
+    reflection = `You're making steady progress. Focus on ${weakest} as your next growth area, it's where consistent practice will pay off most.`
   } else {
     try {
-      const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
       const contextString = buildHatchContextString(hatchCtx, 'coaching')
       const userPrompt =
         contextString +
         '\n\nWrite a growth reflection for this learner. Use 2 short paragraphs: one naming a specific strength, one naming the specific growth area and what to do next. Keep each paragraph to 2 sentences. Use the learner\'s first name if known. Be direct and specific. No filler. Return JSON: {"reflection": "..."}'
+      const budget = budgetUserId
+        ? { userId: budgetUserId, userPlan: await getUserPlanForBudget(budgetUserId), route: 'hatch_growth_reflection' }
+        : undefined
 
-      const message = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 300,
-        system:
-          `You are Hatch, a product thinking coach at HackProduct.\n\n${HATCH_VOICE}\n\nRespond only with a JSON object like: {"reflection": "..."} — no markdown, no extra text. The reflection value must use "\\n\\n" between the two paragraphs.`,
-        messages: [{ role: 'user', content: userPrompt }],
-      })
+      const message = await guardedCachedMessage(
+        `You are Hatch, a product thinking coach at HackProduct.\n\n${HATCH_VOICE}\n\nRespond only with a JSON object like: {"reflection": "..."}, no markdown, no extra text. The reflection value must use "\\n\\n" between the two paragraphs.`,
+        userPrompt,
+        {
+          model: 'claude-sonnet-4-6',
+          max_tokens: 300,
+          budget,
+        }
+      )
 
-      const rawText =
-        message.content[0].type === 'text' ? message.content[0].text : ''
+      const rawText = message.sanitized
       const parsed = JSON.parse(rawText)
       if (typeof parsed.reflection !== 'string' || !parsed.reflection.trim()) {
-        throw new Error('Missing reflection in Claude response')
+        throw new Error('Missing reflection in Hatch response')
       }
       reflection = parsed.reflection
-    } catch {
+    } catch (error) {
+      if (error instanceof AiBudgetExceededError) {
+        return NextResponse.json(
+          {
+            error: 'limit_reached',
+            feature: 'hatch_ai_cents',
+            used: error.used,
+            limit: error.limit,
+            windowDays: error.windowDays,
+          },
+          { status: 402 }
+        )
+      }
+
       const weakest = hatchCtx.weakestCompetency ?? 'your product thinking'
-      reflection = `You're making steady progress. Focus on ${weakest} as your next growth area — it's where consistent practice will pay off most.`
+      reflection = `You're making steady progress. Focus on ${weakest} as your next growth area, it's where consistent practice will pay off most.`
     }
   }
 
