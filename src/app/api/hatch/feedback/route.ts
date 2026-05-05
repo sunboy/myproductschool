@@ -10,7 +10,7 @@ import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { HatchFeedbackSchema, clampFeedbackScores, V2FeedbackSchema, clampV2FeedbackScores } from '@/lib/hatch/feedback-schema'
 import { logEvent } from '@/lib/data/events'
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 
 export async function POST(req: NextRequest) {
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       userResponse
     )
 
-    const message = await createCachedMessage(HATCH_FEEDBACK_SYSTEM_PROMPT, userContent, {
+    const message = await guardedCachedMessage(HATCH_FEEDBACK_SYSTEM_PROMPT, userContent, {
       model: 'claude-sonnet-4-6',
       max_tokens: 2000,
       budget,
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
     // Attempt 1: parse and validate
     let parsedFeedback
-    const rawText = message.content[0].type === 'text' ? message.content[0].text : '{}'
+    const rawText = message.sanitized || '{}'
 
     try {
       const parsed = JSON.parse(rawText)
@@ -62,12 +62,12 @@ export async function POST(req: NextRequest) {
         parsedFeedback = clampFeedbackScores(validated.data)
       } else {
         // Retry once with stricter prompt
-        const retryResponse = await createCachedMessage(
+        const retryResponse = await guardedCachedMessage(
           HATCH_FEEDBACK_SYSTEM_PROMPT + '\n\nCRITICAL: Return ONLY a valid JSON object. No markdown, no explanation, no code blocks. Raw JSON only.',
           'The JSON was invalid. Return only the raw JSON object with no surrounding text.\n\nOriginal response:\n' + rawText,
           { model: 'claude-sonnet-4-6', max_tokens: 1500, budget }
         )
-        const retryText = retryResponse.content[0].type === 'text' ? retryResponse.content[0].text : '{}'
+        const retryText = retryResponse.sanitized || '{}'
         const retryParsed = JSON.parse(retryText)
         const retryValidated = HatchFeedbackSchema.safeParse(retryParsed)
         parsedFeedback = retryValidated.success ? clampFeedbackScores(retryValidated.data) : retryParsed
@@ -201,13 +201,13 @@ Return valid JSON only.`
   const systemPrompt = HATCH_CORE_IDENTITY + '\n\n' + MENTAL_MODELS_CONTEXT + '\n\n' + HATCH_FEEDBACK_SYSTEM_PROMPT_V2
 
   try {
-    const message = await createCachedMessage(systemPrompt, userContent, {
+    const message = await guardedCachedMessage(systemPrompt, userContent, {
       model: 'claude-sonnet-4-6',
       max_tokens: 3000,
       budget,
     })
 
-    const rawText = message.content[0].type === 'text' ? message.content[0].text : '{}'
+    const rawText = message.sanitized || '{}'
 
     try {
       const parsed = JSON.parse(rawText)
