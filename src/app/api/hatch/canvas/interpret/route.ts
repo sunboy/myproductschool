@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { createClient } from '@/lib/supabase/server'
 import { sceneToPrompt, type CanvasScene } from '@/lib/hatch/canvas-scene'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
@@ -302,14 +302,13 @@ async function callClaude(
   isCodingMode = false,
   budget?: { userId: string; userPlan: string; route: string }
 ): Promise<CanvasInterpretResponse> {
-  const response = await createCachedMessage(systemPrompt, userContent, {
+  const response = await guardedCachedMessage(systemPrompt, userContent, {
     model: 'claude-sonnet-4-6',
     max_tokens: 2000,
     budget,
   })
-  const content = response.content[0]
-  if (content.type !== 'text') throw new Error('Non-text response')
-  const raw = content.text.trim()
+  const raw = response.sanitized.trim()
+  if (!raw) throw new Error('Non-text response')
 
   // For coding mode: the skill may return plain text or JSON — handle both.
   if (isCodingMode) {
