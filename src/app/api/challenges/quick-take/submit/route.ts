@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { IS_MOCK } from '@/lib/mock'
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { applyMoveLevelXp } from '@/lib/data/move-levels-update'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 
 // XP base for quick-takes (lower than full challenges)
 const QUICK_TAKE_XP_BASE = 20
@@ -11,23 +12,27 @@ const QUICK_TAKE_XP_BASE = 20
 const MOCK_RESPONSE = {
   score: 0.75,
   xp_earned: 15,
-  feedback_summary: 'Good framing — you identified the key diagnostic signals. Consider prioritizing metric breakdowns earlier.',
+  feedback_summary: 'Good framing, you identified the key diagnostic signals. Consider prioritizing metric breakdowns earlier.',
 }
 
 /**
  * Grade a quick-take response with Haiku.
  * Returns a quality score 0.0–1.0 and structured coaching feedback.
  */
-async function gradeWithHaiku(responseText: string, promptText: string): Promise<{ score: number; feedback: string }> {
+async function gradeWithHaiku(
+  responseText: string,
+  promptText: string,
+  budget: { userId: string; userPlan: string; route: string }
+): Promise<{ score: number; feedback: string }> {
   const systemPrompt = `You are Hatch, a product thinking coach. Grade a quick-take response and give direct, specific coaching.
 
-Never use em dashes. Short sentences. No filler like "Great job" or "Certainly". Be honest — don't soften weak answers.
+Never use em dashes. Short sentences. No filler like "Great job" or "Certainly". Be honest, don't soften weak answers.
 
 Scoring:
-- 0.8–1.0 (Sharp): Frames the problem clearly, names a specific diagnosis or insight, shows reasoning not just description
-- 0.5–0.79 (Solid): On track but generic — missing a specific metric, user segment, or concrete next step
-- 0.2–0.49 (Surface): Restates the question or lists obvious things without real analysis
-- 0.0–0.19 (Weak): Too short, off-topic, or shows no product reasoning
+- 0.8-1.0 (Sharp): Frames the problem clearly, names a specific diagnosis or insight, shows reasoning not just description
+- 0.5-0.79 (Solid): On track but generic, missing a specific metric, user segment, or concrete next step
+- 0.2-0.49 (Surface): Restates the question or lists obvious things without real analysis
+- 0.0-0.19 (Weak): Too short, off-topic, or shows no product reasoning
 
 Return valid JSON only:
 {
@@ -40,11 +45,12 @@ Return valid JSON only:
   const userContent = `Challenge prompt: "${promptText}"\n\nUser's response: "${responseText}"`
 
   try {
-    const msg = await createCachedMessage(systemPrompt, userContent, {
+    const msg = await guardedCachedMessage(systemPrompt, userContent, {
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 300,
+      budget,
     })
-    const raw = msg.content[0].type === 'text' ? msg.content[0].text : ''
+    const raw = msg.sanitized
     // Strip markdown code fences if model wraps output
     const text = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
     const parsed = JSON.parse(text)
@@ -61,6 +67,8 @@ Return valid JSON only:
       feedback: parts.join('\n\n') || 'Keep practising.',
     }
   } catch (err) {
+    if (err instanceof AiBudgetExceededError) throw err
+
     console.error('[quick-take] grading error:', err)
     const wordCount = responseText.trim().split(/\s+/).length
     return {
@@ -98,7 +106,32 @@ export async function POST(req: NextRequest) {
   if (!challenge) return NextResponse.json({ error: 'Prompt not found' }, { status: 404 })
 
   // Grade with Haiku — quality score 0.0–1.0
-  const { score, feedback } = await gradeWithHaiku(response_text, challenge.prompt_text ?? challenge.title ?? challenge_id)
+  let score: number
+  let feedback: string
+  try {
+    const result = await gradeWithHaiku(
+      response_text,
+      challenge.prompt_text ?? challenge.title ?? challenge_id,
+      { userId: user.id, userPlan: await getUserPlanForBudget(user.id), route: 'quick_take_submit' }
+    )
+    score = result.score
+    feedback = result.feedback
+  } catch (error) {
+    if (error instanceof AiBudgetExceededError) {
+      return NextResponse.json(
+        {
+          error: 'limit_reached',
+          feature: 'hatch_ai_cents',
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+
+    throw error
+  }
 
   // XP = base * quality score
   const xp_earned = Math.round(QUICK_TAKE_XP_BASE * score)
