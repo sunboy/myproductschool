@@ -30,6 +30,8 @@ In the Supabase dashboard, enable email confirmation for password signups:
 
 The app routes new password signups to `/verify-email?email=...` and uses `/api/auth/resend-verification` to resend signup confirmations with a 60-second IP+email rate limit.
 
+For Google sign-in, enable the Google provider and add `/auth/callback` to the allowed redirect URLs. Supabase stores linked sign-in methods in Auth identities; keep automatic same-email identity linking enabled, and enable manual identity linking when the Settings page exposes "Connect Google".
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

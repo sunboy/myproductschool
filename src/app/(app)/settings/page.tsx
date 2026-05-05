@@ -36,6 +36,19 @@ type BillingPrices = {
   annual?: BillingPrice
 }
 
+type LinkedIdentity = {
+  identity_id: string
+  provider: string
+  identity_data?: {
+    email?: string
+    full_name?: string
+    name?: string
+    [key: string]: unknown
+  }
+}
+
+type IdentityAction = 'link-google' | 'unlink-google'
+
 function formatBillingDate(value?: string | null) {
   if (!value) return 'Not available'
   const date = new Date(value)
@@ -61,6 +74,10 @@ export default function SettingsPage() {
   const [billingAction, setBillingAction] = useState<string | null>(null)
   const [billingError, setBillingError] = useState<string | null>(null)
   const [prices, setPrices] = useState<BillingPrices | null>(null)
+  const [linkedIdentities, setLinkedIdentities] = useState<LinkedIdentity[]>([])
+  const [identitiesLoading, setIdentitiesLoading] = useState(true)
+  const [identityAction, setIdentityAction] = useState<IdentityAction | null>(null)
+  const [identityError, setIdentityError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   async function refreshProfile() {
@@ -77,8 +94,24 @@ export default function SettingsPage() {
     setSubscription(data.subscription ?? null)
   }
 
+  async function refreshIdentities() {
+    setIdentitiesLoading(true)
+    setIdentityError(null)
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase.auth.getUserIdentities()
+      if (error) throw error
+      setLinkedIdentities(data.identities)
+    } catch {
+      setIdentityError('Could not load linked accounts.')
+    } finally {
+      setIdentitiesLoading(false)
+    }
+  }
+
   useEffect(() => {
     refreshProfile().catch(() => {})
+    refreshIdentities().catch(() => {})
     fetch('/api/billing/prices')
       .then(r => r.ok ? r.json() : null)
       .then((data: BillingPrices | null) => setPrices(data))
@@ -126,6 +159,55 @@ export default function SettingsPage() {
     router.refresh()
   }
 
+  async function handleLinkGoogle() {
+    setIdentityAction('link-google')
+    setIdentityError(null)
+    try {
+      const redirectTo = `${window.location.origin}/auth/callback?next=/settings`
+      const res = await fetch('/api/auth/link-identity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ redirectTo }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error ?? 'Could not connect Google.')
+      if (data.url) {
+        window.location.assign(data.url)
+        return
+      }
+      await refreshIdentities()
+    } catch (error) {
+      setIdentityError(error instanceof Error ? error.message : 'Could not connect Google.')
+    } finally {
+      setIdentityAction(null)
+    }
+  }
+
+  async function handleUnlinkGoogle() {
+    const googleIdentity = linkedIdentities.find(identity => identity.provider === 'google')
+    if (!googleIdentity) return
+
+    setIdentityAction('unlink-google')
+    setIdentityError(null)
+    try {
+      const res = await fetch('/api/auth/link-identity', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: 'google',
+          identityId: googleIdentity.identity_id,
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error ?? 'Could not remove Google.')
+      await refreshIdentities()
+    } catch (error) {
+      setIdentityError(error instanceof Error ? error.message : 'Could not remove Google.')
+    } finally {
+      setIdentityAction(null)
+    }
+  }
+
   async function runBillingAction(action: string, body: Record<string, unknown> = {}) {
     setBillingAction(action)
     setBillingError(null)
@@ -160,6 +242,11 @@ export default function SettingsPage() {
   const switchPrice = switchPlan === 'annual' ? prices?.annual?.formatted : prices?.monthly?.formatted
   const switchInterval = switchPlan === 'annual' ? 'year' : 'month'
   const upgradePrice = prices?.monthly?.formatted
+  const googleIdentity = linkedIdentities.find(identity => identity.provider === 'google')
+  const googleEmail = typeof googleIdentity?.identity_data?.email === 'string'
+    ? googleIdentity.identity_data.email
+    : null
+  const canUnlinkGoogle = !!googleIdentity && linkedIdentities.length > 1
 
   return (
     <main className="mx-auto max-w-[1060px] px-4 py-7 sm:px-6 lg:px-8">
@@ -260,6 +347,61 @@ export default function SettingsPage() {
               </div>
               <span className="material-symbols-outlined shrink-0 text-[17px] text-on-surface-variant">lock</span>
             </div>
+          </div>
+
+          <div className="mt-4 rounded-2xl bg-background/70 px-4 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Linked accounts</p>
+                <p className="mt-1 truncate text-sm font-body font-semibold text-on-surface">
+                  {googleIdentity ? 'Google connected' : 'No Google account connected'}
+                </p>
+              </div>
+              {identitiesLoading ? (
+                <span className="material-symbols-outlined shrink-0 animate-spin text-[17px] text-on-surface-variant">progress_activity</span>
+              ) : (
+                <span className="material-symbols-outlined shrink-0 text-[17px] text-on-surface-variant">hub</span>
+              )}
+            </div>
+
+            <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-outline-variant/45 bg-surface-container-lowest px-3 py-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="material-symbols-outlined flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-container text-[19px] text-on-surface-variant">
+                  account_circle
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-label font-bold text-on-surface">Google</p>
+                  <p className="mt-0.5 truncate text-xs font-body text-on-surface-variant">
+                    {googleEmail ?? (googleIdentity ? 'Connected' : 'Use Google sign-in')}
+                  </p>
+                </div>
+              </div>
+
+              {googleIdentity ? (
+                <button
+                  type="button"
+                  onClick={handleUnlinkGoogle}
+                  disabled={identityAction !== null || identitiesLoading || !canUnlinkGoogle}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-outline-variant/70 px-3 py-2 text-xs font-label font-bold text-on-surface-variant transition-colors hover:bg-background hover:text-on-surface disabled:cursor-not-allowed disabled:opacity-50"
+                  title={canUnlinkGoogle ? 'Remove Google sign-in' : 'Add another sign-in method before removing Google'}
+                >
+                  {identityAction === 'unlink-google' ? 'Removing' : 'Remove'}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleLinkGoogle}
+                  disabled={identityAction !== null || identitiesLoading}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-xs font-label font-bold text-on-primary transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {identityAction === 'link-google' ? 'Connecting' : 'Connect'}
+                </button>
+              )}
+            </div>
+
+            {identityError && (
+              <p className="mt-3 rounded-xl bg-error/10 px-3 py-2 text-sm font-body text-error">{identityError}</p>
+            )}
           </div>
 
           <button
