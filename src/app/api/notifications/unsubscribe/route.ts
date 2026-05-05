@@ -1,6 +1,19 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { verifyUnsubscribeToken } from '@/lib/notifications/unsubscribe'
+import {
+  verifyUnsubscribeToken,
+  type NotificationPreferenceKey,
+} from '@/lib/notifications/unsubscribe'
 import { createAdminClient } from '@/lib/supabase/admin'
+
+const PREFERENCE_LABELS: Record<NotificationPreferenceKey, string> = {
+  streak_reminder: 'Streak reminders',
+  weekly_digest: 'Weekly digests',
+  completion_email: 'Challenge completion emails',
+  marketing: 'Marketing emails',
+  push_enabled: 'Push notifications',
+  discussion_reply: 'Discussion reply emails',
+  billing_alerts: 'Billing alerts',
+}
 
 function htmlResponse(message: string, status = 200) {
   return new NextResponse(
@@ -30,5 +43,6 @@ export async function GET(request: NextRequest) {
 
   if (error) return htmlResponse('We could not update your notification settings.', 500)
 
-  return htmlResponse('Streak reminders are off. You can turn them back on from notification settings.')
+  const label = PREFERENCE_LABELS[payload.preference]
+  return htmlResponse(`${label} are off. You can turn them back on from notification settings.`)
 }
