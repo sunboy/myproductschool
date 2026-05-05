@@ -5,14 +5,21 @@ import { IS_MOCK } from '@/lib/mock'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { applyMoveLevelXp } from '@/lib/data/move-levels-update'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
 
 // XP base for quick-takes (lower than full challenges)
 const QUICK_TAKE_XP_BASE = 20
+const ROUTE_KEY = 'quick_take_submit'
 
 const MOCK_RESPONSE = {
   score: 0.75,
   xp_earned: 15,
   feedback_summary: 'Good framing, you identified the key diagnostic signals. Consider prioritizing metric breakdowns earlier.',
+}
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
 }
 
 /**
@@ -92,6 +99,23 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userPlan = await getUserPlanForBudget(user.id)
+  const throttle = await rateLimit({
+    key: `ai:${user.id}:${ROUTE_KEY}`,
+    limit: userPlan === 'pro' ? 15 : 5,
+    windowSec: 60,
+  })
+
+  if (!throttle.allowed) {
+    const retryAfter = retryAfterSeconds(throttle.resetAt)
+    return NextResponse.json(
+      { error: 'rate_limited', retryAfter },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(retryAfter) },
+      }
+    )
+  }
 
   const adminClient = createAdminClient()
 
@@ -109,14 +133,29 @@ export async function POST(req: NextRequest) {
   let score: number
   let feedback: string
   try {
+    await assertPlanLimit(user.id, userPlan, 'quick_takes')
+
     const result = await gradeWithHaiku(
       response_text,
       challenge.prompt_text ?? challenge.title ?? challenge_id,
-      { userId: user.id, userPlan: await getUserPlanForBudget(user.id), route: 'quick_take_submit' }
+      { userId: user.id, userPlan, route: ROUTE_KEY }
     )
     score = result.score
     feedback = result.feedback
   } catch (error) {
+    if (error instanceof PlanLimitExceeded) {
+      return NextResponse.json(
+        {
+          error: 'limit_reached',
+          feature: error.feature,
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+
     if (error instanceof AiBudgetExceededError) {
       return NextResponse.json(
         {
