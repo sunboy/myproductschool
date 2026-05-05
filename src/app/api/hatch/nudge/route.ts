@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
 import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
 import type { FlowStep } from '@/lib/types'
 
@@ -13,6 +15,12 @@ const MOCK_NUDGES = [
   "Your metric choice is reasonable. What are you willing to let get worse in order to improve it — what's the guardrail?",
   "You've described features, but what's the user's underlying job-to-be-done here?",
 ]
+
+const ROUTE_KEY = 'hatch_nudge'
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
 
 export async function POST(req: NextRequest) {
   const { challengePrompt, draft, attemptId, step } = await req.json()
@@ -28,13 +36,32 @@ export async function POST(req: NextRequest) {
 
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  const userPlan = !authError && user ? await getUserPlanForBudget(user.id) : null
-  const budget = user && userPlan
-    ? { userId: user.id, userPlan, route: 'hatch_nudge' }
-    : undefined
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const userPlan = await getUserPlanForBudget(user.id)
+  const throttle = await rateLimit({
+    key: `ai:${user.id}:${ROUTE_KEY}`,
+    limit: userPlan === 'pro' ? 15 : 5,
+    windowSec: 60,
+  })
+
+  if (!throttle.allowed) {
+    const retryAfter = retryAfterSeconds(throttle.resetAt)
+    return NextResponse.json(
+      { error: 'rate_limited', retryAfter },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(retryAfter) },
+      }
+    )
+  }
+
+  const budget = { userId: user.id, userPlan, route: ROUTE_KEY }
 
   // Nudge rate limiting
-  if (attemptId && !authError && user) {
+  if (attemptId) {
     const adminClient = createAdminClient()
     const { count } = await adminClient
       .from('nudge_usage')
@@ -57,6 +84,25 @@ export async function POST(req: NextRequest) {
       console.warn('nudge_usage insert failed (possible race / constraint):', insertError)
       return NextResponse.json({ error: 'Nudge limit reached', remaining: 0 }, { status: 429 })
     }
+  }
+
+  try {
+    await assertPlanLimit(user.id, userPlan, 'hatch_nudges')
+  } catch (error) {
+    if (error instanceof PlanLimitExceeded) {
+      return NextResponse.json(
+        {
+          error: 'limit_reached',
+          used: error.used,
+          limit: error.limit,
+          feature: error.feature,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+
+    throw error
   }
 
   try {
