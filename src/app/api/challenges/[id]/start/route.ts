@@ -1,9 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { IS_MOCK } from '@/lib/mock'
 import { checkUsageLimit, recordUsageEvent } from '@/lib/usage/check-limit'
 import type { UserRoleV2 } from '@/lib/types'
+
+const VALID_ROLES = [
+  'swe',
+  'data_eng',
+  'ml_eng',
+  'devops',
+  'founding_eng',
+  'em',
+  'tech_lead',
+  'pm',
+  'designer',
+  'data_scientist',
+] as const
+
+const RequestSchema = z.object({
+  role_id: z.enum(VALID_ROLES).optional(),
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
 
 export async function POST(
   req: NextRequest,
@@ -17,7 +42,18 @@ export async function POST(
   const userId = user?.id ?? 'mock-user-00000000-0000-0000-0000-000000000000'
 
   const { id: challenge_id } = await params
-  const body = await req.json().catch(() => ({})) as { role_id?: UserRoleV2 }
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
   const role_id: UserRoleV2 = body.role_id ?? 'swe'
 
   // In mock mode return a synthetic attempt — no DB write
