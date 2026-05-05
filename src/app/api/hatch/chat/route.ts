@@ -6,6 +6,14 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getHatchContext, buildHatchContextString } from '@/lib/hatch-context'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
+
+const ROUTE_KEY = 'hatch_chat'
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
 
 const MOCK_REPLIES = [
   "That's an interesting framing. Can you tell me more about *why* users would behave that way — what's driving their motivation here?",
@@ -226,14 +234,33 @@ export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    const userPlan = user ? await getUserPlanForBudget(user.id) : null
-    const budget = user && userPlan ? { userId: user.id, userPlan, route: 'hatch_chat' } : undefined
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const userPlan = await getUserPlanForBudget(user.id)
+    const throttle = await rateLimit({
+      key: `ai:${user.id}:${ROUTE_KEY}`,
+      limit: userPlan === 'pro' ? 15 : 5,
+      windowSec: 60,
+    })
+
+    if (!throttle.allowed) {
+      const retryAfter = retryAfterSeconds(throttle.resetAt)
+      return NextResponse.json(
+        { error: 'rate_limited', retryAfter },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(retryAfter) },
+        }
+      )
+    }
+
+    const budget = { userId: user.id, userPlan, route: ROUTE_KEY }
 
     // Build all context blocks in parallel
     const [hatchCtx, pageContextBlock, recommendedBlock] = await Promise.all([
-      user ? getHatchContext(user.id) : Promise.resolve(null),
+      getHatchContext(user.id),
       pageContext ? buildPageContextBlock(pageContext as PageContext) : Promise.resolve(''),
-      user ? buildRecommendedChallengesBlock(user.id) : Promise.resolve(''),
+      buildRecommendedChallengesBlock(user.id),
     ])
 
     const contextBlock = hatchCtx ? buildHatchContextString(hatchCtx, 'chat') : ''
@@ -272,6 +299,8 @@ Respond conversationally.`
       message,
     })
 
+    await assertPlanLimit(user.id, userPlan, 'hatch_chat_msgs')
+
     const response = await guardedCachedMessage(systemPrompt, userContent, {
       model,
       max_tokens: maxTokens,
@@ -281,6 +310,19 @@ Respond conversationally.`
     const reply = response.sanitized.trim() || null
     return NextResponse.json({ reply })
   } catch (error) {
+    if (error instanceof PlanLimitExceeded) {
+      return NextResponse.json(
+        {
+          error: 'limit_reached',
+          feature: error.feature,
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+
     if (error instanceof AiBudgetExceededError) {
       return NextResponse.json(
         {
