@@ -1,8 +1,60 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { gradeCodingAttempt } from '@/lib/coding-grading/grader'
 import type { RunResult } from '@/lib/coding/types'
-import type { ChatMessage, SessionEvent } from '@/lib/coding-grading/grader'
+import type { SessionEvent } from '@/lib/coding-grading/grader'
+
+const TestResultSchema = z.object({
+  id: z.string().min(1).max(200),
+  label: z.string().min(1).max(500),
+  status: z.enum(['passed', 'failed', 'error', 'timeout', 'no_solution']),
+  hidden: z.boolean(),
+  input: z.unknown().optional(),
+  output: z.unknown().optional(),
+  expected: z.unknown().optional(),
+  actual: z.unknown().optional(),
+  matchMode: z.string().max(80).optional(),
+  errorMessage: z.string().max(4000).optional(),
+  durationMs: z.number().finite().nonnegative().optional(),
+})
+
+const RunResultSchema = z.object({
+  runId: z.string().min(1).max(200),
+  testsPassed: z.number().int().min(0),
+  testsTotal: z.number().int().min(0),
+  results: z.array(TestResultSchema).max(1000),
+}).superRefine((payload, ctx) => {
+  if (payload.testsPassed > payload.testsTotal) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['testsPassed'],
+      message: 'testsPassed cannot exceed testsTotal',
+    })
+  }
+})
+
+const ChatMessageSchema = z.object({
+  role: z.enum(['user', 'hatch']),
+  content: z.string().max(20000),
+  timestamp: z.number().finite().nonnegative().optional(),
+})
+
+const RequestSchema = z.object({
+  attemptId: z.string().uuid(),
+  finalCode: z.string().max(200000),
+  language: z.string().trim().min(1).max(40),
+  correctnessPayload: RunResultSchema,
+  chatHistory: z.array(ChatMessageSchema).max(200).optional(),
+  partId: z.string().uuid().optional(),
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
 
 // ---------------------------------------------------------------------------
 // step_questions row shape (subset used for partId path)
@@ -89,7 +141,19 @@ export async function POST(
 
   const { id } = await params
 
-  const body = await req.json()
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+
   const {
     attemptId,
     finalCode,
@@ -97,20 +161,7 @@ export async function POST(
     correctnessPayload,
     chatHistory,
     partId,
-  } = body as {
-    attemptId: string
-    finalCode: string
-    language: string
-    correctnessPayload: RunResult
-    chatHistory?: ChatMessage[]
-    partId?: string
-  }
-
-  // Validate required fields
-  if (!attemptId) return NextResponse.json({ error: 'Missing attemptId' }, { status: 400 })
-  if (!finalCode && finalCode !== '') return NextResponse.json({ error: 'Missing finalCode' }, { status: 400 })
-  if (!language) return NextResponse.json({ error: 'Missing language' }, { status: 400 })
-  if (!correctnessPayload) return NextResponse.json({ error: 'Missing correctnessPayload' }, { status: 400 })
+  } = body
 
   // Verify ownership — user must own this attempt
   const { data: attempt } = await supabase
