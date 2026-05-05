@@ -1,13 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import Anthropic from '@anthropic-ai/sdk'
 import { applyCoverageCredit, type FlowMove } from '@/lib/live-interview/flow-coverage-credits'
-import {
-  AiBudgetExceededError,
-  assertAiBudget,
-  estimateAnthropicPreflightCents,
-  getUserPlanForBudget,
-  recordAnthropicUsage,
-} from '@/lib/usage/ai-budget'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 
 const VALID_FLOW_MOVES = new Set(['frame', 'list', 'optimize', 'win'])
 
@@ -27,7 +21,7 @@ export async function POST(
   const { id } = await params
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({ ok: false }, { status: 503 })
+    return Response.json({ ok: false, error: 'Hatch ran into a problem. Try again.' }, { status: 503 })
   }
 
   const { content, role, artifactSnapshot, turnIndex } = await request.json() as {
@@ -54,8 +48,6 @@ export async function POST(
     return Response.json({ ok: false }, { status: 404 })
   }
 
-  // Use a fast model to classify the FLOW move
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   const model = 'claude-haiku-4-5-20251001'
   const sessionUserId = session.user_id as string
   const userPlan = await getUserPlanForBudget(sessionUserId)
@@ -81,14 +73,33 @@ If nothing notable, reply "none".`
     artifactRequest = { system: artifactSystemPrompt, userContent: artifactUserContent, maxTokens: 60 }
   }
 
-  const preflightCostCents =
-    estimateAnthropicPreflightCents(model, flowMaxTokens, flowSystemPrompt.length + content.length) +
-    (artifactRequest
-      ? estimateAnthropicPreflightCents(model, artifactRequest.maxTokens, artifactRequest.system.length + artifactRequest.userContent.length)
-      : 0)
+  // Run FLOW move classification and artifact analysis in parallel when both are needed
+  const flowPromise = guardedCachedMessage(flowSystemPrompt, content, {
+    model,
+    max_tokens: flowMaxTokens,
+    budget: { userId: sessionUserId, userPlan, route: 'live_interview_analyze_flow' },
+  })
 
+  const artifactPromise: Promise<string | null> = artifactSnapshot
+    ? (async () => {
+        if (!artifactRequest) return null
+
+        const artifactResponse = await guardedCachedMessage(artifactRequest.system, artifactRequest.userContent, {
+          model,
+          max_tokens: artifactRequest.maxTokens,
+          budget: { userId: sessionUserId, userPlan, route: 'live_interview_analyze_artifact' },
+        })
+
+        const raw = artifactResponse.sanitized.trim()
+        if (raw && raw.toLowerCase() !== 'none') return raw
+        return null
+      })()
+    : Promise.resolve(null)
+
+  let flowResponse
+  let artifactSignal: string | null
   try {
-    await assertAiBudget(sessionUserId, userPlan, preflightCostCents)
+    ;[flowResponse, artifactSignal] = await Promise.all([flowPromise, artifactPromise])
   } catch (error) {
     if (error instanceof AiBudgetExceededError) {
       return Response.json(
@@ -105,54 +116,7 @@ If nothing notable, reply "none".`
     throw error
   }
 
-  // Run FLOW move classification and artifact analysis in parallel when both are needed
-  const flowPromise = anthropic.messages.create({
-    model,
-    max_tokens: flowMaxTokens,
-    system: flowSystemPrompt,
-    messages: [{ role: 'user', content }],
-  }).then(async (response) => {
-    await recordAnthropicUsage({
-      userId: sessionUserId,
-      model,
-      usage: response.usage,
-      fallbackCostCents: estimateAnthropicPreflightCents(model, flowMaxTokens, flowSystemPrompt.length + content.length),
-      route: 'live_interview_analyze_flow',
-    })
-    return response
-  })
-
-  const artifactPromise: Promise<string | null> = artifactSnapshot
-    ? (async () => {
-        if (!artifactRequest) return null
-
-        const artifactResponse = await anthropic.messages.create({
-          model,
-          max_tokens: artifactRequest.maxTokens,
-          system: artifactRequest.system,
-          messages: [{ role: 'user', content: artifactRequest.userContent }],
-        })
-        await recordAnthropicUsage({
-          userId: sessionUserId,
-          model,
-          usage: artifactResponse.usage,
-          fallbackCostCents: estimateAnthropicPreflightCents(
-            model,
-            artifactRequest.maxTokens,
-            artifactRequest.system.length + artifactRequest.userContent.length
-          ),
-          route: 'live_interview_analyze_artifact',
-        })
-
-        const raw = artifactResponse.content[0].type === 'text' ? artifactResponse.content[0].text.trim() : ''
-        if (raw && raw.toLowerCase() !== 'none') return raw
-        return null
-      })()
-    : Promise.resolve(null)
-
-  const [flowResponse, artifactSignal] = await Promise.all([flowPromise, artifactPromise])
-
-  const raw = flowResponse.content[0].type === 'text' ? flowResponse.content[0].text.trim().toLowerCase() : ''
+  const raw = flowResponse.sanitized.trim().toLowerCase()
   const flowMove = VALID_FLOW_MOVES.has(raw) ? raw : null
 
   if (flowMove) {
