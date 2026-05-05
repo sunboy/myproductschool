@@ -4,10 +4,17 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { HatchGlyph, type HatchState } from '@/components/shell/HatchGlyph'
 import { QUESTIONS } from '@/lib/calibration/questions'
+import { clearOnboardingState, getOnboardingState, saveOnboardingState } from '@/lib/onboarding/state-client'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type CalScreen = 'intro' | 'role' | 'q0' | 'q1' | 'q2' | 'q3' | 'reading' | 'results'
+
+interface CalibrationStateData {
+  screen?: CalScreen
+  selectedRole?: string | null
+  answers?: Record<string, string>
+}
 
 interface Results {
   archetype: string
@@ -21,6 +28,7 @@ interface Results {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
+const CAL_SCREENS: CalScreen[] = ['intro', 'role', 'q0', 'q1', 'q2', 'q3', 'reading', 'results']
 const QUESTION_SCREENS: CalScreen[] = ['q0', 'q1', 'q2', 'q3']
 
 const ROLES = [
@@ -44,6 +52,17 @@ const FLOW_MOVES = [
 ]
 
 const READING_PHRASES = ['Reading your answers\u2026', 'Mapping your instincts\u2026', 'Almost done\u2026']
+
+function isCalScreen(value: unknown): value is CalScreen {
+  return typeof value === 'string' && CAL_SCREENS.includes(value as CalScreen)
+}
+
+function coerceAnswerMap(value: unknown) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+
+  const entries = Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === 'string')
+  return Object.fromEntries(entries)
+}
 
 // ── Workshop SVG background ───────────────────────────────────────────────────
 
@@ -252,12 +271,49 @@ export default function CalibrationPage() {
   const [readingPhraseIdx, setReadingPhraseIdx] = useState(0)
   const [results, setResults] = useState<Results | null>(null)
   const [resultsReveal, setResultsReveal] = useState(false)
+  const [stateLoaded, setStateLoaded] = useState(false)
+  const [shouldPersistState, setShouldPersistState] = useState(true)
   const hasSubmitted = useRef(false)
 
   const questionIdx = QUESTION_SCREENS.indexOf(screen)
   const currentQuestion = questionIdx >= 0 ? QUESTIONS[questionIdx] : null
   const currentMove = questionIdx >= 0 ? FLOW_MOVES[questionIdx] : null
   const completedSet = new Set(QUESTION_SCREENS.slice(0, questionIdx).map((_, i) => i))
+
+  useEffect(() => {
+    let cancelled = false
+
+    getOnboardingState<CalibrationStateData>()
+      .then(state => {
+        if (cancelled || state?.step !== '/calibration') return
+        const data = state.data ?? {}
+        if (isCalScreen(data.screen) && data.screen !== 'results') setScreen(data.screen)
+        if (typeof data.selectedRole === 'string') setSelectedRole(data.selectedRole)
+        const restoredAnswers = coerceAnswerMap(data.answers)
+        if (restoredAnswers) setAnswers(restoredAnswers)
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setStateLoaded(true)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!stateLoaded || !shouldPersistState) return
+    const timeout = window.setTimeout(() => {
+      saveOnboardingState('/calibration', {
+        screen,
+        selectedRole,
+        answers,
+      }).catch(() => {})
+    }, 400)
+
+    return () => window.clearTimeout(timeout)
+  }, [answers, screen, selectedRole, shouldPersistState, stateLoaded])
 
   // Intro: Hatch celebrates → speaking
   useEffect(() => {
@@ -284,6 +340,8 @@ export default function CalibrationPage() {
       body: JSON.stringify({ answers, role: selectedRole ?? undefined }),
     }).then(r => r.ok ? r.json() : null).then(data => {
       if (data) {
+        setShouldPersistState(false)
+        clearOnboardingState().catch(() => {})
         setResults({
           archetype: data.archetype,
           archetype_description: data.archetype_description,
@@ -347,7 +405,10 @@ export default function CalibrationPage() {
   }
 
   async function handleComplete(path: 'challenge' | 'plan') {
-    try { await fetch('/api/onboarding/complete', { method: 'POST' }) } catch {}
+    try {
+      await fetch('/api/onboarding/complete', { method: 'POST' })
+      await clearOnboardingState()
+    } catch {}
     if (path === 'plan') {
       const slug = results?.personalised_plan_slug
       router.push(slug ? `/explore/plans/${slug}` : '/explore/plans')

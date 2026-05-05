@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { getOnboardingState, saveOnboardingState } from '@/lib/onboarding/state-client'
 
 const ROLES = [
   {
@@ -115,6 +116,33 @@ export default function RoleSelectionPage() {
   const selected = ROLES.find(role => role.id === selectedRole)
 
   useEffect(() => {
+    let cancelled = false
+
+    getOnboardingState<{ selectedRole?: string | null }>()
+      .then(state => {
+        if (cancelled || state?.step !== '/onboarding/role') return
+        const role = state.data?.selectedRole
+        if (typeof role === 'string' && ROLES.some(item => item.id === role)) {
+          setSelectedRole(role as RoleId)
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!selectedRole || isLoading) return
+    const timeout = window.setTimeout(() => {
+      saveOnboardingState('/onboarding/role', { selectedRole }).catch(() => {})
+    }, 400)
+
+    return () => window.clearTimeout(timeout)
+  }, [isLoading, selectedRole])
+
+  useEffect(() => {
     let cleanup = () => {}
 
     import('gsap').then(({ gsap }) => {
@@ -159,7 +187,11 @@ export default function RoleSelectionPage() {
     } catch {
       // Calibration can still continue in mock/offline mode.
     } finally {
-      setIsLoading(false)
+      await saveOnboardingState('/calibration', {
+        selectedRole,
+        screen: 'intro',
+        answers: {},
+      }).catch(() => null)
       router.push('/calibration')
     }
   }

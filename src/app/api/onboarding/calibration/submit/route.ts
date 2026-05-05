@@ -195,6 +195,7 @@ export async function POST(request: Request) {
     percentileUpdateResult,
     profileUpdateResult,
     onboardingResponseResult,
+    onboardingStateDeleteResult,
     moveLevelsResult,
     learnerCompetenciesResult,
     hatchContextResult,
@@ -221,6 +222,11 @@ export async function POST(request: Request) {
     adminClient
       .from('onboarding_responses')
       .upsert(persistencePayload.onboardingResponseUpsert, { onConflict: 'user_id' }),
+
+    adminClient
+      .from('onboarding_state')
+      .delete()
+      .eq('user_id', user.id),
 
     adminClient
       .from('move_levels')
@@ -266,6 +272,7 @@ export async function POST(request: Request) {
     percentileUpdateResult,
     profileUpdateResult,
     onboardingResponseResult,
+    onboardingStateDeleteResult,
     moveLevelsResult,
     learnerCompetenciesResult,
     hatchContextResult,

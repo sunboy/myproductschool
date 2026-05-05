@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { getOnboardingState, saveOnboardingState } from '@/lib/onboarding/state-client'
 
 const ROLES = [
   {
@@ -99,6 +100,33 @@ export default function RoleSelectionPage() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
+  useEffect(() => {
+    let cancelled = false
+
+    getOnboardingState<{ selectedRole?: string | null }>()
+      .then(state => {
+        if (cancelled || state?.step !== '/onboarding/role') return
+        const role = state.data?.selectedRole
+        if (typeof role === 'string' && ROLES.some(item => item.id === role)) {
+          setSelectedRole(role)
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!selectedRole || isLoading) return
+    const timeout = window.setTimeout(() => {
+      saveOnboardingState('/onboarding/role', { selectedRole }).catch(() => {})
+    }, 400)
+
+    return () => window.clearTimeout(timeout)
+  }, [isLoading, selectedRole])
+
   const handleNext = async () => {
     if (!selectedRole) return
     setIsLoading(true)
@@ -111,7 +139,11 @@ export default function RoleSelectionPage() {
     } catch {
       // Non-fatal — proceed regardless
     } finally {
-      setIsLoading(false)
+      await saveOnboardingState('/calibration', {
+        selectedRole,
+        screen: 'intro',
+        answers: {},
+      }).catch(() => null)
       router.push('/calibration')
     }
   }

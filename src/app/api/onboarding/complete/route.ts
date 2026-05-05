@@ -28,6 +28,11 @@ export async function POST(request: Request) {
     .from('profiles')
     .upsert({ id: user.id, ...profileUpdate }, { onConflict: 'id' })
 
+  await adminClient
+    .from('onboarding_state')
+    .delete()
+    .eq('user_id', user.id)
+
   // Upsert onboarding response if context provided
   if (role_context && experience_level) {
     await adminClient
