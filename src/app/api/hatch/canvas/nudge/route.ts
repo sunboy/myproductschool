@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { createClient } from '@/lib/supabase/server'
-import { sceneToPrompt, type CanvasScene } from '@/lib/hatch/canvas-scene'
+import { sceneToPrompt } from '@/lib/hatch/canvas-scene'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
@@ -33,20 +34,70 @@ Output schema (return ONLY this JSON, no markdown):
 
 Voice: direct, slightly opinionated, no em dashes, no AI slop ("delve", "leverage", "robust", "seamlessly"), never write "you are a [role]".`
 
-interface NudgeBody {
-  scene: CanvasScene
-  recentDelta?: { added: number }
-  challengeId?: string
-  challengeType?: string
-  attemptId: string
-  lastNudgeAt?: number // client-tracked epoch ms
-  nudgeCount?: number // client-tracked count for this attempt
-}
+const SceneColumnSchema = z.object({
+  name: z.string().min(1).max(200),
+  type: z.string().max(200).optional(),
+  constraints: z.array(z.enum(['PK', 'FK', 'UNIQUE', 'NOT NULL', 'INDEX'])).max(10),
+  foreignKey: z.object({
+    table: z.string().min(1).max(200),
+    column: z.string().min(1).max(200),
+  }).optional(),
+  raw: z.string().max(1000),
+})
+
+const CanvasSceneSchema = z.object({
+  elementCount: z.number().int().min(0).max(5000),
+  entities: z.array(z.object({
+    id: z.string().min(1).max(200),
+    label: z.string().min(1).max(500),
+    type: z.string().min(1).max(100),
+    x: z.number().finite(),
+    y: z.number().finite(),
+    width: z.number().finite(),
+    height: z.number().finite(),
+    columns: z.array(SceneColumnSchema).max(200),
+  })).max(1000),
+  connections: z.array(z.object({
+    from: z.string().min(1).max(500),
+    to: z.string().min(1).max(500),
+    label: z.string().max(500).optional(),
+  })).max(2000),
+  groups: z.array(z.object({
+    label: z.string().min(1).max(500),
+    members: z.array(z.string().min(1).max(500)).max(1000),
+  })).max(1000),
+  freeText: z.array(z.string().max(5000)).max(1000),
+  foreignKeys: z.array(z.object({
+    from: z.string().min(1).max(200),
+    fromColumn: z.string().min(1).max(200),
+    toTable: z.string().min(1).max(200),
+    toColumn: z.string().min(1).max(200),
+  })).max(1000),
+})
+
+const RequestSchema = z.object({
+  scene: CanvasSceneSchema,
+  recentDelta: z.object({
+    added: z.number().int().min(0).max(1000),
+  }).optional(),
+  challengeId: z.string().max(200).optional(),
+  challengeType: z.string().max(100).optional(),
+  attemptId: z.string().uuid(),
+  lastNudgeAt: z.number().finite().nonnegative().optional(),
+  nudgeCount: z.number().int().min(0).max(1000).optional(),
+})
 
 const MAX_NUDGES_PER_ATTEMPT = 5
 
 function retryAfterSeconds(resetAt: Date) {
   return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
 }
 
 export async function POST(req: NextRequest) {
@@ -75,10 +126,17 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const body = (await req.json()) as NudgeBody
-
-  if (!body.attemptId || !body.scene) {
-    return NextResponse.json({ nudge: null })
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
   // Gate 1: rate limit (30s since last nudge)
