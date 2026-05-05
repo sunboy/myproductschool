@@ -6,11 +6,26 @@ import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
+import { z, ZodError } from 'zod'
 
 const ROUTE_KEY = 'live_interview_turn'
 
+const RequestSchema = z.object({
+  messages: z.array(z.object({
+    role: z.string().min(1).max(40),
+    content: z.string().max(20000),
+  })).min(1).max(100),
+})
+
 function retryAfterSeconds(resetAt: Date) {
   return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
 }
 
 export async function POST(
@@ -35,8 +50,19 @@ export async function POST(
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return new Response('Unauthorized', { status: 401 })
 
-  const body = await request.json()
-  const messages: Array<{ role: string; content: string }> = body.messages ?? []
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return Response.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+  const { messages } = body
 
   const adminClient = createAdminClient()
 
