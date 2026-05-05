@@ -10,7 +10,7 @@ export default function InterviewPrepPage() {
           Prep for the companies that matter
         </h1>
         <p className="text-on-surface-variant text-lg">
-          Tell me where you&apos;re interviewing. Luma will build your study plan.
+          Tell me where you&apos;re interviewing. Hatch will build your study plan.
         </p>
       </div>
 

@@ -1,6 +1,14 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
 import Anthropic from '@anthropic-ai/sdk'
+import { applyCoverageCredit, type FlowMove } from '@/lib/live-interview/flow-coverage-credits'
+import {
+  AiBudgetExceededError,
+  assertAiBudget,
+  estimateAnthropicPreflightCents,
+  getUserPlanForBudget,
+  recordAnthropicUsage,
+} from '@/lib/usage/ai-budget'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -51,32 +59,75 @@ export async function POST(
   // Build conversation messages from turns table
   const conversationMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [
     ...(turns ?? []).map((t) => ({
-      role: (t.role === 'luma' ? 'assistant' : 'user') as 'user' | 'assistant',
+      role: (t.role === 'hatch' ? 'assistant' : 'user') as 'user' | 'assistant',
       content: t.content,
     })),
     { role: 'user' as const, content: lastUserMsg },
   ]
 
   // Call Claude with multi-turn messages format
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 300,
-    system: [{ type: 'text', text: session.system_prompt, cache_control: { type: 'ephemeral' } }],
-    messages: conversationMessages,
-  })
+  const model = 'claude-sonnet-4-6'
+  const maxTokens = 300
+  const sessionUserId = session.user_id as string
+  const userPlan = await getUserPlanForBudget(sessionUserId)
+  const systemPrompt = session.system_prompt ?? ''
+  const promptCharCount = systemPrompt.length + conversationMessages.reduce((sum, msg) => sum + msg.content.length, 0)
+  const preflightCostCents = estimateAnthropicPreflightCents(model, maxTokens, promptCharCount)
+
+  let response
+  try {
+    await assertAiBudget(sessionUserId, userPlan, preflightCostCents)
+    response = await anthropic.messages.create({
+      model,
+      max_tokens: maxTokens,
+      system: [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }],
+      messages: conversationMessages,
+    })
+    await recordAnthropicUsage({
+      userId: sessionUserId,
+      model,
+      usage: response.usage,
+      fallbackCostCents: preflightCostCents,
+      route: 'live_interview_turn',
+    })
+  } catch (error) {
+    if (error instanceof AiBudgetExceededError) {
+      return Response.json(
+        {
+          error: 'limit_reached',
+          feature: 'hatch_ai_cents',
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+    throw error
+  }
 
   const rawContent = response.content[0].type === 'text' ? response.content[0].text : ''
   const { cleanContent, signal } = parseGradingSignal(rawContent)
 
-  // Update flow_coverage from LLM signal
-  const currentCoverage = (session.flow_coverage ?? { frame: 0, list: 0, optimize: 0, win: 0 }) as Record<string, number>
-  if (signal?.flowMove) {
-    const current = currentCoverage[signal.flowMove] ?? 0
-    currentCoverage[signal.flowMove] = Math.min(1.0, current + 0.15)
+  // Save turns and update session in parallel.
+  // FLOW coverage is credited against the user's turn_index (`nextIndex`) so
+  // a later /grade-turn pass on the same turn is a no-op.
+  const nextIndex = turnCount
+  const creditResult = signal?.flowMove
+    ? applyCoverageCredit({
+        coverage: session.flow_coverage,
+        credits: (session as { flow_coverage_credits?: Record<string, number[]> | null }).flow_coverage_credits,
+        move: signal.flowMove as FlowMove,
+        turnIndex: nextIndex,
+      })
+    : null
+
+  const sessionUpdate: Record<string, unknown> = { total_turns: nextIndex + 2 }
+  if (creditResult?.credited) {
+    sessionUpdate.flow_coverage = creditResult.coverage
+    sessionUpdate.flow_coverage_credits = creditResult.credits
   }
 
-  // Save turns and update session in parallel
-  const nextIndex = turnCount
   await Promise.all([
     adminClient.from('live_interview_turns').insert([
       {
@@ -88,7 +139,7 @@ export async function POST(
       {
         session_id: id,
         turn_index: nextIndex + 1,
-        role: 'luma',
+        role: 'hatch',
         content: cleanContent,
         flow_move_detected: signal?.flowMove || null,
         competency_signals: signal ? { competency: signal.competency, signal: signal.signal } : null,
@@ -96,7 +147,7 @@ export async function POST(
     ]),
     adminClient
       .from('live_interview_sessions')
-      .update({ flow_coverage: currentCoverage, total_turns: nextIndex + 2 })
+      .update(sessionUpdate)
       .eq('id', id),
   ])
 

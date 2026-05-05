@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const TABS = [
   { id: 'frame', label: 'Frame', icon: 'pentagon' },
@@ -57,11 +57,11 @@ export default function CalibrationFramePage() {
         </div>
       </div>
 
-      {/* Luma coach */}
+      {/* Hatch coach */}
       <div className="flex items-start gap-3 mb-6 bg-surface-container-low rounded-xl p-4">
-        <LumaGlyph size={32} className="text-primary flex-shrink-0" state="listening" />
+        <HatchGlyph size={32} className="text-primary flex-shrink-0" state="listening" />
         <div>
-          <span className="text-xs font-label font-bold text-primary uppercase tracking-wide">Coach Luma</span>
+          <span className="text-xs font-label font-bold text-primary uppercase tracking-wide">Coach Hatch</span>
           <p className="text-sm text-on-surface font-body mt-1">
             I&apos;ll assess how you <strong>Frame</strong> the problem space. I&apos;m evaluating your thinking process, not your product knowledge.
           </p>
@@ -136,7 +136,7 @@ export default function CalibrationFramePage() {
 
       {/* Coaching strip */}
       <p className="text-center text-xs text-on-surface-variant font-label mb-8">
-        Take your time. Luma sees your reasoning, not just keywords.
+        Take your time. Hatch sees your reasoning, not just keywords.
       </p>
 
       {/* Nav */}

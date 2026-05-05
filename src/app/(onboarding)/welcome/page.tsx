@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const THINKING_MOVES = [
   {
@@ -56,7 +56,7 @@ export default function WelcomePage() {
       <header className="fixed top-0 z-50 w-full bg-surface border-b border-outline-variant h-12 flex items-center shadow-sm">
         <div className="flex items-center justify-between px-6 w-full max-w-7xl mx-auto">
           <div className="flex items-center gap-2">
-            <LumaGlyph size={24} state="idle" className="text-primary" />
+            <HatchGlyph size={24} state="idle" className="text-primary" />
             <span className="font-headline font-black text-xl text-primary">HackProduct</span>
           </div>
           <div className="hidden md:flex gap-6 items-center">
@@ -71,10 +71,10 @@ export default function WelcomePage() {
       <main className="min-h-screen flex flex-col items-center justify-center pt-24 pb-16 px-6">
         <div className="max-w-4xl w-full text-center space-y-10">
 
-          {/* Luma Mascot (80px) */}
+          {/* Hatch Mascot (80px) */}
           <div className="flex justify-center">
             <div className="relative">
-              <LumaGlyph size={80} className="text-primary" state="idle" />
+              <HatchGlyph size={80} className="text-primary" state="idle" />
               <div className="absolute -top-2 -right-2 bg-primary text-on-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">
                 Coach
               </div>
@@ -111,9 +111,9 @@ export default function WelcomePage() {
                 &ldquo;{SAMPLE_SCENARIO.snippet}&rdquo;
               </p>
               <div className="flex items-center gap-3 bg-primary-fixed/30 rounded-lg px-4 py-3 border border-primary/10">
-                <LumaGlyph size={28} state="speaking" className="text-primary shrink-0" />
+                <HatchGlyph size={28} state="speaking" className="text-primary shrink-0" />
                 <p className="text-xs text-on-surface leading-snug">
-                  <span className="font-bold text-primary">Luma says: </span>
+                  <span className="font-bold text-primary">Hatch says: </span>
                   Write your diagnosis, and I&apos;ll score you on 4 dimensions — problem reframing, diagnostic accuracy, data reasoning, and recommendation strength.
                 </p>
               </div>
@@ -213,7 +213,7 @@ export default function WelcomePage() {
             {/* Specific proof point */}
             <div className="max-w-md mx-auto bg-surface-container-low rounded-xl p-4 border border-outline-variant/30 text-left">
               <p className="text-xs text-on-surface-variant italic leading-relaxed">
-                &ldquo;I got promoted to Staff 3 months after starting HackProduct. The thinking traps feedback alone was worth it — I didn&apos;t know I had a &apos;premature solution&apos; habit until Luma called it out.&rdquo;
+                &ldquo;I got promoted to Staff 3 months after starting HackProduct. The thinking traps feedback alone was worth it — I didn&apos;t know I had a &apos;premature solution&apos; habit until Hatch called it out.&rdquo;
               </p>
               <p className="text-[10px] font-bold text-on-surface-variant mt-2">
                 — SWE at a Series C startup
@@ -241,7 +241,7 @@ export default function WelcomePage() {
               Support
             </Link>
             <Link href="/dashboard" className="text-xs font-medium uppercase tracking-wider text-secondary hover:text-primary transition-opacity opacity-80 hover:opacity-100">
-              Luma Coach
+              Hatch Coach
             </Link>
           </div>
         </div>

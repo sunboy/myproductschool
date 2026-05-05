@@ -4,7 +4,7 @@ import { getTopicBySlug } from '@/lib/data/topics'
 import { getConcepts } from '@/lib/data/concepts'
 import { getChallenges } from '@/lib/data/challenges'
 import { getDomainBySlug } from '@/lib/data/domains'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 interface TopicPageProps {
   params: Promise<{ skillArea: string; topic: string }>
@@ -35,7 +35,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
   const topicConcepts = concepts.slice(0, 5)
   const topicChallenges = challenges.slice(0, 3)
 
-  const lumaInsight = `Focus on understanding the core concepts in ${topicData.title} before jumping to challenges. Start with beginner-level items and work up — pattern recognition compounds quickly here.`
+  const hatchInsight = `Focus on understanding the core concepts in ${topicData.title} before jumping to challenges. Start with beginner-level items and work up — pattern recognition compounds quickly here.`
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-6">
@@ -137,15 +137,15 @@ export default async function TopicPage({ params }: TopicPageProps) {
 
         {/* Right: Sidebar cards */}
         <div className="lg:col-span-4 space-y-4">
-          {/* Luma's Take */}
+          {/* Hatch's Take */}
           <div className="bg-primary-fixed p-4 rounded-xl">
             <div className="flex items-center gap-2 mb-3">
-              <LumaGlyph size={28} state="reviewing" />
+              <HatchGlyph size={28} state="reviewing" />
               <h3 className="font-headline font-semibold text-on-surface text-sm">
-                Luma&apos;s Take
+                Hatch&apos;s Take
               </h3>
             </div>
-            <p className="text-sm text-on-surface-variant leading-relaxed">{lumaInsight}</p>
+            <p className="text-sm text-on-surface-variant leading-relaxed">{hatchInsight}</p>
           </div>
 
           {/* Practice Challenges */}

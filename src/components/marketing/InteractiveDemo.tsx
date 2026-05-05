@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-const TABS = ['The Challenge', 'Your Response', "Luma's Feedback"] as const
+const TABS = ['The Challenge', 'Your Response', "Hatch's Feedback"] as const
 
 function ChallengeTab() {
   return (
@@ -138,7 +138,7 @@ export function InteractiveDemo() {
         See it in action
       </h2>
       <p className="text-on-surface-variant text-center mb-10 max-w-xl mx-auto">
-        A real challenge, a real response, and real feedback from Luma.
+        A real challenge, a real response, and real feedback from Hatch.
       </p>
 
       <div className="bg-surface-container rounded-2xl p-6 border border-outline-variant">

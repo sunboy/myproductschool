@@ -584,7 +584,7 @@ INSERT INTO company_profiles (id, slug, name, industry, stage, product_focus, in
 -- ============================================================
 
 INSERT INTO feature_flags (key, enabled, rollout_percentage) VALUES
-  ('ai_coach_luma',              true,  100),
+  ('ai_coach_hatch',             true,  100),
   ('simulation_mode',            true,   50),
   ('pro_model_answers',          true,  100),
   ('live_interview_mode',        false,   0),

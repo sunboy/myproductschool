@@ -24,7 +24,7 @@ export async function createNote(content: string, color: string = 'default') {
   }).select('id').single()
   if (insertError) console.error('[createNote] DB insert error:', insertError)
 
-  // Store a notes_summary context entry for Luma
+  // Store a notes_summary context entry for Hatch
   try {
     const noteId = note?.id ?? 'default'
     await embedAndStoreContext(
@@ -67,7 +67,7 @@ export async function updateNote(
     .eq('id', id)
     .eq('user_id', user.id)
 
-  // Update the notes_summary context entry for Luma
+  // Update the notes_summary context entry for Hatch
   try {
     await embedAndStoreContext(
       user.id,

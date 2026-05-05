@@ -1,11 +1,12 @@
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { BILLING_PLANS, formatPlanPrice } from '@/lib/billing/plans'
 
 const FEATURES = [
-  { icon: 'all_inclusive',  text: 'Unlimited challenge attempts' },
-  { icon: 'psychology',     text: 'Full Luma coaching on every step' },
+  { icon: 'fitness_center', text: '80 challenge starts each month' },
+  { icon: 'psychology',     text: 'Fair-use Hatch AI coaching budget' },
   { icon: 'analytics',      text: 'Learner DNA — competency radar' },
-  { icon: 'school',         text: 'All study plans, unlocked' },
-  { icon: 'mic',            text: 'Live AI interview sessions' },
+  { icon: 'school',         text: 'All study plans and autopsies' },
+  { icon: 'mic',            text: '12 AI interview starts each month' },
 ]
 
 interface ProPaywallGateProps {
@@ -19,6 +20,8 @@ export function ProPaywallGate({
   completedCount = 3,
   onUpgrade,
 }: ProPaywallGateProps) {
+  const monthlyPlan = BILLING_PLANS.monthly
+
   return (
     <div className="fixed inset-0 z-0 overflow-hidden">
 
@@ -26,7 +29,7 @@ export function ProPaywallGate({
       <div className="fixed inset-0 z-0 flex select-none grayscale-[20%] opacity-40 pointer-events-none">
         <aside className="fixed left-0 top-0 h-screen w-[220px] bg-primary flex flex-col pb-4">
           <div className="p-4 flex items-center gap-2 pt-5">
-            <LumaGlyph size={24} className="text-white" state="none" />
+            <HatchGlyph size={24} className="text-white" state="none" />
             <span className="font-headline text-base font-bold text-white">HackProduct</span>
           </div>
           <nav className="flex-1 px-2 space-y-px pt-2">
@@ -89,7 +92,7 @@ export function ProPaywallGate({
             style={{ background: 'linear-gradient(145deg, #2d5a3d 0%, #4a7c59 60%, #3a6b4a 100%)' }}
           >
             <div className="flex items-center gap-3 mb-4">
-              <LumaGlyph size={40} state="idle" className="text-white shrink-0" />
+              <HatchGlyph size={40} state="idle" className="text-white shrink-0" />
               <div>
                 <p className="font-label text-[11px] uppercase tracking-[0.18em] font-bold text-white/60">
                   HackProduct Pro
@@ -100,7 +103,7 @@ export function ProPaywallGate({
               </div>
             </div>
             <p className="font-body text-sm text-white/70 leading-relaxed">
-              Keep going — unlock unlimited access, full coaching, and your Learner DNA fingerprint.
+              Keep going with a serious monthly practice budget, full coaching, and your Learner DNA fingerprint.
             </p>
           </div>
 
@@ -127,18 +130,18 @@ export function ProPaywallGate({
             >
               <div>
                 <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold mb-0.5">
-                  Annual plan
+                  Monthly plan
                 </p>
                 <p className="font-headline font-bold text-on-surface text-lg" style={{ letterSpacing: '-0.02em' }}>
-                  $199 <span className="text-sm font-body font-normal text-on-surface-variant">/ year</span>
+                  {formatPlanPrice(monthlyPlan)} <span className="text-sm font-body font-normal text-on-surface-variant">/ mo</span>
                 </p>
-                <p className="font-label text-[10px] text-primary font-semibold">~$16.58/mo — save 43%</p>
+                <p className="font-label text-[10px] text-primary font-semibold">Fair use, backend-configured</p>
               </div>
               <div className="text-right">
                 <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold mb-0.5">
-                  Monthly
+                  Includes
                 </p>
-                <p className="font-body text-sm text-on-surface-variant">$29 / mo</p>
+                <p className="font-body text-sm text-on-surface-variant">Hatch + interviews</p>
               </div>
             </div>
 

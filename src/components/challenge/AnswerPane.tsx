@@ -3,7 +3,7 @@
 import { useRef, useEffect } from 'react'
 import type { ChallengeMode } from '@/lib/types'
 import { PMCanvas } from './PMCanvas'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { getWordCount } from '@/lib/utils'
 
 /* ── Types ───────────────────────────────────────────────── */
@@ -26,9 +26,9 @@ interface AnswerPaneProps {
   // Save status
   autoSaveText: string
   // Live mode
-  lumaMessages: Array<{ role: 'user' | 'luma'; content: string }>
+  hatchMessages: Array<{ role: 'user' | 'hatch'; content: string }>
   onLiveSend: () => void
-  lumaSending: boolean
+  hatchSending: boolean
   // Timer (for canvas auto-submit)
   timeLeft?: number
   timeExpired?: boolean
@@ -174,16 +174,16 @@ function ConfidenceBar({ confidence }: { confidence: number }) {
 /* ── Live mode chat view ─────────────────────────────────── */
 
 function LiveChatView({
-  lumaMessages,
-  lumaSending,
+  hatchMessages,
+  hatchSending,
   response,
   onResponseChange,
   onLiveSend,
   onSubmit,
   submitting,
 }: {
-  lumaMessages: Array<{ role: 'user' | 'luma'; content: string }>
-  lumaSending: boolean
+  hatchMessages: Array<{ role: 'user' | 'hatch'; content: string }>
+  hatchSending: boolean
   response: string
   onResponseChange: (v: string) => void
   onLiveSend: () => void
@@ -196,7 +196,7 @@ function LiveChatView({
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
-  }, [lumaMessages, lumaSending])
+  }, [hatchMessages, hatchSending])
 
   return (
     <div className="flex flex-col h-full">
@@ -205,7 +205,7 @@ function LiveChatView({
         ref={scrollRef}
         className="flex-1 overflow-y-auto px-10 py-6 space-y-4"
       >
-        {lumaMessages.map((msg, i) => (
+        {hatchMessages.map((msg, i) => (
           <div
             key={i}
             className={`flex flex-col gap-1 max-w-[85%] ${
@@ -214,7 +214,7 @@ function LiveChatView({
           >
             <div
               className={
-                msg.role === 'luma'
+                msg.role === 'hatch'
                   ? 'bg-surface-container-high text-on-surface-variant p-4 rounded-r-xl rounded-bl-xl text-sm leading-relaxed font-body'
                   : 'bg-primary/10 text-on-surface p-4 rounded-l-xl rounded-br-xl text-sm leading-relaxed font-body ml-auto'
               }
@@ -222,13 +222,13 @@ function LiveChatView({
               {msg.content}
             </div>
             <span className="text-[10px] font-label font-bold text-outline uppercase tracking-wider">
-              {msg.role === 'luma' ? 'Luma' : 'You'}
+              {msg.role === 'hatch' ? 'Hatch' : 'You'}
             </span>
           </div>
         ))}
 
         {/* Typing indicator */}
-        {lumaSending && (
+        {hatchSending && (
           <div className="flex items-start gap-2 max-w-[85%]">
             <div className="bg-surface-container-high p-4 rounded-r-xl rounded-bl-xl">
               <div className="flex gap-1 items-center">
@@ -268,7 +268,7 @@ function LiveChatView({
         <button
           type="button"
           onClick={onLiveSend}
-          disabled={!response.trim() || lumaSending}
+          disabled={!response.trim() || hatchSending}
           className="flex-shrink-0 px-5 py-3 bg-primary text-on-primary rounded-full font-label font-bold text-sm hover:opacity-90 disabled:opacity-40 transition-opacity"
         >
           Send →
@@ -280,13 +280,13 @@ function LiveChatView({
         <button
           type="button"
           onClick={onSubmit}
-          disabled={submitting || lumaMessages.filter((m) => m.role === 'user').length === 0}
+          disabled={submitting || hatchMessages.filter((m) => m.role === 'user').length === 0}
           className="w-full flex items-center justify-center gap-3 bg-primary text-white px-8 py-3.5 rounded-full font-bold shadow-lg hover:opacity-90 disabled:opacity-40 transition-opacity font-label"
         >
           {submitting ? (
             <>
-              <LumaGlyph size={18} className="animate-luma-glow text-white" />
-              Luma is thinking...
+              <HatchGlyph size={18} className="animate-hatch-glow text-white" />
+              Hatch is thinking...
             </>
           ) : (
             'Finish & Submit Answer'
@@ -348,9 +348,9 @@ export function AnswerPane({
   onModeChange,
   subQuestions,
   autoSaveText,
-  lumaMessages,
+  hatchMessages,
   onLiveSend,
-  lumaSending,
+  hatchSending,
   timeLeft,
   timeExpired,
 }: AnswerPaneProps) {
@@ -398,8 +398,8 @@ export function AnswerPane({
                 >
                   {submitting ? (
                     <>
-                      <LumaGlyph size={18} className="animate-luma-glow text-white" />
-                      Luma is thinking...
+                      <HatchGlyph size={18} className="animate-hatch-glow text-white" />
+                      Hatch is thinking...
                     </>
                   ) : (
                     'Submit Answer'
@@ -413,8 +413,8 @@ export function AnswerPane({
         {/* ── Your Answer tab (Live mode) ── */}
         {activeTab === 'answer' && mode === 'live' && (
           <LiveChatView
-            lumaMessages={lumaMessages}
-            lumaSending={lumaSending}
+            hatchMessages={hatchMessages}
+            hatchSending={hatchSending}
             response={response}
             onResponseChange={onResponseChange}
             onLiveSend={onLiveSend}

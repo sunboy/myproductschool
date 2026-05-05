@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useSimulation } from '@/hooks/useSimulation'
 
 interface DebriefData {
@@ -45,7 +45,7 @@ export default function SimulationPage() {
   if (isLoading) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col items-center justify-center" style={{ height: 'calc(100vh - 4rem)' }}>
-        <LumaGlyph size={48} className="text-primary mx-auto mb-4" animated />
+        <HatchGlyph size={48} className="text-primary mx-auto mb-4" animated />
         <p className="text-on-surface-variant text-sm">Loading session…</p>
       </div>
     )
@@ -60,16 +60,16 @@ export default function SimulationPage() {
       <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col" style={{ height: 'calc(100vh - 4rem)' }}>
         {/* Header */}
         <div className="flex items-center gap-3 pb-4 border-b border-outline-variant mb-4">
-          <LumaGlyph size={28} className="text-primary" animated />
+          <HatchGlyph size={28} className="text-primary" animated />
           <div>
             <p className="font-medium text-on-surface">{companyName ?? 'Interview Simulation'}</p>
-            <p className="text-xs text-on-surface-variant">{challengeTitle ?? 'Luma as PM Interviewer'}</p>
+            <p className="text-xs text-on-surface-variant">{challengeTitle ?? 'Hatch as PM Interviewer'}</p>
           </div>
         </div>
 
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-5 max-w-md">
-            <LumaGlyph size={56} className="text-primary mx-auto" />
+            <HatchGlyph size={56} className="text-primary mx-auto" />
             <h2 className="font-headline text-2xl font-bold text-on-surface">Session complete</h2>
 
             {score != null && (
@@ -106,10 +106,10 @@ export default function SimulationPage() {
     <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col" style={{ height: 'calc(100vh - 4rem)' }}>
       {/* Header */}
       <div className="flex items-center gap-3 pb-4 border-b border-outline-variant mb-4">
-        <LumaGlyph size={28} className="text-primary" animated />
+        <HatchGlyph size={28} className="text-primary" animated />
         <div>
           <p className="font-medium text-on-surface">{companyName ?? 'Interview Simulation'}</p>
-          <p className="text-xs text-on-surface-variant">{challengeTitle ?? 'Luma as PM Interviewer'}</p>
+          <p className="text-xs text-on-surface-variant">{challengeTitle ?? 'Hatch as PM Interviewer'}</p>
         </div>
         <div className="ml-auto flex items-center gap-3">
           <span className="text-xs text-on-surface-variant font-label">
@@ -128,7 +128,7 @@ export default function SimulationPage() {
       <div className="flex-1 overflow-y-auto space-y-4 pb-4">
         {turns.map((turn, i) => (
           <div key={i} className={`flex gap-3 ${turn.role === 'user' ? 'flex-row-reverse' : ''}`}>
-            {turn.role === 'luma' && <LumaGlyph size={24} className="text-primary flex-shrink-0 mt-1" />}
+            {turn.role === 'hatch' && <HatchGlyph size={24} className="text-primary flex-shrink-0 mt-1" />}
             <div className={`rounded-2xl px-4 py-3 max-w-[85%] text-sm whitespace-pre-wrap leading-relaxed ${
               turn.role === 'user'
                 ? 'bg-surface-container-high text-on-surface rounded-tr-sm'
@@ -140,7 +140,7 @@ export default function SimulationPage() {
         ))}
         {isSending && (
           <div className="flex gap-3">
-            <LumaGlyph size={24} className="text-primary flex-shrink-0 mt-1" />
+            <HatchGlyph size={24} className="text-primary flex-shrink-0 mt-1" />
             <div className="bg-primary-container rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1">
               {[0, 150, 300].map(delay => (
                 <span key={delay} className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: `${delay}ms` }} />

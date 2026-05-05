@@ -7,13 +7,13 @@ import { IS_MOCK } from '@/lib/mock'
 // Flip to false (or remove the block) when ready to launch.
 const PRE_LAUNCH = false
 
-const LAUNCH_ALLOWED = ['/waitlist', '/waitlist-quick', '/waitlist-flow', '/api/waitlist', '/luma-preview']
+const LAUNCH_ALLOWED = ['/waitlist', '/waitlist-quick', '/waitlist-flow', '/api/waitlist', '/hatch-preview']
 
 // ── Post-launch route config ─────────────────────────────────
 // Marketing / auth pages — accessible without any session.
 // These short-circuit BEFORE we talk to Supabase so they can
 // never be blocked by an auth-service hiccup.
-const MARKETING_ROUTES = ['/', '/waitlist', '/waitlist-quick', '/waitlist-flow', '/pricing', '/flow', '/luma-preview']
+const MARKETING_ROUTES = ['/', '/waitlist', '/waitlist-quick', '/waitlist-flow', '/pricing', '/flow', '/hatch-preview', '/home']
 const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-password']
 
 // Routes that require a user but NOT a completed profile/onboarding
@@ -26,6 +26,11 @@ export async function proxy(request: NextRequest) {
   // Bypass auth in mock/testing mode
   if (IS_MOCK) {
     return NextResponse.next()
+  }
+
+  // Hide unimplemented routes
+  if (pathname.startsWith('/cohort')) {
+    return NextResponse.redirect(new URL('/challenges', request.url))
   }
 
   // ── Pre-launch: only waitlist + its API are accessible ──
@@ -79,25 +84,11 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // ── A/B split for root → waitlist variants ──────────────
   // Authenticated users visiting / go straight to dashboard.
-  // Unauthenticated visitors get a stable 50/50 split between waitlist variants.
+  // Unauthenticated visitors see the landing page.
   if (isRoot) {
     if (user) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
-    const existing = request.cookies.get('ab_waitlist')?.value
-    const variant = existing === 'a' || existing === 'b'
-      ? existing
-      : Math.random() < 0.5 ? 'a' : 'b'
-
-    supabaseResponse.headers.set('x-ab-waitlist', variant)
-    if (!existing) {
-      supabaseResponse.cookies.set('ab_waitlist', variant, {
-        maxAge: 60 * 60 * 24 * 30, // 30 days
-        path: '/',
-        sameSite: 'lax',
-      })
     }
     return supabaseResponse
   }
@@ -111,6 +102,8 @@ export async function proxy(request: NextRequest) {
   }
 
   if (user) {
+    // Password reset page must stay accessible even after setSession() establishes a session
+    if (pathname === '/reset-password') return supabaseResponse
     // Logged-in users hitting auth pages → redirect to dashboard
     if (isAuthRoute) {
       return NextResponse.redirect(new URL('/dashboard', request.url))

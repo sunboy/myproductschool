@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const STEP_PILLS = [
   { id: 'frame', label: 'Frame', active: true },
@@ -98,10 +98,10 @@ export default function CalibrationFramePage() {
       {/* Main Content */}
       <main className="flex-grow flex flex-col items-center px-4 py-8 w-full max-w-screen-xl mx-auto overflow-y-auto pb-32">
         <div className="w-full max-w-[800px]">
-          {/* Luma Intro Banner */}
+          {/* Hatch Intro Banner */}
           <div className="bg-surface-container-low rounded-xl p-5 mb-6 flex items-start gap-4 border border-outline-variant/30">
             <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center border border-primary/20">
-              <LumaGlyph size={40} state="listening" className="text-primary" />
+              <HatchGlyph size={40} state="listening" className="text-primary" />
             </div>
             <div className="flex-grow">
               <p className="text-sm text-on-surface font-medium leading-relaxed">
@@ -191,11 +191,11 @@ export default function CalibrationFramePage() {
           <span>Back</span>
         </button>
 
-        {/* Center: Luma Tip */}
+        {/* Center: Hatch Tip */}
         <div className="hidden lg:flex items-center gap-3 max-w-md">
-          <LumaGlyph size={24} state="none" className="text-on-surface-variant opacity-70 grayscale" />
+          <HatchGlyph size={24} state="none" className="text-on-surface-variant opacity-70 grayscale" />
           <span className="text-xs text-on-surface-variant italic">
-            &ldquo;Take your time. Luma sees your reasoning, not just keywords.&rdquo;
+            &ldquo;Take your time. Hatch sees your reasoning, not just keywords.&rdquo;
           </span>
         </div>
 

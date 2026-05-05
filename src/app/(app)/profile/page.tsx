@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { DIMENSION_LABELS } from '@/lib/types'
 import { getTopDimension } from '@/lib/utils'
 import { SkillRadar } from '@/components/profile/SkillRadar'
@@ -125,14 +125,14 @@ export default async function ProfilePage() {
             <SkillRadar dimensions={analytics.dimensions} />
           </div>
 
-          {/* 4. Luma's Insight */}
+          {/* 4. Hatch's Insight */}
           <div className="bg-primary-fixed rounded-xl p-5 flex gap-4">
             <div className="flex-shrink-0 mt-0.5">
-              <LumaGlyph size={28} className="text-primary" />
+              <HatchGlyph size={28} className="text-primary" />
             </div>
             <blockquote className="text-sm text-on-surface leading-relaxed">
               <p className="font-label font-semibold text-primary mb-1">
-                Luma&apos;s Insight
+                Hatch&apos;s Insight
               </p>
               Your strongest dimension is <strong>{topDimensionLabel}</strong> at{' '}
               {topDimension.score}/100. You consistently propose actionable next steps
@@ -158,7 +158,7 @@ export default async function ProfilePage() {
               Pattern Breakdown
             </h2>
             <p className="text-xs text-on-surface-variant mb-4">
-              Recurring anti-patterns Luma has flagged in your responses
+              Recurring anti-patterns Hatch has flagged in your responses
             </p>
             <PatternBreakdown patterns={[]} />
           </div>
@@ -175,7 +175,7 @@ export default async function ProfilePage() {
               challengeCount={analytics.total_attempts}
               streak={analytics.streak_days}
               percentile={percentile}
-              lumaQuote="Strong recommendation instincts. Keep sharpening your diagnostic framing."
+              hatchQuote="Strong recommendation instincts. Keep sharpening your diagnostic framing."
             />
           </div>
         </div>

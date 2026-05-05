@@ -14,7 +14,7 @@ export default function RootNotFound() {
       </span>
       <h1 className="font-headline text-3xl font-bold text-on-surface mb-2">Page not found</h1>
       <p className="text-on-surface-variant text-sm mb-8 max-w-xs">
-        This page doesn&apos;t exist or has been moved. Let Luma guide you back.
+        This page doesn&apos;t exist or has been moved. Let Hatch guide you back.
       </p>
       <Link
         href="/dashboard"

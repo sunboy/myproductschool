@@ -1,0 +1,1803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HackProduct — Product sense training for engineers</title>
+<meta name="description" content="Practice product thinking with real challenges. Luma, your AI coach, grades every answer. 100 founding spots.">
+<meta property="og:title" content="HackProduct — Product sense for engineers">
+<meta property="og:description" content="Daily 12-minute challenges. Luma grades your strategy, metrics, and empathy. 100 founding spots.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,300;0,7..72,400;0,7..72,700;1,7..72,300;1,7..72,400&display=swap" rel="stylesheet">
+<style>
+  /* ─── RESET ─────────────────────────────────────────────── */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+
+  /* ─── TOKENS ─────────────────────────────────────────────── */
+  :root {
+    --bg: #faf6f0;
+    --bg-mid: #f5f1ea;
+    --surface-1: rgba(46,50,48,0.04);
+    --surface-2: rgba(46,50,48,0.06);
+    --surface-3: rgba(46,50,48,0.09);
+    --border: rgba(46,50,48,0.10);
+    --border-strong: rgba(46,50,48,0.16);
+    --green: #4a7c59;
+    --green-dark: #2d5a3d;
+    --green-light: #3a6b4a;
+    --green-pale: rgba(74,124,89,0.10);
+    --amber: #705c30;
+    --amber-light: #8a7040;
+    --text: #2e3230;
+    --text-2: rgba(46,50,48,0.60);
+    --text-3: rgba(46,50,48,0.38);
+    --red-dim: rgba(184,50,48,0.7);
+    --f-display: 'Sora', sans-serif;
+    --f-serif: 'Literata', serif;
+  }
+
+  /* ─── BASE ─────────────────────────────────────────────── */
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--f-display);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* subtle grain overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 1000; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    opacity: 0.25;
+  }
+
+  /* ─── GLOBAL GRADIENT ─────────────────────────────────── */
+  .page-gradient {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 900px 600px at 70% 10%, rgba(74,124,89,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 600px 400px at 10% 80%, rgba(112,92,48,0.04) 0%, transparent 60%),
+      #faf6f0;
+  }
+
+  /* ─── LAYOUT WRAPPER ──────────────────────────────────── */
+  .wrap { position: relative; z-index: 1; }
+  .container { max-width: 1160px; margin: 0 auto; padding: 0 32px; }
+
+  /* ─── NAV ─────────────────────────────────────────────── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 40px;
+    background: rgba(250,246,240,0.88);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-brand {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none; color: var(--text);
+    font-size: 17px; font-weight: 700; letter-spacing: -0.02em;
+  }
+  .nav-logo-mark {
+    width: 28px; height: 28px;
+    background: var(--green);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .nav-logo-mark svg { width: 16px; height: 16px; }
+  .nav-right { display: flex; align-items: center; gap: 20px; }
+  .nav-link {
+    font-size: 13px; color: var(--text-2); text-decoration: none;
+    letter-spacing: -0.01em; transition: color 0.2s;
+  }
+  .nav-link:hover { color: var(--text); }
+  .nav-cta {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 20px; border-radius: 8px;
+    background: var(--green); color: #fff;
+    font-size: 13px; font-weight: 700; letter-spacing: -0.01em;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: background 0.18s, transform 0.18s;
+  }
+  .nav-cta:hover { background: var(--green-dark); transform: translateY(-1px); }
+  .nav-cta:active { transform: scale(0.98) translateY(0); }
+
+  /* ─── HERO ─────────────────────────────────────────────── */
+  .hero {
+    min-height: 100dvh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 0;
+    padding-top: 80px;
+    overflow: hidden;
+  }
+  .hero-left {
+    padding: 80px 60px 80px 0;
+    padding-left: calc((100vw - 1160px) / 2 + 32px);
+  }
+  .hero-right {
+    position: relative;
+    height: 100%;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    padding: 80px 0;
+    overflow: hidden;
+  }
+
+  /* launch strip */
+  .launch-strip {
+    display: inline-flex; align-items: center; gap: 10px;
+    margin-bottom: 36px;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .launch-strip-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green-light);
+    animation: pulse-dot 2.5s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+  .launch-strip-line {
+    width: 28px; height: 1px; background: var(--border-strong);
+  }
+
+  .hero-h1 {
+    font-size: clamp(44px, 5vw, 68px);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -0.04em;
+    margin-bottom: 28px;
+    max-width: 520px;
+    text-wrap: balance;
+  }
+  .hero-h1 em {
+    font-style: italic;
+    font-weight: 300;
+    font-family: var(--f-serif);
+    color: var(--green);
+  }
+  .hero-h1 .line-break { display: block; }
+
+  .hero-desc {
+    font-size: 16px;
+    color: var(--text-2);
+    max-width: 420px;
+    line-height: 1.75;
+    margin-bottom: 40px;
+    font-weight: 300;
+  }
+  .hero-desc strong { color: var(--text); font-weight: 500; }
+
+  /* email form */
+  .hero-form {
+    display: flex; gap: 8px;
+    max-width: 440px;
+    margin-bottom: 14px;
+  }
+  .hero-form input {
+    flex: 1;
+    padding: 14px 18px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--f-display);
+    font-size: 14px;
+    outline: none;
+    backdrop-filter: blur(8px);
+    transition: border-color 0.2s;
+  }
+  .hero-form input::placeholder { color: var(--text-3); }
+  .hero-form input:focus { border-color: var(--green); }
+  .hero-form button {
+    padding: 14px 22px;
+    background: var(--green);
+    color: #fff;
+    border: none; border-radius: 10px;
+    font-family: var(--f-display);
+    font-size: 14px; font-weight: 700;
+    cursor: pointer; white-space: nowrap;
+    transition: background 0.18s, transform 0.18s;
+    letter-spacing: -0.01em;
+  }
+  .hero-form button:hover { background: var(--green-dark); transform: translateY(-1px); }
+  .hero-form button:active { transform: scale(0.98); }
+
+  .hero-footnote {
+    font-size: 12px; color: var(--text-3);
+    margin-bottom: 32px;
+  }
+
+  /* scarcity */
+  .scarcity {
+    max-width: 440px;
+    border-top: 1px solid var(--border);
+    padding-top: 22px;
+  }
+  .scarcity-row {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--text-3);
+    margin-bottom: 8px;
+    font-weight: 500; letter-spacing: 0.01em;
+  }
+  .scarcity-row strong { color: var(--amber-light); }
+  .scarcity-track {
+    height: 3px;
+    background: var(--surface-3);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .scarcity-fill {
+    height: 100%; width: 73%;
+    background: linear-gradient(90deg, var(--amber), var(--amber-light));
+    border-radius: 100px;
+    animation: fill-in 1.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+  }
+  @keyframes fill-in { from { width: 0% } to { width: 73% } }
+
+  /* right col: screenshot + floating elements */
+  .hero-screen-wrap {
+    position: absolute;
+    left: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: calc(50vw - 16px);
+    max-width: 620px;
+  }
+  .hero-screen-chrome {
+    background: var(--bg-mid);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(46,50,48,0.04),
+      0 40px 80px -20px rgba(0,0,0,0.18),
+      0 80px 140px -40px rgba(0,0,0,0.10);
+  }
+  .screen-titlebar {
+    display: flex; align-items: center; gap: 6px;
+    padding: 10px 14px;
+    background: var(--surface-1);
+    border-bottom: 1px solid var(--border);
+  }
+  .tb-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .tb-dot.r { background: rgba(255,95,87,0.6); }
+  .tb-dot.y { background: rgba(255,188,46,0.6); }
+  .tb-dot.g { background: rgba(40,201,68,0.6); }
+  .tb-url {
+    margin-left: 10px;
+    padding: 3px 12px;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-size: 11px; color: var(--text-3);
+    letter-spacing: 0.02em;
+  }
+  .hero-screen-chrome img {
+    width: 100%; display: block;
+    border-radius: 0 0 13px 13px;
+  }
+
+  /* floating score badge */
+  .float-badge {
+    position: absolute;
+    bottom: 15%;
+    right: 24px;
+    background: rgba(250,246,240,0.92);
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    padding: 14px 18px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.10);
+    animation: float-up 5s ease-in-out infinite;
+    max-width: 220px;
+    z-index: 10;
+  }
+  @keyframes float-up {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .float-badge-label {
+    font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-3); margin-bottom: 8px; font-weight: 600;
+  }
+  .float-scores {
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .float-score-row {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px;
+  }
+  .float-score-label { color: var(--text-2); min-width: 90px; font-size: 11px; }
+  .float-score-bar-wrap {
+    flex: 1; height: 3px; background: var(--surface-3); border-radius: 100px; overflow: hidden;
+  }
+  .float-score-bar {
+    height: 100%; border-radius: 100px;
+    animation: fill-in 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .bar-green { background: var(--green-light); }
+  .bar-amber { background: var(--amber); }
+  .float-score-val { font-size: 11px; font-weight: 700; color: var(--text); min-width: 22px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* luma float badge */
+  .float-luma {
+    position: absolute;
+    top: 12%;
+    right: 12px;
+    animation: float-up 6s ease-in-out 1s infinite;
+    z-index: 10;
+  }
+
+  /* fade-in for hero elements */
+  .fade-up-1 { animation: fade-up 0.6s ease-out 0.1s both; }
+  .fade-up-2 { animation: fade-up 0.6s ease-out 0.2s both; }
+  .fade-up-3 { animation: fade-up 0.6s ease-out 0.3s both; }
+  .fade-up-4 { animation: fade-up 0.6s ease-out 0.4s both; }
+  .fade-up-5 { animation: fade-up 0.6s ease-out 0.5s both; }
+  .fade-up-6 { animation: fade-up 0.6s ease-out 0.6s both; }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── MARQUEE STRIP ───────────────────────────────────── */
+  .marquee-strip {
+    position: relative; z-index: 1;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 0;
+    overflow: hidden;
+    background: var(--surface-1);
+  }
+  .marquee-track {
+    display: flex; gap: 0;
+    animation: marquee 28s linear infinite;
+  }
+  .marquee-track:hover { animation-play-state: paused; }
+  @keyframes marquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+  .marquee-item {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 0 32px;
+    white-space: nowrap;
+    font-size: 12px; color: var(--text-3); letter-spacing: 0.02em;
+    border-right: 1px solid var(--border);
+  }
+  .marquee-item svg { opacity: 0.4; }
+  .marquee-item strong { color: var(--text-2); }
+
+  /* ─── SECTION SHARED ──────────────────────────────────── */
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--green-light);
+    margin-bottom: 20px;
+    opacity: 0.8;
+  }
+  .eyebrow-line { width: 20px; height: 1px; background: var(--green-light); opacity: 0.5; }
+
+  /* ─── PAIN SECTION ────────────────────────────────────── */
+  .pain {
+    padding: 120px 0 100px;
+    position: relative; z-index: 1;
+  }
+  .pain-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+  .pain-left {}
+  .pain-h2 {
+    font-size: clamp(32px, 3.5vw, 46px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 28px;
+    text-wrap: balance;
+  }
+  .pain-lead {
+    font-size: 16px; color: var(--text-2); line-height: 1.75;
+    font-weight: 300; max-width: 380px; margin-bottom: 36px;
+  }
+  .pain-bridge {
+    padding: 24px 28px;
+    background: rgba(112,92,48,0.05);
+    border-left: 2px solid rgba(112,92,48,0.25);
+    border-radius: 0 8px 8px 0;
+    font-family: var(--f-serif);
+    font-style: italic;
+    font-size: 17px;
+    color: var(--amber);
+    line-height: 1.7;
+  }
+  .pain-right {
+    display: flex; flex-direction: column; gap: 0;
+    padding-top: 8px;
+  }
+  .pain-item {
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  .pain-item:first-child { border-top: 1px solid var(--border); }
+  .pain-num {
+    font-size: 11px; font-weight: 700;
+    color: var(--text-3); letter-spacing: 0.06em;
+    padding-top: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+  .pain-text {
+    font-size: 15px; color: var(--text-2); line-height: 1.65;
+    font-weight: 300;
+  }
+  .pain-text strong { color: var(--text); font-weight: 600; }
+
+  /* ─── PRODUCT SCREENSHOT SECTION ─────────────────────── */
+  .product-section {
+    padding: 40px 0 120px;
+    position: relative; z-index: 1;
+  }
+  .product-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: end;
+    margin-bottom: 60px;
+  }
+  .product-h2 {
+    font-size: clamp(30px, 3vw, 42px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+  .product-desc {
+    font-size: 16px; color: var(--text-2);
+    line-height: 1.75; font-weight: 300;
+  }
+
+  /* two-screen mockup grid */
+  .screens-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  .screen-block { position: relative; }
+  .screen-frame {
+    background: var(--bg-mid);
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 24px 64px -16px rgba(0,0,0,0.15);
+  }
+  .screen-frame img { width: 100%; display: block; }
+  .screen-caption {
+    margin-top: 14px;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .screen-cap-num {
+    font-size: 10px; font-weight: 700;
+    color: var(--text-3); letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding-top: 2px;
+  }
+  .screen-cap-text {
+    font-size: 13px; color: var(--text-2); line-height: 1.55; font-weight: 300;
+  }
+  .screen-cap-text strong { color: var(--text); font-weight: 600; }
+
+  /* luma feedback overlay */
+  .luma-overlay {
+    position: absolute;
+    top: -28px;
+    right: -20px;
+    background: rgba(250,246,240,0.95);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    padding: 16px 18px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.10);
+    width: 200px;
+    animation: float-up 5s ease-in-out 0.5s infinite;
+    z-index: 5;
+  }
+  .luma-overlay-head {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 10px;
+  }
+  .luma-overlay-head span {
+    font-size: 11px; font-weight: 600; color: var(--green-light);
+    letter-spacing: 0.02em;
+  }
+  .score-pills { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+  .pill {
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.02em;
+  }
+  .pill-green { background: rgba(82,183,136,0.15); color: var(--green-light); }
+  .pill-amber { background: rgba(212,150,58,0.15); color: var(--amber-light); }
+  .luma-coaching-text {
+    font-size: 11px; color: var(--text-2); line-height: 1.55; font-weight: 300;
+  }
+  .luma-coaching-text strong { color: var(--text); font-weight: 600; }
+
+  /* ─── HOW IT WORKS ────────────────────────────────────── */
+  .how {
+    padding: 120px 0;
+    position: relative; z-index: 1;
+    border-top: 1px solid var(--border);
+  }
+  .how-inner {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+  .how-left {}
+  .how-h2 {
+    font-size: clamp(28px, 2.8vw, 38px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-bottom: 20px;
+    text-wrap: balance;
+  }
+  .how-sub {
+    font-size: 15px; color: var(--text-2);
+    line-height: 1.7; font-weight: 300;
+  }
+  .how-right {}
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    gap: 32px;
+    padding: 44px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+  }
+  .step:first-child { border-top: 1px solid var(--border); }
+  .step-num-col { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+  .step-num {
+    font-size: 13px; font-weight: 700;
+    color: var(--text-3); letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+  }
+  .step-icon-wrap {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--green-pale);
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 12px;
+  }
+  .step-icon-wrap svg { width: 18px; height: 18px; stroke: var(--green-light); stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .step-body {}
+  .step-title {
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 12px; color: var(--text);
+    line-height: 1.15;
+  }
+  .step-desc {
+    font-size: 15px; color: var(--text-2);
+    line-height: 1.75; font-weight: 300;
+    max-width: 520px;
+  }
+  .step-tag {
+    display: inline-flex;
+    margin-top: 12px;
+    padding: 4px 10px; border-radius: 5px;
+    background: var(--surface-1); border: 1px solid var(--border);
+    font-size: 11px; color: var(--text-3); letter-spacing: 0.04em;
+  }
+
+  /* ─── LUMA SHOWCASE ──────────────────────────────────── */
+  .luma-showcase {
+    padding: 120px 0;
+    position: relative; z-index: 1;
+  }
+  .ls-header {
+    margin-bottom: 64px;
+  }
+  .ls-h2 {
+    font-size: clamp(32px, 3.5vw, 52px);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    max-width: 640px;
+    text-wrap: balance;
+    margin-bottom: 20px;
+  }
+  .ls-h2 em {
+    font-style: italic; font-weight: 300;
+    font-family: var(--f-serif);
+    color: var(--green);
+  }
+  .ls-desc {
+    font-size: 17px; color: var(--text-2); line-height: 1.75; font-weight: 300;
+    max-width: 560px;
+  }
+  /* main two-column layout */
+  .ls-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 20px;
+    align-items: start;
+  }
+  /* left: tall screenshot with context overlay */
+  .ls-main-wrap {
+    position: relative;
+  }
+  .ls-screen {
+    background: var(--bg-mid);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 24px 72px -16px rgba(0,0,0,0.14);
+  }
+  .ls-screen-bar {
+    display: flex; align-items: center; gap: 6px;
+    padding: 10px 14px;
+    background: var(--surface-1);
+    border-bottom: 1px solid var(--border);
+  }
+  .ls-screen img { width: 100%; display: block; }
+  /* right: smaller screenshot stacked + call-out block */
+  .ls-right {
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .ls-chat-wrap {
+    position: relative;
+  }
+  .ls-chat {
+    background: var(--bg-mid);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 16px 48px -12px rgba(0,0,0,0.12);
+  }
+  .ls-chat img { width: 100%; display: block; }
+  /* call-out cards below */
+  .ls-callout-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .ls-callout {
+    padding: 22px 20px;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: background 0.2s, border-color 0.2s;
+    cursor: default;
+  }
+  .ls-callout:hover {
+    background: var(--surface-2);
+    border-color: var(--border-strong);
+  }
+  .ls-callout-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--green-pale);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+    flex-shrink: 0;
+  }
+  .ls-callout-icon svg { width: 16px; height: 16px; stroke: var(--green); stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .ls-callout-title {
+    font-size: 13px; font-weight: 700;
+    color: var(--text); margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .ls-callout-desc {
+    font-size: 12px; color: var(--text-2); line-height: 1.6; font-weight: 300;
+  }
+  /* moat banner at bottom */
+  .ls-moat {
+    margin-top: 56px;
+    padding: 36px 48px;
+    background: var(--green-pale);
+    border: 1px solid rgba(74,124,89,0.16);
+    border-radius: 16px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: center;
+  }
+  .ls-moat-text {
+    font-size: 18px; font-weight: 600;
+    letter-spacing: -0.03em; color: var(--green);
+    line-height: 1.35; text-wrap: balance;
+  }
+  .ls-moat-text em {
+    font-style: italic; font-weight: 300;
+    font-family: var(--f-serif); color: var(--text);
+  }
+  .ls-moat-stat {
+    text-align: right; white-space: nowrap;
+  }
+  .ls-moat-stat-num {
+    font-size: 40px; font-weight: 800;
+    letter-spacing: -0.05em; color: var(--green);
+    line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .ls-moat-stat-label {
+    font-size: 12px; color: var(--green-light);
+    font-weight: 500; margin-top: 4px;
+  }
+
+  /* ─── PROOF: PROGRESS SCREENSHOT ─────────────────────── */
+  .proof-section {
+    padding: 0 0 120px;
+    position: relative; z-index: 1;
+  }
+  .proof-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .proof-left {}
+  .proof-h2 {
+    font-size: clamp(28px, 3vw, 40px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    text-wrap: balance;
+  }
+  .proof-desc {
+    font-size: 16px; color: var(--text-2); line-height: 1.75;
+    font-weight: 300; margin-bottom: 36px;
+  }
+  .proof-stats {
+    display: flex; gap: 0;
+    border-top: 1px solid var(--border);
+    padding-top: 32px;
+  }
+  .proof-stat {
+    flex: 1;
+    padding-right: 28px;
+    border-right: 1px solid var(--border);
+    margin-right: 28px;
+  }
+  .proof-stat:last-child {
+    border-right: none; margin-right: 0; padding-right: 0;
+  }
+  .proof-stat-num {
+    font-size: 36px; font-weight: 800;
+    letter-spacing: -0.04em; line-height: 1;
+    color: var(--text); margin-bottom: 6px;
+    font-variant-numeric: tabular-nums;
+  }
+  .proof-stat-num em {
+    font-style: normal; color: var(--amber-light);
+  }
+  .proof-stat-label {
+    font-size: 12px; color: var(--text-3);
+    font-weight: 400; line-height: 1.4;
+  }
+  .proof-right {}
+  .proof-screen {
+    background: var(--bg-mid);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px -24px rgba(0,0,0,0.14);
+  }
+  .proof-screen-bar {
+    display: flex; align-items: center; gap: 6px;
+    padding: 10px 14px;
+    background: var(--surface-1);
+    border-bottom: 1px solid var(--border);
+  }
+  .proof-screen-bar .tb-dot { width: 9px; height: 9px; }
+  .proof-screen img { width: 100%; display: block; }
+
+  /* ─── COMPARISON TABLE ────────────────────────────────── */
+  .compare {
+    padding: 0 0 120px;
+    position: relative; z-index: 1;
+  }
+  .compare-header { margin-bottom: 48px; }
+  .compare-h2 {
+    font-size: clamp(28px, 3vw, 42px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    max-width: 520px;
+    text-wrap: balance;
+  }
+  .compare-table {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .compare-thead {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1.4fr;
+    background: var(--surface-1);
+    border-bottom: 1px solid var(--border-strong);
+  }
+  .compare-thead-cell {
+    padding: 14px 20px;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .compare-thead-cell.hp {
+    color: var(--green);
+    background: var(--green-pale);
+    border-left: 1px solid rgba(74,124,89,0.20);
+  }
+  .compare-row {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1.4fr;
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-row:last-child { border-bottom: none; }
+  .compare-row:hover { background: var(--surface-1); }
+  .compare-cell {
+    padding: 16px 20px;
+    font-size: 13px; font-weight: 300;
+    color: var(--text-2);
+    display: flex; align-items: center; gap: 8px;
+    line-height: 1.5;
+  }
+  .compare-cell.topic {
+    color: var(--text); font-weight: 400;
+  }
+  .compare-cell.hp {
+    background: rgba(74,124,89,0.03);
+    border-left: 1px solid rgba(74,124,89,0.12);
+    color: var(--text-2);
+  }
+  .compare-cell.hp-strong {
+    background: rgba(74,124,89,0.06);
+    border-left: 1px solid rgba(74,124,89,0.18);
+    color: var(--green); font-weight: 500;
+  }
+  .c-icon { flex-shrink: 0; }
+  /* inline SVG icons for check / cross / arrow */
+  .icon-check { color: var(--green-light); }
+  .icon-cross { color: var(--red-dim); }
+  .icon-arrow { color: var(--amber-light); }
+
+  /* ─── FINAL CTA ───────────────────────────────────────── */
+  .final {
+    position: relative; z-index: 1;
+    padding: 0 0 0;
+  }
+  .final-inner {
+    background: var(--surface-1);
+    border: 1px solid var(--border-strong);
+    border-radius: 24px;
+    overflow: hidden;
+    margin-bottom: 0;
+  }
+  .final-top {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 520px;
+  }
+  .final-left {
+    padding: 72px 64px 72px 72px;
+    display: flex; flex-direction: column; justify-content: center;
+    border-right: 1px solid var(--border);
+  }
+  .final-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 14px; border-radius: 6px;
+    background: var(--green-pale);
+    border: 1px solid rgba(74,124,89,0.20);
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 28px;
+    width: fit-content;
+  }
+  .final-h2 {
+    font-size: clamp(32px, 3.5vw, 52px);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.0;
+    margin-bottom: 20px;
+    text-wrap: balance;
+  }
+  .final-h2 em {
+    font-style: italic; font-weight: 300;
+    font-family: var(--f-serif);
+    color: var(--green);
+  }
+  .final-desc {
+    font-size: 16px; color: var(--text-2);
+    line-height: 1.75; font-weight: 300;
+    margin-bottom: 36px;
+    max-width: 380px;
+  }
+  .final-form {
+    display: flex; gap: 8px; margin-bottom: 12px;
+  }
+  .final-form input {
+    flex: 1;
+    padding: 14px 18px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--f-display);
+    font-size: 14px;
+    outline: none;
+    backdrop-filter: blur(8px);
+    transition: border-color 0.2s;
+  }
+  .final-form input::placeholder { color: var(--text-3); }
+  .final-form input:focus { border-color: var(--green); }
+  .final-form button {
+    padding: 14px 22px;
+    background: var(--green);
+    color: #fff;
+    border: none; border-radius: 10px;
+    font-family: var(--f-display);
+    font-size: 14px; font-weight: 700;
+    cursor: pointer; white-space: nowrap;
+    transition: background 0.18s, transform 0.18s;
+    letter-spacing: -0.01em;
+  }
+  .final-form button:hover { background: var(--green-dark); transform: translateY(-1px); }
+  .final-form button:active { transform: scale(0.98); }
+  .final-footnote { font-size: 12px; color: var(--text-3); }
+
+  .final-right {
+    padding: 72px 64px;
+    display: flex; flex-direction: column; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  /* right side glow */
+  .final-right::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(74,124,89,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .final-mascot-wrap {
+    display: flex; justify-content: center; margin-bottom: 32px; position: relative; z-index: 1;
+    animation: float-up 5s ease-in-out infinite;
+  }
+  .final-scarcity-block {
+    position: relative; z-index: 1;
+  }
+  .final-scarcity-label {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--text-3);
+    margin-bottom: 10px; font-weight: 500;
+  }
+  .final-scarcity-label strong { color: var(--amber-light); }
+  .final-scarcity-track {
+    height: 4px; background: var(--surface-3); border-radius: 100px; overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .final-scarcity-fill {
+    height: 100%; width: 73%;
+    background: linear-gradient(90deg, var(--amber), var(--amber-light));
+    border-radius: 100px;
+    animation: fill-in 2s cubic-bezier(0.16, 1, 0.3, 1) 0.8s both;
+  }
+  .final-perks {
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .perk {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 14px; color: var(--text-2); font-weight: 300;
+  }
+  .perk-icon {
+    width: 28px; height: 28px; border-radius: 6px;
+    background: var(--green-pale);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .perk-icon svg { width: 13px; height: 13px; stroke: var(--green-light); stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ─── FOOTER ──────────────────────────────────────────── */
+  footer {
+    position: relative; z-index: 1;
+    padding: 32px 0;
+    margin-top: 0;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer-brand {
+    font-size: 13px; color: var(--text-3);
+    letter-spacing: -0.01em;
+  }
+  .footer-links {
+    display: flex; gap: 28px;
+  }
+  .footer-links a {
+    font-size: 12px; color: var(--text-3);
+    text-decoration: none; transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--text-2); }
+
+  /* ─── MOBILE ──────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    .nav-link { display: none; }
+    .container { padding: 0 20px; }
+
+    .hero { grid-template-columns: 1fr; min-height: unset; padding-top: 80px; }
+    .hero-left { padding: 48px 20px 32px; }
+    .hero-right { display: none; }
+    .hero-h1 { font-size: 38px; }
+    .hero-form { flex-direction: column; }
+    .hero-form button { width: 100%; }
+
+    .pain-inner { grid-template-columns: 1fr; gap: 48px; }
+    .pain-right { padding-top: 0; }
+
+    .product-header { grid-template-columns: 1fr; gap: 20px; margin-bottom: 36px; }
+    .screens-grid { grid-template-columns: 1fr; }
+    .luma-overlay { display: none; }
+
+    .how-inner { grid-template-columns: 1fr; gap: 40px; }
+    .step { grid-template-columns: 40px 1fr; gap: 16px; }
+
+    .ls-grid { grid-template-columns: 1fr; }
+    .ls-callout-grid { grid-template-columns: 1fr; }
+    .ls-moat { grid-template-columns: 1fr; gap: 20px; padding: 28px 24px; }
+    .ls-moat-stat { text-align: left; }
+
+    .proof-inner { grid-template-columns: 1fr; gap: 40px; }
+    .proof-stats { gap: 0; }
+
+    .compare-thead-cell, .compare-cell { padding: 12px 10px; font-size: 11px; }
+
+    .final-top { grid-template-columns: 1fr; }
+    .final-left { padding: 48px 24px; border-right: none; border-bottom: 1px solid var(--border); }
+    .final-right { padding: 40px 24px; }
+    .final-form { flex-direction: column; }
+    .final-form button { width: 100%; }
+
+    footer { flex-direction: column; gap: 16px; text-align: center; padding: 24px 0; }
+    .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-gradient" aria-hidden="true"></div>
+
+<!-- ── NAV ── -->
+<nav role="navigation" aria-label="Main navigation">
+  <a href="/" class="nav-brand" aria-label="HackProduct home">
+    <div class="nav-logo-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+    </div>
+    HackProduct
+  </a>
+  <div class="nav-right">
+    <a href="#how" class="nav-link">How it works</a>
+    <a href="#signup" class="nav-cta">Get in early</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<!-- ── HERO ── -->
+<section class="hero" aria-labelledby="hero-heading">
+
+  <div class="hero-left">
+    <div class="launch-strip fade-up-1">
+      <span class="launch-strip-dot" aria-hidden="true"></span>
+      <span>Launching Summer 2026</span>
+      <span class="launch-strip-line" aria-hidden="true"></span>
+      <span>100 founding spots</span>
+    </div>
+
+    <h1 class="hero-h1 fade-up-2" id="hero-heading">
+      You can code.
+      <span class="line-break">Can you think like</span>
+      <em>a product person?</em>
+    </h1>
+
+    <p class="hero-desc fade-up-3">
+      Most engineers bomb the product sense round — not because they're not smart,
+      but because <strong>nobody taught them how to practice.</strong>
+      HackProduct drills product thinking the way LeetCode drilled your algorithms.
+    </p>
+
+    <form class="hero-form fade-up-4" onsubmit="return false">
+      <input type="email" placeholder="you@company.com" aria-label="Email address" autocomplete="email">
+      <button type="submit">Reserve my spot</button>
+    </form>
+    <p class="hero-footnote fade-up-5">No spam. Founding members lock in 50% off for life.</p>
+
+    <div class="scarcity fade-up-6" aria-label="Waitlist scarcity indicator">
+      <div class="scarcity-row">
+        <span><strong>73 of 100</strong> founding spots taken</span>
+        <span>27 remaining</span>
+      </div>
+      <div class="scarcity-track" role="progressbar" aria-valuenow="73" aria-valuemin="0" aria-valuemax="100">
+        <div class="scarcity-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right" aria-hidden="true">
+    <div class="hero-screen-wrap">
+      <div class="hero-screen-chrome">
+        <div class="screen-titlebar">
+          <span class="tb-dot r"></span>
+          <span class="tb-dot y"></span>
+          <span class="tb-dot g"></span>
+          <span class="tb-url">hackproduct.com/dashboard</span>
+        </div>
+        <img
+          src=".playwright-mcp/product-dashboard.png"
+          alt="HackProduct dashboard showing the Quick Take challenge, FLOW skill levels, and leaderboard"
+          loading="eager"
+        >
+      </div>
+
+      <!-- floating score badge -->
+      <div class="float-badge" role="complementary" aria-label="Example Luma feedback scores">
+        <div class="float-badge-label">Luma's scores</div>
+        <div class="float-scores">
+          <div class="float-score-row">
+            <span class="float-score-label">User empathy</span>
+            <div class="float-score-bar-wrap"><div class="float-score-bar bar-green" style="width:70%; animation-delay:0.8s"></div></div>
+            <span class="float-score-val">7</span>
+          </div>
+          <div class="float-score-row">
+            <span class="float-score-label">Metrics</span>
+            <div class="float-score-bar-wrap"><div class="float-score-bar bar-amber" style="width:40%; animation-delay:1s"></div></div>
+            <span class="float-score-val">4</span>
+          </div>
+          <div class="float-score-row">
+            <span class="float-score-label">Strategy</span>
+            <div class="float-score-bar-wrap"><div class="float-score-bar bar-green" style="width:60%; animation-delay:1.2s"></div></div>
+            <span class="float-score-val">6</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Luma reviewing float -->
+      <div class="float-luma">
+        <svg width="72" height="81" viewBox="0 0 64 72" fill="none" aria-label="Luma AI coach">
+          <ellipse cx="32" cy="38" rx="28" ry="30" fill="none" stroke="#c8e8d0" stroke-width="1.5" opacity="0.25">
+            <animate attributeName="rx" values="28;31;28" dur="3s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.25;0.5;0.25" dur="3s" repeatCount="indefinite"/>
+          </ellipse>
+          <polygon points="18,22 46,22 50,16 14,16" fill="#4a7c59"/>
+          <rect x="22" y="10" width="20" height="12" rx="1" fill="#4a7c59"/>
+          <circle cx="32" cy="10" r="1.5" fill="#4a7c59"/>
+          <line x1="42" y1="12" x2="46" y2="18" stroke="#4a7c59" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="46" cy="19" r="1.5" fill="#4a7c59"/>
+          <line x1="48" y1="18" x2="54" y2="10" stroke="#8ecf9e" stroke-width="2.5" stroke-linecap="round">
+            <animate attributeName="opacity" values="1;0.3;1" dur="2.5s" repeatCount="indefinite"/>
+          </line>
+          <polyline points="50,10 54,10 54,14" stroke="#8ecf9e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+            <animate attributeName="opacity" values="1;0.3;1" dur="2.5s" repeatCount="indefinite"/>
+          </polyline>
+          <rect x="8" y="32" width="6" height="10" rx="3" fill="#4a7c59"/>
+          <rect x="50" y="32" width="6" height="10" rx="3" fill="#4a7c59"/>
+          <rect x="14" y="22" width="36" height="30" rx="8" fill="#f5f1ea" stroke="#4a7c59" stroke-width="3"/>
+          <circle cx="25" cy="34" r="3" fill="#4a7c59">
+            <animate attributeName="cx" values="25;26.5;25;23.5;25" dur="3s" repeatCount="indefinite"/>
+            <animate attributeName="cy" values="34;32;34;34;34" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="39" cy="34" r="3" fill="#4a7c59">
+            <animate attributeName="cx" values="39;40.5;39;37.5;39" dur="3s" repeatCount="indefinite"/>
+            <animate attributeName="cy" values="34;32;34;34;34" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="26" cy="33" r="1" fill="white" opacity="0.8"/>
+          <circle cx="40" cy="33" r="1" fill="white" opacity="0.8"/>
+          <path d="M27 44 Q30 42 32 44 Q34 46 37 44" stroke="#4a7c59" stroke-width="2" stroke-linecap="round" fill="none">
+            <animate attributeName="d" values="M27 44 Q30 42 32 44 Q34 46 37 44;M27 43 Q30 45 32 43 Q34 41 37 43;M27 44 Q30 42 32 44 Q34 46 37 44" dur="3s" repeatCount="indefinite"/>
+          </path>
+          <circle cx="52" cy="22" r="1.5" fill="#c4c8bc">
+            <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="56" cy="16" r="2.5" fill="#c4c8bc">
+            <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2s" begin="0.3s" repeatCount="indefinite"/>
+          </circle>
+          <ellipse cx="58" cy="8" rx="5" ry="4" fill="#c4c8bc" opacity="0.5">
+            <animate attributeName="opacity" values="0.25;0.6;0.25" dur="2s" begin="0.6s" repeatCount="indefinite"/>
+          </ellipse>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ── MARQUEE ── -->
+<div class="marquee-strip" aria-hidden="true">
+  <div class="marquee-track">
+    <!-- set 1 -->
+    <span class="marquee-item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <strong>FLOW Framework</strong> · Frame · List · Optimize · Win
+    </span>
+    <span class="marquee-item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <strong>12 min/day</strong> average session
+    </span>
+    <span class="marquee-item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M17 7l-5 5-5-5"/><path d="M5 2h14"/></svg>
+      Real scenarios from <strong>Google, Stripe, Spotify, Airbnb</strong>
+    </span>
+    <span class="marquee-item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Graded on <strong>strategy · metrics · empathy · execution</strong>
+    </span>
+    <span class="marquee-item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></svg>
+      AI coach <strong>Luma</strong> shows you exactly where the gap is
+    </span>
+    <span class="marquee-item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="3 9 21 9"/><polyline points="9 21 9 9"/></svg>
+      Progress visible by <strong>day 7</strong>
+    </span>
+    <!-- set 2 (clone for seamless loop) -->
+    <span class="marquee-item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <strong>FLOW Framework</strong> · Frame · List · Optimize · Win
+    </span>
+    <span class="marquee-item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <strong>12 min/day</strong> average session
+    </span>
+    <span class="marquee-item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M17 7l-5 5-5-5"/><path d="M5 2h14"/></svg>
+      Real scenarios from <strong>Google, Stripe, Spotify, Airbnb</strong>
+    </span>
+    <span class="marquee-item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Graded on <strong>strategy · metrics · empathy · execution</strong>
+    </span>
+    <span class="marquee-item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></svg>
+      AI coach <strong>Luma</strong> shows you exactly where the gap is
+    </span>
+    <span class="marquee-item">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="3 9 21 9"/><polyline points="9 21 9 9"/></svg>
+      Progress visible by <strong>day 7</strong>
+    </span>
+  </div>
+</div>
+
+
+<!-- ── PAIN ── -->
+<section class="pain" aria-labelledby="pain-heading">
+  <div class="container">
+    <div class="pain-inner">
+      <div class="pain-left">
+        <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span>The problem</p>
+        <h2 class="pain-h2" id="pain-heading">The interview coding skills can't save you from.</h2>
+        <p class="pain-lead">
+          Technical interviews have a training ground: LeetCode, HackerRank, countless prep resources.
+          Product sense has no equivalent. Until now.
+        </p>
+        <blockquote class="pain-bridge">
+          "The worst part? Nobody tells you why you failed. Just 'not enough product sense.' That's not feedback. That's a closed door."
+        </blockquote>
+      </div>
+
+      <div class="pain-right" aria-label="Common pain points">
+        <div class="pain-item">
+          <span class="pain-num">01</span>
+          <p class="pain-text">You solved 500 LeetCode problems but <strong>froze when asked "How would you improve Google Maps?"</strong> — no framework, no anchor.</p>
+        </div>
+        <div class="pain-item">
+          <span class="pain-num">02</span>
+          <p class="pain-text">You're a senior engineer but <strong>got passed over for a PM role</strong> because you couldn't articulate tradeoffs at the speed of an interview.</p>
+        </div>
+        <div class="pain-item">
+          <span class="pain-num">03</span>
+          <p class="pain-text">You prepped with YouTube and blog posts but had <strong>no way to practice against a real rubric</strong> — so you couldn't tell if you were getting better.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── PRODUCT SCREENSHOTS ── -->
+<section class="product-section" aria-labelledby="product-heading">
+  <div class="container">
+    <div class="product-header">
+      <div>
+        <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span>The product</p>
+        <h2 class="product-h2" id="product-heading">This is what the practice looks like.</h2>
+      </div>
+      <p class="product-desc">
+        Real scenarios from real product decisions. Luma grades you on strategy, metrics, user empathy, and execution — then shows you the exact reasoning gap between your answer and a 9/10.
+      </p>
+    </div>
+
+    <div class="screens-grid">
+      <div class="screen-block">
+        <div class="screen-frame">
+          <img
+            src=".playwright-mcp/product-challenges.png"
+            alt="HackProduct Practice Hub showing challenges: Improve Spotify podcast discovery, B2B fintech product strategy, and more"
+            loading="lazy"
+          >
+        </div>
+        <div class="screen-caption">
+          <span class="screen-cap-num">01</span>
+          <p class="screen-cap-text"><strong>Pick a challenge.</strong> Real product dilemmas sourced from FAANG decisions — not textbook hypotheticals. Traditional, AI-assisted, and agentic paradigms.</p>
+        </div>
+      </div>
+
+      <div class="screen-block" style="padding-top: 48px; position: relative;">
+        <!-- Luma feedback overlay -->
+        <div class="luma-overlay" aria-label="Luma AI coach feedback example">
+          <div class="luma-overlay-head">
+            <svg width="22" height="25" viewBox="0 0 64 72" fill="none" aria-hidden="true">
+              <rect x="8" y="32" width="6" height="10" rx="3" fill="#4a7c59"/>
+              <rect x="50" y="32" width="6" height="10" rx="3" fill="#4a7c59"/>
+              <rect x="14" y="22" width="36" height="30" rx="8" fill="#f5f1ea" stroke="#4a7c59" stroke-width="3"/>
+              <circle cx="25" cy="34" r="3" fill="#4a7c59">
+                <animate attributeName="cx" values="25;26;25;24;25" dur="3s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="39" cy="34" r="3" fill="#4a7c59">
+                <animate attributeName="cx" values="39;40;39;38;39" dur="3s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="26" cy="33" r="1" fill="white" opacity="0.8"/>
+              <circle cx="40" cy="33" r="1" fill="white" opacity="0.8"/>
+            </svg>
+            <span>Luma's feedback</span>
+          </div>
+          <div class="score-pills">
+            <span class="pill pill-green">Empathy 7/10</span>
+            <span class="pill pill-amber">Metrics 4/10</span>
+            <span class="pill pill-green">Strategy 6/10</span>
+          </div>
+          <p class="luma-coaching-text">Good instinct — but you skipped defining retention. <strong>Define the north star metric first.</strong> Sessions/week? Episode completion?</p>
+        </div>
+
+        <div class="screen-frame">
+          <img
+            src=".playwright-mcp/product-explore.png"
+            alt="HackProduct Explore page showing FLOW Framework, course modules, and study plans"
+            loading="lazy"
+          >
+        </div>
+        <div class="screen-caption">
+          <span class="screen-cap-num">02</span>
+          <p class="screen-cap-text"><strong>Get graded by Luma.</strong> Scores across four dimensions with specific coaching. Not "be more structured" — the exact reasoning gap, named.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── HOW IT WORKS ── -->
+<section class="how" id="how" aria-labelledby="how-heading">
+  <div class="container">
+    <div class="how-inner">
+      <div class="how-left">
+        <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span>How it works</p>
+        <h2 class="how-h2" id="how-heading">Three steps. Measurable results.</h2>
+        <p class="how-sub">Engineers who practice consistently for 30 days report scoring 2–3 interview levels higher on product sense rounds.</p>
+      </div>
+
+      <div class="how-right">
+        <div class="steps" role="list">
+
+          <div class="step" role="listitem">
+            <div class="step-num-col">
+              <span class="step-num">01</span>
+              <div class="step-icon-wrap" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="3 9 21 9"/><polyline points="9 21 9 9"/></svg>
+              </div>
+            </div>
+            <div class="step-body">
+              <h3 class="step-title">Pick a challenge</h3>
+              <p class="step-desc">Real product scenarios from Google, Stripe, Spotify, and Airbnb decisions. Not textbook theory — actual product dilemmas with no obvious right answer.</p>
+              <span class="step-tag">Traditional · AI-Assisted · Agentic</span>
+            </div>
+          </div>
+
+          <div class="step" role="listitem">
+            <div class="step-num-col">
+              <span class="step-num">02</span>
+              <div class="step-icon-wrap" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              </div>
+            </div>
+            <div class="step-body">
+              <h3 class="step-title">Write your answer</h3>
+              <p class="step-desc">Think through the problem using the FLOW framework — Frame, List, Optimize, Win. Structure your thinking before submitting. No hints until you're done.</p>
+              <span class="step-tag">avg. 12 minutes per session</span>
+            </div>
+          </div>
+
+          <div class="step" role="listitem">
+            <div class="step-num-col">
+              <span class="step-num">03</span>
+              <div class="step-icon-wrap" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+            </div>
+            <div class="step-body">
+              <h3 class="step-title">Get graded by Luma</h3>
+              <p class="step-desc">Luma scores your answer across strategy, user empathy, metrics, and execution — then shows you the exact reasoning move you're missing and what a 9/10 looks like.</p>
+              <span class="step-tag">Product IQ score tracks over time</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── TESTIMONIALS ── -->
+<!-- ── LUMA SHOWCASE ── -->
+<section class="luma-showcase" aria-labelledby="luma-showcase-heading">
+  <div class="container">
+    <div class="ls-header">
+      <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span>Live AI interviews</p>
+      <h2 class="ls-h2" id="luma-showcase-heading">
+        Luma doesn't just grade your answers.
+        <span class="line-break">It <em>interviews you</em> in real time.</span>
+      </h2>
+      <p class="ls-desc">
+        Practice a full product sense interview with Luma as your interviewer — voice, text, follow-up questions, and rubric scoring. The feedback isn't generic. Luma knows exactly which reasoning move you skipped.
+      </p>
+    </div>
+
+    <div class="ls-grid">
+
+      <!-- LEFT: main interview screenshot -->
+      <div class="ls-main-wrap">
+        <div class="ls-screen">
+          <div class="ls-screen-bar">
+            <span class="tb-dot r"></span>
+            <span class="tb-dot y"></span>
+            <span class="tb-dot g"></span>
+            <span class="tb-url" style="margin-left:10px; padding:3px 12px; background:var(--surface-1); border:1px solid var(--border); border-radius:5px; font-size:11px; color:var(--text-3); letter-spacing:0.02em;">hackproduct.com/live-interviews</span>
+          </div>
+          <img
+            src=".playwright-mcp/.playwright-mcp/interview-active-session.png"
+            alt="Luma live interview: active session with Uber PM role, transcript showing question and user response"
+            loading="lazy"
+          >
+        </div>
+      </div>
+
+      <!-- RIGHT: chat panel screenshot + callout cards -->
+      <div class="ls-right">
+        <div class="ls-chat-wrap">
+          <div class="ls-chat">
+            <img
+              src=".playwright-mcp/.playwright-mcp/interview-redesign-chat-open.png"
+              alt="Luma chat panel open during interview — Luma avatar on left, conversation thread on right"
+              loading="lazy"
+            >
+          </div>
+        </div>
+
+        <div class="ls-callout-grid">
+          <div class="ls-callout">
+            <div class="ls-callout-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </div>
+            <p class="ls-callout-title">Voice + text, your choice</p>
+            <p class="ls-callout-desc">Speak naturally or type. Luma adapts to how you think best under pressure.</p>
+          </div>
+          <div class="ls-callout">
+            <div class="ls-callout-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <p class="ls-callout-title">Follow-up questions</p>
+            <p class="ls-callout-desc">Luma probes your reasoning exactly like a real interviewer would. Vague answers get challenged.</p>
+          </div>
+          <div class="ls-callout">
+            <div class="ls-callout-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <p class="ls-callout-title">FLOW rubric scoring</p>
+            <p class="ls-callout-desc">Every response scored across strategy, metrics, empathy, and execution. No vague "be more structured."</p>
+          </div>
+          <div class="ls-callout">
+            <div class="ls-callout-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <p class="ls-callout-title">Real company scenarios</p>
+            <p class="ls-callout-desc">Uber, Stripe, Google, Airbnb. Luma plays the interviewer. You play the PM candidate.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- moat banner -->
+    <div class="ls-moat" aria-label="Live interview differentiator">
+      <p class="ls-moat-text">
+        No AI interview coach gives you a rubric-graded debrief with <em>named reasoning gaps</em> after every single answer.
+        That's the moat.
+      </p>
+      <div class="ls-moat-stat" aria-label="Founding member countries">
+        <p class="ls-moat-stat-num">12</p>
+        <p class="ls-moat-stat-label">countries · founding members</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ── PROGRESS PROOF ── -->
+<section class="proof-section" aria-labelledby="proof-heading">
+  <div class="container">
+    <div class="proof-inner">
+      <div class="proof-left">
+        <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span>Track progress</p>
+        <h2 class="proof-h2" id="proof-heading">You'll know exactly where you're weak.</h2>
+        <p class="proof-desc">
+          Your Product IQ score updates after every challenge. Luma tracks all six competency dimensions — so you stop guessing and start drilling the specific gap between where you are and where you need to be.
+        </p>
+        <div class="proof-stats" role="list">
+          <div class="proof-stat" role="listitem">
+            <p class="proof-stat-num"><em>+18</em></p>
+            <p class="proof-stat-label">avg. Product IQ jump in first 7 days</p>
+          </div>
+          <div class="proof-stat" role="listitem">
+            <p class="proof-stat-num">12<em>m</em></p>
+            <p class="proof-stat-label">average session — fits any schedule</p>
+          </div>
+          <div class="proof-stat" role="listitem">
+            <p class="proof-stat-num">6</p>
+            <p class="proof-stat-label">competency dimensions tracked automatically</p>
+          </div>
+        </div>
+      </div>
+      <div class="proof-right">
+        <div class="proof-screen">
+          <div class="proof-screen-bar">
+            <span class="tb-dot r"></span>
+            <span class="tb-dot y"></span>
+            <span class="tb-dot g"></span>
+          </div>
+          <img
+            src=".playwright-mcp/product-progress.png"
+            alt="HackProduct Progress page showing FLOW skill levels, competency scores, and challenge completion stats"
+            loading="lazy"
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── COMPARISON ── -->
+<section class="compare" aria-labelledby="compare-heading">
+  <div class="container">
+    <div class="compare-header">
+      <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span>The prep gap</p>
+      <h2 class="compare-h2" id="compare-heading">How engineers who land product roles actually prepare.</h2>
+    </div>
+
+    <div class="compare-table" role="table" aria-label="Preparation method comparison">
+      <div class="compare-thead" role="row">
+        <div class="compare-thead-cell" role="columnheader">Dimension</div>
+        <div class="compare-thead-cell" role="columnheader">What most people do</div>
+        <div class="compare-thead-cell hp" role="columnheader">HackProduct</div>
+      </div>
+
+      <div class="compare-row" role="row">
+        <div class="compare-cell topic" role="cell">Practice format</div>
+        <div class="compare-cell" role="cell">
+          <svg class="c-icon icon-cross" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Passive video watching, blog reading
+        </div>
+        <div class="compare-cell hp-strong" role="cell">
+          <svg class="c-icon icon-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Active writing against real scenarios daily
+        </div>
+      </div>
+
+      <div class="compare-row" role="row">
+        <div class="compare-cell topic" role="cell">Feedback quality</div>
+        <div class="compare-cell" role="cell">
+          <svg class="c-icon icon-cross" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          "Be more structured" — vague, not actionable
+        </div>
+        <div class="compare-cell hp-strong" role="cell">
+          <svg class="c-icon icon-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Specific rubric scores: strategy, metrics, empathy, execution
+        </div>
+      </div>
+
+      <div class="compare-row" role="row">
+        <div class="compare-cell topic" role="cell">Progress tracking</div>
+        <div class="compare-cell" role="cell">
+          <svg class="c-icon icon-cross" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          No way to know if you're actually improving
+        </div>
+        <div class="compare-cell hp-strong" role="cell">
+          <svg class="c-icon icon-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Product IQ score updates after every session
+        </div>
+      </div>
+
+      <div class="compare-row" role="row">
+        <div class="compare-cell topic" role="cell">Time investment</div>
+        <div class="compare-cell" role="cell">
+          <svg class="c-icon icon-cross" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Hours of prep that don't compound
+        </div>
+        <div class="compare-cell hp-strong" role="cell">
+          <svg class="c-icon icon-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          12 minutes/day. Compounding skill, measurable by day 7
+        </div>
+      </div>
+
+      <div class="compare-row" role="row">
+        <div class="compare-cell topic" role="cell">Mental model</div>
+        <div class="compare-cell" role="cell">
+          <svg class="c-icon icon-cross" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Memorized frameworks that break under pressure
+        </div>
+        <div class="compare-cell hp-strong" role="cell">
+          <svg class="c-icon icon-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          FLOW framework internalized through daily reps
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ── FINAL CTA ── -->
+<section class="final" id="signup" aria-labelledby="final-heading">
+  <div class="container">
+    <div class="final-inner">
+      <div class="final-top">
+
+        <div class="final-left">
+          <div class="final-tag">
+            Summer 2026 · 27 founding spots left
+          </div>
+          <h2 class="final-h2" id="final-heading">Stop studying.<br><em>Start practicing.</em></h2>
+          <p class="final-desc">
+            100 founding member spots. 50% off for life.
+            The engineers who get in now will have a measurable product thinking advantage before this is publicly available.
+          </p>
+          <form class="final-form" onsubmit="return false">
+            <input type="email" placeholder="you@company.com" aria-label="Email address" autocomplete="email">
+            <button type="submit">Reserve my founding spot</button>
+          </form>
+          <p class="final-footnote">No spam. We'll reach out one week before launch.</p>
+        </div>
+
+        <div class="final-right">
+          <div class="final-mascot-wrap" aria-hidden="true">
+            <!-- Luma celebrating -->
+            <svg width="140" height="160" viewBox="0 0 64 72" fill="none" aria-hidden="true">
+              <!-- sparkles -->
+              <circle cx="6" cy="22" r="1.5" fill="#d4963a">
+                <animate attributeName="opacity" values="0;1;0" dur="0.9s" repeatCount="indefinite"/>
+                <animate attributeName="cy" values="22;14;22" dur="0.9s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="58" cy="18" r="1.5" fill="#d4963a">
+                <animate attributeName="opacity" values="0;1;0" dur="0.9s" begin="0.35s" repeatCount="indefinite"/>
+                <animate attributeName="cy" values="18;10;18" dur="0.9s" begin="0.35s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="10" cy="52" r="1.2" fill="#52b788">
+                <animate attributeName="opacity" values="0;1;0" dur="0.7s" begin="0.18s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="54" cy="54" r="1.2" fill="#52b788">
+                <animate attributeName="opacity" values="0;1;0" dur="0.7s" begin="0.5s" repeatCount="indefinite"/>
+              </circle>
+              <path d="M48 6 L49 9.5 L52.5 10.5 L49 11.5 L48 15 L47 11.5 L43.5 10.5 L47 9.5 Z" fill="#d4963a">
+                <animate attributeName="opacity" values="0;1;0" dur="1.1s" begin="0.22s" repeatCount="indefinite"/>
+              </path>
+              <!-- cap with bounce -->
+              <g>
+                <animateTransform attributeName="transform" type="translate" values="0,0;0,-6;0,0" dur="0.7s" repeatCount="indefinite"/>
+                <polygon points="18,22 46,22 50,16 14,16" fill="#4a7c59"/>
+                <rect x="22" y="10" width="20" height="12" rx="1" fill="#4a7c59"/>
+                <circle cx="32" cy="10" r="1.5" fill="#4a7c59"/>
+                <line x1="42" y1="12" x2="46" y2="18" stroke="#4a7c59" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="46" cy="19" r="1.5" fill="#4a7c59"/>
+              </g>
+              <!-- growth arrow animated -->
+              <g>
+                <animateTransform attributeName="transform" type="translate" values="0,0;3,-4;0,0" dur="0.85s" repeatCount="indefinite"/>
+                <line x1="48" y1="18" x2="54" y2="10" stroke="#52b788" stroke-width="2.5" stroke-linecap="round"/>
+                <polyline points="50,10 54,10 54,14" stroke="#52b788" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              </g>
+              <!-- ears -->
+              <rect x="8" y="32" width="6" height="10" rx="3" fill="#4a7c59"/>
+              <rect x="50" y="32" width="6" height="10" rx="3" fill="#4a7c59"/>
+              <!-- head -->
+              <rect x="14" y="22" width="36" height="30" rx="8" fill="#f5f1ea" stroke="#4a7c59" stroke-width="3"/>
+              <!-- arch eyes (celebrating) -->
+              <path d="M22 36 Q25 33 28 36" stroke="#4a7c59" stroke-width="2.5" stroke-linecap="round" fill="none">
+                <animate attributeName="d" values="M22 36 Q25 33 28 36;M22 35 Q25 31 28 35;M22 36 Q25 33 28 36" dur="0.7s" repeatCount="indefinite"/>
+              </path>
+              <path d="M36 36 Q39 33 42 36" stroke="#4a7c59" stroke-width="2.5" stroke-linecap="round" fill="none">
+                <animate attributeName="d" values="M36 36 Q39 33 42 36;M36 35 Q39 31 42 35;M36 36 Q39 33 42 36" dur="0.7s" repeatCount="indefinite"/>
+              </path>
+              <!-- wide smile -->
+              <path d="M25 42 Q32 51 39 42" stroke="#4a7c59" stroke-width="2.5" stroke-linecap="round" fill="none">
+                <animate attributeName="d" values="M25 42 Q32 51 39 42;M25 41 Q32 52 39 41;M25 42 Q32 51 39 42" dur="0.7s" repeatCount="indefinite"/>
+              </path>
+            </svg>
+          </div>
+
+          <div class="final-scarcity-block">
+            <div class="final-scarcity-label">
+              <span><strong>73 of 100</strong> founding spots taken</span>
+              <span>27 remaining</span>
+            </div>
+            <div class="final-scarcity-track" role="progressbar" aria-valuenow="73" aria-valuemin="0" aria-valuemax="100">
+              <div class="final-scarcity-fill"></div>
+            </div>
+            <div class="final-perks" role="list">
+              <div class="perk" role="listitem">
+                <div class="perk-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                </div>
+                <span>50% off Pro pricing, locked in for life</span>
+              </div>
+              <div class="perk" role="listitem">
+                <div class="perk-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                </div>
+                <span>Direct access to the founding member Discord</span>
+              </div>
+              <div class="perk" role="listitem">
+                <div class="perk-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <span>Early access before public launch</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="container" style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+    <p class="footer-brand">© 2026 HackProduct</p>
+    <nav class="footer-links" aria-label="Footer navigation">
+      <a href="#">Privacy policy</a>
+      <a href="#">Terms of service</a>
+    </nav>
+  </div>
+</footer>
+
+</div><!-- /wrap -->
+</body>
+</html>

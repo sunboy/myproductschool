@@ -18,6 +18,7 @@ export function ChallengeCardV2({ challenge, onStart }: ChallengeCardV2Props) {
 
   return (
     <div
+      data-hatch-sound="open"
       className="bg-surface-container rounded-xl p-5 hover:bg-surface-container-high transition-colors cursor-pointer"
       onClick={() => onStart(challenge.id)}
     >

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const COMPANIES = ['Meta', 'Google', 'Stripe', 'Airbnb']
 
@@ -38,7 +38,7 @@ export default function SimulationPage() {
           Practice like it&apos;s real
         </h1>
         <p className="text-on-surface-variant">
-          3 rounds. 45 minutes. Luma debriefs you at the end.
+          3 rounds. 45 minutes. Hatch debriefs you at the end.
         </p>
       </div>
 
@@ -50,8 +50,8 @@ export default function SimulationPage() {
           </h2>
           {suggestedCompany && (
             <div className="flex items-center gap-1.5 text-[11px] text-on-surface-variant">
-              <LumaGlyph size={16} state="none" className="text-primary" />
-              <span>Luma suggests: <span className="font-bold text-primary">{suggestedCompany}</span></span>
+              <HatchGlyph size={16} state="none" className="text-primary" />
+              <span>Hatch suggests: <span className="font-bold text-primary">{suggestedCompany}</span></span>
             </div>
           )}
         </div>

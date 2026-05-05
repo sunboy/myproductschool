@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HackProduct | Master Product Sense for Tech Careers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Literata:ital,wght@0,400;0,500;0,700;1,400&family=Nunito+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-900: #0B1F14;
+    --green-800: #122B1C;
+    --green-700: #1B4332;
+    --green-600: #2D6A4F;
+    --green-500: #40916C;
+    --green-400: #52B788;
+    --green-300: #74C69D;
+    --amber-500: #F59E0B;
+    --amber-400: #FBBF24;
+    --amber-300: #FCD34D;
+    --cream: #FDF6E3;
+    --white: #FFFFFF;
+    --gray-300: #D1D5DB;
+    --gray-400: #9CA3AF;
+    --gray-500: #6B7280;
+    --red-400: #F87171;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-serif: 'Literata', serif;
+    --font-body: 'Nunito Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--green-900);
+    color: var(--cream);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 40px;
+    background: rgba(11, 31, 20, 0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(82, 183, 136, 0.1);
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none; color: var(--cream);
+    font-family: var(--font-display); font-weight: 700; font-size: 20px;
+  }
+  .nav-logo img { height: 32px; }
+  .nav-cta {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 22px; border-radius: 8px;
+    background: var(--amber-500); color: var(--green-900);
+    font-family: var(--font-display); font-weight: 600; font-size: 14px;
+    text-decoration: none; letter-spacing: -0.01em;
+    transition: all 0.2s;
+  }
+  .nav-cta:hover { background: var(--amber-400); transform: translateY(-1px); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+    width: 900px; height: 900px;
+    background: radial-gradient(circle, rgba(45, 106, 79, 0.25) 0%, rgba(11, 31, 20, 0) 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 16px; border-radius: 100px;
+    background: rgba(82, 183, 136, 0.12);
+    border: 1px solid rgba(82, 183, 136, 0.2);
+    font-family: var(--font-display); font-size: 13px; font-weight: 500;
+    color: var(--green-300);
+    margin-bottom: 28px;
+    animation: fadeInDown 0.6s ease-out;
+  }
+  .hero-badge .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green-400);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(36px, 5.5vw, 64px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    max-width: 720px;
+    margin-bottom: 20px;
+    animation: fadeInUp 0.6s ease-out 0.1s both;
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--amber-400);
+    font-family: var(--font-serif);
+    font-style: italic;
+  }
+  .hero-sub {
+    font-size: 18px;
+    color: var(--gray-300);
+    max-width: 560px;
+    margin-bottom: 36px;
+    line-height: 1.7;
+    animation: fadeInUp 0.6s ease-out 0.2s both;
+  }
+
+  /* ── INLINE FORM (hero) ── */
+  .hero-form {
+    display: flex; gap: 10px;
+    width: 100%; max-width: 480px;
+    animation: fadeInUp 0.6s ease-out 0.3s both;
+  }
+  .hero-form input {
+    flex: 1;
+    padding: 14px 18px;
+    border-radius: 10px;
+    border: 1px solid rgba(82, 183, 136, 0.25);
+    background: rgba(18, 43, 28, 0.8);
+    color: var(--cream);
+    font-family: var(--font-body);
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .hero-form input::placeholder { color: var(--gray-500); }
+  .hero-form input:focus { border-color: var(--green-400); }
+  .hero-form button {
+    padding: 14px 28px;
+    border-radius: 10px; border: none;
+    background: var(--amber-500);
+    color: var(--green-900);
+    font-family: var(--font-display); font-weight: 700; font-size: 15px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .hero-form button:hover { background: var(--amber-400); transform: translateY(-1px); }
+  .hero-micro {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--gray-500);
+    animation: fadeInUp 0.6s ease-out 0.35s both;
+  }
+  .hero-proof {
+    margin-top: 40px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--gray-400);
+    font-family: var(--font-display);
+    animation: fadeInUp 0.6s ease-out 0.45s both;
+  }
+  .hero-proof .divider { width: 1px; height: 16px; background: rgba(255,255,255,0.15); }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── PAIN SECTION ── */
+  .pain {
+    padding: 80px 24px;
+    max-width: 800px; margin: 0 auto;
+  }
+  .pain-label {
+    font-family: var(--font-display); font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--green-400);
+    margin-bottom: 20px;
+  }
+  .pain h2 {
+    font-family: var(--font-display); font-size: 32px; font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 40px;
+    line-height: 1.2;
+  }
+  .pain-card {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 20px 24px;
+    border-radius: 12px;
+    background: rgba(18, 43, 28, 0.5);
+    border: 1px solid rgba(82, 183, 136, 0.08);
+    margin-bottom: 12px;
+  }
+  .pain-icon {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    background: rgba(248, 113, 113, 0.12);
+    color: var(--red-400);
+    font-size: 14px;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+  .pain-text {
+    font-size: 16px; color: var(--gray-300); line-height: 1.6;
+  }
+  .pain-text strong { color: var(--cream); font-weight: 600; }
+  .pain-fix {
+    margin-top: 32px;
+    text-align: center;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 22px;
+    color: var(--amber-400);
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how {
+    padding: 80px 24px;
+    max-width: 960px; margin: 0 auto;
+  }
+  .section-label {
+    font-family: var(--font-display); font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--green-400);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .how h2 {
+    font-family: var(--font-display); font-size: 32px; font-weight: 700;
+    letter-spacing: -0.02em; text-align: center;
+    margin-bottom: 56px;
+  }
+  .steps {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+  }
+  .step {
+    padding: 32px 28px;
+    border-radius: 16px;
+    background: rgba(18, 43, 28, 0.6);
+    border: 1px solid rgba(82, 183, 136, 0.1);
+    position: relative;
+    transition: border-color 0.3s;
+  }
+  .step:hover { border-color: rgba(82, 183, 136, 0.25); }
+  .step-num {
+    font-family: var(--font-display);
+    font-size: 48px; font-weight: 700;
+    color: rgba(82, 183, 136, 0.15);
+    line-height: 1; margin-bottom: 16px;
+  }
+  .step h3 {
+    font-family: var(--font-display); font-size: 18px; font-weight: 600;
+    margin-bottom: 10px; color: var(--cream);
+  }
+  .step p {
+    font-size: 14px; color: var(--gray-400); line-height: 1.65;
+  }
+
+  /* ── COMPARE ── */
+  .compare {
+    padding: 80px 24px;
+    max-width: 740px; margin: 0 auto;
+  }
+  .compare h2 {
+    font-family: var(--font-display); font-size: 32px; font-weight: 700;
+    letter-spacing: -0.02em; text-align: center;
+    margin-bottom: 40px;
+  }
+  .compare-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(82, 183, 136, 0.12);
+  }
+  .compare-table th, .compare-table td {
+    padding: 16px 20px;
+    text-align: left; font-size: 14px;
+  }
+  .compare-table thead th {
+    background: rgba(18, 43, 28, 0.8);
+    font-family: var(--font-display); font-weight: 600; font-size: 13px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--gray-400);
+    border-bottom: 1px solid rgba(82, 183, 136, 0.12);
+  }
+  .compare-table thead th:last-child {
+    color: var(--amber-400);
+  }
+  .compare-table tbody td {
+    background: rgba(11, 31, 20, 0.6);
+    border-bottom: 1px solid rgba(82, 183, 136, 0.06);
+    color: var(--gray-300);
+  }
+  .compare-table tbody tr:last-child td { border-bottom: none; }
+  .compare-table td:first-child { font-weight: 500; color: var(--cream); }
+  .check { color: var(--green-400); font-weight: 700; }
+  .cross { color: var(--gray-500); }
+
+  /* ── WHO ── */
+  .who {
+    padding: 60px 24px 80px;
+    max-width: 800px; margin: 0 auto;
+    text-align: center;
+  }
+  .who h2 {
+    font-family: var(--font-display); font-size: 28px; font-weight: 700;
+    margin-bottom: 32px; letter-spacing: -0.02em;
+  }
+  .personas {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+  }
+  .persona-tag {
+    padding: 10px 20px;
+    border-radius: 100px;
+    background: rgba(82, 183, 136, 0.08);
+    border: 1px solid rgba(82, 183, 136, 0.15);
+    font-family: var(--font-display); font-size: 14px; font-weight: 500;
+    color: var(--green-300);
+  }
+
+  /* ── CREDIBILITY ── */
+  .cred {
+    padding: 60px 24px;
+    text-align: center;
+    max-width: 640px; margin: 0 auto;
+  }
+  .cred-quote {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 20px;
+    color: var(--gray-300);
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+  .cred-author {
+    font-family: var(--font-display);
+    font-size: 14px;
+    color: var(--gray-500);
+  }
+  .cred-divider {
+    width: 40px; height: 2px;
+    background: var(--green-600);
+    margin: 32px auto;
+    border-radius: 2px;
+  }
+
+  /* ── FINAL CTA ── */
+  .final-cta {
+    padding: 80px 24px 100px;
+    text-align: center;
+    position: relative;
+  }
+  .final-cta::before {
+    content: '';
+    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 800px; height: 600px;
+    background: radial-gradient(ellipse, rgba(45, 106, 79, 0.2) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .final-cta h2 {
+    font-family: var(--font-display); font-size: 36px; font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 12px;
+    position: relative;
+  }
+  .final-cta h2 em {
+    font-style: normal; color: var(--amber-400);
+    font-family: var(--font-serif); font-style: italic;
+  }
+  .final-sub {
+    font-size: 16px; color: var(--gray-400);
+    margin-bottom: 36px; position: relative;
+  }
+  .final-form {
+    display: flex; gap: 10px;
+    max-width: 480px; margin: 0 auto;
+    position: relative;
+  }
+  .final-form input {
+    flex: 1;
+    padding: 14px 18px; border-radius: 10px;
+    border: 1px solid rgba(82, 183, 136, 0.25);
+    background: rgba(18, 43, 28, 0.8);
+    color: var(--cream);
+    font-family: var(--font-body); font-size: 15px;
+    outline: none;
+  }
+  .final-form input:focus { border-color: var(--green-400); }
+  .final-form input::placeholder { color: var(--gray-500); }
+  .final-form button {
+    padding: 14px 28px; border-radius: 10px; border: none;
+    background: var(--amber-500); color: var(--green-900);
+    font-family: var(--font-display); font-weight: 700; font-size: 15px;
+    cursor: pointer; white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .final-form button:hover { background: var(--amber-400); transform: translateY(-1px); }
+  .final-micro {
+    margin-top: 14px; font-size: 13px; color: var(--gray-500);
+    position: relative;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 40px 24px;
+    text-align: center;
+    font-size: 13px; color: var(--gray-500);
+    border-top: 1px solid rgba(82, 183, 136, 0.08);
+    font-family: var(--font-display);
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    nav { padding: 14px 20px; }
+    .hero { padding: 100px 20px 60px; }
+    .hero h1 { font-size: 32px; }
+    .hero-sub { font-size: 16px; }
+    .hero-form { flex-direction: column; }
+    .hero-form button { width: 100%; }
+    .hero-proof { flex-direction: column; gap: 4px; }
+    .hero-proof .divider { display: none; }
+    .steps { grid-template-columns: 1fr; }
+    .pain, .how, .compare, .who, .cred, .final-cta { padding-left: 20px; padding-right: 20px; }
+    .compare-table th, .compare-table td { padding: 12px 14px; font-size: 13px; }
+    .final-cta h2 { font-size: 28px; }
+    .final-form { flex-direction: column; }
+    .final-form button { width: 100%; }
+    .personas { gap: 8px; }
+    .persona-tag { font-size: 13px; padding: 8px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <img src="https://www.hackproduct.com/images/hackylogo.png" alt="HackProduct">
+    HackProduct
+  </a>
+  <a href="#waitlist-form" class="nav-cta">Get Early Access →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="waitlist-form">
+  <div class="hero-badge">
+    <span class="dot"></span>
+    Launching Summer 2026 · Only 100 founding spots
+  </div>
+
+  <h1>You can code. But can you <em>think</em> like a PM?</h1>
+
+  <p class="hero-sub">
+    Most engineers bomb the product sense round — not because they aren't smart, but because nobody taught them the frameworks. HackProduct trains your product thinking like LeetCode trained your algorithms.
+  </p>
+
+  <div class="hero-form">
+    <input type="email" placeholder="you@company.com" aria-label="Email address">
+    <button type="submit">Join Waitlist</button>
+  </div>
+  <p class="hero-micro">No spam. Founding members lock in 50% off for life.</p>
+
+  <div class="hero-proof">
+    <span>Inspired by real FAANG product decisions</span>
+    <span class="divider"></span>
+    <span>AI coaching by Luma</span>
+    <span class="divider"></span>
+    <span>FLOW Framework™</span>
+  </div>
+</section>
+
+<!-- PAIN -->
+<section class="pain">
+  <p class="pain-label">Sound familiar?</p>
+  <h2>The interview that coding can't solve.</h2>
+
+  <div class="pain-card">
+    <div class="pain-icon">✕</div>
+    <p class="pain-text">
+      You crushed 500 LeetCode problems but <strong>froze when asked "How would you improve Google Maps?"</strong>
+    </p>
+  </div>
+
+  <div class="pain-card">
+    <div class="pain-icon">✕</div>
+    <p class="pain-text">
+      You're a senior engineer but <strong>got passed over for a PM role</strong> because you couldn't articulate product tradeoffs.
+    </p>
+  </div>
+
+  <div class="pain-card">
+    <div class="pain-icon">✕</div>
+    <p class="pain-text">
+      You prepped with YouTube videos and blog posts but had <strong>no way to practice and get real feedback</strong> on your product thinking.
+    </p>
+  </div>
+
+  <p class="pain-fix">HackProduct fixes this.</p>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <p class="section-label">How It Works</p>
+  <h2>Three steps. One sharper mind.</h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>Pick a challenge</h3>
+      <p>Real product scenarios inspired by decisions at Google, Stripe, Spotify, and more. Not textbook theory — actual product dilemmas.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>Write your answer</h3>
+      <p>Think through the problem. Structure your recommendation using the FLOW framework. Hit submit when you're ready.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>Get AI coaching</h3>
+      <p>Luma, your AI product coach, grades you across strategy, user empathy, metrics, and execution — then shows you exactly how to improve.</p>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARE -->
+<section class="compare">
+  <p class="section-label">Why HackProduct</p>
+  <h2>The gap nobody filled. Until now.</h2>
+
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>YouTube / Books</th>
+        <th>HackProduct ✦</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Hands-on practice</td>
+        <td class="cross">✕ Passive</td>
+        <td class="check">✓ Write & submit</td>
+      </tr>
+      <tr>
+        <td>Personalized feedback</td>
+        <td class="cross">✕ None</td>
+        <td class="check">✓ AI coaching</td>
+      </tr>
+      <tr>
+        <td>Structured framework</td>
+        <td class="cross">✕ Scattered tips</td>
+        <td class="check">✓ FLOW method</td>
+      </tr>
+      <tr>
+        <td>Track your growth</td>
+        <td class="cross">✕ No signal</td>
+        <td class="check">✓ Product IQ score</td>
+      </tr>
+      <tr>
+        <td>Daily habit loop</td>
+        <td class="cross">✕ One-off</td>
+        <td class="check">✓ Streaks & boards</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section class="who">
+  <h2>Built for people who ship.</h2>
+  <div class="personas">
+    <span class="persona-tag">Engineers prepping for PM interviews</span>
+    <span class="persona-tag">PMs sharpening product intuition</span>
+    <span class="persona-tag">Students targeting APM programs</span>
+    <span class="persona-tag">Tech leads building product chops</span>
+    <span class="persona-tag">Career switchers into product</span>
+  </div>
+</section>
+
+<!-- CREDIBILITY -->
+<section class="cred">
+  <div class="cred-divider"></div>
+  <p class="cred-quote">
+    "The FLOW framework is a mental model distilled from how top PMs at FAANG companies actually make product decisions — not theory from a textbook, but patterns from real product reviews."
+  </p>
+  <p class="cred-author">The FLOW Framework™ · Built into every HackProduct challenge</p>
+  <div class="cred-divider"></div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <h2>Stop studying. Start <em>practicing.</em></h2>
+  <p class="final-sub">100 founding member spots. 50% off for life. Your arena opens this summer.</p>
+
+  <div class="final-form">
+    <input type="email" placeholder="you@company.com" aria-label="Email address">
+    <button type="submit">Claim My Spot</button>
+  </div>
+  <p class="final-micro">No spam. Just a heads-up when your practice arena is ready.</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  © 2026 HackProduct. All rights reserved.
+</footer>
+
+</body>
+</html>

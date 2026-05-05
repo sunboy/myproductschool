@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
@@ -28,7 +28,7 @@ interface MoveData {
   body: string
   expert: { initials: string; name: string; role: string; quote: string }
   scenario: { label: string; text: string }
-  lumaMessage: string
+  hatchMessage: string
 }
 
 function exampleBody(scenario: string, explanation: string): string {
@@ -57,7 +57,7 @@ const MOVES: MoveData[] = [
       label: 'Applied — B2B SaaS notifications',
       text: "PM says: add real-time push notifications. Framed correctly, the job isn't to notify — it's to keep teams in sync without breaking focus. That's a completely different problem to solve.",
     },
-    lumaMessage: "Before jumping to solutions, great product thinkers ask one question: what job is this person actually trying to do? The answer is almost never what was stated.",
+    hatchMessage: "Before jumping to solutions, great product thinkers ask one question: what job is this person actually trying to do? The answer is almost never what was stated.",
     cards: [
       {
         title: 'Most people start solving immediately',
@@ -100,7 +100,7 @@ const MOVES: MoveData[] = [
       label: 'Applied — B2B SaaS notifications',
       text: "Listed: push notifs, Slack/Teams integration, daily digest, in-app feed, @mention threads, smart batching. The Slack integration — which nobody asked for — turns out to be the highest-leverage option by far.",
     },
-    lumaMessage: "The first solution you think of is almost never the best one. Generate until you surprise yourself — that's when you know you've actually opened the space.",
+    hatchMessage: "The first solution you think of is almost never the best one. Generate until you surprise yourself — that's when you know you've actually opened the space.",
     cards: [
       {
         title: "A brainstorm dump isn't a List",
@@ -143,7 +143,7 @@ const MOVES: MoveData[] = [
       label: 'Applied — B2B SaaS notifications',
       text: "RICE scores: Push notifs = 42. Daily digest = 31. Slack bot = 118. The number makes the decision obvious — and gives you something concrete to bring into the planning meeting instead of a preference.",
     },
-    lumaMessage: "A number beats an opinion every time. Even a rough RICE score converts a preference argument into a tradeoff conversation — and that's a much better meeting.",
+    hatchMessage: "A number beats an opinion every time. Even a rough RICE score converts a preference argument into a tradeoff conversation — and that's a much better meeting.",
     cards: [
       {
         title: 'Anyone can list options',
@@ -186,7 +186,7 @@ const MOVES: MoveData[] = [
       label: 'Applied — B2B SaaS notifications',
       text: 'Instead of "we should build a Slack bot (RICE: 118)," you say: "For our enterprise users who run operations in Slack, this replaces their current workflow of switching back to our app — and we can validate it in one sprint." Approved in the meeting.',
     },
-    lumaMessage: "Engineers think the win is building the right thing. Product thinkers know the win is getting the right thing built. Those are different skills — and this step is where you develop the second one.",
+    hatchMessage: "Engineers think the win is building the right thing. Product thinkers know the win is getting the right thing built. Those are different skills — and this step is where you develop the second one.",
     cards: [
       {
         title: "A decision no one hears isn't a decision",
@@ -488,7 +488,7 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
 
         {/* Header */}
         <div className="flex items-center gap-2 mb-1">
-          <LumaGlyph size={28} state="speaking" className="text-primary shrink-0" />
+          <HatchGlyph size={28} state="speaking" className="text-primary shrink-0" />
           <span className="font-headline font-bold text-primary">hackproduct</span>
         </div>
         <p className="font-body text-sm text-on-surface-variant mb-5">
@@ -582,23 +582,23 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
   )
 }
 
-// ── Luma Rail ──────────────────────────────────────────────────
-function LumaRail({ message, visible }: { message: string; visible: boolean }) {
+// ── Hatch Rail ──────────────────────────────────────────────────
+function HatchRail({ message, visible }: { message: string; visible: boolean }) {
   return (
     <div
       className="sticky top-24 hidden lg:block transition-all duration-400"
       style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateX(0)' : 'translateX(20px)' }}
     >
       <div className="bg-inverse-surface rounded-2xl rounded-bl-sm p-4 mb-3">
-        <p className="font-label text-xs font-bold uppercase tracking-widest text-inverse-on-surface opacity-40 mb-2">Luma</p>
+        <p className="font-label text-xs font-bold uppercase tracking-widest text-inverse-on-surface opacity-40 mb-2">Hatch</p>
         <p className="text-sm text-inverse-on-surface leading-relaxed">{message}</p>
       </div>
       <div className="flex justify-center">
-        <div style={{ animation: 'lumaFloat 3s ease-in-out infinite' }}>
-          <LumaGlyph size={56} state="speaking" className="text-primary" />
+        <div style={{ animation: 'hatchFloat 3s ease-in-out infinite' }}>
+          <HatchGlyph size={56} state="speaking" className="text-primary" />
         </div>
       </div>
-      <style>{`@keyframes lumaFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }`}</style>
+      <style>{`@keyframes hatchFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }`}</style>
     </div>
   )
 }
@@ -672,7 +672,7 @@ export default function FlowMarketingPage() {
       {/* ── Hero ───────────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-6 py-12">
         <div className="flex items-start gap-4">
-          <LumaGlyph size={48} state="speaking" className="text-primary shrink-0 mt-1" />
+          <HatchGlyph size={48} state="speaking" className="text-primary shrink-0 mt-1" />
           <div>
             <p className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">HackProduct · The Framework</p>
             <h1 className="font-headline text-4xl font-bold text-on-surface leading-tight mb-2">
@@ -896,8 +896,8 @@ export default function FlowMarketingPage() {
                 </div>
               </div>
 
-              {/* Right: Luma rail */}
-              <LumaRail message={move.lumaMessage} visible={isVisible} />
+              {/* Right: Hatch rail */}
+              <HatchRail message={move.hatchMessage} visible={isVisible} />
             </div>
           </div>
         )

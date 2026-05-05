@@ -82,7 +82,7 @@ const jsonLd = {
           name: 'What is HackProduct?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'HackProduct is a product sense training platform for engineers, PMs, and students. It helps you practice real product decisions from companies like Google, Uber, and Stripe, with AI-coached feedback from Luma, your personal product coach.',
+            text: 'HackProduct is a product sense training platform for engineers, PMs, and students. It helps you practice real product decisions from companies like Google, Uber, and Stripe, with AI-coached feedback from Hatch, your personal product coach.',
           },
         },
         {
@@ -267,10 +267,10 @@ export default async function WaitlistBPage() {
             </div>
           </div>
 
-          {/* Luma interjection 1 */}
+          {/* Hatch interjection 1 */}
           <div className="relative z-10 pt-40 flex justify-start pl-[15%]">
             <div className="bg-secondary-container p-4 rounded-t-2xl rounded-br-2xl border-l-4 border-outline text-on-secondary-container font-label font-bold text-sm max-w-[200px]">
-              &ldquo;Most engineers struggle in the Product Sense round. Luma helps you win&rdquo;
+              &ldquo;Most engineers struggle in the Product Sense round. Hatch helps you win&rdquo;
             </div>
           </div>
 
@@ -322,7 +322,7 @@ export default async function WaitlistBPage() {
             </div>
           </div>
 
-          {/* Luma interjection 2 */}
+          {/* Hatch interjection 2 */}
           <div className="relative z-10 pt-20 flex justify-center">
             <div className="bg-primary-container p-4 rounded-2xl border-b-4 border-primary text-on-primary-container font-label font-bold text-base text-center max-w-[250px]">
               &ldquo;Look at that momentum! You&apos;re already in the top 10% of learners today!&rdquo;
@@ -338,7 +338,7 @@ export default async function WaitlistBPage() {
                 </span>
                 <h3 className="text-xl font-headline font-bold mb-2">Live AI-assisted Interviews</h3>
                 <p className="text-on-surface-variant text-sm">
-                  Practice your product sense with Luma, our custom trained AI agent.
+                  Practice your product sense with Hatch, our custom trained AI agent.
                 </p>
               </div>
               <div className="mt-4">
@@ -388,7 +388,7 @@ export default async function WaitlistBPage() {
         <p>Software engineers preparing for PM interviews. Product managers sharpening product intuition. Students preparing for APM programs at Google, Meta, and Microsoft. Career switchers transitioning into product management. Tech leads building product thinking skills. MBA students preparing for product roles.</p>
 
         <h3>How HackProduct Works</h3>
-        <p>Choose from real product case studies inspired by decisions at top tech companies. Analyze the problem, form your recommendation, and submit your answer. Luma, your AI product coach, grades your response across multiple dimensions including product strategy, user empathy, metrics definition, and execution planning. Track your Product IQ score as it grows with every practice session.</p>
+        <p>Choose from real product case studies inspired by decisions at top tech companies. Analyze the problem, form your recommendation, and submit your answer. Hatch, your AI product coach, grades your response across multiple dimensions including product strategy, user empathy, metrics definition, and execution planning. Track your Product IQ score as it grows with every practice session.</p>
       </section>
     </div>
   )

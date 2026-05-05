@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useFlashcardSession } from '@/hooks/useFlashcardSession'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import type { Domain } from '@/lib/types'
 
 /* ── Types ───────────────────────────────────────────────── */
@@ -93,7 +93,7 @@ export function FlashcardSession({ domain, domainSlug, allDomains = [] }: Flashc
             <div className="text-sm text-on-surface-variant">Accuracy across {totalCards} cards</div>
           </div>
           <div className="bg-primary-fixed rounded-xl p-4 flex items-start gap-3 text-left">
-            <LumaGlyph size={24} className="text-primary flex-shrink-0 mt-0.5" />
+            <HatchGlyph size={24} className="text-primary flex-shrink-0 mt-0.5" />
             <p className="text-sm text-on-primary-fixed-variant">
               Keep reviewing to strengthen recall. Spaced repetition works best with consistent daily practice.
             </p>

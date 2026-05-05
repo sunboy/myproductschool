@@ -1,6 +1,6 @@
 ---
 name: hackproduct-challenge-delivery
-description: "Challenge delivery system for HackProduct — listing, filtering, loading FLOW steps, managing attempts, and the workspace state machine. Use when building challenge list API, detail API, step loading, attempt management, workspace page, or FlowStepper. Triggers on: challenge list, detail, load step, start attempt, resume, workspace, FLOW stepper, taxonomy filters, option shuffling, state machine."
+description: "Challenge delivery system for HackProduct. Covers listing, filtering, loading FLOW steps, managing attempts, and the workspace state machine. Use when building challenge list API, detail API, step loading, attempt management, workspace page, or FlowStepper. Triggers on: challenge list, detail, load step, start attempt, resume, workspace, FLOW stepper, taxonomy filters, option shuffling, state machine."
 ---
 
 # HackProduct Challenge Delivery
@@ -77,6 +77,18 @@ const isV2 = !isUUID(params.id) // v2 = TEXT like "HP-AG-FIN-GM-042"
 if (isV2) return <FlowWorkspace challengeId={params.id} />
 return <LegacyWorkspace challengeId={params.id} />
 ```
+
+## Writing Style
+
+All user-facing copy this skill produces (nudges, labels, status messages, UI strings, coaching fragments) follows the canonical HackProduct Writing Style Guide: [`docs/notes/writing-style-guide.md`](../../../../docs/notes/writing-style-guide.md), summarized in `CLAUDE.md` at the repo root.
+
+**The hard rules to enforce here:**
+- No second-person role framing in user-facing copy ("you are a tech lead", "as a senior engineer", "imagine you work at"). Role is metadata used for filtering, never rendered as copy.
+- No em dashes. Use commas, periods, or restructure.
+- No AI slop: *delve, leverage, utilize, holistic, robust, seamlessly, it's worth noting, in order to, as well as, embark on, navigate, unlock, landscape, tapestry, ensure, tailored, cutting-edge, revolutionary, game-changing*.
+- Coherent sentences that flow together. Fragment-style prose reads as a speech, not writing. Exception: UI chrome like button labels where terse is correct.
+
+Status messages and error states inherit the same tone: direct, specific, not apologetic.
 
 ## Files This Skill Produces
 

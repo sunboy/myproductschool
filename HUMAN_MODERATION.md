@@ -32,7 +32,7 @@ feature is intended, it requires:
 - Scheduling infrastructure (calendar integration)
 - Payment/incentive model for interviewers
 
-**Action needed**: Confirm whether "Live Interview" is AI-only (Luma) or includes
+**Action needed**: Confirm whether "Live Interview" is AI-only (Hatch) or includes
 real human interviewers. If human, define the recruitment and scheduling process.
 
 ---

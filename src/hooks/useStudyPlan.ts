@@ -7,15 +7,18 @@ interface StudyPlanDetail {
   plan: StudyPlan | null
   chapters: StudyPlanChapter[]
   userProgress: UserStudyPlan | null
+  inProgressChallengeIds: string[]
   isLoading: boolean
   error: string | null
   activate: () => Promise<void>
+  refetch: () => Promise<void>
 }
 
 export function useStudyPlan(slug: string): StudyPlanDetail {
   const [plan, setPlan] = useState<StudyPlan | null>(null)
   const [chapters, setChapters] = useState<StudyPlanChapter[]>([])
   const [userProgress, setUserProgress] = useState<UserStudyPlan | null>(null)
+  const [inProgressChallengeIds, setInProgressChallengeIds] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -30,6 +33,7 @@ export function useStudyPlan(slug: string): StudyPlanDetail {
       setPlan(data.plan ?? null)
       setChapters(data.chapters ?? [])
       setUserProgress(data.userProgress ?? data.user_progress ?? null)
+      setInProgressChallengeIds(data.in_progress_challenge_ids ?? [])
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error')
     } finally {
@@ -49,5 +53,5 @@ export function useStudyPlan(slug: string): StudyPlanDetail {
 
   useEffect(() => { fetchPlan() }, [fetchPlan])
 
-  return { plan, chapters, userProgress, isLoading, error, activate }
+  return { plan, chapters, userProgress, inProgressChallengeIds, isLoading, error, activate, refetch: fetchPlan }
 }

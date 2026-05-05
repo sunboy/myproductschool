@@ -21,7 +21,7 @@ export function MoveLevelsCard({ levels }: MoveLevelsCardProps) {
   return (
     <div className="bg-surface-container-low rounded-2xl p-5 border border-outline-variant/30">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-headline font-semibold text-sm text-on-surface">FLOW Move Levels</h3>
+        <h3 className="font-headline font-semibold text-sm text-on-surface">FLOW Levels</h3>
         <span className="text-[10px] text-on-surface-variant font-label uppercase tracking-wider">Your skills</span>
       </div>
 

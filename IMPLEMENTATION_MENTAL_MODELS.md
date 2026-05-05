@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-The Mental Models integration wires HackProduct's 6 competency dimensions and 10 active competency-step mappings into the live product. Before this build, rubric files and framework content existed only as static content — grading used v1 dimensions (`diagnostic_accuracy`, etc.), nudges were step-unaware, option reveals had no framework hints, and there was no post-challenge mental models breakdown. This build connects every layer: schema, grading pipeline, Luma AI interactions, frontend components, token optimization via Anthropic prompt caching, and 4 Claude Code skills for deterministic AI behavior.
+The Mental Models integration wires HackProduct's 6 competency dimensions and 10 active competency-step mappings into the live product. Before this build, rubric files and framework content existed only as static content — grading used v1 dimensions (`diagnostic_accuracy`, etc.), nudges were step-unaware, option reveals had no framework hints, and there was no post-challenge mental models breakdown. This build connects every layer: schema, grading pipeline, Hatch AI interactions, frontend components, token optimization via Anthropic prompt caching, and 4 Claude Code skills for deterministic AI behavior.
 
 ---
 
@@ -49,8 +49,8 @@ Migration: `supabase/migrations/026_mental_models_v2.sql`
 | `src/lib/v2/skills/ai/freeform-grader.ts` | Imports `loadRubric`, injects rubric criteria into grading prompt, expanded `GradingResponseSchema` with `criteria_scores` and `competency_signal`, uses `createCachedMessage` |
 | `src/app/api/v2/challenges/[id]/step/[step]/submit/route.ts` | Persists `competency_signal` on `step_attempts` insert, generates deterministic signal for `pure_mcq` via `STEP_PRIMARY_COMPETENCIES` + `getReasoningMove` |
 | `src/app/api/v2/challenges/[id]/coaching/route.ts` | Selects `framework_hint` from `flow_options`, includes in response JSON and coaching prompt, uses `createCachedMessage` |
-| `src/app/api/luma/nudge/route.ts` | Accepts `step` in request body, imports `getReasoningMove`, injects reasoning move into nudge prompt, uses `createCachedMessage` with haiku model |
-| `src/app/api/luma/feedback/route.ts` | Dual-path: v1 (legacy) and v2 (FLOW-based). V2 fetches `step_attempts.competency_signal`, evaluates against rubrics, generates `mental_models_breakdown`, uses `createCachedMessage` |
+| `src/app/api/hatch/nudge/route.ts` | Accepts `step` in request body, imports `getReasoningMove`, injects reasoning move into nudge prompt, uses `createCachedMessage` with haiku model |
+| `src/app/api/hatch/feedback/route.ts` | Dual-path: v1 (legacy) and v2 (FLOW-based). V2 fetches `step_attempts.competency_signal`, evaluates against rubrics, generates `mental_models_breakdown`, uses `createCachedMessage` |
 | `src/lib/luma/system-prompt.ts` | Added `LUMA_CORE_IDENTITY`, `MENTAL_MODELS_CONTEXT`, `STEP_PRIMARY_COMPETENCIES`, `LUMA_FEEDBACK_SYSTEM_PROMPT_V2`, updated `buildNudgeUserPrompt` with step context |
 | `src/lib/luma/feedback-schema.ts` | Added `V2FeedbackSchema` with per-step `CriterionScoreSchema`, `MentalModelBreakdownSchema`, `clampV2FeedbackScores` |
 | `src/lib/v2/skills/nudge-resolver.ts` | Accepts `reasoningMove` parameter, prepends mental model context to nudge output |
@@ -69,8 +69,8 @@ Migration: `supabase/migrations/026_mental_models_v2.sql`
 |---|---|---|---|
 | `/api/v2/challenges/[id]/step/[step]/submit` | POST | (none) | `competency_signal: { primary, signal, framework_hint }`, `framework_hint` on revealed options |
 | `/api/v2/challenges/[id]/coaching` | POST | (none) | `framework_hint` in response JSON |
-| `/api/luma/nudge` | POST | `step: FlowStep` | Nudge text now references reasoning move for current step |
-| `/api/luma/feedback` | POST | `attempt_id: string` (triggers v2 path) | V2 response: `{ overall_score, overall, steps[], mental_models_breakdown[], weakest_competency, next_recommendation, detected_patterns[] }` |
+| `/api/hatch/nudge` | POST | `step: FlowStep` | Nudge text now references reasoning move for current step |
+| `/api/hatch/feedback` | POST | `attempt_id: string` (triggers v2 path) | V2 response: `{ overall_score, overall, steps[], mental_models_breakdown[], weakest_competency, next_recommendation, detected_patterns[] }` |
 
 ---
 
@@ -78,7 +78,7 @@ Migration: `supabase/migrations/026_mental_models_v2.sql`
 
 ### Prompt Caching
 
-All Luma AI interactions now use `src/lib/anthropic/cached-client.ts`. System prompts are marked with `cache_control: { type: 'ephemeral' }`, giving a ~90% input token discount on cache hits.
+All Hatch AI interactions now use `src/lib/anthropic/cached-client.ts`. System prompts are marked with `cache_control: { type: 'ephemeral' }`, giving a ~90% input token discount on cache hits.
 
 | System Prompt | Est. Tokens | Calls/Challenge | Cache Impact |
 |---|---|---|---|
@@ -112,7 +112,7 @@ All Luma AI interactions now use `src/lib/anthropic/cached-client.ts`. System pr
 
 ## 7. Skills Created
 
-4 Claude Code skills define deterministic behavior for all Luma AI interactions:
+4 Claude Code skills define deterministic behavior for all Hatch AI interactions:
 
 | Skill | Path | Trigger | Output Schema |
 |---|---|---|---|
@@ -211,7 +211,7 @@ Expected: Response includes `framework_hint` field.
 
 ### Request a step-aware nudge
 ```bash
-curl -X POST http://localhost:3000/api/luma/nudge \
+curl -X POST http://localhost:3000/api/hatch/nudge \
   -H "Content-Type: application/json" \
   -H "Cookie: <auth-cookie>" \
   -d '{
@@ -226,7 +226,7 @@ Expected: Nudge references reasoning move ("finding the problem behind the probl
 
 ### Get v2 feedback (FLOW-based)
 ```bash
-curl -X POST http://localhost:3000/api/luma/feedback \
+curl -X POST http://localhost:3000/api/hatch/feedback \
   -H "Content-Type: application/json" \
   -H "Cookie: <auth-cookie>" \
   -d '{

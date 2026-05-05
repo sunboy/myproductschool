@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 interface StreakRecoveryModalProps {
   isOpen: boolean
@@ -28,9 +28,9 @@ export function StreakRecoveryModal({ isOpen, onClose }: StreakRecoveryModalProp
 
         {/* Main Modal */}
         <div className="bg-surface w-full max-w-[360px] rounded-2xl shadow-lg p-6 relative flex flex-col items-center">
-          {/* Luma Mascot Section */}
+          {/* Hatch Mascot Section */}
           <div className="mb-4 relative">
-            <LumaGlyph size={80} className="text-primary" />
+            <HatchGlyph size={80} className="text-primary" />
           </div>
 
           {/* Speech Bubble */}

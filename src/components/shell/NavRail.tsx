@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { LumaGlyph } from './LumaGlyph'
+import { HatchGlyph } from './HatchGlyph'
 
 const navItems = [
   { href: '/dashboard',       icon: 'home',           label: 'Home'       },
@@ -13,13 +13,13 @@ const navItems = [
 ]
 
 interface NavRailProps {
-  onAskLuma?: () => void
+  onAskHatch?: () => void
   onUpgrade?: () => void
   compact?: boolean
   isPro?: boolean
 }
 
-export function NavRail({ onAskLuma, onUpgrade, compact, isPro }: NavRailProps) {
+export function NavRail({ onAskHatch, onUpgrade, compact, isPro }: NavRailProps) {
   const pathname = usePathname()
   const [dailyDone, setDailyDone] = useState<number | null>(null)
   const dailyTotal = 5
@@ -37,7 +37,7 @@ export function NavRail({ onAskLuma, onUpgrade, compact, isPro }: NavRailProps) 
 
       {/* ── Brand ── */}
       <div className={`flex items-center pt-5 pb-4 ${compact ? 'justify-center px-0' : 'gap-2.5 px-4'}`}>
-        <LumaGlyph size={24} state="idle" className="text-white shrink-0" />
+        <HatchGlyph size={24} state="idle" className="text-white shrink-0" />
         {!compact && (
           <span className="font-headline text-base font-bold text-white tracking-tight">HackProduct</span>
         )}
@@ -107,13 +107,13 @@ export function NavRail({ onAskLuma, onUpgrade, compact, isPro }: NavRailProps) 
             )}
           </div>
 
-          {/* Ask Luma */}
+          {/* Ask Hatch */}
           <button
-            onClick={onAskLuma}
+            onClick={onAskHatch}
             className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/10 hover:bg-white/18 text-white w-full transition-all duration-200 group"
           >
-            <LumaGlyph size={16} state="idle" className="shrink-0" />
-            <span className="text-xs font-semibold font-label">Ask Luma</span>
+            <HatchGlyph size={16} state="idle" className="shrink-0" />
+            <span className="text-xs font-semibold font-label">Ask Hatch</span>
             <span className="ml-auto material-symbols-outlined text-sm text-white/50 group-hover:text-white/70 transition-colors">chevron_right</span>
           </button>
 
@@ -145,15 +145,15 @@ export function NavRail({ onAskLuma, onUpgrade, compact, isPro }: NavRailProps) 
         </div>
       )}
 
-      {/* ── Compact bottom: Ask Luma icon only ── */}
-      {compact && onAskLuma && (
+      {/* ── Compact bottom: Ask Hatch icon only ── */}
+      {compact && onAskHatch && (
         <div className="pb-4 flex justify-center">
           <button
-            onClick={onAskLuma}
-            title="Ask Luma"
+            onClick={onAskHatch}
+            title="Ask Hatch"
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/15 transition-colors"
           >
-            <LumaGlyph size={16} state="idle" />
+            <HatchGlyph size={16} state="idle" />
           </button>
         </div>
       )}

@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import CompetencyRadar from '@/components/live-interview/CompetencyRadar'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -8,6 +8,7 @@ import { IS_MOCK } from '@/lib/mock'
 import { MOCK_LIVE_DEBRIEF, MOCK_LIVE_TURNS } from '@/lib/mock-live-interviews'
 import type { LiveInterviewDebrief, LiveInterviewTurn } from '@/lib/mock-live-interviews'
 import type { FlowStep } from '@/lib/types'
+import type { ArtifactGrading } from '@/lib/live-interview/artifact-grader'
 
 interface DebriefPageProps {
   params: Promise<{ id: string }>
@@ -49,6 +50,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
   const { id } = await params
 
   let debrief: LiveInterviewDebrief
+  let artifactGrading: ArtifactGrading | null = null
   let companyName = ''
   let role = ''
   let sessionDate = ''
@@ -83,7 +85,9 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
       redirect('/live-interviews')
     }
 
-    debrief = session.debrief_json as LiveInterviewDebrief
+    const debriefData = session.debrief_json as LiveInterviewDebrief & { artifactGrading?: ArtifactGrading }
+    debrief = debriefData
+    artifactGrading = debriefData.artifactGrading ?? null
 
     // Fetch company name
     if (session.company_id) {
@@ -156,7 +160,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
         {/* Score card */}
         <div className="bg-surface-container rounded-xl p-6 border-t-4 border-primary">
           <div className="flex items-center gap-4 mb-4">
-            <LumaGlyph size={64} state="celebrating" className="text-primary shrink-0" />
+            <HatchGlyph size={64} state="celebrating" className="text-primary shrink-0" />
             <div className="flex-1">
               <div className="flex items-center gap-3">
                 <span className="text-5xl font-headline font-extrabold text-primary">
@@ -202,6 +206,53 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
             })}
           </div>
         </div>
+
+        {/* Artifact Score Card (only shown when a canvas or editor was used) */}
+        {artifactGrading && (
+          <div className="bg-surface-container rounded-xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <span
+                className="material-symbols-outlined text-tertiary text-2xl"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                {artifactGrading.artifact_dimensions.completeness.score > 0 ? 'draw' : 'code'}
+              </span>
+              <h2 className="font-headline text-lg font-bold text-on-surface">Artifact Score</h2>
+              <span className="ml-auto text-3xl font-headline font-extrabold text-tertiary">
+                {artifactGrading.artifact_score}
+              </span>
+            </div>
+            <p className="text-sm text-on-surface-variant mb-4">{artifactGrading.artifact_verdict}</p>
+            <div className="grid grid-cols-3 gap-3">
+              {(
+                [
+                  { key: 'completeness' as const, label: 'Completeness', icon: 'checklist' },
+                  { key: 'correctness' as const, label: 'Correctness', icon: 'verified' },
+                  { key: 'clarity' as const, label: 'Clarity', icon: 'visibility' },
+                ] as const
+              ).map(({ key, label, icon }) => {
+                const dim = artifactGrading!.artifact_dimensions[key]
+                const pct = (dim.score / 5) * 100
+                return (
+                  <div key={key} className="bg-surface-container-low rounded-lg p-3">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <span className="material-symbols-outlined text-tertiary text-base">{icon}</span>
+                      <span className="text-xs font-label font-semibold text-on-surface">{label}</span>
+                      <span className="ml-auto text-xs font-label font-bold text-tertiary">{dim.score}/5</span>
+                    </div>
+                    <div className="h-1.5 bg-surface-container-highest rounded-full overflow-hidden mb-2">
+                      <div
+                        className="h-full bg-tertiary rounded-full transition-all duration-700"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <p className="text-[11px] text-on-surface-variant leading-tight">{dim.evidence}</p>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Strengths & Improvements */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -328,23 +379,23 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
             </h2>
             <div className="space-y-0">
               {(() => {
-                // Group turns into pairs (user + luma)
-                const pairs: Array<{ user?: typeof turns[0]; luma?: typeof turns[0]; index: number }> = []
+                // Group turns into pairs (user + hatch)
+                const pairs: Array<{ user?: typeof turns[0]; hatch?: typeof turns[0]; index: number }> = []
                 let pairIndex = 0
                 for (let i = 0; i < turns.length; i++) {
                   pairIndex++
                   const turn = turns[i]
                   if (turn.role === 'user') {
                     const next = turns[i + 1]
-                    if (next?.role === 'luma') {
-                      pairs.push({ user: turn, luma: next, index: pairIndex })
-                      i++ // skip the luma turn
+                    if (next?.role === 'hatch') {
+                      pairs.push({ user: turn, hatch: next, index: pairIndex })
+                      i++ // skip the hatch turn
                     } else {
                       pairs.push({ user: turn, index: pairIndex })
                     }
                   } else {
-                    // Luma turn without user (opening message)
-                    pairs.push({ luma: turn, index: pairIndex })
+                    // Hatch turn without user (opening message)
+                    pairs.push({ hatch: turn, index: pairIndex })
                   }
                 }
 
@@ -359,7 +410,7 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
                 const startTime = turns[0]?.createdAt ? new Date(turns[0].createdAt).getTime() : 0
 
                 return pairs.map((pair) => {
-                  const flowMove = pair.luma?.flowMoveDetected
+                  const flowMove = pair.hatch?.flowMoveDetected
                   const borderColorValue = flowMove ? flowBorderColors[flowMove] ?? defaultBorderColor : defaultBorderColor
                   const relTime = pair.user?.createdAt && startTime
                     ? Math.round((new Date(pair.user.createdAt).getTime() - startTime) / 1000)
@@ -378,8 +429,8 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
                           </span>
                         )}
                         <span className="flex-1 text-sm text-on-surface-variant truncate font-body">
-                          {pair.user ? pair.user.content.slice(0, 100) : pair.luma?.content.slice(0, 100)}
-                          {((pair.user?.content ?? pair.luma?.content) ?? '').length > 100 ? '...' : ''}
+                          {pair.user ? pair.user.content.slice(0, 100) : pair.hatch?.content.slice(0, 100)}
+                          {((pair.user?.content ?? pair.hatch?.content) ?? '').length > 100 ? '...' : ''}
                         </span>
                         <span className="flex items-center gap-1.5 shrink-0">
                           {flowMove && (
@@ -396,10 +447,10 @@ export default async function DebriefPage({ params }: DebriefPageProps) {
                             <p className="text-sm text-on-surface-variant leading-relaxed mt-0.5">{pair.user.content}</p>
                           </div>
                         )}
-                        {pair.luma && (
+                        {pair.hatch && (
                           <div className="bg-primary-fixed/50 border border-primary/10 rounded-lg p-3">
-                            <span className="text-[10px] font-label font-bold text-on-surface-variant uppercase">Luma</span>
-                            <p className="text-sm text-on-surface-variant leading-relaxed mt-0.5">{pair.luma.content}</p>
+                            <span className="text-[10px] font-label font-bold text-on-surface-variant uppercase">Hatch</span>
+                            <p className="text-sm text-on-surface-variant leading-relaxed mt-0.5">{pair.hatch.content}</p>
                           </div>
                         )}
                       </div>

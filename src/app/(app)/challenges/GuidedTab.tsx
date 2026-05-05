@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 interface CohortData {
   total_participants: number
@@ -188,12 +188,12 @@ export function GuidedTab() {
           </div>
         </div>
 
-        {/* Right Column: Community */}
+        {/* Right Column: Weekly drill board */}
         <div className="col-span-12 lg:col-span-4">
           <div className="bg-surface-container rounded-xl p-5 border border-outline-variant/30">
             <div className="flex items-center gap-2 mb-4">
-              <span className="material-symbols-outlined text-primary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>group</span>
-              <h3 className="font-bold text-sm">This Week&apos;s Cohort</h3>
+              <span className="material-symbols-outlined text-primary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>leaderboard</span>
+              <h3 className="font-bold text-sm">Weekly Drill Board</h3>
             </div>
 
             {cohort === null ? (
@@ -204,28 +204,27 @@ export function GuidedTab() {
                 <div className="h-4 bg-surface-container-highest rounded w-2/3" />
               </div>
             ) : cohort.total_participants === 0 ? (
-              /* No active cohort */
+              /* No active drill */
               <div className="flex flex-col items-center py-4 gap-2 text-center">
-                <LumaGlyph size={36} state="idle" className="text-primary" />
-                <p className="text-xs text-on-surface-variant">No active cohort challenge this week.</p>
-                <Link href="/cohort" className="text-xs font-bold text-primary hover:underline">Check back soon →</Link>
+                <HatchGlyph size={36} state="idle" className="text-primary" />
+                <p className="text-xs text-on-surface-variant">No weekly drill results yet.</p>
+                <Link href="/challenges" className="text-xs font-bold text-primary hover:underline">Browse drills →</Link>
               </div>
             ) : (
               <>
                 {/* Participant count */}
                 <p className="text-xs text-on-surface-variant mb-4">
-                  <span className="font-bold text-on-surface">{cohort.total_participants}</span> engineers competing this week
+                  <span className="font-bold text-on-surface">{cohort.total_participants}</span> engineers practicing this week
                 </p>
 
                 {/* Top 3 */}
                 <div className="space-y-2 mb-4">
                   {cohort.rankings.slice(0, 3).map((r) => {
                     const isYou = r.user_id !== 'u1' && r.user_id !== 'u2' && r.user_id !== 'u4' && cohort.user_rank === r.rank
-                    const medals = ['🥇', '🥈', '🥉']
                     return (
                       <div key={r.user_id} className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs ${isYou ? 'bg-primary/10 border border-primary/20' : 'bg-surface-container-low'}`}>
                         <div className="flex items-center gap-2">
-                          <span>{medals[r.rank - 1] ?? `#${r.rank}`}</span>
+                          <span className="font-bold text-on-surface-variant">#{r.rank}</span>
                           <span className={`font-medium ${isYou ? 'text-primary font-bold' : 'text-on-surface'}`}>
                             {isYou ? 'You' : r.display_name}
                           </span>
@@ -248,10 +247,10 @@ export function GuidedTab() {
                 )}
 
                 <Link
-                  href="/cohort"
+                  href="/challenges"
                   className="flex items-center justify-center gap-1 w-full py-2 rounded-full border border-primary/30 text-xs font-bold text-primary hover:bg-primary/5 transition-colors"
                 >
-                  View full leaderboard
+                  View practice board
                   <span className="material-symbols-outlined text-sm">chevron_right</span>
                 </Link>
               </>
@@ -263,9 +262,9 @@ export function GuidedTab() {
       {/* Footer Coaching Strip */}
       {!coachingDismissed && (
         <div className="bg-surface-container-low border border-outline-variant p-4 rounded-xl flex items-center gap-4">
-          <LumaGlyph size={28} state="speaking" className="text-primary shrink-0" />
+          <HatchGlyph size={28} state="speaking" className="text-primary shrink-0" />
           <p className="text-sm text-on-surface-variant leading-tight flex-1">
-            <span className="font-bold text-on-surface">Luma&apos;s Tip:</span> Strong <span className="text-primary font-bold italic">Problem Framing</span> is the most common differentiator at Staff-level interviews. Before listing solutions, make sure you&apos;ve defined the core tension clearly.
+            <span className="font-bold text-on-surface">Hatch&apos;s Tip:</span> Strong <span className="text-primary font-bold italic">Problem Framing</span> is the most common differentiator at Staff-level interviews. Before listing solutions, make sure you&apos;ve defined the core tension clearly.
           </p>
           <button
             onClick={() => setCoachingDismissed(true)}

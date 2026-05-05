@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Instrument_Serif, DM_Sans, Geist_Mono } from 'next/font/google'
 import { WaitlistForm } from '@/components/marketing/WaitlistForm'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const instrumentSerif = Instrument_Serif({ subsets: ['latin'], weight: ['400'], style: ['normal', 'italic'], variable: '--wf-display' })
 const dmSans = DM_Sans({ subsets: ['latin'], weight: ['300', '400', '500', '600'], variable: '--wf-body' })
@@ -51,7 +51,7 @@ function WaitlistModal({ trigger, onClose }: { trigger: string; onClose: () => v
 
         {/* Header */}
         <div className="flex items-center gap-2 mb-1">
-          <LumaGlyph size={28} state="idle" className="text-primary shrink-0" />
+          <HatchGlyph size={28} state="idle" className="text-primary shrink-0" />
           <span className="font-headline font-bold text-primary">hackproduct</span>
         </div>
         <h3 style={{ fontFamily: 'var(--wf-display)', fontSize: '1.75rem', fontWeight: 400, lineHeight: 1.1, color: '#0E1B15', marginBottom: '0.5rem' }}>
@@ -289,7 +289,7 @@ const STEPS = [
     svgs: [<FrameBeforeSVG key="fb"/>, <FrameMoveSVG key="fm"/>, <FrameAfterSVG key="fa"/>],
     expert: { initials: 'MC', name: 'Marty Cagan · SVPG', role: 'Author, Inspired', quote: '"The most common mistake is confusing the solution with the outcome. Features are hypotheses. The job is to discover which problem is actually worth solving."', avatarStyle: 'avatar-f' },
     scenario: { label: 'Applied — B2B SaaS notifications', text: "PM says: add real-time push notifications. Framed correctly, the job isn't to notify — it's to keep teams in sync without breaking focus. That's a completely different problem to solve." },
-    lumaMsg: "Before jumping to solutions, great product thinkers ask one question: what job is this person actually trying to do? The answer is almost never what was stated.",
+    hatchMsg: "Before jumping to solutions, great product thinkers ask one question: what job is this person actually trying to do? The answer is almost never what was stated.",
   },
   {
     key: 'list' as FlowMove,
@@ -308,7 +308,7 @@ const STEPS = [
     svgs: [<ListBeforeSVG key="lb"/>, <ListMoveSVG key="lm"/>, <ListAfterSVG key="la"/>],
     expert: { initials: 'TT', name: 'Teresa Torres · Product Talk', role: 'Author, Continuous Discovery Habits', quote: '"Jumping to solutions is the product team\'s version of premature optimization. The Opportunity Solution Tree forces you to separate problem discovery from solution generation."', avatarStyle: 'avatar-l' },
     scenario: { label: 'Applied — B2B SaaS notifications', text: "Listed: push notifs, Slack/Teams integration, daily digest, in-app feed, @mention threads, smart batching. The Slack integration — which nobody asked for — turns out to be the highest-leverage option by far." },
-    lumaMsg: "The first solution you think of is almost never the best one. Generate until you surprise yourself — that's when you know you've actually opened the space.",
+    hatchMsg: "The first solution you think of is almost never the best one. Generate until you surprise yourself — that's when you know you've actually opened the space.",
   },
   {
     key: 'optimize' as FlowMove,
@@ -327,7 +327,7 @@ const STEPS = [
     svgs: [<OptBeforeSVG key="ob"/>, <OptMoveSVG key="om"/>, <OptAfterSVG key="oa"/>],
     expert: { initials: 'SD', name: 'Shreyas Doshi · ex-Stripe, Twitter', role: 'Creator, LNO Framework', quote: '"Product leverage is about finding the work that is 10x more impactful than everything else. Most teams optimize locally — they do a good job on the wrong things."', avatarStyle: 'avatar-o' },
     scenario: { label: 'Applied — B2B SaaS notifications', text: "RICE scores: Push notifs = 42. Daily digest = 31. Slack bot = 118. The number makes the decision obvious — and gives you something concrete to bring into the planning meeting instead of a preference." },
-    lumaMsg: "A number beats an opinion every time. Even a rough RICE score converts a preference argument into a tradeoff conversation — and that's a much better meeting.",
+    hatchMsg: "A number beats an opinion every time. Even a rough RICE score converts a preference argument into a tradeoff conversation — and that's a much better meeting.",
   },
   {
     key: 'win' as FlowMove,
@@ -346,7 +346,7 @@ const STEPS = [
     svgs: [<WinBeforeSVG key="wb"/>, <WinMoveSVG key="wm"/>, <WinAfterSVG key="wa"/>],
     expert: { initials: 'AD', name: 'April Dunford · Obviously Awesome', role: 'Author, positioning strategist', quote: '"Positioning isn\'t about what you build — it\'s the context you create so your audience instantly understands why yours is the right answer. Engineers forget that the decision-maker needs a story, not a spreadsheet."', avatarStyle: 'avatar-w' },
     scenario: { label: 'Applied — B2B SaaS notifications', text: 'Instead of "we should build a Slack bot (RICE: 118)," you say: "For our enterprise users who run operations in Slack, this replaces their current workflow of switching back to our app — and we can validate it in one sprint." Approved in the meeting.' },
-    lumaMsg: "Engineers think the win is building the right thing. Product thinkers know the win is getting the right thing built. Those are different skills — and this step is where you develop the second one.",
+    hatchMsg: "Engineers think the win is building the right thing. Product thinkers know the win is getting the right thing built. Those are different skills — and this step is where you develop the second one.",
   },
 ]
 
@@ -431,7 +431,7 @@ export default function WaitlistFlowPage() {
           opacity: 1;
           transform: translateY(0);
         }
-        .luma-float { animation: wfFloat 3s ease-in-out infinite; }
+        .hatch-float { animation: wfFloat 3s ease-in-out infinite; }
         @keyframes wfFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
 
         .wf-nav-step {
@@ -701,7 +701,7 @@ export default function WaitlistFlowPage() {
                 </div>
               </div>
 
-              {/* Right: Luma rail */}
+              {/* Right: Hatch rail */}
               <div
                 className="wf-hide-mobile"
                 style={{
@@ -712,11 +712,11 @@ export default function WaitlistFlowPage() {
                 }}
               >
                 <div style={{ background: '#0E1B15', color: '#FAF6F0', borderRadius: '14px 14px 14px 4px', padding: '0.875rem 1rem', marginBottom: '0.75rem' }}>
-                  <div className="wf-mono" style={{ fontSize: '0.58rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(250,246,240,.4)', marginBottom: '0.4rem' }}>Luma</div>
-                  <p className="wf-body" style={{ fontSize: '0.82rem', lineHeight: 1.55 }}>{step.lumaMsg}</p>
+                  <div className="wf-mono" style={{ fontSize: '0.58rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(250,246,240,.4)', marginBottom: '0.4rem' }}>Hatch</div>
+                  <p className="wf-body" style={{ fontSize: '0.82rem', lineHeight: 1.55 }}>{step.hatchMsg}</p>
                 </div>
-                <div className="luma-float" style={{ display: 'flex', justifyContent: 'center' }}>
-                  <LumaGlyph size={64} state="speaking" className="text-primary" />
+                <div className="hatch-float" style={{ display: 'flex', justifyContent: 'center' }}>
+                  <HatchGlyph size={64} state="speaking" className="text-primary" />
                 </div>
               </div>
 

@@ -4,6 +4,48 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { FreemiumUsageSummary } from '@/components/billing/FreemiumUsageSummary'
+
+type SubscriptionInfo = {
+  plan?: string | null
+  status?: string | null
+  current_period_end?: string | null
+  billing_interval?: 'month' | 'year' | null
+  cancel_at_period_end?: boolean | null
+  cancel_at?: string | null
+  canceled_at?: string | null
+}
+
+type ProfileResponse = {
+  display_name?: string
+  email?: string
+  preferred_role?: string
+  avatar_url?: string
+  plan?: string
+  subscription?: SubscriptionInfo | null
+}
+
+type BillingPrice = {
+  formatted?: string | null
+  interval?: 'month' | 'year' | null
+  source?: 'stripe' | 'fallback'
+}
+
+type BillingPrices = {
+  monthly?: BillingPrice
+  annual?: BillingPrice
+}
+
+function formatBillingDate(value?: string | null) {
+  if (!value) return 'Not available'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Not available'
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date)
+}
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -11,25 +53,35 @@ export default function SettingsPage() {
   const [editingName, setEditingName] = useState(false)
   const [profileSaving, setProfileSaving] = useState(false)
   const [profileInitial, setProfileInitial] = useState('?')
-  const [preferredRole, setPreferredRole] = useState<string | null>(null)
+  const [email, setEmail] = useState<string | null>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [avatarUploading, setAvatarUploading] = useState(false)
   const [plan, setPlan] = useState<string>('free')
+  const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null)
+  const [billingAction, setBillingAction] = useState<string | null>(null)
+  const [billingError, setBillingError] = useState<string | null>(null)
+  const [prices, setPrices] = useState<BillingPrices | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    fetch('/api/profile')
+  async function refreshProfile() {
+    const data: ProfileResponse | null = await fetch('/api/profile')
       .then(r => r.ok ? r.json() : null)
-      .then((data: { display_name?: string; preferred_role?: string; avatar_url?: string; plan?: string } | null) => {
-        if (!data) return
-        if (data.display_name) {
-          setDisplayName(data.display_name)
-          setProfileInitial(data.display_name[0]?.toUpperCase() ?? '?')
-        }
-        if (data.preferred_role) setPreferredRole(data.preferred_role)
-        if (data.avatar_url) setAvatarUrl(data.avatar_url)
-        if (data.plan) setPlan(data.plan)
-      })
+    if (!data) return
+    if (data.display_name) {
+      setDisplayName(data.display_name)
+      setProfileInitial(data.display_name[0]?.toUpperCase() ?? '?')
+    }
+    if (data.email) setEmail(data.email)
+    if (data.avatar_url) setAvatarUrl(data.avatar_url)
+    if (data.plan) setPlan(data.plan)
+    setSubscription(data.subscription ?? null)
+  }
+
+  useEffect(() => {
+    refreshProfile().catch(() => {})
+    fetch('/api/billing/prices')
+      .then(r => r.ok ? r.json() : null)
+      .then((data: BillingPrices | null) => setPrices(data))
       .catch(() => {})
   }, [])
 
@@ -74,206 +126,259 @@ export default function SettingsPage() {
     router.refresh()
   }
 
+  async function runBillingAction(action: string, body: Record<string, unknown> = {}) {
+    setBillingAction(action)
+    setBillingError(null)
+    try {
+      const res = await fetch('/api/billing/subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, ...body }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error ?? 'Billing update failed')
+      await refreshProfile()
+      window.dispatchEvent(new CustomEvent('profile-stats-updated'))
+    } catch (error) {
+      setBillingError(error instanceof Error ? error.message : 'Billing update failed')
+    } finally {
+      setBillingAction(null)
+    }
+  }
+
   const isPro = plan === 'pro'
+  const interval = subscription?.billing_interval === 'year' ? 'Annual' : 'Monthly'
+  const statusLabel = subscription?.status
+    ? subscription.status.replaceAll('_', ' ')
+    : isPro ? 'active' : 'free'
+  const periodEndLabel = formatBillingDate(subscription?.current_period_end)
+  const cancelScheduled = !!subscription?.cancel_at_period_end
+  const currentPrice = subscription?.billing_interval === 'year'
+    ? prices?.annual?.formatted
+    : prices?.monthly?.formatted
+  const switchPlan = subscription?.billing_interval === 'year' ? 'monthly' : 'annual'
+  const switchPrice = switchPlan === 'annual' ? prices?.annual?.formatted : prices?.monthly?.formatted
+  const switchInterval = switchPlan === 'annual' ? 'year' : 'month'
+  const upgradePrice = prices?.monthly?.formatted
 
   return (
-    <div className="max-w-xl mx-auto px-6 py-8 space-y-6">
-
-      <h1 className="font-headline font-bold text-lg text-on-surface" style={{ letterSpacing: '-0.02em' }}>
-        Settings
-      </h1>
-
-      {/* ── PROFILE ── */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: '#eae6de' }}>
-
-        {/* Avatar + name header */}
-        <div className="flex items-center gap-4 px-5 py-5">
-          <div
-            className="relative w-14 h-14 rounded-full bg-primary flex items-center justify-center cursor-pointer overflow-hidden shrink-0 group"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {avatarUrl
-              ? <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
-              : <span className="text-lg font-bold text-on-primary font-label" suppressHydrationWarning>{profileInitial}</span>
-            }
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center">
-              <span className="material-symbols-outlined text-white text-base opacity-0 group-hover:opacity-100 transition-opacity">photo_camera</span>
-            </div>
-            {avatarUploading && (
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <span className="material-symbols-outlined text-white text-lg animate-spin">progress_activity</span>
-              </div>
-            )}
-          </div>
-
-          <div className="flex-1 min-w-0">
-            {editingName ? (
-              <div className="flex items-center gap-2">
-                <input
-                  autoFocus
-                  value={displayName}
-                  onChange={e => setDisplayName(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') saveDisplayName(); if (e.key === 'Escape') setEditingName(false) }}
-                  className="font-body text-sm border border-primary rounded-lg px-2.5 py-1.5 flex-1 focus:outline-none focus:ring-1 ring-primary bg-white"
-                />
-                <button
-                  onClick={saveDisplayName}
-                  disabled={profileSaving}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-primary text-white disabled:opacity-50 shrink-0"
-                >
-                  <span className="material-symbols-outlined text-sm">check</span>
-                </button>
-                <button
-                  onClick={() => setEditingName(false)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-black/10 transition-colors shrink-0"
-                >
-                  <span className="material-symbols-outlined text-sm">close</span>
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5">
-                <p className="font-body font-semibold text-sm text-on-surface truncate">{displayName || 'Add your name'}</p>
-                <button onClick={() => setEditingName(true)} className="text-on-surface-variant hover:text-on-surface transition-colors shrink-0">
-                  <span className="material-symbols-outlined text-[14px]">edit</span>
-                </button>
-              </div>
-            )}
-            <p className="text-xs text-on-surface-variant mt-0.5 font-body truncate" suppressHydrationWarning>
-              {preferredRole ?? 'Role not set'}
-            </p>
-          </div>
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+    <main className="mx-auto max-w-[1060px] px-4 py-7 sm:px-6 lg:px-8">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="font-label text-[11px] font-extrabold uppercase tracking-[0.14em] text-on-surface-variant">
+            Account
+          </p>
+          <h1 className="mt-1 font-headline text-[32px] font-bold leading-none text-on-surface" style={{ letterSpacing: '-0.03em' }}>
+            Settings
+          </h1>
         </div>
-
-        {/* Divider */}
-        <div className="mx-5 h-px bg-outline-variant/30" />
-
-        {/* Email row */}
-        <div className="flex items-center justify-between px-5 py-3.5">
-          <div>
-            <p className="text-sm font-body text-on-surface">Email</p>
-            <p className="text-xs text-on-surface-variant font-body mt-0.5">Managed by your auth provider</p>
-          </div>
-          <span className="material-symbols-outlined text-[16px] text-on-surface-variant">lock</span>
-        </div>
-
-        <div className="mx-5 h-px bg-outline-variant/30" />
-
-        {/* Role row */}
-        <div className="flex items-center justify-between px-5 py-3.5">
-          <p className="text-sm font-body text-on-surface">Role</p>
-          <Link
-            href="/onboarding/role"
-            className="flex items-center gap-0.5 text-xs font-semibold text-primary font-label hover:opacity-70 transition-opacity"
-          >
-            Change
-            <span className="material-symbols-outlined text-[13px]">chevron_right</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* ── PLAN ── */}
-      <div
-        className="rounded-2xl px-5 py-4 flex items-center justify-between"
-        style={{
-          background: isPro
-            ? 'linear-gradient(135deg, #2d5a3d 0%, #4a7c59 100%)'
-            : '#eae6de',
-        }}
-      >
-        <div className="flex items-center gap-3">
-          <span
-            className="material-symbols-outlined text-[20px]"
-            style={{ fontVariationSettings: "'FILL' 1", color: isPro ? '#fbbf24' : '#74796e' }}
-          >
-            workspace_premium
+        <div className="inline-flex w-fit items-center gap-2 rounded-full border border-outline-variant/50 bg-surface-container-low px-3 py-1.5 text-xs font-label font-bold text-on-surface-variant">
+          <span className="material-symbols-outlined text-[15px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
+            verified_user
           </span>
-          <div>
-            <p className={`font-label font-bold text-sm ${isPro ? 'text-white' : 'text-on-surface'}`}>
-              {isPro ? 'HackProduct Pro' : 'Free plan'}
-            </p>
-            <p className={`text-xs font-body mt-0.5 ${isPro ? 'text-white/60' : 'text-on-surface-variant'}`}>
-              {isPro ? 'Unlimited · full coaching · Learner DNA' : '3 challenges/day · basic feedback'}
-            </p>
-          </div>
+          {isPro ? 'Pro workspace' : 'Free workspace'}
         </div>
-        {!isPro && (
-          <button
-            onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade-modal'))}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold font-label text-white shrink-0 transition-all active:scale-[0.97]"
-            style={{ background: 'linear-gradient(135deg, #4a7c59 0%, #3a6b4a 100%)', boxShadow: '0 2px 8px rgba(74,124,89,0.30)' }}
-          >
-            Upgrade
-            <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
-          </button>
-        )}
       </div>
 
-      {/* ── ACCOUNT ── */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: '#eae6de' }}>
-        <div className="flex items-center justify-between px-5 py-3.5">
-          <div>
-            <p className="text-sm font-body text-on-surface">Export my data</p>
-            <p className="text-xs text-on-surface-variant font-body mt-0.5">Download your progress and history</p>
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[360px_1fr]">
+        <section className="rounded-[22px] border border-outline-variant/45 bg-surface-container-low p-5 shadow-[0_18px_50px_rgba(56,47,33,0.07)]">
+          <div className="flex items-start gap-4">
+            <button
+              type="button"
+              className="group relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-primary text-xl font-bold text-on-primary transition-transform active:scale-[0.98]"
+              onClick={() => fileInputRef.current?.click()}
+              aria-label="Update avatar"
+            >
+              {avatarUrl
+                ? <img src={avatarUrl} alt="avatar" className="h-full w-full object-cover" />
+                : <span className="font-label" suppressHydrationWarning>{profileInitial}</span>
+              }
+              <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-white transition-colors group-hover:bg-black/25">
+                <span className="material-symbols-outlined text-[18px] opacity-0 transition-opacity group-hover:opacity-100">photo_camera</span>
+              </span>
+              {avatarUploading && (
+                <span className="absolute inset-0 flex items-center justify-center bg-black/45">
+                  <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
+                </span>
+              )}
+            </button>
+
+            <div className="min-w-0 flex-1">
+              {editingName ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    autoFocus
+                    value={displayName}
+                    onChange={e => setDisplayName(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') saveDisplayName(); if (e.key === 'Escape') setEditingName(false) }}
+                    className="min-w-0 flex-1 rounded-xl border border-outline-variant bg-background px-3 py-2 text-sm font-body text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                  <button
+                    onClick={saveDisplayName}
+                    disabled={profileSaving}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-white transition-opacity disabled:opacity-50"
+                    aria-label="Save display name"
+                  >
+                    <span className="material-symbols-outlined text-[17px]">check</span>
+                  </button>
+                  <button
+                    onClick={() => setEditingName(false)}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-on-surface-variant transition-colors hover:bg-surface-container"
+                    aria-label="Cancel display name edit"
+                  >
+                    <span className="material-symbols-outlined text-[17px]">close</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-headline text-xl font-bold leading-tight text-on-surface" style={{ letterSpacing: '-0.02em' }}>
+                      {displayName || 'Add your name'}
+                    </p>
+                    <p className="mt-1 truncate text-sm font-body text-on-surface-variant" suppressHydrationWarning>
+                      {email ?? 'Signed in email'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setEditingName(true)}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface"
+                    aria-label="Edit display name"
+                  >
+                    <span className="material-symbols-outlined text-[17px]">edit</span>
+                  </button>
+                </div>
+              )}
+            </div>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
           </div>
-          <button
-            onClick={async () => {
-              const res = await fetch('/api/profile/export')
-              if (!res.ok) return
-              const blob = await res.blob()
-              const url = URL.createObjectURL(blob)
-              const a = document.createElement('a')
-              a.href = url; a.download = 'hackproduct-data.json'; a.click()
-              URL.revokeObjectURL(url)
-            }}
-            className="flex items-center gap-1 text-xs font-semibold text-primary font-label hover:opacity-70 transition-opacity shrink-0"
-          >
-            Export
-            <span className="material-symbols-outlined text-[13px]">download</span>
-          </button>
-        </div>
 
-        <div className="mx-5 h-px bg-outline-variant/30" />
+          <div className="mt-5 rounded-2xl bg-background/70 px-4 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Email</p>
+                <p className="mt-1 truncate text-sm font-body font-semibold text-on-surface">{email ?? 'Signed in email'}</p>
+              </div>
+              <span className="material-symbols-outlined shrink-0 text-[17px] text-on-surface-variant">lock</span>
+            </div>
+          </div>
 
-        <div className="flex items-center justify-between px-5 py-3.5">
-          <p className="text-sm font-body text-on-surface">Sign out</p>
           <button
             onClick={handleLogout}
-            className="text-xs font-semibold text-on-surface-variant font-label hover:text-on-surface transition-colors"
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-outline-variant/60 bg-transparent px-4 py-3 text-sm font-label font-bold text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface active:scale-[0.99]"
           >
+            <span className="material-symbols-outlined text-[17px]">logout</span>
             Sign out
           </button>
-        </div>
-      </div>
+        </section>
 
-      {/* ── DANGER ── */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: '#eae6de' }}>
-        <div className="flex items-center justify-between px-5 py-3.5">
-          <div>
-            <p className="text-sm font-body text-on-surface">Delete account</p>
-            <p className="text-xs text-on-surface-variant font-body mt-0.5">Permanently removes your account and all data</p>
+        <section className="rounded-[22px] border border-outline-variant/45 bg-surface-container-low p-5 shadow-[0_18px_50px_rgba(56,47,33,0.07)]">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary-fixed px-3 py-1 text-xs font-label font-bold text-primary">
+                <span className="material-symbols-outlined text-[15px]" style={{ fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
+                {isPro ? 'Active subscription' : 'Free plan'}
+              </div>
+              <h2 className="mt-3 font-headline text-2xl font-bold leading-tight text-on-surface" style={{ letterSpacing: '-0.025em' }}>
+                {isPro ? 'HackProduct Pro' : 'Free workspace'}
+              </h2>
+              <p className="mt-1 text-sm font-body capitalize text-on-surface-variant">
+                {isPro ? `${interval} · ${statusLabel}` : 'Monthly free practice limits'}
+              </p>
+            </div>
+
+            {!isPro && (
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade-modal'))}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-label font-bold text-on-primary transition-opacity hover:opacity-95 active:scale-[0.98]"
+              >
+                Upgrade
+                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+              </button>
+            )}
           </div>
-          <button
-            onClick={() => {
-              if (confirm('Delete your account? This cannot be undone.')) {
-                window.location.href = '/api/profile/delete-account'
-              }
-            }}
-            className="text-xs font-semibold text-error font-label hover:opacity-70 transition-opacity shrink-0"
-          >
-            Delete
-          </button>
-        </div>
+
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl bg-background/75 px-4 py-3">
+              <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Current</p>
+              <p className="mt-2 text-sm font-body font-semibold text-on-surface">
+                {isPro ? `${interval}${currentPrice ? ` · ${currentPrice}/${subscription?.billing_interval === 'year' ? 'yr' : 'mo'}` : ''}` : 'Free · $0'}
+              </p>
+            </div>
+            <div className="rounded-2xl bg-background/75 px-4 py-3">
+              <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Next billing</p>
+              <p className="mt-2 text-sm font-body font-semibold text-on-surface">{isPro ? periodEndLabel : 'None'}</p>
+            </div>
+            <div className="rounded-2xl bg-background/75 px-4 py-3">
+              <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-on-surface-variant">Switch price</p>
+              <p className="mt-2 text-sm font-body font-semibold text-on-surface">
+                {isPro && switchPrice ? `${switchPrice}/${switchInterval === 'year' ? 'yr' : 'mo'}` : upgradePrice ? `${upgradePrice}/mo` : 'Loading'}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <FreemiumUsageSummary plan={plan} />
+          </div>
+
+          {cancelScheduled && (
+            <div className="mt-4 rounded-2xl border border-amber-200 bg-[#f3e2b9]/55 px-4 py-3 text-sm font-body text-on-surface">
+              Pro remains active until {periodEndLabel}, then your account moves to Free.
+            </div>
+          )}
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            {isPro ? (
+              <>
+                <button
+                  onClick={() => runBillingAction('change-plan', { plan: switchPlan })}
+                  disabled={!!billingAction}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-label font-bold text-on-primary transition-opacity hover:opacity-95 disabled:opacity-60 active:scale-[0.98]"
+                >
+                  <span className="material-symbols-outlined text-[17px]">sync_alt</span>
+                  Switch to {switchPlan} {switchPrice ? `(${switchPrice}/${switchInterval === 'year' ? 'yr' : 'mo'})` : ''}
+                </button>
+                {cancelScheduled ? (
+                  <button
+                    onClick={() => runBillingAction('reactivate')}
+                    disabled={!!billingAction}
+                    className="inline-flex items-center gap-2 rounded-2xl border border-outline-variant/70 px-4 py-3 text-sm font-label font-bold text-on-surface transition-colors hover:bg-background disabled:opacity-60 active:scale-[0.98]"
+                  >
+                    <span className="material-symbols-outlined text-[17px]">restart_alt</span>
+                    Keep Pro
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => runBillingAction('cancel')}
+                    disabled={!!billingAction}
+                    className="inline-flex items-center gap-2 rounded-2xl border border-outline-variant/70 px-4 py-3 text-sm font-label font-bold text-on-surface-variant transition-colors hover:bg-background hover:text-on-surface disabled:opacity-60 active:scale-[0.98]"
+                  >
+                    <span className="material-symbols-outlined text-[17px]">event_busy</span>
+                    Cancel at renewal
+                  </button>
+                )}
+              </>
+            ) : (
+              upgradePrice && (
+                <p className="text-sm font-body text-on-surface-variant">
+                  Pro starts at {upgradePrice}/mo. Prices are fetched from Stripe when this page loads.
+                </p>
+              )
+            )}
+          </div>
+
+          {billingError && (
+            <p className="mt-3 rounded-xl bg-error/10 px-3 py-2 text-sm font-body text-error">{billingError}</p>
+          )}
+        </section>
       </div>
 
-      {/* Footer */}
-      <div className="flex items-center justify-between pb-8 pt-2">
-        <p className="text-[10px] text-on-surface-variant/40 font-label uppercase tracking-widest">HackProduct · Sunboy Labs</p>
+      <footer className="mt-8 flex items-center justify-between pb-8">
+        <p className="text-[10px] text-on-surface-variant/45 font-label uppercase tracking-widest">HackProduct · Sunboy Labs</p>
         <div className="flex gap-4">
-          <Link href="/privacy" className="text-[10px] text-on-surface-variant/40 font-label hover:text-on-surface-variant transition-colors">Privacy</Link>
-          <Link href="/terms" className="text-[10px] text-on-surface-variant/40 font-label hover:text-on-surface-variant transition-colors">Terms</Link>
+          <Link href="/privacy" className="text-[10px] text-on-surface-variant/45 font-label transition-colors hover:text-on-surface-variant">Privacy</Link>
+          <Link href="/terms" className="text-[10px] text-on-surface-variant/45 font-label transition-colors hover:text-on-surface-variant">Terms</Link>
         </div>
-      </div>
-    </div>
+      </footer>
+    </main>
   )
 }

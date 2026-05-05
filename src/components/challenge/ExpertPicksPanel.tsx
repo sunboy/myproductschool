@@ -19,7 +19,7 @@ export function ExpertPicksPanel() {
           <div className="w-8 h-8 rounded-full bg-tertiary-container/10 flex items-center justify-center text-tertiary-container">
             <span className="material-symbols-outlined text-xl">verified</span>
           </div>
-          <h3 className="text-tertiary-container font-bold text-lg tracking-wide uppercase font-label">Luma&apos;s Expert Picks</h3>
+          <h3 className="text-tertiary-container font-bold text-lg tracking-wide uppercase font-label">Hatch&apos;s Expert Picks</h3>
         </div>
         <p className="text-sm font-medium mb-6 text-on-surface-variant">
           Curated insights from the community to help you navigate complex design challenges.

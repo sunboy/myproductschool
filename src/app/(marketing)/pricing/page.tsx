@@ -6,19 +6,21 @@ import { FloatingNav } from '@/components/marketing/FloatingNav'
 import { GradientFooter } from '@/components/marketing/GradientFooter'
 import { LogoMarquee } from '@/components/marketing/LogoMarquee'
 import { UpgradeButton } from '@/components/marketing/UpgradeButton'
+import { BILLING_PLANS, formatPlanPrice } from '@/lib/billing/plans'
 
 const FREE_FEATURES = [
   { label: 'Core Methodology Access', included: true },
-  { label: 'Weekly Case Study', included: true },
-  { label: 'Community Forum Access', included: true },
-  { label: 'AI Performance Coach', included: false },
+  { label: '3 Challenge Starts / Month', included: true },
+  { label: 'Starter Hatch AI Budget', included: true },
+  { label: 'AI Interview Practice', included: false },
 ]
 
 const PRO_FEATURES = [
   'Full Methodology Library',
-  'Unlimited AI Coach Sessions',
-  'Proprietary Challenge Sandbox',
-  'Priority 1:1 Support',
+  '80 Challenge Starts / Month',
+  '12 AI Interview Starts / Month',
+  'Fair-Use Hatch AI Budget',
+  'Learner DNA and Failure Patterns',
 ]
 
 const TESTIMONIALS = [
@@ -75,6 +77,7 @@ const FAQS = [
 
 export default function PricingPage() {
   const [openFaq, setOpenFaq] = useState(0)
+  const monthlyPlan = BILLING_PLANS.monthly
 
   return (
     <div className="min-h-screen bg-background font-body text-on-surface">
@@ -83,7 +86,7 @@ export default function PricingPage() {
       {/* Hero Section */}
       <header className="relative bg-signature-gradient pt-48 pb-64 overflow-hidden">
         <div className="max-w-7xl mx-auto px-8 relative z-10 text-center">
-          {/* Luma Glyph */}
+          {/* Hatch Glyph */}
           <div className="mb-10 relative inline-block">
             <div className="relative w-20 h-20 flex items-center justify-center">
               <div className="absolute border-2 border-white/20 rounded-full w-20 h-20 animate-[spin_20s_linear_infinite]" />
@@ -175,7 +178,7 @@ export default function PricingPage() {
               </h3>
               <div className="flex items-baseline gap-1">
                 <span className="font-headline text-5xl font-extrabold text-on-surface tracking-[-0.02em]">
-                  $49
+                  {formatPlanPrice(monthlyPlan)}
                 </span>
                 <span className="text-on-surface-variant font-medium">
                   / month

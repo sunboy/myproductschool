@@ -1,6 +1,6 @@
 ---
 name: hackproduct-learner-dna
-description: "Learner DNA competency system for HackProduct — 6-axis scoring with role-weighted ELO updates, trend analysis, weakness identification, and adaptive recommendations. Use when building competency updater, DNA API, CompetencyRadar, trend analyzer, or any learner_competencies code. Triggers on: competency, learner DNA, radar chart, trend, weakness, recommendation, ELO, skill profile, progress."
+description: "Learner DNA competency system for HackProduct. Covers 6-axis scoring with role-weighted ELO updates, trend analysis, weakness identification, and next-challenge recommendations. Use when building competency updater, DNA API, CompetencyRadar, trend analyzer, or any learner_competencies code. Triggers on: competency, learner DNA, radar chart, trend, weakness, recommendation, ELO, skill profile, progress."
 ---
 
 # HackProduct Learner DNA System
@@ -104,6 +104,17 @@ Find uncompleted challenge targeting weakest competency. If in a study plan, pre
 
 Inline SVG, 6 axes at 60° intervals, score 0-100 → radius.
 Fill: `fill-primary/20 stroke-primary`. Labels outside hexagon. Animate on mount.
+
+## Writing Style
+
+All learner DNA copy (competency labels, weakness summaries, recommendation copy, trend descriptions, radar chart labels) follows the canonical HackProduct Writing Style Guide: [`docs/notes/writing-style-guide.md`](../../../../docs/notes/writing-style-guide.md), summarized in `CLAUDE.md` at the repo root.
+
+**Learner DNA-specific applications of the rules:**
+- No second-person role framing. Weakness and recommendation copy talks about the learner's pattern in third-person observation, not as advice delivered "to you as a tech lead".
+- No em dashes. No AI slop words.
+- Weakness descriptions name the gap plainly. No "growth opportunity", no "area for development", no "room to improve". "Scores bottom third on strategic_thinking across six attempts, driven by skipping the Optimize tradeoff sacrifice" beats "strategic thinking is a growth area".
+- Recommendation copy names the next challenge and the specific reasoning move it exercises, in one sentence.
+- Competency and axis labels on the radar chart are terse (one or two words) because they are UI chrome; the style-guide exception for chrome applies.
 
 ## Files This Skill Produces
 

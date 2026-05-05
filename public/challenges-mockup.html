@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Challenges Mockup — Swim Lanes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,600;0,700;1,400&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #faf6f0; font-family: 'Nunito Sans', sans-serif; color: #2e3230; }
+  .page { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  /* Filter bar (abbreviated for context) */
+  .filter-bar { margin-bottom: 24px; display: flex; flex-direction: column; gap: 10px; }
+  .filter-row { display: flex; align-items: center; gap: 12px; }
+  .filter-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #4a4e4a; width: 72px; flex-shrink: 0; }
+  .pill { font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; border: none; cursor: pointer; }
+  .pill.active { background: #4a7c59; color: #fff; }
+  .pill.inactive { background: #f0ece4; color: #2e3230; }
+
+  /* Swim lane */
+  .swim-lane { margin-bottom: 40px; }
+  .lane-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1.5px solid #e4e0d8; }
+  .lane-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .lane-title { font-family: 'Literata', Georgia, serif; font-size: 18px; font-weight: 600; color: #2e3230; }
+  .lane-count { font-size: 11px; font-weight: 700; color: #4a4e4a; background: #eae6de; padding: 2px 8px; border-radius: 999px; margin-left: 4px; }
+  .lane-desc { font-size: 11px; color: #74796e; margin-left: auto; }
+
+  /* Card grid */
+  .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+  /* Card */
+  .card { border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden; border: 1px solid rgba(0,0,0,0.04); }
+  .card-top { display: flex; align-items: center; justify-content: space-between; }
+  .card-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+  .card-diff { font-size: 10px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+  .diff-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .card-title { font-family: 'Literata', Georgia, serif; font-size: 16px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; }
+  .card-body { font-size: 11px; line-height: 1.55; opacity: 0.65; }
+  .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 8px; }
+  .card-meta { font-size: 10px; opacity: 0.6; }
+  .card-cta { font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 999px; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+  .glow { position: absolute; top: -24px; right: -24px; width: 100px; height: 100px; border-radius: 50%; pointer-events: none; }
+
+  /* Warmup cards */
+  .warmup .card { background: #e8f1ec; }
+  .warmup .card-badge { background: rgba(255,255,255,0.7); color: #2d4a3b; }
+  .warmup .card-diff { color: #2d4a3b99; }
+  .warmup .card-title { color: #2d4a3b; }
+  .warmup .card-body { color: #2d4a3b; }
+  .warmup .card-meta { color: #2d4a3b; }
+  .warmup .card-cta { background: #6b8275; }
+  .warmup .glow { background: radial-gradient(circle, #6b827522, transparent 70%); }
+  .warmup .lane-dot { background: #10b981; }
+
+  /* Standard cards */
+  .standard .card { background: #fef3c7; }
+  .standard .card-badge { background: rgba(255,255,255,0.7); color: #78450a; }
+  .standard .card-diff { color: #78450a99; }
+  .standard .card-title { color: #78450a; }
+  .standard .card-body { color: #78450a; }
+  .standard .card-meta { color: #78450a; }
+  .standard .card-cta { background: #d97706; }
+  .standard .glow { background: radial-gradient(circle, #d9770622, transparent 70%); }
+  .standard .lane-dot { background: #f59e0b; }
+
+  /* Advanced cards */
+  .advanced .card { background: #fee2e2; }
+  .advanced .card-badge { background: rgba(255,255,255,0.7); color: #8a1c1c; }
+  .advanced .card-diff { color: #8a1c1c99; }
+  .advanced .card-title { color: #8a1c1c; }
+  .advanced .card-body { color: #8a1c1c; }
+  .advanced .card-meta { color: #8a1c1c; }
+  .advanced .card-cta { background: #dc2626; }
+  .advanced .glow { background: radial-gradient(circle, #dc262622, transparent 70%); }
+  .advanced .lane-dot { background: #ef4444; }
+
+  /* Staff+ cards */
+  .staffplus .card { background: #ede9fe; }
+  .staffplus .card-badge { background: rgba(255,255,255,0.7); color: #4c1d95; }
+  .staffplus .card-diff { color: #4c1d9599; }
+  .staffplus .card-title { color: #4c1d95; }
+  .staffplus .card-body { color: #4c1d95; }
+  .staffplus .card-meta { color: #4c1d95; }
+  .staffplus .card-cta { background: #7c3aed; }
+  .staffplus .glow { background: radial-gradient(circle, #7c3aed22, transparent 70%); }
+  .staffplus .lane-dot { background: #8b5cf6; }
+
+  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #74796e; margin-bottom: 20px; }
+  .show-more { text-align: center; margin-top: 12px; font-size: 12px; font-weight: 700; color: #4a7c59; cursor: pointer; padding: 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Filter bar (abbreviated) -->
+  <div style="margin-bottom: 8px; display:flex; align-items:center; justify-content:space-between;">
+    <div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#74796e;margin-bottom:4px;">Practice</div>
+      <h1 style="font-family:'Literata',Georgia,serif;font-size:32px;font-weight:600;letter-spacing:-.02em;color:#2e3230;">Practice Hub</h1>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div style="position:relative;">
+        <input placeholder="Search 159 challenges…" style="padding:8px 16px 8px 36px;border-radius:999px;border:1px solid #c4c8bc;background:#faf6f0;font-size:13px;width:220px;outline:none;" readonly>
+      </div>
+      <button style="padding:8px 16px;border-radius:999px;border:1px solid #c4c8bc;background:transparent;font-size:13px;font-weight:700;cursor:pointer;">Filters</button>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <div class="filter-row">
+      <span class="filter-label">Role</span>
+      <button class="pill active">All</button>
+      <button class="pill inactive">SWE</button>
+      <button class="pill inactive">Data Eng</button>
+      <button class="pill inactive">ML Eng</button>
+      <button class="pill inactive">PM</button>
+      <button class="pill inactive">Designer</button>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">Format</span>
+      <button class="pill active">All Formats</button>
+      <button class="pill inactive">Traditional</button>
+      <button class="pill inactive">AI-Assisted</button>
+      <button class="pill inactive">Agentic</button>
+      <button class="pill inactive">AI-Native</button>
+    </div>
+  </div>
+
+  <!-- ALL CHALLENGES count -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;margin-top:8px;">
+    <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#74796e;">All challenges</span>
+    <span style="font-size:11px;color:#74796e;">159 total</span>
+  </div>
+
+  <!-- ── WARMUP LANE ── -->
+  <div class="swim-lane warmup">
+    <div class="lane-header">
+      <span class="lane-dot"></span>
+      <span class="lane-title">Warmup</span>
+      <span class="lane-count">14</span>
+      <span class="lane-desc">Good starting point · 10–15 min</span>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="glow"></div>
+        <div class="card-top">
+          <span class="card-badge">Traditional</span>
+          <span class="card-diff"><span class="diff-dot" style="background:#10b981"></span>Warm-up</span>
+        </div>
+        <div class="card-title">Spotify's 15% Session Drop</div>
+        <div class="card-body">DAU dropped 15% overnight. Diagnose before you fix.</div>
+        <div class="card-footer">
+          <span class="card-meta">— attempts</span>
+          <button class="card-cta">Start →</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="glow"></div>
+        <div class="card-top">
+          <span class="card-badge">AI-Assisted</span>
+          <span class="card-diff"><span class="diff-dot" style="background:#10b981"></span>Warm-up</span>
+        </div>
+        <div class="card-title">Notification Fatigue: B2B SaaS Drop-off</div>
+        <div class="card-body">Users are disabling push notifications. What's the root cause?</div>
+        <div class="card-footer">
+          <span class="card-meta">— attempts</span>
+          <button class="card-cta">Start →</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="glow"></div>
+        <div class="card-top">
+          <span class="card-badge">Traditional</span>
+          <span class="card-diff"><span class="diff-dot" style="background:#10b981"></span>Warm-up</span>
+        </div>
+        <div class="card-title">Onboarding Drop — Mobile Banking App</div>
+        <div class="card-body">60% of users abandon before account verification. Frame the problem.</div>
+        <div class="card-footer">
+          <span class="card-meta">— attempts</span>
+          <button class="card-cta">Start →</button>
+        </div>
+      </div>
+    </div>
+    <div class="show-more">Show 11 more Warmup challenges ↓</div>
+  </div>
+
+  <!-- ── STANDARD LANE ── -->
+  <div class="swim-lane standard">
+    <div class="lane-header">
+      <span class="lane-dot"></span>
+      <span class="lane-title">Standard</span>
+      <span class="lane-count">98</span>
+      <span class="lane-desc">Core practice · 15–25 min</span>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="glow"></div>
+        <div class="card-top">
+          <span class="card-badge">AI-Native</span>
+          <span class="card-diff"><span class="diff-dot" style="background:#f59e0b"></span>Standard</span>
+        </div>
+        <div class="card-title">TikTok Shop Creator Ad Cross-Sell</div>
+        <div class="card-body">Creator monetisation rate is half of Instagram's. Design the fix.</div>
+        <div class="card-footer">
+          <span class="card-meta">— attempts</span>
+          <button class="card-cta">Start →</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="glow"></div>
+        <div class="card-top">
+          <span class="card-badge">AI-Assisted</span>
+          <span class="card-diff"><span class="diff-dot" style="background:#f59e0b"></span>Standard</span>
+        </div>
+        <div class="card-title">Slack Channel Discovery Problem</div>
+        <div class="card-body">Users join Slack but never find the right channels. Root cause analysis.</div>
+        <div class="card-footer">
+          <span class="card-meta">— attempts</span>
+          <button class="card-cta">Start →</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="glow"></div>
+        <div class="card-top">
+          <span class="card-badge">Agentic</span>
+          <span class="card-diff"><span class="diff-dot" style="background:#f59e0b"></span>Standard</span>
+        </div>
+        <div class="card-title">GitHub Copilot Adoption in Enterprise</div>
+        <div class="card-body">Copilot seats purchased but activation rate is 34%. Frame the job-to-be-done.</div>
+        <div class="card-footer">
+          <span class="card-meta">— attempts</span>
+          <button class="card-cta">Start →</button>
+        </div>
+      </div>
+    </div>
+    <div class="show-more">Show 95 more Standard challenges ↓</div>
+  </div>
+
+  <!-- ── ADVANCED LANE ── -->
+  <div class="swim-lane advanced">
+    <div class="lane-header">
+      <span class="lane-dot"></span>
+      <span class="lane-title">Advanced</span>
+      <span class="lane-count">38</span>
+      <span class="lane-desc">Stretch problems · 25–35 min</span>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="glow"></div>
+        <div class="card-top">
+          <span class="card-badge">AI-Native</span>
+          <span class="card-diff"><span class="diff-dot" style="background:#ef4444"></span>Advanced</span>
+        </div>
+        <div class="card-title">TikTok DAU Growth: Which Lever to Pull</div>
+        <div class="card-body">Three competing growth hypotheses. Score them with evidence and defend one.</div>
+        <div class="card-footer">
+          <span class="card-meta">— attempts</span>
+          <button class="card-cta">Start →</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="glow"></div>
+        <div class="card-top">
+          <span class="card-badge">Traditional</span>
+          <span class="card-diff"><span class="diff-dot" style="background:#ef4444"></span>Advanced</span>
+        </div>
+        <div class="card-title">Airbnb Autopsy: Why Experiences Failed</div>
+        <div class="card-body">Full FLOW analysis of a real failed bet. What did they miss?</div>
+        <div class="card-footer">
+          <span class="card-meta">— attempts</span>
+          <button class="card-cta">Start →</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="glow"></div>
+        <div class="card-top">
+          <span class="card-badge">Agentic</span>
+          <span class="card-diff"><span class="diff-dot" style="background:#ef4444"></span>Advanced</span>
+        </div>
+        <div class="card-title">Netflix Password Sharing Monetisation</div>
+        <div class="card-body">Paid sharing launched. Optimise for LTV without destroying NPS.</div>
+        <div class="card-footer">
+          <span class="card-meta">— attempts</span>
+          <button class="card-cta">Start →</button>
+        </div>
+      </div>
+    </div>
+    <div class="show-more">Show 35 more Advanced challenges ↓</div>
+  </div>
+
+  <!-- ── STAFF+ LANE ── -->
+  <div class="swim-lane staffplus">
+    <div class="lane-header">
+      <span class="lane-dot"></span>
+      <span class="lane-title">Staff+</span>
+      <span class="lane-count">9</span>
+      <span class="lane-desc">Executive-level · 35+ min</span>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="glow"></div>
+        <div class="card-top">
+          <span class="card-badge">Traditional</span>
+          <span class="card-diff"><span class="diff-dot" style="background:#8b5cf6"></span>Staff+</span>
+        </div>
+        <div class="card-title">Platform vs Product: Build the API Strategy</div>
+        <div class="card-body">You're presenting to the board. Make the case for platform-first with hard trade-offs named.</div>
+        <div class="card-footer">
+          <span class="card-meta">— attempts</span>
+          <button class="card-cta">Start →</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="glow"></div>
+        <div class="card-top">
+          <span class="card-badge">AI-Native</span>
+          <span class="card-diff"><span class="diff-dot" style="background:#8b5cf6"></span>Staff+</span>
+        </div>
+        <div class="card-title">Stripe's Pricing Localisation Decision</div>
+        <div class="card-body">15 markets, 4 pricing models. Which is the defensible default and why?</div>
+        <div class="card-footer">
+          <span class="card-meta">— attempts</span>
+          <button class="card-cta">Start →</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="glow"></div>
+        <div class="card-top">
+          <span class="card-badge">Agentic</span>
+          <span class="card-diff"><span class="diff-dot" style="background:#8b5cf6"></span>Staff+</span>
+        </div>
+        <div class="card-title">Deprecating a Core API at Scale</div>
+        <div class="card-body">10,000 external integrations depend on this endpoint. Frame the migration strategy.</div>
+        <div class="card-footer">
+          <span class="card-meta">— attempts</span>
+          <button class="card-cta">Start →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

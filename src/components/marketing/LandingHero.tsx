@@ -1,12 +1,12 @@
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 export function LandingHero() {
   return (
     <section className="relative py-24 md:py-32 text-center overflow-hidden">
-      {/* Large subtle LumaGlyph watermark */}
+      {/* Large subtle HatchGlyph watermark */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <LumaGlyph size={400} className="text-primary opacity-5" />
+        <HatchGlyph size={400} className="text-primary opacity-5" />
       </div>
 
       <div className="relative z-10 space-y-8">

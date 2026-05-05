@@ -29,7 +29,7 @@ export interface LiveInterviewTurn {
   id: string
   sessionId: string
   turnIndex: number
-  role: 'luma' | 'user'
+  role: 'hatch' | 'user'
   content: string
   flowMoveDetected?: FlowStep
   createdAt: string
@@ -230,7 +230,7 @@ export const MOCK_LIVE_TURNS: LiveInterviewTurn[] = [
     id: 'turn-0',
     sessionId: 'mock-session-id',
     turnIndex: 0,
-    role: 'luma',
+    role: 'hatch',
     content:
       "Let's jump in. You're a PM at Uber. Driver churn is up 18% quarter-over-quarter, and your data team has flagged that drivers who contact support about earnings are 3x more likely to churn within 30 days. Your job is to design a solution. How do you think about this problem?",
     createdAt: new Date(Date.now() - 8 * 60 * 1000).toISOString(),
@@ -249,7 +249,7 @@ export const MOCK_LIVE_TURNS: LiveInterviewTurn[] = [
     id: 'turn-2',
     sessionId: 'mock-session-id',
     turnIndex: 2,
-    role: 'luma',
+    role: 'hatch',
     content:
       "You've jumped to a solution quickly. Why do you think earnings confusion is the core problem here? What's the actual job the driver is trying to do when they contact support — and what's blocking them from doing it?",
     createdAt: new Date(Date.now() - 6 * 60 * 1000).toISOString(),
@@ -268,7 +268,7 @@ export const MOCK_LIVE_TURNS: LiveInterviewTurn[] = [
     id: 'turn-4',
     sessionId: 'mock-session-id',
     turnIndex: 4,
-    role: 'luma',
+    role: 'hatch',
     content:
       "Good reframe. Trust is the job. Now walk me through who else is affected by this problem — not just individual drivers. Who are the stakeholders, and what does success look like from each of their perspectives?",
     createdAt: new Date(Date.now() - 4 * 60 * 1000).toISOString(),
@@ -287,7 +287,7 @@ export const MOCK_LIVE_TURNS: LiveInterviewTurn[] = [
     id: 'turn-6',
     sessionId: 'mock-session-id',
     turnIndex: 6,
-    role: 'luma',
+    role: 'hatch',
     content:
       "Strong stakeholder map. Now let's get into solutions. What are the structurally different approaches you could take — not variations on a dashboard, but genuinely distinct solution types?",
     createdAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(),

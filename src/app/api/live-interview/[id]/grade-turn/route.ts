@@ -1,5 +1,13 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import Anthropic from '@anthropic-ai/sdk'
+import { applyCoverageCredit, type FlowMove } from '@/lib/live-interview/flow-coverage-credits'
+import {
+  AiBudgetExceededError,
+  assertAiBudget,
+  estimateAnthropicPreflightCents,
+  getUserPlanForBudget,
+  recordAnthropicUsage,
+} from '@/lib/usage/ai-budget'
 
 const VALID_FLOW_MOVES = new Set(['frame', 'list', 'optimize', 'win'])
 const VALID_COMPETENCIES = new Set([
@@ -28,7 +36,7 @@ interface GradingResult {
  * POST /api/live-interview/[id]/grade-turn
  *
  * Asynchronous post-hoc grading of a conversation turn. Called AFTER the
- * Luma response has already been returned to the user, so latency here
+ * Hatch response has already been returned to the user, so latency here
  * does not affect conversational flow.
  *
  * Uses Claude Haiku for speed and cost — this is pure analytical
@@ -44,9 +52,11 @@ export async function POST(
     return Response.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 503 })
   }
 
-  const { recentTurns, challengeId } = (await request.json()) as {
-    recentTurns: Array<{ role: 'user' | 'luma'; content: string }>
+  const { recentTurns, challengeId, turnIndex } = (await request.json()) as {
+    recentTurns: Array<{ role: 'user' | 'hatch'; content: string }>
     challengeId?: string | null
+    /** turn_index of the user turn being graded; used to dedup flow_coverage credits. */
+    turnIndex?: number
   }
 
   if (!recentTurns?.length) {
@@ -57,7 +67,7 @@ export async function POST(
 
   const { data: session } = await adminClient
     .from('live_interview_sessions')
-    .select('flow_coverage, total_turns, status, conversation_memory, calibration_snapshot, scenario_rubric')
+    .select('user_id, flow_coverage, flow_coverage_credits, total_turns, status, conversation_memory, calibration_snapshot, scenario_rubric')
     .eq('id', id)
     .single()
 
@@ -68,7 +78,7 @@ export async function POST(
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
   const transcript = recentTurns
-    .map((t) => `${t.role === 'luma' ? 'INTERVIEWER' : 'CANDIDATE'}: ${t.content}`)
+    .map((t) => `${t.role === 'hatch' ? 'INTERVIEWER' : 'CANDIDATE'}: ${t.content}`)
     .join('\n\n')
 
   // Build scenario-specific grading context if a challenge is linked
@@ -105,10 +115,9 @@ ${rubric.engineerStandout ?? ''}
     ? '\n- rubric_alignment: How well the candidate\'s response aligns with the scenario rubric. "strong" if they hit the core insight, "partial" if they\'re on the right track but incomplete, "surface" if they\'re addressing symptoms not root causes, "off_track" if their reasoning contradicts the scenario\'s key insight. null if not enough to judge.'
     : ''
 
-  const response = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 400,
-    system: `You are an interview analysis engine. Analyze the most recent exchange in a PM interview and return a JSON object. No other text.
+  const model = 'claude-haiku-4-5-20251001'
+  const maxTokens = 400
+  const systemPrompt = `You are an interview analysis engine. Analyze the most recent exchange in a PM interview and return a JSON object. No other text.
 ${scenarioContext}
 Analyze the CANDIDATE's most recent response (not the interviewer's).
 
@@ -128,9 +137,42 @@ Guidelines:
 - signal: A specific observation, not generic praise. "Identified the causal mechanism behind churn" not "Good analysis."${rubricAlignmentGuideline}
 - emotional_beat: How the interviewer should be feeling right now. "intrigued" if the candidate said something unexpected, "challenging" if they gave a weak answer, "delighted" if they nailed something, "concerned" if they're off track.
 - session_phase: "opening" if still in warm-up/first few exchanges, "middle" for the bulk, "closing" if the interviewer is wrapping up, "done" if the interviewer has explicitly ended the session.
-- memory_items: 0-2 items worth remembering for later reference. Concrete claims, contradictions, strong moments, or dodged questions. Empty array if nothing notable.`,
-    messages: [{ role: 'user', content: transcript }],
-  })
+- memory_items: 0-2 items worth remembering for later reference. Concrete claims, contradictions, strong moments, or dodged questions. Empty array if nothing notable.`
+  const sessionUserId = session.user_id as string
+  const userPlan = await getUserPlanForBudget(sessionUserId)
+  const preflightCostCents = estimateAnthropicPreflightCents(model, maxTokens, systemPrompt.length + transcript.length)
+
+  let response
+  try {
+    await assertAiBudget(sessionUserId, userPlan, preflightCostCents)
+    response = await anthropic.messages.create({
+      model,
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: transcript }],
+    })
+    await recordAnthropicUsage({
+      userId: sessionUserId,
+      model,
+      usage: response.usage,
+      fallbackCostCents: preflightCostCents,
+      route: 'live_interview_grade_turn',
+    })
+  } catch (error) {
+    if (error instanceof AiBudgetExceededError) {
+      return Response.json(
+        {
+          error: 'limit_reached',
+          feature: 'hatch_ai_cents',
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        },
+        { status: 402 }
+      )
+    }
+    throw error
+  }
 
   const raw = response.content[0].type === 'text' ? response.content[0].text.trim() : '{}'
 
@@ -181,12 +223,18 @@ Guidelines:
   // Consolidate session updates into a single DB call
   const sessionUpdate: Record<string, unknown> = {}
 
-  // Update FLOW coverage
+  // Update FLOW coverage with per-turn dedup
   if (flowMove) {
-    const coverage = (session.flow_coverage ?? { frame: 0, list: 0, optimize: 0, win: 0 }) as Record<string, number>
-    const current = coverage[flowMove] ?? 0
-    coverage[flowMove] = Math.min(1.0, current + 0.15)
-    sessionUpdate.flow_coverage = coverage
+    const result = applyCoverageCredit({
+      coverage: session.flow_coverage,
+      credits: (session as { flow_coverage_credits?: Record<string, number[]> | null }).flow_coverage_credits,
+      move: flowMove as FlowMove,
+      turnIndex: typeof turnIndex === 'number' ? turnIndex : null,
+    })
+    if (result.credited) {
+      sessionUpdate.flow_coverage = result.coverage
+      sessionUpdate.flow_coverage_credits = result.credits
+    }
   }
 
   // Append memory items
@@ -210,17 +258,17 @@ Guidelines:
       .eq('id', id)
   }
 
-  // Update the latest luma turn with grading data
-  const { data: latestLumaTurn } = await adminClient
+  // Update the latest hatch turn with grading data
+  const { data: latestHatchTurn } = await adminClient
     .from('live_interview_turns')
     .select('id')
     .eq('session_id', id)
-    .eq('role', 'luma')
+    .eq('role', 'hatch')
     .order('turn_index', { ascending: false })
     .limit(1)
     .single()
 
-  if (latestLumaTurn) {
+  if (latestHatchTurn) {
     await adminClient
       .from('live_interview_turns')
       .update({
@@ -230,7 +278,7 @@ Guidelines:
           : null,
         rubric_alignment: rubricAlignment,
       })
-      .eq('id', latestLumaTurn.id)
+      .eq('id', latestHatchTurn.id)
   }
 
   const result: GradingResult = {

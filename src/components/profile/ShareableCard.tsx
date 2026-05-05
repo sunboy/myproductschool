@@ -9,7 +9,7 @@ interface ShareableCardProps {
   challengeCount: number
   streak: number
   percentile: number | null
-  lumaQuote: string
+  hatchQuote: string
 }
 
 export function ShareableCard({
@@ -19,7 +19,7 @@ export function ShareableCard({
   challengeCount,
   streak,
   percentile,
-  lumaQuote,
+  hatchQuote,
 }: ShareableCardProps) {
   const [copied, setCopied] = useState(false)
 
@@ -75,7 +75,7 @@ export function ShareableCard({
         </div>
 
         <p className="italic text-sm opacity-70 mt-4 text-center">
-          &ldquo;{lumaQuote}&rdquo;
+          &ldquo;{hatchQuote}&rdquo;
         </p>
 
         <p className="text-xs opacity-40 text-center mt-4">{name}</p>

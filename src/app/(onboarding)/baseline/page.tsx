@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const SCORES = [
   { name: 'Frame', score: 72, icon: 'diamond', color: 'text-primary' },
@@ -28,7 +28,7 @@ export default function BaselineResultsPage() {
         </Link>
         <span className="font-headline text-lg font-bold text-primary">HackProduct</span>
         <div className="flex-1" />
-        <LumaGlyph size={28} className="text-primary" state="listening" />
+        <HatchGlyph size={28} className="text-primary" state="listening" />
       </div>
 
       {/* Heading */}
@@ -36,9 +36,9 @@ export default function BaselineResultsPage() {
         Your Baseline Results
       </h1>
 
-      {/* Luma quote */}
+      {/* Hatch quote */}
       <div className="flex items-start gap-3 mb-8 bg-surface-container-low rounded-xl p-5">
-        <LumaGlyph size={32} state="speaking" className="text-primary flex-shrink-0" />
+        <HatchGlyph size={32} state="speaking" className="text-primary flex-shrink-0" />
         <p className="text-sm text-on-surface font-body">
           Based on your answer, I&apos;ve mapped your starting point across all 4 FLOW moves. Here&apos;s where you stand.
         </p>
@@ -81,11 +81,11 @@ export default function BaselineResultsPage() {
         </p>
       </div>
 
-      {/* What Luma noticed */}
+      {/* What Hatch noticed */}
       <div className="bg-surface-container-low border border-outline-variant rounded-xl p-5 mb-6">
         <h3 className="text-sm font-label font-bold text-on-surface mb-2 flex items-center gap-2">
-          <LumaGlyph size={16} state="none" className="text-primary" />
-          What Luma noticed in your answer
+          <HatchGlyph size={16} state="none" className="text-primary" />
+          What Hatch noticed in your answer
         </h3>
         <p className="text-sm text-on-surface-variant font-body italic mb-3">
           &quot;You identified the structural issue quickly and used criteria-based thinking to frame your analysis.

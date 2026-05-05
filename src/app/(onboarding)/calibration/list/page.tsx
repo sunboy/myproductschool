@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const TABS = [
   { id: 'frame', label: 'Frame', icon: 'pentagon', done: true },
@@ -63,9 +63,9 @@ export default function CalibrationSplitPage() {
         </p>
       </div>
 
-      {/* Luma coach tip */}
+      {/* Hatch coach tip */}
       <div className="flex items-start gap-3 mb-4 bg-surface-container-low rounded-xl p-4">
-        <LumaGlyph size={28} className="text-primary flex-shrink-0" state="listening" />
+        <HatchGlyph size={28} className="text-primary flex-shrink-0" state="listening" />
         <div>
           <span className="text-xs font-label font-bold text-primary uppercase tracking-wide">Coach Tip</span>
           <p className="text-sm text-on-surface font-body mt-1">

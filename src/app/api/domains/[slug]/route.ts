@@ -38,6 +38,7 @@ export async function GET(
       .select('id, title, prompt_text, difficulty, tags, estimated_minutes, is_published, move_tags, paradigm, relevant_roles')
       .eq('domain_id', domain.id)
       .eq('is_published', true)
+      .neq('challenge_type', 'freeform')
       .order('created_at'),
     adminClient
       .from('challenge_attempts')

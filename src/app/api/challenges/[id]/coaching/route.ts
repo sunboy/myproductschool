@@ -1,8 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getLumaContext } from '@/lib/v2/luma-context'
+import { getHatchContext } from '@/lib/v2/hatch-context'
 import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+
+function aiBudgetResponse(error: unknown) {
+  if (!(error instanceof AiBudgetExceededError)) return null
+
+  return NextResponse.json(
+    {
+      error: 'limit_reached',
+      feature: 'hatch_ai_cents',
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    },
+    { status: 402 }
+  )
+}
 
 export async function POST(
   req: NextRequest,
@@ -11,6 +27,8 @@ export async function POST(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userPlan = await getUserPlanForBudget(user.id)
+  const budget = { userId: user.id, userPlan, route: 'challenge_coaching' }
 
   const { id: challengeId } = await params
   const body = await req.json().catch(() => ({})) as {
@@ -76,16 +94,16 @@ export async function POST(
     const questionText = question?.question_text ?? ''
     const scenarioContext = challenge?.scenario_context ?? ''
     const scenarioTrigger = challenge?.scenario_trigger ?? ''
-    const lumaContext = await getLumaContext(user.id, challengeId, step)
+    const hatchContext = await getHatchContext(user.id, challengeId, step)
 
-    const systemPrompt = `You are Luma, an AI coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
+    const systemPrompt = `You are Hatch, an AI coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
     let userPrompt = `The learner is a ${roleLabel} who just answered the ${step} step.
 Challenge: ${scenarioContext} ${scenarioTrigger}
 Question: ${questionText}
 Their answer: "${user_text ?? '(no answer provided)'}"`
 
-    if (lumaContext) {
-      userPrompt += `\n\nLearner context:\n${lumaContext}`
+    if (hatchContext) {
+      userPrompt += `\n\nLearner context:\n${hatchContext}`
     }
 
     userPrompt += `
@@ -97,11 +115,19 @@ Generate two short paragraphs:
 Tone: Direct, warm. Senior ${roleLabel} mentoring a junior. No filler.
 Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
 
-    const message = await createCachedMessage(systemPrompt, userPrompt, {
-      model: 'claude-sonnet-4-6',
-      max_tokens: 800,
-      thinking: { type: 'adaptive' },
-    })
+    let message
+    try {
+      message = await createCachedMessage(systemPrompt, userPrompt, {
+        model: 'claude-sonnet-4-6',
+        max_tokens: 800,
+        thinking: { type: 'adaptive' },
+        budget,
+      })
+    } catch (error) {
+      const response = aiBudgetResponse(error)
+      if (response) return response
+      throw error
+    }
 
     let rawText = ''
     for (const block of message.content) {
@@ -140,6 +166,21 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
   }
 
   // Option-based path
+  // Check global pre-generated cache first (covers all MCQ selections, all users)
+  const globalKey = `global:${challengeId}:${step}:${question_id}:${option_id}:${roleId}`
+  const { data: globalHit } = await admin
+    .from('coaching_cache')
+    .select('role_context, career_signal')
+    .eq('cache_key', globalKey)
+    .single()
+  if (globalHit) {
+    return NextResponse.json({
+      role_context: globalHit.role_context,
+      career_signal: globalHit.career_signal,
+      cached: true,
+    })
+  }
+
   // Cache key: userId:challengeId:step:questionId:optionId:roleId
   const cacheKey = `${user.id}:${challengeId}:${step}:${question_id}:${option_id}:${roleId}`
 
@@ -203,11 +244,11 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
   const scenarioTrigger = challenge?.scenario_trigger ?? ''
   const questionText = question?.question_text ?? ''
 
-  // Get Luma context for personalization
-  const lumaContext = await getLumaContext(user.id, challengeId, step)
+  // Get Hatch context for personalization
+  const hatchContext = await getHatchContext(user.id, challengeId, step)
 
   // Build the prompt
-  const systemPrompt = `You are Luma, Luma is an AI coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
+  const systemPrompt = `You are Hatch, Hatch is an AI coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
 
   let userPrompt = `The learner is a ${roleLabel} who just answered the ${step} step.
 Challenge: ${scenarioContext} ${scenarioTrigger}
@@ -216,8 +257,8 @@ They selected: "${selectedText}" (${qualityLabel})
 Best answer: "${bestText}"
 Static explanation: ${staticExplanation}`
 
-  if (lumaContext) {
-    userPrompt += `\n\nLearner context:\n${lumaContext}`
+  if (hatchContext) {
+    userPrompt += `\n\nLearner context:\n${hatchContext}`
   }
 
   userPrompt += `
@@ -229,11 +270,19 @@ Generate two short paragraphs:
 Tone: Direct, warm. Senior ${roleLabel} mentoring a junior. No filler.
 Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
 
-  const message = await createCachedMessage(systemPrompt, userPrompt, {
-    model: 'claude-sonnet-4-6',
-    max_tokens: 800,
-    thinking: { type: 'adaptive' },
-  })
+  let message
+  try {
+    message = await createCachedMessage(systemPrompt, userPrompt, {
+      model: 'claude-sonnet-4-6',
+      max_tokens: 800,
+      thinking: { type: 'adaptive' },
+      budget,
+    })
+  } catch (error) {
+    const response = aiBudgetResponse(error)
+    if (response) return response
+    throw error
+  }
 
   // Extract text content from response
   let rawText = ''

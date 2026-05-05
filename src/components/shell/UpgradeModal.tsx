@@ -3,18 +3,26 @@
 import { useState, useEffect, useCallback } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js'
+import {
+  BILLING_PLANS,
+  annualSavingsPercent,
+  formatMonthlyEquivalent,
+  formatPlanPrice,
+} from '@/lib/billing/plans'
 
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ??
-  'pk_live_51PnserEGJUB78L7n83OomVTkj4BNTLMiwg5Vl2PuUydBlFImSoXRS5N82pRoYJWJerH8hh63iUT8BOlvsQ9AP1cB00tVBDfI8t'
-)
+const stripePublishableKey =
+  process.env.NEXT_PUBLIC_STRIPE_MODE === 'test'
+    ? process.env.NEXT_PUBLIC_STRIPE_TEST_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+    : process.env.NEXT_PUBLIC_STRIPE_LIVE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+
+const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : Promise.resolve(null)
 
 const FEATURES = [
-  { icon: 'all_inclusive',     text: 'Unlimited challenge attempts' },
-  { icon: 'psychology',        text: 'Full Luma coaching on every step' },
+  { icon: 'fitness_center',    text: '80 challenge starts/month' },
+  { icon: 'psychology',        text: 'Fair-use Hatch AI budget' },
   { icon: 'analytics',         text: 'Learner DNA — competency radar' },
-  { icon: 'school',            text: 'All study plans, unlocked' },
-  { icon: 'mic',               text: 'Live AI interview sessions' },
+  { icon: 'school',            text: 'Study plans and autopsies' },
+  { icon: 'mic',               text: '12 AI interview starts/month' },
   { icon: 'workspace_premium', text: 'Early access to new features' },
 ]
 
@@ -27,17 +35,20 @@ interface UpgradeModalProps {
 }
 
 export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
-  const [billing, setBilling] = useState<BillingCycle>('annual')
+  const [billing, setBilling] = useState<BillingCycle>('monthly')
   const [checkoutOpen, setCheckoutOpen] = useState(false)
-  const [checkoutBilling, setCheckoutBilling] = useState<BillingCycle>('annual')
+  const [checkoutBilling, setCheckoutBilling] = useState<BillingCycle>('monthly')
+  const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const annualSavings = Math.round(((29 * 12 - 199) / (29 * 12)) * 100)
-  const monthlyCost   = (199 / 12).toFixed(2)
+  const annualSavings = annualSavingsPercent()
+  const monthlyCost = formatMonthlyEquivalent(BILLING_PLANS.annual)
+  const selectedPlan = BILLING_PLANS[billing]
 
   function handleClose() {
     setCheckoutOpen(false)
+    setCheckoutClientSecret(null)
     setError(null)
     onClose()
   }
@@ -69,6 +80,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
       const data = await res.json()
       if (data.clientSecret) {
         setCheckoutBilling(billing)
+        setCheckoutClientSecret(data.clientSecret)
         setCheckoutOpen(true)
       } else {
         setError(data.error ?? 'Could not start checkout. Please try again.')
@@ -82,6 +94,8 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
 
   // Called by EmbeddedCheckoutProvider to get a fresh client secret
   const fetchClientSecret = useCallback(async () => {
+    if (checkoutClientSecret) return checkoutClientSecret
+
     const res = await fetch('/api/stripe/create-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -89,7 +103,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
     })
     const data = await res.json()
     return data.clientSecret as string
-  }, [checkoutBilling])
+  }, [checkoutBilling, checkoutClientSecret])
 
   if (!open) return null
 
@@ -123,7 +137,10 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
           <div className="flex items-center gap-2">
             {checkoutOpen && (
               <button
-                onClick={() => setCheckoutOpen(false)}
+                onClick={() => {
+                  setCheckoutOpen(false)
+                  setCheckoutClientSecret(null)
+                }}
                 className="w-7 h-7 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors mr-1"
                 aria-label="Back"
               >
@@ -193,7 +210,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                   className="font-headline font-bold text-on-surface tabular-nums"
                   style={{ fontSize: '1.9rem', letterSpacing: '-0.03em', lineHeight: 1 }}
                 >
-                  ${billing === 'annual' ? '199' : '29'}
+                  {formatPlanPrice(selectedPlan)}
                 </span>
                 <div className="pb-0.5 space-y-0.5">
                   <p className="font-label text-xs text-on-surface-variant font-semibold">
@@ -201,7 +218,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                   </p>
                   {billing === 'annual' && (
                     <p className="font-label text-[10px] text-primary font-semibold">
-                      ~${monthlyCost}/mo — billed annually
+                      ~{monthlyCost}/mo — billed annually
                     </p>
                   )}
                 </div>
@@ -241,7 +258,9 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                     workspace_premium
                   </span>
                 )}
-                {loading ? 'Loading checkout…' : `Unlock Pro — $${billing === 'annual' ? '199/yr' : '29/mo'}`}
+                {loading
+                  ? 'Loading checkout...'
+                  : `Unlock Pro - ${formatPlanPrice(selectedPlan)}/${selectedPlan.interval === 'year' ? 'yr' : 'mo'}`}
               </button>
               {error && (
                 <p className="text-center font-body text-[11px] text-error">{error}</p>

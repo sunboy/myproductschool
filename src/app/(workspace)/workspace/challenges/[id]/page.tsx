@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { FlowWorkspaceShell } from '@/components/v2/FlowWorkspaceShell'
 import type { UserRoleV2 } from '@/lib/types'
 import { IS_MOCK } from '@/lib/mock'
+import { sanitizeReturnTo } from '@/lib/navigation/return-to'
 
 async function getNextChallengeInPlan(
   planSlug: string,
@@ -43,7 +44,7 @@ async function getNextChallengeInPlan(
     if (remainingIds.length === 0) return null
 
     // Get completed challenge IDs for this user
-    let completedIds = new Set<string>()
+    const completedIds = new Set<string>()
     if (user) {
       const { data: attempts } = await supabase
         .from('challenge_attempts')
@@ -70,12 +71,55 @@ async function getNextChallengeInPlan(
   }
 }
 
+async function getNextChallengeInCategory(
+  currentChallengeId: string,
+  userId: string | undefined,
+): Promise<string | null> {
+  try {
+    const admin = createAdminClient()
+
+    // Get the current challenge's domain_id
+    const { data: current } = await admin
+      .from('challenges')
+      .select('domain_id, slug')
+      .eq('id', currentChallengeId)
+      .single()
+
+    if (!current?.domain_id) return null
+
+    // Get completed challenge IDs for this user
+    const completedIds = new Set<string>()
+    if (userId) {
+      const { data: attempts } = await admin
+        .from('challenge_attempts')
+        .select('challenge_id')
+        .eq('user_id', userId)
+        .eq('status', 'completed')
+      for (const a of attempts ?? []) completedIds.add(a.challenge_id)
+    }
+
+    // Find next unattempted challenge in same domain, excluding current
+    const { data: candidates } = await admin
+      .from('challenges')
+      .select('id, slug')
+      .eq('domain_id', current.domain_id)
+      .neq('id', currentChallengeId)
+      .eq('is_published', true)
+      .order('created_at', { ascending: true })
+
+    const next = (candidates ?? []).find(c => !completedIds.has(c.id))
+    return next?.slug ?? (candidates?.[0]?.slug ?? null)
+  } catch {
+    return null
+  }
+}
+
 export default async function ChallengeWorkspacePage({ params, searchParams }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ role?: string; from_plan?: string }>
+  searchParams: Promise<{ role?: string; from_plan?: string; returnTo?: string }>
 }) {
   const { id } = await params
-  const { role, from_plan } = await searchParams
+  const { role, from_plan, returnTo } = await searchParams
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -86,27 +130,41 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
   let challengeSlug = id
   if (!IS_MOCK) {
     const admin = createAdminClient()
-    const { data: ch } = await admin.from('challenges').select('id, slug').eq('slug', id).maybeSingle()
+    const { data: ch } = await admin.from('challenges').select('id, slug, challenge_type').eq('slug', id).maybeSingle()
     if (ch?.id) {
       challengeId = ch.id
       challengeSlug = ch.slug
+      // Quick takes don't have FLOW steps — send to challenges hub
+      if (ch.challenge_type === 'quick_take') redirect('/challenges')
+    } else {
+      // Try by UUID
+      const { data: chById } = await admin.from('challenges').select('id, slug, challenge_type').eq('id', id).maybeSingle()
+      if (chById?.challenge_type === 'quick_take') redirect('/challenges')
     }
   }
 
-  // If coming from a plan, compute the next challenge
+  // Compute next challenge: prefer plan order, fall back to same-category
   let nextChallengeSlug: string | undefined
-  if (from_plan && !IS_MOCK) {
-    const next = await getNextChallengeInPlan(from_plan, challengeId)
-    nextChallengeSlug = next ?? undefined
+  if (!IS_MOCK) {
+    if (from_plan) {
+      const next = await getNextChallengeInPlan(from_plan, challengeId)
+      nextChallengeSlug = next ?? undefined
+    }
+    if (!nextChallengeSlug) {
+      const next = await getNextChallengeInCategory(challengeId, user?.id)
+      nextChallengeSlug = next ?? undefined
+    }
   }
 
   const roleId = (role as UserRoleV2) ?? 'swe'
   return (
     <FlowWorkspaceShell
       challengeId={challengeId}
+      challengeSlug={challengeSlug}
       initialRoleId={roleId}
       fromPlan={from_plan}
       nextChallengeSlug={nextChallengeSlug}
+      returnTo={sanitizeReturnTo(returnTo)}
     />
   )
 }

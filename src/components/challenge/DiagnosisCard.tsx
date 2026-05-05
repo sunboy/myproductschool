@@ -1,4 +1,4 @@
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import type { FailurePattern } from '@/lib/types'
 
 interface DiagnosisCardProps {

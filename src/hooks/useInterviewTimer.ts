@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
 
-export function useInterviewTimer(startedAt: number | null, isActive: boolean) {
+export function useInterviewTimer(
+  startedAt: number | null,
+  isActive: boolean,
+  maxMinutes?: number
+) {
   const [elapsed, setElapsed] = useState(0)
 
   useEffect(() => {
@@ -19,6 +23,7 @@ export function useInterviewTimer(startedAt: number | null, isActive: boolean) {
   const seconds = elapsed % 60
   const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
   const isWarning = elapsed >= 25 * 60
+  const isLimitReached = maxMinutes != null && elapsed >= maxMinutes * 60
 
-  return { elapsed, formatted, isWarning }
+  return { elapsed, formatted, isWarning, isLimitReached }
 }

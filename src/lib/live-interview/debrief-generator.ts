@@ -1,10 +1,12 @@
 import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { clampToFlowScale, scoreToGrade } from '@/lib/scoring/flow-scale'
+import type { CompetencySignal } from '@/lib/scoring/competency-signal'
 
 export interface DebriefResult {
   overallScore: number
   grade: string
   flowScores: { frame: number; list: number; optimize: number; win: number }
-  competencySignals: Array<{ competency: string; signal: string; stepDetected: string }>
+  competencySignals: CompetencySignal[]
   failurePatternsDetected: Array<{ patternId: string; patternName: string; evidence: string }>
   strengths: string[]
   improvements: string[]
@@ -14,10 +16,11 @@ export interface DebriefResult {
 export interface DebriefParams {
   /** Session ID — available for future logging/tracing */
   sessionId: string
-  turns: Array<{ role: 'luma' | 'user'; content: string; turnIndex: number }>
+  turns: Array<{ role: 'hatch' | 'user'; content: string; turnIndex: number }>
   calibrationSnapshot: { archetype: string; moveLevels: Record<string, number> }
   scenarioRubric?: Record<string, unknown> | null
   challengeId?: string | null
+  budget?: { userId: string; userPlan: string; route: string }
 }
 
 const SYSTEM_PROMPT = `You are an expert PM interview evaluator for HackProduct. Analyze the provided interview transcript against the FLOW rubric and return a structured JSON debrief.
@@ -30,12 +33,14 @@ Win: W1 (specificity, 0.30), W2 (defensibility, 0.25), W3 (falsifiability, 0.30)
 
 Scoring per criterion: strong=1.0 (≥0.75), partial=0.5 (≥0.45), needs_work=0.0 (<0.45)
 
+Aggregate per FLOW move into a 0–5 score (one decimal). Aggregate the four move scores weighted by the rubric into an overall 0–5 score (one decimal).
+
 Six competency keys: motivation_theory, cognitive_empathy, taste, strategic_thinking, creative_execution, domain_expertise
 
 Respond with ONLY valid JSON. No explanation. No markdown. No code fences. The JSON must exactly match this shape:
 {
-  "overallScore": <0-100 integer>,
-  "flowScores": { "frame": <0-100>, "list": <0-100>, "optimize": <0-100>, "win": <0-100> },
+  "overallScore": <0.0–5.0 float, one decimal>,
+  "flowScores": { "frame": <0.0–5.0>, "list": <0.0–5.0>, "optimize": <0.0–5.0>, "win": <0.0–5.0> },
   "competencySignals": [{ "competency": "<key>", "signal": "<1-2 sentences>", "stepDetected": "<frame|list|optimize|win>" }],
   "failurePatternsDetected": [{ "patternId": "<FP-XX>", "patternName": "<name>", "evidence": "<1-2 sentences>" }],
   "strengths": ["<string>"],
@@ -43,26 +48,19 @@ Respond with ONLY valid JSON. No explanation. No markdown. No code fences. The J
   "nextChallengeRecommendation": "<string>"
 }`
 
-function scoreToGrade(score: number): string {
-  if (score >= 80) return 'Strong'
-  if (score >= 65) return 'Good'
-  if (score >= 45) return 'Developing'
-  return 'Needs Work'
-}
-
 export async function generateDebrief(params: DebriefParams): Promise<DebriefResult> {
   if (process.env.USE_MOCK_DATA === 'true') {
     const { MOCK_LIVE_DEBRIEF } = await import('@/lib/mock-live-interviews')
     return MOCK_LIVE_DEBRIEF
   }
 
-  const { turns, calibrationSnapshot, scenarioRubric } = params
+  const { turns, calibrationSnapshot, scenarioRubric, budget } = params
 
   // Build transcript sorted by turnIndex
   const sorted = [...turns].sort((a, b) => a.turnIndex - b.turnIndex)
   const transcript = sorted
     .map((t) => {
-      const speaker = t.role === 'luma' ? 'LUMA' : 'CANDIDATE'
+      const speaker = t.role === 'hatch' ? 'HATCH' : 'CANDIDATE'
       return `${speaker}: ${t.content}`
     })
     .join('\n')
@@ -108,6 +106,7 @@ ${transcript}`
   const response = await createCachedMessage(systemPrompt, userMessage, {
     model: 'claude-opus-4-6',
     max_tokens: 1500,
+    budget,
   })
 
   const rawText = response.content
@@ -125,8 +124,20 @@ ${transcript}`
     throw new Error(`Debrief parse failed. Raw response: ${rawText.slice(0, 200)}`)
   }
 
+  // Defensive clamp to 0–5. Auto-rescales if Claude returns a 0–100 value
+  // (e.g. due to a warm prompt cache after deploy).
+  const overallScore = clampToFlowScale(parsed.overallScore)
+  const flowScores = {
+    frame: clampToFlowScale(parsed.flowScores?.frame),
+    list: clampToFlowScale(parsed.flowScores?.list),
+    optimize: clampToFlowScale(parsed.flowScores?.optimize),
+    win: clampToFlowScale(parsed.flowScores?.win),
+  }
+
   return {
     ...parsed,
-    grade: scoreToGrade(parsed.overallScore),
+    overallScore,
+    flowScores,
+    grade: scoreToGrade(overallScore),
   }
 }

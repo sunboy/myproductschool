@@ -1,4 +1,5 @@
-import { getLumaPersonality } from '@/lib/luma/personality'
+import { getHatchPersonality } from '@/lib/hatch/personality'
+import { DISCIPLINE_META, type LiveInterviewDiscipline } from '@/lib/live-interview/disciplines'
 
 export interface ScenarioParams {
   question: string
@@ -35,7 +36,7 @@ export interface SystemPromptParams {
   moveLevels: { frame: number; list: number; optimize: number; win: number }
   failurePatterns: Array<{ pattern_name: string }>
   competencies: Array<{ competency: string; score: number }>
-  lumaContext: string
+  hatchContext: string
   companyName?: string
   roleId?: string
   personaPrompt?: string
@@ -43,6 +44,7 @@ export interface SystemPromptParams {
   learnerName?: string
   scenario?: ScenarioParams
   roleLens?: RoleLensParams
+  discipline?: LiveInterviewDiscipline
 }
 
 // ---------------------------------------------------------------------------
@@ -190,7 +192,7 @@ export function buildLiveInterviewSystemPrompt(
     personaPrompt,
     relevantNotes,
     learnerName,
-    lumaContext,
+    hatchContext,
     scenario,
     roleLens,
   } = params
@@ -198,7 +200,7 @@ export function buildLiveInterviewSystemPrompt(
   const sections: string[] = []
 
   // ── Personality (identity + voice examples + emotional range + tics + anti-patterns)
-  sections.push(getLumaPersonality())
+  sections.push(getHatchPersonality())
 
   // ── Opening & Conversation Phases
   const name = learnerName ?? 'there'
@@ -259,6 +261,19 @@ You are conducting a ${role} interview in the style of ${companyName}.
 ${personaPrompt ? personaPrompt : ''}`)
   }
 
+  // ── Discipline / workspace context
+  if (params.discipline && DISCIPLINE_META[params.discipline].artifact !== 'none') {
+    const meta = DISCIPLINE_META[params.discipline]
+    const workspaceType = meta.artifact === 'editor' ? 'code editor' : 'whiteboard canvas'
+    const openHint = meta.artifact === 'editor'
+      ? 'open it with the Editor button in the controls'
+      : 'open it with the Canvas button in the controls'
+    const runHint = meta.artifact === 'editor'
+      ? '\nThe candidate can run their code — you will see the test output.'
+      : ''
+    sections.push(`[THIS ROUND: ${params.discipline.replace(/_/g, ' ').toUpperCase()}]\nA ${workspaceType} is available in the interview UI. When appropriate, suggest the candidate open it (e.g., "Go ahead and sketch that out — ${openHint}"). You can see their work in real time and will reference specific elements in your coaching.${runHint}`)
+  }
+
   // ── Scenario (when interview is anchored to a challenge)
   if (scenario) {
     const competencies = scenario.primaryCompetencies.map(c => c.replace(/_/g, ' ')).join(', ')
@@ -287,8 +302,8 @@ This scenario is context, not a script. When presenting it, break it into digest
   sections.push(`[WHAT YOU KNOW ABOUT THIS CANDIDATE]\n${buildCandidateNarrative(params)}`)
 
   // ── Additional coaching context
-  if (lumaContext) {
-    sections.push(`[COACHING CONTEXT]\n${lumaContext}`)
+  if (hatchContext) {
+    sections.push(`[COACHING CONTEXT]\n${hatchContext}`)
   }
 
   // ── User notes

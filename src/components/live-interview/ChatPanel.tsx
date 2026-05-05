@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Md } from '@/components/ui/Md'
 
 interface ChatPanelProps {
   isOpen: boolean
   onClose: () => void
-  turns: Array<{ role: 'luma' | 'user'; content: string; id: string; source?: 'voice' | 'chat' }>
+  turns: Array<{ role: 'hatch' | 'user'; content: string; id: string; source?: 'voice' | 'chat' }>
   isThinking?: boolean
   onSendMessage?: (text: string) => Promise<void>
 }
@@ -89,16 +90,16 @@ export default function ChatPanel({ isOpen, onClose, turns, isThinking, onSendMe
                 className={`flex flex-col ${turn.role === 'user' ? 'items-end' : 'items-start'}`}
               >
                 <span className="text-xs text-on-surface-variant mb-1 font-label">
-                  {turn.role === 'luma' ? 'Luma' : 'You'}
+                  {turn.role === 'hatch' ? 'Hatch' : 'You'}
                 </span>
                 <div
                   className={
-                    turn.role === 'luma'
+                    turn.role === 'hatch'
                       ? 'bg-primary-container text-on-primary-container rounded-xl rounded-tl-sm p-3 max-w-[85%] font-body text-sm'
                       : 'bg-surface-container-high text-on-surface rounded-xl rounded-tr-sm p-3 max-w-[85%] ml-auto font-body text-sm'
                   }
                 >
-                  {turn.content}
+                  {turn.role === 'hatch' ? <Md>{turn.content}</Md> : turn.content}
                 </div>
               </div>
             ))
@@ -107,7 +108,7 @@ export default function ChatPanel({ isOpen, onClose, turns, isThinking, onSendMe
           {/* Thinking indicator */}
           {isThinking && (
             <div className="flex flex-col items-start">
-              <span className="text-xs text-on-surface-variant mb-1 font-label">Luma</span>
+              <span className="text-xs text-on-surface-variant mb-1 font-label">Hatch</span>
               <div className="bg-primary-container text-on-primary-container rounded-xl rounded-tl-sm p-3 font-body text-sm">
                 <span className="inline-flex gap-1">
                   <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />

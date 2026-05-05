@@ -29,7 +29,7 @@ export function PrescriptionCard({ mode, challengeTitle, challengeSlug, reason }
           <span className={`rounded-full px-2.5 py-0.5 text-xs font-label font-semibold ${config.badgeClass}`}>
             {config.label}
           </span>
-          <span className="text-xs text-on-primary-fixed font-label font-semibold ml-1">Luma&apos;s prescription</span>
+          <span className="text-xs text-on-primary-fixed font-label font-semibold ml-1">Hatch&apos;s prescription</span>
         </div>
         <h3 className="font-headline text-lg text-on-primary-fixed">{challengeTitle}</h3>
         <p className="text-sm text-on-primary-fixed italic">{reason}</p>

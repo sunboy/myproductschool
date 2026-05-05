@@ -102,7 +102,7 @@ export async function setInterviewDate(date: string, meta?: { company?: string; 
     .update({ interview_date: date, ...(meta ? { interview_meta: meta } : {}) })
     .eq('id', user.id)
 
-  // Compute days until interview and store Luma context
+  // Compute days until interview and store Hatch context
   try {
     const daysUntil = Math.max(
       0,

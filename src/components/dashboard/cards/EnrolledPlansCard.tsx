@@ -11,7 +11,7 @@ export function EnrolledPlansCard({ plans }: EnrolledPlansCardProps) {
   return (
     <div className="bg-surface-container rounded-xl p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-headline font-semibold text-base text-on-surface">My Study Plans</h3>
+        <h3 className="font-headline font-semibold text-base text-on-surface">Study Plans</h3>
         <Link href="/explore/plans" className="text-xs text-primary font-bold hover:underline">View all →</Link>
       </div>
       <div className="space-y-3">

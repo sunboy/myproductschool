@@ -81,7 +81,7 @@ export interface DashboardCardData {
   interviews: UserInterview[]
   recentActivity: RecentActivity[]
   quickTakePrompt: string
-  lumaInsight: string | null
+  hatchInsight: string | null
 }
 
 interface DashboardGridProps {
@@ -148,7 +148,7 @@ export function DashboardGrid({ visibleCards, dismissedCards, cardData, initialC
           <QuickTakeCard
             prompt={cardData.quickTakePrompt}
             challengeId={cardData.featuredChallengeId || 'orientation'}
-            lumaContext={cardData.lumaInsight}
+            hatchContext={cardData.hatchInsight}
           />
         )
       case 'next_challenge':
@@ -158,7 +158,7 @@ export function DashboardGrid({ visibleCards, dismissedCards, cardData, initialC
             domain={cardData.featuredChallengeDomain}
             difficulty={cardData.featuredChallengeDifficulty}
             challengeId={cardData.featuredChallengeId || 'orientation'}
-            lumaInsight={cardData.lumaInsight}
+            hatchInsight={cardData.hatchInsight}
           />
         )
       case 'move_levels':

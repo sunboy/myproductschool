@@ -8,102 +8,60 @@ export interface CalibrationOption {
 
 export interface CalibrationQuestion {
   move: 'frame' | 'list' | 'optimize' | 'win'
+  scenario: string
   q: string
-  luma: string
+  hatch: string
   options: CalibrationOption[]
 }
 
+// One AI-native incident thread — each question spans product, systems, data, SQL, and coding signals.
 export const QUESTIONS: CalibrationQuestion[] = [
-  // ── Frame move ──────────────────────────────
   {
     move: 'frame',
-    q: 'You\'re a PM at OpenAI. Leadership just told you Sora is being discontinued — effective in 60 days. What\'s your first move?',
-    luma: 'Frame move — I\'m watching how you define the problem before jumping to solutions.',
+    scenario: 'You are on the team for an AI coding assistant. Free users are burning 40% more inference, paid upgrades are flat, SQL practice accuracy dropped, and support says users feel the product is "random." Leadership wants a fix by tomorrow.',
+    q: "What's your first move?",
+    hatch: "Frame move — I'm watching whether you separate product symptoms, system cost, data quality, and user trust before jumping to fixes.",
     options: [
-      { id: 'A', text: 'Ask why it\'s being discontinued — cost, safety, low adoption, or strategic pivot? The framing changes everything', quality: 'best' },
-      { id: 'B', text: 'Identify who the most affected users are and what they\'ll lose', quality: 'good_but_incomplete' },
-      { id: 'C', text: 'Look at usage data to understand whether this is a surprise or something the metrics already showed', quality: 'good_but_incomplete' },
-      { id: 'D', text: 'Draft a migration plan to move Sora users to alternative tools', quality: 'plausible_wrong' },
-    ],
-  },
-  {
-    move: 'frame',
-    q: 'An exec says "Sora failed because the market wasn\'t ready for AI video." How do you respond?',
-    luma: 'Still on Frame — how you challenge (or accept) a narrative reveals your instincts.',
-    options: [
-      { id: 'A', text: '"That\'s a story, not a finding — what data are we looking at to separate market timing from product fit?"', quality: 'best' },
-      { id: 'B', text: 'Ask whether competitors in AI video saw similar drop-off, or if this is OpenAI-specific', quality: 'good_but_incomplete' },
-      { id: 'C', text: 'Check whether Sora\'s retention curves differed by use case — creators vs. enterprise vs. hobbyists', quality: 'good_but_incomplete' },
-      { id: 'D', text: 'Agree to do user interviews before drawing conclusions', quality: 'surface' },
-    ],
-  },
-  // ── List move ───────────────────────────────
-  {
-    move: 'list',
-    q: 'Sora had strong trial signups but low repeat usage. Which user segment do you investigate first?',
-    luma: 'List move — I\'m watching how you slice a messy problem into distinct groups.',
-    options: [
-      { id: 'A', text: 'Users who generated more than 3 videos vs. those who only tried once — behaviour over demographics', quality: 'best' },
-      { id: 'B', text: 'Professional creators vs. casual experimenters — different jobs to be done', quality: 'good_but_incomplete' },
-      { id: 'C', text: 'Users who came via API vs. the web UI — channel likely signals intent', quality: 'good_but_incomplete' },
-      { id: 'D', text: 'Users who churned in week 1 vs. week 4 — timing of drop-off reveals the friction point', quality: 'surface' },
+      { id: 'A', text: 'Define the decision first: are we solving cost leakage, learning quality, conversion, or trust? Then pull evidence for each before picking a lever', quality: 'best' },
+      { id: 'B', text: 'Segment by discipline, plan tier, model route, and recent release cohort to see where the signal concentrates', quality: 'good_but_incomplete' },
+      { id: 'C', text: 'Review the last deployments to see whether prompt routing, SQL grading, or auth limits changed', quality: 'good_but_incomplete' },
+      { id: 'D', text: 'Immediately reduce the free token limit so spend stops growing while the team investigates', quality: 'surface' },
     ],
   },
   {
     move: 'list',
-    q: 'You have one query to run before a 30-minute exec readout on why Sora failed. What do you pull?',
-    luma: 'Still on List — your first-choice metric tells me how you prioritise signal over noise.',
+    scenario: 'The data shows three hotspots: SQL hints loop too long, system design users ask Hatch for full answers, and coding users rerun failing submissions without reading feedback.',
+    q: 'What set of options do you explore?',
+    hatch: "List move — I'm watching whether you generate structurally different product, system, data, and UX interventions.",
     options: [
-      { id: 'A', text: 'Week-over-week active users split by use case (creative, research, enterprise) — shows where value was and wasn\'t landing', quality: 'best' },
-      { id: 'B', text: 'Video generation completion rate — did users start and abandon, or not return after first success?', quality: 'good_but_incomplete' },
-      { id: 'C', text: 'Cohort retention at day 1, 7, and 30 — when exactly did users stop coming back?', quality: 'good_but_incomplete' },
-      { id: 'D', text: 'NPS from churned users — qualitative signal on the core disappointment', quality: 'surface' },
-    ],
-  },
-  // ── Optimize move ────────────────────────────
-  {
-    move: 'optimize',
-    q: 'You\'ve identified that Sora\'s best users were professional video editors who needed frame-level control. Leadership wants a fix in 6 weeks. What do you cut?',
-    luma: 'Optimize move — I\'m watching how you sharpen a solution under real constraints.',
-    options: [
-      { id: 'A', text: 'Ship frame-level editing only for the top 500 power users as a closed beta — learn before scaling', quality: 'best' },
-      { id: 'B', text: 'Cut the 6-week timeline — a half-built feature for professionals will hurt more than help', quality: 'good_but_incomplete' },
-      { id: 'C', text: 'Scope down to one workflow (e.g. trim + caption sync) that solves 80% of the professional pain', quality: 'best' },
-      { id: 'D', text: 'Negotiate scope with engineering to understand what\'s feasible before committing to anything', quality: 'good_but_incomplete' },
+      { id: 'A', text: 'List distinct levers: cap full-solution requests, change hint depth, add reflection checkpoints, route cheaper models for low-risk nudges, and fix SQL rubric loops separately', quality: 'best' },
+      { id: 'B', text: 'Audit the prompt chain and logs for each discipline so you can see whether Hatch is over-answering or users are over-requesting', quality: 'good_but_incomplete' },
+      { id: 'C', text: 'Interview a few users from each discipline to understand when they ask for answers instead of hints', quality: 'good_but_incomplete' },
+      { id: 'D', text: 'Make all free users wait 30 seconds between Hatch replies so they naturally ask fewer questions', quality: 'plausible_wrong' },
     ],
   },
   {
     move: 'optimize',
-    q: 'Three possible bets: (A) re-launch with a freemium tier, (B) pivot to an API-first product for enterprises, (C) double down on creator tools for professional video editors. How do you choose?',
-    luma: 'Still on Optimize — how you weigh bets under uncertainty reveals your product judgement.',
+    scenario: 'You can ship one thing this sprint: a token-aware hint ladder that costs 32% less, or a new onboarding game that improves activation but may increase Hatch usage. Finance wants 80% gross margin at $30/mo; growth wants conversion.',
+    q: "How do you choose?",
+    hatch: "Optimize move — I'm watching whether you connect user value to cost, learning quality, and margin instead of picking the flashiest feature.",
     options: [
-      { id: 'A', text: 'Run a quick assumption map — list the 2 most critical unknowns for each bet, pick the one with the most validated assumptions', quality: 'best' },
-      { id: 'B', text: 'Go where the existing traction points — check which segment had the highest activation rate and double down there', quality: 'good_but_incomplete' },
-      { id: 'C', text: 'Freemium is default — it lowers acquisition cost and lets the product speak for itself', quality: 'surface' },
-      { id: 'D', text: 'Take it to a leadership review with a one-pager on each option — get alignment before going deep on any', quality: 'surface' },
-    ],
-  },
-  // ── Win move ─────────────────────────────────
-  {
-    move: 'win',
-    q: 'You\'re presenting your recommendation to re-launch Sora as an API-first product to the leadership team. You have 5 minutes. What\'s your opener?',
-    luma: 'Win move — I\'m watching how you land an idea with clarity and conviction.',
-    options: [
-      { id: 'A', text: '"Sora didn\'t fail — it found the wrong customer. Here\'s who actually needs it and what we do next."', quality: 'best' },
-      { id: 'B', text: 'Walk through the data story first: signups, drop-off, segment behaviour, then the recommendation', quality: 'good_but_incomplete' },
-      { id: 'C', text: 'Open with a competitor doing this well to establish urgency before proposing the pivot', quality: 'surface' },
-      { id: 'D', text: 'State the recommendation up front, then spend 4 minutes on the evidence behind it', quality: 'best' },
+      { id: 'A', text: 'Ship the hint ladder first if it preserves learning quality and makes unit economics work; growth that breaks margin is not durable', quality: 'best' },
+      { id: 'B', text: 'Run the decision as assumptions: onboarding must lift paid conversion enough to pay for extra tokens; hint ladder must not reduce challenge completion or perceived help', quality: 'best' },
+      { id: 'C', text: 'Ship onboarding because first impressions matter most and cost can be optimized later', quality: 'surface' },
+      { id: 'D', text: 'Split engineering between both so neither stakeholder feels ignored', quality: 'good_but_incomplete' },
     ],
   },
   {
     move: 'win',
-    q: 'An engineering lead pushes back: "We built Sora for consumers — pivoting to API-first means rewriting the auth layer." How do you respond?',
-    luma: 'Still on Win — how you handle a hard pushback in the room is the real test.',
+    scenario: 'You recommend the hint ladder. A senior engineer worries it will make Hatch feel less magical; support worries free users will complain; the CEO wants the $30 plan to feel premium.',
+    q: "What's your move?",
+    hatch: "Win move — I'm watching whether you can land a crisp decision with measurement, empathy, and a reversible rollout.",
     options: [
-      { id: 'A', text: '"That\'s a real constraint — help me understand the scope and we\'ll build it into the roadmap estimate"', quality: 'best' },
-      { id: 'B', text: '"We can phase it — ship read-only API access first to validate demand before touching auth"', quality: 'best' },
-      { id: 'C', text: 'Acknowledge the concern, park it, and bring it back with a concrete proposal after the meeting', quality: 'surface' },
-      { id: 'D', text: '"Fair point — let\'s figure out if there\'s a path that avoids the rewrite before we commit"', quality: 'good_but_incomplete' },
+      { id: 'A', text: 'Frame it as a learning-quality upgrade, not a cost cut: hints reveal progressively, full answers still exist when earned, and success is completion plus margin', quality: 'best' },
+      { id: 'B', text: 'Propose a staged rollout by discipline with guardrails: complaint rate, paid conversion, completion, and cost per active learner', quality: 'best' },
+      { id: 'C', text: 'Tell support that free users are not the target customer and the company cannot subsidize unlimited AI usage', quality: 'plausible_wrong' },
+      { id: 'D', text: 'Ask the CEO to decide whether premium feel or gross margin matters more', quality: 'surface' },
     ],
   },
 ]

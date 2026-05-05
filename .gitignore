@@ -41,5 +41,24 @@ yarn-error.log*
 next-env.d.ts
 
 # git worktrees
-.claude/worktrees/
 .worktrees/
+
+# local tooling (Claude Code, Playwright MCP, Superpowers)
+.codex/
+.claude/
+.playwright-mcp/
+.superpowers/
+
+# enrichment intermediates / backups (never commit)
+seeds/staged-interview-challenges.backup-*.json
+seeds/reenrich-shard-*.json
+seeds/reenrich-sonnet-shard-*.json
+seeds/algo-fix-shard-*.json
+seeds/sql-fix-shard.json
+seeds/validate-shard-*.json
+seeds/scraped-raw.json
+seeds/*.log
+supabase/.temp/
+
+# personal notes
+v2 plannin.md

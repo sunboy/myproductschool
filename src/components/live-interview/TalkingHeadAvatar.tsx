@@ -1,7 +1,7 @@
 'use client'
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
-import type { LumaAvatarState } from './LumaAvatar'
+import type { HatchAvatarState } from './HatchAvatar'
 
 // TalkingHead is loaded as a native ES module from /public to avoid
 // Turbopack choking on its dynamic import() for lip-sync modules.
@@ -15,14 +15,14 @@ export interface TalkingHeadHandle {
 }
 
 interface TalkingHeadAvatarProps {
-  lumaState?: LumaAvatarState
+  hatchState?: HatchAvatarState
   avatarUrl?: string
   className?: string
   onError?: (err: string) => void
   onReady?: () => void
 }
 
-const DEFAULT_AVATAR_URL = '/luma-interviewer.glb'
+const DEFAULT_AVATAR_URL = '/hatch-interviewer.glb'
 
 const STATE_TO_MOOD: Record<string, string> = {
   idle: 'neutral',
@@ -59,7 +59,7 @@ function applyMorph(scene: any, morphName: string, value: number) {
 }
 
 const TalkingHeadAvatar = forwardRef<TalkingHeadHandle, TalkingHeadAvatarProps>(
-  function TalkingHeadAvatar({ lumaState = 'idle', avatarUrl, className, onError, onReady }, ref) {
+  function TalkingHeadAvatar({ hatchState = 'idle', avatarUrl, className, onError, onReady }, ref) {
     const wrapperRef = useRef<HTMLDivElement>(null)
     const headRef = useRef<TalkingHeadInstance | null>(null)
     const analyserRef = useRef<AnalyserNode | null>(null)
@@ -159,13 +159,13 @@ const TalkingHeadAvatar = forwardRef<TalkingHeadHandle, TalkingHeadAvatarProps>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [avatarUrl])
 
-    // Sync lumaState -> mood
+    // Sync hatchState -> mood
     useEffect(() => {
       const head = headRef.current
       if (!head) return
-      const mood = STATE_TO_MOOD[lumaState] ?? 'neutral'
+      const mood = STATE_TO_MOOD[hatchState] ?? 'neutral'
       head.setMood(mood)
-    }, [lumaState])
+    }, [hatchState])
 
     useImperativeHandle(ref, () => ({
       setAnalyser(analyser) {

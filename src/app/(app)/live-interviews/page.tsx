@@ -1,7 +1,11 @@
 import { MOCK_LIVE_INTERVIEW_PERSONAS } from '@/lib/mock-live-interviews'
-import FilteredPersonaGrid from './FilteredPersonaGrid'
-import PastInterviews from './PastInterviews'
-import { GuidedTab } from '../challenges/GuidedTab'
+import { UsageProvider } from '@/context/UsageContext'
+import { BillingUsageFromProfile } from '@/components/billing/BillingUsageFromProfile'
+import { LiveInterviewsShell } from './LiveInterviewsShell'
+import {
+  challengeTypeToDiscipline,
+  type LiveInterviewDiscipline,
+} from '@/lib/live-interview/disciplines'
 
 export interface ScenarioBrief {
   id: string
@@ -11,6 +15,7 @@ export interface ScenarioBrief {
   estimatedMinutes: number
   relevantRoles: string[]
   primaryCompetencies: string[]
+  discipline: LiveInterviewDiscipline
 }
 
 async function getPersonas() {
@@ -56,74 +61,89 @@ async function getScenarios(): Promise<ScenarioBrief[]> {
   const supabase = await createClient()
   const { data } = await supabase
     .from('challenges')
-    .select('id, title, scenario_question, difficulty, estimated_minutes, relevant_roles, primary_competencies')
+    .select('id, title, scenario_question, difficulty, estimated_minutes, relevant_roles, primary_competencies, challenge_type')
     .eq('is_published', true)
     .not('scenario_question', 'is', null)
+    .in('challenge_type', [
+      'flow',
+      'freeform',
+      'quick_take',
+      'system_design',
+      'data_modeling',
+      'sql',
+      'algorithm',
+    ])
     .order('difficulty')
+    .limit(120)
 
-  return (data ?? []).map((c) => ({
-    id: c.id,
-    title: c.title,
-    scenarioQuestion: c.scenario_question ?? '',
-    difficulty: c.difficulty ?? 'standard',
-    estimatedMinutes: c.estimated_minutes ?? 20,
-    relevantRoles: c.relevant_roles ?? [],
-    primaryCompetencies: c.primary_competencies ?? [],
-  }))
+  return (data ?? [])
+    .map((c) => {
+      const discipline = challengeTypeToDiscipline(c.challenge_type)
+      if (!discipline) return null
+      return {
+        id: c.id,
+        title: c.title,
+        scenarioQuestion: c.scenario_question ?? '',
+        difficulty: c.difficulty ?? 'standard',
+        estimatedMinutes: c.estimated_minutes ?? 20,
+        relevantRoles: c.relevant_roles ?? [],
+        primaryCompetencies: c.primary_competencies ?? [],
+        discipline,
+      } satisfies ScenarioBrief
+    })
+    .filter((s): s is ScenarioBrief => s !== null)
 }
 
-export default async function LiveInterviewsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ tab?: string }>
-}) {
-  const { tab } = await searchParams
-  const activeTab = tab === 'prep' ? 'prep' : 'mock'
-
+export default async function LiveInterviewsPage() {
   const [personas, scenarios] = await Promise.all([getPersonas(), getScenarios()])
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <section>
-        <h1 className="font-headline text-3xl font-extrabold text-on-surface">Interviews</h1>
-        <p className="text-sm text-on-surface-variant mt-1">
-          Practice with real interviewers from top companies. Pick a seat.
-        </p>
-      </section>
+    <UsageProvider>
+      <div className="max-w-[1440px] mx-auto px-6 py-7 space-y-6">
+        <section className="relative overflow-hidden rounded-[28px] border border-outline-variant/40 bg-[#14241c] px-6 py-6 sm:px-8 sm:py-7">
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)',
+              backgroundSize: '22px 22px',
+              maskImage: 'radial-gradient(ellipse 80% 100% at 78% 50%, black 30%, transparent 78%)',
+              WebkitMaskImage: 'radial-gradient(ellipse 80% 100% at 78% 50%, black 30%, transparent 78%)',
+            }}
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{ background: 'radial-gradient(520px 360px at 86% 48%, rgba(126,224,153,0.18), transparent 62%)' }}
+          />
+          <div className="relative grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-5 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-[11px] font-label font-bold uppercase tracking-[0.12em] text-[#9ee0b8]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#7ee099]" />
+                AI interviewer online
+              </div>
+              <h1 className="mt-4 font-headline text-[38px] sm:text-[46px] font-semibold leading-[1.03] text-[#f3ede0]" style={{ letterSpacing: '-0.02em' }}>
+                Live interviews, run entirely by Hatch.
+              </h1>
+              <p className="mt-3 max-w-2xl text-[15px] leading-7 text-[#f3ede0]/70">
+                Pick a discipline, open the room, and work out loud. Hatch probes, watches the canvas or editor, carries context across rounds, and writes the debrief.
+              </p>
+            </div>
+            <div className="hidden lg:flex justify-end">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/hatch-mascot.png"
+                alt="Hatch"
+                className="h-40 w-40 rounded-[24px] object-cover shadow-2xl shadow-black/20"
+              />
+            </div>
+          </div>
+        </section>
 
-      {/* Tab Toggle */}
-      <div className="flex items-center gap-1 bg-surface-container rounded-xl p-1 w-fit">
-        <a
-          href="/live-interviews"
-          className={`px-5 py-2 rounded-lg text-sm font-bold transition-colors ${
-            activeTab === 'mock'
-              ? 'bg-primary text-on-primary shadow-sm'
-              : 'text-on-surface-variant hover:text-on-surface'
-          }`}
-        >
-          Mock Interviews
-        </a>
-        <a
-          href="/live-interviews?tab=prep"
-          className={`px-5 py-2 rounded-lg text-sm font-bold transition-colors ${
-            activeTab === 'prep'
-              ? 'bg-primary text-on-primary shadow-sm'
-              : 'text-on-surface-variant hover:text-on-surface'
-          }`}
-        >
-          Study Plans
-        </a>
+        <BillingUsageFromProfile />
+
+        <LiveInterviewsShell personas={personas} scenarios={scenarios} />
       </div>
-
-      {activeTab === 'mock' ? (
-        <>
-          <FilteredPersonaGrid personas={personas} scenarios={scenarios} />
-          <PastInterviews />
-        </>
-      ) : (
-        <GuidedTab />
-      )}
-    </div>
+    </UsageProvider>
   )
 }

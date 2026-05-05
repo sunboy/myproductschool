@@ -9,8 +9,8 @@ interface RubricCriterion {
   strong_signals: string[]
   partial_signals: string[]
   failure_signals: string[]
-  luma_coaching_weak: string
-  luma_coaching_failure: string
+  hatch_coaching_weak: string
+  hatch_coaching_failure: string
   structure?: string
   components?: string[]
   categories?: string[]
@@ -52,7 +52,7 @@ export function getCoachingMessage(step: FlowStep, criterionId: string, level: '
   const rubric = loadRubric(step)
   const criterion = rubric.criteria.find(c => c.id === criterionId)
   if (!criterion) return ''
-  return level === 'weak' ? criterion.luma_coaching_weak : criterion.luma_coaching_failure
+  return level === 'weak' ? criterion.hatch_coaching_weak : criterion.hatch_coaching_failure
 }
 
 export function getReasoningMove(step: FlowStep): string {

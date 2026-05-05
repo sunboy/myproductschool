@@ -84,7 +84,7 @@ const jsonLd = {
           name: 'What is HackProduct?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'HackProduct is a product sense training platform for engineers, PMs, and students. It helps you practice real product decisions from companies like Google, Uber, and Stripe, with AI-coached feedback from Luma, your personal product coach.',
+            text: 'HackProduct is a product sense training platform for engineers, PMs, and students. It helps you practice real product decisions from companies like Google, Uber, and Stripe, with AI-coached feedback from Hatch, your personal product coach.',
           },
         },
         {
@@ -199,7 +199,7 @@ export default async function WaitlistPage() {
 
               {/* Subhead */}
               <h2 className="text-base lg:text-lg text-on-surface-variant leading-relaxed mb-5 max-w-md font-normal">
-                Master product sense for interviews and on the job. Practice real decisions, get feedback from Luma, your personal product coach, and build the intuition that gets you hired and promoted.
+                Master product sense for interviews and on the job. Practice real decisions, get feedback from Hatch, your personal product coach, and build the intuition that gets you hired and promoted.
               </h2>
 
               {/* Value Props */}
@@ -212,7 +212,7 @@ export default async function WaitlistPage() {
                     check_circle
                   </span>
                   <span className="text-on-surface">
-                    <strong>Ace product sense interviews</strong> with Luma-graded practice rounds
+                    <strong>Ace product sense interviews</strong> with Hatch-graded practice rounds
                   </span>
                 </li>
                 <li className="flex items-center gap-2">
@@ -273,7 +273,7 @@ export default async function WaitlistPage() {
         <p>Software engineers preparing for PM interviews. Product managers sharpening product intuition. Students preparing for APM programs at Google, Meta, and Microsoft. Career switchers transitioning into product management. Tech leads building product thinking skills. MBA students preparing for product roles.</p>
 
         <h3>How HackProduct Works</h3>
-        <p>Choose from real product case studies inspired by decisions at top tech companies. Analyze the problem, form your recommendation, and submit your answer. Luma, your AI product coach, grades your response across multiple dimensions including product strategy, user empathy, metrics definition, and execution planning. Track your Product IQ score as it grows with every practice session.</p>
+        <p>Choose from real product case studies inspired by decisions at top tech companies. Analyze the problem, form your recommendation, and submit your answer. Hatch, your AI product coach, grades your response across multiple dimensions including product strategy, user empathy, metrics definition, and execution planning. Track your Product IQ score as it grows with every practice session.</p>
 
         <h3>Product Sense Skills You Will Build</h3>
         <p>Product strategy and vision. User research and empathy. Metrics definition and analytics. Feature prioritization frameworks. Product roadmap planning. Go-to-market strategy. A/B testing and experimentation. Competitive analysis. Revenue model design. Technical feasibility assessment.</p>

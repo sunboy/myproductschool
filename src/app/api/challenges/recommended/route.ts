@@ -11,7 +11,7 @@ const MOCK_RECOMMENDED = {
     difficulty: 'intermediate',
     domain: { slug: 'prioritization', title: 'Prioritization', icon: 'filter_list' },
   },
-  luma_reason: "This challenge covers a skill gap I noticed across your last 3 sessions - structured prioritization under constraints.",
+  hatch_reason: "This challenge covers a skill gap I noticed across your last 3 sessions - structured prioritization under constraints.",
 }
 
 export async function GET() {
@@ -39,6 +39,7 @@ export async function GET() {
     .from('challenges')
     .select('id, title, prompt_text, difficulty, domain_id, move_tags')
     .eq('is_published', true)
+    .neq('challenge_type', 'freeform')
     .contains('move_tags', [weakestMove])
 
   if (completedIds.length > 0) {
@@ -53,6 +54,6 @@ export async function GET() {
 
   return NextResponse.json({
     challenge,
-    luma_reason: `This challenge targets your ${weakestMove} skill, where I've seen the most room to grow based on your recent sessions.`,
+    hatch_reason: `This challenge targets your ${weakestMove} skill, where I've seen the most room to grow based on your recent sessions.`,
   })
 }

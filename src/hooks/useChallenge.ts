@@ -1,18 +1,26 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import type { Challenge, ChallengeAttemptV2, FlowStepRecord, UserRoleV2 } from '@/lib/types'
+import type { Challenge, ChallengeAttemptV2, CodingPart, FlowStepRecord, UserRoleV2 } from '@/lib/types'
 
 interface ChallengeDetail {
   challenge: Challenge
   steps: FlowStepRecord[]
   current_attempt: ChallengeAttemptV2 | null
+  /** Parts for multi-part coding challenges. Empty array for single-prompt coding and all other challenge types. */
+  codingParts: CodingPart[]
+}
+
+export interface PaywallData {
+  used: number
+  limit: number
 }
 
 interface UseChallengeReturn {
   detail: ChallengeDetail | null
   loading: boolean
   error: string | null
+  paywallData: PaywallData | null
   startAttempt: (roleId: UserRoleV2) => Promise<ChallengeAttemptV2 | null>
   reload: () => Promise<void>
 }
@@ -21,6 +29,7 @@ export function useChallenge(challengeId: string): UseChallengeReturn {
   const [detail, setDetail] = useState<ChallengeDetail | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [paywallData, setPaywallData] = useState<PaywallData | null>(null)
 
   const reload = useCallback(async () => {
     setLoading(true)
@@ -29,7 +38,8 @@ export function useChallenge(challengeId: string): UseChallengeReturn {
       const res = await fetch(`/api/challenges/${challengeId}`)
       if (!res.ok) throw new Error(`Failed to load challenge: ${res.status}`)
       const data = await res.json()
-      setDetail(data)
+      // Ensure codingParts is always an array even if the server omits it (e.g. cached older response)
+      setDetail({ ...data, codingParts: data.codingParts ?? [] })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error')
     } finally {
@@ -45,6 +55,11 @@ export function useChallenge(challengeId: string): UseChallengeReturn {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role_id: roleId }),
       })
+      if (res.status === 402) {
+        const data = await res.json()
+        setPaywallData({ used: data.used, limit: data.limit })
+        return null
+      }
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         throw new Error(body.error ?? `Start failed: ${res.status}`)
@@ -58,5 +73,5 @@ export function useChallenge(challengeId: string): UseChallengeReturn {
     }
   }, [challengeId])
 
-  return { detail, loading, error, startAttempt, reload }
+  return { detail, loading, error, paywallData, startAttempt, reload }
 }

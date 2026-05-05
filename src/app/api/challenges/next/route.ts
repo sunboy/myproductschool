@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getLumaContext } from '@/lib/luma-context'
+import { getHatchContext } from '@/lib/hatch-context'
 import type { FlowMove } from '@/lib/types'
 import { IS_MOCK } from '@/lib/mock'
 
@@ -18,7 +18,7 @@ const MOCK_NEXT = {
   reason: 'Targets your weakest move: Frame',
   targets_move: 'frame' as FlowMove,
   recommendation_type: 'weakest_move',
-  luma_insight: 'Your list move is at Level 1 — this challenge drills exactly that.',
+  hatch_insight: 'Your list move is at Level 1 — this challenge drills exactly that.',
 }
 
 // Generate a topic-based tip from challenge data (used when user is uncalibrated)
@@ -46,8 +46,8 @@ function moveTip(move: string, challengeTitle: string): string {
   return tips[move] ?? `This challenge targets your weakest move. Give it a shot.`
 }
 
-// Derive a 1-sentence Luma insight based on the user's weakest FLOW move
-function deriveLumaInsight(
+// Derive a 1-sentence Hatch insight based on the user's weakest FLOW move
+function deriveHatchInsight(
   moveLevels: Array<{ move: string; level: number; progress_pct: number }>,
   weakestFlowMove: string | null
 ): string {
@@ -77,30 +77,30 @@ export async function GET() {
 
   const adminClient = createAdminClient()
 
-  // Fetch Luma context alongside profile/levels/completions
-  const [{ data: profile }, { data: levels }, { data: completedAttempts }, lumaCtx] = await Promise.all([
+  // Fetch Hatch context alongside profile/levels/completions
+  const [{ data: profile }, { data: levels }, { data: completedAttempts }, hatchCtx] = await Promise.all([
     adminClient.from('profiles').select('preferred_role').eq('id', user.id).single(),
     adminClient.from('move_levels').select('move, xp').eq('user_id', user.id).order('xp', { ascending: true }).limit(1),
     adminClient.from('challenge_attempts').select('challenge_id').eq('user_id', user.id).not('submitted_at', 'is', null),
-    getLumaContext(user.id),
+    getHatchContext(user.id),
   ])
 
   const isCalibrated = (levels ?? []).length > 0 && (completedAttempts ?? []).length > 0
   const weakestMove: FlowMove = (levels?.[0]?.move as FlowMove) ?? 'frame'
   const completedIds = (completedAttempts ?? []).map((a: { challenge_id: string }) => a.challenge_id)
 
-  // Derive weakest FLOW move from Luma context move levels
-  const lumaMoveLevels = lumaCtx.moveLevels
-  const weakestFlowMove = lumaMoveLevels.length > 0
-    ? [...lumaMoveLevels].sort((a, b) => a.level - b.level)[0].move
+  // Derive weakest FLOW move from Hatch context move levels
+  const hatchMoveLevels = hatchCtx.moveLevels
+  const weakestFlowMove = hatchMoveLevels.length > 0
+    ? [...hatchMoveLevels].sort((a, b) => a.level - b.level)[0].move
     : null
-  const luma_insight = deriveLumaInsight(lumaMoveLevels, weakestFlowMove)
+  const hatch_insight = deriveHatchInsight(hatchMoveLevels, weakestFlowMove)
 
   // Fire-and-forget: persist the insight as a role_observation row
-  adminClient.from('luma_context').insert({
+  adminClient.from('hatch_context').insert({
     user_id: user.id,
     context_type: 'role_observation',
-    content: luma_insight,
+    content: hatch_insight,
     is_active: true,
   }).then(() => {}, () => {})
 
@@ -135,12 +135,12 @@ export async function GET() {
 
       return NextResponse.json({
         challenge: weakestFirst,
-        reason: `Luma picked this to push you outside your thinking comfort zone`,
+        reason: `Hatch picked this to push you outside your thinking comfort zone`,
         tip: topicTip(weakestFirst),
         targets_move: weakestMove,
         recommendation_type: 'semantic_novelty',
         is_calibrated: isCalibrated,
-        luma_insight,
+        hatch_insight,
       })
     }
   }
@@ -150,6 +150,7 @@ export async function GET() {
     .from('challenges')
     .select('id, slug, title, prompt_text, difficulty, domain_id, move_tags, relevant_roles, paradigm')
     .eq('is_published', true)
+    .neq('challenge_type', 'freeform')
     .contains('move_tags', [weakestMove])
 
   if (completedIds.length > 0) {
@@ -167,6 +168,7 @@ export async function GET() {
       .from('challenges')
       .select('id, slug, title, prompt_text, difficulty, domain_id, move_tags, relevant_roles')
       .eq('is_published', true)
+      .neq('challenge_type', 'freeform')
 
     const { data: fallback } = completedIds.length > 0
       ? await fallbackQuery.not('id', 'in', `(${completedIds.join(',')})`).limit(1).maybeSingle()
@@ -181,7 +183,7 @@ export async function GET() {
       targets_move: weakestMove,
       recommendation_type: 'fallback',
       is_calibrated: isCalibrated,
-      luma_insight,
+      hatch_insight,
     })
   }
 
@@ -196,6 +198,6 @@ export async function GET() {
     targets_move: weakestMove,
     recommendation_type: 'weakest_move',
     is_calibrated: isCalibrated,
-    luma_insight,
+    hatch_insight,
   })
 }

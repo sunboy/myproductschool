@@ -4,8 +4,9 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { ChallengePrompt } from '@/lib/types'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { useSteps } from '@/hooks/useSteps'
+import { useHatchDockState } from '@/hooks/useHatchDockState'
 
 /* ── Types ───────────────────────────────────────────────── */
 
@@ -41,6 +42,15 @@ const MOCK_METRICS = [
 
 const GUIDED_MAX_CHARS  = 1200
 const FREEFORM_MAX_CHARS = 2000
+
+const FLOW_STAGES = [
+  { k: 'Frame',    icon: 'center_focus_strong' },
+  { k: 'List',     icon: 'format_list_bulleted' },
+  { k: 'Optimize', icon: 'tune' },
+  { k: 'Win',      icon: 'emoji_events' },
+]
+
+const CONFIDENCE_LEVELS = ['Developing', 'Solid', 'Strong', 'Expert']
 
 const COACHING_PROMPTS: Record<number, { thought: string; tip: string }> = {
   0: {
@@ -89,9 +99,68 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
   const [inputMode, setInputMode]         = useState<'text' | 'options'>('text')
   const [selectedOptions, setSelectedOptions] = useState<Set<number>>(new Set())
   const [bookmarked, setBookmarked]       = useState(false)
+  const [confidence, setConfidence]       = useState<string | null>(null)
+  const [leftWidth, setLeftWidth]         = useState(40) // percent — matches w-2/5 default
+  const containerRef = useRef<HTMLDivElement>(null)
+  const dragging     = useRef(false)
 
   const { steps } = useSteps(challenge.id)
   const scaffoldOptions = steps[activeStep]?.scaffold_options ?? []
+
+  // Hatch chat state
+  const { mode: hatchMode, panelWidth: hatchWidth, setMode: setHatchMode, setPanelWidth: setHatchWidth, MIN_WIDTH: HATCH_MIN, MAX_WIDTH: HATCH_MAX } = useHatchDockState('flow')
+  const [hatchMessages, setHatchMessages] = useState<Array<{ role: 'user' | 'hatch'; content: string }>>([
+    { role: 'hatch', content: "I'm watching your analysis. Ask me anything — framing, tradeoffs, what your metrics mean." },
+  ])
+  const [hatchInput, setHatchInput] = useState('')
+  const [hatchLoading, setHatchLoading] = useState(false)
+  const hatchBottomRef = useRef<HTMLDivElement>(null)
+  const hatchDragRef = useRef<{ startX: number; startWidth: number } | null>(null)
+
+  useEffect(() => {
+    hatchBottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [hatchMessages])
+
+  const sendHatchMessage = useCallback(async (text: string) => {
+    if (!text.trim() || hatchLoading) return
+    setHatchMessages((prev) => [...prev, { role: 'user', content: text }])
+    setHatchInput('')
+    setHatchLoading(true)
+    try {
+      const res = await fetch('/api/hatch/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text,
+          history: hatchMessages.slice(-10),
+          pageContext: { pageType: 'challenge_workspace', entityId: challenge.id, pathname: `/challenges/${challenge.slug}` },
+        }),
+      })
+      if (!res.ok) throw new Error('chat failed')
+      const data = await res.json() as { reply: string }
+      setHatchMessages((prev) => [...prev, { role: 'hatch', content: data.reply }])
+    } catch {
+      setHatchMessages((prev) => [...prev, { role: 'hatch', content: "Couldn't reach Hatch. Try again in a moment." }])
+    } finally {
+      setHatchLoading(false)
+    }
+  }, [hatchLoading, hatchMessages, challenge.id, challenge.slug])
+
+  const startHatchResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    hatchDragRef.current = { startX: e.clientX, startWidth: hatchWidth }
+    const onMove = (ev: MouseEvent) => {
+      if (!hatchDragRef.current) return
+      setHatchWidth(hatchDragRef.current.startWidth + (hatchDragRef.current.startX - ev.clientX))
+    }
+    const onUp = () => {
+      hatchDragRef.current = null
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }, [hatchWidth, setHatchWidth])
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const responseRef = useRef('')
@@ -111,6 +180,31 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
   useEffect(() => {
     const t = setInterval(() => setTick(n => n + 1), 60_000)
     return () => clearInterval(t)
+  }, [])
+
+  // Resizable divider
+  function onDividerMouseDown() {
+    dragging.current = true
+    document.body.style.cursor = 'col-resize'
+  }
+
+  useEffect(() => {
+    function onMove(e: MouseEvent) {
+      if (!dragging.current || !containerRef.current) return
+      const rect = containerRef.current.getBoundingClientRect()
+      const pct = ((e.clientX - rect.left) / rect.width) * 100
+      setLeftWidth(Math.max(28, Math.min(72, pct)))
+    }
+    function onUp() {
+      dragging.current = false
+      document.body.style.cursor = ''
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+    return () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
   }, [])
 
   const currentResponse = mode === 'guided' ? (responses[activeStep] ?? '') : freeformResponse
@@ -177,6 +271,57 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
 
   const step     = FLOW_STEPS[activeStep]
   const coaching = COACHING_PROMPTS[activeStep]
+
+  const hatchChatContent = (
+    <>
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
+        {hatchMessages.map((msg, i) => (
+          <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+            {msg.role === 'hatch' && (
+              <HatchGlyph size={20} state="idle" className="text-primary shrink-0 mt-0.5" />
+            )}
+            <div
+              className={`rounded-xl px-3 py-2 text-sm max-w-[85%] font-body leading-relaxed ${
+                msg.role === 'user'
+                  ? 'bg-primary text-on-primary'
+                  : 'bg-surface-container-high text-on-surface'
+              }`}
+            >
+              {msg.content}
+            </div>
+          </div>
+        ))}
+        {hatchLoading && (
+          <div className="flex gap-2">
+            <HatchGlyph size={20} state="reviewing" className="text-primary shrink-0" />
+            <div className="bg-surface-container-high rounded-xl px-3 py-2 text-sm text-on-surface-variant">…</div>
+          </div>
+        )}
+        <div ref={hatchBottomRef} />
+      </div>
+      {/* Input */}
+      <div className="border-t border-outline-variant p-2 bg-surface-container-high shrink-0">
+        <div className="flex gap-2 items-end">
+          <textarea
+            value={hatchInput}
+            onChange={(e) => setHatchInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendHatchMessage(hatchInput) } }}
+            placeholder="Ask Hatch…"
+            rows={2}
+            className="flex-1 resize-none rounded-lg bg-surface-container border border-outline-variant text-on-surface text-sm px-3 py-2 font-body placeholder:text-on-surface-variant focus:outline-none focus:border-primary"
+          />
+          <button
+            onClick={() => sendHatchMessage(hatchInput)}
+            disabled={hatchLoading || !hatchInput.trim()}
+            className="p-2 rounded-full bg-primary text-on-primary disabled:opacity-40 hover:opacity-90 transition-opacity"
+          >
+            <span className="material-symbols-outlined text-[18px]">send</span>
+          </button>
+        </div>
+      </div>
+    </>
+  )
 
   /* ── Render ── */
 
@@ -251,6 +396,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
       {/* ═══════════════════════════════════════════════════════
           CONTENT AREA — quick / guided split-pane / freeform scroll
           ═══════════════════════════════════════════════════════ */}
+      <div className="flex flex-1 min-h-0 overflow-hidden relative">
       {mode === 'quick' ? (
         <div className="flex-1 flex overflow-hidden">
           {/* Left pane — scenario */}
@@ -281,7 +427,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
             <div className="flex-1 flex flex-col p-6 gap-4">
               <div className="bg-primary-fixed/30 rounded-xl p-4 text-sm text-on-surface">
                 <p className="font-bold mb-1">Quick Take</p>
-                <p className="text-on-surface-variant">Give your best 2-3 sentence answer. Luma grades it in seconds.</p>
+                <p className="text-on-surface-variant">Give your best 2-3 sentence answer. Hatch grades it in seconds.</p>
               </div>
               <textarea
                 className="flex-1 resize-none rounded-xl border border-outline-variant p-4 text-sm bg-surface focus:outline-none focus:border-primary font-body"
@@ -302,11 +448,11 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
               </div>
             </div>
 
-            {/* Luma coaching strip */}
+            {/* Hatch coaching strip */}
             <div className="bg-primary-fixed/30 border-t border-primary/10 px-6 py-3 flex items-center gap-4 flex-shrink-0">
-              <LumaGlyph size={28} state="listening" className="text-primary flex-shrink-0" />
+              <HatchGlyph size={28} state="listening" className="text-primary flex-shrink-0" />
               <div className="flex-1 text-sm text-on-primary-container font-medium">
-                <span className="font-bold">Quick Take</span> — no steps needed. Just share your instinct and Luma will grade it.
+                <span className="font-bold">Quick Take</span> — no steps needed. Just share your instinct and Hatch will grade it.
               </div>
             </div>
           </section>
@@ -323,10 +469,45 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
           onToggleFramework={() => setFrameworkOpen(f => !f)}
         />
       ) : (
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden">
 
-        {/* ── LEFT PANE — Scenario (w-2/5) ─────────────────── */}
-        <section className="w-2/5 bg-surface-container-lowest border-r border-outline-variant flex flex-col overflow-y-auto p-6">
+        {/* FLOW stage tabs — above the two-pane split */}
+        <div className="flex items-center gap-1 px-4 py-2 border-b border-outline-variant bg-surface shrink-0">
+          {FLOW_STAGES.map((s, i) => {
+            const stageIdx = activeStep
+            const done   = i < stageIdx
+            const active = i === stageIdx
+            return (
+              <button
+                key={s.k}
+                onClick={() => setActiveStep(i)}
+                className={[
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-label font-semibold transition-all',
+                  active ? 'bg-primary-container text-on-primary-container' :
+                  done   ? 'text-primary' :
+                           'text-on-surface-variant hover:text-on-surface',
+                ].join(' ')}
+              >
+                <span
+                  className="material-symbols-outlined text-[16px]"
+                  style={{ fontVariationSettings: (active || done) ? "'FILL' 1" : "'FILL' 0" }}
+                >
+                  {done ? 'check_circle' : s.icon}
+                </span>
+                {s.k}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Two-pane split */}
+        <div ref={containerRef} className="flex-1 flex overflow-hidden">
+
+        {/* ── LEFT PANE — Scenario ─────────────────── */}
+        <section
+          className="bg-surface-container-lowest border-r border-outline-variant flex flex-col overflow-y-auto p-6 shrink-0"
+          style={{ width: `${leftWidth}%` }}
+        >
 
           {/* Title + bookmark */}
           <div className="flex items-start justify-between mb-4">
@@ -361,6 +542,12 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
             <div className="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent" />
           </div>
         </section>
+
+        {/* Resizable divider */}
+        <div
+          onMouseDown={onDividerMouseDown}
+          className="w-1 bg-outline-variant hover:bg-primary cursor-col-resize shrink-0 transition-colors"
+        />
 
         {/* ── RIGHT PANE — Answer Workspace (flex-1) ───────── */}
         <section className="flex-1 bg-surface flex flex-col overflow-hidden relative">
@@ -547,12 +734,12 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
                 </div>
               )}
 
-              {/* Data Cards Grid — Luma thought starter + Add custom segment */}
+              {/* Data Cards Grid — Hatch thought starter + Add custom segment */}
               <div className="mt-12 grid grid-cols-2 gap-4">
                 <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30">
                   <div className="flex items-center gap-2 mb-3">
-                    <LumaGlyph size={24} state="speaking" className="text-primary" />
-                    <span className="text-[10px] font-bold uppercase text-on-surface-variant">Luma&apos;s Thought Starter</span>
+                    <HatchGlyph size={24} state="speaking" className="text-primary" />
+                    <span className="text-[10px] font-bold uppercase text-on-surface-variant">Hatch&apos;s Thought Starter</span>
                   </div>
                   <p className="text-xs italic text-on-surface-variant">
                     &ldquo;{coaching.thought}&rdquo;
@@ -592,9 +779,34 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
             </div>
           </div>
 
-          {/* Luma Coaching Strip (bottom) */}
+          {/* Confidence dock */}
+          <div className="flex items-center gap-2 flex-wrap p-4 border-t border-outline-variant bg-surface-container-low shrink-0">
+            <span className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant mr-2">Confidence</span>
+            {CONFIDENCE_LEVELS.map((c, i) => (
+              <button
+                key={c}
+                onClick={() => setConfidence(c)}
+                className={[
+                  'px-3 py-1.5 rounded-full text-xs font-label font-semibold transition-all border',
+                  confidence === c
+                    ? 'bg-primary-container text-on-primary-container border-transparent'
+                    : 'text-on-surface-variant border-outline-variant hover:bg-surface-container',
+                ].join(' ')}
+              >
+                {i === 3 && (
+                  <span
+                    className="material-symbols-outlined text-[14px] mr-0.5"
+                    style={{ verticalAlign: 'middle', fontVariationSettings: "'FILL' 1" }}
+                  >verified</span>
+                )}
+                {c}
+              </button>
+            ))}
+          </div>
+
+          {/* Hatch Coaching Strip (bottom) */}
           <div className="bg-primary-fixed/30 border-t border-primary/10 px-6 py-3 flex items-center gap-4 flex-shrink-0">
-            <LumaGlyph size={28} state="speaking" className="text-primary flex-shrink-0" />
+            <HatchGlyph size={28} state="speaking" className="text-primary flex-shrink-0" />
             <div className="flex-1 text-sm text-on-primary-container font-medium">
               <span className="font-bold">Pro tip:</span> {coaching.tip}
             </div>
@@ -604,8 +816,72 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
             </Link>
           </div>
         </section>
+        </div>
       </div>
       )}
+
+      {/* Hatch FAB — closed state */}
+      {hatchMode === 'closed' && (
+        <button
+          onClick={() => setHatchMode('floating')}
+          className="absolute bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-on-primary shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+          title="Open Hatch chat"
+        >
+          <HatchGlyph size={20} state="idle" className="text-on-primary" />
+          <span className="font-label font-semibold text-sm">Ask Hatch</span>
+        </button>
+      )}
+
+      {/* Hatch floating panel */}
+      {hatchMode === 'floating' && (
+        <div className="absolute bottom-4 right-4 z-20 flex flex-col w-80 h-[480px] max-h-[calc(100%-2rem)] border border-outline-variant rounded-xl bg-surface-container shadow-2xl overflow-hidden">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-outline-variant bg-surface-container-high shrink-0">
+            <div className="flex items-center gap-2">
+              <HatchGlyph size={20} state={hatchLoading ? 'reviewing' : 'idle'} className="text-primary" />
+              <span className="font-label font-semibold text-sm text-on-surface">Hatch</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <button onClick={() => setHatchMode('docked')} className="text-on-surface-variant hover:text-on-surface transition-colors" title="Dock to side">
+                <span className="material-symbols-outlined text-[18px]">push_pin</span>
+              </button>
+              <button onClick={() => setHatchMode('closed')} className="text-on-surface-variant hover:text-on-surface transition-colors" title="Close">
+                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+              </button>
+            </div>
+          </div>
+          {hatchChatContent}
+        </div>
+      )}
+
+      {/* Hatch docked panel */}
+      {hatchMode === 'docked' && (
+        <div
+          style={{ width: hatchWidth, minWidth: HATCH_MIN, maxWidth: HATCH_MAX }}
+          className="relative flex flex-col border-l border-outline-variant bg-surface-container shrink-0 overflow-hidden"
+        >
+          <div
+            onMouseDown={startHatchResize}
+            className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary/20 z-10"
+          />
+          <div className="flex items-center justify-between px-3 py-2 border-b border-outline-variant bg-surface-container-high shrink-0">
+            <div className="flex items-center gap-2">
+              <HatchGlyph size={20} state={hatchLoading ? 'reviewing' : 'idle'} className="text-primary" />
+              <span className="font-label font-semibold text-sm text-on-surface">Hatch</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <button onClick={() => setHatchMode('floating')} className="text-on-surface-variant hover:text-on-surface transition-colors" title="Undock">
+                <span className="material-symbols-outlined text-[18px]">open_in_new</span>
+              </button>
+              <button onClick={() => setHatchMode('closed')} className="text-on-surface-variant hover:text-on-surface transition-colors" title="Close">
+                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+              </button>
+            </div>
+          </div>
+          {hatchChatContent}
+        </div>
+      )}
+
+      </div>
     </div>
   )
 }
@@ -687,13 +963,13 @@ function FreeformView({
             </div>
           </div>
 
-          {/* Luma Insight sidebar */}
+          {/* Hatch Insight sidebar */}
           <div className="md:col-span-4 space-y-4">
             <div className="bg-tertiary-container/10 border border-tertiary-container/30 rounded-xl p-4">
               <div className="flex items-center gap-3 mb-3">
-                <LumaGlyph size={40} state="speaking" className="flex-shrink-0" />
+                <HatchGlyph size={40} state="speaking" className="flex-shrink-0" />
                 <div>
-                  <h4 className="font-bold text-sm text-tertiary">Luma&apos;s Insight</h4>
+                  <h4 className="font-bold text-sm text-tertiary">Hatch&apos;s Insight</h4>
                   <p className="text-xs text-on-surface-variant">Focus on the cannibalization.</p>
                 </div>
               </div>
@@ -748,9 +1024,9 @@ function FreeformView({
             />
           </div>
 
-          {/* Luma coaching strip */}
+          {/* Hatch coaching strip */}
           <div className="bg-primary-fixed/30 border-y border-primary-fixed px-6 py-3 flex items-center gap-4">
-            <LumaGlyph size={28} state="speaking" className="flex-shrink-0" />
+            <HatchGlyph size={28} state="speaking" className="flex-shrink-0" />
             <p className="text-sm font-medium text-primary">
               <span className="font-bold">Freeform tip:</span> Structure is optional, but great answers
               usually address: What problem really is &rarr; Who&apos;s affected &rarr; What the tradeoff

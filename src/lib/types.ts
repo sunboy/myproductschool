@@ -100,11 +100,11 @@ export interface ChallengeAttempt {
   started_at: string
   submitted_at: string | null
   score: number | null
-  feedback_json: LumaFeedbackItem[] | null
+  feedback_json: HatchFeedbackItem[] | null
   created_at: string
 }
 
-export interface LumaFeedbackItem {
+export interface HatchFeedbackItem {
   dimension: FeedbackDimension
   score: number
   commentary: string
@@ -175,6 +175,11 @@ export interface ChallengeWithDomain extends ChallengePrompt {
   best_score: number | null
   is_completed: boolean
   is_in_progress?: boolean
+  company_tags?: string[]
+  relevant_roles?: string[]
+  topic_tags?: string[]
+  technique_tags?: string[]
+  is_real_interview?: boolean
 }
 
 // ── Failure Pattern Detection ─────────────────────────────
@@ -436,8 +441,8 @@ export interface CalibrationResults {
   archetype_description: string
   starting_levels: Record<FlowMove, number>
   percentile: number
-  // Optional fields returned when Luma provides richer feedback
-  luma_observation?: string
+  // Optional fields returned when Hatch provides richer feedback
+  hatch_observation?: string
   strengths?: string[]
   focus_area?: string
 }
@@ -459,7 +464,7 @@ export interface ShareCardData {
 export interface CareerBenchmark {
   levels: { title: string; percentile: number }[]
   user_level: string
-  luma_message?: string
+  hatch_message?: string
 }
 
 /* ── v2 Challenge Steps ───────────────────────────────────── */
@@ -511,12 +516,41 @@ export interface SessionEvent {
 
 export type DifficultyV2 = 'warmup' | 'standard' | 'advanced' | 'staff_plus'
 export type FlowStep = 'frame' | 'list' | 'optimize' | 'win'
+/** Extended FlowStep that includes the coding sentinel step added in migration 072. */
+export type FlowStepAll = FlowStep | 'coding'
 export type OptionQuality = 'best' | 'good_but_incomplete' | 'surface' | 'plausible_wrong'
-export type ResponseType = 'pure_mcq' | 'mcq_plus_elaboration' | 'modified_option' | 'freeform'
+export type ResponseType = 'pure_mcq' | 'mcq_plus_elaboration' | 'modified_option' | 'freeform' | 'coding_subtask'
+
+/** A single part of a multi-part coding challenge (loaded from flow_steps + step_questions). */
+export interface CodingPart {
+  /** step_questions.id */
+  id: string
+  sequence: number
+  /** question_text — shown as the part title in the Parts list */
+  title: string
+  response_type: 'coding_subtask' | 'pure_mcq'
+  /** 0.0–1.0, sourced from step_questions.grading_weight_within_step */
+  grading_weight_within_step: number
+  /** IDs of test cases (from challenges.metadata.test_cases) that belong to this part */
+  coding_test_case_ids: string[]
+  /** Per-language starter code for this subtask, or null */
+  coding_starter_code: Record<string, string> | null
+  /** Markdown problem statement for this subtask, or null */
+  coding_subtask_prompt: string | null
+  /** Populated only for pure_mcq parts */
+  options?: Array<{
+    id: string
+    option_label: string
+    option_text: string
+    quality: string
+    points: number
+    explanation: string
+  }>
+}
 export type Competency = 'motivation_theory' | 'cognitive_empathy' | 'taste' | 'strategic_thinking' | 'creative_execution' | 'domain_expertise'
 export type UserRoleV2 = 'swe' | 'data_eng' | 'ml_eng' | 'devops' | 'founding_eng' | 'em' | 'tech_lead' | 'pm' | 'designer' | 'data_scientist'
 
-export type ChallengeType = 'flow' | 'freeform' | 'quick_take'
+export type ChallengeType = 'flow' | 'freeform' | 'quick_take' | 'system_design' | 'data_modeling' | 'sql' | 'algorithm'
 
 export interface Challenge {
   id: string; slug: string | null; title: string
@@ -527,17 +561,27 @@ export interface Challenge {
   difficulty: DifficultyV2; estimated_minutes: number
   primary_competencies: string[]; secondary_competencies: string[]
   frameworks: string[]; relevant_roles: string[]; company_tags: string[]; tags: string[]
-  is_published: boolean; is_calibration: boolean; is_premium: boolean; created_at: string
+  is_published: boolean; is_calibration: boolean; is_premium: boolean; is_featured: boolean; created_at: string
   // Consolidated columns (from challenge_prompts / autopsy_challenges)
   prompt_text: string | null
   domain_id: string | null
   move_tags: string[]
   decision_id: string | null
+  // JSONB metadata for coding/canvas challenges (added in migration 070/071)
+  metadata?: Record<string, unknown> | null
 }
 
 export interface FlowStepRecord {
-  id: string; challenge_id: string; step: FlowStep; step_nudge: string | null
+  id: string; challenge_id: string; step: FlowStepAll; step_nudge: string | null
   grading_weight: number; step_order: number
+}
+
+/** Extended StepQuestion shape that includes coding-specific columns added in migration 072. */
+export interface StepQuestionWithCoding extends StepQuestion {
+  response_type: ResponseType
+  coding_test_case_ids: string[]
+  coding_starter_code: Record<string, string> | null
+  coding_subtask_prompt: string | null
 }
 
 export interface StepQuestion {
@@ -560,6 +604,10 @@ export interface ChallengeAttemptV2 {
   time_spent_seconds: number; is_replay: boolean
   started_at: string; completed_at: string | null
   mental_models_breakdown?: Array<{ step: string; competency: string; reasoning_move: string; demonstrated: string; missed: string }> | null
+  canvas_final_snapshot?: Record<string, unknown>
+  draft_snapshot?: Record<string, unknown>
+  draft_updated_at?: string
+  conversation_summary?: string
 }
 
 export interface StepAttemptRecord {
@@ -571,7 +619,9 @@ export interface StepAttemptRecord {
   grading_confidence: number | null
   role_context: string | null; career_signal: string | null
   time_spent_seconds: number
-  competency_signal?: { primary: string; signal: string; framework_hint: string } | null
+  // Transitional: pre-migration rows have `primary`; post-migration have `competency`.
+  // New writers should always emit `competency`. Readers may use the `?? primary` fallback.
+  competency_signal?: { competency?: string; primary?: string; signal: string; framework_hint: string } | null
 }
 
 export interface LearnerCompetency {
@@ -608,6 +658,18 @@ export type ParadigmV2 = 'traditional' | 'ai_assisted' | 'agentic' | 'ai_native'
 export const PARADIGM_V2_LABELS: Record<ParadigmV2, string> = {
   traditional: 'Traditional', ai_assisted: 'AI-Assisted', agentic: 'Agentic', ai_native: 'AI-Native',
 }
+
+// ── Taxonomy re-exports (canonical controlled vocabularies) ──────────────────
+export type { Discipline } from './data/taxonomy'
+
+/** Slug string for a topic within a discipline (e.g. 'hash-tables', 'caching'). */
+export type TopicTag = string
+
+/** Slug string for a technique within a discipline (e.g. 'two-pointers', 'cache-aside'). */
+export type TechniqueTag = string
+
+/** Slug string for a company (e.g. 'google', 'stripe'). */
+export type CompanyTag = string
 
 // ── Topic types (used by explore and study plans) ─────────
 export interface Topic {
@@ -673,6 +735,63 @@ export interface LearnModule {
   created_at: string
 }
 
+// ── Learn chapter figures (typed, structured; render via React components) ──
+
+export type FigureTone = 'ok' | 'warn' | 'neutral'
+
+// Row in a two-or-more-column comparison table. Optional arrow is drawn
+// between the first and second cell (used for "same move, different room"
+// style figures). Optional badge is a FLOW move name. Optional tone flags
+// a row as the uncalibrated / anti-pattern one (rendered in red).
+export interface ComparisonRow {
+  cells: string[]
+  badge?: string
+  tone?: FigureTone
+  arrow?: boolean
+}
+
+export interface ComparisonTableFigure {
+  kind: 'comparison_table'
+  caption: string
+  ariaLabel: string
+  headers: string[]
+  rows: ComparisonRow[]
+  footer?: { cells: string[] }
+}
+
+// Labeled box in a sequence. Anti-line is rendered in red italic beneath
+// the body (used for FLOW move cards with their anti-patterns).
+export interface ConnectedBox {
+  label: string
+  body: string[]
+  anti?: string
+  tone?: FigureTone
+}
+
+export interface ConnectedBoxesFigure {
+  kind: 'connected_boxes'
+  caption: string
+  ariaLabel: string
+  orientation: 'horizontal' | 'vertical'
+  boxes: ConnectedBox[]
+  showArrows: boolean
+}
+
+// Many-to-few mapping diagram (sources at top, targets at bottom, crossing
+// lines between them). Used for "frameworks → FLOW moves".
+export interface MappingDiagramFigure {
+  kind: 'mapping_diagram'
+  caption: string
+  ariaLabel: string
+  sources: string[]
+  targets: Array<{ label: string; body?: string; tone?: FigureTone }>
+  links: Array<{ from: number; to: number }>  // indices into sources and targets
+  sourcesLabel?: string
+  targetsLabel?: string
+}
+
+export type ChapterFigure = ComparisonTableFigure | ConnectedBoxesFigure | MappingDiagramFigure
+
 export interface LearnChapter {
   id: string
   module_id: string
@@ -682,6 +801,7 @@ export interface LearnChapter {
   sort_order: number
   hook_text: string
   body_mdx: string
+  figures: ChapterFigure[]
   created_at: string
 }
 
@@ -780,6 +900,114 @@ export interface IllustrationConfig {
   animationTrigger: 'onVisible' | 'loop'
 }
 
+export interface AarrrStageMetric { value: string; label: string }
+export interface AarrrWarRoomRow { role: string; insight: string }
+
+// ── AARRR Stage v2 — rich content schema ─────────────────────────────────────
+
+export interface AarrrTransition {
+  text: string
+}
+
+export interface AarrrPhoneMockup {
+  type: 'phone_mockup'
+  label: string
+}
+
+export interface AarrrCallout {
+  text: string
+  label?: string
+}
+
+export interface AarrrDataTable {
+  label: string
+  columns: string[]
+  rows: string[][]
+}
+
+export interface AarrrMetricDefinition {
+  metric: string
+  definition: string
+  how_to_calculate: string
+  healthy_range: string
+}
+
+export interface AarrrSystemDesignComponent {
+  component: string
+  what_it_does: string
+  key_technologies: string
+}
+
+export interface AarrrDeepLink {
+  tag: string
+  label: string
+}
+
+export interface AarrrVisualOverview {
+  label: string
+}
+
+export interface AarrrFailure {
+  name: string
+  what: string
+  lesson: string
+}
+
+export interface AarrrDoDont {
+  dos: string[]
+  donts: string[]
+}
+
+export interface AarrrCompetitorRow {
+  dimension: string
+  values: Array<{ text: string; outcome: 'win' | 'loss' | 'tie' }>
+}
+
+export interface AarrrCompetitorTable {
+  columns: string[]
+  rows: AarrrCompetitorRow[]
+}
+
+export interface AarrrGoDeeper {
+  metric_definitions?: AarrrMetricDefinition[]
+  system_design?: {
+    components: AarrrSystemDesignComponent[]
+    links: AarrrDeepLink[]
+  }
+  visual_overview?: AarrrVisualOverview
+  failures?: AarrrFailure[]
+  do_dont?: AarrrDoDont
+  competitor_table?: AarrrCompetitorTable
+}
+
+export interface AarrrPracticeCard {
+  question: string
+  guidance: string
+  hint: string
+}
+
+export interface AarrrPracticePrompts {
+  on_the_job: AarrrPracticeCard
+  interview_prep: AarrrPracticeCard
+}
+
+export interface AarrrStageContent {
+  stage_number: number
+  stage_name: string
+  question: string
+  narrative_paragraphs: string[]
+  metrics?: AarrrStageMetric[]
+  war_room?: AarrrWarRoomRow[]
+  transition?: AarrrTransition
+  phone_mockup?: AarrrPhoneMockup
+  callout?: AarrrCallout
+  data_tables?: AarrrDataTable[]
+  go_deeper?: AarrrGoDeeper
+  practice_prompts?: AarrrPracticePrompts
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export type StorySection =
   | { id: string; layout: 'fullbleed_cover'; content: { label: string; headline: string; subline: string; meta: string } }
   | { id: string; layout: 'split_panel'; content: { label: string; title: string; paragraphs: string[]; textSide: 'left' | 'right' }; illustration: IllustrationConfig }
@@ -789,6 +1017,9 @@ export type StorySection =
   | { id: string; layout: 'fullbleed_cta'; content: { headline: string; subline?: string; buttonText: string; targetPath: string } }
   | { id: string; layout: 'quote'; content: { quote: string; attribution: string; context?: string } }
   | { id: string; layout: 'timeline'; content: { title: string; events: Array<{ date: string; label: string; description: string; type: string }> } }
+  | { id: string; layout: 'aarrr_stage'; content: AarrrStageContent }
+  | { id: string; layout: 'aarrr_hero'; content: { product_name: string; tagline: string; meta: string; accent_color: string } }
+  | { id: string; layout: 'aarrr_closing'; content: { headline: string; summary: string; cta_text: string; cta_path: string } }
 
 export interface AutopsyStory {
   id: string
@@ -800,4 +1031,182 @@ export interface AutopsyStory {
   related_challenge_ids: string[]
   sort_order: number
   created_at: string
+}
+
+// ─── Content Management ───────────────────────────────────────────────────────
+
+export type IntellectualTheme = 'T1' | 'T2' | 'T3' | 'T4' | 'T5' | 'T6' | 'T7'
+
+export type GenerationJobStatus =
+  | 'pending' | 'scraping' | 'generating' | 'review' | 'published' | 'failed'
+
+export type GenerationMode = 'local' | 'api'
+
+export type ReviewStatus = 'pending_review' | 'approved' | 'rejected'
+
+export interface DraftOption {
+  label: 'A' | 'B' | 'C' | 'D'
+  quality: OptionQuality
+  text: string
+  explanation: string
+  competencies: string[]
+}
+
+export interface DraftQuestion {
+  question_text: string
+  question_nudge: string
+  sequence: number
+  grading_weight_within_step: number
+  target_competencies: string[]
+  options: DraftOption[]
+}
+
+export interface DraftFlowStep {
+  step: FlowStep
+  theme: IntellectualTheme
+  theme_name: string
+  step_nudge: string
+  grading_weight: number
+  questions: DraftQuestion[]
+}
+
+export interface ScenarioExcerpt {
+  id: string
+  quote: string
+  topic: 'framing' | 'options' | 'tradeoff' | 'recommendation' | 'context'
+}
+
+export interface ChallengeJsonScenario {
+  role: string
+  context: string
+  trigger: string
+  question: string
+  explanation: string
+  engineer_standout: string
+  specific_detail?: string
+  data_points?: string[]
+  insights?: string[]
+  excerpts?: ScenarioExcerpt[]
+  visuals?: string[]
+}
+
+export interface ChallengeJsonMetadata {
+  paradigm: string
+  industry: string
+  sub_vertical: string
+  difficulty: DifficultyV2
+  estimated_minutes: number
+  primary_competencies: string[]
+  secondary_competencies: string[]
+  frameworks: string[]
+  relevant_roles: string[]
+  company_tags: string[]
+  tags: string[]
+  /** Controlled-vocabulary topic slugs from taxonomy.ts (e.g. 'caching', 'arrays') */
+  topic_tags?: string[]
+  /** Controlled-vocabulary technique slugs from taxonomy.ts (e.g. 'consistent-hashing', 'two-pointers') */
+  technique_tags?: string[]
+  /** True when the source is a confirmed real interview question */
+  is_real_interview?: boolean
+  /** URL of the source that confirmed this is a real interview question */
+  source_url?: string | null
+}
+
+export interface ChallengeJson {
+  scenario: ChallengeJsonScenario
+  flow_steps: DraftFlowStep[]
+  metadata: ChallengeJsonMetadata
+}
+
+export interface GenerationJob {
+  id: string
+  input_type: 'url' | 'text' | 'question'
+  input_raw: string
+  scraped_text: string | null
+  status: GenerationJobStatus
+  mode: GenerationMode
+  result_challenge_id: string | null
+  error_message: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface DraftChallenge {
+  id: string
+  job_id: string
+  challenge_json: ChallengeJson
+  review_status: ReviewStatus
+  step_approvals: Record<FlowStep, boolean>
+  reviewer_notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+// ── Interview Challenge Types (system_design + data_modeling) ─────────────────
+
+export interface InterviewGradeDimension {
+  score: number  // 1-5
+  verdict: string
+  evidence: string
+  hole_to_poke: string
+  how_to_improve: string
+}
+
+export interface CanvasAnnotation {
+  target_label: string
+  text: string
+  severity: 'warning' | 'error' | 'info'
+}
+
+export interface InterviewGrade {
+  overall_score: number  // 1-5
+  headline: string
+  dimensions: Record<string, InterviewGradeDimension>
+  top_strength: string
+  top_improvement: string
+  canvas_annotations: CanvasAnnotation[]
+}
+
+export interface CanvasAction {
+  action: 'create_from_library' | 'create' | 'connect' | 'annotate' | 'remove' | 'rename'
+  // create_from_library
+  library_item?: string
+  x?: number
+  y?: number
+  label_override?: string
+  // create
+  elements?: Array<{
+    type: string
+    x: number
+    y: number
+    width?: number
+    height?: number
+    label?: { text: string }
+    columns?: string[]   // array of column lines like ["id PK", "email UNIQUE"]
+  }>
+  // connect
+  fromLabel?: string
+  toLabel?: string
+  label?: string
+  // annotate
+  text?: string
+  // remove / rename
+  targetLabel?: string
+  fromLabel_rename?: string
+  toLabel_rename?: string
+}
+
+export interface CanvasAnnotationHint {
+  target_label: string
+  text: string
+}
+
+export type CanvasIntent = 'build' | 'coach' | 'build_and_coach'
+
+export interface CanvasInterpretResponse {
+  intent: CanvasIntent
+  message: string
+  actions: CanvasAction[]
+  annotations?: CanvasAnnotationHint[]
 }

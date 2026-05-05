@@ -1,4 +1,4 @@
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import Link from 'next/link'
 
 const steps = [

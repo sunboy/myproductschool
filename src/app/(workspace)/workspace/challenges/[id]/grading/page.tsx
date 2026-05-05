@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { useRouter, useSearchParams, useParams } from 'next/navigation'
-import { LumaGlyph } from '@/components/shell/LumaGlyph'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const POLL_INTERVAL_MS = 2000
 const MAX_POLLS = 30 // 60s timeout
@@ -64,9 +64,9 @@ export default function GradingPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center space-y-6 max-w-sm mx-auto px-6">
-        <LumaGlyph size={80} state="reviewing" className="text-primary mx-auto" />
+        <HatchGlyph size={80} state="reviewing" className="text-primary mx-auto" />
         <div className="space-y-2">
-          <h1 className="font-headline text-2xl font-bold text-on-surface">Luma is reviewing your answer</h1>
+          <h1 className="font-headline text-2xl font-bold text-on-surface">Hatch is reviewing your answer</h1>
           <p className="text-sm text-on-surface-variant">Analysing your thinking across all 4 dimensions…</p>
         </div>
         <div className="flex items-center justify-center gap-1.5">

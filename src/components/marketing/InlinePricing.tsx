@@ -1,20 +1,20 @@
 import Link from 'next/link'
 
 const FREE_FEATURES = [
-  '3 challenges per day',
+  '3 challenge starts per month',
   'All 5 domains',
   'Vocabulary + flashcards',
-  'Basic Luma feedback',
+  'Starter Hatch AI budget',
   'Progress tracking',
 ]
 
 const PRO_FEATURES = [
   'Everything in Free',
-  'Unlimited challenges',
+  '80 challenge starts per month',
+  '12 AI interview starts per month',
+  'Fair-use Hatch AI budget',
   'Full model answers',
   'Failure pattern tracking',
-  'Mock interview simulations',
-  'Shareable ProductIQ card',
 ]
 
 export function InlinePricing() {
@@ -83,7 +83,7 @@ export function InlinePricing() {
             </p>
           </div>
           <p className="font-headline text-3xl font-bold text-on-surface">
-            $12
+            $30
             <span className="text-base font-body font-normal text-on-surface-variant">
               /mo
             </span>

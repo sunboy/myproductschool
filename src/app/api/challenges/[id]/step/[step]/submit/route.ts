@@ -5,7 +5,7 @@ import type { FlowOption, FlowStep, ResponseType } from '@/lib/types'
 import { routeResponse, gradePureMCQ } from '@/lib/v2/skills/grading-router'
 import { scoreOption } from '@/lib/v2/skills/option-scorer'
 import { calculateStepScore } from '@/lib/v2/skills/step-score-calculator'
-import { STEP_PRIMARY_COMPETENCIES } from '@/lib/luma/system-prompt'
+import { STEP_PRIMARY_COMPETENCIES } from '@/lib/hatch/system-prompt'
 import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
 
 // ── Request body ─────────────────────────────────────────────
@@ -117,7 +117,7 @@ export async function POST(
   let competencies_demonstrated: string[]
   let grading_explanation: string
   let grading_confidence: number
-  let competency_signal: { primary: string; signal: string; framework_hint: string } | null = null
+  let competency_signal: { competency: string; signal: string; framework_hint?: string } | null = null
 
   if (path === 'deterministic') {
     // pure_mcq — NO freeform-grader import or call
@@ -133,11 +133,12 @@ export async function POST(
 
     // Generate competency_signal from option metadata
     const selectedOption = options.find(o => o.id === selected_option_id)
-    competency_signal = {
-      primary: STEP_PRIMARY_COMPETENCIES[step]?.[0] ?? 'strategic_thinking',
-      signal: `Selected ${selectedOption?.quality ?? 'unknown'} option demonstrating ${(selectedOption?.competencies ?? []).join(', ') || 'general product thinking'}`,
-      framework_hint: selectedOption?.framework_hint ?? '',
-    }
+    const hint = selectedOption?.framework_hint?.trim() ?? ''
+    competency_signal = hint ? {
+      competency: STEP_PRIMARY_COMPETENCIES[step]?.[0] ?? 'strategic_thinking',
+      signal: hint,
+      framework_hint: hint,
+    } : null
 
   } else if (path === 'hybrid') {
     // mcq_plus_elaboration — base score + AI elaboration adjustment
@@ -169,11 +170,12 @@ export async function POST(
     }
 
     // Generate competency_signal from selected option metadata
-    competency_signal = {
-      primary: STEP_PRIMARY_COMPETENCIES[step]?.[0] ?? 'strategic_thinking',
-      signal: `Selected ${baseOption.quality} option demonstrating ${(baseOption.competencies ?? []).join(', ') || 'general product thinking'}`,
-      framework_hint: baseOption.framework_hint ?? '',
-    }
+    const baseHint = baseOption.framework_hint?.trim() ?? ''
+    competency_signal = baseHint ? {
+      competency: STEP_PRIMARY_COMPETENCIES[step]?.[0] ?? 'strategic_thinking',
+      signal: baseHint,
+      framework_hint: baseHint,
+    } : null
 
   } else {
     // modified_option or freeform — full AI evaluation
@@ -346,10 +348,11 @@ export async function POST(
 
       const breakdown = FLOW_STEP_ORDER.map(s => {
         const stepAttempts = (allAttempts ?? []).filter((a: { step: string }) => a.step === s)
+        // Transitional fallback: post-migration rows store `competency`; pre-migration rows store `primary`.
         const signals = stepAttempts
-          .map((a: { competency_signal?: { primary: string; signal: string } | null }) => a.competency_signal)
-          .filter(Boolean) as { primary: string; signal: string }[]
-        const primary = signals[0]?.primary ?? STEP_PRIMARY_COMPETENCIES[s]?.[0] ?? 'strategic_thinking'
+          .map((a: { competency_signal?: { competency?: string; primary?: string; signal: string } | null }) => a.competency_signal)
+          .filter(Boolean) as { competency?: string; primary?: string; signal: string }[]
+        const primary = signals[0]?.competency ?? signals[0]?.primary ?? STEP_PRIMARY_COMPETENCIES[s]?.[0] ?? 'strategic_thinking'
         let reasoningMove = ''
         try { reasoningMove = getReasoningMove(s as FlowStep) } catch { /* rubric unavailable */ }
         return {

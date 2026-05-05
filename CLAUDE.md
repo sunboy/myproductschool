@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Never use the Anthropic API key unless explicitly asked
+
+The repo has scripts that call the Anthropic API directly (`@anthropic-ai/sdk` with `process.env.ANTHROPIC_API_KEY`) — for example, the bulk enrichment scripts in `scripts/`. Those calls bill the user's Anthropic account by token.
+
+For bulk content work (generating challenges, grading rubrics, MCQ options, etc.), default to **Claude Code sub-agents** instead of API calls. Sub-agents use the user's Claude Code subscription at zero per-token cost. Only use the API key when the user has explicitly asked for it (or when reading existing code that already uses it without modification).
+
+When in doubt: ask before running a script that consumes API credit.
+
 ## Commands
 
 ```bash
@@ -14,7 +22,7 @@ npx shadcn@latest add <component>  # Add shadcn/ui components
 
 ## UI Change Workflow
 
-For every UI change made, use a haiku subagent to run a Playwright test for the change before asking the user to check that it works. The haiku agent should navigate to the affected page, take a screenshot, and report what renders.
+For every UI change made, use a haiku subagent to run a Playwright test for the change before asking the user to check that it works. The haiku agent should navigate to the affected page, take a screenshot, and report what renders. After Playwright finishes, always close the Chrome browser using `mcp__playwright__browser_close`.
 
 ## Reference Archive
 
@@ -63,15 +71,15 @@ To fetch a screen's HTML for reference: use `mcp__stitch__get_screen` with `name
 
 It's a practice gym for product thinking, not a course. Not exclusively for PM-track people.
 
-**AI Coach "Luma"**: Non-human, non-gendered. Always use "it" — never "she/he". Write "Luma reviewed your answer" not "she reviewed."
+**AI Coach "Hatch"**: Non-human, non-gendered. Always use "it" — never "she/he". Write "Hatch reviewed your answer" not "she reviewed."
 
-**Luma mascot — `src/components/shell/LumaGlyph.tsx`**:
-Luma is a friendly robot with a graduation cap and a growth arrow (top-right). It is rendered as an inline SVG component — NOT a generic glyph or emoji.
+**Hatch mascot — `src/components/shell/HatchGlyph.tsx`**:
+Hatch is a friendly robot with a graduation cap and a growth arrow (top-right). It is rendered as an inline SVG component — NOT a generic glyph or emoji.
 
 ```tsx
-import { LumaGlyph, LumaState } from '@/components/shell/LumaGlyph'
+import { HatchGlyph, HatchState } from '@/components/shell/HatchGlyph'
 
-<LumaGlyph size={48} state="idle" className="text-primary" />
+<HatchGlyph size={48} state="idle" className="text-primary" />
 ```
 
 Available `state` values — always use the contextually correct one:
@@ -79,12 +87,29 @@ Available `state` values — always use the contextually correct one:
 |---|---|---|
 | `none` | Static, decorative (no animation) | None |
 | `idle` | Dashboard greeting, nav brand, auth forms | Floating cap, blinking eyes, rising ZZZs |
-| `listening` | Calibration steps, challenge workspace tips, anywhere Luma is reading user input | Headphones on, notepad, pulsing eyes |
-| `reviewing` | Grading interstitial, diagnosis, anywhere Luma is processing | Scanning eyes, thought bubble, glow aura |
-| `speaking` | Luma tips, coaching panels, simulation | Animated mouth |
+| `listening` | Calibration steps, challenge workspace tips, anywhere Hatch is reading user input | Headphones on, notepad, pulsing eyes |
+| `reviewing` | Grading interstitial, diagnosis, anywhere Hatch is processing | Scanning eyes, thought bubble, glow aura |
+| `speaking` | Hatch tips, coaching panels, simulation | Animated mouth |
 | `celebrating` | Results page, high scores, feedback reveal | Sparkles, cap toss, wide smile |
 
-**Do NOT** use the deprecated `animated` boolean prop — always use `state`. **Do NOT** replace LumaGlyph with a Material Symbol icon, emoji, or any other element. When in doubt about which state to use, `idle` is a safe default.
+**Do NOT** use the deprecated `animated` boolean prop — always use `state`. **Do NOT** replace HatchGlyph with a Material Symbol icon, emoji, or any other element. When in doubt about which state to use, `idle` is a safe default.
+
+## Hatch-Awareness — Required for Every Feature
+
+Hatch is not a side feature; it is the platform's coaching surface. **Every feature change or new feature MUST include a Hatch-awareness component.** If a user can do something new in the workspace, Hatch must be able to see it, talk about it, and reason about it. Shipping a feature without this is treating Hatch as decoration.
+
+Concretely, when adding or changing a feature, ask:
+
+1. **Does this introduce new state the user can act on?** (a new field, a new panel section, a new sub-question, a new workspace mode, a new step). If yes, that state MUST be passed to Hatch's chat endpoint as part of the request body.
+2. **Does Hatch's system prompt need to know about this state?** Update the relevant skill (`hackproduct-coding-coach`, `hackproduct-canvas-coach`, etc.) and the user-content builder in `src/app/api/hatch/canvas/interpret/route.ts` so the model sees it on every turn.
+3. **Does the user-facing copy in the chat reflect the active context?** Initial messages, example prompts, and placeholder text in `src/components/challenge/CanvasChatPanel.tsx` should match what the user is doing.
+4. **Is grading aware of the new state?** If the feature affects how a session is scored, update the relevant grader skill so per-session evidence references it.
+
+Verification before claiming a feature is done:
+- Open the chat panel in the new context and ask a question that requires Hatch to know the new state. The reply must demonstrate awareness, not generic guidance.
+- If Hatch falls back to "I can only see what's in your editor" or asks the user to paste context the platform already has, the integration is incomplete.
+
+This is not optional. A feature without Hatch-awareness is half-shipped.
 
 ## Architecture
 
@@ -204,7 +229,7 @@ npx tsc --noEmit 2>&1 | head -20
 - **NO raw hex in className** — use Tailwind tokens. Raw hex OK in `style={{}}` for SVG
 - **Copy ALL text** — every heading, label, badge, placeholder verbatim
 - **Copy ALL icons** — exact Material Symbols name from Stitch
-- **LumaGlyph** replaces Stitch's `<img>` mascot images — use the right `state` prop
+- **HatchGlyph** replaces Stitch's `<img>` mascot images — use the right `state` prop
 
 ## Agent Team Configuration
 
@@ -235,9 +260,13 @@ Use this pattern for any significant build task (3+ files, multiple concerns):
 ### Example spawn message to a dev agent
 > "You are devN on the [team] team. You have ONE task: [Task #N — Title]. Working dir: [...]. Read [...] first. Implement [...]. After implementing: run tsc, send full output to opus saying 'Task N proof: [output]'. Wait for APPROVED from opus before marking task completed."
 
-## Mental Models Framework — Luma's Grading Intelligence
+### Token efficiency note
 
-This is the conceptual foundation for everything Luma does: grading, per-MCQ feedback, in-context nudges, step coaching, post-challenge breakdowns, analytics, and competency routing. All Luma output should be rooted in these mental models.
+Linear me would've burned ~50% more context. Team approach: Opus orchestrated, 9 Sonnets coded in parallel waves, Haiku ran the final test suite. T6 stalled — I jumped in and did it myself in 2 minutes rather than waiting. That kind of intervention is the orchestrator's job.
+
+## Mental Models Framework — Hatch's Grading Intelligence
+
+This is the conceptual foundation for everything Hatch does: grading, per-MCQ feedback, in-context nudges, step coaching, post-challenge breakdowns, analytics, and competency routing. All Hatch output should be rooted in these mental models.
 
 Full document: `../myproductschool-content/content/MENTAL_MODELS_FRAMEWORK.md`
 
@@ -256,7 +285,7 @@ These map to the `learner_competencies` table. They are never self-reported — 
 
 ### Competency × FLOW Step — The 10 Active Mappings
 
-Every piece of Luma feedback connects to one of these mappings. When writing grading output, coaching copy, or nudge text, ground it in the reasoning move being built.
+Every piece of Hatch feedback connects to one of these mappings. When writing grading output, coaching copy, or nudge text, ground it in the reasoning move being built.
 
 | FLOW Step | Competency | The reasoning move being built |
 |---|---|---|
@@ -284,7 +313,7 @@ Example framework_hint for a correct Frame answer:
 Example framework_hint for a wrong Optimize answer:
 > 🧠 Taste failure: This is a preference ("cleaner feels better"), not a tradeoff. Taste is knowing which quality signal actually predicts user behavior.
 
-**2. Per-step grading output** (Luma API response)
+**2. Per-step grading output** (Hatch API response)
 Alongside `detected` / `missed` / `coaching`, include a `competency_signal` block:
 ```json
 {
@@ -304,7 +333,7 @@ After all 4 FLOW steps, show a table mapping each step to the competency being b
 **4. Analytics / Skill Ladder**
 The `learner_competencies` table tracks score (0-100), trend, and total_attempts per competency. Surface this as a radar/hexagon chart. Label axes with competency names, not rubric criterion codes.
 
-**5. Luma nudges (in-challenge)**
+**5. Hatch nudges (in-challenge)**
 Step nudges (`flow_steps.step_nudge`) and question nudges (`step_questions.question_nudge`) should reference the reasoning move being practiced, not just the question topic. E.g. for a Frame step nudge: "You're about to practice the upstream move — finding the problem behind the problem."
 
 ### Design Principle: No Author Attribution in the Product
@@ -324,7 +353,7 @@ Located in `../myproductschool-content/content/grading_rubrics/`:
 
 Scoring: strong (≥0.75), partial (≥0.45), needs_work (<0.45). Each criterion scores 1.0 / 0.5 / 0.0.
 
-Canonical reasoning structures Luma grades against:
+Canonical reasoning structures Hatch grades against:
 - **Frame/F3**: "[Person] is trying to [accomplish X]. [Blocker] is preventing them. If unresolved, [business consequence]."
 - **Optimize/O2**: "We get [gain]. We give up [sacrifice]. [Sacrifice] is acceptable because [reason]."
 - **Win/W3**: "We will know this worked if [metric] reaches [threshold] by [timeline]. We will know it failed if [counter-signal]."
@@ -371,7 +400,7 @@ Fallback to word-count heuristic if AI call fails.
 
 ## Token Optimization & Caching
 
-All Luma AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropic prompt caching (`cache_control: { type: 'ephemeral' }`). System prompts are cached, reducing input token costs by ~90% on cache hits.
+All Hatch AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropic prompt caching (`cache_control: { type: 'ephemeral' }`). System prompts are cached, reducing input token costs by ~90% on cache hits.
 
 ### Model Selection
 | Endpoint | Model | Rationale |
@@ -392,7 +421,7 @@ All Luma AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropic
 
 ## Claude Code Skills for AI Interactions
 
-4 skills define deterministic behavior for all Luma AI interactions:
+4 skills define deterministic behavior for all Hatch AI interactions:
 
 | Skill | Path | Trigger |
 |---|---|---|
@@ -437,9 +466,70 @@ All Luma AI interactions use `src/lib/anthropic/cached-client.ts` with Anthropic
 
 This is pre-existing design (introduced in commit `47872c1`). Always use `quality` for scoring, never derive points from a boolean.
 
+## Content Authoring Pipeline
+
+Full architecture: [`docs/notes/content-authoring-architecture.md`](./docs/notes/content-authoring-architecture.md). Operator runbook: [`docs/notes/content-generation-runbook.md`](./docs/notes/content-generation-runbook.md).
+
+**What it does:** turns a URL, article, or question into a 4-step FLOW challenge (Frame / List / Optimize / Win) with 1-3 MCQ questions per step, 4 options each (one of each quality), taxonomy tags, and deterministic validation. Two pipelines with identical shape: local mode (`scripts/job-server.ts` using the `claude` CLI subprocess) and API mode (`src/lib/content/generator.ts` using Anthropic SDK).
+
+**Audience:** engineers first (tech lead, staff engineer, founding engineer, EM, SWE). PMs secondary. Taxonomy biases toward engineering roles. Copy never uses second-person role framing — no "you are a tech lead", no "as a senior engineer". Role is metadata, not copy.
+
+**Grounding is the core idea.** Every MCQ generation call receives a grounding pack: per-question `focus`, source `excerpts` filtered by step topic, real `data_points`, extracted `insights`, the `engineer_standout` angle, and `siblingFocuses` from other questions in the step to prevent overlap. The BEST option must reference a source-specific element (named entity, metric, or listed insight), or it does not qualify as BEST.
+
+**Open-ended prompts** (short questions like "how do you improve ChatGPT") run an expansion step that picks a concrete angle and writes source-like material, then a verifier step that strips fabricated claims before the main pipeline runs. Unsalvageable sources fail the job.
+
+**Voice rules** (enforced by prompts and validator warnings):
+- No second-person role framing in user-facing copy
+- No em dashes
+- No AI slop ("delve", "leverage", "utilize", "holistic", "robust", "seamlessly", "in order to", "as well as")
+- Explanations read like insight, not instruction
+- Best option is genuinely better in reasoning, not longer
+
+**Validator** runs after generation: hard errors (structural) block publish; warnings (grounding miss, sibling overlap, role-framing match) surface to the reviewer.
+
+**Admin UI:** `/admin/content` lists all jobs with View / Review / Tags / Delete actions. Review page has inline editing and step approvals. Tag editor for published challenges at `/admin/content/challenges/{id}`.
+
+**Bulk ingest** from a Notion "Challenge Pipeline" database: `scripts/bulk-ingest.ts`. Reads rows where `Status=Queued`, submits jobs, updates Notion with `Job ID` and `Status=Generating`.
+
+## Writing Style
+
+Canonical guide: [`docs/notes/writing-style-guide.md`](./docs/notes/writing-style-guide.md). Every user-facing word the platform produces follows this. All five HackProduct skills (`backend_planning/hackproduct-v2-bundle/skills/*/SKILL.md`) inherit from it.
+
+**Register:** Shreyas Doshi in a tweet thread, or an opinionated staff engineer thinking out loud. Direct. Confident. Slightly opinionated. Academic is wrong. Corporate is worse.
+
+**Hard rules (enforced by the content validator):**
+- **No second-person role framing.** No "you are a tech lead", "as a senior engineer", "imagine you work at". Drop into the situation. Role is metadata, not copy.
+- **No em dashes.** Use a comma, a period, or restructure. Hard ban.
+- **No AI slop.** Never: *delve, leverage, utilize, holistic, robust, seamlessly, it's worth noting, in order to, as well as, embark on, navigate, unlock, landscape, tapestry, ensure, tailored, cutting-edge, revolutionary, game-changing*.
+- **Coherent sentences, not fragments.** Full flowing sentences that connect. Fragment-style ("Four moves. Real problem is upstream.") reads like a speech, not writing. Exception: UI chrome (buttons, labels, status).
+
+**Applies to:** challenge scenarios/questions/options/nudges, grading explanations, Luma coaching, learn chapter bodies, competency labels, push notifications, emails, and any admin UI copy that appears alongside user-facing content.
+
+**Does NOT apply to:** code comments, migration SQL, developer-facing error messages, internal reference docs.
+
+**Quick check before shipping generated text:** Does a sentence exist only to sound thorough? Cut it. Does a word appear in the AI-slop list? Replace it. Does the scenario open with "you are" or "as a"? Rewrite it into the situation.
+
 ## Key Conventions
 
 - `@/*` path alias maps to `./src/*`
 - Use Tailwind token classes — never raw hex values in JSX className
 - Stitch v2 project ID: `12072135267645366200` (canonical design reference)
 - See "Canonical Stitch Screens" table above for all 24 screen IDs and their file paths
+
+## Parked Work
+
+### Personalised Study Plan — chapter/challenge seeding (parked 2026-04-23)
+
+The 4 move-tagged study plans exist as shells in the DB (migration `061_study_plans_seed.sql`):
+- `frame-like-a-pm` (move_tag: frame)
+- `the-list-move` (move_tag: list)
+- `optimize-under-pressure` (move_tag: optimize)
+- `win-the-room` (move_tag: win)
+
+**What's done:** Calibration submit auto-enrolls users in the plan matching their weakest FLOW move. The explore page shows it in the hero and as the first card in the study plans grid.
+
+**What's missing:** `study_plan_chapters` rows with actual `challenge_ids`. The plans are empty shells — clicking through shows no challenges. To complete this, either:
+1. **Manual curation** — pick challenges from the `challenges` table per move, write a migration with `study_plan_chapters` inserts
+2. **Tag-based** — use challenges that already have `move_tags` set (only ~20 of 184 currently tagged)
+
+Most challenges have empty `move_tags`, so manual curation will give cleaner plans. When resuming, check `challenges` table for candidates: `SELECT id, title, move_tags, difficulty FROM challenges WHERE is_published = true ORDER BY difficulty`.
