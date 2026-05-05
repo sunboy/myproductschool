@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getHatchContext } from '@/lib/v2/hatch-context'
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 
 function aiBudgetResponse(error: unknown) {
@@ -96,7 +96,7 @@ export async function POST(
     const scenarioTrigger = challenge?.scenario_trigger ?? ''
     const hatchContext = await getHatchContext(user.id, challengeId, step)
 
-    const systemPrompt = `You are Hatch, an AI coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
+    const systemPrompt = `You are Hatch, a coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
     let userPrompt = `The learner is a ${roleLabel} who just answered the ${step} step.
 Challenge: ${scenarioContext} ${scenarioTrigger}
 Question: ${questionText}
@@ -117,7 +117,7 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
 
     let message
     try {
-      message = await createCachedMessage(systemPrompt, userPrompt, {
+      message = await guardedCachedMessage(systemPrompt, userPrompt, {
         model: 'claude-sonnet-4-6',
         max_tokens: 800,
         thinking: { type: 'adaptive' },
@@ -129,10 +129,7 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
       throw error
     }
 
-    let rawText = ''
-    for (const block of message.content) {
-      if (block.type === 'text') { rawText = block.text; break }
-    }
+    const rawText = message.sanitized
 
     let role_context = ''
     let career_signal = ''
@@ -248,7 +245,7 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
   const hatchContext = await getHatchContext(user.id, challengeId, step)
 
   // Build the prompt
-  const systemPrompt = `You are Hatch, Hatch is an AI coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
+  const systemPrompt = `You are Hatch, a coach at HackProduct. You give personalized, career-relevant coaching to engineers practicing product thinking.`
 
   let userPrompt = `The learner is a ${roleLabel} who just answered the ${step} step.
 Challenge: ${scenarioContext} ${scenarioTrigger}
@@ -272,7 +269,7 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
 
   let message
   try {
-    message = await createCachedMessage(systemPrompt, userPrompt, {
+    message = await guardedCachedMessage(systemPrompt, userPrompt, {
       model: 'claude-sonnet-4-6',
       max_tokens: 800,
       thinking: { type: 'adaptive' },
@@ -284,14 +281,7 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
     throw error
   }
 
-  // Extract text content from response
-  let rawText = ''
-  for (const block of message.content) {
-    if (block.type === 'text') {
-      rawText = block.text
-      break
-    }
-  }
+  const rawText = message.sanitized
 
   let role_context = ''
   let career_signal = ''
