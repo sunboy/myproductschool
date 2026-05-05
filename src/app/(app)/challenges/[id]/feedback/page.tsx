@@ -43,8 +43,19 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
   let rawOverallScore: number | null = null
   let submissionDate: string | null = null
   let responseText: string | null = null
-  type MentalModelStep = { step: string; competency: string; reasoning_move: string; demonstrated: string; missed: string }
+  type MentalModelStep = {
+    step: string
+    competency: string
+    reasoning_move: string
+    demonstrated: string
+    missed: string
+    framework_hint?: string | null
+    score?: number | null
+  }
+  type NextChallenge = { id: string; slug: string | null; title: string }
   let mentalModelsBreakdown: MentalModelStep[] | null = null
+  let weakestCompetency: string | null = null
+  let nextChallenge: NextChallenge | null = null
 
   if (!isMock && attempt) {
     try {
@@ -55,20 +66,34 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
         const adminClient = createAdminClient()
         const { data: attemptData } = await adminClient
           .from('challenge_attempts')
-          .select('feedback_json, score_json, submitted_at, response_text')
+          .select('feedback_json, score_json, submitted_at, response_text, mental_models_breakdown, weakest_competency')
           .eq('id', attempt)
           .eq('user_id', user.id)
           .single()
 
         if (attemptData) {
-          if (attemptData.feedback_json) {
-            feedback = attemptData.feedback_json as HatchFeedbackItem[]
+          const feedbackJson = attemptData.feedback_json && typeof attemptData.feedback_json === 'object'
+            ? attemptData.feedback_json as Record<string, unknown>
+            : null
+          const feedbackDimensions = Array.isArray(attemptData.feedback_json)
+            ? attemptData.feedback_json
+            : Array.isArray(feedbackJson?.dimensions)
+              ? feedbackJson.dimensions
+              : []
+          if (feedbackDimensions.length > 0) {
+            feedback = feedbackDimensions as HatchFeedbackItem[]
           }
           if (attemptData.submitted_at) {
             submissionDate = attemptData.submitted_at
           }
           if (attemptData.response_text) {
             responseText = attemptData.response_text as string
+          }
+          if (attemptData.mental_models_breakdown) {
+            mentalModelsBreakdown = attemptData.mental_models_breakdown as MentalModelStep[]
+          }
+          if (typeof attemptData.weakest_competency === 'string') {
+            weakestCompetency = attemptData.weakest_competency
           }
 
           const scoreJson = attemptData.score_json as Record<string, unknown> | null
@@ -117,18 +142,31 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
               })),
             }
           }
+
+          if (!weakestCompetency && typeof feedbackJson?.weakest_competency === 'string') {
+            weakestCompetency = feedbackJson.weakest_competency
+          }
+          if (!mentalModelsBreakdown && Array.isArray(feedbackJson?.mental_models_breakdown)) {
+            mentalModelsBreakdown = feedbackJson.mental_models_breakdown as MentalModelStep[]
+          }
         }
 
-        // Also check for v2 attempt with mental_models_breakdown
-        const { data: v2Attempt } = await adminClient
-          .from('challenge_attempts')
-          .select('mental_models_breakdown')
-          .eq('id', attempt)
-          .eq('user_id', user.id)
-          .single()
+        if (weakestCompetency) {
+          const { data: recommendation } = await adminClient
+            .rpc('next_user_challenge', {
+              p_user_id: user.id,
+              p_competency: weakestCompetency,
+            })
+            .maybeSingle()
 
-        if (v2Attempt?.mental_models_breakdown) {
-          mentalModelsBreakdown = v2Attempt.mental_models_breakdown as MentalModelStep[]
+          if (recommendation) {
+            const recommendedChallenge = recommendation as Record<string, unknown>
+            nextChallenge = {
+              id: String(recommendedChallenge.id),
+              slug: typeof recommendedChallenge.slug === 'string' ? recommendedChallenge.slug : null,
+              title: String(recommendedChallenge.title),
+            }
+          }
         }
       }
     } catch {
@@ -153,8 +191,8 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
     : overallScoreNum >= 75
       ? 'Strong performance with room to grow'
       : overallScoreNum >= 60
-        ? 'Good foundation — focus on the areas below'
-        : 'Keep practicing — review the suggestions below'
+        ? 'Good foundation, focus on the areas below'
+        : 'Keep practicing, review the suggestions below'
 
   // Format submission date
   const formattedDate = submissionDate
@@ -193,6 +231,10 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
     `/workspace/challenges/${id}${attempt ? `?attempt=${encodeURIComponent(attempt)}` : ''}`,
     returnTo,
   )
+  const nextChallengeHref = nextChallenge
+    ? `/workspace/challenges/${nextChallenge.slug ?? nextChallenge.id}`
+    : undefined
+  const shareHref = `/workspace/challenges/${id}/share${attempt ? `?attempt=${encodeURIComponent(attempt)}` : ''}`
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-5">
@@ -298,7 +340,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
                   <h3 className="font-headline text-lg font-bold text-on-surface">
                     Hatch&apos;s Analysis
                   </h3>
-                  <p className="text-sm text-on-surface-variant">AI-Assisted Evaluation</p>
+                  <p className="text-sm text-on-surface-variant">Hatch review</p>
                 </div>
               </div>
               <div className="text-right">
@@ -376,7 +418,12 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
 
           {/* Mental Models Breakdown (v2 challenges) */}
           {mentalModelsBreakdown && mentalModelsBreakdown.length > 0 && (
-            <MentalModelsBreakdown breakdown={mentalModelsBreakdown} />
+            <MentalModelsBreakdown
+              breakdown={mentalModelsBreakdown}
+              weakestCompetency={weakestCompetency ?? undefined}
+              nextChallengeHref={nextChallengeHref}
+              nextChallengeTitle={nextChallenge?.title}
+            />
           )}
 
           {/* Key Insight */}
@@ -403,6 +450,13 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             >
               <span className="material-symbols-outlined">edit_note</span>
               Try Again
+            </Link>
+            <Link
+              href={shareHref}
+              className="flex-1 py-3 border border-outline-variant text-on-surface rounded-full font-bold hover:bg-surface-container transition-all active:scale-95 flex items-center justify-center gap-2 font-label text-sm"
+            >
+              <span className="material-symbols-outlined">ios_share</span>
+              Share scorecard
             </Link>
           </div>
 
