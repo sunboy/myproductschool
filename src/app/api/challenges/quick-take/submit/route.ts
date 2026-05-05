@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { IS_MOCK } from '@/lib/mock'
@@ -12,6 +13,11 @@ import { rateLimit } from '@/lib/security/rate-limit'
 const QUICK_TAKE_XP_BASE = 20
 const ROUTE_KEY = 'quick_take_submit'
 
+const RequestSchema = z.object({
+  challenge_id: z.string().uuid(),
+  response_text: z.string().trim().min(1).max(6000),
+})
+
 const MOCK_RESPONSE = {
   score: 0.75,
   xp_earned: 15,
@@ -20,6 +26,13 @@ const MOCK_RESPONSE = {
 
 function retryAfterSeconds(resetAt: Date) {
   return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
 }
 
 /**
@@ -90,11 +103,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(MOCK_RESPONSE)
   }
 
-  const { challenge_id, response_text } = await req.json()
-
-  if (!challenge_id || !response_text?.trim()) {
-    return NextResponse.json({ error: 'Missing challenge_id or response_text' }, { status: 400 })
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
+  const { challenge_id, response_text } = body
 
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
