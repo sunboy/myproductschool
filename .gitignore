@@ -30,6 +30,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# local dev runtime artifacts
+.next-dev.log
+.stripe-listen.log
+.stripe-listen.pid
+tmp/
+
 # env files (can opt-in for committing if needed)
 .env*
 
