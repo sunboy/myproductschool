@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { IS_MOCK } from '@/lib/mock'
@@ -14,6 +15,18 @@ import {
   competenciesForSignalInput,
   type CompetencySignalInput,
 } from '@/lib/scoring/competency-rollup'
+
+const RequestSchema = z.object({
+  attempt_id: z.string().uuid(),
+  from_plan: z.string().trim().min(1).max(200).nullable().optional(),
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
 
 export async function POST(
   req: NextRequest,
@@ -46,15 +59,19 @@ export async function POST(
   }
 
   const { id: challengeId } = await params
-  const body = await req.json()
-  const { attempt_id, from_plan } = body as {
-    attempt_id: string
-    from_plan?: string
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
-
-  if (!attempt_id) {
-    return NextResponse.json({ error: 'attempt_id is required' }, { status: 400 })
-  }
+  const { attempt_id, from_plan } = body
 
   const admin = createAdminClient()
 
