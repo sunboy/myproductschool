@@ -6,6 +6,14 @@ import { IS_MOCK } from '@/lib/mock'
 import { getHatchContext, buildHatchContextString } from '@/lib/hatch-context'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
+
+const ROUTE_KEY = 'simulation_turn'
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
 
 export async function POST(
   request: Request,
@@ -19,6 +27,26 @@ export async function POST(
 
   const { content } = await request.json()
   if (!content?.trim()) return NextResponse.json({ error: 'Content required' }, { status: 400 })
+  const shouldCallModel = !IS_MOCK && Boolean(process.env.ANTHROPIC_API_KEY)
+
+  if (shouldCallModel) {
+    const throttle = await rateLimit({
+      key: `ai:${user.id}:${ROUTE_KEY}`,
+      limit: userPlan === 'pro' ? 15 : 5,
+      windowSec: 60,
+    })
+
+    if (!throttle.allowed) {
+      const retryAfter = retryAfterSeconds(throttle.resetAt)
+      return NextResponse.json(
+        { error: 'rate_limited', retryAfter },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(retryAfter) },
+        }
+      )
+    }
+  }
 
   const adminClient = createAdminClient()
 
@@ -60,17 +88,32 @@ export async function POST(
   ].join('\n\n')
 
   let hatchReply: string
-  if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
+  if (!shouldCallModel) {
     hatchReply = "That's an interesting perspective. Can you walk me through how you'd measure the success of that approach? What specific metrics would you track in the first 30 days?"
   } else {
     try {
+      await assertPlanLimit(user.id, userPlan, 'simulation_turns')
+
       const response = await guardedCachedMessage(systemPrompt, `Interview transcript:\n\n${conversation}`, {
         model: 'claude-sonnet-4-6',
         max_tokens: 300,
-        budget: { userId: user.id, userPlan, route: 'simulation_turn' },
+        budget: { userId: user.id, userPlan, route: ROUTE_KEY },
       })
       hatchReply = response.sanitized
     } catch (error) {
+      if (error instanceof PlanLimitExceeded) {
+        return NextResponse.json(
+          {
+            error: 'limit_reached',
+            feature: error.feature,
+            used: error.used,
+            limit: error.limit,
+            windowDays: error.windowDays,
+          },
+          { status: 402 }
+        )
+      }
+
       if (error instanceof AiBudgetExceededError) {
         return NextResponse.json(
           {
