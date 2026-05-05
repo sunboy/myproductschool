@@ -3,6 +3,7 @@ import {
   findRateLimitBlock,
   getClientIp,
 } from '@/lib/auth/rate-limit'
+import { hasValidReauthToken } from '@/lib/auth/reauth'
 import { changePasswordSchema, firstZodError } from '@/lib/auth/validation'
 import { createClient } from '@/lib/supabase/server'
 
@@ -31,6 +32,9 @@ export async function POST(request: Request) {
 
   if (!user.email) {
     return NextResponse.json({ error: 'Password changes require an email account.' }, { status: 400 })
+  }
+  if (!hasValidReauthToken(request, user.id)) {
+    return NextResponse.json({ error: 'reauth_required' }, { status: 403 })
   }
 
   const ip = getClientIp(request)

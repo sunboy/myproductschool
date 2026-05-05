@@ -4,6 +4,7 @@ import {
   getClientIp,
   sameOriginRedirect,
 } from '@/lib/auth/rate-limit'
+import { hasValidReauthToken } from '@/lib/auth/reauth'
 import { emailChangeSchema, firstZodError } from '@/lib/auth/validation'
 import { createClient } from '@/lib/supabase/server'
 
@@ -36,6 +37,9 @@ export async function POST(request: Request) {
 
   if (!user.email) {
     return NextResponse.json({ error: 'Email changes require an email account.' }, { status: 400 })
+  }
+  if (!hasValidReauthToken(request, user.id)) {
+    return NextResponse.json({ error: 'reauth_required' }, { status: 403 })
   }
 
   const { email, currentPassword } = parsed.data

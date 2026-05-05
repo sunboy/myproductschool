@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { FreemiumUsageSummary } from '@/components/billing/FreemiumUsageSummary'
-import { changePasswordSchema, emailChangeSchema, zodFieldErrors } from '@/lib/auth/validation'
+import { ReauthModal } from '@/components/auth/ReauthModal'
+import { authEmailSchema, newPasswordSchema, zodFieldErrors } from '@/lib/auth/validation'
 
 type SubscriptionInfo = {
   plan?: string | null
@@ -49,8 +50,14 @@ type LinkedIdentity = {
 }
 
 type IdentityAction = 'link-google' | 'unlink-google'
-type EmailChangeField = 'email' | 'currentPassword'
-type PasswordField = 'currentPassword' | 'password' | 'confirm'
+type EmailChangeField = 'email'
+type PasswordField = 'password' | 'confirm'
+type ReauthRequest = {
+  title: string
+  description: string
+  confirmLabel?: string
+  onVerified: (password: string) => Promise<void>
+}
 
 function formatBillingDate(value?: string | null) {
   if (!value) return 'Not available'
@@ -82,7 +89,6 @@ export default function SettingsPage() {
   const [identityAction, setIdentityAction] = useState<IdentityAction | null>(null)
   const [identityError, setIdentityError] = useState<string | null>(null)
   const [passwordForm, setPasswordForm] = useState({
-    currentPassword: '',
     password: '',
     confirm: '',
   })
@@ -93,13 +99,17 @@ export default function SettingsPage() {
   const [visiblePasswordFields, setVisiblePasswordFields] = useState<Partial<Record<PasswordField, boolean>>>({})
   const [emailChangeForm, setEmailChangeForm] = useState({
     email: '',
-    currentPassword: '',
   })
   const [emailChangeFieldErrors, setEmailChangeFieldErrors] = useState<Partial<Record<EmailChangeField, string>>>({})
   const [emailChangeError, setEmailChangeError] = useState<string | null>(null)
   const [emailChangeSuccess, setEmailChangeSuccess] = useState<string | null>(null)
   const [emailChangeSaving, setEmailChangeSaving] = useState(false)
-  const [showEmailChangePassword, setShowEmailChangePassword] = useState(false)
+  const [reauthRequest, setReauthRequest] = useState<ReauthRequest | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteEmail, setDeleteEmail] = useState('')
+  const [deleteConfirmation, setDeleteConfirmation] = useState('')
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [deleteSaving, setDeleteSaving] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   async function refreshProfile() {
@@ -254,34 +264,46 @@ export default function SettingsPage() {
     setEmailChangeSuccess(null)
     setEmailChangeFieldErrors({})
 
-    const validation = emailChangeSchema.safeParse(emailChangeForm)
+    const validation = authEmailSchema.safeParse(emailChangeForm.email)
     if (!validation.success) {
-      setEmailChangeFieldErrors(zodFieldErrors<EmailChangeField>(validation.error))
+      setEmailChangeFieldErrors({ email: validation.error.issues[0]?.message ?? 'Enter a valid email.' })
       return
     }
 
-    setEmailChangeSaving(true)
-    try {
-      const redirectTo = `${window.location.origin}/auth/callback?next=/settings`
-      const res = await fetch('/api/auth/request-email-change', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...validation.data, redirectTo }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        if (res.status === 429) {
-          throw new Error('Too many attempts. Try again in a minute.')
+    const nextEmail = validation.data
+    setReauthRequest({
+      title: 'Confirm email change',
+      description: 'Enter your current password before changing your sign-in email.',
+      confirmLabel: 'Send confirmation',
+      onVerified: async (currentPassword) => {
+        setEmailChangeSaving(true)
+        try {
+          const redirectTo = `${window.location.origin}/auth/callback?next=/settings`
+          const res = await fetch('/api/auth/request-email-change', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: nextEmail, currentPassword, redirectTo }),
+          })
+          const data = await res.json().catch(() => ({}))
+          if (!res.ok) {
+            if (res.status === 429) {
+              throw new Error('Too many attempts. Try again in a minute.')
+            }
+            if (data.error === 'reauth_required') {
+              throw new Error('Confirm your password and try again.')
+            }
+            throw new Error(data.error ?? 'Could not request email change.')
+          }
+          setEmailChangeForm({ email: '' })
+          setEmailChangeSuccess(`Check ${nextEmail} for confirmation.`)
+        } catch (error) {
+          setEmailChangeError(error instanceof Error ? error.message : 'Could not request email change.')
+          throw error
+        } finally {
+          setEmailChangeSaving(false)
         }
-        throw new Error(data.error ?? 'Could not request email change.')
-      }
-      setEmailChangeForm({ email: '', currentPassword: '' })
-      setEmailChangeSuccess(`Check ${validation.data.email} for confirmation.`)
-    } catch (error) {
-      setEmailChangeError(error instanceof Error ? error.message : 'Could not request email change.')
-    } finally {
-      setEmailChangeSaving(false)
-    }
+      },
+    })
   }
 
   async function handlePasswordChange(e: React.FormEvent<HTMLFormElement>) {
@@ -290,36 +312,62 @@ export default function SettingsPage() {
     setPasswordSuccess(null)
     setPasswordFieldErrors({})
 
-    const validation = changePasswordSchema.safeParse(passwordForm)
+    const validation = newPasswordSchema.safeParse(passwordForm)
     if (!validation.success) {
       setPasswordFieldErrors(zodFieldErrors<PasswordField>(validation.error))
       return
     }
 
-    setPasswordSaving(true)
-    try {
-      const res = await fetch('/api/auth/change-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(validation.data),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        if (res.status === 429) {
-          throw new Error('Too many attempts. Try again in a minute.')
+    setReauthRequest({
+      title: 'Confirm password change',
+      description: 'Enter your current password before choosing a new one.',
+      confirmLabel: 'Update password',
+      onVerified: async (currentPassword) => {
+        setPasswordSaving(true)
+        try {
+          const res = await fetch('/api/auth/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...validation.data, currentPassword }),
+          })
+          const data = await res.json().catch(() => ({}))
+          if (!res.ok) {
+            if (res.status === 429) {
+              throw new Error('Too many attempts. Try again in a minute.')
+            }
+            if (data.error === 'reauth_required') {
+              throw new Error('Confirm your password and try again.')
+            }
+            throw new Error(data.error ?? 'Could not change password.')
+          }
+          setPasswordForm({ password: '', confirm: '' })
+          setPasswordSuccess('Password updated.')
+        } catch (error) {
+          setPasswordError(error instanceof Error ? error.message : 'Could not change password.')
+          throw error
+        } finally {
+          setPasswordSaving(false)
         }
-        throw new Error(data.error ?? 'Could not change password.')
-      }
-      setPasswordForm({ currentPassword: '', password: '', confirm: '' })
-      setPasswordSuccess('Password updated.')
-    } catch (error) {
-      setPasswordError(error instanceof Error ? error.message : 'Could not change password.')
-    } finally {
-      setPasswordSaving(false)
-    }
+      },
+    })
   }
 
   async function runBillingAction(action: string, body: Record<string, unknown> = {}) {
+    const title = action === 'cancel' ? 'Confirm cancellation' : 'Confirm billing change'
+    const description = action === 'cancel'
+      ? 'Enter your current password before scheduling Pro cancellation.'
+      : 'Enter your current password before changing your subscription.'
+    setReauthRequest({
+      title,
+      description,
+      confirmLabel: 'Continue',
+      onVerified: async () => {
+        await performBillingAction(action, body)
+      },
+    })
+  }
+
+  async function performBillingAction(action: string, body: Record<string, unknown> = {}) {
     setBillingAction(action)
     setBillingError(null)
     try {
@@ -337,6 +385,56 @@ export default function SettingsPage() {
     } finally {
       setBillingAction(null)
     }
+  }
+
+  function closeDeleteDialog() {
+    if (deleteSaving) return
+    setDeleteDialogOpen(false)
+    setDeleteEmail('')
+    setDeleteConfirmation('')
+    setDeleteError(null)
+  }
+
+  async function handleDeleteAccount(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setDeleteError(null)
+
+    if (!email || deleteEmail.trim().toLowerCase() !== email.toLowerCase() || deleteConfirmation !== 'DELETE') {
+      setDeleteError('Enter your email and DELETE to continue.')
+      return
+    }
+
+    setReauthRequest({
+      title: 'Confirm account deletion',
+      description: 'Enter your current password before permanently deleting this account.',
+      confirmLabel: 'Delete account',
+      onVerified: async () => {
+        setDeleteSaving(true)
+        try {
+          const res = await fetch('/api/profile/delete', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: deleteEmail, confirmation: deleteConfirmation }),
+          })
+          const data = await res.json().catch(() => ({}))
+          if (!res.ok) {
+            if (data.error === 'reauth_required') {
+              throw new Error('Confirm your password and try again.')
+            }
+            throw new Error(data.error ?? 'Could not delete account.')
+          }
+          const supabase = createClient()
+          await supabase.auth.signOut()
+          router.push('/')
+          router.refresh()
+        } catch (error) {
+          setDeleteError(error instanceof Error ? error.message : 'Could not delete account.')
+          throw error
+        } finally {
+          setDeleteSaving(false)
+        }
+      },
+    })
   }
 
   const isPro = plan === 'pro'
@@ -365,12 +463,6 @@ export default function SettingsPage() {
     placeholder: string
     autoComplete: string
   }> = [
-    {
-      field: 'currentPassword',
-      label: 'Current password',
-      placeholder: 'Current password',
-      autoComplete: 'current-password',
-    },
     {
       field: 'password',
       label: 'New password',
@@ -506,54 +598,22 @@ export default function SettingsPage() {
               <span className="material-symbols-outlined shrink-0 text-[17px] text-on-surface-variant">alternate_email</span>
             </div>
 
-            <div className="mt-3 space-y-3">
-              <div className="space-y-1.5">
-                <label htmlFor="settings-new-email" className="block text-xs font-label font-bold text-on-surface-variant">
-                  New email
-                </label>
-                <input
-                  id="settings-new-email"
-                  type="email"
-                  value={emailChangeForm.email}
-                  onChange={e => updateEmailChangeField('email', e.target.value)}
-                  className={passwordInputClass}
-                  placeholder={email ?? 'name@example.com'}
-                  autoComplete="email"
-                />
-                {emailChangeFieldErrors.email && (
-                  <p className="text-xs font-body text-error">{emailChangeFieldErrors.email}</p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="settings-email-current-password" className="block text-xs font-label font-bold text-on-surface-variant">
-                  Current password
-                </label>
-                <div className="relative">
-                  <input
-                    id="settings-email-current-password"
-                    type={showEmailChangePassword ? 'text' : 'password'}
-                    value={emailChangeForm.currentPassword}
-                    onChange={e => updateEmailChangeField('currentPassword', e.target.value)}
-                    className={`${passwordInputClass} pr-10`}
-                    placeholder="Current password"
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowEmailChangePassword(value => !value)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant transition-colors hover:text-on-surface"
-                    aria-label={showEmailChangePassword ? 'Hide current password' : 'Show current password'}
-                  >
-                    <span className="material-symbols-outlined text-[18px]">
-                      {showEmailChangePassword ? 'visibility_off' : 'visibility'}
-                    </span>
-                  </button>
-                </div>
-                {emailChangeFieldErrors.currentPassword && (
-                  <p className="text-xs font-body text-error">{emailChangeFieldErrors.currentPassword}</p>
-                )}
-              </div>
+            <div className="mt-3 space-y-1.5">
+              <label htmlFor="settings-new-email" className="block text-xs font-label font-bold text-on-surface-variant">
+                New email
+              </label>
+              <input
+                id="settings-new-email"
+                type="email"
+                value={emailChangeForm.email}
+                onChange={e => updateEmailChangeField('email', e.target.value)}
+                className={passwordInputClass}
+                placeholder={email ?? 'name@example.com'}
+                autoComplete="email"
+              />
+              {emailChangeFieldErrors.email && (
+                <p className="text-xs font-body text-error">{emailChangeFieldErrors.email}</p>
+              )}
             </div>
 
             {emailChangeError && (
@@ -565,7 +625,7 @@ export default function SettingsPage() {
 
             <button
               type="submit"
-              disabled={emailChangeSaving}
+              disabled={emailChangeSaving || reauthRequest !== null}
               className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-outline-variant/70 px-4 py-3 text-sm font-label font-bold text-on-surface transition-colors hover:bg-background disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98]"
             >
               <span className="material-symbols-outlined text-[17px]">outgoing_mail</span>
@@ -686,7 +746,7 @@ export default function SettingsPage() {
 
             <button
               type="submit"
-              disabled={passwordSaving}
+              disabled={passwordSaving || reauthRequest !== null}
               className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-label font-bold text-on-primary transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98]"
             >
               <span className="material-symbols-outlined text-[17px]">key</span>
@@ -763,7 +823,7 @@ export default function SettingsPage() {
               <>
                 <button
                   onClick={() => runBillingAction('change-plan', { plan: switchPlan })}
-                  disabled={!!billingAction}
+                  disabled={!!billingAction || reauthRequest !== null}
                   className="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-label font-bold text-on-primary transition-opacity hover:opacity-95 disabled:opacity-60 active:scale-[0.98]"
                 >
                   <span className="material-symbols-outlined text-[17px]">sync_alt</span>
@@ -772,7 +832,7 @@ export default function SettingsPage() {
                 {cancelScheduled ? (
                   <button
                     onClick={() => runBillingAction('reactivate')}
-                    disabled={!!billingAction}
+                    disabled={!!billingAction || reauthRequest !== null}
                     className="inline-flex items-center gap-2 rounded-2xl border border-outline-variant/70 px-4 py-3 text-sm font-label font-bold text-on-surface transition-colors hover:bg-background disabled:opacity-60 active:scale-[0.98]"
                   >
                     <span className="material-symbols-outlined text-[17px]">restart_alt</span>
@@ -781,7 +841,7 @@ export default function SettingsPage() {
                 ) : (
                   <button
                     onClick={() => runBillingAction('cancel')}
-                    disabled={!!billingAction}
+                    disabled={!!billingAction || reauthRequest !== null}
                     className="inline-flex items-center gap-2 rounded-2xl border border-outline-variant/70 px-4 py-3 text-sm font-label font-bold text-on-surface-variant transition-colors hover:bg-background hover:text-on-surface disabled:opacity-60 active:scale-[0.98]"
                   >
                     <span className="material-symbols-outlined text-[17px]">event_busy</span>
@@ -801,8 +861,118 @@ export default function SettingsPage() {
           {billingError && (
             <p className="mt-3 rounded-xl bg-error/10 px-3 py-2 text-sm font-body text-error">{billingError}</p>
           )}
+
+          <div className="mt-6 border-t border-outline-variant/45 pt-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-label text-[10px] font-extrabold uppercase tracking-[0.12em] text-error">Danger zone</p>
+                <p className="mt-1 text-sm font-body font-semibold text-on-surface">Delete your account</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDeleteDialogOpen(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-error/45 px-4 py-3 text-sm font-label font-bold text-error transition-colors hover:bg-error/10 active:scale-[0.98]"
+              >
+                <span className="material-symbols-outlined text-[17px]">delete_forever</span>
+                Delete my account
+              </button>
+            </div>
+          </div>
         </section>
       </div>
+
+      {deleteDialogOpen && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/45 px-4">
+          <form
+            onSubmit={handleDeleteAccount}
+            className="w-full max-w-[460px] rounded-[22px] border border-error/35 bg-background p-5 shadow-[0_24px_70px_rgba(20,18,14,0.28)]"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-account-title"
+          >
+            <div className="flex items-start gap-3">
+              <span className="material-symbols-outlined flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-error/10 text-[20px] text-error" style={{ fontVariationSettings: "'FILL' 1" }}>
+                warning
+              </span>
+              <div>
+                <h2 id="delete-account-title" className="font-headline text-xl font-bold leading-tight text-on-surface">
+                  Delete account
+                </h2>
+                <p className="mt-1 text-sm font-body leading-relaxed text-on-surface-variant">
+                  This permanently removes your account and connected profile data.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-3">
+              <div className="space-y-1.5">
+                <label htmlFor="delete-email" className="block text-xs font-label font-bold text-on-surface-variant">
+                  Account email
+                </label>
+                <input
+                  id="delete-email"
+                  type="email"
+                  value={deleteEmail}
+                  onChange={e => {
+                    setDeleteEmail(e.target.value)
+                    setDeleteError(null)
+                  }}
+                  className={passwordInputClass}
+                  placeholder={email ?? 'name@example.com'}
+                  autoComplete="email"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="delete-confirmation" className="block text-xs font-label font-bold text-on-surface-variant">
+                  Type DELETE
+                </label>
+                <input
+                  id="delete-confirmation"
+                  value={deleteConfirmation}
+                  onChange={e => {
+                    setDeleteConfirmation(e.target.value)
+                    setDeleteError(null)
+                  }}
+                  className={passwordInputClass}
+                  placeholder="DELETE"
+                />
+              </div>
+            </div>
+
+            {deleteError && (
+              <p className="mt-3 rounded-xl bg-error/10 px-3 py-2 text-sm font-body text-error">{deleteError}</p>
+            )}
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={closeDeleteDialog}
+                disabled={deleteSaving}
+                className="rounded-2xl border border-outline-variant/70 px-4 py-2.5 text-sm font-label font-bold text-on-surface-variant transition-colors hover:bg-surface-container disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={deleteSaving}
+                className="rounded-2xl bg-error px-4 py-2.5 text-sm font-label font-bold text-white transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {deleteSaving ? 'Deleting' : 'Continue'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      <ReauthModal
+        open={reauthRequest !== null}
+        title={reauthRequest?.title ?? ''}
+        description={reauthRequest?.description ?? ''}
+        confirmLabel={reauthRequest?.confirmLabel}
+        onCancel={() => setReauthRequest(null)}
+        onVerified={password => reauthRequest?.onVerified(password)}
+      />
 
       <footer className="mt-8 flex items-center justify-between pb-8">
         <p className="text-[10px] text-on-surface-variant/45 font-label uppercase tracking-widest">HackProduct · Sunboy Labs</p>
