@@ -6,6 +6,14 @@ import { NextResponse } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
+
+const ROUTE_KEY = 'simulation_end'
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
 
 export async function POST(
   _request: Request,
@@ -26,21 +34,43 @@ export async function POST(
 
   if (sessionResult.error || !sessionResult.data) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
   if (sessionResult.data.status === 'completed') return NextResponse.json(sessionResult.data.debrief_json)
+  const shouldCallModel = !IS_MOCK && Boolean(process.env.ANTHROPIC_API_KEY)
+
+  if (shouldCallModel) {
+    const throttle = await rateLimit({
+      key: `ai:${user.id}:${ROUTE_KEY}`,
+      limit: userPlan === 'pro' ? 15 : 5,
+      windowSec: 60,
+    })
+
+    if (!throttle.allowed) {
+      const retryAfter = retryAfterSeconds(throttle.resetAt)
+      return NextResponse.json(
+        { error: 'rate_limited', retryAfter },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(retryAfter) },
+        }
+      )
+    }
+  }
 
   const transcript = (turnsResult.data ?? []).map(t => `${t.role === 'hatch' ? 'Interviewer' : 'Candidate'}: ${t.content}`).join('\n\n')
 
   let debrief: object
-  if (IS_MOCK || !process.env.ANTHROPIC_API_KEY) {
+  if (!shouldCallModel) {
     debrief = { overall_score: 72, dimensions: [], strengths: ['Clear structure'], improvements: ['Add more metrics'], detected_patterns: [], interview_summary: 'Good overall performance.' }
   } else {
     try {
+      await assertPlanLimit(user.id, userPlan, 'ai_grading_runs')
+
       const response = await guardedCachedMessage(
         HATCH_SIMULATION_DEBRIEF_PROMPT,
         `Interview transcript:\n\n${transcript}`,
         {
           model: 'claude-sonnet-4-6',
           max_tokens: 1000,
-          budget: { userId: user.id, userPlan, route: 'simulation_end' },
+          budget: { userId: user.id, userPlan, route: ROUTE_KEY },
         }
       )
       const raw = response.sanitized || '{}'
@@ -48,6 +78,19 @@ export async function POST(
       const validated = HatchFeedbackSchema.safeParse(parsed)
       debrief = validated.success ? clampFeedbackScores(validated.data) : parsed
     } catch (error) {
+      if (error instanceof PlanLimitExceeded) {
+        return NextResponse.json(
+          {
+            error: 'limit_reached',
+            feature: error.feature,
+            used: error.used,
+            limit: error.limit,
+            windowDays: error.windowDays,
+          },
+          { status: 402 }
+        )
+      }
+
       if (error instanceof AiBudgetExceededError) {
         return NextResponse.json(
           {
