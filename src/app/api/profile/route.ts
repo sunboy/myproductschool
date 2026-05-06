@@ -3,6 +3,27 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
 import { getUsageForUser } from '@/lib/usage/check-limit'
+import { z, ZodError } from 'zod'
+
+const RequestSchema = z.object({
+  display_name: z.string().trim().min(1).max(80).optional(),
+  avatar_url: z.union([z.string().url().max(2048), z.literal(''), z.null()]).optional(),
+}).superRefine((body, ctx) => {
+  if (Object.keys(body).length === 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: [],
+      message: 'At least one profile field is required.',
+    })
+  }
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
 
 export async function GET() {
   // Mock mode: return a stub profile so the shell doesn't redirect to /login
@@ -75,9 +96,18 @@ export async function PATCH(request: Request) {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await request.json()
-  const allowed = ['display_name', 'avatar_url']
-  const updates = Object.fromEntries(Object.entries(body).filter(([k]) => allowed.includes(k)))
+  let updates: z.infer<typeof RequestSchema>
+  try {
+    updates = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
 
   const adminClient = createAdminClient()
   const { data, error } = await adminClient.from('profiles').update(updates).eq('id', user.id).select().single()
