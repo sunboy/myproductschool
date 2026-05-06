@@ -93,6 +93,8 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 - [ ] Difficulty taxonomy is not standardized to `easy | medium | hard`.
   - Evidence: read-only live DB audit on May 6, 2026 found existing values such as `advanced`, `beginner`, `intermediate`, `standard`, `warmup`, `staff_plus`, and other content-specific labels.
   - Launch note: no blanket taxonomy migration was applied during launch freeze because this touches content, UI labels, recommendation logic, and legacy cohort data.
+- [ ] Error monitoring is not implemented.
+  - Evidence: static repo audit on May 6, 2026 found no Sentry package and no Sentry instrumentation.
 ## Manual Checks Before Launch
 
 - [ ] Owner reviews `/dashboard` against the current dev baseline and confirms no visual regression.
