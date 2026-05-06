@@ -9,6 +9,12 @@ Required environment:
 - `AFFILIATE_HASH_SECRET`: HMAC key for hashing referral click IP and user-agent signals.
 - `CRON_SECRET`: authorizes `/api/cron/affiliate-payouts`.
 
+Stripe setup:
+
+- Enable Stripe Connect in the Stripe Dashboard before launch. `/api/affiliate/signup` creates Express connected accounts, and Stripe rejects that call until Connect is activated for the account.
+- Create the shared affiliate coupon in live mode and set `STRIPE_AFFILIATE_COUPON_ID`. For test runs, create a test-mode coupon and set `STRIPE_TEST_AFFILIATE_COUPON_ID`.
+- Keep the coupon terms in Stripe. The app creates one Promotion Code per affiliate against that shared coupon.
+
 Flow:
 
 1. A logged-in user opens `/affiliate` and creates an affiliate account.

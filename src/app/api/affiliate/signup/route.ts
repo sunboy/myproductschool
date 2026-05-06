@@ -37,6 +37,27 @@ function stripeUnavailable(detail: string | null, mode: string) {
   )
 }
 
+function stripeAffiliateSetupError(error: unknown) {
+  const stripeError = error as { code?: string; message?: string }
+  const message = stripeError.message ?? ''
+
+  if (/signed up for Connect/i.test(message)) {
+    return NextResponse.json(
+      { error: 'Affiliate payouts are not configured yet.' },
+      { status: 503 }
+    )
+  }
+
+  return NextResponse.json(
+    {
+      error: stripeError.code === 'resource_already_exists'
+        ? 'Affiliate code is already taken.'
+        : 'Could not create Stripe affiliate resources.',
+    },
+    { status: stripeError.code === 'resource_already_exists' ? 409 : 502 }
+  )
+}
+
 function validationIssues(error: ZodError) {
   return error.issues.map(issue => ({
     path: issue.path.join('.'),
@@ -274,11 +295,7 @@ export async function POST(request: NextRequest) {
       createConnectAccount(stripe, user),
     ])
   } catch (error) {
-    const stripeError = error as { code?: string; message?: string }
-    return NextResponse.json(
-      { error: stripeError.message ?? 'Could not create Stripe affiliate resources.' },
-      { status: stripeError.code === 'resource_already_exists' ? 409 : 502 }
-    )
+    return stripeAffiliateSetupError(error)
   }
 
   const { data: affiliate, error } = await admin
