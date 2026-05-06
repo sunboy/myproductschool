@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { gradeInterviewSession } from '@/lib/v2/skills/interview-grading'
 import type { ChallengeType } from '@/lib/types'
+
+const RequestSchema = z.object({
+  attemptId: z.string().uuid(),
+  canvasFinalSnapshot: z.record(z.string(), z.unknown()).nullable().optional(),
+  contextPack: z.string().max(50000).nullable().optional(),
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
 
 export async function POST(
   req: NextRequest,
@@ -13,14 +27,19 @@ export async function POST(
 
   const { id } = await params
 
-  const body = await req.json()
-  const { attemptId, canvasFinalSnapshot, contextPack } = body as {
-    attemptId: string
-    canvasFinalSnapshot?: Record<string, unknown>
-    contextPack?: string | null
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
-
-  if (!attemptId) return NextResponse.json({ error: 'Missing attemptId' }, { status: 400 })
+  const { attemptId, canvasFinalSnapshot, contextPack } = body
 
   // Verify ownership
   const { data: attempt } = await supabase
