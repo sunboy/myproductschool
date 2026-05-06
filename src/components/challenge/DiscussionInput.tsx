@@ -1,6 +1,7 @@
 'use client'
 
 import { type RefObject, useState } from 'react'
+import { validateDiscussionContent } from '@/lib/content/discussion-validator'
 
 interface Props {
   challengeId: string
@@ -13,9 +14,17 @@ export function DiscussionInput({ challengeId, onSubmitted, inputRef }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const validation = validateDiscussionContent(content)
+  const validationMessage = content.trim()
+    ? validation.errors[0] ?? validation.warnings[0] ?? null
+    : null
 
   async function handleSubmit() {
     if (!content.trim() || submitting) return
+    if (!validation.valid) {
+      setError(validation.errors[0] ?? validation.warnings[0] ?? 'Tighten the post before submitting.')
+      return
+    }
     setSubmitting(true)
     setError(null)
     try {
@@ -64,6 +73,10 @@ export function DiscussionInput({ challengeId, onSubmitted, inputRef }: Props) {
             }
           }}
         />
+        <p className="text-[11px] font-medium text-on-surface-variant/80">Direct, specific, no slop.</p>
+        {validationMessage && (
+          <p className="text-xs font-medium text-tertiary">{validationMessage}</p>
+        )}
         {error && (
           <p className="text-xs font-medium text-error">{error}</p>
         )}
@@ -76,7 +89,7 @@ export function DiscussionInput({ challengeId, onSubmitted, inputRef }: Props) {
       ) : (
         <button
           onClick={handleSubmit}
-          disabled={submitting || !content.trim()}
+          disabled={submitting || !content.trim() || !validation.valid}
           className="bg-primary text-white px-6 py-2 rounded-xl font-bold text-sm shadow-md hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap"
         >
           {submitting ? 'Posting...' : 'Post'}
