@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type Stripe from 'stripe'
 import {
+  affiliatesEnabled,
   commissionAmountCents,
   getAffiliateCouponId,
   normalizeAffiliateCode,
@@ -241,6 +242,12 @@ describe('affiliate flow helpers', () => {
       STRIPE_AFFILIATE_COUPON_ID: 'coupon_live',
       STRIPE_TEST_AFFILIATE_COUPON_ID: 'coupon_test',
     })).toBe('coupon_live')
+  })
+
+  it('keeps affiliates disabled unless the explicit launch flag is true', () => {
+    expect(affiliatesEnabled({})).toBe(false)
+    expect(affiliatesEnabled({ NEXT_PUBLIC_ENABLE_AFFILIATES: 'false' })).toBe(false)
+    expect(affiliatesEnabled({ NEXT_PUBLIC_ENABLE_AFFILIATES: 'true' })).toBe(true)
   })
 
   it('calculates invoice commission in cents', () => {

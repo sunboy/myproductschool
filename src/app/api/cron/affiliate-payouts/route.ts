@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { runAffiliatePayouts } from '@/lib/affiliate/payouts'
+import { affiliatesEnabled } from '@/lib/affiliate/config'
 import { sendAffiliatePayoutEmail } from '@/lib/email/transactional'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createStripeClient } from '@/lib/stripe/config'
@@ -20,7 +21,7 @@ function appUrl(request: NextRequest, path: string) {
 export async function GET(request: NextRequest) {
   if (!isAuthorized(request)) return unauthorized()
 
-  if (process.env.NEXT_PUBLIC_ENABLE_AFFILIATES !== 'true') {
+  if (!affiliatesEnabled()) {
     return NextResponse.json({ ok: true, disabled: true, paid: [], skipped: [], failed: [] })
   }
 

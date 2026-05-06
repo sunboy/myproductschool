@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { AFFILIATE_COOKIE_MAX_AGE, AFFILIATE_COOKIE_NAME, normalizeAffiliateCode } from '@/lib/affiliate/config'
+import { AFFILIATE_COOKIE_MAX_AGE, AFFILIATE_COOKIE_NAME, affiliatesEnabled, normalizeAffiliateCode } from '@/lib/affiliate/config'
 import { hashAffiliateSignal } from '@/lib/affiliate/server'
 import { getClientIp } from '@/lib/auth/rate-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -12,7 +12,7 @@ export async function GET(
   const code = normalizeAffiliateCode(rawCode)
   const destination = new URL('/', request.url)
 
-  if (process.env.NEXT_PUBLIC_ENABLE_AFFILIATES !== 'true') {
+  if (!affiliatesEnabled()) {
     return NextResponse.redirect(destination)
   }
 

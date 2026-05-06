@@ -6,6 +6,10 @@ const AFFILIATE_CODE_PATTERN = /^[A-Z0-9][A-Z0-9-]{3,23}$/
 
 export type StripeRuntimeMode = 'live' | 'test'
 
+export function affiliatesEnabled(env: Record<string, string | undefined> = process.env) {
+  return env.NEXT_PUBLIC_ENABLE_AFFILIATES === 'true'
+}
+
 export function normalizeAffiliateCode(value: string | null | undefined) {
   const code = value?.trim().toUpperCase()
   if (!code || !AFFILIATE_CODE_PATTERN.test(code)) return null

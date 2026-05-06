@@ -2,13 +2,14 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { createStripeClient } from '@/lib/stripe/config'
+import { affiliatesEnabled } from '@/lib/affiliate/config'
 
 function redirect(request: NextRequest, path: string) {
   return NextResponse.redirect(new URL(path, process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin))
 }
 
 export async function GET(request: NextRequest) {
-  if (process.env.NEXT_PUBLIC_ENABLE_AFFILIATES !== 'true') {
+  if (!affiliatesEnabled()) {
     return redirect(request, '/dashboard')
   }
 

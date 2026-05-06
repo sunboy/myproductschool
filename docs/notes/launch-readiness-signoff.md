@@ -46,6 +46,7 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: local `next start` smoke on `/privacy` returned HSTS, CSP, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, and no `x-powered-by` header.
 - [x] Feedback, affiliate, and billing unit coverage passes with the right test runners.
   - Evidence: `npx vitest run tests/unit/feedback-nps.spec.ts tests/unit/affiliate-flow.spec.ts` passed on May 6, 2026: 3 files, 21 tests.
+  - Evidence: `npx vitest run tests/unit/affiliate-flow.spec.ts` passed after affiliate launch gating was tightened: 2 files, 18 tests.
   - Evidence: `npx tsx --test tests/lib/billing/entitlements.test.ts` passed on May 6, 2026: 6 tests.
 - [x] Security helper unit coverage passes.
   - Evidence: `npx tsx --test tests/lib/security/turnstile.test.ts tests/lib/ai/moderation.test.ts tests/lib/security/rate-limit.test.ts` passed on May 6, 2026: 13 tests.
@@ -93,6 +94,10 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: stale-field grep now returns only expected compatibility fields from `/api/attempts`, UI consumers of that compatibility payload, `step_attempts.score`, and onboarding `scores_json`.
   - Evidence: `npx tsc --noEmit --pretty false`, `npm run lint`, `npm run build`, and `npm run secrets:scan` passed after the schema cleanup.
   - See: `docs/notes/challenge-attempts-schema-audit.md`.
+- [x] Affiliate mechanics are fully gated off for launch unless explicitly enabled.
+  - Evidence: `NEXT_PUBLIC_ENABLE_AFFILIATES !== 'true'` now disables affiliate signup routes, referral redirect cookie-setting, auth referral attribution, checkout affiliate promotion-code application, webhook commission creation, and affiliate payout cron.
+  - Evidence: `npx vitest run tests/unit/affiliate-flow.spec.ts`, `npx tsc --noEmit --pretty false`, `npm run lint`, `npm run build`, and `npm run secrets:scan` passed after tightening the gate.
+  - Note: `PLAYWRIGHT_BASE_URL=http://localhost:3015 npx playwright test e2e/paywall.spec.ts --reporter=line` exited `0` but skipped all 10 tests because `E2E_TEST_PASSWORD` is not set in this shell. This is not counted as fresh pass evidence.
 
 ## Accepted Scope Changes
 
@@ -114,7 +119,7 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: Vercel production deployment points at `main` commit `da0370e8e5cc2c4799f461ec8a5059a43fcbc605`, while local `dev` contains unpublished launch-readiness commits.
   - Evidence: the mismatch remains until `dev` is pushed or an explicit Vercel deployment is created from this checkout.
 - [ ] Affiliate real signup smoke is blocked by Stripe account setup.
-  - Affiliate UI and affiliate routes are disabled by default unless `NEXT_PUBLIC_ENABLE_AFFILIATES=true` is set at build time.
+  - Affiliate UI, routes, auth attribution, checkout discounts, webhook commissions, and payout cron are disabled by default unless `NEXT_PUBLIC_ENABLE_AFFILIATES=true` is set.
   - Stripe Connect is not enabled for the account used by `.env.local`.
   - Required env vars are missing locally: `NEXT_PUBLIC_ENABLE_AFFILIATES`, `STRIPE_AFFILIATE_COUPON_ID`, `STRIPE_TEST_AFFILIATE_COUPON_ID`, `AFFILIATE_HASH_SECRET`.
   - Code and unit flow pass, but affiliate launch should not be signed off until Connect and env setup are done and the real signup smoke passes.

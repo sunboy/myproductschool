@@ -28,7 +28,7 @@ The current owner-narrowed launch scope is:
 | 5. Plan limits + throttle | Partial | Paywall N2 coverage passed; full per-route AI throttle/limit verification across every AI route is not recorded. |
 | 6. Discipline workspaces | Not complete | `src/components/challenge/workspace/WorkspaceShell.tsx` and new per-discipline workspace routes are absent. This is broad feature work, not current launch scope. |
 | 7. Auth | Launch scope complete, full plan not complete | Essential auth paths passed for signup, password login, and forgot-password reset. Magic link, Google linking, reauth, idle timeout, delete account, and 2FA are outside the narrowed launch bar unless re-added. |
-| 8. Stripe | Partial | Paywall checkout/webhook scenarios passed. Affiliate real signup smoke is blocked by Stripe Connect and missing affiliate env vars. Owner/provider setup required. |
+| 8. Stripe | Partial | Paywall checkout/webhook scenarios passed in the prior launch gate. Affiliate mechanics are now disabled across routes, auth attribution, checkout discounting, webhook commissions, and payout cron unless `NEXT_PUBLIC_ENABLE_AFFILIATES=true`. Affiliate real signup smoke is still blocked by Stripe Connect and missing affiliate env vars. Owner/provider setup required. |
 | 9. Onboarding resilience | Partial | Essential signup to onboarding to dashboard passed. Refresh mid-calibration resume has not been reverified in the latest gate. |
 | 10. Mental Models | Partial | Live schema confirms `challenge_attempts` stores `mental_models_breakdown`, `primary_competency`, and `weakest_competency`. Completion and Hatch feedback routes write these fields, and feedback/diagnosis pages now read the live fields instead of the removed `score_json` column. No latest end-to-end evidence ties weak competency feedback to a specific `motivation_theory` recommendation. |
 | 11. Discussions | Complete for launch | `e2e/discussions.spec.ts` passed `10/10` against local production server. |
@@ -48,7 +48,7 @@ The current owner-narrowed launch scope is:
 
 ## Current Launch Blockers
 
-- Affiliate real signup smoke cannot be signed off until Stripe Connect is enabled and `NEXT_PUBLIC_ENABLE_AFFILIATES`, `STRIPE_AFFILIATE_COUPON_ID`, `STRIPE_TEST_AFFILIATE_COUPON_ID`, and `AFFILIATE_HASH_SECRET` are set. Until then, affiliate UI and routes are disabled by default.
+- Affiliate real signup smoke cannot be signed off until Stripe Connect is enabled and `NEXT_PUBLIC_ENABLE_AFFILIATES`, `STRIPE_AFFILIATE_COUPON_ID`, `STRIPE_TEST_AFFILIATE_COUPON_ID`, and `AFFILIATE_HASH_SECRET` are set. Until then, affiliate UI, routes, auth attribution, checkout discounting, webhook commissions, and payout cron are disabled by default.
 - Supabase Auth leaked-password protection is disabled in dashboard settings.
 - Supabase performance advisor has a broad pre-existing backlog that needs a deliberate tuning pass, not a blanket launch migration.
 - Production env and provider checks remain owner-controlled: no E2E fallback flags, OpenAI, Turnstile, Upstash, status DNS/provider, security headers.

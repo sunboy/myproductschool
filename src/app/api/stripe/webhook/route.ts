@@ -6,6 +6,7 @@ import {
   invoicePeriodEnd,
   planLabelFromInterval,
 } from '@/lib/email/billing'
+import { affiliatesEnabled } from '@/lib/affiliate/config'
 import { invoiceSubscriptionId, recordAffiliateCommission } from '@/lib/affiliate/commissions'
 import {
   sendCancellationConfirmedEmail,
@@ -287,7 +288,9 @@ export async function POST(req: NextRequest) {
 
     case 'invoice.paid': {
       const invoice = event.data.object as Stripe.Invoice
-      await recordAffiliateCommission(stripe, supabase, invoice)
+      if (affiliatesEnabled()) {
+        await recordAffiliateCommission(stripe, supabase, invoice)
+      }
 
       const subscriptionId = invoiceSubscriptionId(invoice)
       const customerId = invoiceCustomerId(invoice)

@@ -8,10 +8,13 @@ import {
   getCheckoutBrandingSettings,
   getStripePlanConfig,
 } from '@/lib/stripe/config'
+import { affiliatesEnabled } from '@/lib/affiliate/config'
 
 const PRO_TRIAL_DAYS = 7
 
 async function getAffiliateDiscountForUser(userId: string) {
+  if (!affiliatesEnabled()) return null
+
   const admin = createAdminClient()
   const { data: profile } = await admin
     .from('profiles')

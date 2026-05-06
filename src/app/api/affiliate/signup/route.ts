@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createStripeClient } from '@/lib/stripe/config'
 import {
   AFFILIATE_DEFAULT_COMMISSION_PCT,
+  affiliatesEnabled,
   getAffiliateCouponId,
   normalizeAffiliateCode,
   suggestAffiliateCode,
@@ -24,10 +25,6 @@ type AffiliateRow = {
   commission_pct: number | string
   status: 'pending' | 'active' | 'disabled'
   created_at: string
-}
-
-function affiliatesEnabled() {
-  return process.env.NEXT_PUBLIC_ENABLE_AFFILIATES === 'true'
 }
 
 function appUrl(request: NextRequest, path: string) {

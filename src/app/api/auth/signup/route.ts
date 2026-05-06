@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { AFFILIATE_COOKIE_NAME } from '@/lib/affiliate/config'
+import { AFFILIATE_COOKIE_NAME, affiliatesEnabled } from '@/lib/affiliate/config'
 import { applyReferralAttribution } from '@/lib/affiliate/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     return apiError(400, 'signup_failed', error.message)
   }
 
-  if (data.user?.id) {
+  if (data.user?.id && affiliatesEnabled()) {
     await applyReferralAttribution(
       createAdminClient(),
       data.user.id,
