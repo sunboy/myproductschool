@@ -67,6 +67,12 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: a fresh `next start` on port `3012` loaded `/dashboard` with a temporary Supabase user that was deleted after the run.
   - Evidence: the smoke verified the dashboard hero, session CTA, quick-take card, multiple card sections, zero visible `Luma` text, and zero visible em dashes.
   - Evidence: screenshot captured at `/tmp/dashboard-smoke-1778065728974.png` for local visual review.
+- [x] Local dashboard parity smoke preserves the current dashboard structure.
+  - Evidence: Playwright loaded `/dashboard` on `localhost:3000`, current production build `localhost:3014`, and observed `localhost:3001` with a temporary Supabase user that was deleted after the run.
+  - Evidence: all three runs returned `200`, showed the large greeting hero, session CTA, freemium usage card, practice-loop card, quick-take card, recommended challenge card, FLOW levels, trending/activity cards, and community pulse.
+  - Evidence: current production build and `localhost:3001` both had zero visible `Luma` text and zero visible em dashes.
+  - Evidence: screenshots captured at `/tmp/hackproduct-dashboard-parity/dev3000-baseline-1778066745062.png`, `/tmp/hackproduct-dashboard-parity/current3014-prod-1778066745062.png`, and `/tmp/hackproduct-dashboard-parity/dev3001-observed-1778066745062.png`.
+  - Note: `localhost:3000` was not byte-for-byte identical to current build. It still showed older copy such as the weekly-room CTA and one visible em dash, while current build reflects the launch cleanup and affiliate/cohort gating.
 
 ## Accepted Scope Changes
 
@@ -110,7 +116,8 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 ## Manual Checks Before Launch
 
 - [ ] Owner reviews `/dashboard` against the current dev baseline and confirms no visual regression.
-  - Codex local smoke passed after the copy cleanup, but owner visual parity remains a launch check because the requested baseline is the running dev dashboard.
+  - Codex local smokes passed after the copy cleanup and again against `localhost:3000`, current production build `localhost:3014`, and observed `localhost:3001`.
+  - Owner visual parity remains a launch check because the requested baseline is the running dev dashboard and there are small intentional copy/launch-scope deltas.
 - [ ] Owner confirms Stripe Connect is enabled and affiliate env vars are set.
 - [ ] Owner reruns affiliate real signup smoke.
 - [ ] Owner confirms production env does not set any `*_E2E_FALLBACK` flags.

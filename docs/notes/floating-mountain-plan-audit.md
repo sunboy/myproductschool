@@ -10,7 +10,7 @@ The original plan asks for a full pre-launch hardening pass across AI guardrails
 
 The current owner-narrowed launch scope is:
 
-- Preserve the current dev dashboard and avoid visual regressions.
+- Preserve the current dev dashboard structure and avoid visual regressions.
 - Do not add MFA or custom recovery-code features.
 - Do not ship cohort features.
 - Keep paywall verified.
@@ -52,7 +52,7 @@ The current owner-narrowed launch scope is:
 - Supabase Auth leaked-password protection is disabled in dashboard settings.
 - Supabase performance advisor has a broad pre-existing backlog that needs a deliberate tuning pass, not a blanket launch migration.
 - Production env and provider checks remain owner-controlled: no E2E fallback flags, OpenAI, Turnstile, Upstash, status DNS/provider, security headers.
-- Owner still needs to visually compare `/dashboard` against the current dev baseline. Codex local smoke after the copy cleanup loaded `/dashboard` with a temporary Supabase user, verified the hero, session CTA, quick-take card, multiple card sections, zero visible `Luma` text, and zero visible em dashes, then deleted the temporary user.
+- Owner still needs to visually compare `/dashboard` against the current dev baseline. Codex local smokes loaded `/dashboard` with temporary Supabase users, verified the large hero, session CTA, usage card, practice loop, quick take, recommended challenge, FLOW levels, trending/activity, and community pulse sections, found zero visible `Luma` text in current builds, and deleted the temporary users. The `localhost:3000` baseline still differs in small copy/CTA details from the launch-cleaned current build.
 
 ## Guardrail Decision
 
