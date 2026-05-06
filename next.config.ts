@@ -1,5 +1,21 @@
 import type { NextConfig } from 'next'
 
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.stripe.com challenges.cloudflare.com *.posthog.com va.vercel-scripts.com",
+  "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' fonts.gstatic.com data:",
+  "connect-src 'self' *.supabase.co api.anthropic.com api.openai.com api.stripe.com *.posthog.com api.resend.com *.upstash.io *.vercel-insights.com vitals.vercel-insights.com ws: wss: http://localhost:*",
+  "frame-src 'self' *.stripe.com challenges.cloudflare.com",
+  "media-src 'self' data: blob: https:",
+  "worker-src 'self' blob:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self' *.stripe.com",
+  "frame-ancestors 'none'",
+].join('; ')
+
 const nextConfig: NextConfig = {
   async redirects() {
     return [
@@ -28,6 +44,14 @@ const nextConfig: NextConfig = {
       {
         source: '/(.*)',
         headers: [
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: contentSecurityPolicy,
+          },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
