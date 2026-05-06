@@ -3,6 +3,7 @@ import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { apiError } from '@/lib/api/error'
+import { resolveChallengeIdentity } from '@/lib/challenges/resolve'
 
 const RequestSchema = z.object({
   content: z.string().trim().min(1).max(10000),
@@ -51,9 +52,12 @@ export async function PATCH(
   }
 
   const adminClient = createAdminClient()
+  const identity = await resolveChallengeIdentity(id, adminClient)
+  if (!identity) return apiError(404, 'challenge_not_found', 'Challenge not found')
+
   const { data: discussion, error: lookupError } = await getDiscussionForMutation(
     adminClient,
-    id,
+    identity.id,
     discussionId
   )
 
@@ -74,8 +78,8 @@ export async function PATCH(
     .from('challenge_discussions')
     .update({ content: body.content.trim(), updated_at: new Date().toISOString() })
     .eq('id', discussionId)
-    .eq('challenge_id', id)
-    .select('*, profiles(display_name)')
+    .eq('challenge_id', identity.id)
+    .select('*, profiles!challenge_discussions_user_id_fkey(display_name)')
     .single()
 
   if (error) {
@@ -101,9 +105,12 @@ export async function DELETE(
   if (authError || !user) return apiError(401, 'auth_required', 'Unauthorized')
 
   const adminClient = createAdminClient()
+  const identity = await resolveChallengeIdentity(id, adminClient)
+  if (!identity) return apiError(404, 'challenge_not_found', 'Challenge not found')
+
   const { data: discussion, error: lookupError } = await getDiscussionForMutation(
     adminClient,
-    id,
+    identity.id,
     discussionId
   )
 
@@ -124,7 +131,7 @@ export async function DELETE(
     .from('challenge_discussions')
     .delete()
     .eq('id', discussionId)
-    .eq('challenge_id', id)
+    .eq('challenge_id', identity.id)
 
   if (error) {
     return apiError(500, 'discussion_delete_failed', 'Failed to delete discussion')

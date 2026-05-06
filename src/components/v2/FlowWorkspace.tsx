@@ -478,6 +478,29 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [upvoted, setUpvoted] = useState<Set<string>>(new Set())
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
+  const deriveDiscussionUpvotes = useCallback((items: ChallengeDiscussion[], userId: string | null) => {
+    if (!userId) return new Set<string>()
+    return new Set(
+      items
+        .filter(d => Array.isArray(d.upvoted_by) && d.upvoted_by.includes(userId))
+        .map(d => d.id)
+    )
+  }, [])
+
+  const applyDiscussionUpvoteState = useCallback((
+    discussion: ChallengeDiscussion,
+    userId: string | null,
+    isUpvoted: boolean
+  ): ChallengeDiscussion => {
+    if (!userId) return discussion
+    const previous = Array.isArray(discussion.upvoted_by) ? discussion.upvoted_by : []
+    const next = isUpvoted
+      ? Array.from(new Set([...previous, userId]))
+      : previous.filter(id => id !== userId)
+
+    return { ...discussion, upvoted_by: next }
+  }, [])
+
   // Session history for Submissions tab
   const [sessionHistory, setSessionHistory] = useState<SessionRecord[]>([])
   const [selectedHistoryIdx, setSelectedHistoryIdx] = useState<number | null>(null)
@@ -1598,6 +1621,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       if (res.ok) {
         const data: ChallengeDiscussion[] = await res.json()
         setDiscussions(data)
+        setUpvoted(deriveDiscussionUpvotes(data, currentUserId))
         setDiscussionsLoaded(true)
       }
     } finally {
@@ -1625,6 +1649,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     return () => { cancelled = true }
   }, [])
 
+  useEffect(() => {
+    setUpvoted(deriveDiscussionUpvotes(discussions, currentUserId))
+  }, [currentUserId, deriveDiscussionUpvotes, discussions])
+
   async function handleDiscussionUpvote(id: string) {
     if (!challengeId) return
     const wasUpvoted = upvoted.has(id)
@@ -1635,11 +1663,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       return next
     })
     setDiscussions(prev =>
-      prev.map(d =>
-        d.id === id
-          ? { ...d, upvote_count: d.upvote_count + (wasUpvoted ? -1 : 1) }
-          : d
-      )
+      prev.map(d => {
+        if (d.id !== id) return d
+        return applyDiscussionUpvoteState(
+          { ...d, upvote_count: d.upvote_count + (wasUpvoted ? -1 : 1) },
+          currentUserId,
+          !wasUpvoted
+        )
+      })
     )
     try {
       const res = await fetch(`/api/challenges/${challengeId}/discussions/${id}/upvote`, { method: 'PATCH' })
@@ -1647,8 +1678,22 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       const data = await res.json().catch(() => null)
       if (typeof data?.upvote_count === 'number') {
         setDiscussions(prev =>
-          prev.map(d => d.id === id ? { ...d, upvote_count: data.upvote_count } : d)
+          prev.map(d => d.id === id
+            ? applyDiscussionUpvoteState(
+              { ...d, upvote_count: data.upvote_count },
+              currentUserId,
+              Boolean(data.upvoted)
+            )
+            : d)
         )
+      }
+      if (typeof data?.upvoted === 'boolean') {
+        setUpvoted(prev => {
+          const next = new Set(prev)
+          if (data.upvoted) next.add(id)
+          else next.delete(id)
+          return next
+        })
       }
     } catch {
       setUpvoted(prev => {
@@ -1658,11 +1703,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         return next
       })
       setDiscussions(prev =>
-        prev.map(d =>
-          d.id === id
-            ? { ...d, upvote_count: Math.max(0, d.upvote_count + (wasUpvoted ? 1 : -1)) }
-            : d
-        )
+        prev.map(d => d.id === id
+          ? applyDiscussionUpvoteState(
+            { ...d, upvote_count: Math.max(0, d.upvote_count + (wasUpvoted ? 1 : -1)) },
+            currentUserId,
+            wasUpvoted
+          )
+          : d)
       )
     }
   }

@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { getChallengeDiscussions, postDiscussion } from '@/lib/data/analytics'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { apiError } from '@/lib/api/error'
+import { resolveChallengeIdentity } from '@/lib/challenges/resolve'
 import { discussionModerationError } from '@/lib/discussions/moderation'
 
 const RequestSchema = z.object({
@@ -24,7 +26,10 @@ export async function GET(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   try {
-    const discussions = await getChallengeDiscussions(id, user?.id ?? null)
+    const identity = await resolveChallengeIdentity(id, createAdminClient())
+    if (!identity) return apiError(404, 'challenge_not_found', 'Challenge not found')
+
+    const discussions = await getChallengeDiscussions(identity.id, user?.id ?? null)
     return NextResponse.json(discussions)
   } catch (err) {
     console.error('Discussions fetch error:', err)
@@ -58,7 +63,10 @@ export async function POST(
   if (moderationError) return moderationError
 
   try {
-    const discussion = await postDiscussion(id, user.id, content.trim())
+    const identity = await resolveChallengeIdentity(id, createAdminClient())
+    if (!identity) return apiError(404, 'challenge_not_found', 'Challenge not found')
+
+    const discussion = await postDiscussion(identity.id, user.id, content.trim())
     return NextResponse.json(discussion, { status: 201 })
   } catch (err) {
     console.error('Discussion post error:', err)

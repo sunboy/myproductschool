@@ -3,6 +3,7 @@ import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { apiError } from '@/lib/api/error'
+import { resolveChallengeIdentity } from '@/lib/challenges/resolve'
 import { sendDiscussionReplyEmail } from '@/lib/email/transactional'
 import { createUnsubscribeToken } from '@/lib/notifications/unsubscribe'
 import { discussionModerationError } from '@/lib/discussions/moderation'
@@ -119,12 +120,14 @@ export async function GET(
 ) {
   const { id, discussionId } = await params
   const adminClient = createAdminClient()
+  const identity = await resolveChallengeIdentity(id, adminClient)
+  if (!identity) return apiError(404, 'challenge_not_found', 'Challenge not found')
 
   const { data: discussion, error: discussionError } = await adminClient
     .from('challenge_discussions')
     .select('id, user_id, hidden_at')
     .eq('id', discussionId)
-    .eq('challenge_id', id)
+    .eq('challenge_id', identity.id)
     .maybeSingle()
 
   if (discussionError) {
@@ -181,12 +184,14 @@ export async function POST(
   if (authError || !user) return apiError(401, 'auth_required', 'Unauthorized')
 
   const adminClient = createAdminClient()
+  const identity = await resolveChallengeIdentity(id, adminClient)
+  if (!identity) return apiError(404, 'challenge_not_found', 'Challenge not found')
 
   const { data: discussion, error: discussionError } = await adminClient
     .from('challenge_discussions')
     .select('id, user_id, hidden_at')
     .eq('id', discussionId)
-    .eq('challenge_id', id)
+    .eq('challenge_id', identity.id)
     .maybeSingle()
 
   if (discussionError) {
@@ -222,7 +227,7 @@ export async function POST(
   await maybeSendReplyNotification({
     adminClient,
     request,
-    challengeId: id,
+    challengeId: identity.id,
     discussionId,
     discussionOwnerId: discussion.user_id,
     replyAuthorId: user.id,

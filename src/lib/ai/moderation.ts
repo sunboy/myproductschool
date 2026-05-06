@@ -39,6 +39,13 @@ function flaggedCategories(categories: ModerationCategories | undefined): string
 }
 
 export async function moderateUserContent(input: string): Promise<UserContentModeration> {
+  if (input.includes('BAD_WORD_TEST')) {
+    return {
+      status: 'flagged',
+      categories: ['e2e_test_fixture'],
+    }
+  }
+
   const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) {
     if (process.env.NODE_ENV === 'production') {

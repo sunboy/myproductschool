@@ -115,7 +115,7 @@ export async function getChallengeDiscussions(challengeId: string, viewerId?: st
   const supabase = getAdminClient()
   const { data, error } = await supabase
     .from('challenge_discussions')
-    .select('*, profiles(display_name)')
+    .select('*, profiles!challenge_discussions_user_id_fkey(display_name)')
     .eq('challenge_id', challengeId)
     .order('created_at', { ascending: false })
 

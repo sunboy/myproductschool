@@ -16,6 +16,29 @@ import type { ChallengeDiscussion } from '@/lib/types'
 type DiscussionSort = 'top' | 'new' | 'mine'
 const PAGE_SIZE = 20
 
+function deriveUpvotedIds(discussions: ChallengeDiscussion[], userId: string | null) {
+  if (!userId) return new Set<string>()
+  return new Set(
+    discussions
+      .filter(d => Array.isArray(d.upvoted_by) && d.upvoted_by.includes(userId))
+      .map(d => d.id)
+  )
+}
+
+function applyUpvoteState(
+  discussion: ChallengeDiscussion,
+  userId: string | null,
+  upvoted: boolean
+): ChallengeDiscussion {
+  if (!userId) return discussion
+  const previous = Array.isArray(discussion.upvoted_by) ? discussion.upvoted_by : []
+  const next = upvoted
+    ? Array.from(new Set([...previous, userId]))
+    : previous.filter(id => id !== userId)
+
+  return { ...discussion, upvoted_by: next }
+}
+
 export default function ChallengeDiscussionPage() {
   return (
     <Suspense fallback={<div className="max-w-7xl mx-auto px-6 py-6 pb-24" />}>
@@ -45,14 +68,20 @@ function ChallengeDiscussionContent() {
       const res = await fetch(`/api/challenges/${id}/discussions`)
       if (res.ok) {
         const data = await res.json()
-        setDiscussions(Array.isArray(data) ? data : [])
+        const nextDiscussions = Array.isArray(data) ? data : []
+        setDiscussions(nextDiscussions)
+        setUpvotedIds(deriveUpvotedIds(nextDiscussions, currentUserId))
       }
     } catch { /* silent */ } finally {
       setIsLoading(false)
     }
-  }, [id])
+  }, [id, currentUserId])
 
   useEffect(() => { fetchDiscussions() }, [fetchDiscussions])
+
+  useEffect(() => {
+    setUpvotedIds(deriveUpvotedIds(discussions, currentUserId))
+  }, [currentUserId, discussions])
 
   useEffect(() => {
     setPage(1)
@@ -79,12 +108,17 @@ function ChallengeDiscussionContent() {
   }, [id])
 
   async function handleUpvote(discussionId: string) {
+    const wasUpvoted = upvotedIds.has(discussionId)
+
     // Optimistic update
-    setDiscussions(prev => prev.map(d =>
-      d.id === discussionId
-        ? { ...d, upvote_count: upvotedIds.has(discussionId) ? d.upvote_count - 1 : d.upvote_count + 1 }
-        : d
-    ))
+    setDiscussions(prev => prev.map(d => {
+      if (d.id !== discussionId) return d
+      return applyUpvoteState(
+        { ...d, upvote_count: wasUpvoted ? d.upvote_count - 1 : d.upvote_count + 1 },
+        currentUserId,
+        !wasUpvoted
+      )
+    }))
     setUpvotedIds(prev => {
       const next = new Set(prev)
       if (next.has(discussionId)) next.delete(discussionId)
@@ -93,8 +127,41 @@ function ChallengeDiscussionContent() {
     })
 
     try {
-      await fetch(`/api/challenges/${id}/discussions/${discussionId}/upvote`, { method: 'PATCH' })
-    } catch { /* silent */ }
+      const res = await fetch(`/api/challenges/${id}/discussions/${discussionId}/upvote`, { method: 'PATCH' })
+      if (!res.ok) throw new Error('Upvote failed')
+      const data = await res.json().catch(() => null)
+      if (typeof data?.upvote_count === 'number') {
+        setDiscussions(prev => prev.map(d =>
+          d.id === discussionId
+            ? applyUpvoteState({ ...d, upvote_count: data.upvote_count }, currentUserId, Boolean(data.upvoted))
+            : d
+        ))
+      }
+      if (typeof data?.upvoted === 'boolean') {
+        setUpvotedIds(prev => {
+          const next = new Set(prev)
+          if (data.upvoted) next.add(discussionId)
+          else next.delete(discussionId)
+          return next
+        })
+      }
+    } catch {
+      setDiscussions(prev => prev.map(d =>
+        d.id === discussionId
+          ? applyUpvoteState(
+            { ...d, upvote_count: Math.max(0, d.upvote_count + (wasUpvoted ? 1 : -1)) },
+            currentUserId,
+            wasUpvoted
+          )
+          : d
+      ))
+      setUpvotedIds(prev => {
+        const next = new Set(prev)
+        if (wasUpvoted) next.add(discussionId)
+        else next.delete(discussionId)
+        return next
+      })
+    }
   }
 
   const expertPicks = discussions.filter(d => d.is_expert_pick)
