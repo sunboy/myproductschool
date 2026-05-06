@@ -414,6 +414,43 @@ export interface CohortSubmission {
   submitted_at: string
 }
 
+/* ── v2 Community Engagement ──────────────────────────────── */
+
+export type CommunityDisplayMode = 'anonymous' | 'named'
+export type CommunityLensTag = 'metric-first' | 'segment-first' | 'tradeoff-aware' | 'strong win' | 'interesting miss'
+export type CommunityReactionTarget = 'discussion' | 'community_submission' | 'feedback_trade'
+export type CommunityReactionType =
+  | 'upvote'
+  | 'strong_win'
+  | 'interesting_miss'
+  | 'metric_hawk'
+  | 'tradeoff_catcher'
+  | 'clarity_builder'
+export type CommunityBadgeKey = 'frame_sharpener' | 'metric_hawk' | 'tradeoff_catcher' | 'clarity_builder'
+export type ActivityFeedEventType =
+  | 'completed_challenge'
+  | 'shared_answer'
+  | 'earned_badge'
+  | 'expert_picked_answer'
+  | 'weekly_room_milestone'
+  | 'feedback_trade'
+
+export interface ActivityFeedEvent {
+  id: string
+  actor_user_id: string | null
+  event_type: ActivityFeedEventType
+  challenge_id: string | null
+  submission_id: string | null
+  badge_key: CommunityBadgeKey | null
+  display_mode: CommunityDisplayMode
+  headline: string
+  metadata: Record<string, unknown>
+  visibility: 'public' | 'authenticated' | 'private'
+  created_at: string
+  actor_display_name?: string | null
+  challenge_title?: string | null
+}
+
 /* ── v2 Settings ──────────────────────────────────────────── */
 
 export interface UserSettings {

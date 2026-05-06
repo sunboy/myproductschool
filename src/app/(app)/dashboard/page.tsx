@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { CalibrationHero } from './CalibrationHero'
-import { HatchIntroTour } from '@/components/onboarding/HatchIntroTour'
 import { UpgradedBanner } from '@/components/dashboard/UpgradedBanner'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -11,6 +10,7 @@ import {
   getLeaderboardPeek,
   getLatestInterview,
 } from '@/lib/data/dashboard'
+import { getCommunityActivityFeed } from '@/lib/data/community'
 import { getEnrolledPlans } from '@/lib/data/study-plans'
 import { QuickTakeCard } from '@/components/dashboard/cards/QuickTakeCard'
 import { NextChallengeCard } from '@/components/dashboard/cards/NextChallengeCard'
@@ -19,6 +19,7 @@ import { FlowMoveLevelsCard } from '@/components/dashboard/cards/FlowMoveLevelsC
 import { LatestInterviewCard } from '@/components/dashboard/cards/LatestInterviewCard'
 import { HotChallengesCard } from '@/components/dashboard/cards/HotChallengesCard'
 import { LeaderboardPeekCard } from '@/components/dashboard/cards/LeaderboardPeekCard'
+import { CommunityActivityCard } from '@/components/dashboard/cards/CommunityActivityCard'
 import { InterviewCountdownCard } from '@/components/dashboard/cards/InterviewCountdownCard'
 import { EnrolledPlansCard } from '@/components/dashboard/cards/EnrolledPlansCard'
 import { TodaysPathCard } from '@/components/dashboard/cards/TodaysPathCard'
@@ -197,14 +198,13 @@ export default async function DashboardPage() {
   let lastAttemptDate: string | null = null
   let dailyDone = 0
   let plan: string | null = 'free'
-  let hasSeenHatchIntro = true
 
   if (user) {
     const today = new Date().toISOString().split('T')[0]
     const [{ data: profile }, { data: lastAttempt }, { count: dailyCount }] = await Promise.all([
       supabase
         .from('profiles')
-        .select('display_name, onboarding_completed_at, streak_days, xp_total, interview_date, plan, has_seen_hatch_intro')
+        .select('display_name, onboarding_completed_at, streak_days, xp_total, interview_date, plan')
         .eq('id', user.id)
         .single(),
       supabase
@@ -230,17 +230,17 @@ export default async function DashboardPage() {
     lastAttemptDate = lastAttempt?.created_at ? lastAttempt.created_at.split('T')[0] : null
     dailyDone = dailyCount ?? 0
     plan = profile?.plan ?? 'free'
-    hasSeenHatchIntro = profile?.has_seen_hatch_intro ?? false
   }
 
   const userId = user?.id ?? ''
   const adminClient = createAdminClient()
 
-  const [hotChallenges, leaderboard, enrolledPlans, latestInterview] = await Promise.all([
+  const [hotChallenges, leaderboard, enrolledPlans, latestInterview, communityActivity] = await Promise.all([
     getHotChallenges(),
     userId ? getLeaderboardPeek(userId) : [],
     userId ? getEnrolledPlans(userId) : [],
     userId ? getLatestInterview(userId) : null,
+    userId ? getCommunityActivityFeed(6) : [],
   ])
 
   // Fetch paused loops for PausedLoopCard
@@ -471,7 +471,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7">
-      <HatchIntroTour show={Boolean(userId && isCalibrated && !hasSeenHatchIntro)} />
 
       <Suspense fallback={null}>
         <UpgradedBanner />
@@ -535,6 +534,8 @@ export default async function DashboardPage() {
               <HotChallengesCard challenges={hotChallenges} />
               <LeaderboardPeekCard entries={leaderboard} userRank={userRank} />
             </div>
+
+            <CommunityActivityCard events={communityActivity} />
 
             {/* Interview Countdown — conditional */}
             {interviewDate && (
