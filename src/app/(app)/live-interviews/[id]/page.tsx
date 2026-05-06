@@ -27,6 +27,7 @@ const MonacoCodeEditor = dynamic(
   { ssr: false }
 )
 
+import type { PasteEvent } from '@/components/challenge/MonacoCodeEditor'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { Md } from '@/components/ui/Md'
 import { useInterviewTimer } from '@/hooks/useInterviewTimer'
@@ -34,6 +35,7 @@ import { InterviewLimitModal } from '@/components/paywalls/InterviewLimitModal'
 import { useUpgrade } from '@/hooks/useUpgrade'
 import { useEntitlements } from '@/hooks/useEntitlements'
 import { parseGradingSignal } from '@/lib/live-interview/parse-grading-signal'
+import type { LiveInterviewArtifactSnapshot } from '@/lib/live-interview/artifact-context'
 import {
   DISCIPLINE_META,
   normalizeDiscipline,
@@ -101,6 +103,38 @@ const COMPETENCY_LABELS: Record<string, string> = {
   strategic_thinking: 'Strategy',
   creative_execution: 'Creativity',
   domain_expertise: 'Domain',
+}
+
+const SNAPSHOT_CODE_MAX_CHARS = 40000
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function summarizeCanvasElements(elements: unknown[]) {
+  const elementTypes: Record<string, number> = {}
+  const textLabels: string[] = []
+
+  for (const element of elements) {
+    if (!isRecord(element)) continue
+    const type = typeof element.type === 'string' ? element.type : 'unknown'
+    elementTypes[type] = (elementTypes[type] ?? 0) + 1
+
+    const label = isRecord(element.label) && typeof element.label.text === 'string'
+      ? element.label.text
+      : typeof element.text === 'string'
+      ? element.text
+      : null
+
+    if (label?.trim()) {
+      textLabels.push(label.trim().slice(0, 80))
+    }
+  }
+
+  return {
+    elementTypes,
+    textLabels: [...new Set(textLabels)].slice(0, 12),
+  }
 }
 
 // ─── Signal Card ───
@@ -480,10 +514,13 @@ export default function SessionPage({
   const [currentCode, setCurrentCode] = useState('')
   const [currentLanguage, setCurrentLanguage] = useState<'python' | 'javascript' | 'java' | 'cpp' | 'go' | 'sql'>('python')
   const [lastRunResult, setLastRunResult] = useState<unknown>(null)
-  const [artifactSignals, setArtifactSignals] = useState<Array<{ id: string; text: string; time: number }>>([])
+  const [editorPasteEvents, setEditorPasteEvents] = useState<PasteEvent[]>([])
+  const [editorCursorLine, setEditorCursorLine] = useState<number | undefined>(undefined)
 
   const eventSourceRef = useRef<EventSource | null>(null)
   const lastSignalTurnIndexRef = useRef<number>(-1)
+  const openingRequestedRef = useRef(false)
+  const snapshotPersistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { formatted: timerDisplay, isWarning, isLimitReached } = useInterviewTimer(
     interviewStartedAt,
@@ -501,6 +538,51 @@ export default function SessionPage({
     (loopRounds[currentRoundIndex]?.discipline as LiveInterviewDiscipline | undefined)
     ?? normalizeDiscipline(disciplineParam)
     ?? null
+
+  const buildCurrentArtifactSnapshot = useCallback((): LiveInterviewArtifactSnapshot | null => {
+    if (centerMode === 'canvas') {
+      const elements = (canvasScene?.elements ?? []) as unknown[]
+      const summary = summarizeCanvasElements(elements)
+      if (elements.length === 0) return null
+
+      return {
+        type: 'canvas',
+        discipline: discipline ?? undefined,
+        capturedAt: Date.now(),
+        elementCount: elements.length,
+        elementTypes: summary.elementTypes,
+        textLabels: summary.textLabels,
+      }
+    }
+
+    if (centerMode === 'editor') {
+      const hasCode = currentCode.trim().length > 0
+      const hasRunResult = lastRunResult != null
+      if (!hasCode && !hasRunResult && editorPasteEvents.length === 0) return null
+
+      return {
+        type: 'editor',
+        discipline: discipline ?? undefined,
+        capturedAt: Date.now(),
+        code: currentCode.slice(0, SNAPSHOT_CODE_MAX_CHARS),
+        language: currentLanguage,
+        cursorLine: editorCursorLine,
+        pasteEvents: editorPasteEvents.slice(-5),
+        runResult: lastRunResult,
+      }
+    }
+
+    return null
+  }, [
+    canvasScene,
+    centerMode,
+    currentCode,
+    currentLanguage,
+    discipline,
+    editorCursorLine,
+    editorPasteEvents,
+    lastRunResult,
+  ])
 
   // Set the editor's default language based on discipline (sql vs coding).
   // Guard with !currentCode so we never stomp on user input.
@@ -621,6 +703,86 @@ export default function SessionPage({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loopIdParam])
 
+  useEffect(() => {
+    if (interviewPhase !== 'active' || !sessionId || turns.length > 0 || openingRequestedRef.current) return
+    openingRequestedRef.current = true
+
+    if (IS_MOCK) {
+      setTurns([{
+        id: crypto.randomUUID(),
+        role: 'hatch',
+        content: "Hey. Good to see you. I'll make this feel like a real interview, and I'm going to push hardest on whether you diagnose before solving.",
+        source: 'chat',
+      }])
+      setTotalTurns(1)
+      setIsChatOpen(true)
+      return
+    }
+
+    let cancelled = false
+    setHatchState('thinking')
+    setIsThinking(true)
+
+    fetch(`/api/live-interview/${sessionId}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'opening',
+        artifactSnapshot: buildCurrentArtifactSnapshot() ?? undefined,
+      }),
+    })
+      .then((res) => res.ok ? res.json() : Promise.reject(new Error('opening_failed')))
+      .then((data) => {
+        if (cancelled || !data?.reply) return
+        setTurns((prev) => prev.length > 0 ? prev : [{
+          id: crypto.randomUUID(),
+          role: 'hatch',
+          content: data.reply,
+          source: 'chat',
+        }])
+        setTotalTurns((prev) => Math.max(prev, 1))
+        setCurrentCaption(data.reply)
+        if (!isVoiceAvailable) {
+          setIsChatOpen(true)
+          setTimeout(() => chatInputRef.current?.focus(), 50)
+        }
+      })
+      .catch(() => {
+        openingRequestedRef.current = false
+      })
+      .finally(() => {
+        if (cancelled) return
+        setHatchState('idle')
+        setIsThinking(false)
+      })
+
+    return () => { cancelled = true }
+  }, [buildCurrentArtifactSnapshot, interviewPhase, isVoiceAvailable, sessionId, turns.length])
+
+  useEffect(() => {
+    if (IS_MOCK || interviewPhase !== 'active' || centerMode === 'orb' || !sessionId) return
+    const snapshot = buildCurrentArtifactSnapshot()
+    if (!snapshot) return
+
+    if (snapshotPersistTimerRef.current) {
+      clearTimeout(snapshotPersistTimerRef.current)
+    }
+
+    snapshotPersistTimerRef.current = setTimeout(() => {
+      fetch(`/api/live-interview/${sessionId}/snapshot`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ artifactSnapshot: snapshot }),
+      }).catch(() => {})
+    }, 1500)
+
+    return () => {
+      if (snapshotPersistTimerRef.current) {
+        clearTimeout(snapshotPersistTimerRef.current)
+      }
+    }
+  }, [buildCurrentArtifactSnapshot, centerMode, interviewPhase, sessionId])
+
   const handleStartInterview = useCallback(() => {
     setInterviewPhase('active')
     setInterviewStartedAt(Date.now())
@@ -653,7 +815,11 @@ export default function SessionPage({
           const signalTurnIndex = data.latestSignal.turnIndex as number
           if (signalTurnIndex > lastSignalTurnIndexRef.current) {
             lastSignalTurnIndexRef.current = signalTurnIndex
-            const { turnIndex: _, ...signalData } = data.latestSignal
+            const signalData: CoachingSignal = {
+              flowMove: data.latestSignal.flowMove,
+              competency: data.latestSignal.competency,
+              signal: data.latestSignal.signal,
+            }
             setRecentSignals(prev => [
               { ...signalData, id: crypto.randomUUID(), time: Date.now() },
               ...prev.slice(0, 9),
@@ -761,18 +927,7 @@ export default function SessionPage({
     }
 
     if (role === 'user' && cleanContent) {
-      const artifactSnapshot = centerMode !== 'orb' ? {
-        type: centerMode as 'canvas' | 'editor',
-        ...(centerMode === 'canvas' ? {
-          elementCount: canvasScene ? (canvasScene.elements as unknown[]).length : 0,
-          discipline: discipline ?? undefined,
-        } : {
-          code: currentCode,
-          language: currentLanguage,
-          runResult: lastRunResult,
-          discipline: discipline ?? undefined,
-        }),
-      } : undefined
+      const artifactSnapshot = buildCurrentArtifactSnapshot()
 
       const turnId = turn.id
 
@@ -797,16 +952,12 @@ export default function SessionPage({
           }))
         }
         if (data?.artifactSignal) {
-          setArtifactSignals(prev => [
-            { id: crypto.randomUUID(), text: data.artifactSignal, time: Date.now() },
-            ...prev.slice(0, 9),
-          ])
           // Patch the turn bubble with the artifact signal
           setTurns(prev => prev.map(t => t.id === turnId ? { ...t, artifactSignal: data.artifactSignal } : t))
         }
       }).catch(() => {})
     }
-  }, [sessionId, router, centerMode, canvasScene, currentCode, currentLanguage, lastRunResult, discipline])
+  }, [sessionId, router, totalTurns, buildCurrentArtifactSnapshot])
 
   const handleAgentSpeaking = useCallback(() => {
     setHatchState('speaking')
@@ -861,10 +1012,14 @@ export default function SessionPage({
     }
 
     try {
+      const artifactSnapshot = buildCurrentArtifactSnapshot()
       const res = await fetch(`/api/live-interview/${sessionId}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({
+          message: text,
+          artifactSnapshot: artifactSnapshot ?? undefined,
+        }),
       })
       if (res.ok) {
         const { reply } = await res.json()
@@ -887,7 +1042,7 @@ export default function SessionPage({
       setHatchState('idle')
       setIsThinking(false)
     }
-  }, [sessionId])
+  }, [buildCurrentArtifactSnapshot, sessionId])
 
   const handleEndInterview = useCallback(() => {
     if (isEnding) return
@@ -906,15 +1061,15 @@ export default function SessionPage({
     try {
       // Save artifact snapshot before ending so the end route can grade it
       if (centerMode !== 'orb' && sessionId) {
-        const snapshot = centerMode === 'canvas'
-          ? { type: 'canvas' as const, elementCount: (canvasScene?.elements as unknown[])?.length ?? 0, discipline: discipline ?? undefined }
-          : { type: 'editor' as const, code: currentCode, language: currentLanguage, runResult: lastRunResult, discipline: discipline ?? undefined }
+        const snapshot = buildCurrentArtifactSnapshot()
         try {
-          await fetch(`/api/live-interview/${sessionId}/snapshot`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ artifactSnapshot: snapshot }),
-          })
+          if (snapshot) {
+            await fetch(`/api/live-interview/${sessionId}/snapshot`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ artifactSnapshot: snapshot }),
+            })
+          }
         } catch {
           // Non-fatal — end still proceeds
         }
@@ -928,7 +1083,7 @@ export default function SessionPage({
       setIsEnding(false)
       setInterviewPhase('active')
     }
-  }, [sessionId, router, centerMode, canvasScene, currentCode, currentLanguage, lastRunResult, discipline])
+  }, [sessionId, router, centerMode, buildCurrentArtifactSnapshot])
 
   // ─── Loading ───
   if (interviewPhase === 'loading') {
@@ -1508,7 +1663,8 @@ export default function SessionPage({
                 language={currentLanguage}
                 theme="vs-dark"
                 height="100%"
-                onPaste={() => {}}
+                onPaste={(event) => setEditorPasteEvents((prev) => [...prev.slice(-4), event])}
+                onCursorMove={(line) => setEditorCursorLine(line)}
               />
             </div>
           )}
@@ -1666,7 +1822,7 @@ export default function SessionPage({
                 Signals appear as you answer
               </p>
             ) : (
-              recentSignals.map((s, i) => (
+              recentSignals.map((s) => (
                 <div
                   key={s.id}
                   className="rounded-[10px] p-3 mb-2"

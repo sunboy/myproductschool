@@ -61,26 +61,7 @@ export function MonacoCodeEditor({
   const handleEditorMount = useCallback<OnMount>((editorInstance) => {
     editorRef.current = editorInstance
 
-    // Paste detection — captures paste event with analytics payload
-    editorInstance.onDidPaste(() => {
-      if (!onPaste) return
-      const fullText = editorInstance.getValue()
-      // We get the selection before paste is applied — estimate length from model change
-      // Use getSelections to check the pasted area
-      const model = editorInstance.getModel()
-      if (!model) return
-      const totalLength = fullText.length
-
-      // Estimate paste length via contentChange events in onDidChangeModelContent
-      // Note: for accurate paste length we hook into the model content changed event below
-      onPaste({
-        length: 0, // will be populated via onDidChangeModelContent with isFlush=false
-        percentOfBuffer: 0,
-        timestamp: Date.now(),
-      })
-    })
-
-    // More accurate paste tracking via model content changed — captures actual pasted chars
+    // Paste tracking via model content changes captures the actual pasted chars.
     let lastPasteTimestamp = 0
     editorInstance.onDidPaste(() => {
       lastPasteTimestamp = Date.now()

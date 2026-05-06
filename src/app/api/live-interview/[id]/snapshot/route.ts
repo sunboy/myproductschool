@@ -1,4 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
+import type { LiveInterviewArtifactSnapshot } from '@/lib/live-interview/artifact-context'
 import { z, ZodError } from 'zod'
 
 const ArtifactSnapshotSchema = z.object({
@@ -8,7 +10,7 @@ const ArtifactSnapshotSchema = z.object({
   elementCount: z.number().int().min(0).max(10000).optional(),
   elementTypes: z.record(z.string(), z.number().int().min(0)).optional(),
   textLabels: z.array(z.string().max(1000)).max(1000).optional(),
-  code: z.string().max(200000).optional(),
+  code: z.string().max(40000).optional(),
   language: z.string().max(80).optional(),
   cursorLine: z.number().int().min(0).optional(),
   pasteEvents: z.array(z.object({
@@ -36,7 +38,11 @@ export async function PATCH(
 ) {
   const { id } = await params
 
-  let body: z.infer<typeof RequestSchema>
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) return new Response('Unauthorized', { status: 401 })
+
+  let body: { artifactSnapshot: LiveInterviewArtifactSnapshot }
   try {
     body = RequestSchema.parse(await request.json())
   } catch (error) {
@@ -55,6 +61,7 @@ export async function PATCH(
     .from('live_interview_sessions')
     .select('calibration_snapshot')
     .eq('id', id)
+    .eq('user_id', user.id)
     .single()
 
   if (!session) {
@@ -68,6 +75,7 @@ export async function PATCH(
     .from('live_interview_sessions')
     .update({ calibration_snapshot: updated })
     .eq('id', id)
+    .eq('user_id', user.id)
 
   return Response.json({ ok: true })
 }

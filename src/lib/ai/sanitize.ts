@@ -61,6 +61,21 @@ function cleanupText(text: string) {
     .trim()
 }
 
+function shouldStripSpokenFormatting(route: string) {
+  return route === 'live_interview_chat' || route === 'live_interview_turn'
+}
+
+function stripSpokenFormatting(text: string) {
+  return text
+    .replace(/\*\*["“]([^"”\n]+)["”]\*\*/g, '$1')
+    .replace(/\*\*([^*\n]+)\*\*/g, '$1')
+    .replace(/__([^_\n]+)__/g, '$1')
+    .replace(/`([^`\n]+)`/g, '$1')
+    .replace(/^[ \t]*#{1,6}\s+/gm, '')
+    .replace(/^[ \t]*[-*]\s+/gm, '')
+    .replace(/^["“]([\s\S]*?)["”]$/g, '$1')
+}
+
 function applyPattern(
   text: string,
   pattern: VoicePattern,
@@ -109,10 +124,14 @@ export function sanitizeAiOutput(input: SanitizeAiOutputInput): SanitizeAiOutput
   const { masked, fences } = extractCodeFences(input.text)
   const violations: AiVoiceViolation[] = []
 
-  const sanitized = VOICE_PATTERNS_IN_ORDER.reduce(
+  const voiceSanitized = VOICE_PATTERNS_IN_ORDER.reduce(
     (current, pattern) => applyPattern(current, pattern, input, violations),
     masked
   )
+
+  const sanitized = shouldStripSpokenFormatting(input.route)
+    ? stripSpokenFormatting(voiceSanitized)
+    : voiceSanitized
 
   const text = restoreCodeFences(cleanupText(sanitized), fences)
 

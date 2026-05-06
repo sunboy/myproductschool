@@ -2,8 +2,10 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateDebrief } from '@/lib/live-interview/debrief-generator'
 import { gradeArtifact } from '@/lib/live-interview/artifact-grader'
+import type { LiveInterviewArtifactSnapshot } from '@/lib/live-interview/artifact-context'
 import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { apiError } from '@/lib/api/error'
 import { z, ZodError } from 'zod'
 
@@ -27,6 +29,15 @@ function validationIssues(error: ZodError) {
 }
 
 function aiBudgetResponse(error: unknown) {
+  if (error instanceof PlanLimitExceeded) {
+    return apiError(402, 'limit_reached', 'limit_reached', {
+      feature: error.feature,
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    })
+  }
+
   if (!(error instanceof AiBudgetExceededError)) return null
 
   return apiError(402, 'limit_reached', 'limit_reached', {
@@ -64,6 +75,10 @@ export async function POST(
     return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
 
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return apiError(401, 'auth_required', 'Unauthorized')
+
   const adminClient = createAdminClient()
 
   if (abandoned) {
@@ -71,12 +86,9 @@ export async function POST(
       .from('live_interview_sessions')
       .update({ status: 'abandoned', ended_at: new Date().toISOString() })
       .eq('id', id)
+      .eq('user_id', user.id)
     return Response.json({ ok: true, abandoned: true })
   }
-
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return apiError(401, 'auth_required', 'Unauthorized')
 
   // Load session + turns in parallel
   const [sessionResult, turnsResult] = await Promise.all([
@@ -113,16 +125,21 @@ export async function POST(
   const userPlan = await getUserPlanForBudget(user.id)
   const budget = { userId: user.id, userPlan, route: 'live_interview_debrief' }
 
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return apiError(503, 'hatch_unavailable', 'Hatch ran into a problem. Try again.')
+  }
+
+  try {
+    await assertPlanLimit(user.id, userPlan, 'ai_grading_runs')
+  } catch (err) {
+    const response = aiBudgetResponse(err)
+    if (response) return response
+    throw err
+  }
+
   // Grade artifact if one was captured during the session
   const calibrationSnap = (session.calibration_snapshot ?? {}) as Record<string, unknown>
-  const artifactSnapshot = calibrationSnap._artifactSnapshot as {
-    type: 'canvas' | 'editor'
-    elementCount?: number
-    code?: string
-    language?: string
-    runResult?: unknown
-    discipline?: string
-  } | undefined
+  const artifactSnapshot = calibrationSnap._artifactSnapshot as LiveInterviewArtifactSnapshot | undefined
 
   let artifactGrading: Awaited<ReturnType<typeof gradeArtifact>> | null = null
   if (artifactSnapshot && process.env.ANTHROPIC_API_KEY) {
