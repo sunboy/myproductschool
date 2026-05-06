@@ -2,13 +2,40 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkUsageLimit, recordUsageEvent } from '@/lib/usage/check-limit'
 import { buildPromptFromSession } from '@/lib/live-interview/build-prompt-from-session'
+import { z, ZodError } from 'zod'
+
+const RequestSchema = z.object({
+  companyId: z.string().max(200).nullable().optional(),
+  roleId: z.string().max(200).nullable().optional(),
+  challengeId: z.string().max(200).nullable().optional(),
+  discipline: z.string().max(100).nullable().optional(),
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
 
 export async function POST(request: Request) {
   if (process.env.USE_MOCK_DATA === 'true') {
     return Response.json({ sessionId: 'mock-session-id', companyName: 'Uber', role: 'PM' })
   }
 
-  const { companyId, roleId, challengeId, discipline } = await request.json()
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return Response.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+  const { companyId, roleId, challengeId, discipline } = body
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
