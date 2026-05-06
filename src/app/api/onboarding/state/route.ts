@@ -2,6 +2,16 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { OnboardingStateSchema } from '@/lib/onboarding/state'
+import { z, ZodError } from 'zod'
+
+const RequestSchema = OnboardingStateSchema
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
 
 async function requireUser() {
   const supabase = await createClient()
@@ -29,25 +39,17 @@ export async function PUT(request: Request) {
   const user = await requireUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  let body: unknown
+  let body: z.infer<typeof RequestSchema>
   try {
-    body = await request.json()
-  } catch {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
-  }
-
-  const parsed = OnboardingStateSchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json(
-      {
-        error: 'Invalid onboarding state',
-        issues: parsed.error.issues.map(issue => ({
-          path: issue.path.join('.'),
-          message: issue.message,
-        })),
-      },
-      { status: 400 }
-    )
   }
 
   const adminClient = createAdminClient()
@@ -56,8 +58,8 @@ export async function PUT(request: Request) {
     .upsert(
       {
         user_id: user.id,
-        step: parsed.data.step,
-        data: parsed.data.data,
+        step: body.step,
+        data: body.data,
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'user_id' }
