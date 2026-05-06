@@ -20,6 +20,9 @@ CREATE INDEX IF NOT EXISTS admin_action_log_target
 
 ALTER TABLE public.admin_action_log ENABLE ROW LEVEL SECURITY;
 
+GRANT SELECT ON public.admin_action_log TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.admin_action_log TO service_role;
+
 DO $$ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_policies

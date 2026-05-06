@@ -44,6 +44,11 @@ CREATE TRIGGER feedback_submissions_updated_at
 ALTER TABLE public.feedback_submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.feedback_prompt_events ENABLE ROW LEVEL SECURITY;
 
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.feedback_submissions TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.feedback_submissions TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.feedback_prompt_events TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.feedback_prompt_events TO service_role;
+
 DROP POLICY IF EXISTS "Users can insert own feedback submissions" ON public.feedback_submissions;
 CREATE POLICY "Users can insert own feedback submissions"
   ON public.feedback_submissions FOR INSERT
