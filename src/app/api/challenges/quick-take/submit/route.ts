@@ -200,13 +200,14 @@ export async function POST(req: NextRequest) {
     feedback_json: { feedback, xp_earned, move: primaryMove },
   })
   if (attemptInsertError) {
+    console.error('[quick-take] challenge_attempts insert failed:', attemptInsertError.message)
     return apiError(500, 'quick_take_attempt_save_failed', 'Failed to save quick-take attempt')
   }
 
   const { error: sessionEventError } = await adminClient.from('session_events').insert({
     user_id: user.id,
     event_type: 'quick_take_submit',
-    event_data: { challenge_id, move: primaryMove, score, xp_earned },
+    payload: { challenge_id, move: primaryMove, score, xp_earned },
   })
   if (sessionEventError) console.error('[quick-take] session_events insert failed:', sessionEventError.message)
 

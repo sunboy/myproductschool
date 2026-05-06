@@ -12,6 +12,14 @@ E2E_TEST_PASSWORD='use-a-long-shared-test-password'
 
 The script uses the Supabase service role key from Node only. Do not expose this key in browser code.
 
+When running a local production server with `next start` and no Upstash Redis, start it with the local-only fallback:
+
+```bash
+RATE_LIMIT_MEMORY_FALLBACK=true npx next start -p 3002
+```
+
+Do not set `RATE_LIMIT_MEMORY_FALLBACK=true` in production. Production should use `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` so rate limiting is shared across instances.
+
 ## Run
 
 ```bash

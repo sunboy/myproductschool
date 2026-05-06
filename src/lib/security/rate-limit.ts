@@ -44,6 +44,10 @@ function hasUpstashEnv() {
   return Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
 }
 
+function allowsMemoryFallbackEnv() {
+  return process.env.RATE_LIMIT_MEMORY_FALLBACK === 'true'
+}
+
 function defaultUpstashLimiter(limit: number, windowSec: number): UpstashLimiter {
   const cacheKey = `${limit}:${windowSec}`
   const cached = upstashLimiters.get(cacheKey)
@@ -73,7 +77,9 @@ export function createRateLimiter(options: CreateRateLimiterOptions = {}) {
   const buckets = new Map<string, MemoryBucket>()
   const now = options.now ?? Date.now
   const warn = options.warn ?? console.warn
-  const memoryFallback = options.memoryFallback ?? process.env.NODE_ENV !== 'production'
+  const memoryFallback = options.memoryFallback ?? (
+    process.env.NODE_ENV !== 'production' || allowsMemoryFallbackEnv()
+  )
   const shouldUseUpstash = options.useUpstash ?? hasUpstashEnv()
   const getUpstashLimiter = options.getUpstashLimiter ?? defaultUpstashLimiter
   let warnedMissingEnv = false

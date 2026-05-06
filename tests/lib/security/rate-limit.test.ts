@@ -80,3 +80,36 @@ test('throws in production-style mode when Upstash env is unavailable and fallba
     /UPSTASH_REDIS_REST_URL/
   )
 })
+
+test('allows explicit memory fallback for local production-style e2e runs', async () => {
+  const mutableEnv = process.env as Record<string, string | undefined>
+  const previousNodeEnv = process.env.NODE_ENV
+  const previousFallback = process.env.RATE_LIMIT_MEMORY_FALLBACK
+
+  mutableEnv.NODE_ENV = 'production'
+  mutableEnv.RATE_LIMIT_MEMORY_FALLBACK = 'true'
+
+  try {
+    const rateLimit = createRateLimiter({
+      useUpstash: false,
+      now: () => 20_000,
+      warn: () => {},
+    })
+
+    const result = await rateLimit({ key: 'e2e:local', limit: 1, windowSec: 60 })
+    assert.equal(result.allowed, true)
+    assert.equal(result.remaining, 0)
+  } finally {
+    if (previousNodeEnv === undefined) {
+      delete mutableEnv.NODE_ENV
+    } else {
+      mutableEnv.NODE_ENV = previousNodeEnv
+    }
+
+    if (previousFallback === undefined) {
+      delete mutableEnv.RATE_LIMIT_MEMORY_FALLBACK
+    } else {
+      mutableEnv.RATE_LIMIT_MEMORY_FALLBACK = previousFallback
+    }
+  }
+})
