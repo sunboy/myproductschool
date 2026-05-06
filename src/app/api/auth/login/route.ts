@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { findRateLimitBlock, getClientIp } from '@/lib/auth/rate-limit'
-import { firstZodError, loginSchema } from '@/lib/auth/validation'
+import { loginSchema } from '@/lib/auth/validation'
+import { z, ZodError } from 'zod'
+
+const RequestSchema = loginSchema
 
 function rateLimitedResponse(retryAfter: number) {
   return NextResponse.json(
@@ -14,13 +17,27 @@ function rateLimitedResponse(retryAfter: number) {
   )
 }
 
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
+
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({}))
-  const parsed = loginSchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json({ error: firstZodError(parsed.error) }, { status: 400 })
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
-  const { email, password } = parsed.data
+  const { email, password } = body
 
   const ip = getClientIp(request)
   const block = await findRateLimitBlock([
