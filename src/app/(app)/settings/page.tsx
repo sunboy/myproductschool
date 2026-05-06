@@ -387,6 +387,32 @@ export default function SettingsPage() {
     }
   }
 
+  async function openBillingPortal() {
+    const portalWindow = window.open('about:blank', '_blank')
+    if (portalWindow) portalWindow.opener = null
+
+    setBillingAction('portal')
+    setBillingError(null)
+    try {
+      const res = await fetch('/api/stripe/portal', { method: 'POST' })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok || !data.url) {
+        throw new Error(data.error ?? 'Could not open billing portal')
+      }
+
+      if (portalWindow) {
+        portalWindow.location.href = data.url
+      } else {
+        window.location.assign(data.url)
+      }
+    } catch (error) {
+      if (portalWindow) portalWindow.close()
+      setBillingError(error instanceof Error ? error.message : 'Could not open billing portal')
+    } finally {
+      setBillingAction(null)
+    }
+  }
+
   function closeDeleteDialog() {
     if (deleteSaving) return
     setDeleteDialogOpen(false)
@@ -822,9 +848,17 @@ export default function SettingsPage() {
             {isPro ? (
               <>
                 <button
+                  onClick={openBillingPortal}
+                  disabled={!!billingAction}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-label font-bold text-on-primary transition-opacity hover:opacity-95 disabled:opacity-60 active:scale-[0.98]"
+                >
+                  <span className="material-symbols-outlined text-[17px]">account_balance_wallet</span>
+                  {billingAction === 'portal' ? 'Opening billing' : 'Manage billing'}
+                </button>
+                <button
                   onClick={() => runBillingAction('change-plan', { plan: switchPlan })}
                   disabled={!!billingAction || reauthRequest !== null}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-label font-bold text-on-primary transition-opacity hover:opacity-95 disabled:opacity-60 active:scale-[0.98]"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-outline-variant/70 px-4 py-3 text-sm font-label font-bold text-on-surface transition-colors hover:bg-background disabled:opacity-60 active:scale-[0.98]"
                 >
                   <span className="material-symbols-outlined text-[17px]">sync_alt</span>
                   Switch to {switchPlan} {switchPrice ? `(${switchPrice}/${switchInterval === 'year' ? 'yr' : 'mo'})` : ''}
