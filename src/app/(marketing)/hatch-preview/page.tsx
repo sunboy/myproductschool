@@ -1,5 +1,15 @@
+import type { Metadata } from 'next'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import type { HatchState } from '@/components/shell/HatchGlyph'
+import { buildMetadata } from '@/lib/seo/site'
+
+export const metadata: Metadata = buildMetadata({
+  title: 'Hatch Animation States | HackProduct',
+  description:
+    'Preview Hatch animation states used across HackProduct coaching, feedback, and practice surfaces.',
+  path: '/hatch-preview',
+  keywords: ['Hatch', 'HackProduct', 'animation states', 'product coaching UI'],
+})
 
 const states: { state: HatchState; label: string; description: string }[] = [
   { state: 'none', label: 'Static', description: 'No animation. Reduced motion or static contexts.' },
