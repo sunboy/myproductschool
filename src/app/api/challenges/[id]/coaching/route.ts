@@ -6,11 +6,28 @@ import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
+import { z, ZodError } from 'zod'
 
 const ROUTE_KEY = 'challenge_coaching'
 
+const RequestSchema = z.object({
+  attempt_id: z.string().uuid(),
+  question_id: z.string().uuid(),
+  option_id: z.string().uuid().nullable().optional(),
+  step: z.enum(['frame', 'list', 'optimize', 'win']),
+  role_id: z.string().max(100).optional(),
+  user_text: z.string().max(50000).nullable().optional(),
+})
+
 function retryAfterSeconds(resetAt: Date) {
   return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
 }
 
 function aiBudgetResponse(error: unknown) {
@@ -71,19 +88,19 @@ export async function POST(
   const budget = { userId: user.id, userPlan, route: ROUTE_KEY }
 
   const { id: challengeId } = await params
-  const body = await req.json().catch(() => ({})) as {
-    attempt_id?: string
-    question_id?: string
-    option_id?: string
-    step?: string
-    role_id?: string
-    user_text?: string
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
   const { attempt_id, question_id, option_id, step, user_text } = body
-
-  if (!attempt_id || !question_id || !step) {
-    return NextResponse.json({ error: 'Missing required fields: attempt_id, question_id, step' }, { status: 400 })
-  }
 
   const admin = createAdminClient()
 
