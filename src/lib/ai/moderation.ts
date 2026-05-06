@@ -38,6 +38,10 @@ function flaggedCategories(categories: ModerationCategories | undefined): string
     .map(([category]) => category)
 }
 
+function allowsMissingModerationFallback() {
+  return process.env.DISCUSSION_MODERATION_E2E_FALLBACK === 'true'
+}
+
 export async function moderateUserContent(input: string): Promise<UserContentModeration> {
   if (input.includes('BAD_WORD_TEST')) {
     return {
@@ -48,6 +52,9 @@ export async function moderateUserContent(input: string): Promise<UserContentMod
 
   const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) {
+    if (allowsMissingModerationFallback()) {
+      return { status: 'skipped', reason: 'missing_api_key' }
+    }
     if (process.env.NODE_ENV === 'production') {
       return { status: 'unavailable', reason: 'missing_api_key' }
     }

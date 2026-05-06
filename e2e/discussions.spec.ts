@@ -106,10 +106,18 @@ async function loginAs(page: Page, email: string) {
 
     expect(loginResponse.status()).toBe(200)
     await page.goto(`${BASE_URL}/dashboard`)
+    await dismissCookieBanner(page)
     return
   }
 
   throw new Error(`Could not log in as ${email}; auth login remained rate-limited.`)
+}
+
+async function dismissCookieBanner(page: Page) {
+  const acceptAll = page.getByRole('button', { name: /Accept all/i })
+  if (await acceptAll.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await acceptAll.click()
+  }
 }
 
 async function appFetch(

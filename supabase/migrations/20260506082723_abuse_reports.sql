@@ -27,6 +27,9 @@ CREATE INDEX IF NOT EXISTS abuse_reports_target_idx
 
 ALTER TABLE public.abuse_reports ENABLE ROW LEVEL SECURITY;
 
+GRANT SELECT, INSERT ON public.abuse_reports TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.abuse_reports TO service_role;
+
 DROP POLICY IF EXISTS "Users insert own abuse reports" ON public.abuse_reports;
 CREATE POLICY "Users insert own abuse reports"
   ON public.abuse_reports FOR INSERT
