@@ -1013,6 +1013,7 @@ export default function SettingsPage() {
         <div className="flex gap-4">
           <Link href="/privacy" className="text-[10px] text-on-surface-variant/45 font-label transition-colors hover:text-on-surface-variant">Privacy</Link>
           <Link href="/terms" className="text-[10px] text-on-surface-variant/45 font-label transition-colors hover:text-on-surface-variant">Terms</Link>
+          <a href="https://status.hackproduct.com" target="_blank" rel="noopener noreferrer" className="text-[10px] text-on-surface-variant/45 font-label transition-colors hover:text-on-surface-variant">Status</a>
         </div>
       </footer>
     </main>
