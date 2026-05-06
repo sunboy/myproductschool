@@ -8,6 +8,8 @@ import {
   getStripePlanConfig,
 } from '@/lib/stripe/config'
 
+const PRO_TRIAL_DAYS = 7
+
 export async function POST(req: NextRequest) {
   const { stripe, config: stripeRuntime } = createStripeClient()
 
@@ -65,6 +67,7 @@ export async function POST(req: NextRequest) {
     client_reference_id: user.id,
     metadata: { user_id: user.id, plan, stripe_mode: stripeRuntime.mode },
     subscription_data: {
+      trial_period_days: PRO_TRIAL_DAYS,
       metadata: { user_id: user.id, plan, stripe_mode: stripeRuntime.mode },
     },
     allow_promotion_codes: true,

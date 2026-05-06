@@ -164,7 +164,7 @@ export function ProPaywallGate({
             </button>
 
             <p className="text-center font-body text-[11px] text-on-surface-variant">
-              Secure checkout via Stripe. Cancel any time.
+              7-day free trial. Secure checkout via Stripe. Cancel anytime.
             </p>
           </div>
         </div>

@@ -13,6 +13,7 @@ type TransactionalEmailKind =
   | 'challenge_completion'
   | 'payment_receipt'
   | 'payment_failed'
+  | 'trial_ending'
   | 'cancellation_confirmed'
   | 'cancellation_scheduled'
   | 'subscription_reactivated'
@@ -379,6 +380,22 @@ export function sendPaymentFailedEmail(admin: SupabaseClient, input: PaymentEmai
     body: `Stripe could not collect payment for ${input.planLabel ?? 'HackProduct Pro'}. Update billing details to keep Pro access active.`,
     detail: amount ? `Amount due: ${amount}` : null,
     ctaLabel: 'Fix payment',
+    ctaUrl: input.url ?? appUrl('/settings'),
+  })
+}
+
+export function sendTrialEndingEmail(admin: SupabaseClient, input: PaymentEmailInput) {
+  const trialEnd = formatDate(input.periodEnd)
+
+  return sendTransactionalEmail(admin, {
+    ...input,
+    kind: 'trial_ending',
+    subject: 'Your HackProduct Pro trial ends soon',
+    eyebrow: 'Trial ending',
+    heading: 'Your Pro trial ends tomorrow.',
+    body: `${input.planLabel ?? 'HackProduct Pro'} starts automatically after your 7-day free trial unless you cancel before then.`,
+    detail: trialEnd ? `Trial ends on ${trialEnd}.` : null,
+    ctaLabel: 'Manage billing',
     ctaUrl: input.url ?? appUrl('/settings'),
   })
 }

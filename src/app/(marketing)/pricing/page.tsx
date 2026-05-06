@@ -104,7 +104,7 @@ export default function PricingPage() {
           </h1>
           <p className="text-white/80 text-xl font-light max-w-2xl mx-auto leading-relaxed">
             Choose the path that fits your ambition. From foundational learning
-            to high-performance AI coaching for product leaders.
+            to a 7-day free Pro trial with AI coaching. Cancel anytime.
           </p>
         </div>
       </header>
@@ -185,8 +185,8 @@ export default function PricingPage() {
                 </span>
               </div>
               <p className="mt-4 text-on-surface-variant leading-relaxed">
-                Advanced systems and AI-powered feedback for high-growth product
-                professionals.
+                Advanced systems and AI-powered feedback. Try Pro free for 7 days,
+                then keep going monthly or annually. Cancel anytime.
               </p>
             </div>
             <div className="space-y-4 mb-10 flex-grow">

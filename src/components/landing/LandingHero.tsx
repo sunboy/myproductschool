@@ -10,7 +10,7 @@ export function LandingHero() {
 
       <div className="land-hero-copy">
         <h1>HackProduct lets you train for product interviews with AI coaches</h1>
-        <p>Practice product sense, systems, SQL, data modeling, coding, and live interview pressure.</p>
+        <p>Practice product sense, systems, SQL, data modeling, coding, and live interview pressure. Try Pro free for 7 days, cancel anytime.</p>
         <div className="land-hero-actions">
           <Link href="/login">Train now</Link>
           <Link href="/practice">Check out practice</Link>
