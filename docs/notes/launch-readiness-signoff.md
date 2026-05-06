@@ -17,6 +17,7 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Note: lint still reports warnings. `_archived/` and generated public bundles are excluded from lint, and React compiler-style purity rules are disabled to avoid rewriting established UI flows during launch hardening.
 - [x] Secrets scan passes.
   - Evidence: `npm run secrets:scan` passed on May 6, 2026; staged secret scans passed on commit.
+  - Evidence: exact secret-rotation grep for committed Supabase service-role JWTs and direct hardcoded service-key assignments returned no matches on May 6, 2026.
 - [x] Paywall scenarios pass.
   - Evidence: `e2e/paywall.spec.ts` passed `10/10` against `next start` with seeded Supabase users.
   - Commit: `4f96343 fix(paywall): unblock local production e2e`.

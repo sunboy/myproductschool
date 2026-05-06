@@ -37,7 +37,7 @@ The current owner-narrowed launch scope is:
 | 14. Mobile | Not complete | No latest 375px browser/axe evidence recorded. |
 | 15. Voice violation rate after 24 hours | Not complete | Requires post-launch or extended normal-use monitoring. |
 | 16. Security headers | Local complete, production partial | `next.config.ts` defines HSTS, CSP, frame denial, nosniff, referrer, and permissions policies. Local `next start` smoke on `/privacy` returned those headers and no `x-powered-by`. Live `https://www.hackproduct.com/waitlist` check found HSTS, nosniff, frame, referrer, and permissions headers, but CSP was absent and the page is an older waitlist build. |
-| 17. Secret rotation | Partial | Repo/staged secret scans pass. Provider key rotation remains owner-controlled. |
+| 17. Secret rotation | Code-side complete, provider action remains | Repo/staged secret scans pass. Exact grep for committed Supabase service-role JWTs and direct service-key assignments returned no matches. Supabase key rotation remains owner-controlled. |
 | 18. Sentry receiving | Not complete | Static repo audit found no Sentry package and no Sentry instrumentation. |
 | 19. Status page reachable | Partial | `/api/health` exists and smokes locally. `status.hackproduct.com` DNS resolves, but `https://status.hackproduct.com` returned `404` on May 6, so provider/app routing still needs setup. |
 | 20. PWA installable | Partial | Static audit found a linked valid manifest and existing 512px icon; browser installability has not been verified, and the 192px manifest entry points to the 512px file. See `docs/notes/pwa-manifest-audit.md`. |
