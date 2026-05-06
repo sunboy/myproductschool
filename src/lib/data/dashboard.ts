@@ -118,17 +118,35 @@ export async function getLatestDiscussions(): Promise<DiscussionPreview[]> {
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('challenge_discussions')
-    .select('content, created_at, challenge_id, user_id, challenge_prompts(title)')
+    .select('content, created_at, challenge_id, user_id, display_name')
     .order('created_at', { ascending: false })
     .limit(3)
 
+  if (error) {
+    console.error('Latest discussions fetch error:', error)
+    return MOCK_DISCUSSIONS
+  }
   if (!data || data.length === 0) return MOCK_DISCUSSIONS
 
+  const challengeIds = Array.from(new Set(data.map(d => d.challenge_id).filter(Boolean)))
+  const { data: challenges, error: challengeError } = challengeIds.length > 0
+    ? await supabase
+      .from('challenges')
+      .select('id, title')
+      .in('id', challengeIds)
+    : { data: [], error: null }
+
+  if (challengeError) {
+    console.error('Latest discussion challenge lookup error:', challengeError)
+  }
+
+  const titlesById = new Map((challenges ?? []).map(c => [c.id, c.title]))
+
   return data.map(d => ({
-    challenge: ((d.challenge_prompts as unknown as { title: string } | null))?.title ?? 'Untitled',
-    author: d.user_id.slice(0, 8),
+    challenge: titlesById.get(d.challenge_id) ?? 'Untitled',
+    author: d.display_name ?? d.user_id?.slice(0, 8) ?? 'Hatch',
     preview: d.content.slice(0, 80) + (d.content.length > 80 ? '...' : ''),
     time: formatRelativeTime(d.created_at),
   }))
