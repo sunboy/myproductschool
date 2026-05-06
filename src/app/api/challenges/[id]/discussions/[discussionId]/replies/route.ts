@@ -3,6 +3,8 @@ import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { apiError } from '@/lib/api/error'
+import { sendDiscussionReplyEmail } from '@/lib/email/transactional'
+import { createUnsubscribeToken } from '@/lib/notifications/unsubscribe'
 
 const RequestSchema = z.object({
   content: z.string().trim().min(1).max(10000),
@@ -15,6 +17,101 @@ function validationIssues(error: ZodError) {
   }))
 }
 
+function appUrl(request: NextRequest, path: string) {
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin
+  return new URL(path, base).toString()
+}
+
+function hourlyDedupeKey(discussionId: string, userId: string) {
+  const hour = new Date()
+  hour.setMinutes(0, 0, 0)
+  return `discussion_reply:${discussionId}:${userId}:${hour.toISOString()}`
+}
+
+async function maybeSendReplyNotification({
+  adminClient,
+  request,
+  challengeId,
+  discussionId,
+  discussionOwnerId,
+  replyAuthorId,
+  replyContent,
+}: {
+  adminClient: ReturnType<typeof createAdminClient>
+  request: NextRequest
+  challengeId: string
+  discussionId: string
+  discussionOwnerId: string | null
+  replyAuthorId: string
+  replyContent: string
+}) {
+  if (!discussionOwnerId || discussionOwnerId === replyAuthorId) return
+
+  const dedupeKey = hourlyDedupeKey(discussionId, discussionOwnerId)
+  const [prefsResult, logResult, profilesResult, challengeResult] = await Promise.all([
+    adminClient
+      .from('notification_prefs')
+      .select('discussion_reply')
+      .eq('user_id', discussionOwnerId)
+      .maybeSingle(),
+    adminClient
+      .from('notification_log')
+      .select('id')
+      .eq('kind', 'discussion_reply')
+      .eq('dedupe_key', dedupeKey)
+      .maybeSingle(),
+    adminClient
+      .from('profiles')
+      .select('id, display_name')
+      .in('id', [discussionOwnerId, replyAuthorId]),
+    adminClient
+      .from('challenges')
+      .select('title, slug')
+      .eq('id', challengeId)
+      .maybeSingle(),
+  ])
+
+  if (prefsResult.error || logResult.error || profilesResult.error || challengeResult.error) return
+  if (prefsResult.data?.discussion_reply === false || logResult.data) return
+
+  const profiles = new Map((profilesResult.data ?? []).map(profile => [profile.id, profile.display_name]))
+  const token = createUnsubscribeToken({ userId: discussionOwnerId, preference: 'discussion_reply' })
+  const challengePath = `/challenges/${challengeResult.data?.slug ?? challengeId}/discussion`
+  const unsubscribeUrl = token ? appUrl(request, `/api/notifications/unsubscribe?token=${token}`) : null
+
+  await sendDiscussionReplyEmail(adminClient, {
+    dedupeKey,
+    userId: discussionOwnerId,
+    name: profiles.get(discussionOwnerId),
+    challengeTitle: challengeResult.data?.title ?? 'New discussion reply',
+    replyAuthor: profiles.get(replyAuthorId) ?? 'Someone',
+    excerpt: replyContent,
+    url: appUrl(request, challengePath),
+    unsubscribeUrl,
+  })
+
+  const { data: emailEvent } = await adminClient
+    .from('email_dedupes')
+    .select('status')
+    .eq('dedupe_key', dedupeKey)
+    .maybeSingle()
+
+  if (emailEvent?.status === 'sent') {
+    await adminClient.from('notification_log').upsert({
+      user_id: discussionOwnerId,
+      kind: 'discussion_reply',
+      channel: 'email',
+      dedupe_key: dedupeKey,
+      metadata: {
+        challenge_id: challengeId,
+        discussion_id: discussionId,
+        reply_author_id: replyAuthorId,
+      },
+      sent_at: new Date().toISOString(),
+    }, { onConflict: 'dedupe_key' })
+  }
+}
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string; discussionId: string }> }
@@ -24,7 +121,7 @@ export async function GET(
 
   const { data: discussion, error: discussionError } = await adminClient
     .from('challenge_discussions')
-    .select('id')
+    .select('id, user_id')
     .eq('id', discussionId)
     .eq('challenge_id', id)
     .maybeSingle()
@@ -83,7 +180,7 @@ export async function POST(
 
   const { data: discussion, error: discussionError } = await adminClient
     .from('challenge_discussions')
-    .select('id')
+    .select('id, user_id')
     .eq('id', discussionId)
     .eq('challenge_id', id)
     .maybeSingle()
@@ -111,6 +208,16 @@ export async function POST(
       ?? (data.display_name as string | null)
       ?? 'Anonymous',
   }
+
+  await maybeSendReplyNotification({
+    adminClient,
+    request,
+    challengeId: id,
+    discussionId,
+    discussionOwnerId: discussion.user_id,
+    replyAuthorId: user.id,
+    replyContent: content.trim(),
+  })
 
   return NextResponse.json(reply, { status: 201 })
 }
