@@ -6,8 +6,11 @@ import type { LiveInterviewArtifactSnapshot } from '@/lib/live-interview/artifac
 import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
+import { rateLimit } from '@/lib/security/rate-limit'
 import { apiError } from '@/lib/api/error'
 import { z, ZodError } from 'zod'
+
+const ROUTE_KEY = 'live_interview_debrief'
 
 const INTERVIEW_DIFFICULTY_BASE_XP: Record<string, number> = {
   beginner: 60,
@@ -26,6 +29,10 @@ function validationIssues(error: ZodError) {
     path: issue.path.join('.'),
     message: issue.message,
   }))
+}
+
+function retryAfterSeconds(resetAt: Date) {
+  return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
 }
 
 function aiBudgetResponse(error: unknown) {
@@ -123,7 +130,20 @@ export async function POST(
     turnIndex: t.turn_index,
   }))
   const userPlan = await getUserPlanForBudget(user.id)
-  const budget = { userId: user.id, userPlan, route: 'live_interview_debrief' }
+  const throttle = await rateLimit({
+    key: `ai:${user.id}:${ROUTE_KEY}`,
+    limit: userPlan === 'pro' ? 15 : 5,
+    windowSec: 60,
+  })
+
+  if (!throttle.allowed) {
+    const retryAfter = retryAfterSeconds(throttle.resetAt)
+    const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+    response.headers.set('Retry-After', String(retryAfter))
+    return response
+  }
+
+  const budget = { userId: user.id, userPlan, route: ROUTE_KEY }
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return apiError(503, 'hatch_unavailable', 'Hatch ran into a problem. Try again.')
