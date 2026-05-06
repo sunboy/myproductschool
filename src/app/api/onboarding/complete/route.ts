@@ -22,25 +22,21 @@ export async function POST(request: Request) {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  let rawBody: unknown = {}
+  let body: z.infer<typeof RequestSchema>
   try {
     const text = await request.text()
-    rawBody = text.trim() ? JSON.parse(text) : {}
-  } catch {
+    const rawBody = text.trim() ? JSON.parse(text) : {}
+    body = RequestSchema.parse(rawBody)
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
-
-  const parsed = RequestSchema.safeParse(rawBody)
-  if (!parsed.success) {
-    return NextResponse.json(
-      {
-        error: 'Invalid request body',
-        issues: validationIssues(parsed.error),
-      },
-      { status: 400 }
-    )
-  }
-  const { role_context, experience_level, calibration_answers } = parsed.data
+  const { role_context, experience_level, calibration_answers } = body
 
   const adminClient = createAdminClient()
 
