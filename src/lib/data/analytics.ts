@@ -1,4 +1,4 @@
-import { AnalyticsSummary, ChallengeDiscussion } from '@/lib/types'
+import { AnalyticsSummary, ChallengeDiscussion, DiscussionReply } from '@/lib/types'
 import { MOCK_ANALYTICS_SUMMARY, MOCK_DISCUSSIONS } from '@/lib/mock-data'
 import { createClient } from '@supabase/supabase-js'
 import { IS_MOCK } from '@/lib/mock'
@@ -113,18 +113,50 @@ export async function getChallengeDiscussions(challengeId: string): Promise<Chal
   if (USE_MOCK) return MOCK_DISCUSSIONS.filter(d => d.challenge_id === challengeId || true)
 
   const supabase = getAdminClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('challenge_discussions')
-    .select('*, profiles(username)')
+    .select('*, profiles(display_name)')
     .eq('challenge_id', challengeId)
     .order('created_at', { ascending: false })
+
+  if (error) throw error
 
   // Flatten profiles join
   const enriched = (data ?? []).map((d: Record<string, unknown>) => ({
     ...d,
-    username: (d.profiles as { username?: string } | null)?.username ?? 'Anonymous',
-  }))
-  return enriched as ChallengeDiscussion[]
+    username: (d.profiles as { display_name?: string } | null)?.display_name
+      ?? (d.display_name as string | null)
+      ?? 'Anonymous',
+  })) as Array<Record<string, unknown> & { id: string; username: string }>
+  const discussionIds = enriched.map(d => d.id)
+  if (discussionIds.length === 0) return []
+
+  const { data: replies, error: repliesError } = await supabase
+    .from('discussion_replies')
+    .select('*, profiles(display_name)')
+    .in('discussion_id', discussionIds)
+    .order('created_at', { ascending: true })
+
+  if (repliesError) throw repliesError
+
+  const repliesByDiscussion = new Map<string, DiscussionReply[]>()
+  for (const reply of replies ?? []) {
+    const row = reply as Record<string, unknown>
+    const discussionId = row.discussion_id as string
+    const existing = repliesByDiscussion.get(discussionId) ?? []
+    existing.push({
+      ...(row as unknown as DiscussionReply),
+      username: (row.profiles as { display_name?: string } | null)?.display_name
+        ?? (row.display_name as string | null)
+        ?? 'Anonymous',
+    })
+    repliesByDiscussion.set(discussionId, existing)
+  }
+
+  return enriched.map(d => ({
+    ...d,
+    replies: repliesByDiscussion.get(d.id) ?? [],
+  })) as ChallengeDiscussion[]
 }
 
 export async function postDiscussion(

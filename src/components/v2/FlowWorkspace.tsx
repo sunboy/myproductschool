@@ -2418,6 +2418,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 isOP
                 upvoted={upvoted.has(d.id)}
                 onUpvote={handleDiscussionUpvote}
+                onReplyPosted={fetchDiscussions}
+                replies={d.replies ?? []}
               />
             ))}
           </div>
@@ -2437,6 +2439,8 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             challengeId={challengeId}
             upvoted={upvoted.has(d.id)}
             onUpvote={handleDiscussionUpvote}
+            onReplyPosted={fetchDiscussions}
+            replies={d.replies ?? []}
           />
         ))}
       </div>

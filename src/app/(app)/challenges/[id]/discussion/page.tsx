@@ -118,6 +118,8 @@ function ChallengeDiscussionContent() {
                   challengeId={id}
                   upvoted={upvotedIds.has(d.id)}
                   onUpvote={handleUpvote}
+                  onReplyPosted={fetchDiscussions}
+                  replies={d.replies ?? []}
                 />
               ))}
             </div>
@@ -140,6 +142,8 @@ function ChallengeDiscussionContent() {
                   isOP={idx === 0 && expertPicks.length === 0}
                   upvoted={upvotedIds.has(d.id)}
                   onUpvote={handleUpvote}
+                  onReplyPosted={fetchDiscussions}
+                  replies={d.replies ?? []}
                 />
               ))}
             </div>

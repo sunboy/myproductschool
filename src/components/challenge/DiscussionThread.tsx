@@ -2,15 +2,7 @@
 
 import { useState } from 'react'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
-import { ChallengeDiscussion } from '@/lib/types'
-
-export interface DiscussionReply {
-  id: string
-  username: string
-  display_name?: string | null
-  content: string
-  created_at: string
-}
+import { ChallengeDiscussion, DiscussionReply } from '@/lib/types'
 
 interface Props {
   discussion: ChallengeDiscussion
@@ -18,6 +10,7 @@ interface Props {
   isOP?: boolean
   upvoted?: boolean
   onUpvote?: (id: string) => void
+  onReplyPosted?: () => void | Promise<void>
   replies?: DiscussionReply[]
 }
 
@@ -45,6 +38,7 @@ export function DiscussionThread({
   isOP = false,
   upvoted = false,
   onUpvote,
+  onReplyPosted,
   replies = [],
 }: Props) {
   const [showReply, setShowReply] = useState(false)
@@ -74,6 +68,7 @@ export function DiscussionThread({
         return
       }
       setReplyContent('')
+      await onReplyPosted?.()
       setReplyPosted(true)
       setShowReply(false)
       setTimeout(() => setReplyPosted(false), 3000)

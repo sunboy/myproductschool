@@ -38,7 +38,7 @@ export async function GET(
 
   const { data, error } = await adminClient
     .from('discussion_replies')
-    .select('*, profiles(username)')
+    .select('*, profiles(display_name)')
     .eq('discussion_id', discussionId)
     .order('created_at', { ascending: true })
 
@@ -49,7 +49,7 @@ export async function GET(
   const replies = (data ?? []).map((r: Record<string, unknown>) => ({
     ...r,
     display_name: (r.display_name as string | null) ?? null,
-    username: (r.profiles as { username?: string } | null)?.username
+    username: (r.profiles as { display_name?: string } | null)?.display_name
       ?? (r.display_name as string | null)
       ?? 'Anonymous',
   }))
@@ -98,7 +98,7 @@ export async function POST(
   const { data, error } = await adminClient
     .from('discussion_replies')
     .insert({ discussion_id: discussionId, user_id: user.id, content: content.trim() })
-    .select('*, profiles(username)')
+    .select('*, profiles(display_name)')
     .single()
 
   if (error) {
@@ -107,7 +107,9 @@ export async function POST(
 
   const reply = {
     ...data,
-    username: (data.profiles as { username?: string } | null)?.username ?? 'Anonymous',
+    username: (data.profiles as { display_name?: string } | null)?.display_name
+      ?? (data.display_name as string | null)
+      ?? 'Anonymous',
   }
 
   return NextResponse.json(reply, { status: 201 })

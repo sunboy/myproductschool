@@ -240,6 +240,16 @@ export interface Prescription {
   message?: string  // for onboarding/explore fallback types
 }
 
+export interface DiscussionReply {
+  id: string
+  discussion_id: string
+  user_id: string | null
+  display_name?: string | null
+  username?: string
+  content: string
+  created_at: string
+}
+
 export interface ChallengeDiscussion {
   id: string
   challenge_id: string
@@ -252,6 +262,7 @@ export interface ChallengeDiscussion {
   username?: string
   reply_count?: number
   upvoted_by?: string[]
+  replies?: DiscussionReply[]
 }
 
 export interface AnalyticsSummary {
