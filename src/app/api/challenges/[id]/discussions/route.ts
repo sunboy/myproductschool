@@ -20,8 +20,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
   try {
-    const discussions = await getChallengeDiscussions(id)
+    const discussions = await getChallengeDiscussions(id, user?.id ?? null)
     return NextResponse.json(discussions)
   } catch (err) {
     console.error('Discussions fetch error:', err)

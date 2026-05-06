@@ -109,7 +109,7 @@ export async function getUserAnalyticsSummary(userId: string): Promise<Analytics
   }
 }
 
-export async function getChallengeDiscussions(challengeId: string): Promise<ChallengeDiscussion[]> {
+export async function getChallengeDiscussions(challengeId: string, viewerId?: string | null): Promise<ChallengeDiscussion[]> {
   if (USE_MOCK) return MOCK_DISCUSSIONS.filter(d => d.challenge_id === challengeId || true)
 
   const supabase = getAdminClient()
@@ -128,8 +128,26 @@ export async function getChallengeDiscussions(challengeId: string): Promise<Chal
       ?? (d.display_name as string | null)
       ?? 'Anonymous',
   })) as Array<Record<string, unknown> & { id: string; username: string }>
-  const discussionIds = enriched.map(d => d.id)
-  if (discussionIds.length === 0) return []
+  const visibleDiscussions = enriched.flatMap(d => {
+    if (!d.hidden_at) return [d]
+    if (viewerId && d.user_id === viewerId) return []
+    return [{
+      ...d,
+      content: '[Removed by moderator]',
+      username: 'Removed',
+      display_name: null,
+      is_expert_pick: false,
+      upvote_count: 0,
+      reply_count: 0,
+    }]
+  }) as Array<Record<string, unknown> & { id: string; username: string }>
+
+  const discussionIds = visibleDiscussions
+    .filter(d => !d.hidden_at)
+    .map(d => d.id)
+  if (discussionIds.length === 0) {
+    return visibleDiscussions.map(d => ({ ...d, replies: [] })) as unknown as ChallengeDiscussion[]
+  }
 
   const { data: replies, error: repliesError } = await supabase
     .from('discussion_replies')
@@ -153,9 +171,9 @@ export async function getChallengeDiscussions(challengeId: string): Promise<Chal
     repliesByDiscussion.set(discussionId, existing)
   }
 
-  return enriched.map(d => ({
+  return visibleDiscussions.map(d => ({
     ...d,
-    replies: repliesByDiscussion.get(d.id) ?? [],
+    replies: d.hidden_at ? [] : (repliesByDiscussion.get(d.id) ?? []),
   })) as ChallengeDiscussion[]
 }
 

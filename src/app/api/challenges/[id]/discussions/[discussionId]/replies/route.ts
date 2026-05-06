@@ -121,7 +121,7 @@ export async function GET(
 
   const { data: discussion, error: discussionError } = await adminClient
     .from('challenge_discussions')
-    .select('id, user_id')
+    .select('id, user_id, hidden_at')
     .eq('id', discussionId)
     .eq('challenge_id', id)
     .maybeSingle()
@@ -130,6 +130,9 @@ export async function GET(
     return apiError(500, 'discussion_lookup_failed', 'Failed to load discussion')
   }
   if (!discussion) {
+    return apiError(404, 'discussion_not_found', 'Discussion not found')
+  }
+  if (discussion.hidden_at) {
     return apiError(404, 'discussion_not_found', 'Discussion not found')
   }
 
@@ -180,7 +183,7 @@ export async function POST(
 
   const { data: discussion, error: discussionError } = await adminClient
     .from('challenge_discussions')
-    .select('id, user_id')
+    .select('id, user_id, hidden_at')
     .eq('id', discussionId)
     .eq('challenge_id', id)
     .maybeSingle()
@@ -189,6 +192,9 @@ export async function POST(
     return apiError(500, 'discussion_lookup_failed', 'Failed to load discussion')
   }
   if (!discussion) {
+    return apiError(404, 'discussion_not_found', 'Discussion not found')
+  }
+  if (discussion.hidden_at) {
     return apiError(404, 'discussion_not_found', 'Discussion not found')
   }
 

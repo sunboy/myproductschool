@@ -6,6 +6,7 @@ const adminNav = [
   { href: '/admin/content', icon: 'edit_document', label: 'Content' },
   { href: '/admin/users', icon: 'group', label: 'Users' },
   { href: '/admin/hatch-queue', icon: 'rate_review', label: 'Hatch Queue' },
+  { href: '/admin/discussions', icon: 'forum', label: 'Discussions' },
   { href: '/admin/voice-violations', icon: 'rule', label: 'Voice Rules' },
   { href: '/admin/revenue', icon: 'payments', label: 'Revenue' },
   { href: '/admin/waitlist', icon: 'mail', label: 'Waitlist' },

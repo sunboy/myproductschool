@@ -22,7 +22,7 @@ async function getDiscussionForMutation(
 ) {
   return adminClient
     .from('challenge_discussions')
-    .select('id, user_id')
+    .select('id, user_id, hidden_at')
     .eq('id', discussionId)
     .eq('challenge_id', challengeId)
     .maybeSingle()
@@ -61,6 +61,9 @@ export async function PATCH(
     return apiError(500, 'discussion_lookup_failed', 'Failed to load discussion')
   }
   if (!discussion) {
+    return apiError(404, 'discussion_not_found', 'Discussion not found')
+  }
+  if (discussion.hidden_at) {
     return apiError(404, 'discussion_not_found', 'Discussion not found')
   }
   if (discussion.user_id !== user.id) {
@@ -108,6 +111,9 @@ export async function DELETE(
     return apiError(500, 'discussion_lookup_failed', 'Failed to load discussion')
   }
   if (!discussion) {
+    return apiError(404, 'discussion_not_found', 'Discussion not found')
+  }
+  if (discussion.hidden_at) {
     return apiError(404, 'discussion_not_found', 'Discussion not found')
   }
   if (discussion.user_id !== user.id) {

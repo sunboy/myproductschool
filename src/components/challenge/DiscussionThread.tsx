@@ -56,9 +56,15 @@ export function DiscussionThread({
   const [savingEdit, setSavingEdit] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [editError, setEditError] = useState<string | null>(null)
+  const [reporting, setReporting] = useState(false)
+  const [reportError, setReportError] = useState<string | null>(null)
+  const [reportSuccess, setReportSuccess] = useState(false)
 
   const initials = getInitials(discussion.username ?? 'User')
-  const canModify = Boolean(currentUserId && discussion.user_id === currentUserId)
+  const isHidden = Boolean(discussion.hidden_at)
+  const displayAsOP = isOP && !isHidden
+  const displayAsExpertPick = discussion.is_expert_pick && !isHidden
+  const canModify = Boolean(!isHidden && currentUserId && discussion.user_id === currentUserId)
 
   async function handleSaveEdit() {
     if (!editContent.trim() || savingEdit) return
@@ -106,6 +112,34 @@ export function DiscussionThread({
     }
   }
 
+  async function handleReport() {
+    if (reporting) return
+    const reason = window.prompt('Why are you reporting this discussion?')
+    if (!reason?.trim()) return
+    setReporting(true)
+    setReportError(null)
+    setReportSuccess(false)
+    try {
+      const res = await fetch(`/api/discussions/${discussion.id}/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        setReportError(data?.error ?? 'Could not report discussion. Try again.')
+        return
+      }
+      setReportSuccess(true)
+      setMenuOpen(false)
+      setTimeout(() => setReportSuccess(false), 3000)
+    } catch {
+      setReportError('Could not report discussion. Try again.')
+    } finally {
+      setReporting(false)
+    }
+  }
+
   async function handlePostReply() {
     if (!replyContent.trim() || postingReply) return
     setPostingReply(true)
@@ -136,7 +170,7 @@ export function DiscussionThread({
     }
   }
 
-  const actionRow = (
+  const actionRow = !isHidden && (
     <div className="flex items-center gap-3 mt-3">
       <button
         onClick={() => onUpvote?.(discussion.id)}
@@ -179,43 +213,64 @@ export function DiscussionThread({
         </span>
       )}
 
-      {canModify && (
-        <div className="relative ml-auto">
-          <button
-            type="button"
-            onClick={() => setMenuOpen(v => !v)}
-            aria-label="Discussion actions"
-            aria-expanded={menuOpen}
-            className="material-symbols-outlined text-base text-on-surface-variant hover:text-on-surface transition-colors p-1 rounded-full hover:bg-surface-container-highest"
-          >
-            more_horiz
-          </button>
-          {menuOpen && (
-            <div className="absolute right-0 top-8 z-10 min-w-28 rounded-lg border border-outline-variant/30 bg-white py-1 shadow-lg">
-              <button
-                type="button"
-                onClick={() => {
-                  setEditing(true)
-                  setEditContent(discussion.content)
-                  setEditError(null)
-                  setMenuOpen(false)
-                }}
-                className="w-full px-3 py-2 text-left text-xs font-semibold text-on-surface hover:bg-surface-container-highest"
-              >
-                Edit
-              </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={deleting}
-                className="w-full px-3 py-2 text-left text-xs font-semibold text-error hover:bg-surface-container-highest disabled:opacity-50"
-              >
-                {deleting ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-          )}
-        </div>
+      {reportSuccess && (
+        <span className="text-xs text-primary font-bold flex items-center gap-1">
+          <span className="material-symbols-outlined text-xs">check_circle</span>
+          Report sent
+        </span>
       )}
+
+      {reportError && (
+        <span className="text-xs text-error font-semibold">{reportError}</span>
+      )}
+
+      <div className="relative ml-auto">
+        <button
+          type="button"
+          onClick={() => setMenuOpen(v => !v)}
+          aria-label="Discussion actions"
+          aria-expanded={menuOpen}
+          className="material-symbols-outlined text-base text-on-surface-variant hover:text-on-surface transition-colors p-1 rounded-full hover:bg-surface-container-highest"
+        >
+          more_horiz
+        </button>
+        {menuOpen && (
+          <div className="absolute right-0 top-8 z-10 min-w-28 rounded-lg border border-outline-variant/30 bg-white py-1 shadow-lg">
+            {canModify && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditing(true)
+                    setEditContent(discussion.content)
+                    setEditError(null)
+                    setMenuOpen(false)
+                  }}
+                  className="w-full px-3 py-2 text-left text-xs font-semibold text-on-surface hover:bg-surface-container-highest"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="w-full px-3 py-2 text-left text-xs font-semibold text-error hover:bg-surface-container-highest disabled:opacity-50"
+                >
+                  {deleting ? 'Deleting...' : 'Delete'}
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={handleReport}
+              disabled={reporting}
+              className="w-full px-3 py-2 text-left text-xs font-semibold text-on-surface hover:bg-surface-container-highest disabled:opacity-50"
+            >
+              {reporting ? 'Reporting...' : 'Report'}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 
@@ -265,7 +320,7 @@ export function DiscussionThread({
     </>
   )
 
-  const replyInput = showReply && (
+  const replyInput = !isHidden && showReply && (
     <div className="mt-3 ml-4 border-l-2 border-outline-variant/30 pl-4 space-y-2">
       <textarea
         className="w-full text-sm bg-surface-container-low rounded-lg border border-outline-variant/40 p-3 resize-none focus:outline-none focus:ring-1 focus:ring-primary/50 text-on-surface placeholder:text-on-surface-variant/60"
@@ -303,7 +358,7 @@ export function DiscussionThread({
     </div>
   )
 
-  const repliesList = replies.length > 0 && (
+  const repliesList = !isHidden && replies.length > 0 && (
     <div className="mt-3 ml-4 border-l-2 border-outline-variant/20 pl-4 space-y-3">
       {replies.map(r => {
         const replyName = r.display_name || r.username || 'Anonymous'
@@ -332,8 +387,8 @@ export function DiscussionThread({
     </div>
   )
 
-  // OP variant — green left border
-  if (isOP) {
+  // OP variant with green left border
+  if (displayAsOP) {
     return (
       <div className="bg-white rounded-xl p-5 shadow-sm border border-outline-variant/20 border-l-4 border-l-primary">
         <div className="flex items-start gap-3">
@@ -358,8 +413,8 @@ export function DiscussionThread({
     )
   }
 
-  // Expert pick variant — amber/tertiary left border with Hatch branding
-  if (discussion.is_expert_pick) {
+  // Expert pick variant with amber/tertiary left border and Hatch branding
+  if (displayAsExpertPick) {
     return (
       <div className="bg-white rounded-xl p-5 shadow-sm border border-outline-variant/20 border-l-4 border-l-tertiary">
         <div className="flex items-start gap-3">

@@ -259,6 +259,9 @@ export interface ChallengeDiscussion {
   is_expert_pick: boolean
   upvote_count: number
   created_at: string
+  hidden_at?: string | null
+  hidden_by?: string | null
+  hidden_reason?: string | null
   username?: string
   reply_count?: number
   upvoted_by?: string[]
