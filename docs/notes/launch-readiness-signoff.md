@@ -45,6 +45,8 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: `npx tsx --test tests/lib/billing/entitlements.test.ts` passed on May 6, 2026: 6 tests.
 - [x] Security helper unit coverage passes.
   - Evidence: `npx tsx --test tests/lib/security/turnstile.test.ts tests/lib/ai/moderation.test.ts tests/lib/security/rate-limit.test.ts` passed on May 6, 2026: 13 tests.
+- [x] AI guardrail unit coverage passes.
+  - Evidence: `npx tsx --test tests/lib/ai/voice-rules.test.ts tests/lib/ai/sanitize.test.ts tests/lib/ai/guarded-client.test.ts` passed on May 6, 2026: 15 tests.
 - [x] Active cohort feature surface is removed from launch.
   - Evidence: deleted `/api/cohort/current`, `/api/cohort/leaderboard`, and `/api/cohort/submit` route handlers plus the unused cohort hook/data helpers.
   - Evidence: `/challenges` no longer fetches cohort leaderboard data; dashboard community CTA now links to practice instead of a weekly room.
