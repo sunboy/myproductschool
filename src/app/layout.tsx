@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Raleway, Literata } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { PostHogProvider } from "@/components/PostHogProvider";
@@ -25,6 +25,7 @@ export const metadata: Metadata = {
     template: '%s | HackProduct',
   },
   description: DEFAULT_DESCRIPTION,
+  manifest: '/manifest.json',
   keywords: [
     'AI-native learning platform', 'product-minded engineer', 'product sense', 'product thinking',
     'system design practice', 'data modeling practice', 'SQL interview practice', 'coding interview practice',
@@ -81,6 +82,10 @@ export const metadata: Metadata = {
     },
   },
   category: 'education',
+};
+
+export const viewport: Viewport = {
+  themeColor: '#4a7c59',
 };
 
 export default function RootLayout({
