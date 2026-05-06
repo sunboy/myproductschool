@@ -32,11 +32,11 @@ The current owner-narrowed launch scope is:
 | 9. Onboarding resilience | Partial | Essential signup to onboarding to dashboard passed. Refresh mid-calibration resume has not been reverified in the latest gate. |
 | 10. Mental Models | Unknown | No latest evidence tying weak competency feedback to `motivation_theory` recommendation. |
 | 11. Discussions | Complete for launch | `e2e/discussions.spec.ts` passed `10/10` against local production server. |
-| 12. Legal/help | Local complete, production manual remains | Local production smoke returned `200` for `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog`. `PUBLIC_DIRECTORY_PATHS` includes those paths for sitemap generation. Production owner check remains. |
+| 12. Legal/help | Local complete, production blocked | Local production smoke returned `200` for `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog`. `PUBLIC_DIRECTORY_PATHS` includes those paths for sitemap generation. Live production currently redirects to an older waitlist build, so production page checks remain blocked until deployment/domain routing is updated. |
 | 13. Bookmarks/share/referral display/push/2FA | Not complete | Push and 2FA are not launch scope. Referral display depends on affiliate setup. |
 | 14. Mobile | Not complete | No latest 375px browser/axe evidence recorded. |
 | 15. Voice violation rate after 24 hours | Not complete | Requires post-launch or extended normal-use monitoring. |
-| 16. Security headers | Local complete, production manual remains | `next.config.ts` defines HSTS, CSP, frame denial, nosniff, referrer, and permissions policies. Local `next start` smoke on `/privacy` returned those headers and no `x-powered-by`. Production-domain verification remains owner-controlled. |
+| 16. Security headers | Local complete, production partial | `next.config.ts` defines HSTS, CSP, frame denial, nosniff, referrer, and permissions policies. Local `next start` smoke on `/privacy` returned those headers and no `x-powered-by`. Live `https://www.hackproduct.com/waitlist` check found HSTS, nosniff, frame, referrer, and permissions headers, but CSP was absent and the page is an older waitlist build. |
 | 17. Secret rotation | Partial | Repo/staged secret scans pass. Provider key rotation remains owner-controlled. |
 | 18. Sentry receiving | Unknown | No current Sentry evidence recorded. |
 | 19. Status page reachable | Manual blocker | `/api/health` exists and smokes locally; `status.hackproduct.com` DNS/provider setup remains owner-controlled. |

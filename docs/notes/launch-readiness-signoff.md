@@ -71,6 +71,9 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 
 ## Open Blockers
 
+- [ ] Production domain appears to be serving an older waitlist build.
+  - Evidence: live browser check on May 6, 2026 showed `https://hackproduct.com/` redirecting to `https://www.hackproduct.com/waitlist`.
+  - Evidence: the live waitlist page still contains legacy "Luma" coach copy, so production does not match the current launch-ready local app.
 - [ ] Affiliate real signup smoke is blocked by Stripe account setup.
   - Stripe Connect is not enabled for the account used by `.env.local`.
   - Required env vars are missing locally: `STRIPE_AFFILIATE_COUPON_ID`, `STRIPE_TEST_AFFILIATE_COUPON_ID`, `AFFILIATE_HASH_SECRET`.
@@ -99,7 +102,7 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 - [ ] Owner checks `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog` in production.
 - [ ] Owner runs browser PWA installability check. Static repo audit found a valid linked manifest and existing 512px icon, but no browser installability proof yet.
 - [ ] Owner creates/configures the external status provider and DNS for `status.hackproduct.com`.
-- [ ] Owner verifies production security headers are present on the deployed domain.
+- [ ] Owner verifies production security headers are present on the deployed domain. Live check on May 6, 2026 found HSTS, nosniff, frame, referrer, and permissions headers on `https://www.hackproduct.com/waitlist`, but CSP was absent.
 
 ## Commands
 
