@@ -5,6 +5,7 @@ import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
+import { apiError } from '@/lib/api/error'
 import { z, ZodError } from 'zod'
 
 const ROUTE_KEY = 'live_interview_chat'
@@ -39,24 +40,23 @@ export async function POST(
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return new Response('Unauthorized', { status: 401 })
+  if (!user) return apiError(401, 'auth_required', 'Unauthorized')
 
   let body: z.infer<typeof RequestSchema>
   try {
     body = RequestSchema.parse(await request.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return Response.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
   const { message } = body
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({ error: 'Hatch ran into a problem. Try again.' }, { status: 503 })
+    return apiError(503, 'hatch_unavailable', 'Hatch ran into a problem. Try again.')
   }
 
   const adminClient = createAdminClient()
@@ -69,8 +69,8 @@ export async function POST(
     .eq('user_id', user.id)
     .single()
 
-  if (!session) return new Response('Session not found', { status: 404 })
-  if (session.status === 'completed') return new Response('Session ended', { status: 410 })
+  if (!session) return apiError(404, 'session_not_found', 'Session not found')
+  if (session.status === 'completed') return apiError(410, 'session_ended', 'Session ended')
 
   // Load existing turns for conversation history
   const { data: turnsData, count, error: turnsError } = await adminClient
@@ -79,7 +79,7 @@ export async function POST(
     .eq('session_id', id)
     .order('turn_index', { ascending: true })
 
-  if (turnsError) return new Response('Internal Server Error', { status: 500 })
+  if (turnsError) return apiError(500, 'live_interview_turns_load_failed', 'Internal Server Error')
   const nextIndex = count ?? 0
 
   const conversation = [
@@ -129,13 +129,9 @@ export async function POST(
 
   if (!throttle.allowed) {
     const retryAfter = retryAfterSeconds(throttle.resetAt)
-    return Response.json(
-      { error: 'rate_limited', retryAfter },
-      {
-        status: 429,
-        headers: { 'Retry-After': String(retryAfter) },
-      }
-    )
+    const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+    response.headers.set('Retry-After', String(retryAfter))
+    return response
   }
 
   let reply = ''
@@ -150,29 +146,21 @@ export async function POST(
     reply = response.sanitized
   } catch (error) {
     if (error instanceof PlanLimitExceeded) {
-      return Response.json(
-        {
-          error: 'limit_reached',
-          feature: error.feature,
-          used: error.used,
-          limit: error.limit,
-          windowDays: error.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: error.feature,
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
     }
 
     if (error instanceof AiBudgetExceededError) {
-      return Response.json(
-        {
-          error: 'limit_reached',
-          feature: 'hatch_ai_cents',
-          used: error.used,
-          limit: error.limit,
-          windowDays: error.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: 'hatch_ai_cents',
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
     }
     throw error
   }
@@ -195,7 +183,7 @@ export async function POST(
 
   if (insertError) {
     console.error('Failed to save turns:', insertError)
-    return new Response('Failed to save turn', { status: 500 })
+    return apiError(500, 'live_interview_turn_save_failed', 'Failed to save turn')
   }
 
   // Update total turns

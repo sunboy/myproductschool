@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { getChallengeDiscussions, postDiscussion } from '@/lib/data/analytics'
 import { createClient } from '@/lib/supabase/server'
+import { apiError } from '@/lib/api/error'
 
 const RequestSchema = z.object({
   content: z.string().trim().min(1).max(10000),
@@ -24,7 +25,7 @@ export async function GET(
     return NextResponse.json(discussions)
   } catch (err) {
     console.error('Discussions fetch error:', err)
-    return NextResponse.json({ error: 'Failed to fetch discussions' }, { status: 500 })
+    return apiError(500, 'discussion_fetch_failed', 'Failed to fetch discussions')
   }
 }
 
@@ -38,12 +39,11 @@ export async function POST(
     body = RequestSchema.parse(await request.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
   const { content } = body
 
@@ -56,6 +56,6 @@ export async function POST(
     return NextResponse.json(discussion, { status: 201 })
   } catch (err) {
     console.error('Discussion post error:', err)
-    return NextResponse.json({ error: 'Failed to post discussion' }, { status: 500 })
+    return apiError(500, 'discussion_post_failed', 'Failed to post discussion')
   }
 }

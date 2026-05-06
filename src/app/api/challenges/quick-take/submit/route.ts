@@ -8,6 +8,7 @@ import { applyMoveLevelXp } from '@/lib/data/move-levels-update'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
+import { apiError } from '@/lib/api/error'
 
 // XP base for quick-takes (lower than full challenges)
 const QUICK_TAKE_XP_BASE = 20
@@ -108,18 +109,17 @@ export async function POST(req: NextRequest) {
     body = RequestSchema.parse(await req.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
   const { challenge_id, response_text } = body
 
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return apiError(401, 'auth_required', 'Unauthorized')
   const userPlan = await getUserPlanForBudget(user.id)
   const throttle = await rateLimit({
     key: `ai:${user.id}:${ROUTE_KEY}`,
@@ -129,13 +129,9 @@ export async function POST(req: NextRequest) {
 
   if (!throttle.allowed) {
     const retryAfter = retryAfterSeconds(throttle.resetAt)
-    return NextResponse.json(
-      { error: 'rate_limited', retryAfter },
-      {
-        status: 429,
-        headers: { 'Retry-After': String(retryAfter) },
-      }
-    )
+    const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+    response.headers.set('Retry-After', String(retryAfter))
+    return response
   }
 
   const adminClient = createAdminClient()
@@ -148,7 +144,7 @@ export async function POST(req: NextRequest) {
     .eq('challenge_type', 'quick_take')
     .single()
 
-  if (!challenge) return NextResponse.json({ error: 'Prompt not found' }, { status: 404 })
+  if (!challenge) return apiError(404, 'prompt_not_found', 'Prompt not found')
 
   // Grade with Haiku — quality score 0.0–1.0
   let score: number
@@ -165,29 +161,21 @@ export async function POST(req: NextRequest) {
     feedback = result.feedback
   } catch (error) {
     if (error instanceof PlanLimitExceeded) {
-      return NextResponse.json(
-        {
-          error: 'limit_reached',
-          feature: error.feature,
-          used: error.used,
-          limit: error.limit,
-          windowDays: error.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: error.feature,
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
     }
 
     if (error instanceof AiBudgetExceededError) {
-      return NextResponse.json(
-        {
-          error: 'limit_reached',
-          feature: 'hatch_ai_cents',
-          used: error.used,
-          limit: error.limit,
-          windowDays: error.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: 'hatch_ai_cents',
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
     }
 
     throw error
@@ -211,7 +199,7 @@ export async function POST(req: NextRequest) {
     feedback_json: { feedback, xp_earned, move: primaryMove },
   })
   if (attemptInsertError) {
-    return NextResponse.json({ error: 'Failed to save quick-take attempt' }, { status: 500 })
+    return apiError(500, 'quick_take_attempt_save_failed', 'Failed to save quick-take attempt')
   }
 
   const { error: sessionEventError } = await adminClient.from('session_events').insert({
@@ -230,7 +218,7 @@ export async function POST(req: NextRequest) {
     .eq('id', user.id)
     .single()
   if (profileReadError || !profileRow) {
-    return NextResponse.json({ error: 'Failed to load profile for XP update' }, { status: 500 })
+    return apiError(500, 'profile_xp_load_failed', 'Failed to load profile for XP update')
   }
 
   const { error: xpUpdateError } = await adminClient
@@ -238,7 +226,7 @@ export async function POST(req: NextRequest) {
     .update({ xp_total: (profileRow.xp_total ?? 0) + xp_earned })
     .eq('id', user.id)
   if (xpUpdateError) {
-    return NextResponse.json({ error: 'Failed to award quick-take XP' }, { status: 500 })
+    return apiError(500, 'quick_take_xp_award_failed', 'Failed to award quick-take XP')
   }
 
   const { error: streakError } = await adminClient.rpc('update_user_streak', { p_user_id: user.id })

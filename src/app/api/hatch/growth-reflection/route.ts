@@ -8,6 +8,7 @@ import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
+import { apiError } from '@/lib/api/error'
 
 const MOCK_REFLECTION =
   "You've been showing strong diagnostic precision, your frame move is your biggest strength right now. Keep pushing your weigh move next, that's where your next level is hiding."
@@ -33,11 +34,11 @@ export async function POST() {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError(401, 'auth_required', 'Unauthorized')
     }
     userId = user.id
   } catch {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError(401, 'auth_required', 'Unauthorized')
   }
 
   // ── Hatch context ─────────────────────────────────────────────
@@ -82,13 +83,9 @@ export async function POST() {
 
       if (!throttle.allowed) {
         const retryAfter = retryAfterSeconds(throttle.resetAt)
-        return NextResponse.json(
-          { error: 'rate_limited', retryAfter },
-          {
-            status: 429,
-            headers: { 'Retry-After': String(retryAfter) },
-          }
-        )
+        const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+        response.headers.set('Retry-After', String(retryAfter))
+        return response
       }
 
       await assertPlanLimit(userId, userPlan, 'hatch_chat_msgs')
@@ -116,29 +113,21 @@ export async function POST() {
       reflection = parsed.reflection
     } catch (error) {
       if (error instanceof PlanLimitExceeded) {
-        return NextResponse.json(
-          {
-            error: 'limit_reached',
-            feature: error.feature,
-            used: error.used,
-            limit: error.limit,
-            windowDays: error.windowDays,
-          },
-          { status: 402 }
-        )
+        return apiError(402, 'limit_reached', 'limit_reached', {
+          feature: error.feature,
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        })
       }
 
       if (error instanceof AiBudgetExceededError) {
-        return NextResponse.json(
-          {
-            error: 'limit_reached',
-            feature: 'hatch_ai_cents',
-            used: error.used,
-            limit: error.limit,
-            windowDays: error.windowDays,
-          },
-          { status: 402 }
-        )
+        return apiError(402, 'limit_reached', 'limit_reached', {
+          feature: 'hatch_ai_cents',
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        })
       }
 
       const weakest = hatchCtx.weakestCompetency ?? 'your product thinking'

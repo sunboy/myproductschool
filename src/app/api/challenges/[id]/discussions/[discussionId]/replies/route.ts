@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { apiError } from '@/lib/api/error'
 
 const RequestSchema = z.object({
   content: z.string().trim().min(1).max(10000),
@@ -28,7 +29,7 @@ export async function GET(
     .order('created_at', { ascending: true })
 
   if (error) {
-    return NextResponse.json({ error: 'Failed to fetch replies' }, { status: 500 })
+    return apiError(500, 'discussion_replies_fetch_failed', 'Failed to fetch replies')
   }
 
   const replies = (data ?? []).map((r: Record<string, unknown>) => ({
@@ -52,12 +53,11 @@ export async function POST(
     body = RequestSchema.parse(await request.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
   const { content } = body
 
@@ -74,7 +74,7 @@ export async function POST(
     .single()
 
   if (error) {
-    return NextResponse.json({ error: 'Failed to post reply' }, { status: 500 })
+    return apiError(500, 'discussion_reply_post_failed', 'Failed to post reply')
   }
 
   const reply = {

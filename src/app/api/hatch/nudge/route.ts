@@ -8,6 +8,7 @@ import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budg
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
 import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
+import { apiError } from '@/lib/api/error'
 import type { FlowStep } from '@/lib/types'
 
 const MOCK_NUDGES = [
@@ -42,12 +43,11 @@ export async function POST(req: NextRequest) {
     body = RequestSchema.parse(await req.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
   const { challengePrompt, draft, attemptId, step } = body
 
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError(401, 'auth_required', 'Unauthorized')
   }
 
   const userPlan = await getUserPlanForBudget(user.id)
@@ -75,13 +75,9 @@ export async function POST(req: NextRequest) {
 
   if (!throttle.allowed) {
     const retryAfter = retryAfterSeconds(throttle.resetAt)
-    return NextResponse.json(
-      { error: 'rate_limited', retryAfter },
-      {
-        status: 429,
-        headers: { 'Retry-After': String(retryAfter) },
-      }
-    )
+    const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+    response.headers.set('Retry-After', String(retryAfter))
+    return response
   }
 
   const budget = { userId: user.id, userPlan, route: ROUTE_KEY }
@@ -96,7 +92,7 @@ export async function POST(req: NextRequest) {
       .eq('attempt_id', attemptId)
 
     if ((count ?? 0) >= 3) {
-      return NextResponse.json({ error: 'Nudge limit reached', remaining: 0 }, { status: 429 })
+      return apiError(429, 'nudge_limit_reached', 'Nudge limit reached', { remaining: 0 })
     }
 
     // Record nudge usage.
@@ -108,7 +104,7 @@ export async function POST(req: NextRequest) {
     } catch (insertError) {
       // If insert fails due to a unique constraint violation treat it as rate-limited.
       console.warn('nudge_usage insert failed (possible race / constraint):', insertError)
-      return NextResponse.json({ error: 'Nudge limit reached', remaining: 0 }, { status: 429 })
+      return apiError(429, 'nudge_limit_reached', 'Nudge limit reached', { remaining: 0 })
     }
   }
 
@@ -116,16 +112,12 @@ export async function POST(req: NextRequest) {
     await assertPlanLimit(user.id, userPlan, 'hatch_nudges')
   } catch (error) {
     if (error instanceof PlanLimitExceeded) {
-      return NextResponse.json(
-        {
-          error: 'limit_reached',
-          used: error.used,
-          limit: error.limit,
-          feature: error.feature,
-          windowDays: error.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        used: error.used,
+        limit: error.limit,
+        feature: error.feature,
+        windowDays: error.windowDays,
+      })
     }
 
     throw error
@@ -152,16 +144,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ nudge })
   } catch (error) {
     if (error instanceof AiBudgetExceededError) {
-      return NextResponse.json(
-        {
-          error: 'limit_reached',
-          feature: 'hatch_ai_cents',
-          used: error.used,
-          limit: error.limit,
-          windowDays: error.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: 'hatch_ai_cents',
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
     }
 
     console.error('Hatch nudge error:', error)

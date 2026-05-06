@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkUsageLimit, recordUsageEvent } from '@/lib/usage/check-limit'
 import { buildPromptFromSession } from '@/lib/live-interview/build-prompt-from-session'
+import { apiError } from '@/lib/api/error'
 import { z, ZodError } from 'zod'
 
 const RequestSchema = z.object({
@@ -28,18 +29,17 @@ export async function POST(request: Request) {
     body = RequestSchema.parse(await request.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return Response.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
   const { companyId, roleId, challengeId, discipline } = body
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return new Response('Unauthorized', { status: 401 })
+  if (!user) return apiError(401, 'auth_required', 'Unauthorized')
 
   const adminClient = createAdminClient()
 
@@ -56,16 +56,12 @@ export async function POST(request: Request) {
   if (!isAdminUser) {
     const limitResult = await checkUsageLimit(user.id, 'interviews', userPlanForLimit)
     if (!limitResult.allowed) {
-      return Response.json(
-        {
-          error: 'limit_reached',
-          used: limitResult.used,
-          limit: limitResult.limit,
-          feature: 'interviews',
-          windowDays: limitResult.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        used: limitResult.used,
+        limit: limitResult.limit,
+        feature: 'interviews',
+        windowDays: limitResult.windowDays,
+      })
     }
   }
 

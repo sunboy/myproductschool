@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { sameOriginRedirect } from '@/lib/auth/rate-limit'
 import { createClient } from '@/lib/supabase/server'
+import { apiError } from '@/lib/api/error'
 
 const RequestSchema = z.object({
   redirectTo: z.string().trim().max(2048).optional(),
@@ -13,11 +14,11 @@ const DeleteRequestSchema = z.object({
 })
 
 function authRequiredResponse() {
-  return NextResponse.json({ error: 'auth_required' }, { status: 401 })
+  return apiError(401, 'auth_required', 'auth_required')
 }
 
 function providerErrorResponse(message = 'Could not update linked accounts.') {
-  return NextResponse.json({ error: message }, { status: 400 })
+  return apiError(400, 'identity_provider_error', message)
 }
 
 function validationIssues(error: ZodError) {
@@ -33,12 +34,11 @@ export async function POST(request: Request) {
     body = RequestSchema.parse(await request.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
 
   const supabase = await createClient()
@@ -72,12 +72,11 @@ export async function DELETE(request: Request) {
     body = DeleteRequestSchema.parse(await request.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
 
   const supabase = await createClient()

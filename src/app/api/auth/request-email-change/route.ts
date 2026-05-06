@@ -7,6 +7,7 @@ import {
 import { hasValidReauthToken } from '@/lib/auth/reauth'
 import { emailChangeSchema } from '@/lib/auth/validation'
 import { createClient } from '@/lib/supabase/server'
+import { apiError } from '@/lib/api/error'
 import { z, ZodError } from 'zod'
 
 const RequestSchema = emailChangeSchema.extend({
@@ -14,13 +15,9 @@ const RequestSchema = emailChangeSchema.extend({
 })
 
 function rateLimitedResponse(retryAfter: number) {
-  return NextResponse.json(
-    { error: 'rate_limited', retryAfter },
-    {
-      status: 429,
-      headers: { 'Retry-After': String(retryAfter) },
-    }
-  )
+  const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+  response.headers.set('Retry-After', String(retryAfter))
+  return response
 }
 
 function validationIssues(error: ZodError) {
@@ -36,30 +33,29 @@ export async function POST(request: Request) {
     body = RequestSchema.parse(await request.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
 
   const supabase = await createClient()
   const { data: { user }, error: userError } = await supabase.auth.getUser()
   if (userError || !user) {
-    return NextResponse.json({ error: 'auth_required' }, { status: 401 })
+    return apiError(401, 'auth_required', 'auth_required')
   }
 
   if (!user.email) {
-    return NextResponse.json({ error: 'Email changes require an email account.' }, { status: 400 })
+    return apiError(400, 'email_account_required', 'Email changes require an email account.')
   }
   if (!hasValidReauthToken(request, user.id)) {
-    return NextResponse.json({ error: 'reauth_required' }, { status: 403 })
+    return apiError(403, 'reauth_required', 'reauth_required')
   }
 
   const { email, currentPassword } = body
   if (email === user.email.toLowerCase()) {
-    return NextResponse.json({ error: 'Enter a different email.' }, { status: 400 })
+    return apiError(400, 'same_email', 'Enter a different email.')
   }
 
   const ip = getClientIp(request)
@@ -74,7 +70,7 @@ export async function POST(request: Request) {
     password: currentPassword,
   })
   if (signInError) {
-    return NextResponse.json({ error: 'Current password is incorrect.' }, { status: 400 })
+    return apiError(400, 'invalid_current_password', 'Current password is incorrect.')
   }
 
   const { error: updateError } = await supabase.auth.updateUser(
@@ -82,7 +78,7 @@ export async function POST(request: Request) {
     { emailRedirectTo: sameOriginRedirect(request, body.redirectTo, '/auth/callback?next=/settings') }
   )
   if (updateError) {
-    return NextResponse.json({ error: 'Could not request email change.' }, { status: 400 })
+    return apiError(400, 'email_change_failed', 'Could not request email change.')
   }
 
   return NextResponse.json({ ok: true, email })

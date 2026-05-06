@@ -8,6 +8,7 @@ import { sceneToPrompt } from '@/lib/hatch/canvas-scene'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
+import { apiError } from '@/lib/api/error'
 import type { CanvasInterpretResponse, CanvasIntent } from '@/lib/types'
 
 const ROUTE_KEY = 'hatch_canvas_interpret'
@@ -407,7 +408,7 @@ export async function POST(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError(401, 'auth_required', 'Unauthorized')
   }
   const userPlan = await getUserPlanForBudget(user.id)
   const throttle = await rateLimit({
@@ -418,13 +419,9 @@ export async function POST(req: NextRequest) {
 
   if (!throttle.allowed) {
     const retryAfter = retryAfterSeconds(throttle.resetAt)
-    return NextResponse.json(
-      { error: 'rate_limited', retryAfter },
-      {
-        status: 429,
-        headers: { 'Retry-After': String(retryAfter) },
-      }
-    )
+    const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+    response.headers.set('Retry-After', String(retryAfter))
+    return response
   }
 
   const budget = { userId: user.id, userPlan, route: ROUTE_KEY }
@@ -434,12 +431,11 @@ export async function POST(req: NextRequest) {
     body = RequestSchema.parse(await req.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
 
   const challengeType = body.challengeType ?? 'system_design'
@@ -464,29 +460,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result)
   } catch (error) {
     if (error instanceof PlanLimitExceeded) {
-      return NextResponse.json(
-        {
-          error: 'limit_reached',
-          feature: error.feature,
-          used: error.used,
-          limit: error.limit,
-          windowDays: error.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: error.feature,
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
     }
 
     if (error instanceof AiBudgetExceededError) {
-      return NextResponse.json(
-        {
-          error: 'limit_reached',
-          feature: 'hatch_ai_cents',
-          used: error.used,
-          limit: error.limit,
-          windowDays: error.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: 'hatch_ai_cents',
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
     }
 
     console.error('Canvas interpret error:', error)

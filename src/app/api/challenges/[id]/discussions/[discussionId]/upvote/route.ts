@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { apiError } from '@/lib/api/error'
 
 export async function PATCH(
   _request: NextRequest,
@@ -22,7 +23,7 @@ export async function PATCH(
     .single()
 
   if (error || !discussion) {
-    return NextResponse.json({ error: 'Discussion not found' }, { status: 404 })
+    return apiError(404, 'discussion_not_found', 'Discussion not found')
   }
 
   const upvotedBy: string[] = discussion.upvoted_by ?? []
@@ -42,7 +43,7 @@ export async function PATCH(
     .eq('id', discussionId)
 
   if (updateError) {
-    return NextResponse.json({ error: 'Failed to update upvote' }, { status: 500 })
+    return apiError(500, 'discussion_upvote_failed', 'Failed to update upvote')
   }
 
   return NextResponse.json({ upvote_count: newCount, upvoted: !alreadyUpvoted })

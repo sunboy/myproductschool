@@ -7,6 +7,7 @@ import {
 } from '@/lib/auth/rate-limit'
 import { protectedSignupSchema } from '@/lib/auth/validation'
 import { isHoneypotFilled, turnstileErrorMessage, verifyTurnstileToken } from '@/lib/security/turnstile'
+import { apiError } from '@/lib/api/error'
 import { z, ZodError } from 'zod'
 
 const RequestSchema = protectedSignupSchema.extend({
@@ -14,13 +15,9 @@ const RequestSchema = protectedSignupSchema.extend({
 })
 
 function rateLimitedResponse(retryAfter: number) {
-  return NextResponse.json(
-    { error: 'rate_limited', retryAfter },
-    {
-      status: 429,
-      headers: { 'Retry-After': String(retryAfter) },
-    }
-  )
+  const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+  response.headers.set('Retry-After', String(retryAfter))
+  return response
 }
 
 function validationIssues(error: ZodError) {
@@ -36,17 +33,16 @@ export async function POST(request: Request) {
     body = RequestSchema.parse(await request.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
   const { email, password, name, turnstileToken, website } = body
 
   if (isHoneypotFilled(website)) {
-    return NextResponse.json({ error: 'Unable to submit this form.' }, { status: 400 })
+    return apiError(400, 'bot_trap_triggered', 'Unable to submit this form.')
   }
 
   const ip = getClientIp(request)
@@ -58,7 +54,7 @@ export async function POST(request: Request) {
 
   const turnstile = await verifyTurnstileToken({ token: turnstileToken, remoteIp: ip })
   if (!turnstile.ok) {
-    return NextResponse.json({ error: turnstileErrorMessage(turnstile) }, { status: 400 })
+    return apiError(400, 'turnstile_failed', turnstileErrorMessage(turnstile))
   }
 
   const supabase = await createClient()
@@ -72,7 +68,7 @@ export async function POST(request: Request) {
   })
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 })
+    return apiError(400, 'signup_failed', error.message)
   }
 
   return NextResponse.json({

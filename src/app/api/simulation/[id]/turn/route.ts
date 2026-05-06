@@ -8,6 +8,7 @@ import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
+import { apiError } from '@/lib/api/error'
 import { z, ZodError } from 'zod'
 
 const ROUTE_KEY = 'simulation_turn'
@@ -34,7 +35,7 @@ export async function POST(
   const { id } = await params
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return apiError(401, 'auth_required', 'Unauthorized')
   const userPlan = await getUserPlanForBudget(user.id)
 
   let body: z.infer<typeof RequestSchema>
@@ -42,12 +43,11 @@ export async function POST(
     body = RequestSchema.parse(await request.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
   const { content } = body
   const shouldCallModel = !IS_MOCK && Boolean(process.env.ANTHROPIC_API_KEY)
@@ -61,13 +61,9 @@ export async function POST(
 
     if (!throttle.allowed) {
       const retryAfter = retryAfterSeconds(throttle.resetAt)
-      return NextResponse.json(
-        { error: 'rate_limited', retryAfter },
-        {
-          status: 429,
-          headers: { 'Retry-After': String(retryAfter) },
-        }
-      )
+      const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+      response.headers.set('Retry-After', String(retryAfter))
+      return response
     }
   }
 
@@ -80,8 +76,8 @@ export async function POST(
     .eq('user_id', user.id)
     .single()
 
-  if (sessionError || !session) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
-  if (session.status === 'completed') return NextResponse.json({ error: 'Session already completed' }, { status: 400 })
+  if (sessionError || !session) return apiError(404, 'session_not_found', 'Session not found')
+  if (session.status === 'completed') return apiError(400, 'session_completed', 'Session already completed')
 
   const [existingTurnsResult, hatchCtx] = await Promise.all([
     adminClient
@@ -125,29 +121,21 @@ export async function POST(
       hatchReply = response.sanitized
     } catch (error) {
       if (error instanceof PlanLimitExceeded) {
-        return NextResponse.json(
-          {
-            error: 'limit_reached',
-            feature: error.feature,
-            used: error.used,
-            limit: error.limit,
-            windowDays: error.windowDays,
-          },
-          { status: 402 }
-        )
+        return apiError(402, 'limit_reached', 'limit_reached', {
+          feature: error.feature,
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        })
       }
 
       if (error instanceof AiBudgetExceededError) {
-        return NextResponse.json(
-          {
-            error: 'limit_reached',
-            feature: 'hatch_ai_cents',
-            used: error.used,
-            limit: error.limit,
-            windowDays: error.windowDays,
-          },
-          { status: 402 }
-        )
+        return apiError(402, 'limit_reached', 'limit_reached', {
+          feature: 'hatch_ai_cents',
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        })
       }
 
       throw error

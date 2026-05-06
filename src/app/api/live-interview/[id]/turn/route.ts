@@ -6,6 +6,7 @@ import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
+import { apiError } from '@/lib/api/error'
 import { z, ZodError } from 'zod'
 
 const ROUTE_KEY = 'live_interview_turn'
@@ -48,19 +49,18 @@ export async function POST(
 
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return new Response('Unauthorized', { status: 401 })
+  if (authError || !user) return apiError(401, 'auth_required', 'Unauthorized')
 
   let body: z.infer<typeof RequestSchema>
   try {
     body = RequestSchema.parse(await request.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return Response.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
   const { messages } = body
 
@@ -74,7 +74,7 @@ export async function POST(
     .single()
 
   if (!session || session.status !== 'active') {
-    return new Response('Session not found or not active', { status: 404 })
+    return apiError(404, 'session_not_found', 'Session not found or not active')
   }
 
   const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user')?.content ?? ''
@@ -106,13 +106,9 @@ export async function POST(
 
   if (!throttle.allowed) {
     const retryAfter = retryAfterSeconds(throttle.resetAt)
-    return Response.json(
-      { error: 'rate_limited', retryAfter },
-      {
-        status: 429,
-        headers: { 'Retry-After': String(retryAfter) },
-      }
-    )
+    const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+    response.headers.set('Retry-After', String(retryAfter))
+    return response
   }
 
   const systemPrompt = session.system_prompt ?? ''
@@ -129,29 +125,21 @@ export async function POST(
     rawContent = response.sanitized
   } catch (error) {
     if (error instanceof PlanLimitExceeded) {
-      return Response.json(
-        {
-          error: 'limit_reached',
-          feature: error.feature,
-          used: error.used,
-          limit: error.limit,
-          windowDays: error.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: error.feature,
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
     }
 
     if (error instanceof AiBudgetExceededError) {
-      return Response.json(
-        {
-          error: 'limit_reached',
-          feature: 'hatch_ai_cents',
-          used: error.used,
-          limit: error.limit,
-          windowDays: error.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: 'hatch_ai_cents',
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
     }
     throw error
   }

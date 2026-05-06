@@ -3,18 +3,15 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { findRateLimitBlock, getClientIp } from '@/lib/auth/rate-limit'
 import { loginSchema } from '@/lib/auth/validation'
+import { apiError } from '@/lib/api/error'
 import { z, ZodError } from 'zod'
 
 const RequestSchema = loginSchema
 
 function rateLimitedResponse(retryAfter: number) {
-  return NextResponse.json(
-    { error: 'rate_limited', retryAfter },
-    {
-      status: 429,
-      headers: { 'Retry-After': String(retryAfter) },
-    }
-  )
+  const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+  response.headers.set('Retry-After', String(retryAfter))
+  return response
 }
 
 function validationIssues(error: ZodError) {
@@ -30,12 +27,11 @@ export async function POST(request: Request) {
     body = RequestSchema.parse(await request.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
   const { email, password } = body
 
@@ -48,7 +44,7 @@ export async function POST(request: Request) {
   const supabase = await createClient()
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
   if (error || !data.user) {
-    return NextResponse.json({ error: error?.message ?? 'Sign in failed' }, { status: 401 })
+    return apiError(401, 'invalid_credentials', error?.message ?? 'Sign in failed')
   }
 
   const admin = createAdminClient()

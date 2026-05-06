@@ -8,6 +8,7 @@ import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
+import { apiError } from '@/lib/api/error'
 
 const ROUTE_KEY = 'simulation_end'
 
@@ -22,7 +23,7 @@ export async function POST(
   const { id } = await params
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return apiError(401, 'auth_required', 'Unauthorized')
   const userPlan = await getUserPlanForBudget(user.id)
 
   const adminClient = createAdminClient()
@@ -32,7 +33,7 @@ export async function POST(
     adminClient.from('simulation_turns').select('role, content, turn_index').eq('session_id', id).order('turn_index', { ascending: true }),
   ])
 
-  if (sessionResult.error || !sessionResult.data) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
+  if (sessionResult.error || !sessionResult.data) return apiError(404, 'session_not_found', 'Session not found')
   if (sessionResult.data.status === 'completed') return NextResponse.json(sessionResult.data.debrief_json)
   const shouldCallModel = !IS_MOCK && Boolean(process.env.ANTHROPIC_API_KEY)
 
@@ -45,13 +46,9 @@ export async function POST(
 
     if (!throttle.allowed) {
       const retryAfter = retryAfterSeconds(throttle.resetAt)
-      return NextResponse.json(
-        { error: 'rate_limited', retryAfter },
-        {
-          status: 429,
-          headers: { 'Retry-After': String(retryAfter) },
-        }
-      )
+      const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+      response.headers.set('Retry-After', String(retryAfter))
+      return response
     }
   }
 
@@ -79,29 +76,21 @@ export async function POST(
       debrief = validated.success ? clampFeedbackScores(validated.data) : parsed
     } catch (error) {
       if (error instanceof PlanLimitExceeded) {
-        return NextResponse.json(
-          {
-            error: 'limit_reached',
-            feature: error.feature,
-            used: error.used,
-            limit: error.limit,
-            windowDays: error.windowDays,
-          },
-          { status: 402 }
-        )
+        return apiError(402, 'limit_reached', 'limit_reached', {
+          feature: error.feature,
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        })
       }
 
       if (error instanceof AiBudgetExceededError) {
-        return NextResponse.json(
-          {
-            error: 'limit_reached',
-            feature: 'hatch_ai_cents',
-            used: error.used,
-            limit: error.limit,
-            windowDays: error.windowDays,
-          },
-          { status: 402 }
-        )
+        return apiError(402, 'limit_reached', 'limit_reached', {
+          feature: 'hatch_ai_cents',
+          used: error.used,
+          limit: error.limit,
+          windowDays: error.windowDays,
+        })
       }
 
       throw error

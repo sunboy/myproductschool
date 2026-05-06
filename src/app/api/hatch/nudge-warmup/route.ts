@@ -6,6 +6,7 @@ import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
 import { createClient } from '@/lib/supabase/server'
 import { getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { rateLimit } from '@/lib/security/rate-limit'
+import { apiError } from '@/lib/api/error'
 import type { FlowStep } from '@/lib/types'
 
 const ROUTE_KEY = 'hatch_nudge_warmup'
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 })
+    return apiError(401, 'auth_required', 'Unauthorized')
   }
 
   const userPlan = await getUserPlanForBudget(user.id)
@@ -44,13 +45,9 @@ export async function POST(req: NextRequest) {
 
   if (!throttle.allowed) {
     const retryAfter = retryAfterSeconds(throttle.resetAt)
-    return NextResponse.json(
-      { ok: false, error: 'rate_limited', retryAfter },
-      {
-        status: 429,
-        headers: { 'Retry-After': String(retryAfter) },
-      }
-    )
+    const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+    response.headers.set('Retry-After', String(retryAfter))
+    return response
   }
 
   let body: z.infer<typeof RequestSchema>
@@ -58,12 +55,11 @@ export async function POST(req: NextRequest) {
     body = RequestSchema.parse(await req.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { ok: false, error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return NextResponse.json({ ok: false, error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
 
   try {

@@ -23,6 +23,7 @@ import {
   type MentalModelBreakdownItem,
 } from '@/lib/scoring/competency-rollup'
 import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
+import { apiError } from '@/lib/api/error'
 
 const ROUTE_KEY = 'hatch_feedback'
 const V2_ROUTE_KEY = 'hatch_feedback_v2'
@@ -72,26 +73,18 @@ async function throttleFeedback(userId: string, userPlan: string) {
   if (throttle.allowed) return null
 
   const retryAfter = retryAfterSeconds(throttle.resetAt)
-  return NextResponse.json(
-    { error: 'rate_limited', retryAfter },
-    {
-      status: 429,
-      headers: { 'Retry-After': String(retryAfter) },
-    }
-  )
+  const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+  response.headers.set('Retry-After', String(retryAfter))
+  return response
 }
 
 function planLimitResponse(error: PlanLimitExceeded) {
-  return NextResponse.json(
-    {
-      error: 'limit_reached',
-      feature: error.feature,
-      used: error.used,
-      limit: error.limit,
-      windowDays: error.windowDays,
-    },
-    { status: 402 }
-  )
+  return apiError(402, 'limit_reached', 'limit_reached', {
+    feature: error.feature,
+    used: error.used,
+    limit: error.limit,
+    windowDays: error.windowDays,
+  })
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -123,12 +116,11 @@ export async function POST(req: NextRequest) {
     body = RequestSchema.parse(await req.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
   const { challengeId: _challengeId, challengeTitle, challengePrompt, response: userResponse, attemptId, attempt_id } = body
 
@@ -147,7 +139,7 @@ export async function POST(req: NextRequest) {
 
   const authenticatedUserId = await getAuthenticatedUserId()
   if (!authenticatedUserId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError(401, 'auth_required', 'Unauthorized')
   }
 
   const userPlan = await getUserPlanForBudget(authenticatedUserId)
@@ -166,7 +158,7 @@ export async function POST(req: NextRequest) {
         .maybeSingle()
 
       if (!ownedAttempt) {
-        return NextResponse.json({ error: 'Attempt not found' }, { status: 404 })
+        return apiError(404, 'attempt_not_found', 'Attempt not found')
       }
     }
 
@@ -209,7 +201,7 @@ export async function POST(req: NextRequest) {
         parsedFeedback = retryValidated.success ? clampFeedbackScores(retryValidated.data) : retryParsed
       }
     } catch {
-      return NextResponse.json({ error: 'Failed to parse Hatch feedback' }, { status: 500 })
+      return apiError(500, 'hatch_feedback_parse_failed', 'Failed to parse Hatch feedback')
     }
 
     // Persist detected patterns to DB
@@ -242,16 +234,12 @@ export async function POST(req: NextRequest) {
     }
 
     if (error instanceof AiBudgetExceededError) {
-      return NextResponse.json(
-        {
-          error: 'limit_reached',
-          feature: 'hatch_ai_cents',
-          used: error.used,
-          limit: error.limit,
-          windowDays: error.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: 'hatch_ai_cents',
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
     }
 
     console.error('Hatch feedback error:', error)
@@ -269,7 +257,7 @@ async function handleV2Feedback(attemptId: string, challengeId: string | undefin
 
   const authenticatedUserId = await getAuthenticatedUserId()
   if (!authenticatedUserId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError(401, 'auth_required', 'Unauthorized')
   }
 
   const userPlan = await getUserPlanForBudget(authenticatedUserId)
@@ -287,7 +275,7 @@ async function handleV2Feedback(attemptId: string, challengeId: string | undefin
     .single()
 
   if (attemptError || !attempt) {
-    return NextResponse.json({ error: 'Attempt not found' }, { status: 404 })
+    return apiError(404, 'attempt_not_found', 'Attempt not found')
   }
   const budget = {
     userId: authenticatedUserId,
@@ -303,7 +291,7 @@ async function handleV2Feedback(attemptId: string, challengeId: string | undefin
     .order('created_at', { ascending: true })
 
   if (stepsError || !stepAttempts?.length) {
-    return NextResponse.json({ error: 'No step attempts found' }, { status: 404 })
+    return apiError(404, 'step_attempts_not_found', 'No step attempts found')
   }
 
   const questionIds = stepAttempts
@@ -495,7 +483,7 @@ Return valid JSON only.`
         version: 'v2',
       })
     } catch {
-      return NextResponse.json({ error: 'Failed to parse v2 feedback' }, { status: 500 })
+      return apiError(500, 'hatch_feedback_v2_parse_failed', 'Failed to parse v2 feedback')
     }
   } catch (error) {
     if (error instanceof PlanLimitExceeded) {
@@ -503,16 +491,12 @@ Return valid JSON only.`
     }
 
     if (error instanceof AiBudgetExceededError) {
-      return NextResponse.json(
-        {
-          error: 'limit_reached',
-          feature: 'hatch_ai_cents',
-          used: error.used,
-          limit: error.limit,
-          windowDays: error.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: 'hatch_ai_cents',
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
     }
 
     console.error('Hatch v2 feedback error:', error)

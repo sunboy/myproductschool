@@ -6,6 +6,7 @@ import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
+import { apiError } from '@/lib/api/error'
 import { z, ZodError } from 'zod'
 
 const ROUTE_KEY = 'challenge_coaching'
@@ -33,31 +34,23 @@ function validationIssues(error: ZodError) {
 function aiBudgetResponse(error: unknown) {
   if (!(error instanceof AiBudgetExceededError)) return null
 
-  return NextResponse.json(
-    {
-      error: 'limit_reached',
-      feature: 'hatch_ai_cents',
-      used: error.used,
-      limit: error.limit,
-      windowDays: error.windowDays,
-    },
-    { status: 402 }
-  )
+  return apiError(402, 'limit_reached', 'limit_reached', {
+    feature: 'hatch_ai_cents',
+    used: error.used,
+    limit: error.limit,
+    windowDays: error.windowDays,
+  })
 }
 
 function planLimitResponse(error: unknown) {
   if (!(error instanceof PlanLimitExceeded)) return null
 
-  return NextResponse.json(
-    {
-      error: 'limit_reached',
-      feature: error.feature,
-      used: error.used,
-      limit: error.limit,
-      windowDays: error.windowDays,
-    },
-    { status: 402 }
-  )
+  return apiError(402, 'limit_reached', 'limit_reached', {
+    feature: error.feature,
+    used: error.used,
+    limit: error.limit,
+    windowDays: error.windowDays,
+  })
 }
 
 export async function POST(
@@ -66,7 +59,7 @@ export async function POST(
 ) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!user) return apiError(401, 'auth_required', 'Unauthorized')
   const userPlan = await getUserPlanForBudget(user.id)
   const throttle = await rateLimit({
     key: `ai:${user.id}:${ROUTE_KEY}`,
@@ -76,13 +69,9 @@ export async function POST(
 
   if (!throttle.allowed) {
     const retryAfter = retryAfterSeconds(throttle.resetAt)
-    return NextResponse.json(
-      { error: 'rate_limited', retryAfter },
-      {
-        status: 429,
-        headers: { 'Retry-After': String(retryAfter) },
-      }
-    )
+    const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+    response.headers.set('Retry-After', String(retryAfter))
+    return response
   }
 
   const budget = { userId: user.id, userPlan, route: ROUTE_KEY }
@@ -93,12 +82,11 @@ export async function POST(
     body = RequestSchema.parse(await req.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
   const { attempt_id, question_id, option_id, step, user_text } = body
 
@@ -113,7 +101,7 @@ export async function POST(
     .single()
 
   if (attemptError || !attempt) {
-    return NextResponse.json({ error: 'Attempt not found or unauthorized' }, { status: 404 })
+    return apiError(404, 'attempt_not_found', 'Attempt not found or unauthorized')
   }
 
   const roleId = attempt.role_id as string

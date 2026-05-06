@@ -9,6 +9,7 @@ import {
   REAUTH_COOKIE_NAME,
   REAUTH_MAX_AGE_SECONDS,
 } from '@/lib/auth/reauth'
+import { apiError } from '@/lib/api/error'
 import { z, ZodError } from 'zod'
 
 const RequestSchema = z.object({
@@ -16,13 +17,9 @@ const RequestSchema = z.object({
 })
 
 function rateLimitedResponse(retryAfter: number) {
-  return NextResponse.json(
-    { error: 'rate_limited', retryAfter },
-    {
-      status: 429,
-      headers: { 'Retry-After': String(retryAfter) },
-    }
-  )
+  const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+  response.headers.set('Retry-After', String(retryAfter))
+  return response
 }
 
 function validationIssues(error: ZodError) {
@@ -35,22 +32,21 @@ function validationIssues(error: ZodError) {
 export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (authError || !user) return apiError(401, 'auth_required', 'Unauthorized')
 
   let body: z.infer<typeof RequestSchema>
   try {
     body = RequestSchema.parse(await request.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
   const { password } = body
-  if (!user.email) return NextResponse.json({ error: 'Password reauthentication is not available for this account.' }, { status: 400 })
+  if (!user.email) return apiError(400, 'email_account_required', 'Password reauthentication is not available for this account.')
 
   const ip = getClientIp(request)
   const block = await findRateLimitBlock([
@@ -63,10 +59,10 @@ export async function POST(request: Request) {
     email: user.email,
     password,
   })
-  if (error) return NextResponse.json({ error: 'Current password is incorrect.' }, { status: 401 })
+  if (error) return apiError(401, 'invalid_current_password', 'Current password is incorrect.')
 
   const token = createReauthToken(user.id)
-  if (!token) return NextResponse.json({ error: 'Reauthentication is not configured.' }, { status: 500 })
+  if (!token) return apiError(500, 'reauth_not_configured', 'Reauthentication is not configured.')
 
   const response = NextResponse.json({ ok: true })
   response.cookies.set(REAUTH_COOKIE_NAME, token, {

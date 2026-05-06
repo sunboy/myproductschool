@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { apiError } from '@/lib/api/error'
 
 const RequestSchema = z.object({
   attemptId: z.string().uuid(),
@@ -18,19 +19,18 @@ function validationIssues(error: ZodError) {
 export async function PATCH(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!user) return apiError(401, 'auth_required', 'Unauthorized')
 
   let body: z.infer<typeof RequestSchema>
   try {
     body = RequestSchema.parse(await req.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
 
   const { attemptId, draftSnapshot, updatedAt } = body
@@ -42,8 +42,8 @@ export async function PATCH(req: NextRequest) {
     .eq('id', attemptId)
     .single()
 
-  if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  if (existing.user_id !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!existing) return apiError(404, 'attempt_not_found', 'Not found')
+  if (existing.user_id !== user.id) return apiError(403, 'forbidden', 'Forbidden')
 
   const incomingTs = updatedAt ? new Date(updatedAt).getTime() : Date.now()
   const existingTs = existing.draft_updated_at ? new Date(existing.draft_updated_at).getTime() : 0

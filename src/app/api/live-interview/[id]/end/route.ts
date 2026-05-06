@@ -4,6 +4,7 @@ import { generateDebrief } from '@/lib/live-interview/debrief-generator'
 import { gradeArtifact } from '@/lib/live-interview/artifact-grader'
 import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { apiError } from '@/lib/api/error'
 import { z, ZodError } from 'zod'
 
 const INTERVIEW_DIFFICULTY_BASE_XP: Record<string, number> = {
@@ -28,16 +29,12 @@ function validationIssues(error: ZodError) {
 function aiBudgetResponse(error: unknown) {
   if (!(error instanceof AiBudgetExceededError)) return null
 
-  return Response.json(
-    {
-      error: 'limit_reached',
-      feature: 'hatch_ai_cents',
-      used: error.used,
-      limit: error.limit,
-      windowDays: error.windowDays,
-    },
-    { status: 402 }
-  )
+  return apiError(402, 'limit_reached', 'limit_reached', {
+    feature: 'hatch_ai_cents',
+    used: error.used,
+    limit: error.limit,
+    windowDays: error.windowDays,
+  })
 }
 
 export async function POST(
@@ -60,12 +57,11 @@ export async function POST(
     abandoned = body.abandoned
   } catch (error) {
     if (error instanceof ZodError) {
-      return Response.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
 
   const adminClient = createAdminClient()
@@ -80,7 +76,7 @@ export async function POST(
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return new Response('Unauthorized', { status: 401 })
+  if (!user) return apiError(401, 'auth_required', 'Unauthorized')
 
   // Load session + turns in parallel
   const [sessionResult, turnsResult] = await Promise.all([
@@ -93,12 +89,12 @@ export async function POST(
   ])
 
   if (!sessionResult.data) {
-    return new Response('Session not found', { status: 404 })
+    return apiError(404, 'session_not_found', 'Session not found')
   }
 
   const session = sessionResult.data
   if (session.user_id !== user.id) {
-    return new Response('Session not found', { status: 404 })
+    return apiError(404, 'session_not_found', 'Session not found')
   }
 
   if (session.status === 'completed') {

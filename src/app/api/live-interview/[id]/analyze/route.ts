@@ -5,6 +5,7 @@ import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
+import { apiError } from '@/lib/api/error'
 import { z, ZodError } from 'zod'
 
 const VALID_FLOW_MOVES = new Set(['frame', 'list', 'optimize', 'win'])
@@ -53,24 +54,23 @@ export async function POST(
   const { id } = await params
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({ ok: false, error: 'Hatch ran into a problem. Try again.' }, { status: 503 })
+    return apiError(503, 'hatch_unavailable', 'Hatch ran into a problem. Try again.')
   }
 
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return new Response('Unauthorized', { status: 401 })
+  if (authError || !user) return apiError(401, 'auth_required', 'Unauthorized')
 
   let body: z.infer<typeof RequestSchema>
   try {
     body = RequestSchema.parse(await request.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return Response.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
   const { content, role, artifactSnapshot, turnIndex } = body
 
@@ -89,7 +89,7 @@ export async function POST(
     .single()
 
   if (!session || session.status !== 'active') {
-    return Response.json({ ok: false }, { status: 404 })
+    return apiError(404, 'session_not_found', 'Session not found or ended')
   }
 
   const model = 'claude-haiku-4-5-20251001'
@@ -103,13 +103,9 @@ export async function POST(
 
   if (!throttle.allowed) {
     const retryAfter = retryAfterSeconds(throttle.resetAt)
-    return Response.json(
-      { error: 'rate_limited', retryAfter },
-      {
-        status: 429,
-        headers: { 'Retry-After': String(retryAfter) },
-      }
-    )
+    const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+    response.headers.set('Retry-After', String(retryAfter))
+    return response
   }
 
   const flowMaxTokens = 50
@@ -165,29 +161,21 @@ If nothing notable, reply "none".`
     ;[flowResponse, artifactSignal] = await Promise.all([flowPromise, artifactPromise])
   } catch (error) {
     if (error instanceof PlanLimitExceeded) {
-      return Response.json(
-        {
-          error: 'limit_reached',
-          feature: error.feature,
-          used: error.used,
-          limit: error.limit,
-          windowDays: error.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: error.feature,
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
     }
 
     if (error instanceof AiBudgetExceededError) {
-      return Response.json(
-        {
-          error: 'limit_reached',
-          feature: 'hatch_ai_cents',
-          used: error.used,
-          limit: error.limit,
-          windowDays: error.windowDays,
-        },
-        { status: 402 }
-      )
+      return apiError(402, 'limit_reached', 'limit_reached', {
+        feature: 'hatch_ai_cents',
+        used: error.used,
+        limit: error.limit,
+        windowDays: error.windowDays,
+      })
     }
     throw error
   }

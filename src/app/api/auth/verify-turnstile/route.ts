@@ -3,6 +3,7 @@ import { z, ZodError } from 'zod'
 import { getClientIp } from '@/lib/auth/rate-limit'
 import { turnstileTokenSchema } from '@/lib/auth/validation'
 import { turnstileErrorMessage, verifyTurnstileToken } from '@/lib/security/turnstile'
+import { apiError } from '@/lib/api/error'
 
 const RequestSchema = z.object({
   token: turnstileTokenSchema,
@@ -21,12 +22,11 @@ export async function POST(request: Request) {
     body = RequestSchema.parse(await request.json())
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request body', issues: validationIssues(error) },
-        { status: 400 }
-      )
+      return apiError(400, 'invalid_request', 'Invalid request body', {
+        issues: validationIssues(error),
+      })
     }
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
 
   const result = await verifyTurnstileToken({
@@ -35,10 +35,7 @@ export async function POST(request: Request) {
   })
 
   if (!result.ok) {
-    return NextResponse.json(
-      { error: turnstileErrorMessage(result) },
-      { status: 400 }
-    )
+    return apiError(400, 'turnstile_failed', turnstileErrorMessage(result))
   }
 
   return NextResponse.json({ ok: true, skipped: Boolean(result.skipped) })
