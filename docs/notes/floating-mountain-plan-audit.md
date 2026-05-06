@@ -21,7 +21,7 @@ The current owner-narrowed launch scope is:
 
 | Plan Gate | Status | Evidence / Gap |
 | --- | --- | --- |
-| 1. Build, lint, types, tests clean | Partial | `npm run build`, `npm run lint`, and `npx tsc --noEmit --pretty false` passed on May 6. Full `npm test` has not been rerun as one aggregate gate. |
+| 1. Build, lint, types, tests clean | Partial | `npm run build`, `npm run lint`, and `npx tsc --noEmit --pretty false` passed on May 6. `package.json` does not define an `npm test` script, so the aggregate test gate cannot run as written. Focused test commands remain the evidence source. |
 | 2. Playwright N2/N3/N4 green | Partial | N2 paywall passed `10/10`; N3 discussions passed `10/10`; narrowed N4 auth passed signup/login/forgot-password `3/3`. Full N4 remains out of launch scope per owner direction. |
 | 3. AI guardrails E2E | Not complete | AI guardrail modules and tests exist, but no latest E2E evidence proving a live Hatch response logs `ai_voice_violations` and appears in the admin dashboard. |
 | 4. Prompt injection | Not complete | Guarded client tests exist, but no latest live Hatch probe evidence is recorded. |

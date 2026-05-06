@@ -118,3 +118,5 @@ npx tsx --test tests/lib/security/turnstile.test.ts tests/lib/ai/moderation.test
 npx tsx --test tests/lib/billing/entitlements.test.ts
 npx vitest run tests/unit/feedback-nps.spec.ts tests/unit/affiliate-flow.spec.ts
 ```
+
+Note: `package.json` does not currently define an aggregate `npm test` script. Use the focused commands above until a unified test script exists.
