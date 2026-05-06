@@ -32,7 +32,7 @@ The current owner-narrowed launch scope is:
 | 9. Onboarding resilience | Partial | Essential signup to onboarding to dashboard passed. Refresh mid-calibration resume has not been reverified in the latest gate. |
 | 10. Mental Models | Unknown | No latest evidence tying weak competency feedback to `motivation_theory` recommendation. |
 | 11. Discussions | Complete for launch | `e2e/discussions.spec.ts` passed `10/10` against local production server. |
-| 12. Legal/help | Local complete, production manual remains | Local production smoke returned `200` for `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog`. Production owner check remains. |
+| 12. Legal/help | Local complete, production manual remains | Local production smoke returned `200` for `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog`. `PUBLIC_DIRECTORY_PATHS` includes those paths for sitemap generation. Production owner check remains. |
 | 13. Bookmarks/share/referral display/push/2FA | Not complete | Push and 2FA are not launch scope. Referral display depends on affiliate setup. |
 | 14. Mobile | Not complete | No latest 375px browser/axe evidence recorded. |
 | 15. Voice violation rate after 24 hours | Not complete | Requires post-launch or extended normal-use monitoring. |

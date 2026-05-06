@@ -40,6 +40,7 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: local production smoke returned `200` for `/api/health`.
 - [x] Core legal, pricing, help, and changelog pages respond locally.
   - Evidence: local production smoke returned `200` for `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog`.
+  - Evidence: `src/lib/seo/directory-content.ts` includes `/pricing`, `/privacy`, `/terms`, `/help`, and `/changelog` in `PUBLIC_DIRECTORY_PATHS`, which feeds `src/app/sitemap.ts`.
 - [x] Local production security headers are configured and present.
   - Evidence: local `next start` smoke on `/privacy` returned HSTS, CSP, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, and no `x-powered-by` header.
 - [x] Feedback, affiliate, and billing unit coverage passes with the right test runners.
