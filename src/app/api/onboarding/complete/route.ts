@@ -2,19 +2,45 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { logEvent } from '@/lib/data/events'
+import { z, ZodError } from 'zod'
+
+const RequestSchema = z.object({
+  role_context: z.string().trim().min(1).max(200).optional(),
+  experience_level: z.string().trim().min(1).max(100).optional(),
+  calibration_answers: z.array(z.unknown()).max(100).optional(),
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
 
 export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  let body: Record<string, unknown> = {}
-  try { body = await request.json() } catch { /* body is optional */ }
-  const { role_context, experience_level, calibration_answers } = body as {
-    role_context?: string
-    experience_level?: string
-    calibration_answers?: unknown[]
+  let rawBody: unknown = {}
+  try {
+    const text = await request.text()
+    rawBody = text.trim() ? JSON.parse(text) : {}
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
+
+  const parsed = RequestSchema.safeParse(rawBody)
+  if (!parsed.success) {
+    return NextResponse.json(
+      {
+        error: 'Invalid request body',
+        issues: validationIssues(parsed.error),
+      },
+      { status: 400 }
+    )
+  }
+  const { role_context, experience_level, calibration_answers } = parsed.data
 
   const adminClient = createAdminClient()
 
