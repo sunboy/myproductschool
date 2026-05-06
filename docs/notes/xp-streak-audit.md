@@ -11,8 +11,9 @@ This is a launch-scope audit of XP and streak persistence. It does not claim the
 - `supabase/migrations/20260506095721_set_app_function_search_paths.sql` sets a fixed search path for `update_user_streak(uuid)`.
 - `src/app/api/live-interview/[id]/end/route.ts` returns early when a session is already `completed`, before XP/streak writes.
 - `src/app/api/challenges/[id]/complete/route.ts` now returns stored completion data when the attempt is already `completed`, before XP, streak, move-level, study-plan, or Hatch context writes. This prevents duplicate XP awards from repeated FLOW finalization calls for the same attempt.
-- `src/lib/scoring/completed-attempt-result.ts` reconstructs the duplicate-finalization response from stored `feedback_json` and attempt columns.
-- `tests/lib/scoring/completed-attempt-result.test.ts` covers replaying stored completion feedback and old-attempt fallback behavior.
+- `src/app/api/challenges/quick-take/submit/route.ts` now returns the stored quick-take result when the same user submits a completed quick-take challenge again, before AI grading, plan-limit reservation, attempt insert, XP write, or streak update.
+- `src/lib/scoring/completed-attempt-result.ts` reconstructs duplicate-completion responses from stored `feedback_json` and attempt columns.
+- `tests/lib/scoring/completed-attempt-result.test.ts` covers replaying stored FLOW completion feedback, old-attempt fallback behavior, and stored quick-take results.
 
 ## Verified Commands
 
@@ -29,10 +30,9 @@ npm run secrets:scan
 - No append-only XP ledger exists, so historical XP awards still cannot be independently audited.
 - XP formulas are still spread across FLOW challenge completion, quick takes, and live interview end instead of one shared calculator.
 - `profiles.xp_total` updates still use read-then-update arithmetic rather than a single atomic increment RPC.
-- Quick-take duplicate POST behavior has not been made idempotent. The normal UI routes users to new quick takes, but a repeated direct POST could still create a second completed attempt and award XP again.
 - No latest browser or API E2E proves streak behavior across UTC day boundaries.
 - No latest E2E covers simultaneous completions across different attempts for the same user.
 
 ## Launch Decision
 
-The main FLOW duplicate-finalization double-award risk is fixed and covered by a focused unit test. Full XP/streak correctness is still partial and should remain outside automatic sign-off until the ledger, shared calculator, atomic XP update, quick-take idempotency, and UTC boundary tests are added deliberately.
+The main same-attempt duplicate-award risks for FLOW completion and quick takes are fixed and covered by focused unit tests. Full XP/streak correctness is still partial and should remain outside automatic sign-off until the ledger, shared calculator, atomic XP update, UTC boundary tests, and simultaneous-completion coverage are added deliberately.

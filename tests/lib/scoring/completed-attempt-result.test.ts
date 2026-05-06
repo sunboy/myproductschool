@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { buildCompletedAttemptResult } from '@/lib/scoring/completed-attempt-result'
+import {
+  buildCompletedAttemptResult,
+  buildCompletedQuickTakeResult,
+} from '@/lib/scoring/completed-attempt-result'
 
 describe('completed attempt result', () => {
   it('replays stored completion feedback for duplicate finalization requests', () => {
@@ -50,5 +53,22 @@ describe('completed attempt result', () => {
     assert.deepEqual(result.step_breakdown, [])
     assert.equal(result.primary_competency, 'taste')
     assert.equal(result.weakest_competency, 'domain_expertise')
+  })
+
+  it('replays stored quick-take results for duplicate submissions', () => {
+    const result = buildCompletedQuickTakeResult({
+      total_score: 0.75,
+      feedback_json: {
+        feedback: 'Name the segment first.',
+        xp_earned: 15,
+      },
+    })
+
+    assert.deepEqual(result, {
+      score: 0.75,
+      xp_earned: 15,
+      feedback_summary: 'Name the segment first.',
+      alreadyCompleted: true,
+    })
   })
 })

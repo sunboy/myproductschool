@@ -8,6 +8,11 @@ type CompletedAttemptRow = {
   weakest_competency?: string | null
 }
 
+type CompletedQuickTakeAttemptRow = {
+  total_score?: number | string | null
+  feedback_json?: unknown
+}
+
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
@@ -46,6 +51,19 @@ export function buildCompletedAttemptResult(attempt: CompletedAttemptRow) {
     mental_models_breakdown: feedback.mental_models_breakdown ?? attempt.mental_models_breakdown ?? null,
     primary_competency: stringOrNull(feedback.primary_competency) ?? attempt.primary_competency ?? null,
     weakest_competency: stringOrNull(feedback.weakest_competency) ?? attempt.weakest_competency ?? null,
+    alreadyCompleted: true,
+  }
+}
+
+export function buildCompletedQuickTakeResult(attempt: CompletedQuickTakeAttemptRow) {
+  const feedback = asRecord(attempt.feedback_json)
+
+  return {
+    score: finiteNumber(feedback.score, finiteNumber(attempt.total_score, 0)),
+    xp_earned: finiteNumber(feedback.xp_earned, 0),
+    feedback_summary: stringOrNull(feedback.feedback_summary)
+      ?? stringOrNull(feedback.feedback)
+      ?? 'Keep practising.',
     alreadyCompleted: true,
   }
 }

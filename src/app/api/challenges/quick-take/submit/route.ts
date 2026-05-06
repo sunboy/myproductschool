@@ -9,6 +9,7 @@ import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budg
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
 import { apiError } from '@/lib/api/error'
+import { buildCompletedQuickTakeResult } from '@/lib/scoring/completed-attempt-result'
 
 // XP base for quick-takes (lower than full challenges)
 const QUICK_TAKE_XP_BASE = 20
@@ -145,6 +146,20 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (!challenge) return apiError(404, 'prompt_not_found', 'Prompt not found')
+
+  const { data: completedAttempt } = await adminClient
+    .from('challenge_attempts')
+    .select('total_score, feedback_json')
+    .eq('user_id', user.id)
+    .eq('challenge_id', challenge_id)
+    .eq('status', 'completed')
+    .order('completed_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (completedAttempt) {
+    return NextResponse.json(buildCompletedQuickTakeResult(completedAttempt))
+  }
 
   // Grade with Haiku - quality score 0.0–1.0
   let score: number

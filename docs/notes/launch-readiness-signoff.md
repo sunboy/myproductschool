@@ -82,8 +82,9 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 - [x] Local PWA browser installability passes.
   - Evidence: Chromium CDP probe against `RATE_LIMIT_MEMORY_FALLBACK=true npx next start -p 3014` returned `installabilityErrors: []` from `Page.getInstallabilityErrors`.
   - Evidence: the browser probe confirmed `http://localhost:3014/manifest.json` responds `200`, `display` is `standalone`, `start_url` is `/`, and manifest icons include 192px, 512px, and maskable 512px PNG entries.
-- [x] FLOW duplicate completion no longer double-awards XP.
+- [x] Duplicate FLOW and quick-take completions no longer double-award XP for the same completed item.
   - Evidence: `src/app/api/challenges/[id]/complete/route.ts` returns stored completion data when the attempt is already `completed`, before XP, streak, move-level, study-plan, or Hatch context writes.
+  - Evidence: `src/app/api/challenges/quick-take/submit/route.ts` returns the stored quick-take result when the same user submits an already completed quick-take challenge, before AI grading, plan-limit reservation, attempt insert, XP write, or streak update.
   - Evidence: `npx tsx --test tests/lib/scoring/completed-attempt-result.test.ts`, `npx tsc --noEmit --pretty false`, `npm run lint`, `npm run build`, and `npm run secrets:scan` passed after the idempotency guard.
   - Note: full XP/streak correctness is still partial; see `docs/notes/xp-streak-audit.md`.
 
@@ -127,7 +128,7 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 - [ ] Error monitoring is not implemented.
   - Evidence: static repo audit on May 6, 2026 found no Sentry package and no Sentry instrumentation.
 - [ ] Full XP/streak correctness remains partial.
-  - Evidence: the FLOW duplicate-finalization double-award path is fixed and tested, but there is still no XP ledger, shared XP calculator, atomic XP increment, quick-take idempotency, UTC boundary E2E, or simultaneous-completion coverage.
+  - Evidence: the same-item duplicate-award paths for FLOW completion and quick takes are fixed and tested, but there is still no XP ledger, shared XP calculator, atomic XP increment, UTC boundary E2E, or simultaneous-completion coverage.
   - Launch note: see `docs/notes/xp-streak-audit.md`.
 
 ## Manual Checks Before Launch
