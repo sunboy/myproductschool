@@ -25,9 +25,11 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Commit: `4f96343 fix(paywall): unblock local production e2e`.
 - [x] Discussions scenarios pass.
   - Evidence: `e2e/discussions.spec.ts` passed `10/10` against `next start`.
+  - Evidence: `PLAYWRIGHT_BASE_URL=http://localhost:3016 E2E_TEST_PASSWORD=... npx playwright test e2e/discussions.spec.ts --reporter=line` passed `10/10` on May 6, 2026 after the fixed E2E personas were reseeded.
   - Commit: `7473936 fix(discussions): unblock launch e2e reporting`.
 - [x] Essential auth paths pass.
   - Evidence: `e2e/auth.spec.ts -g "N4\.(1|2|4)"` passed `3/3` against `next start`.
+  - Evidence: `PLAYWRIGHT_BASE_URL=http://localhost:3016 npx playwright test e2e/auth.spec.ts -g "N4\\.(1|2|4)" --reporter=line` passed `3/3` on May 6, 2026.
   - Covered: signup verification to onboarding to dashboard, password login, forgot-password reset to new password login.
   - Commit: `b026402 fix(auth): unblock local turnstile e2e`.
 - [x] Local production E2E fallback flags are documented.
