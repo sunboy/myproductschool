@@ -143,7 +143,12 @@ async function fetchUrl(path: string) {
 async function checkRoute(path: string) {
   try {
     const response = await fetchUrl(path)
-    add(response.ok ? 'ok' : 'fail', `route ${path}`, `${response.status} ${response.url}`)
+    const finalPath = new URL(response.url).pathname.replace(/\/$/, '') || '/'
+    const expectedPath = path.replace(/\/$/, '') || '/'
+    const wrongFinalPath = finalPath !== expectedPath
+    const level = response.ok && !wrongFinalPath ? 'ok' : 'fail'
+    const redirectDetail = wrongFinalPath ? `, final path ${finalPath}` : ''
+    add(level, `route ${path}`, `${response.status} ${response.url}${redirectDetail}`)
     return response
   } catch (error) {
     add('fail', `route ${path}`, error instanceof Error ? error.message : 'fetch failed')
