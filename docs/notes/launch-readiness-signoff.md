@@ -82,6 +82,10 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 - [x] Local PWA browser installability passes.
   - Evidence: Chromium CDP probe against `RATE_LIMIT_MEMORY_FALLBACK=true npx next start -p 3014` returned `installabilityErrors: []` from `Page.getInstallabilityErrors`.
   - Evidence: the browser probe confirmed `http://localhost:3014/manifest.json` responds `200`, `display` is `standalone`, `start_url` is `/`, and manifest icons include 192px, 512px, and maskable 512px PNG entries.
+- [x] FLOW duplicate completion no longer double-awards XP.
+  - Evidence: `src/app/api/challenges/[id]/complete/route.ts` returns stored completion data when the attempt is already `completed`, before XP, streak, move-level, study-plan, or Hatch context writes.
+  - Evidence: `npx tsx --test tests/lib/scoring/completed-attempt-result.test.ts`, `npx tsc --noEmit --pretty false`, `npm run lint`, `npm run build`, and `npm run secrets:scan` passed after the idempotency guard.
+  - Note: full XP/streak correctness is still partial; see `docs/notes/xp-streak-audit.md`.
 
 ## Accepted Scope Changes
 
@@ -122,6 +126,10 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Launch note: no blanket taxonomy migration was applied during launch freeze because this touches content, UI labels, recommendation logic, and legacy cohort data.
 - [ ] Error monitoring is not implemented.
   - Evidence: static repo audit on May 6, 2026 found no Sentry package and no Sentry instrumentation.
+- [ ] Full XP/streak correctness remains partial.
+  - Evidence: the FLOW duplicate-finalization double-award path is fixed and tested, but there is still no XP ledger, shared XP calculator, atomic XP increment, quick-take idempotency, UTC boundary E2E, or simultaneous-completion coverage.
+  - Launch note: see `docs/notes/xp-streak-audit.md`.
+
 ## Manual Checks Before Launch
 
 - [ ] Owner reviews `/dashboard` against the current dev baseline and confirms no visual regression.
@@ -161,6 +169,7 @@ Focused unit gates:
 ```bash
 npx tsx --test tests/lib/security/turnstile.test.ts tests/lib/ai/moderation.test.ts tests/lib/security/rate-limit.test.ts
 npx tsx --test tests/lib/billing/entitlements.test.ts
+npx tsx --test tests/lib/scoring/completed-attempt-result.test.ts
 npx vitest run tests/unit/feedback-nps.spec.ts tests/unit/affiliate-flow.spec.ts
 ```
 

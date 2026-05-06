@@ -10,6 +10,7 @@ import { analyzeTrend } from '@/lib/v2/skills/trend-analyzer'
 import type { FlowStep, LearnerCompetency, RoleLens } from '@/lib/types'
 import { applyMoveLevelXp } from '@/lib/data/move-levels-update'
 import { FLOW_MAX_SCORE, MOVE_XP_MULTIPLIER } from '@/lib/scoring/flow-scale'
+import { buildCompletedAttemptResult } from '@/lib/scoring/completed-attempt-result'
 import {
   computeChallengeCompetencyRollup,
   competenciesForSignalInput,
@@ -78,7 +79,7 @@ export async function POST(
   // Fetch the attempt to verify ownership and get role_id
   const { data: attempt, error: attemptError } = await admin
     .from('challenge_attempts')
-    .select('id, role_id, user_id, status')
+    .select('id, role_id, user_id, status, total_score, max_score, grade_label, feedback_json, mental_models_breakdown, primary_competency, weakest_competency')
     .eq('id', attempt_id)
     .eq('user_id', userId)
     .eq('challenge_id', challengeId)
@@ -86,6 +87,10 @@ export async function POST(
 
   if (attemptError || !attempt) {
     return NextResponse.json({ error: 'Attempt not found or unauthorized' }, { status: 404 })
+  }
+
+  if (attempt.status === 'completed') {
+    return NextResponse.json(buildCompletedAttemptResult(attempt))
   }
 
   // Fetch all step_attempts for this attempt, joined with question weights
