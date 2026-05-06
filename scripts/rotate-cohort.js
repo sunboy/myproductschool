@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+/* eslint-disable @typescript-eslint/no-require-imports */
+
 // Cohort challenge rotation script
 //
 // Usage:
@@ -10,9 +13,17 @@
 
 const { createClient } = require('@supabase/supabase-js')
 
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+  console.error('NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required')
+  process.exit(1)
+}
+
 const supabase = createClient(
-  'https://tikkhvxlclivixqqqjyb.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRpa2todnhsY2xpdml4cXFxanliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTMxMzI5MCwiZXhwIjoyMDc2ODg5MjkwfQ.SLtlceDB4vzlDWukbFpeYNQoXglqL1U41nuAKoRdSlM'
+  SUPABASE_URL,
+  SERVICE_ROLE_KEY
 )
 
 const isDryRun = process.argv.includes('--dry-run')

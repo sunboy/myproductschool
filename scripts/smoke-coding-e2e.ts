@@ -23,10 +23,15 @@ import * as path from 'path'
 // Config
 // ---------------------------------------------------------------------------
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://tikkhvxlclivixqqqjyb.supabase.co'
-const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRpa2todnhsY2xpdml4cXFxanliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzMTMyOTAsImV4cCI6MjA3Njg4OTI5MH0.KnGhetCD7303FRcvy9SJGj5T_Lquysi3TmWWnVoYZ5k'
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRpa2todnhsY2xpdml4cXFxanliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTMxMzI5MCwiZXhwIjoyMDc2ODg5MjkwfQ.SLtlceDB4vzlDWukbFpeYNQoXglqL1U41nuAKoRdSlM'
-const BASE_URL = 'http://localhost:3000'
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+const BASE_URL = process.env.E2E_BASE_URL ?? 'http://localhost:3000'
+
+if (!SUPABASE_URL || !ANON_KEY || !SERVICE_ROLE_KEY) {
+  console.error('Missing NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, or SUPABASE_SERVICE_ROLE_KEY')
+  process.exit(1)
+}
 
 const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
@@ -169,8 +174,10 @@ async function validateSqlInProcess(params: {
     // First try the public wasm bundle
     const sqlJsPath = path.join(process.cwd(), 'node_modules', 'sql.js', 'dist', 'sql-wasm.js')
     if (fs.existsSync(sqlJsPath)) {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       initSqlJs = require(sqlJsPath)
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       initSqlJs = require('sql.js')
     }
   } catch {
@@ -233,7 +240,7 @@ async function validateSqlInProcess(params: {
       }
 
       results.push({ id: tc.id, label: tc.label, status: passed ? 'passed' : 'failed', hidden: tc.hidden })
-    } catch (err) {
+    } catch {
       results.push({ id: tc.id, label: tc.label, status: 'error', hidden: tc.hidden })
     }
   }
