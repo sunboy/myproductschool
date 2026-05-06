@@ -5,12 +5,13 @@ import {
   sameOriginRedirect,
 } from '@/lib/auth/rate-limit'
 import { hasValidReauthToken } from '@/lib/auth/reauth'
-import { emailChangeSchema, firstZodError } from '@/lib/auth/validation'
+import { emailChangeSchema } from '@/lib/auth/validation'
 import { createClient } from '@/lib/supabase/server'
+import { z, ZodError } from 'zod'
 
-interface EmailChangeBodyExtras {
-  redirectTo?: string
-}
+const RequestSchema = emailChangeSchema.extend({
+  redirectTo: z.string().trim().max(2048).optional(),
+})
 
 function rateLimitedResponse(retryAfter: number) {
   return NextResponse.json(
@@ -22,11 +23,25 @@ function rateLimitedResponse(retryAfter: number) {
   )
 }
 
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
+
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({})) as EmailChangeBodyExtras
-  const parsed = emailChangeSchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json({ error: firstZodError(parsed.error) }, { status: 400 })
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
   const supabase = await createClient()
@@ -42,7 +57,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'reauth_required' }, { status: 403 })
   }
 
-  const { email, currentPassword } = parsed.data
+  const { email, currentPassword } = body
   if (email === user.email.toLowerCase()) {
     return NextResponse.json({ error: 'Enter a different email.' }, { status: 400 })
   }
