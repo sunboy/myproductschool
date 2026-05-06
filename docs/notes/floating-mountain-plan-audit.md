@@ -36,7 +36,7 @@ The current owner-narrowed launch scope is:
 | 13. Bookmarks/share/referral display/push/2FA | Not complete | Push and 2FA are not launch scope. Referral display depends on affiliate setup. |
 | 14. Mobile | Not complete | No latest 375px browser/axe evidence recorded. |
 | 15. Voice violation rate after 24 hours | Not complete | Requires post-launch or extended normal-use monitoring. |
-| 16. Security headers | Manual blocker | Needs production-domain verification. |
+| 16. Security headers | Local complete, production manual remains | `next.config.ts` defines HSTS, CSP, frame denial, nosniff, referrer, and permissions policies. Local `next start` smoke on `/privacy` returned those headers and no `x-powered-by`. Production-domain verification remains owner-controlled. |
 | 17. Secret rotation | Partial | Repo/staged secret scans pass. Provider key rotation remains owner-controlled. |
 | 18. Sentry receiving | Unknown | No current Sentry evidence recorded. |
 | 19. Status page reachable | Manual blocker | `/api/health` exists and smokes locally; `status.hackproduct.com` DNS/provider setup remains owner-controlled. |
