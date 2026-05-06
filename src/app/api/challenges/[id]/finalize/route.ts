@@ -3,6 +3,8 @@ import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { gradeCodingAttempt } from '@/lib/coding-grading/grader'
 import type { ChatMessage, SessionEvent } from '@/lib/coding-grading/grader'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 
 const RequestSchema = z.object({
   attemptId: z.string().uuid(),
@@ -13,6 +15,30 @@ function validationIssues(error: ZodError) {
     path: issue.path.join('.'),
     message: issue.message,
   }))
+}
+
+function aiLimitResponse(error: unknown) {
+  if (error instanceof PlanLimitExceeded) {
+    return NextResponse.json({
+      error: 'limit_reached',
+      feature: error.feature,
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    }, { status: 402 })
+  }
+
+  if (error instanceof AiBudgetExceededError) {
+    return NextResponse.json({
+      error: 'limit_reached',
+      feature: 'hatch_ai_cents',
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    }, { status: 402 })
+  }
+
+  return null
 }
 
 // ---------------------------------------------------------------------------
@@ -292,6 +318,11 @@ export async function POST(
     sessionStartedAt: attempt.started_at as string | undefined,
     // Parts-aware field - T8 will extend the skill to use this
     parts: gradingParts,
+    budget: {
+      userId: user.id,
+      userPlan: await getUserPlanForBudget(user.id),
+      route: 'coding_finalize_grade',
+    },
   }
 
   // ---------------------------------------------------------------------------
@@ -300,8 +331,11 @@ export async function POST(
 
   let grade
   try {
+    await assertPlanLimit(user.id, gradingInput.budget.userPlan, 'ai_grading_runs')
     grade = await gradeCodingAttempt(gradingInput)
   } catch (err) {
+    const response = aiLimitResponse(err)
+    if (response) return response
     console.error('Coding grader failed in finalize:', err)
     return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
   }

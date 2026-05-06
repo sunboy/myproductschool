@@ -3,6 +3,8 @@ import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { gradeInterviewSession } from '@/lib/v2/skills/interview-grading'
 import type { ChallengeType } from '@/lib/types'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 
 const RequestSchema = z.object({
   attemptId: z.string().uuid(),
@@ -15,6 +17,30 @@ function validationIssues(error: ZodError) {
     path: issue.path.join('.'),
     message: issue.message,
   }))
+}
+
+function aiLimitResponse(error: unknown) {
+  if (error instanceof PlanLimitExceeded) {
+    return NextResponse.json({
+      error: 'limit_reached',
+      feature: error.feature,
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    }, { status: 402 })
+  }
+
+  if (error instanceof AiBudgetExceededError) {
+    return NextResponse.json({
+      error: 'limit_reached',
+      feature: 'hatch_ai_cents',
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    }, { status: 402 })
+  }
+
+  return null
 }
 
 export async function POST(
@@ -97,10 +123,18 @@ export async function POST(
     .eq('id', attemptId)
 
   // Grade
+  const userPlan = await getUserPlanForBudget(user.id)
   let grade
   try {
-    grade = await gradeInterviewSession(attemptId, challengeType)
+    await assertPlanLimit(user.id, userPlan, 'ai_grading_runs')
+    grade = await gradeInterviewSession(attemptId, challengeType, {
+      userId: user.id,
+      userPlan,
+      route: 'interview_challenge_grade',
+    })
   } catch (err) {
+    const response = aiLimitResponse(err)
+    if (response) return response
     console.error('Interview grading failed:', err)
     return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
   }

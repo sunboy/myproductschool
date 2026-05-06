@@ -6,6 +6,8 @@ import { validateInterviewGrade } from './schemas/feedback-output'
 import { summarizeScene, sceneToPrompt } from '@/lib/hatch/canvas-scene'
 import type { InterviewGrade, ChallengeType } from '@/lib/types'
 
+type AiBudget = { userId: string; userPlan: string; route: string }
+
 function buildCanvasSummary(snapshot: Record<string, unknown> | null): string {
   if (!snapshot) return 'No canvas data — user did not draw anything.'
   const elements = (snapshot.elements as unknown[]) ?? []
@@ -18,7 +20,8 @@ function buildCanvasSummary(snapshot: Record<string, unknown> | null): string {
 
 export async function gradeInterviewSession(
   attemptId: string,
-  challengeType: ChallengeType
+  challengeType: ChallengeType,
+  budget?: AiBudget
 ): Promise<InterviewGrade> {
   const supabase = await createClient()
 
@@ -73,6 +76,7 @@ Grade this session according to the rubric.`
         // Bumped from 2000 → 4000: large rubrics (8+ entities) produce 6KB+ JSON
         // and hit the cap mid-array, yielding unterminated JSON.
         max_tokens: 4000,
+        budget,
       }
     )
     const textBlock = response.content

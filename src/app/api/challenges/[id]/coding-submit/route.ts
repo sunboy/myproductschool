@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { gradeCodingAttempt } from '@/lib/coding-grading/grader'
 import type { RunResult } from '@/lib/coding/types'
 import type { SessionEvent } from '@/lib/coding-grading/grader'
+import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 
 const TestResultSchema = z.object({
   id: z.string().min(1).max(200),
@@ -54,6 +56,30 @@ function validationIssues(error: ZodError) {
     path: issue.path.join('.'),
     message: issue.message,
   }))
+}
+
+function aiLimitResponse(error: unknown) {
+  if (error instanceof PlanLimitExceeded) {
+    return NextResponse.json({
+      error: 'limit_reached',
+      feature: error.feature,
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    }, { status: 402 })
+  }
+
+  if (error instanceof AiBudgetExceededError) {
+    return NextResponse.json({
+      error: 'limit_reached',
+      feature: 'hatch_ai_cents',
+      used: error.used,
+      limit: error.limit,
+      windowDays: error.windowDays,
+    }, { status: 402 })
+  }
+
+  return null
 }
 
 // ---------------------------------------------------------------------------
@@ -274,6 +300,7 @@ export async function POST(
 
   // Pull session events (paste events, run events) from conversation_summary
   const sessionEvents = parseEventLog(attempt.conversation_summary)
+  const userPlan = await getUserPlanForBudget(user.id)
 
   // Persist final code + test results to challenge_attempts before grading
   // (so attempt is recoverable even if grading fails)
@@ -306,13 +333,17 @@ export async function POST(
     chatHistory: chatHistory ?? [],
     sessionEvents,
     sessionStartedAt: attempt.started_at as string | undefined,
+    budget: { userId: user.id, userPlan, route: 'coding_submit_grade' },
   }
 
   // Grade the attempt
   let grade
   try {
+    await assertPlanLimit(user.id, userPlan, 'ai_grading_runs')
     grade = await gradeCodingAttempt(gradingInput)
   } catch (err) {
+    const response = aiLimitResponse(err)
+    if (response) return response
     console.error('Coding grading failed:', err)
     return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
   }

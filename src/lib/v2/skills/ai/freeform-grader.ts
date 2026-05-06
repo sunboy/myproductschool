@@ -4,8 +4,15 @@ import { getHatchContext } from '@/lib/v2/hatch-context'
 import { loadRubric } from '@/lib/v2/skills/rubric-loader'
 import { MENTAL_MODELS_CONTEXT, STEP_PRIMARY_COMPETENCIES } from '@/lib/hatch/system-prompt'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
+import { AiBudgetExceededError } from '@/lib/usage/ai-budget'
 import { FLOW_MAX_SCORE, TIER_CAPS_FIVE } from '@/lib/scoring/flow-scale'
 import type { CompetencySignal } from '@/lib/scoring/competency-signal'
+
+type AiBudget = { userId: string; userPlan: string; route: string }
+
+function rethrowBudgetError(error: unknown) {
+  if (error instanceof AiBudgetExceededError) throw error
+}
 
 // ── Zod schemas ──────────────────────────────────────────────
 
@@ -80,7 +87,8 @@ export async function gradeFreeform(
   scenario: ScenarioContext,
   step: FlowStep,
   targetCompetencies: string[],
-  userId?: string
+  userId?: string,
+  budget?: AiBudget
 ): Promise<GradingResult> {
   const best = options.find(o => o.quality === 'best')
   const good = options.find(o => o.quality === 'good_but_incomplete')
@@ -169,6 +177,7 @@ Return ONLY valid JSON:
       model: 'claude-opus-4-6',
       max_tokens: 800,
       thinking: { type: 'adaptive' },
+      budget,
     })
 
     const textBlock = response.content.find(b => b.type === 'text')
@@ -198,7 +207,7 @@ Return ONLY valid JSON:
         const retryResponse = await guardedCachedMessage(
           systemPrompt,
           `${prompt}\n\nPREVIOUS ATTEMPT (invalid JSON):\n${rawText}\n\nInvalid JSON. Return ONLY the raw JSON object. No markdown backticks.`,
-          { model: 'claude-opus-4-6', max_tokens: 800, thinking: { type: 'adaptive' } }
+          { model: 'claude-opus-4-6', max_tokens: 800, thinking: { type: 'adaptive' }, budget }
         )
         const retryText = retryResponse.content.find(b => b.type === 'text')
         const retryRaw = retryText?.type === 'text' ? retryText.text : ''
@@ -213,7 +222,8 @@ Return ONLY valid JSON:
             score: Math.min(FLOW_MAX_SCORE, Math.max(0, Number(retryJson.score) || TIER_CAPS_FIVE[1])),
           } as GradingResponse
         }
-      } catch {
+      } catch (error) {
+        rethrowBudgetError(error)
         return fallback
       }
     }
@@ -238,7 +248,8 @@ Return ONLY valid JSON:
       criteria_scores: gated.criteria_scores,
       competency_signal: gated.competency_signal,
     }
-  } catch {
+  } catch (error) {
+    rethrowBudgetError(error)
     return fallback
   }
 }
@@ -257,7 +268,8 @@ export async function gradeElaboration(
   elaborationText: string,
   allOptions: FlowOption[],
   scenario: ScenarioContext,
-  step: FlowStep
+  step: FlowStep,
+  budget?: AiBudget
 ): Promise<ElaborationResult> {
   const bestOption = allOptions.find(o => o.quality === 'best')
 
@@ -292,7 +304,7 @@ Return ONLY JSON:
     const response = await guardedCachedMessage(
       'You are a product sense elaboration grading agent. Evaluate whether a learner\'s elaboration adds depth to their selected MCQ option.',
       prompt,
-      { model: 'claude-sonnet-4-6', max_tokens: 300, thinking: { type: 'adaptive' } }
+      { model: 'claude-sonnet-4-6', max_tokens: 300, thinking: { type: 'adaptive' }, budget }
     )
 
     const textBlock = response.content.find(b => b.type === 'text')
@@ -320,7 +332,8 @@ Return ONLY JSON:
       adjustment_reason: parsed.adjustment_reason,
       additional_competencies: parsed.additional_competencies,
     }
-  } catch {
+  } catch (error) {
+    rethrowBudgetError(error)
     return fallback
   }
 }

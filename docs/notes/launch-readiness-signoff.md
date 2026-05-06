@@ -9,9 +9,9 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 ## Verified Gates
 
 - [x] Production build passes.
-  - Evidence: `npm run build` passed on May 6, 2026 after the PWA manifest and affiliate-gating changes.
+  - Evidence: `npm run build` passed on May 6, 2026 after the PWA manifest, affiliate-gating, and AI grading budget changes.
 - [x] TypeScript passes.
-  - Evidence: `npx tsc --noEmit --pretty false` passed on May 6, 2026 after the PWA manifest and affiliate-gating changes.
+  - Evidence: `npx tsc --noEmit --pretty false` passed on May 6, 2026 after the PWA manifest, affiliate-gating, and AI grading budget changes.
 - [x] Repo lint exits successfully.
   - Evidence: `npm run lint` exits `0` on May 6, 2026.
   - Note: lint still reports warnings. `_archived/` and generated public bundles are excluded from lint, and React compiler-style purity rules are disabled to avoid rewriting established UI flows during launch hardening.
@@ -48,6 +48,7 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: `npx vitest run tests/unit/feedback-nps.spec.ts tests/unit/affiliate-flow.spec.ts` passed on May 6, 2026: 3 files, 21 tests.
   - Evidence: `npx vitest run tests/unit/affiliate-flow.spec.ts` passed after affiliate launch gating was tightened: 2 files, 18 tests.
   - Evidence: `npx tsx --test tests/lib/billing/entitlements.test.ts` passed on May 6, 2026: 6 tests.
+  - Evidence: `npx tsx --test tests/lib/usage/assert-plan-limit.test.ts tests/lib/billing/entitlements.test.ts tests/lib/ai/guarded-client.test.ts` passed after AI grading budget coverage was tightened: 14 tests.
 - [x] Security helper unit coverage passes.
   - Evidence: `npx tsx --test tests/lib/security/turnstile.test.ts tests/lib/ai/moderation.test.ts tests/lib/security/rate-limit.test.ts` passed on May 6, 2026: 13 tests.
 - [x] AI guardrail unit coverage passes.
@@ -98,6 +99,11 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: `NEXT_PUBLIC_ENABLE_AFFILIATES !== 'true'` now disables affiliate signup routes, referral redirect cookie-setting, auth referral attribution, checkout affiliate promotion-code application, webhook commission creation, and affiliate payout cron.
   - Evidence: `npx vitest run tests/unit/affiliate-flow.spec.ts`, `npx tsc --noEmit --pretty false`, `npm run lint`, `npm run build`, and `npm run secrets:scan` passed after tightening the gate.
   - Note: `PLAYWRIGHT_BASE_URL=http://localhost:3015 npx playwright test e2e/paywall.spec.ts --reporter=line` exited `0` but skipped all 10 tests because `E2E_TEST_PASSWORD` is not set in this shell. This is not counted as fresh pass evidence.
+- [x] User-triggered AI grading paths use plan reservations and AI spend budget checks.
+  - Evidence: FLOW elaboration/freeform submit, coding submit, coding finalize, interview challenge submit, and interview-loop debrief routes now reserve `ai_grading_runs` before model grading and pass a `budget` object into their guarded Anthropic calls.
+  - Evidence: duplicate FLOW step submissions return the existing saved answer before grading, so retries do not consume plan quota or AI spend budget.
+  - Evidence: static audit of `guardedCachedMessage` call sites found the remaining unbudgeted launch exception is `src/lib/content/coaching-warmer.ts`, which is an admin publish-time cache warmer rather than a user-triggered paywall path.
+  - Evidence: `npx tsc --noEmit --pretty false`, `npx tsx --test tests/lib/usage/assert-plan-limit.test.ts tests/lib/billing/entitlements.test.ts tests/lib/ai/guarded-client.test.ts`, `npx vitest run tests/unit/affiliate-flow.spec.ts`, `npm run lint`, `npm run build`, and `npm run secrets:scan` passed after the AI grading budget patch.
 
 ## Accepted Scope Changes
 
@@ -181,6 +187,7 @@ Focused unit gates:
 ```bash
 npx tsx --test tests/lib/security/turnstile.test.ts tests/lib/ai/moderation.test.ts tests/lib/security/rate-limit.test.ts
 npx tsx --test tests/lib/billing/entitlements.test.ts
+npx tsx --test tests/lib/usage/assert-plan-limit.test.ts tests/lib/billing/entitlements.test.ts tests/lib/ai/guarded-client.test.ts
 npx tsx --test tests/lib/scoring/completed-attempt-result.test.ts
 npx vitest run tests/unit/feedback-nps.spec.ts tests/unit/affiliate-flow.spec.ts
 ```

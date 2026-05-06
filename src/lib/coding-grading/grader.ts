@@ -3,6 +3,8 @@ import { join } from 'path'
 import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import type { GradingFeedback, RunResult } from '@/lib/coding/types'
 
+type AiBudget = { userId: string; userPlan: string; route: string }
+
 // ---------------------------------------------------------------------------
 // Skill loader — loads the hackproduct-coding-grader SKILL.md as system prompt
 // ---------------------------------------------------------------------------
@@ -78,6 +80,7 @@ export interface GradingInput {
   sessionEvents: SessionEvent[]
   sessionStartedAt?: string
   parts?: CodingPart[]
+  budget?: AiBudget
 }
 
 // ---------------------------------------------------------------------------
@@ -213,6 +216,7 @@ export async function gradeCodingAttempt(input: GradingInput): Promise<GradingFe
       {
         model: 'claude-opus-4-6',
         max_tokens: 4000,
+        budget: input.budget,
       }
     )
 
