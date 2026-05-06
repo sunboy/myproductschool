@@ -61,13 +61,16 @@ This document tracks launch gates by real evidence. A checked item means the gat
   - Stripe Connect is not enabled for the account used by `.env.local`.
   - Required env vars are missing locally: `STRIPE_AFFILIATE_COUPON_ID`, `STRIPE_TEST_AFFILIATE_COUPON_ID`, `AFFILIATE_HASH_SECRET`.
   - Code and unit flow pass, but affiliate launch should not be signed off until Connect and env setup are done and the real signup smoke passes.
-- [ ] Supabase advisors still report pre-existing security and performance items.
+- [ ] Supabase Auth leaked-password protection is disabled.
   - Fixed during this pass: `user_pattern_summary` security-definer view, direct public RPC access to security-definer functions, mutable search paths on app-owned functions, broad listing on the public `avatars` bucket, missing service-role-only policies on legacy pipeline tables, broad public insert policies that are not used by the active app, and `pg_trgm` living in the exposed `public` schema.
-  - Remaining security item: leaked-password protection disabled in Supabase Auth settings.
-  - Evidence: live Supabase security advisor rerun after the policy and extension migrations only reports leaked-password protection.
+  - Remaining security advisor item: leaked-password protection disabled in Supabase Auth settings.
+  - Evidence: live Supabase security advisor rerun on May 6, 2026 only reports leaked-password protection.
   - Evidence: service-role REST smoke inserted and deleted a temporary `waitlist` row after public insert access was removed.
   - Evidence: `pg_trgm` now lives in `extensions`; existing `idx_artifacts_desc_trgm` and `idx_artifacts_name_trgm` indexes still exist.
   - Advisor output did not point to the newly applied launch tables as missing policies.
+- [ ] Supabase performance advisor backlog remains.
+  - Evidence: live Supabase performance advisor rerun on May 6, 2026 still reports pre-existing INFO/WARN items such as unindexed foreign keys, multiple permissive RLS policies, and duplicate indexes.
+  - Launch note: no blanket performance migration was applied during this pass because the warnings span many legacy/content tables and need a deliberate database tuning pass to avoid unnecessary lock or policy risk.
 ## Manual Checks Before Launch
 
 - [ ] Owner reviews `/dashboard` against the current dev baseline and confirms no visual regression.
