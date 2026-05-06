@@ -62,7 +62,7 @@ Recorded evidence before this handoff:
 Affiliates should remain disabled until Stripe Connect and all affiliate env vars are ready. Keep `NEXT_PUBLIC_ENABLE_AFFILIATES` unset unless all of these are true:
 
 - Stripe Connect is enabled.
-- `STRIPE_AFFILIATE_COUPON_ID` is set for live mode.
+- `STRIPE_AFFILIATE_COUPON_ID` is set for live mode (`1kgAyNZl`).
 - `STRIPE_TEST_AFFILIATE_COUPON_ID` is set for test smoke runs if needed.
 - `AFFILIATE_HASH_SECRET` is set.
 - The real affiliate signup and Connect onboarding smoke passes.

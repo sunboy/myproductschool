@@ -13,7 +13,7 @@ Required environment:
 Stripe setup:
 
 - Enable Stripe Connect in the Stripe Dashboard before launch. `/api/affiliate/signup` creates Express connected accounts, and Stripe rejects that call until Connect is activated for the account.
-- Create the shared affiliate coupon in live mode and set `STRIPE_AFFILIATE_COUPON_ID`. For test runs, create a test-mode coupon and set `STRIPE_TEST_AFFILIATE_COUPON_ID`.
+- Create the shared affiliate coupon in live mode and set `STRIPE_AFFILIATE_COUPON_ID=1kgAyNZl`. For test runs, create a test-mode coupon and set `STRIPE_TEST_AFFILIATE_COUPON_ID`.
 - Keep the coupon terms in Stripe. The app creates one Promotion Code per affiliate against that shared coupon.
 - Keep `NEXT_PUBLIC_ENABLE_AFFILIATES` unset until Connect, coupon ids, hash secret, and the real signup smoke are verified.
 - When `NEXT_PUBLIC_ENABLE_AFFILIATES` is not exactly `true`, affiliate behavior is disabled across the active app surface: affiliate signup routes return unavailable, referral redirects do not set cookies, auth callbacks do not apply referral attribution, checkout does not pre-apply affiliate promotion codes, webhooks do not create affiliate commissions, and affiliate payout cron returns a disabled no-op response.
