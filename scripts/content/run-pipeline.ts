@@ -44,9 +44,15 @@ async function callClaude(prompt: string, model?: string, tools?: string[]): Pro
 }
 
 async function callCodex(brief: string, outputPath: string): Promise<void> {
-  execFileSync(CODEX_BIN, ['generate-image', brief, '--output', outputPath], {
+  const prompt = `$imagegen ${brief} Save the result to ${outputPath}`
+  execFileSync(CODEX_BIN, [
+    'exec',
+    '--dangerously-bypass-approvals-and-sandbox',
+    prompt,
+  ], {
     encoding: 'utf-8',
-    maxBuffer: 5 * 1024 * 1024,
+    maxBuffer: 10 * 1024 * 1024,
+    env: { ...process.env },
   })
 }
 
