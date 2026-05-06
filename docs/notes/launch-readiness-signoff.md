@@ -79,6 +79,9 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: the Hatch overlay was positioned above the mobile bottom nav (`hatchBottom=716`, `bottomNavTop=753`) after the responsive offset fix.
   - Evidence: screenshot captured at `/tmp/hackproduct-mobile-smoke/challenges-auth-1778068327143.png`.
   - Evidence: `npx tsx --test tests/lib/copy/display.test.ts`, `npx tsc --noEmit --pretty false`, `npm run lint`, `npm run build`, and `npm run secrets:scan` passed after the mobile and display-copy cleanup.
+- [x] Local PWA browser installability passes.
+  - Evidence: Chromium CDP probe against `RATE_LIMIT_MEMORY_FALLBACK=true npx next start -p 3014` returned `installabilityErrors: []` from `Page.getInstallabilityErrors`.
+  - Evidence: the browser probe confirmed `http://localhost:3014/manifest.json` responds `200`, `display` is `standalone`, `start_url` is `/`, and manifest icons include 192px, 512px, and maskable 512px PNG entries.
 
 ## Accepted Scope Changes
 
@@ -130,7 +133,7 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 - [ ] Owner confirms production has `OPENAI_API_KEY`, `TURNSTILE_SECRET_KEY`, and Upstash Redis env vars. Local `.env.local` presence check did not find these keys.
 - [ ] Owner enables Supabase Auth leaked-password protection in the Supabase dashboard.
 - [ ] Owner checks `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog` in production.
-- [ ] Owner runs browser PWA installability check. Local production smoke found `/manifest.json` publicly reachable with dedicated 192px and 512px PNG icons, but no browser installability proof yet.
+- [ ] Owner reruns browser PWA installability check on the production domain after it serves the current app. Local Chromium installability passes for the current production build.
 - [ ] Owner creates/configures the external status provider and DNS for `status.hackproduct.com`. Live check on May 6, 2026 found DNS resolving, but `https://status.hackproduct.com` returned `404`.
 - [ ] Owner verifies production security headers are present on the deployed domain. Live check on May 6, 2026 found HSTS, nosniff, frame, referrer, and permissions headers on `https://www.hackproduct.com/waitlist`, but CSP was absent.
 
