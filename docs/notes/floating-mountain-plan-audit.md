@@ -23,7 +23,7 @@ The current owner-narrowed launch scope is:
 | --- | --- | --- |
 | 1. Build, lint, types, tests clean | Partial | `npm run build`, `npm run lint`, and `npx tsc --noEmit --pretty false` passed on May 6. `package.json` does not define an `npm test` script, so the aggregate test gate cannot run as written. Focused test commands remain the evidence source. |
 | 2. Playwright N2/N3/N4 green | Partial | N2 paywall passed `10/10`; N3 discussions passed `10/10`; narrowed N4 auth passed signup/login/forgot-password `3/3`. Full N4 remains out of launch scope per owner direction. |
-| 3. AI guardrails E2E | Partial | AI guardrail unit tests passed on May 6: 15 tests across voice rules, sanitizer, and guarded client. No latest E2E evidence proves a live Hatch response logs `ai_voice_violations` and appears in the admin dashboard. |
+| 3. AI guardrails E2E | Partial | AI guardrail unit tests passed on May 6: 15 tests across voice rules, sanitizer, and guarded client. Static app copy still contains em dashes; see `docs/notes/voice-copy-audit.md`. No latest E2E evidence proves a live Hatch response logs `ai_voice_violations` and appears in the admin dashboard. |
 | 4. Prompt injection | Partial | Guarded client unit tests cover wrapping user input and opacity guard instructions. No latest live Hatch probe evidence is recorded. |
 | 5. Plan limits + throttle | Partial | Paywall N2 coverage passed; full per-route AI throttle/limit verification across every AI route is not recorded. |
 | 6. Discipline workspaces | Not complete | `src/components/challenge/workspace/WorkspaceShell.tsx` and new per-discipline workspace routes are absent. This is broad feature work, not current launch scope. |
