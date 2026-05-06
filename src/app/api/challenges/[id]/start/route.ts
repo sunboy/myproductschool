@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { IS_MOCK } from '@/lib/mock'
 import { checkUsageLimit, recordUsageEvent } from '@/lib/usage/check-limit'
+import { getEffectiveUserPlan } from '@/lib/billing/entitlements'
 import type { UserRoleV2 } from '@/lib/types'
 
 const VALID_ROLES = [
@@ -98,15 +99,7 @@ export async function POST(
     })
   }
 
-  // Fetch profile to check plan + admin status
-  const { data: profile } = await adminClient
-    .from('profiles')
-    .select('plan, role')
-    .eq('id', userId)
-    .single()
-
-  const isAdmin = profile?.role === 'admin'
-  const userPlan = profile?.plan ?? 'free'
+  const { plan: userPlan, isAdmin } = await getEffectiveUserPlan(adminClient, userId)
 
   // Rolling-window usage limit (skip for admins)
   if (!isAdmin) {

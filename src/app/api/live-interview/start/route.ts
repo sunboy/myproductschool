@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { checkUsageLimit, recordUsageEvent } from '@/lib/usage/check-limit'
 import { buildPromptFromSession } from '@/lib/live-interview/build-prompt-from-session'
 import { apiError } from '@/lib/api/error'
+import { getEffectiveUserPlan } from '@/lib/billing/entitlements'
 import { z, ZodError } from 'zod'
 
 const RequestSchema = z.object({
@@ -43,15 +44,8 @@ export async function POST(request: Request) {
 
   const adminClient = createAdminClient()
 
-  // Fetch profile for plan + admin status (early check before expensive lookups)
-  const { data: profileForLimit } = await adminClient
-    .from('profiles')
-    .select('plan, role')
-    .eq('id', user.id)
-    .single()
-
-  const isAdminUser = profileForLimit?.role === 'admin'
-  const userPlanForLimit = profileForLimit?.plan ?? 'free'
+  // Resolve entitlement before expensive prompt/session work.
+  const { plan: userPlanForLimit, isAdmin: isAdminUser } = await getEffectiveUserPlan(adminClient, user.id)
 
   if (!isAdminUser) {
     const limitResult = await checkUsageLimit(user.id, 'interviews', userPlanForLimit)

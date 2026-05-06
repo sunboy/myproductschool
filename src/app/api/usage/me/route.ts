@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getUsageForUser } from '@/lib/usage/check-limit'
+import { getEffectiveUserPlan } from '@/lib/billing/entitlements'
 
 export async function GET() {
   const supabase = await createClient()
@@ -12,13 +13,7 @@ export async function GET() {
   }
 
   const admin = createAdminClient()
-  const { data: profile } = await admin
-    .from('profiles')
-    .select('plan, role')
-    .eq('id', user.id)
-    .maybeSingle()
-
-  const plan = profile?.role === 'admin' ? 'pro' : (profile?.plan ?? 'free')
+  const { plan } = await getEffectiveUserPlan(admin, user.id)
   const usage = await getUsageForUser(user.id, plan)
 
   return NextResponse.json(usage)

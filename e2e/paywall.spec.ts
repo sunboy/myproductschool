@@ -23,6 +23,8 @@ type AiCounterFeature =
   | 'hatch_nudges'
   | 'quick_takes'
 
+type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing'
+
 interface TestUser {
   id: string
   email: string
@@ -91,6 +93,10 @@ function currentMonthStart(): string {
     .slice(0, 10)
 }
 
+function isoDaysFromNow(days: number): string {
+  return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
+}
+
 async function getPlanLimit(
   admin: SupabaseClient,
   plan: 'free' | 'pro',
@@ -139,6 +145,28 @@ async function clearAiCounters(admin: SupabaseClient, userId: string) {
 async function setProfilePlan(admin: SupabaseClient, userId: string, plan: 'free' | 'pro') {
   const { error } = await admin.from('profiles').update({ plan }).eq('id', userId)
   if (error) throw new Error(`Could not set profile plan: ${error.message}`)
+}
+
+async function setSubscriptionEntitlement(
+  admin: SupabaseClient,
+  userId: string,
+  input: {
+    plan: 'free' | 'pro'
+    status: SubscriptionStatus
+    currentPeriodEnd?: string | null
+    cancelAtPeriodEnd?: boolean
+  }
+) {
+  const { error } = await admin.from('subscriptions').upsert({
+    user_id: userId,
+    plan: input.plan,
+    status: input.status,
+    current_period_end: input.currentPeriodEnd ?? null,
+    cancel_at_period_end: input.cancelAtPeriodEnd ?? false,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'user_id' })
+
+  if (error) throw new Error(`Could not set subscription entitlement: ${error.message}`)
 }
 
 async function setRollingUsage(
@@ -259,16 +287,32 @@ test.describe('Paywall scenarios', () => {
     users = await loadUsers(admin)
   })
 
-  test.beforeEach(async () => {
+  async function resetPaywallState() {
     await Promise.all(Object.values(users).map(user => clearAiCounters(admin, user.id)))
     await Promise.all([
       setProfilePlan(admin, users.freeNew.id, 'free'),
       setProfilePlan(admin, users.freeActive.id, 'free'),
       setProfilePlan(admin, users.freeCapped.id, 'free'),
       setProfilePlan(admin, users.proActive.id, 'pro'),
+      setSubscriptionEntitlement(admin, users.freeNew.id, { plan: 'free', status: 'active' }),
+      setSubscriptionEntitlement(admin, users.freeActive.id, { plan: 'free', status: 'active' }),
+      setSubscriptionEntitlement(admin, users.freeCapped.id, { plan: 'free', status: 'active' }),
+      setSubscriptionEntitlement(admin, users.proActive.id, {
+        plan: 'pro',
+        status: 'active',
+        currentPeriodEnd: isoDaysFromNow(14),
+      }),
       setRollingUsage(admin, users.freeActive.id, 'interviews', 0),
       setRollingUsage(admin, users.proActive.id, 'interviews', 0),
     ])
+  }
+
+  test.beforeEach(async () => {
+    await resetPaywallState()
+  })
+
+  test.afterAll(async () => {
+    await resetPaywallState()
   })
 
   test('N2.1 Free user at Hatch chat limit receives a server 402', async ({ page }) => {
@@ -437,5 +481,39 @@ test.describe('Paywall scenarios', () => {
       data: {},
     })
     expect(interview.status).toBe(200)
+  })
+
+  test('N2.7 Expired trial no longer receives Pro entitlements', async ({ page }) => {
+    const freeInterviewLimit = await getPlanLimit(admin, 'free', 'interviews', FALLBACK_LIMITS.interviews)
+
+    await Promise.all([
+      setRollingUsage(admin, users.proActive.id, 'interviews', freeInterviewLimit),
+      setProfilePlan(admin, users.proActive.id, 'pro'),
+      setSubscriptionEntitlement(admin, users.proActive.id, {
+        plan: 'pro',
+        status: 'trialing',
+        currentPeriodEnd: isoDaysFromNow(1),
+      }),
+    ])
+
+    await loginAs(page, users.proActive.email)
+
+    const activeTrial = await appFetch(page, '/api/live-interview/start', {
+      method: 'POST',
+      data: {},
+    })
+    expect(activeTrial.status, JSON.stringify(activeTrial.body)).toBe(200)
+
+    await setSubscriptionEntitlement(admin, users.proActive.id, {
+      plan: 'pro',
+      status: 'trialing',
+      currentPeriodEnd: isoDaysFromNow(-1),
+    })
+
+    const expiredTrial = await appFetch(page, '/api/live-interview/start', {
+      method: 'POST',
+      data: {},
+    })
+    expectLimitReached(expiredTrial, 'interviews')
   })
 })

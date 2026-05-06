@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
 import { getUsageForUser } from '@/lib/usage/check-limit'
+import { effectivePlanFromRows } from '@/lib/billing/entitlements'
 import { z, ZodError } from 'zod'
 
 const RequestSchema = z.object({
@@ -76,13 +77,14 @@ export async function GET() {
 
   if (profileResult.error) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
 
-  const plan = profileResult.data.plan || 'free'
+  const plan = effectivePlanFromRows(profileResult.data, subscriptionResult.data)
   const dailyLimit = plan === 'pro' ? null : 3
   const dailyAttemptsToday = attemptsResult.count ?? 0
-  const usage = await getUsageForUser(user.id, profileResult.data.role === 'admin' ? 'pro' : plan)
+  const usage = await getUsageForUser(user.id, plan)
 
   return NextResponse.json({
     ...profileResult.data,
+    plan,
     email: user.email,
     subscription: subscriptionResult.data,
     usage,
