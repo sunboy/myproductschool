@@ -339,7 +339,7 @@ function TurnBubble({ turn }: { turn: TranscriptTurn }) {
                 }
           }
         >
-          {isHatch ? <Md>{turn.content}</Md> : turn.content}
+          {isHatch ? <Md variant="chat">{turn.content}</Md> : turn.content}
         </div>
 
         {/* User initials */}
@@ -2166,7 +2166,7 @@ export default function SessionPage({
                           }
                     }
                   >
-                    {turn.role === 'hatch' ? <Md>{turn.content}</Md> : turn.content}
+                    {turn.role === 'hatch' ? <Md variant="chat">{turn.content}</Md> : turn.content}
                   </div>
                 </div>
               ))}

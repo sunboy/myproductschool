@@ -437,7 +437,7 @@ export function CanvasChatPanel({
                       )}
                     </div>
                   )}
-                  {msg.role === 'hatch' ? <Md>{msg.content}</Md> : msg.content}
+                  {msg.role === 'hatch' ? <Md variant="chat">{msg.content}</Md> : msg.content}
                   {msg.kind === 'canvas_action' && (
                     <span className="material-symbols-outlined text-[14px] ml-1 opacity-70">draw</span>
                   )}
@@ -612,7 +612,7 @@ export function CanvasChatPanel({
                     )}
                   </div>
                 )}
-                {msg.role === 'hatch' ? <Md>{msg.content}</Md> : msg.content}
+                {msg.role === 'hatch' ? <Md variant="chat">{msg.content}</Md> : msg.content}
                 {msg.kind === 'canvas_action' && (
                   <span className="material-symbols-outlined text-[14px] ml-1 opacity-70">draw</span>
                 )}
