@@ -21,6 +21,8 @@ const MARKETING_ROUTES = [
   '/pricing',
   '/privacy',
   '/terms',
+  '/help',
+  '/changelog',
   '/r',
   '/flow',
   '/hatch-preview',

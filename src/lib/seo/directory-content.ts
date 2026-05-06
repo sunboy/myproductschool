@@ -588,6 +588,8 @@ export const PUBLIC_DIRECTORY_PATHS = [
   '/pricing',
   '/privacy',
   '/terms',
+  '/help',
+  '/changelog',
   '/waitlist',
 ]
 
