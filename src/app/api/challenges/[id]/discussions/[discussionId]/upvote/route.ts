@@ -3,6 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { apiError } from '@/lib/api/error'
 
+type ToggleDiscussionUpvoteResult = {
+  upvote_count: number
+  upvoted: boolean
+}
+
 export async function PATCH(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string; discussionId: string }> }
@@ -15,40 +20,24 @@ export async function PATCH(
 
   const adminClient = createAdminClient()
 
-  // Fetch current upvoted_by
-  const { data: discussion, error } = await adminClient
-    .from('challenge_discussions')
-    .select('upvote_count, upvoted_by')
-    .eq('id', discussionId)
-    .eq('challenge_id', id)
+  const { data, error } = await adminClient
+    .rpc('toggle_discussion_upvote', {
+      p_discussion_id: discussionId,
+      p_challenge_id: id,
+      p_user_id: user.id,
+    })
     .maybeSingle()
 
   if (error) {
-    return apiError(500, 'discussion_lookup_failed', 'Failed to load discussion')
+    return apiError(500, 'discussion_upvote_failed', 'Failed to update upvote')
   }
-  if (!discussion) {
+  if (!data) {
     return apiError(404, 'discussion_not_found', 'Discussion not found')
   }
 
-  const upvotedBy: string[] = discussion.upvoted_by ?? []
-  const alreadyUpvoted = upvotedBy.includes(user.id)
-
-  const newUpvotedBy = alreadyUpvoted
-    ? upvotedBy.filter(id => id !== user.id)
-    : [...upvotedBy, user.id]
-
-  const newCount = alreadyUpvoted
-    ? Math.max(0, (discussion.upvote_count ?? 0) - 1)
-    : (discussion.upvote_count ?? 0) + 1
-
-  const { error: updateError } = await adminClient
-    .from('challenge_discussions')
-    .update({ upvoted_by: newUpvotedBy, upvote_count: newCount })
-    .eq('id', discussionId)
-
-  if (updateError) {
-    return apiError(500, 'discussion_upvote_failed', 'Failed to update upvote')
-  }
-
-  return NextResponse.json({ upvote_count: newCount, upvoted: !alreadyUpvoted })
+  const result = data as ToggleDiscussionUpvoteResult
+  return NextResponse.json({
+    upvote_count: result.upvote_count,
+    upvoted: result.upvoted,
+  })
 }
