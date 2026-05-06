@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { FlowOption, FlowStep, ResponseType } from '@/lib/types'
+import type { FlowOption, FlowStep } from '@/lib/types'
 import { routeResponse, gradePureMCQ } from '@/lib/v2/skills/grading-router'
 import { scoreOption } from '@/lib/v2/skills/option-scorer'
 import { calculateStepScore } from '@/lib/v2/skills/step-score-calculator'
@@ -10,13 +11,20 @@ import { getReasoningMove } from '@/lib/v2/skills/rubric-loader'
 
 // ── Request body ─────────────────────────────────────────────
 
-interface SubmitRequestBody {
-  attempt_id: string
-  question_id: string
-  response_type: ResponseType
-  selected_option_id?: string
-  user_text?: string
-  time_spent_seconds?: number
+const RequestSchema = z.object({
+  attempt_id: z.string().uuid(),
+  question_id: z.string().uuid(),
+  response_type: z.enum(['pure_mcq', 'mcq_plus_elaboration', 'modified_option', 'freeform', 'coding_subtask']),
+  selected_option_id: z.string().uuid().nullable().optional(),
+  user_text: z.string().max(50000).nullable().optional(),
+  time_spent_seconds: z.number().int().min(0).max(24 * 60 * 60).optional().default(0),
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
 }
 
 // ── FLOW steps in order ──────────────────────────────────────
@@ -38,7 +46,18 @@ export async function POST(
   const { id: challenge_id, step: stepParam } = await params
   const step = stepParam as FlowStep
 
-  const body: SubmitRequestBody = await req.json()
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
   const {
     attempt_id,
     question_id,
@@ -47,10 +66,6 @@ export async function POST(
     user_text,
     time_spent_seconds = 0,
   } = body
-
-  if (!attempt_id || !question_id || !response_type) {
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
-  }
 
   // Auth
   const supabase = await createClient()
