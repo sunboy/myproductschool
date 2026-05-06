@@ -2,6 +2,19 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { hasValidReauthToken, REAUTH_COOKIE_NAME } from '@/lib/auth/reauth'
+import { z, ZodError } from 'zod'
+
+const RequestSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+  confirmation: z.literal('DELETE'),
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
 
 export async function DELETE(request: Request) {
   const supabase = await createClient()
@@ -11,9 +24,19 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'reauth_required' }, { status: 403 })
   }
 
-  const body = await request.json().catch(() => ({})) as { email?: unknown; confirmation?: unknown }
-  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
-  const confirmation = typeof body.confirmation === 'string' ? body.confirmation : ''
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+  const { email, confirmation } = body
 
   if (!user.email || email !== user.email.toLowerCase() || confirmation !== 'DELETE') {
     return NextResponse.json({ error: 'Account deletion confirmation did not match.' }, { status: 400 })
