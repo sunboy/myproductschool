@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Raleway, Literata } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
+import { AnalyticsGate } from "@/components/legal/AnalyticsGate";
+import { CookieBanner } from "@/components/legal/CookieBanner";
 import { PostHogProvider } from "@/components/PostHogProvider";
 import { HatchSonicSurface } from "@/components/shell/HatchSonicSurface";
 import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, imageUrl, SITE_URL } from "@/lib/seo/site";
@@ -106,8 +107,9 @@ export default function RootLayout({
         <PostHogProvider>
           <HatchSonicSurface />
           {children}
+          <CookieBanner />
         </PostHogProvider>
-        <Analytics />
+        <AnalyticsGate />
       </body>
     </html>
   );

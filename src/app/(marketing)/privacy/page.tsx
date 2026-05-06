@@ -63,7 +63,7 @@ const DATA_SECTIONS = [
     body: [
       'Account holders can request access, correction, export, or deletion of personal data by contacting privacy@hackproduct.dev.',
       'Notification preferences can be changed in settings or through signed unsubscribe links in email.',
-      'Cookie choices can be changed when the cookie banner is available. Essential cookies are required for login, security, billing, and core product operation.',
+      'Cookie choices are saved in the current browser. Essential storage is required for login, security, billing, and core product operation.',
       'Deleting an account removes profile data and cascaded practice data where technically possible. Some billing, security, affiliate, tax, dispute, and audit records may remain when retention is required.',
       'Affiliate payouts through Stripe Connect may require additional identity, tax, and bank account information handled by Stripe.',
     ],
