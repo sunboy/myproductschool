@@ -80,7 +80,7 @@ This document tracks launch gates by real evidence. A checked item means the gat
 - [ ] Owner confirms Stripe Connect is enabled and affiliate env vars are set.
 - [ ] Owner reruns affiliate real signup smoke.
 - [ ] Owner confirms production env does not set any `*_E2E_FALLBACK` flags.
-- [ ] Owner confirms production has `OPENAI_API_KEY`, `TURNSTILE_SECRET_KEY`, and Upstash Redis env vars.
+- [ ] Owner confirms production has `OPENAI_API_KEY`, `TURNSTILE_SECRET_KEY`, and Upstash Redis env vars. Local `.env.local` presence check did not find these keys.
 - [ ] Owner enables Supabase Auth leaked-password protection in the Supabase dashboard.
 - [ ] Owner checks `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog` in production.
 - [ ] Owner creates/configures the external status provider and DNS for `status.hackproduct.com`.
