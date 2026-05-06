@@ -11,14 +11,18 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 - [x] Production build passes.
   - Evidence: `npm run build` passed on May 6, 2026 after the PWA manifest, affiliate-gating, and AI grading budget changes.
   - Evidence: `npm run build` passed after explicitly setting the Next project root; the previous multiple-lockfile workspace-root warning no longer appears.
+  - Evidence: `npm run build` passed on Next `16.2.4` after Sentry instrumentation and targeted dependency patches. The Sentry post-build hook completed.
 - [x] TypeScript passes.
   - Evidence: `npx tsc --noEmit --pretty false` passed on May 6, 2026 after the PWA manifest, affiliate-gating, and AI grading budget changes.
+  - Evidence: `npx tsc --noEmit --pretty false` passed after Sentry instrumentation and targeted dependency patches.
 - [x] Repo lint exits successfully.
   - Evidence: `npm run lint` exits `0` on May 6, 2026.
+  - Evidence: `npm run lint` exited `0` after Sentry instrumentation and targeted dependency patches.
   - Note: lint still reports warnings. `_archived/` and generated public bundles are excluded from lint, and React compiler-style purity rules are disabled to avoid rewriting established UI flows during launch hardening.
 - [x] Secrets scan passes.
   - Evidence: `npm run secrets:scan` passed on May 6, 2026; staged secret scans passed on commit.
   - Evidence: exact secret-rotation grep for committed Supabase service-role JWTs and direct hardcoded service-key assignments returned no matches on May 6, 2026.
+  - Evidence: `npm run secrets:scan` passed after Sentry instrumentation and dependency env examples were added.
 - [x] Paywall scenarios pass.
   - Evidence: `e2e/paywall.spec.ts` passed `10/10` against `next start` with seeded Supabase users.
   - Evidence: `PLAYWRIGHT_BASE_URL=http://localhost:3016 E2E_TEST_PASSWORD=... npx playwright test e2e/paywall.spec.ts --reporter=line` passed `10/10` on May 6, 2026 after reseeding the six fixed E2E personas.
@@ -47,6 +51,14 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: `/api/health` returns a no-store JSON health response for uptime monitors.
   - Evidence: `docs/notes/status-page.md` points the external status provider setup at `/api/health`.
   - Evidence: local production smoke returned `200` for `/api/health`.
+- [x] Code-side error monitoring support exists.
+  - Evidence: `@sentry/nextjs` is installed and wired through `src/instrumentation.ts`, `src/instrumentation-client.ts`, `src/sentry.server.config.ts`, `src/sentry.edge.config.ts`, and `src/app/global-error.tsx`.
+  - Evidence: `next.config.ts` wraps the app with `withSentryConfig`, disables Sentry telemetry, removes Sentry debug logging from bundles, and only enables source map upload when `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` are set.
+  - Evidence: CSP `connect-src` includes `*.sentry.io`, and `.env.example` documents the required Sentry env vars.
+  - Evidence: `npx tsc --noEmit --pretty false`, `npm run lint`, `npm run build`, `npm run secrets:scan`, and `npm audit --omit=dev --audit-level=critical` passed after the change.
+- [x] Critical production dependency audit is clean.
+  - Evidence: `npm audit --omit=dev --audit-level=critical` exits `0` after targeted updates to `next@16.2.4`, `posthog-js@1.372.9`, and transitive `protobufjs@7.5.6`.
+  - Evidence: targeted nonbreaking updates also cleared the previous `picomatch` high advisory and the `uuid` advisory.
 - [x] Core legal, pricing, help, and changelog pages respond locally.
   - Evidence: local production smoke returned `200` for `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog`.
   - Evidence: `src/lib/seo/directory-content.ts` includes `/pricing`, `/privacy`, `/terms`, `/help`, and `/changelog` in `PUBLIC_DIRECTORY_PATHS`, which feeds `src/app/sitemap.ts`.
@@ -154,8 +166,14 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 - [ ] Difficulty taxonomy is not standardized to `easy | medium | hard`.
   - Evidence: read-only live DB audit on May 6, 2026 found existing values such as `advanced`, `beginner`, `intermediate`, `standard`, `warmup`, `staff_plus`, and other content-specific labels.
   - Launch note: no blanket taxonomy migration was applied during launch freeze because this touches content, UI labels, recommendation logic, and legacy cohort data.
-- [ ] Error monitoring is not implemented.
-  - Evidence: static repo audit on May 6, 2026 found no Sentry package and no Sentry instrumentation.
+- [ ] Sentry provider receiving is not verified.
+  - Code-side instrumentation exists, but no staging or production event has been observed in Sentry yet.
+  - Required env vars before verification: `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, and `SENTRY_AUTH_TOKEN`.
+  - Launch note: source map upload stays disabled until Sentry org, project, and auth token are present.
+- [ ] Production dependency audit still has non-critical advisories.
+  - Evidence: `npm audit --omit=dev --json` reports 0 critical, 1 high, and 15 moderate production advisories after targeted patches.
+  - Remaining high: `lodash-es` under Excalidraw's Mermaid parser dependency path through `@mermaid-js/parser`, `langium`, and `chevrotain`.
+  - Remaining moderate items include the Anthropic SDK memory-tool advisories, Monaco's nested DOMPurify, Next's nested PostCSS advisory, and Excalidraw's nested NanoID path. The npm suggested fixes include breaking changes or an invalid Next downgrade path, so they need a deliberate dependency upgrade pass.
 - [ ] Full XP/streak correctness remains partial.
   - Evidence: the same-item duplicate-award paths for FLOW completion and quick takes are fixed and tested, but there is still no XP ledger, shared XP calculator, atomic XP increment, UTC boundary E2E, or simultaneous-completion coverage.
   - Launch note: see `docs/notes/xp-streak-audit.md`.
@@ -169,6 +187,7 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 - [ ] Owner reruns affiliate real signup smoke.
 - [ ] Owner confirms production env does not set any `*_E2E_FALLBACK` flags.
 - [ ] Owner confirms production has `OPENAI_API_KEY`, `TURNSTILE_SECRET_KEY`, and Upstash Redis env vars. Local `.env.local` presence check did not find these keys.
+- [ ] Owner configures Sentry env vars and verifies a captured staging or production error appears in the Sentry project.
 - [ ] Owner enables Supabase Auth leaked-password protection in the Supabase dashboard.
 - [ ] Owner checks `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog` in production.
 - [ ] Owner reruns browser PWA installability check on the production domain after it serves the current app. Local Chromium installability passes for the current production build.

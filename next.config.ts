@@ -1,6 +1,12 @@
 import type { NextConfig } from 'next'
+import { withSentryConfig } from '@sentry/nextjs'
 
 const projectRoot = process.cwd()
+const sentrySourceMapsConfigured = Boolean(
+  process.env.SENTRY_AUTH_TOKEN
+  && process.env.SENTRY_ORG
+  && process.env.SENTRY_PROJECT
+)
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -8,7 +14,7 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' fonts.gstatic.com data:",
-  "connect-src 'self' *.supabase.co api.anthropic.com api.openai.com api.stripe.com *.posthog.com api.resend.com *.upstash.io *.vercel-insights.com vitals.vercel-insights.com ws: wss: http://localhost:*",
+  "connect-src 'self' *.supabase.co api.anthropic.com api.openai.com api.stripe.com *.posthog.com api.resend.com *.upstash.io *.vercel-insights.com vitals.vercel-insights.com *.sentry.io ws: wss: http://localhost:*",
   "frame-src 'self' *.stripe.com challenges.cloudflare.com",
   "media-src 'self' data: blob: https:",
   "worker-src 'self' blob:",
@@ -73,4 +79,19 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.CI,
+  telemetry: false,
+  sourcemaps: {
+    disable: !sentrySourceMapsConfigured,
+  },
+  routeManifestInjection: false,
+  webpack: {
+    treeshake: {
+      removeDebugLogging: true,
+    },
+  },
+})
