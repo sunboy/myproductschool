@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { TopNav } from '@/components/shell/TopNav'
 import { BottomTabs } from '@/components/shell/BottomTabs'
 import { StudyPlanIndexPanel } from '@/components/shell/StudyPlanIndexPanel'
@@ -10,9 +10,13 @@ import { HatchDirector } from '@/components/shell/HatchDirector'
 import { HatchProvider } from '@/context/HatchContext'
 
 function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const fromPlan = searchParams.get('from_plan')
   const cid = searchParams.get('cid') ?? undefined
+  const isShareRoute = /^\/workspace\/challenges\/[^/]+\/share(?:\/[^/]+)?$/.test(pathname)
+
+  if (isShareRoute) return <>{children}</>
 
   return (
     <HatchProvider>

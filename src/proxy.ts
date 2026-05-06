@@ -41,6 +41,8 @@ const MARKETING_ROUTES = [
 ]
 const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/magic-link-sent']
 const AUTH_CALLBACK_ROUTES = ['/auth/callback']
+const PUBLIC_SCORECARD_ROUTE =
+  /^\/workspace\/challenges\/[^/]+\/share(?:\/[^/]+(?:\/(?:opengraph-image|twitter-image)[^/]*)?)?$/
 
 // Routes that can be reached before signing in.
 const APP_PUBLIC_ROUTES = ['/onboarding', '/welcome', '/role', '/calibration', '/results', '/baseline']
@@ -71,11 +73,12 @@ export async function proxy(request: NextRequest) {
   const isWaitlist  = WAITLIST_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isAuthRoute = AUTH_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isAuthCallback = AUTH_CALLBACK_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
+  const isPublicScorecard = PUBLIC_SCORECARD_ROUTE.test(pathname)
   const isApi       = pathname.startsWith('/api/')
 
   // Pure marketing routes that never need auth (not / or waitlist which need redirect logic)
   const isPureMarketing = isMarketing && !isRoot && !isWaitlist
-  if (isPureMarketing || isAuthCallback || isApi) {
+  if (isPureMarketing || isAuthCallback || isPublicScorecard || isApi) {
     return NextResponse.next()
   }
 

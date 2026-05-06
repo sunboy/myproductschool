@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getOrCreateAttemptShare } from '@/lib/share/attempt-scorecard'
+import { SITE_URL } from '@/lib/seo/site'
 import { NextResponse } from 'next/server'
 import { IS_MOCK } from '@/lib/mock'
 
@@ -17,7 +19,7 @@ export async function GET(
       user_display_name: 'Alex K.',
       xp_earned: 240,
       percentile: 78,
-      share_url: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://hackproduct.io'}/workspace/challenges/${id}/share`,
+      share_url: `${process.env.NEXT_PUBLIC_APP_URL ?? SITE_URL}/workspace/challenges/mock/share/mock-share-token`,
     })
   }
 
@@ -31,10 +33,8 @@ export async function GET(
     .from('challenge_attempts')
     .select(`
       id,
-      score,
       user_id,
       challenge_id,
-      challenges(title, move_tags),
       move_level_history(xp_delta)
     `)
     .eq('id', id)
@@ -50,19 +50,25 @@ export async function GET(
     .eq('id', user.id)
     .single()
 
-  const prompt = attempt.challenges as unknown as { title: string; move_tags: string[] } | null
   const xpHistory = attempt.move_level_history as { xp_delta: number }[] | null
   const xpEarned = xpHistory?.reduce((sum, h) => sum + (h.xp_delta ?? 0), 0) ?? 0
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hackproduct.io'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? SITE_URL
+  const scorecard = await getOrCreateAttemptShare(adminClient, {
+    attemptId: id,
+    userId: user.id,
+    challengeId: attempt.challenge_id as string,
+  })
+
+  if (!scorecard) return NextResponse.json({ error: 'Attempt not found' }, { status: 404 })
 
   return NextResponse.json({
-    score: attempt.score ?? 0,
-    challenge_title: prompt?.title ?? 'Challenge',
-    move: prompt?.move_tags?.[0] ?? 'frame',
+    score: scorecard.scorePercent,
+    challenge_title: scorecard.challengeTitle,
+    move: scorecard.moveLevels[0]?.move ?? 'frame',
     user_display_name: profile?.display_name ?? 'Anonymous',
     xp_earned: xpEarned,
-    percentile: attempt.score ? Math.round(attempt.score * 0.85) : 50,
-    share_url: `${appUrl}/workspace/challenges/${id}/share`,
+    percentile: scorecard.scorePercent ? Math.round(scorecard.scorePercent * 0.85) : 50,
+    share_url: `${appUrl}/workspace/challenges/${attempt.challenge_id}/share/${scorecard.shareId}`,
   })
 }
