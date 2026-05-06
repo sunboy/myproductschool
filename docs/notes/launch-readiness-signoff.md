@@ -63,6 +63,10 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: `rg -i "claude|anthropic|sonnet|opus|haiku|openai|gpt-|language model|system prompt|tool call"` returned no matches in `src/components`, `src/app/(app)`, `src/app/(marketing)`, `src/app/(auth)`, and `src/lib/email` after excluding AI internals and Hatch system prompt files.
   - Evidence: `rg -i "\\bluma\\b|luma"` returned no matches in current `src/components`, `src/app`, and `src/lib/email` TypeScript/TSX user-surface files after renaming a stale internal preview export.
   - Evidence: stale `Luma` copy and selectors were removed from public static mockups and waitlist HTML; `rg -i "\\bluma\\b|luma" public src/app src/components src/lib/email --glob '!public/sql.js/**' --glob '!public/talkinghead/**' --glob '!public/images/logos/stripe.png'` returned no matches on May 6, 2026.
+- [x] Local authenticated dashboard smoke passes after copy cleanup.
+  - Evidence: a fresh `next start` on port `3012` loaded `/dashboard` with a temporary Supabase user that was deleted after the run.
+  - Evidence: the smoke verified the dashboard hero, session CTA, quick-take card, multiple card sections, zero visible `Luma` text, and zero visible em dashes.
+  - Evidence: screenshot captured at `/tmp/dashboard-smoke-1778065728974.png` for local visual review.
 
 ## Accepted Scope Changes
 
@@ -105,6 +109,7 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 ## Manual Checks Before Launch
 
 - [ ] Owner reviews `/dashboard` against the current dev baseline and confirms no visual regression.
+  - Codex local smoke passed after the copy cleanup, but owner visual parity remains a launch check because the requested baseline is the running dev dashboard.
 - [ ] Owner confirms Stripe Connect is enabled and affiliate env vars are set.
 - [ ] Owner reruns affiliate real signup smoke.
 - [ ] Owner confirms production env does not set any `*_E2E_FALLBACK` flags.
