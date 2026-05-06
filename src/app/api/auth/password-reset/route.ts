@@ -5,12 +5,13 @@ import {
   getClientIp,
   sameOriginRedirect,
 } from '@/lib/auth/rate-limit'
-import { firstZodError, protectedPasswordResetRequestSchema } from '@/lib/auth/validation'
+import { protectedPasswordResetRequestSchema } from '@/lib/auth/validation'
 import { turnstileErrorMessage, verifyTurnstileToken } from '@/lib/security/turnstile'
+import { z, ZodError } from 'zod'
 
-interface PasswordResetBodyExtras {
-  redirectTo?: string
-}
+const RequestSchema = protectedPasswordResetRequestSchema.extend({
+  redirectTo: z.string().trim().max(2048).optional(),
+})
 
 function rateLimitedResponse(retryAfter: number) {
   return NextResponse.json(
@@ -22,13 +23,27 @@ function rateLimitedResponse(retryAfter: number) {
   )
 }
 
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
+
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({})) as PasswordResetBodyExtras
-  const parsed = protectedPasswordResetRequestSchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json({ error: firstZodError(parsed.error) }, { status: 400 })
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
-  const { email, turnstileToken } = parsed.data
+  const { email, turnstileToken } = body
 
   const ip = getClientIp(request)
   const block = await findRateLimitBlock([
