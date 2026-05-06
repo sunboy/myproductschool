@@ -5,11 +5,23 @@ import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
+import { z, ZodError } from 'zod'
 
 const ROUTE_KEY = 'live_interview_chat'
 
+const RequestSchema = z.object({
+  message: z.string().trim().min(1).max(20000),
+})
+
 function retryAfterSeconds(resetAt: Date) {
   return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
+}
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
 }
 
 export async function POST(
@@ -29,8 +41,19 @@ export async function POST(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return new Response('Unauthorized', { status: 401 })
 
-  const { message } = await request.json()
-  if (!message?.trim()) return new Response('Bad Request', { status: 400 })
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return Response.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+  const { message } = body
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json({ error: 'Hatch ran into a problem. Try again.' }, { status: 503 })
