@@ -50,7 +50,7 @@ This document tracks launch gates by real evidence. A checked item means the gat
   - `npm run lint` currently fails on pre-existing unrelated files, including `_archived/` and older live-interview/showcase code.
   - Changed files in the recent launch-gate work passed targeted lint.
 - [ ] Supabase advisors still report pre-existing security and performance items.
-  - Notable security items include `public.user_pattern_summary` as a security-definer view, mutable function search paths, public executable security-definer functions, and leaked-password protection disabled.
+  - Notable security items include mutable function search paths, public executable security-definer functions, and leaked-password protection disabled.
   - Advisor output did not point to the newly applied launch tables as missing policies.
 - [ ] Full auth suite has not been treated as a launch requirement after scope reduction.
   - Verified launch scope is signup, login, and forgot-password reset.
