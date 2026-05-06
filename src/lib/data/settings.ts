@@ -8,7 +8,6 @@ const MOCK_SETTINGS: UserSettings = {
     weekly_summary: true,
     streak_reminder: true,
     new_challenges: false,
-    cohort_updates: true,
   },
   daily_goal_count: 3,
   preferred_role: 'SWE',

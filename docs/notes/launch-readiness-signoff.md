@@ -38,6 +38,10 @@ This document tracks launch gates by real evidence. A checked item means the gat
 - [x] Feedback, affiliate, and billing unit coverage passes with the right test runners.
   - Evidence: `npx vitest run tests/unit/feedback-nps.spec.ts tests/unit/affiliate-flow.spec.ts` passed.
   - Evidence: `npx tsx --test tests/lib/billing/entitlements.test.ts` passed.
+- [x] Active cohort feature surface is removed from launch.
+  - Evidence: deleted `/api/cohort/current`, `/api/cohort/leaderboard`, and `/api/cohort/submit` route handlers plus the unused cohort hook/data helpers.
+  - Evidence: `/challenges` no longer fetches cohort leaderboard data; dashboard community CTA now links to practice instead of a weekly room.
+  - Evidence: `rg` found no remaining active cohort route/helper references, and `npm run build` no longer lists `/api/cohort/*`.
 
 ## Accepted Scope Changes
 
@@ -45,6 +49,8 @@ This document tracks launch gates by real evidence. A checked item means the gat
   - Owner direction: use Supabase auth for login, signup, and forgot-password. Do not build MFA or custom recovery-code features.
 - [x] Custom MFA recovery is out of scope for launch.
   - Existing dropped migration remains applied remotely as `drop_unused_mfa_recovery_codes`; no user-facing MFA work should be added.
+- [x] Cohorts are out of scope for launch.
+  - Active cohort UI and backend endpoints are removed. The legacy `/cohort` path only redirects to `/challenges`.
 
 ## Open Blockers
 

@@ -27,10 +27,10 @@ export function CommunityActivityCard({ events }: { events: ActivityFeedEvent[] 
           <h3 className="mt-1 font-headline text-lg font-bold text-on-surface">What peers are doing</h3>
         </div>
         <Link
-          href="/cohort"
+          href="/challenges"
           className="inline-flex items-center gap-1 rounded-full border border-outline-variant px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary-fixed"
         >
-          Weekly Room
+          Practice
           <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
         </Link>
       </div>

@@ -71,7 +71,6 @@ function parsePageContext(pathname: string): { pageType: string; entityId: strin
   if (pathname.startsWith('/explore')) return { pageType: 'explore', entityId: null }
   if (pathname.startsWith('/challenges')) return { pageType: 'practice', entityId: null }
   if (pathname.startsWith('/progress')) return { pageType: 'progress', entityId: null }
-  if (pathname.startsWith('/cohort')) return { pageType: 'practice', entityId: null }
 
   return { pageType: 'general', entityId: null }
 }

@@ -11,7 +11,6 @@ const MOCK_SETTINGS = {
     weekly_summary: true,
     streak_reminder: true,
     new_challenges: false,
-    cohort_updates: true,
   },
   daily_goal_count: 3,
   preferred_role: 'SWE',
@@ -66,7 +65,7 @@ export async function GET() {
     return NextResponse.json({
       id: null,
       user_id: user.id,
-      notifications: { weekly_summary: true, streak_reminder: true, new_challenges: true, cohort_updates: true },
+      notifications: { weekly_summary: true, streak_reminder: true, new_challenges: true },
       daily_goal_count: 3,
       preferred_role: null,
       flow_focus: 'List',

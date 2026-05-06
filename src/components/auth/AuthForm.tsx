@@ -397,7 +397,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
             {[
               'Product sense, system design, data modeling, SQL, and coding in one track',
               'Hatch coaches in real time and pushes back when you hand-wave',
-              'Role-aware plans without live cohorts or human scheduling',
+              'Role-aware plans without human scheduling',
             ].map(item => (
               <li key={item} className="flex items-center gap-3">
                 <span

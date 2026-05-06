@@ -160,7 +160,6 @@ async function buildPageContextBlock(pageContext: PageContext): Promise<string> 
       explore: 'User is on the Explore hub — browsing challenges, study plans, and domains.',
       practice: 'User is on the Practice hub — browsing FLOW challenges to attempt.',
       progress: 'User is on the Progress & Analytics page — reviewing their FLOW skill levels, archetype, and certification progress.',
-      cohort: 'User is on the Cohort Leaderboard — weekly competitive rankings.',
     }
     const label = pageLabels[pageType]
     return label ? `## Current Page\n${label}` : ''

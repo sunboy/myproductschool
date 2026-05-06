@@ -339,7 +339,7 @@ export interface MoveLevelHistory {
   user_id: string
   move: FlowMove
   xp_delta: number
-  source: 'challenge' | 'quick-take' | 'calibration' | 'cohort'
+  source: 'challenge' | 'quick-take' | 'calibration'
   source_id: string | null
   created_at: string
 }
@@ -390,30 +390,6 @@ export interface UserStudyPlan {
   completed_challenges: string[]
 }
 
-/* ── v2 Cohort ────────────────────────────────────────────── */
-
-export interface CohortChallenge {
-  id: string
-  title: string
-  prompt_text: string
-  difficulty: Difficulty
-  move_tag: FlowMove | null
-  week_start: string
-  week_end: string
-  is_active: boolean
-  created_at: string
-}
-
-export interface CohortSubmission {
-  id: string
-  user_id: string
-  cohort_challenge_id: string
-  response_text: string
-  score: number | null
-  feedback_json: Record<string, unknown> | null
-  submitted_at: string
-}
-
 /* ── v2 Community Engagement ──────────────────────────────── */
 
 export type CommunityDisplayMode = 'anonymous' | 'named'
@@ -432,7 +408,6 @@ export type ActivityFeedEventType =
   | 'shared_answer'
   | 'earned_badge'
   | 'expert_picked_answer'
-  | 'weekly_room_milestone'
   | 'feedback_trade'
 
 export interface ActivityFeedEvent {
@@ -460,7 +435,6 @@ export interface UserSettings {
     weekly_summary: boolean
     streak_reminder: boolean
     new_challenges: boolean
-    cohort_updates: boolean
   }
   daily_goal_count: number
   preferred_role: UserRole | null
