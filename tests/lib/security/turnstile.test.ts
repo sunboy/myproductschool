@@ -4,6 +4,7 @@ import { verifyTurnstileToken } from '../../../src/lib/security/turnstile'
 
 const originalSecret = process.env.TURNSTILE_SECRET_KEY
 const originalNodeEnv = process.env.NODE_ENV
+const originalE2eFallback = process.env.TURNSTILE_E2E_FALLBACK
 const originalFetch = globalThis.fetch
 const mutableEnv = process.env as Record<string, string | undefined>
 
@@ -17,6 +18,11 @@ afterEach(() => {
     delete mutableEnv.NODE_ENV
   } else {
     mutableEnv.NODE_ENV = originalNodeEnv
+  }
+  if (originalE2eFallback === undefined) {
+    delete mutableEnv.TURNSTILE_E2E_FALLBACK
+  } else {
+    mutableEnv.TURNSTILE_E2E_FALLBACK = originalE2eFallback
   }
   globalThis.fetch = originalFetch
 })
@@ -33,6 +39,7 @@ test('skips Turnstile in development when no secret is configured', async () => 
 
 test('fails closed in production when no secret is configured', async () => {
   delete mutableEnv.TURNSTILE_SECRET_KEY
+  delete mutableEnv.TURNSTILE_E2E_FALLBACK
   mutableEnv.NODE_ENV = 'production'
 
   const result = await verifyTurnstileToken({ token: 'token' })
@@ -41,8 +48,20 @@ test('fails closed in production when no secret is configured', async () => {
   assert.equal(result.error, 'turnstile_not_configured')
 })
 
+test('allows explicit e2e fallback in production-style local runs', async () => {
+  delete mutableEnv.TURNSTILE_SECRET_KEY
+  mutableEnv.TURNSTILE_E2E_FALLBACK = 'true'
+  mutableEnv.NODE_ENV = 'production'
+
+  const result = await verifyTurnstileToken({ token: '' })
+
+  assert.equal(result.ok, true)
+  assert.equal(result.skipped, true)
+})
+
 test('requires a token when Turnstile is configured', async () => {
   mutableEnv.TURNSTILE_SECRET_KEY = 'secret'
+  delete mutableEnv.TURNSTILE_E2E_FALLBACK
   mutableEnv.NODE_ENV = 'development'
   let fetchCalled = false
   globalThis.fetch = (async () => {

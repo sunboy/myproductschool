@@ -35,6 +35,10 @@ export function isTurnstileRequired() {
   return process.env.NODE_ENV === 'production' || isTurnstileConfigured()
 }
 
+function allowsTurnstileE2eFallback() {
+  return process.env.TURNSTILE_E2E_FALLBACK === 'true'
+}
+
 export function isHoneypotFilled(value: string | null | undefined) {
   return Boolean(value?.trim())
 }
@@ -44,6 +48,10 @@ export async function verifyTurnstileToken({
   remoteIp,
 }: VerifyTurnstileTokenOptions): Promise<TurnstileVerificationResult> {
   const secret = cleanEnv(process.env.TURNSTILE_SECRET_KEY)
+
+  if (allowsTurnstileE2eFallback()) {
+    return { ok: true, skipped: true }
+  }
 
   if (!secret) {
     if (process.env.NODE_ENV === 'production') {

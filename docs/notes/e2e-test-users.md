@@ -15,10 +15,10 @@ The script uses the Supabase service role key from Node only. Do not expose this
 When running a local production server with `next start` and no Upstash Redis, start it with the local-only fallback:
 
 ```bash
-RATE_LIMIT_MEMORY_FALLBACK=true DISCUSSION_MODERATION_E2E_FALLBACK=true npx next start -p 3002
+RATE_LIMIT_MEMORY_FALLBACK=true DISCUSSION_MODERATION_E2E_FALLBACK=true TURNSTILE_E2E_FALLBACK=true npx next start -p 3002
 ```
 
-Do not set these fallback flags in production. Production should use `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` so rate limiting is shared across instances, and `OPENAI_API_KEY` so discussion moderation fails closed instead of bypassing review.
+Do not set these fallback flags in production. Production should use `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` so rate limiting is shared across instances, `OPENAI_API_KEY` so discussion moderation fails closed instead of bypassing review, and `TURNSTILE_SECRET_KEY` so signup/recovery bot checks fail closed instead of bypassing review.
 
 ## Run
 
