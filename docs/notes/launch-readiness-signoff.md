@@ -213,9 +213,16 @@ npm test
 npm run build
 npx tsc --noEmit --pretty false
 npm run secrets:scan
+npm run launch:preflight -- --skip-network
 npx playwright test e2e/paywall.spec.ts --reporter=line
 npx playwright test e2e/discussions.spec.ts --reporter=line
 npx playwright test e2e/auth.spec.ts -g "N4\\.(1|2|4)" --reporter=line
+```
+
+Production-domain gate after deploy:
+
+```bash
+LAUNCH_PREFLIGHT_URL=https://hackproduct.com npm run launch:preflight
 ```
 
 Focused unit gates:
