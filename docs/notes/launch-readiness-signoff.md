@@ -29,6 +29,9 @@ This document tracks launch gates by real evidence. A checked item means the gat
   - Evidence: remote checks confirmed `abuse_reports`, `admin_action_log`, `feedback_submissions`, `feedback_prompt_events`, `challenge_attempts.share_id`, and `nudge_usage.nudge_sequence`.
   - Evidence: service-role REST access passed for those tables and columns.
   - Commit: `3be449c fix(db): expose launch tables to service role`.
+- [x] Code-side status monitoring support exists.
+  - Evidence: `/api/health` returns a no-store JSON health response for uptime monitors.
+  - Evidence: `docs/notes/status-page.md` points the external status provider setup at `/api/health`.
 - [x] Feedback, affiliate, and billing unit coverage passes with the right test runners.
   - Evidence: `npx vitest run tests/unit/feedback-nps.spec.ts tests/unit/affiliate-flow.spec.ts` passed.
   - Evidence: `npx tsx --test tests/lib/billing/entitlements.test.ts` passed.
@@ -69,7 +72,8 @@ This document tracks launch gates by real evidence. A checked item means the gat
 - [ ] Owner confirms production has `OPENAI_API_KEY`, `TURNSTILE_SECRET_KEY`, and Upstash Redis env vars.
 - [ ] Owner enables Supabase Auth leaked-password protection in the Supabase dashboard.
 - [ ] Owner checks `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog` in production.
-- [ ] Owner verifies status page and production security headers.
+- [ ] Owner creates/configures the external status provider and DNS for `status.hackproduct.com`.
+- [ ] Owner verifies production security headers are present on the deployed domain.
 
 ## Commands
 
