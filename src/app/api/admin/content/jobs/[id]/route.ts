@@ -1,6 +1,7 @@
 // src/app/api/admin/content/jobs/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logAdminAction } from '@/lib/admin/audit-log'
 import { checkAdminSecret } from '@/lib/content/admin-auth'
 
 export async function GET(
@@ -58,6 +59,15 @@ export async function DELETE(
   // Delete job
   const { error } = await supabase.from('generation_jobs').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  await logAdminAction(supabase, {
+    action: 'content_generation_job.delete',
+    targetType: 'generation_jobs',
+    targetId: id,
+    before: {
+      result_challenge_id: job?.result_challenge_id ?? null,
+    },
+  })
 
   return NextResponse.json({ ok: true })
 }

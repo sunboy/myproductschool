@@ -1,6 +1,7 @@
 // src/app/api/admin/content/drafts/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logAdminAction } from '@/lib/admin/audit-log'
 import { checkAdminSecret } from '@/lib/content/admin-auth'
 import type { ChallengeJson } from '@/lib/types'
 
@@ -21,5 +22,11 @@ export async function PATCH(
     .eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  await logAdminAction(supabase, {
+    action: 'draft_challenge.update',
+    targetType: 'draft_challenges',
+    targetId: id,
+    after: { challenge_json: body.challenge_json as unknown as Record<string, unknown> },
+  })
   return NextResponse.json({ ok: true })
 }

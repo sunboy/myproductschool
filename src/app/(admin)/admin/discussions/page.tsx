@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { logAdminAction } from '@/lib/admin/audit-log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
@@ -90,21 +91,37 @@ async function hideDiscussion(formData: FormData) {
     .eq('discussion_id', discussionId)
     .eq('status', 'open')
 
+  await logAdminAction(admin, {
+    adminId: user.id,
+    action: 'discussion.hide',
+    targetType: 'challenge_discussions',
+    targetId: discussionId,
+    after: { report_id: reportId, reason, hidden_at: now },
+  })
+
   revalidatePath('/admin/discussions')
 }
 
 async function dismissReport(formData: FormData) {
   'use server'
 
-  await requireAdmin()
+  const user = await requireAdmin()
   const reportId = stringValue(formData, 'reportId')
   if (!reportId) return
 
-  await createAdminClient()
+  const admin = createAdminClient()
+  await admin
     .from('discussion_reports')
     .update({ status: 'dismissed', updated_at: new Date().toISOString() })
     .eq('id', reportId)
     .eq('status', 'open')
+
+  await logAdminAction(admin, {
+    adminId: user.id,
+    action: 'discussion_report.dismiss',
+    targetType: 'discussion_reports',
+    targetId: reportId,
+  })
 
   revalidatePath('/admin/discussions')
 }

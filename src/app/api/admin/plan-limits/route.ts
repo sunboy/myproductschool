@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logAdminAction } from '@/lib/admin/audit-log'
 import { AI_PLAN_LIMIT_FEATURES } from '@/lib/usage/assert-plan-limit'
 
 const VALID_PLANS = ['free', 'pro'] as const
@@ -99,5 +100,12 @@ export async function PUT(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  await logAdminAction(admin, {
+    adminId: user.id,
+    action: 'plan_limit.upsert',
+    targetType: 'plan_limits',
+    targetId: `${body.plan}:${body.feature}`,
+    after: { limit: data },
+  })
   return NextResponse.json({ limit: data })
 }

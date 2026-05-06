@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logAdminAction } from '@/lib/admin/audit-log'
 import { checkAdminSecret } from '@/lib/content/admin-auth'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -55,6 +56,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const supabase = createAdminClient()
   const { error } = await supabase.from('challenges').update(update).eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  await logAdminAction(supabase, {
+    action: 'challenge.update',
+    targetType: 'challenges',
+    targetId: id,
+    after: update,
+  })
 
   return NextResponse.json({ ok: true })
 }

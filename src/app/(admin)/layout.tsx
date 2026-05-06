@@ -10,6 +10,7 @@ const adminNav = [
   { href: '/admin/voice-violations', icon: 'rule', label: 'Voice Rules' },
   { href: '/admin/revenue', icon: 'payments', label: 'Revenue' },
   { href: '/admin/coupons', icon: 'local_offer', label: 'Coupons' },
+  { href: '/admin/audit-log', icon: 'policy', label: 'Audit Log' },
   { href: '/admin/waitlist', icon: 'mail', label: 'Waitlist' },
 ]
 

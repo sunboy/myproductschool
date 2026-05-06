@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logAdminAction } from '@/lib/admin/audit-log'
 import { apiError } from '@/lib/api/error'
 import { createStripeClient } from '@/lib/stripe/config'
 
@@ -156,6 +157,13 @@ export async function POST(req: NextRequest) {
     if (maxRedemptions) params.max_redemptions = maxRedemptions
 
     const coupon = await stripe.coupons.create(params)
+    await logAdminAction(createAdminClient(), {
+      adminId: user.id,
+      action: 'stripe_coupon.create',
+      targetType: 'stripe_coupon',
+      targetId: coupon.id,
+      after: serializeCoupon(coupon),
+    })
     return NextResponse.json({ coupon: serializeCoupon(coupon) }, { status: 201 })
   }
 
@@ -182,6 +190,13 @@ export async function POST(req: NextRequest) {
     if (expiresAt) params.expires_at = expiresAt
 
     const promotionCode = await stripe.promotionCodes.create(params)
+    await logAdminAction(createAdminClient(), {
+      adminId: user.id,
+      action: 'stripe_promotion_code.create',
+      targetType: 'stripe_promotion_code',
+      targetId: promotionCode.id,
+      after: serializePromotionCode(promotionCode),
+    })
     return NextResponse.json({ promotionCode: serializePromotionCode(promotionCode) }, { status: 201 })
   }
 
