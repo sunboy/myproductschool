@@ -116,7 +116,7 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 - [ ] Owner confirms production has `OPENAI_API_KEY`, `TURNSTILE_SECRET_KEY`, and Upstash Redis env vars. Local `.env.local` presence check did not find these keys.
 - [ ] Owner enables Supabase Auth leaked-password protection in the Supabase dashboard.
 - [ ] Owner checks `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog` in production.
-- [ ] Owner runs browser PWA installability check. Static repo audit found a valid linked manifest and existing 512px icon, but no browser installability proof yet.
+- [ ] Owner runs browser PWA installability check. Static repo audit found a valid linked manifest plus dedicated 192px and 512px PNG icons, but no browser installability proof yet.
 - [ ] Owner creates/configures the external status provider and DNS for `status.hackproduct.com`. Live check on May 6, 2026 found DNS resolving, but `https://status.hackproduct.com` returned `404`.
 - [ ] Owner verifies production security headers are present on the deployed domain. Live check on May 6, 2026 found HSTS, nosniff, frame, referrer, and permissions headers on `https://www.hackproduct.com/waitlist`, but CSP was absent.
 

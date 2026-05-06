@@ -9,13 +9,13 @@ This is a static repo audit only. No browser installability check was run.
 - `src/app/layout.tsx` links `metadata.manifest` to `/manifest.json`.
 - `public/manifest.json` parses as valid JSON.
 - Required manifest fields are present: `name`, `short_name`, `start_url`, `display`, and `icons`.
-- Referenced manifest icon file exists: `public/brand/favicon-512.png`.
+- Referenced manifest icon files exist: `public/brand/favicon-192.png` and `public/brand/favicon-512.png`.
+- `public/brand/favicon-192.png` is a 192 x 192 PNG.
 - `public/brand/favicon-512.png` is a 512 x 512 PNG.
 
 ## Gaps
 
 - Browser installability has not been verified in Chrome DevTools or Lighthouse.
-- The manifest advertises a `192x192` icon entry that points to the 512px file. Browsers may scale it, but a dedicated 192px icon would be cleaner before signing off PWA installability.
 
 ## Launch Decision
 
