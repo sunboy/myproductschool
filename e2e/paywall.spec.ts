@@ -11,6 +11,7 @@ const HAS_SUPABASE_ENV = Boolean(
   process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 const HAS_ANTHROPIC_ENV = Boolean(process.env.ANTHROPIC_API_KEY)
+const HAS_STRIPE_ENV = Boolean(process.env.STRIPE_TEST_SECRET_KEY || process.env.STRIPE_SECRET_KEY)
 const HAS_STRIPE_WEBHOOK_ENV = Boolean(
   process.env.STRIPE_WEBHOOK_SECRET && (
     process.env.STRIPE_TEST_SECRET_KEY ||
@@ -21,6 +22,7 @@ const IS_MOCK_SERVER = process.env.USE_MOCK_DATA === 'true'
 const STRIPE_EVENT_API_VERSION = '2026-02-25.clover'
 const E2E_STRIPE_CUSTOMER_ID = 'cus_e2e_pro_active'
 const E2E_STRIPE_SUBSCRIPTION_ID = 'sub_e2e_pro_active'
+const E2E_STRIPE_REAL_SUBSCRIPTION_ID = 'sub_e2e_portal_active'
 
 type PersonaKey =
   | 'freeNew'
@@ -226,6 +228,26 @@ function stripeEventId(kind: string) {
   return `evt_e2e_${kind}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 }
 
+function getStripeForTest() {
+  const key = process.env.STRIPE_TEST_SECRET_KEY ?? process.env.STRIPE_SECRET_KEY
+  if (!key) throw new Error('Stripe secret key is required for this test.')
+  return new Stripe(key, { apiVersion: STRIPE_EVENT_API_VERSION })
+}
+
+async function createStripeTestCustomer(user: TestUser) {
+  const stripe = getStripeForTest()
+  const customer = await stripe.customers.create({
+    email: user.email,
+    name: 'E2E Pro Active',
+    metadata: {
+      user_id: user.id,
+      e2e_seed: 'paywall.spec.ts',
+    },
+  })
+
+  return customer.id
+}
+
 async function postStripeWebhook(
   request: APIRequestContext,
   event: Record<string, unknown>
@@ -294,6 +316,29 @@ function subscriptionDeletedEvent(id: string, userId: string) {
     customer: E2E_STRIPE_CUSTOMER_ID,
     metadata: { user_id: userId },
     status: 'canceled',
+  })
+}
+
+function subscriptionCancelScheduledEvent(id: string, userId: string, customerId: string) {
+  const periodEnd = Math.floor((Date.now() + 14 * 24 * 60 * 60 * 1000) / 1000)
+  return stripeEvent('customer.subscription.updated', id, {
+    id: E2E_STRIPE_REAL_SUBSCRIPTION_ID,
+    object: 'subscription',
+    cancel_at: periodEnd,
+    cancel_at_period_end: true,
+    canceled_at: null,
+    customer: customerId,
+    items: {
+      data: [{
+        id: 'si_e2e_portal_active',
+        object: 'subscription_item',
+        current_period_end: periodEnd,
+        plan: { interval: 'month' },
+        price: { id: 'price_e2e_portal_monthly', object: 'price' },
+      }],
+    },
+    metadata: { user_id: userId },
+    status: 'active',
   })
 }
 
@@ -710,5 +755,48 @@ test.describe('Paywall scenarios', () => {
       data: {},
     })
     expectLimitReached(downgradedResult, 'interviews')
+  })
+
+  test('N2.9 Customer Portal opens and cancellation webhook schedules downgrade', async ({ page, request }) => {
+    test.skip(!HAS_STRIPE_ENV || !HAS_STRIPE_WEBHOOK_ENV, 'Stripe secret and webhook secret are required.')
+
+    const customerId = await createStripeTestCustomer(users.proActive)
+    const cancelScheduledId = stripeEventId('subscription_cancel_scheduled')
+
+    await Promise.all([
+      setProfilePlan(admin, users.proActive.id, 'pro'),
+      setSubscriptionEntitlement(admin, users.proActive.id, {
+        plan: 'pro',
+        status: 'active',
+        currentPeriodEnd: isoDaysFromNow(14),
+        cancelAtPeriodEnd: false,
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: E2E_STRIPE_REAL_SUBSCRIPTION_ID,
+      }),
+    ])
+
+    await loginAs(page, users.proActive.email)
+    await page.goto(`${BASE_URL}/settings`)
+    await expect(page.getByRole('button', { name: /Manage billing/i })).toBeVisible({ timeout: 30000 })
+
+    const popupPromise = page.waitForEvent('popup')
+    await page.getByRole('button', { name: /Manage billing/i }).click()
+    const portalPage = await popupPromise
+    await portalPage.waitForURL(/billing\.stripe\.com/, { timeout: 30000 })
+    expect(portalPage.url()).toContain('billing.stripe.com')
+    await portalPage.close()
+
+    const webhook = await postStripeWebhook(
+      request,
+      subscriptionCancelScheduledEvent(cancelScheduledId, users.proActive.id, customerId)
+    )
+    expect(webhook.status, JSON.stringify(webhook.body)).toBe(200)
+    expect(webhook.body.received).toBe(true)
+
+    const billingState = await getBillingState(admin, users.proActive.id)
+    expect(billingState.profilePlan).toBe('pro')
+    expect(billingState.subscription?.plan).toBe('pro')
+    expect(billingState.subscription?.status).toBe('active')
+    expect(billingState.subscription?.cancel_at_period_end).toBe(true)
   })
 })
