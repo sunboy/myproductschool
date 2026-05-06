@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { apiError } from '@/lib/api/error'
 import { sendDiscussionReplyEmail } from '@/lib/email/transactional'
 import { createUnsubscribeToken } from '@/lib/notifications/unsubscribe'
+import { discussionModerationError } from '@/lib/discussions/moderation'
 
 const RequestSchema = z.object({
   content: z.string().trim().min(1).max(10000),
@@ -197,6 +198,9 @@ export async function POST(
   if (discussion.hidden_at) {
     return apiError(404, 'discussion_not_found', 'Discussion not found')
   }
+
+  const moderationError = await discussionModerationError(content)
+  if (moderationError) return moderationError
 
   const { data, error } = await adminClient
     .from('discussion_replies')

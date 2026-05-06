@@ -3,6 +3,7 @@ import { z, ZodError } from 'zod'
 import { getChallengeDiscussions, postDiscussion } from '@/lib/data/analytics'
 import { createClient } from '@/lib/supabase/server'
 import { apiError } from '@/lib/api/error'
+import { discussionModerationError } from '@/lib/discussions/moderation'
 
 const RequestSchema = z.object({
   content: z.string().trim().min(1).max(10000),
@@ -52,6 +53,9 @@ export async function POST(
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return apiError(401, 'auth_required', 'Unauthorized')
+
+  const moderationError = await discussionModerationError(content)
+  if (moderationError) return moderationError
 
   try {
     const discussion = await postDiscussion(id, user.id, content.trim())
