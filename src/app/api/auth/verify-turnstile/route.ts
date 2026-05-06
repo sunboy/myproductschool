@@ -1,22 +1,36 @@
 import { NextResponse } from 'next/server'
-import { z } from 'zod'
+import { z, ZodError } from 'zod'
 import { getClientIp } from '@/lib/auth/rate-limit'
-import { firstZodError, turnstileTokenSchema } from '@/lib/auth/validation'
+import { turnstileTokenSchema } from '@/lib/auth/validation'
 import { turnstileErrorMessage, verifyTurnstileToken } from '@/lib/security/turnstile'
 
-const VerifyTurnstileSchema = z.object({
+const RequestSchema = z.object({
   token: turnstileTokenSchema,
 })
 
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
+
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({}))
-  const parsed = VerifyTurnstileSchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json({ error: firstZodError(parsed.error) }, { status: 400 })
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
   const result = await verifyTurnstileToken({
-    token: parsed.data.token,
+    token: body.token,
     remoteIp: getClientIp(request),
   })
 
