@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
-import { sameOriginRedirect } from '@/lib/auth/rate-limit'
+import { findRateLimitBlock, getClientIp, sameOriginRedirect } from '@/lib/auth/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import { apiError } from '@/lib/api/error'
 
@@ -19,6 +19,12 @@ function authRequiredResponse() {
 
 function providerErrorResponse(message = 'Could not update linked accounts.') {
   return apiError(400, 'identity_provider_error', message)
+}
+
+function rateLimitedResponse(retryAfter: number) {
+  const response = apiError(429, 'rate_limited', 'rate_limited', { retryAfter })
+  response.headers.set('Retry-After', String(retryAfter))
+  return response
 }
 
 function validationIssues(error: ZodError) {
@@ -44,6 +50,13 @@ export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user }, error: userError } = await supabase.auth.getUser()
   if (userError || !user) return authRequiredResponse()
+
+  const ip = getClientIp(request)
+  const block = await findRateLimitBlock([
+    { key: `auth:link-identity:ip:${ip}`, limit: 10, windowSec: 60 * 60 },
+    { key: `auth:link-identity:user:${user.id}`, limit: 5, windowSec: 60 * 60 },
+  ])
+  if (block) return rateLimitedResponse(block.retryAfter)
 
   const identitiesResult = await supabase.auth.getUserIdentities()
   if (identitiesResult.error) return providerErrorResponse()
@@ -82,6 +95,13 @@ export async function DELETE(request: Request) {
   const supabase = await createClient()
   const { data: { user }, error: userError } = await supabase.auth.getUser()
   if (userError || !user) return authRequiredResponse()
+
+  const ip = getClientIp(request)
+  const block = await findRateLimitBlock([
+    { key: `auth:unlink-identity:ip:${ip}`, limit: 10, windowSec: 60 * 60 },
+    { key: `auth:unlink-identity:user:${user.id}`, limit: 5, windowSec: 60 * 60 },
+  ])
+  if (block) return rateLimitedResponse(block.retryAfter)
 
   const identitiesResult = await supabase.auth.getUserIdentities()
   if (identitiesResult.error) return providerErrorResponse()
