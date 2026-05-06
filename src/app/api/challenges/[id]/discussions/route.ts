@@ -48,11 +48,11 @@ export async function POST(
   const { content } = body
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  const resolvedUserId = user?.id ?? 'mock-user'
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) return apiError(401, 'auth_required', 'Unauthorized')
 
   try {
-    const discussion = await postDiscussion(id, resolvedUserId, content.trim())
+    const discussion = await postDiscussion(id, user.id, content.trim())
     return NextResponse.json(discussion, { status: 201 })
   } catch (err) {
     console.error('Discussion post error:', err)

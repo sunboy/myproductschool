@@ -10,8 +10,8 @@ export async function PATCH(
   const { discussionId } = await params
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  const userId = user?.id ?? 'mock-user'
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) return apiError(401, 'auth_required', 'Unauthorized')
 
   const adminClient = createAdminClient()
 
@@ -27,11 +27,11 @@ export async function PATCH(
   }
 
   const upvotedBy: string[] = discussion.upvoted_by ?? []
-  const alreadyUpvoted = upvotedBy.includes(userId)
+  const alreadyUpvoted = upvotedBy.includes(user.id)
 
   const newUpvotedBy = alreadyUpvoted
-    ? upvotedBy.filter(id => id !== userId)
-    : [...upvotedBy, userId]
+    ? upvotedBy.filter(id => id !== user.id)
+    : [...upvotedBy, user.id]
 
   const newCount = alreadyUpvoted
     ? Math.max(0, (discussion.upvote_count ?? 0) - 1)
