@@ -73,6 +73,12 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: current production build and `localhost:3001` both had zero visible `Luma` text and zero visible em dashes.
   - Evidence: screenshots captured at `/tmp/hackproduct-dashboard-parity/dev3000-baseline-1778066745062.png`, `/tmp/hackproduct-dashboard-parity/current3014-prod-1778066745062.png`, and `/tmp/hackproduct-dashboard-parity/dev3001-observed-1778066745062.png`.
   - Note: `localhost:3000` was not byte-for-byte identical to current build. It still showed older copy such as the weekly-room CTA and one visible em dash, while current build reflects the launch cleanup and affiliate/cohort gating.
+- [x] Local authenticated mobile `/challenges` smoke passes at 375px.
+  - Evidence: rebuilt production app on `localhost:3014` loaded `/challenges` with a temporary Supabase user that was deleted after the run.
+  - Evidence: route returned `200`, rendered the Practice page and Hatch pick, had zero visible `Luma` text, zero visible em dashes, `documentScrollWidth` equaled `viewportWidth` at `375px`, and overflow element detection returned an empty list.
+  - Evidence: the Hatch overlay was positioned above the mobile bottom nav (`hatchBottom=716`, `bottomNavTop=753`) after the responsive offset fix.
+  - Evidence: screenshot captured at `/tmp/hackproduct-mobile-smoke/challenges-auth-1778068327143.png`.
+  - Evidence: `npx tsx --test tests/lib/copy/display.test.ts`, `npx tsc --noEmit --pretty false`, `npm run lint`, `npm run build`, and `npm run secrets:scan` passed after the mobile and display-copy cleanup.
 
 ## Accepted Scope Changes
 

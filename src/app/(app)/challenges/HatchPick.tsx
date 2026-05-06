@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { cleanDisplayCopy } from '@/lib/copy/display'
 
 interface HatchPickData {
   challenge: { id: string; slug?: string; title: string }
@@ -34,6 +35,8 @@ export function HatchPick() {
   }
 
   if (!data) return null
+  const challengeTitle = cleanDisplayCopy(data.challenge.title) || data.challenge.title
+  const tip = cleanDisplayCopy(data.tip)
 
   return (
     <div
@@ -42,8 +45,8 @@ export function HatchPick() {
     >
       <HatchGlyph size={40} state="speaking" className="text-primary flex-shrink-0" />
       <div>
-        <p className="text-sm font-bold text-primary">Hatch&apos;s Pick: {data.challenge.title}</p>
-        <p className="text-xs text-on-surface-variant font-semibold">{data.tip}</p>
+        <p className="text-sm font-bold text-primary">Hatch&apos;s Pick: {challengeTitle}</p>
+        <p className="text-xs text-on-surface-variant font-semibold">{tip}</p>
       </div>
       <Link
         href={`/workspace/challenges/${data.challenge.slug ?? data.challenge.id}`}

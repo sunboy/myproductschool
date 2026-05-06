@@ -122,13 +122,13 @@ export function TopNav() {
         borderColor: 'var(--color-outline-faint)',
       }}
     >
-      <div className="mx-auto max-w-[1440px] px-8 py-2 flex items-center gap-8">
+      <div className="mx-auto flex w-full max-w-[1440px] min-w-0 items-center gap-3 px-4 py-2 sm:gap-8 sm:px-8">
 
         {/* Column 1: Brand. Wordmark file has padding around the glyphs, so it
             needs more pixels than the visible text suggests. */}
-        <Link href="/dashboard" className="flex items-center no-underline shrink-0">
+        <Link href="/dashboard" className="flex min-w-0 shrink items-center no-underline sm:shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/wordmark.png" alt="HackProduct" className="h-12" />
+          <img src="/images/wordmark.png" alt="HackProduct" className="h-8 max-w-[190px] object-contain sm:h-12 sm:max-w-none" />
         </Link>
 
         {/* Column 2: Nav pills (centered) */}
@@ -188,7 +188,7 @@ export function TopNav() {
         </div>
 
         {/* Column 3: Right cluster */}
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
 
           {/* Streak */}
           <AppTooltip label="Your current practice streak." side="bottom" className="hidden sm:inline-flex">

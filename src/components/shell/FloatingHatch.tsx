@@ -387,7 +387,7 @@ export function FloatingHatch() {
     (bubble && !bubbleDismissed && messages.length === 0)
   )
   const isWorkspace = pathname.startsWith('/workspace')
-  const wrapperPositionClass = `right-5 ${isWorkspace ? 'bottom-20' : 'bottom-5'}`
+  const wrapperPositionClass = `right-4 md:right-5 ${isWorkspace ? 'bottom-24 md:bottom-20' : 'bottom-24 md:bottom-5'}`
   const currentAnimation = activeCue?.animation ?? (open ? 'listening' : 'idle-hover')
   const currentGlyphState = open ? 'listening' : activeCue?.state ?? glyphState
 

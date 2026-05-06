@@ -3,6 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { appendReturnTo } from '@/lib/navigation/return-to'
+import { cleanDisplayCopy } from '@/lib/copy/display'
 import type { ChallengeWithDomain } from '@/lib/types'
 import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
 
@@ -188,6 +189,8 @@ export function ChallengeCard({
   const style = PARADIGM_STYLE[paradigm] ?? PARADIGM_STYLE.Traditional
   const diff = DIFFICULTY_CONFIG[challenge.difficulty] ?? { label: challenge.difficulty, dot: '#74796e' }
   const attempts = challenge.attempt_count ?? 0
+  const title = cleanDisplayCopy(challenge.title) || challenge.title
+  const promptText = cleanDisplayCopy(challenge.prompt_text)
   const challengePath = `/workspace/challenges/${challenge.slug ?? challenge.id}`
   const challengeHref = appendReturnTo(challengePath, returnHref)
   const discussionHref = appendReturnTo(`/challenges/${challenge.slug ?? challenge.id}/discussion`, returnHref)
@@ -210,12 +213,12 @@ export function ChallengeCard({
         <div className="flex-1 min-w-0">
           <Link href={challengeHref} data-hatch-sound="open" className="block">
             <p className="font-headline font-bold text-[14px] text-on-surface leading-snug truncate group-hover:text-primary transition-colors">
-              {challenge.title}
+              {title}
             </p>
           </Link>
-          {challenge.prompt_text && (
+          {promptText && (
             <p className="text-[11px] text-on-surface-variant font-body font-semibold truncate mt-0.5">
-              {challenge.prompt_text}
+              {promptText}
             </p>
           )}
         </div>
@@ -372,7 +375,7 @@ export function ChallengeCard({
           className="font-headline font-[600] text-[16px] tracking-[-0.01em] leading-snug transition-colors"
           style={{ color: style.fg, textWrap: 'balance' } as React.CSSProperties}
         >
-          {challenge.title}
+          {title}
         </h3>
       </Link>
 
