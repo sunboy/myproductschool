@@ -51,6 +51,9 @@ This document tracks launch gates by real evidence. A checked item means the gat
   - Existing dropped migration remains applied remotely as `drop_unused_mfa_recovery_codes`; no user-facing MFA work should be added.
 - [x] Cohorts are out of scope for launch.
   - Active cohort UI and backend endpoints are removed. The legacy `/cohort` path only redirects to `/challenges`.
+- [x] The broader auth suite is out of scope for launch.
+  - Verified launch auth scope is signup, password login, and forgot-password reset.
+  - Magic link, Google linking, reauth, idle timeout, and account deletion remain outside the narrowed launch auth bar unless the owner re-adds them.
 
 ## Open Blockers
 
@@ -65,10 +68,6 @@ This document tracks launch gates by real evidence. A checked item means the gat
   - Evidence: service-role REST smoke inserted and deleted a temporary `waitlist` row after public insert access was removed.
   - Evidence: `pg_trgm` now lives in `extensions`; existing `idx_artifacts_desc_trgm` and `idx_artifacts_name_trgm` indexes still exist.
   - Advisor output did not point to the newly applied launch tables as missing policies.
-- [ ] Full auth suite has not been treated as a launch requirement after scope reduction.
-  - Verified launch scope is signup, login, and forgot-password reset.
-  - Magic link, Google linking, reauth, idle timeout, and account deletion exist in `e2e/auth.spec.ts`, but they are outside the narrowed launch auth scope unless the owner re-adds them.
-
 ## Manual Checks Before Launch
 
 - [ ] Owner reviews `/dashboard` against the current dev baseline and confirms no visual regression.
