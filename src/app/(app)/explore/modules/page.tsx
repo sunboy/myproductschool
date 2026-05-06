@@ -15,6 +15,16 @@ const DIFFICULTIES: Array<{ id: LearnDifficulty | 'all'; label: string }> = [
   { id: 'new-era', label: 'New Era' },
 ]
 
+const TRACK_CONFIG: Record<string, { label: string; accent: string; description: string }> = {
+  'foundations':      { label: 'Foundations',      accent: '#4a7c59', description: 'Data modeling, SQL, coding patterns' },
+  'systems':          { label: 'Systems',           accent: '#4a4a9c', description: 'System design, distributed systems' },
+  'ai-llms':          { label: 'AI & LLMs',         accent: '#c9933a', description: 'LLM internals, agentic systems, RAG' },
+  'new-era':          { label: 'New Era',            accent: '#8b46d4', description: 'Claude Code, Codex, agentic workflows' },
+  'product-thinking': { label: 'Product Thinking',  accent: '#2a7ab5', description: 'FLOW framework, user models, root cause' },
+}
+
+const TRACK_ORDER = ['foundations', 'systems', 'ai-llms', 'new-era', 'product-thinking']
+
 const DIFF_CONFIG: Record<string, { bg: string; iconBg: string; artColor: string }> = {
   foundation:   { bg: '#e8f4ed', iconBg: '#2d6a4a', artColor: '#2d6a4a' },
   beginner:     { bg: '#cfe3d3', iconBg: '#4a7c59', artColor: '#4a7c59' },
@@ -27,75 +37,62 @@ const DIFF_CONFIG: Record<string, { bg: string; iconBg: string; artColor: string
 // ── Background arts (same pattern as StudyPlanCard) ───────────────────────
 
 function FoundationArt({ color }: { color: string }) {
-  const lines = [0, 1, 2, 3, 4].map(i => ({
-    x1: 10 + i * 48, y1: 0, x2: 10 + i * 48, y2: 170, opacity: 0.06 + i * 0.03,
-  }))
+  // Subtle grid confined to bottom-right corner
   return (
     <svg viewBox="0 0 260 170" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0 }} aria-hidden>
-      {lines.map((l, i) => (
-        <line key={i} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke={color} strokeWidth={1.5} opacity={l.opacity} />
+      {[0,1,2,3].map(i => (
+        <line key={`v${i}`} x1={160 + i * 30} y1={100} x2={160 + i * 30} y2={170} stroke={color} strokeWidth={1} opacity={0.07 + i * 0.02} />
       ))}
-      <line x1={0} y1={140} x2={260} y2={140} stroke={color} strokeWidth={1.5} opacity={0.18} />
+      {[0,1,2].map(i => (
+        <line key={`h${i}`} x1={150} y1={110 + i * 28} x2={270} y2={110 + i * 28} stroke={color} strokeWidth={1} opacity={0.07 + i * 0.02} />
+      ))}
     </svg>
   )
 }
 
 function BeginnerArt({ color }: { color: string }) {
-  const waves = [
-    'M-10 40 C 20 30, 60 50, 100 40 C 140 30, 180 50, 230 40',
-    'M-10 60 C 20 50, 60 70, 100 60 C 140 50, 180 70, 230 60',
-    'M-10 80 C 20 70, 60 90, 100 80 C 140 70, 180 90, 230 80',
-    'M-10 100 C 20 90, 60 110, 100 100 C 140 90, 180 110, 230 100',
-    'M-10 120 C 20 110, 60 130, 100 120 C 140 110, 180 130, 230 120',
-  ]
+  // Two gentle waves along the bottom edge only
   return (
     <svg viewBox="0 0 220 170" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0 }} aria-hidden>
-      {waves.map((d, i) => (
-        <path key={i} d={d} stroke={color} strokeWidth={1.8} fill="none" opacity={0.10 + i * 0.04} />
-      ))}
+      <path d="M-10 145 C 40 138, 90 152, 140 145 C 180 140, 210 150, 230 145" stroke={color} strokeWidth={1.5} fill="none" opacity={0.10} />
+      <path d="M-10 158 C 40 151, 90 165, 140 158 C 180 153, 210 163, 230 158" stroke={color} strokeWidth={1.5} fill="none" opacity={0.07} />
     </svg>
   )
 }
 
 function IntermediateArt({ color }: { color: string }) {
+  // Small dot cluster in bottom-right only
   const dots = []
-  for (let row = 0; row < 9; row++) {
-    for (let col = 0; col < 5; col++) {
-      const t = (row * 5 + col) / 44
-      dots.push({ cx: 22 + col * 46, cy: 16 + row * 18, r: 1.2 + t * 3, opacity: 0.08 + t * 0.18 })
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 4; col++) {
+      dots.push({ cx: 160 + col * 28, cy: 110 + row * 22, opacity: 0.06 + (row + col) * 0.015 })
     }
   }
   return (
     <svg viewBox="0 0 260 176" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0 }} aria-hidden>
       {dots.map((d, i) => (
-        <circle key={i} cx={d.cx} cy={d.cy} r={d.r} fill={color} opacity={d.opacity} />
+        <circle key={i} cx={d.cx} cy={d.cy} r={2} fill={color} opacity={d.opacity} />
       ))}
     </svg>
   )
 }
 
 function AdvancedArt({ color }: { color: string }) {
-  const chevrons = [
-    { d: 'M 60 30 L 110 75 L 60 120', opacity: 0.13 },
-    { d: 'M 90 20 L 155 75 L 90 130', opacity: 0.17 },
-    { d: 'M 125 15 L 200 75 L 125 135', opacity: 0.21 },
-    { d: 'M 165 12 L 248 75 L 165 138', opacity: 0.25 },
-  ]
+  // Single thin chevron tucked into the right edge
   return (
     <svg viewBox="0 0 260 155" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0 }} aria-hidden>
-      {chevrons.map((ch, i) => (
-        <path key={i} d={ch.d} stroke={color} strokeWidth={11} fill="none" opacity={ch.opacity} strokeLinecap="round" strokeLinejoin="round" />
-      ))}
+      <path d="M 210 40 L 255 77 L 210 115" stroke={color} strokeWidth={6} fill="none" opacity={0.09} strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M 228 50 L 258 77 L 228 105" stroke={color} strokeWidth={4} fill="none" opacity={0.06} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
 
 function NewEraArt({ color }: { color: string }) {
-  const rings = [60, 90, 120, 150]
+  // Rings anchored to far right, only partially visible
   return (
     <svg viewBox="0 0 260 170" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0 }} aria-hidden>
-      {rings.map((r, i) => (
-        <circle key={i} cx={220} cy={85} r={r} stroke={color} strokeWidth={1.5} fill="none" opacity={0.07 + i * 0.04} />
+      {[45, 70, 95].map((r, i) => (
+        <circle key={i} cx={265} cy={85} r={r} stroke={color} strokeWidth={1} fill="none" opacity={0.07 + i * 0.02} />
       ))}
     </svg>
   )
@@ -150,14 +147,14 @@ function ModuleCard({ module, index }: { module: LearnModuleWithProgress; index:
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 14,
+        gap: 10,
         background: cfg.bg,
-        borderRadius: 24,
-        padding: '24px 22px',
+        borderRadius: 20,
+        padding: '18px 16px',
         position: 'relative',
         overflow: 'hidden',
         border: '1px solid rgba(0,0,0,0.05)',
-        minHeight: 240,
+        minHeight: 200,
         cursor: 'pointer',
         textDecoration: 'none',
         color: 'inherit',
@@ -176,12 +173,12 @@ function ModuleCard({ module, index }: { module: LearnModuleWithProgress; index:
       {/* Top row */}
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{
-          width: 46, height: 46, borderRadius: 14,
+          width: 36, height: 36, borderRadius: 10,
           background: cfg.iconBg,
-          boxShadow: `0 4px 16px -4px ${cfg.iconBg}55`,
+          boxShadow: `0 4px 12px -4px ${cfg.iconBg}55`,
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         }}>
-          <span className="material-symbols-outlined" style={{ color: '#fff', fontSize: 22, fontVariationSettings: "'FILL' 1, 'wght' 500" }}>
+          <span className="material-symbols-outlined" style={{ color: '#fff', fontSize: 18, fontVariationSettings: "'FILL' 1, 'wght' 500" }}>
             {icon}
           </span>
         </div>
@@ -199,7 +196,7 @@ function ModuleCard({ module, index }: { module: LearnModuleWithProgress; index:
       <div style={{
         position: 'relative', zIndex: 1,
         fontFamily: 'var(--font-headline)',
-        fontSize: 19, fontWeight: 700, letterSpacing: '-0.01em', lineHeight: 1.2,
+        fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em', lineHeight: 1.2,
         color: '#1e1b14',
       }}>
         {module.name}
@@ -210,7 +207,7 @@ function ModuleCard({ module, index }: { module: LearnModuleWithProgress; index:
         <div style={{
           position: 'relative', zIndex: 1, flex: 1,
           fontFamily: 'var(--font-label)',
-          fontSize: 13, lineHeight: 1.55, color: 'rgba(0,0,0,0.62)',
+          fontSize: 12, fontWeight: 600, lineHeight: 1.5, color: 'rgba(0,0,0,0.70)',
         }}>
           {module.tagline}
         </div>
@@ -219,8 +216,8 @@ function ModuleCard({ module, index }: { module: LearnModuleWithProgress; index:
       {/* Stats */}
       <div style={{
         position: 'relative', zIndex: 1,
-        display: 'flex', gap: 14,
-        fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.5)',
+        display: 'flex', gap: 10,
+        fontSize: 11, fontWeight: 600, color: 'rgba(0,0,0,0.5)',
         fontFamily: 'var(--font-label)',
       }}>
         <span><b style={{ color: 'rgba(0,0,0,0.72)' }}>{module.chapter_count}</b> chapters</span>
@@ -245,8 +242,8 @@ function ModuleCard({ module, index }: { module: LearnModuleWithProgress; index:
         <span style={{
           display: 'inline-flex', alignItems: 'center', gap: 5,
           background: cfg.iconBg, color: '#fff',
-          padding: '9px 18px', borderRadius: 999,
-          fontWeight: 700, fontSize: 13, fontFamily: 'var(--font-label)',
+          padding: '7px 14px', borderRadius: 999,
+          fontWeight: 700, fontSize: 12, fontFamily: 'var(--font-label)',
           boxShadow: `0 4px 12px -4px ${cfg.iconBg}66`,
         }}>
           {ctaLabel}
@@ -275,16 +272,16 @@ export default function ModulesPage() {
   const firstInProgress = inProgress[0]
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 48px' }}>
+    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '16px 24px 48px' }}>
 
       {/* ── Hero ── */}
       <div style={{
-        borderRadius: 32,
+        borderRadius: 24,
         overflow: 'hidden',
-        marginBottom: 32,
+        marginBottom: 20,
         background: 'linear-gradient(135deg, #1e3528 0%, #14241c 58%, #0e1a14 100%)',
         border: '1px solid rgba(255,255,255,0.06)',
-        padding: '44px 52px',
+        padding: '24px 32px',
         position: 'relative',
       }}>
         {/* Dot grid */}
@@ -302,22 +299,22 @@ export default function ModulesPage() {
         }} />
         <SpiralSVG />
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 36, alignItems: 'center', position: 'relative', zIndex: 1 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 24, alignItems: 'center', position: 'relative', zIndex: 1 }}>
           {/* Left */}
           <div>
             <div style={{
               fontFamily: 'var(--font-label)',
-              fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase',
-              color: 'rgba(243,237,224,0.45)', marginBottom: 18,
+              fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase',
+              color: 'rgba(243,237,224,0.45)', marginBottom: 8,
             }}>
               Explore › Guides
             </div>
             <h1 style={{
               fontFamily: 'var(--font-headline)',
-              fontSize: 52, fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.05,
-              color: '#f3ede0', marginBottom: 16,
+              fontSize: 34, fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.1,
+              color: '#f3ede0', marginBottom: 8,
             }}>
-              Theory, built for<br />
+              Theory, built for{' '}
               <span style={{
                 background: 'linear-gradient(90deg, #7ee099, #c9e86e)',
                 WebkitBackgroundClip: 'text',
@@ -329,59 +326,59 @@ export default function ModulesPage() {
             </h1>
             <p style={{
               fontFamily: 'var(--font-body)',
-              fontSize: 16, lineHeight: 1.58,
+              fontSize: 14, lineHeight: 1.55,
               color: 'rgba(243,237,224,0.70)',
-              maxWidth: 500, marginBottom: 28,
+              maxWidth: 500, marginBottom: 16,
             }}>
               Self-paced reading tracks from foundations to the new era of AI product. Each module builds the mental models Hatch grades you on.
             </p>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               <Link href="/explore" style={{
-                display: 'inline-flex', alignItems: 'center', gap: 7,
+                display: 'inline-flex', alignItems: 'center', gap: 6,
                 background: '#f3ede0', color: '#1e1b14',
-                padding: '14px 24px', borderRadius: 999,
-                fontFamily: 'var(--font-label)', fontWeight: 700, fontSize: 15,
+                padding: '9px 18px', borderRadius: 999,
+                fontFamily: 'var(--font-label)', fontWeight: 700, fontSize: 13,
                 textDecoration: 'none',
               }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 18, fontVariationSettings: "'FILL' 1" }}>explore</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 16, fontVariationSettings: "'FILL' 1" }}>explore</span>
                 Back to Explore
               </Link>
               <Link href="/explore/plans" style={{
-                display: 'inline-flex', alignItems: 'center', gap: 7,
+                display: 'inline-flex', alignItems: 'center', gap: 6,
                 background: 'rgba(255,255,255,0.08)', color: '#f3ede0',
                 border: '1px solid rgba(255,255,255,0.14)',
-                padding: '14px 24px', borderRadius: 999,
-                fontFamily: 'var(--font-label)', fontWeight: 700, fontSize: 15,
+                padding: '9px 18px', borderRadius: 999,
+                fontFamily: 'var(--font-label)', fontWeight: 700, fontSize: 13,
                 textDecoration: 'none',
               }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>school</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>school</span>
                 Study Plans
               </Link>
             </div>
           </div>
 
-          {/* Right - stat pills */}
+          {/* Right — stat pills */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
             {[
               { label: 'Guides', value: String(modules.length || 12) },
-              { label: 'Difficulty levels', value: '5' },
-              { label: 'Avg. read time', value: '~18 min' },
+              { label: 'Levels', value: '5' },
+              { label: 'Avg. read', value: '~18 min' },
             ].map(stat => (
               <div key={stat.label} style={{
                 background: 'rgba(255,255,255,0.07)',
                 border: '1px solid rgba(255,255,255,0.10)',
-                borderRadius: 18, padding: '12px 20px', minWidth: 190,
+                borderRadius: 14, padding: '10px 16px', minWidth: 90, textAlign: 'center',
               }}>
                 <div style={{
                   fontFamily: 'var(--font-label)',
-                  fontSize: 10.5, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
+                  fontSize: 9.5, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
                   color: 'rgba(243,237,224,0.45)', marginBottom: 3,
                 }}>
                   {stat.label}
                 </div>
                 <div style={{
                   fontFamily: 'var(--font-headline)',
-                  fontSize: 22, fontWeight: 600, color: '#f3ede0',
+                  fontSize: 18, fontWeight: 600, color: '#f3ede0',
                 }}>
                   {stat.value}
                 </div>
@@ -394,62 +391,41 @@ export default function ModulesPage() {
       {/* ── Hatch in-progress banner ── */}
       {firstInProgress && (
         <div style={{
-          display: 'flex', alignItems: 'flex-start', gap: 16,
-          padding: '18px 20px',
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '12px 16px',
           background: 'var(--color-primary-container, #cfe3d3)',
-          borderRadius: 24,
+          borderRadius: 16,
           border: '1px solid rgba(0,0,0,0.04)',
-          marginBottom: 28,
+          marginBottom: 16,
         }}>
-          <HatchGlyph size={48} state="speaking" className="text-primary flex-shrink-0" />
-          <div>
-            <div style={{
-              fontFamily: 'var(--font-label)',
-              fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase',
-              color: 'var(--color-on-primary-container, #0f3d1f)', opacity: 0.7, marginBottom: 4,
-            }}>
-              Keep going
-            </div>
+          <HatchGlyph size={36} state="speaking" className="text-primary flex-shrink-0" />
+          <div style={{ flex: 1 }}>
             <div style={{
               fontFamily: 'var(--font-headline)',
-              fontSize: 17, fontWeight: 600, color: 'var(--color-on-primary-container, #0f3d1f)', marginBottom: 4,
+              fontSize: 14, fontWeight: 600, color: 'var(--color-on-primary-container, #0f3d1f)', marginBottom: 2,
             }}>
-              {firstInProgress.name} - pick up where you left off.
+              {firstInProgress.name} — {firstInProgress.progress_percentage}% complete. Pick up where you left off.
             </div>
-            <p style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 13.5, lineHeight: 1.55, color: 'var(--color-on-primary-container, #0f3d1f)',
-              opacity: 0.85, maxWidth: 580, margin: '0 0 12px',
-            }}>
-              You&rsquo;re {firstInProgress.progress_percentage}% through. Completing this module unlocks the mental model signals Hatch uses to calibrate your coaching.
-            </p>
-            <Link href={`/explore/modules/${firstInProgress.slug}`} style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              background: 'var(--color-primary, #4a7c59)', color: '#fff',
-              borderRadius: 999, padding: '8px 16px',
-              fontFamily: 'var(--font-label)', fontSize: 13, fontWeight: 700,
-              textDecoration: 'none',
-            }}>
-              Continue {firstInProgress.name}
-              <span className="material-symbols-outlined" style={{ fontSize: 15 }}>arrow_forward</span>
-            </Link>
           </div>
+          <Link href={`/explore/modules/${firstInProgress.slug}`} style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            background: 'var(--color-primary, #4a7c59)', color: '#fff',
+            borderRadius: 999, padding: '7px 14px', flexShrink: 0,
+            fontFamily: 'var(--font-label)', fontSize: 13, fontWeight: 700,
+            textDecoration: 'none',
+          }}>
+            Continue
+            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward</span>
+          </Link>
         </div>
       )}
 
       {/* ── Section heading + filters ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
         <div>
-          <div style={{
-            fontFamily: 'var(--font-label)',
-            fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
-            color: 'var(--color-on-surface-muted, #78715f)', marginBottom: 4,
-          }}>
-            All guides
-          </div>
           <h2 style={{
             fontFamily: 'var(--font-headline)',
-            fontSize: 36, fontWeight: 700, letterSpacing: '-0.02em',
+            fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em',
             color: 'var(--color-on-surface, #1e1b14)', margin: 0,
           }}>
             Pick your level.
@@ -485,9 +461,9 @@ export default function ModulesPage() {
 
       {/* ── Module grid ── */}
       {isLoading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-          {Array(6).fill(0).map((_, i) => (
-            <div key={i} style={{ height: 240, borderRadius: 24, background: 'var(--color-surface-container, #f0ece4)', animation: 'pulse 1.5s ease-in-out infinite' }} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+          {Array(8).fill(0).map((_, i) => (
+            <div key={i} style={{ height: 200, borderRadius: 20, background: 'var(--color-surface-container, #f0ece4)', animation: 'pulse 1.5s ease-in-out infinite' }} />
           ))}
         </div>
       ) : filtered.length === 0 ? (
@@ -498,8 +474,38 @@ export default function ModulesPage() {
         }}>
           No {filter !== 'all' ? filter : ''} modules yet.
         </div>
+      ) : filter === 'all' ? (
+        <div className="space-y-10">
+          {TRACK_ORDER.map(trackKey => {
+            const trackModules = modules.filter(m => (m.track ?? 'product-thinking') === trackKey)
+            if (trackModules.length === 0) return null
+            const cfg = TRACK_CONFIG[trackKey]
+            return (
+              <div key={trackKey}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-px flex-1 bg-outline-variant" />
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="inline-block w-2 h-2 rounded-full"
+                      style={{ background: cfg.accent }}
+                    />
+                    <span className="font-label font-semibold text-sm text-on-surface-variant uppercase tracking-wide">
+                      {cfg.label}
+                    </span>
+                  </div>
+                  <div className="h-px flex-1 bg-outline-variant" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {trackModules.map((m, i) => (
+                    <ModuleCard key={m.id} module={m} index={i} />
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
           {filtered.map((m, i) => (
             <ModuleCard key={m.id} module={m} index={i} />
           ))}
