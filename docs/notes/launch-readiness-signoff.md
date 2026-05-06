@@ -75,6 +75,7 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: live browser check on May 6, 2026 showed `https://hackproduct.com/` redirecting to `https://www.hackproduct.com/waitlist`.
   - Evidence: the live waitlist page still contains legacy "Luma" coach copy, so production does not match the current launch-ready local app.
   - Evidence: Vercel production deployment points at `main` commit `da0370e8e5cc2c4799f461ec8a5059a43fcbc605`; current local `dev` HEAD is `d5882690c2e6228122bf2155ceb89d7ba04c19e7`.
+  - Evidence: local `dev` was `205` commits ahead of `origin/dev` at audit time, so Vercel's Git-backed preview deployments do not include the local launch-readiness commits.
 - [ ] Affiliate real signup smoke is blocked by Stripe account setup.
   - Stripe Connect is not enabled for the account used by `.env.local`.
   - Required env vars are missing locally: `STRIPE_AFFILIATE_COUPON_ID`, `STRIPE_TEST_AFFILIATE_COUPON_ID`, `AFFILIATE_HASH_SECRET`.
