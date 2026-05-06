@@ -442,6 +442,16 @@ async function getQuickTakeId(admin: SupabaseClient): Promise<string> {
   return id
 }
 
+async function clearChallengeAttempt(admin: SupabaseClient, userId: string, challengeId: string) {
+  const { error } = await admin
+    .from('challenge_attempts')
+    .delete()
+    .eq('user_id', userId)
+    .eq('challenge_id', challengeId)
+
+  if (error) throw new Error(`Could not clear challenge attempt: ${error.message}`)
+}
+
 async function loginAs(page: Page, email: string) {
   await page.goto(`${BASE_URL}/login`)
   await page.waitForSelector('input[type="email"]', { timeout: 15000 })
@@ -629,29 +639,24 @@ test.describe('Paywall scenarios', () => {
     expectLimitReached(result, 'hatch_nudges')
   })
 
-  test('N2.3 Free user crossing the quick-take cap receives a server 402', async ({ page }) => {
+  test('N2.3 Free user at the quick-take cap receives a server 402', async ({ page }) => {
     test.skip(!HAS_ANTHROPIC_ENV, 'ANTHROPIC_API_KEY is required because quick-take mock mode bypasses plan checks.')
 
     const limit = await getPlanLimit(admin, 'free', 'quick_takes', FALLBACK_LIMITS.quick_takes)
     const quickTakeId = await getQuickTakeId(admin)
-    await setAiCounter(admin, users.freeCapped.id, 'quick_takes', Math.max(limit - 4, 0))
+    await clearChallengeAttempt(admin, users.freeCapped.id, quickTakeId)
+    await setAiCounter(admin, users.freeCapped.id, 'quick_takes', limit)
     await loginAs(page, users.freeCapped.email)
 
-    const statuses: number[] = []
-    for (let i = 0; i < 5; i++) {
-      const result = await appFetchAfterThrottleReset(page, '/api/challenges/quick-take/submit', {
-        method: 'POST',
-        data: {
-          challenge_id: quickTakeId,
-          response_text: `Attempt ${i + 1}: I would diagnose the funnel, segment new users, and pick one activation metric.`,
-        },
-      })
-      statuses.push(result.status)
-      if (i < 4) expect(result.status, JSON.stringify(result.body)).toBe(200)
-      if (i === 4) expectLimitReached(result, 'quick_takes')
-    }
+    const result = await appFetchAfterThrottleReset(page, '/api/challenges/quick-take/submit', {
+      method: 'POST',
+      data: {
+        challenge_id: quickTakeId,
+        response_text: 'I would diagnose the funnel, segment new users, and pick one activation metric.',
+      },
+    })
 
-    expect(statuses).toEqual([200, 200, 200, 200, 402])
+    expectLimitReached(result, 'quick_takes')
   })
 
   test('N2.4 Free live interview start is blocked, while Pro can start', async ({ page }) => {
@@ -720,6 +725,7 @@ test.describe('Paywall scenarios', () => {
       getPlanLimit(admin, 'free', 'quick_takes', FALLBACK_LIMITS.quick_takes),
       getQuickTakeId(admin),
     ])
+    await clearChallengeAttempt(admin, users.proActive.id, quickTakeId)
 
     await Promise.all([
       setAiCounter(admin, users.proActive.id, 'hatch_chat_msgs', chatLimit),

@@ -20,6 +20,8 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: exact secret-rotation grep for committed Supabase service-role JWTs and direct hardcoded service-key assignments returned no matches on May 6, 2026.
 - [x] Paywall scenarios pass.
   - Evidence: `e2e/paywall.spec.ts` passed `10/10` against `next start` with seeded Supabase users.
+  - Evidence: `PLAYWRIGHT_BASE_URL=http://localhost:3016 E2E_TEST_PASSWORD=... npx playwright test e2e/paywall.spec.ts --reporter=line` passed `10/10` on May 6, 2026 after reseeding the six fixed E2E personas.
+  - Evidence: N2.3 now validates the quick-take cap directly instead of relying on repeated duplicate submissions of the same quick-take, because duplicate completions are intentionally idempotent.
   - Commit: `4f96343 fix(paywall): unblock local production e2e`.
 - [x] Discussions scenarios pass.
   - Evidence: `e2e/discussions.spec.ts` passed `10/10` against `next start`.
@@ -98,7 +100,6 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 - [x] Affiliate mechanics are fully gated off for launch unless explicitly enabled.
   - Evidence: `NEXT_PUBLIC_ENABLE_AFFILIATES !== 'true'` now disables affiliate signup routes, referral redirect cookie-setting, auth referral attribution, checkout affiliate promotion-code application, webhook commission creation, and affiliate payout cron.
   - Evidence: `npx vitest run tests/unit/affiliate-flow.spec.ts`, `npx tsc --noEmit --pretty false`, `npm run lint`, `npm run build`, and `npm run secrets:scan` passed after tightening the gate.
-  - Note: `PLAYWRIGHT_BASE_URL=http://localhost:3015 npx playwright test e2e/paywall.spec.ts --reporter=line` exited `0` but skipped all 10 tests because `E2E_TEST_PASSWORD` is not set in this shell. This is not counted as fresh pass evidence.
 - [x] User-triggered AI grading paths use plan reservations and AI spend budget checks.
   - Evidence: FLOW elaboration/freeform submit, coding submit, coding finalize, interview challenge submit, and interview-loop debrief routes now reserve `ai_grading_runs` before model grading and pass a `budget` object into their guarded Anthropic calls.
   - Evidence: duplicate FLOW step submissions return the existing saved answer before grading, so retries do not consume plan quota or AI spend budget.
