@@ -35,6 +35,9 @@ This document tracks launch gates by real evidence. A checked item means the gat
 - [x] Code-side status monitoring support exists.
   - Evidence: `/api/health` returns a no-store JSON health response for uptime monitors.
   - Evidence: `docs/notes/status-page.md` points the external status provider setup at `/api/health`.
+  - Evidence: local production smoke returned `200` for `/api/health`.
+- [x] Core legal, pricing, help, and changelog pages respond locally.
+  - Evidence: local production smoke returned `200` for `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog`.
 - [x] Feedback, affiliate, and billing unit coverage passes with the right test runners.
   - Evidence: `npx vitest run tests/unit/feedback-nps.spec.ts tests/unit/affiliate-flow.spec.ts` passed.
   - Evidence: `npx tsx --test tests/lib/billing/entitlements.test.ts` passed.
@@ -50,7 +53,7 @@ This document tracks launch gates by real evidence. A checked item means the gat
 - [x] Custom MFA recovery is out of scope for launch.
   - Existing dropped migration remains applied remotely as `drop_unused_mfa_recovery_codes`; no user-facing MFA work should be added.
 - [x] Cohorts are out of scope for launch.
-  - Active cohort UI and backend endpoints are removed. The legacy `/cohort` path only redirects to `/challenges`.
+  - Active cohort UI and backend endpoints are removed. The legacy protected `/cohort` path does not expose a cohort page; logged-out requests follow the normal app auth redirect.
 - [x] The broader auth suite is out of scope for launch.
   - Verified launch auth scope is signup, password login, and forgot-password reset.
   - Magic link, Google linking, reauth, idle timeout, and account deletion remain outside the narrowed launch auth bar unless the owner re-adds them.
