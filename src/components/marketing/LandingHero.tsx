@@ -18,7 +18,7 @@ export function LandingHero() {
         </h1>
 
         <p className="text-on-surface-variant text-xl max-w-2xl mx-auto leading-relaxed">
-          For engineers, career changers, and PMs — build the instincts that
+          For engineers, career changers, and PMs - build the instincts that
           interviews test and jobs demand.
         </p>
 

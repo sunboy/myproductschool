@@ -10,7 +10,7 @@ const FEATURES = [
   {
     id: 'build',
     image: 'I',
-    title: 'A full roadmap tailored to your interview loop',
+    title: 'A full roadmap matched to your interview loop',
     body: "When prep feels fuzzy, HackProduct turns your target role into sequenced tasks: diagnostics, weak moves, live reps, and review blocks.",
     link: 'Learn how to start',
     href: '/study-plans',

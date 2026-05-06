@@ -161,7 +161,7 @@ export default async function WaitlistPage() {
                   bolt
                 </span>
                 <span className="text-xs font-label font-bold tracking-wider uppercase text-on-background">
-                  Beta — Limited Spots
+                  Beta - Limited Spots
                 </span>
                 {showSocial && (
                   <>

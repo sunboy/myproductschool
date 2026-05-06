@@ -48,7 +48,7 @@ const MOVES: MoveData[] = [
     bgColor: '#e8f5e9',
     stepLabel: 'Step 1 of 4',
     sub: 'Find the real job behind the request',
-    body: 'Stop solving the stated problem. Every feature request is a disguised symptom. Framing means surfacing the underlying job-to-be-done — the outcome the user actually wants — before evaluating any solutions.',
+    body: 'Stop solving the stated problem. Every feature request is a disguised symptom. Framing means surfacing the underlying job-to-be-done - the outcome the user actually wants - before evaluating any solutions.',
     expert: {
       initials: 'MC',
       name: 'Marty Cagan · SVPG',
@@ -56,8 +56,8 @@ const MOVES: MoveData[] = [
       quote: '"The most common mistake is confusing the solution with the outcome. Features are hypotheses. The job is to discover which problem is actually worth solving."',
     },
     scenario: {
-      label: 'Applied — B2B SaaS notifications',
-      text: "PM says: add real-time push notifications. Framed correctly, the job isn't to notify — it's to keep teams in sync without breaking focus. That's a completely different problem to solve.",
+      label: 'Applied - B2B SaaS notifications',
+      text: "PM says: add real-time push notifications. Framed correctly, the job isn't to notify - it's to keep teams in sync without breaking focus. That's a completely different problem to solve.",
     },
     hatchMessage: "Before jumping to solutions, great product thinkers ask one question: what job is this person actually trying to do? The answer is almost never what was stated.",
     cards: [
@@ -68,17 +68,17 @@ const MOVES: MoveData[] = [
       },
       {
         title: 'Strong framers ask "why" before "what"',
-        body: "Frame is the move where you decide what problem you're actually solving. Most people skip it — they jump straight to solutions before questioning the brief.",
+        body: "Frame is the move where you decide what problem you're actually solving. Most people skip it - they jump straight to solutions before questioning the brief.",
         highlight: 'The best product decisions start with the right question.',
       },
       {
         title: 'The question that changes everything',
-        body: "If you Frame wrong, every subsequent move — no matter how sharp — solves the wrong thing. Framing isn't the slow move. It's the move that makes all the others faster.",
+        body: "If you Frame wrong, every subsequent move - no matter how sharp - solves the wrong thing. Framing isn't the slow move. It's the move that makes all the others faster.",
         highlight: 'Reframe the brief before accepting it.',
       },
       {
         title: 'Frame in the wild',
-        body: exampleBody("DAU up 20% but revenue flat — what do you ask first?", "Bad frame: \"How do we convert more users?\" Good frame: \"Which user segments are growing and why aren't they paying?\" The first chases a symptom. The second finds the driver."),
+        body: exampleBody("DAU up 20% but revenue flat - what do you ask first?", "Bad frame: \"How do we convert more users?\" Good frame: \"Which user segments are growing and why aren't they paying?\" The first chases a symptom. The second finds the driver."),
       },
     ],
   },
@@ -91,7 +91,7 @@ const MOVES: MoveData[] = [
     bgColor: '#f5e6c8',
     stepLabel: 'Step 2 of 4',
     sub: 'Open the solution space before evaluating anything',
-    body: "Don't commit to a solution yet. Generate every plausible approach to the framed problem — at least five distinct options that vary in effort, reach, and mechanism. The goal is breadth before depth.",
+    body: "Don't commit to a solution yet. Generate every plausible approach to the framed problem - at least five distinct options that vary in effort, reach, and mechanism. The goal is breadth before depth.",
     expert: {
       initials: 'TT',
       name: 'Teresa Torres · Product Talk',
@@ -99,19 +99,19 @@ const MOVES: MoveData[] = [
       quote: '"Jumping to solutions is the product team\'s version of premature optimization. The Opportunity Solution Tree forces you to separate problem discovery from solution generation."',
     },
     scenario: {
-      label: 'Applied — B2B SaaS notifications',
-      text: "Listed: push notifs, Slack/Teams integration, daily digest, in-app feed, @mention threads, smart batching. The Slack integration — which nobody asked for — turns out to be the highest-leverage option by far.",
+      label: 'Applied - B2B SaaS notifications',
+      text: "Listed: push notifs, Slack/Teams integration, daily digest, in-app feed, @mention threads, smart batching. The Slack integration - which nobody asked for - turns out to be the highest-impact option by far.",
     },
-    hatchMessage: "The first solution you think of is almost never the best one. Generate until you surprise yourself — that's when you know you've actually opened the space.",
+    hatchMessage: "The first solution you think of is almost never the best one. Generate until you surprise yourself - that's when you know you've actually opened the space.",
     cards: [
       {
         title: "A brainstorm dump isn't a List",
-        body: "Throwing every idea on a whiteboard feels productive but leaves you with a mess, not a structure. List is not about quantity — it's about coverage without overlap.",
+        body: "Throwing every idea on a whiteboard feels productive but leaves you with a mess, not a structure. List is not about quantity - it's about coverage without overlap.",
         highlight: 'Not exhaustive. Not exclusive. Both at once.',
       },
       {
         title: 'The MECE test',
-        body: "List is the move where you break a complex problem into distinct, non-overlapping pieces. Mutually Exclusive, Collectively Exhaustive — you're looking for segments, dimensions, or options that cover the space without doubling up.",
+        body: "List is the move where you break a complex problem into distinct, non-overlapping pieces. Mutually Exclusive, Collectively Exhaustive - you're looking for segments, dimensions, or options that cover the space without doubling up.",
         highlight: "If two buckets feel similar, you haven't structured it yet.",
       },
       {
@@ -121,7 +121,7 @@ const MOVES: MoveData[] = [
       },
       {
         title: 'List in the wild',
-        body: exampleBody('Power users vs. new users react differently to the same change.', 'Bad list: "Users, admins, people who pay." Good list: "New users (0-7 days) · Active users (weekly) · Power users (daily) · Churned (30d+ inactive)." The second is structured — each bucket is distinct.'),
+        body: exampleBody('Power users vs. new users react differently to the same change.', 'Bad list: "Users, admins, people who pay." Good list: "New users (0-7 days) · Active users (weekly) · Power users (daily) · Churned (30d+ inactive)." The second is structured - each bucket is distinct.'),
       },
     ],
   },
@@ -129,42 +129,42 @@ const MOVES: MoveData[] = [
     key: 'optimize',
     symbol: 'O',
     label: 'Optimize',
-    tagline: 'Pick the highest-leverage bet with explicit evidence',
+    tagline: 'Pick the highest-impact bet with explicit evidence',
     accentColor: '#7a3010',
     bgColor: '#fde8d8',
     stepLabel: 'Step 3 of 4',
-    sub: 'Pick the highest-leverage bet with explicit evidence',
-    body: "Not all solutions are equal. Apply a scoring lens — RICE, ICE, LNO — before you fall in love with any single approach. The goal is to replace preference with evidence and make the tradeoff visible.",
+    sub: 'Pick the highest-impact bet with explicit evidence',
+    body: "Not all solutions are equal. Apply a scoring lens - RICE, ICE, LNO - before you fall in love with any single approach. The goal is to replace preference with evidence and make the tradeoff visible.",
     expert: {
       initials: 'SD',
       name: 'Shreyas Doshi · ex-Stripe, Twitter',
       role: 'Creator, LNO Framework',
-      quote: '"Product leverage is about finding the work that is 10x more impactful than everything else. Most teams optimize locally — they do a good job on the wrong things."',
+      quote: '"Product impact is about finding the work that is 10x more impactful than everything else. Most teams optimize locally - they do a good job on the wrong things."',
     },
     scenario: {
-      label: 'Applied — B2B SaaS notifications',
-      text: "RICE scores: Push notifs = 42. Daily digest = 31. Slack bot = 118. The number makes the decision obvious — and gives you something concrete to bring into the planning meeting instead of a preference.",
+      label: 'Applied - B2B SaaS notifications',
+      text: "RICE scores: Push notifs = 42. Daily digest = 31. Slack bot = 118. The number makes the decision obvious - and gives you something concrete to bring into the planning meeting instead of a preference.",
     },
-    hatchMessage: "A number beats an opinion every time. Even a rough RICE score converts a preference argument into a tradeoff conversation — and that's a much better meeting.",
+    hatchMessage: "A number beats an opinion every time. Even a rough RICE score converts a preference argument into a tradeoff conversation - and that's a much better meeting.",
     cards: [
       {
         title: 'Anyone can list options',
-        body: "Once you've framed and listed, the real work begins. Optimize is not about adding more options — it's about narrowing to the one that's actually defensible given your constraints.",
+        body: "Once you've framed and listed, the real work begins. Optimize is not about adding more options - it's about narrowing to the one that's actually defensible given your constraints.",
         highlight: "Stakeholders need a recommendation, not a menu.",
       },
       {
         title: 'Constraints are the filter',
-        body: "Optimize is where you sharpen from many options to the best one given real constraints — time, resources, risk, and evidence. It's not about the perfect option in a vacuum.",
+        body: "Optimize is where you sharpen from many options to the best one given real constraints - time, resources, risk, and evidence. It's not about the perfect option in a vacuum.",
         highlight: "A perfect option you can't ship isn't an option.",
       },
       {
         title: 'The recommendation, not the menu',
-        body: "Optimize is what separates PMs who produce clarity from PMs who produce decks full of bullets. Your job is to make the call — and to make it legible to others.",
+        body: "Optimize is what separates PMs who produce clarity from PMs who produce decks full of bullets. Your job is to make the call - and to make it legible to others.",
         highlight: 'Come with a PoV before the meeting, not during.',
       },
       {
         title: 'Optimize in the wild',
-        body: exampleBody('Cut free tier from 10K to 1K API calls — or find a smarter lever?', '"Cutting to 1K is highest-leverage — triggers 40% of power free-users to evaluate paid. Validate with a 2-week shadow limit before enforcement." The second makes a call.'),
+        body: exampleBody('Cut free tier from 10K to 1K API calls - or find a smarter lever?', '"Cutting to 1K is highest-impact - triggers 40% of power free-users to evaluate paid. Validate with a 2-week shadow limit before enforcement." The second makes a call.'),
       },
     ],
   },
@@ -172,32 +172,32 @@ const MOVES: MoveData[] = [
     key: 'win',
     symbol: 'W',
     label: 'Win',
-    tagline: "Position your recommendation — don't just present it",
+    tagline: "Position your recommendation - don't just present it",
     accentColor: '#1a4731',
     bgColor: '#d8f0de',
     stepLabel: 'Step 4 of 4',
-    sub: "Position your recommendation — don't just present it",
-    body: "Great analysis that can't be communicated doesn't ship. Positioning means framing your recommendation for the decision-maker's context — not your own. They need a story, not a spreadsheet.",
+    sub: "Position your recommendation - don't just present it",
+    body: "Great analysis that can't be communicated doesn't ship. Positioning means framing your recommendation for the decision-maker's context - not your own. They need a story, not a spreadsheet.",
     expert: {
       initials: 'AD',
       name: 'April Dunford · Obviously Awesome',
       role: 'Author, positioning strategist',
-      quote: '"Positioning isn\'t about what you build — it\'s the context you create so your audience instantly understands why yours is the right answer. Engineers forget that the decision-maker needs a story, not a spreadsheet."',
+      quote: '"Positioning isn\'t about what you build - it\'s the context you create so your audience instantly understands why yours is the right answer. Engineers forget that the decision-maker needs a story, not a spreadsheet."',
     },
     scenario: {
-      label: 'Applied — B2B SaaS notifications',
-      text: 'Instead of "we should build a Slack bot (RICE: 118)," you say: "For our enterprise users who run operations in Slack, this replaces their current workflow of switching back to our app — and we can validate it in one sprint." Approved in the meeting.',
+      label: 'Applied - B2B SaaS notifications',
+      text: 'Instead of "we should build a Slack bot (RICE: 118)," you say: "For our enterprise users who run operations in Slack, this replaces their current workflow of switching back to our app - and we can validate it in one sprint." Approved in the meeting.',
     },
-    hatchMessage: "Engineers think the win is building the right thing. Product thinkers know the win is getting the right thing built. Those are different skills — and this step is where you develop the second one.",
+    hatchMessage: "Engineers think the win is building the right thing. Product thinkers know the win is getting the right thing built. Those are different skills - and this step is where you develop the second one.",
     cards: [
       {
         title: "A decision no one hears isn't a decision",
-        body: "You can Frame the problem perfectly, List every option, and pick the right one — and still fail if you can't land it with the people who need to act on it.",
+        body: "You can Frame the problem perfectly, List every option, and pick the right one - and still fail if you can't land it with the people who need to act on it.",
         highlight: 'Clarity is a product deliverable.',
       },
       {
         title: 'BLUF: recommendation first, evidence after',
-        body: "Win is the move where you land your recommendation with clarity and conviction. Bottom Line Up Front — the room knows what you're recommending before you've shown a single data point.",
+        body: "Win is the move where you land your recommendation with clarity and conviction. Bottom Line Up Front - the room knows what you're recommending before you've shown a single data point.",
         highlight: "If they need to read to the end to understand your point, rewrite.",
       },
       {
@@ -207,7 +207,7 @@ const MOVES: MoveData[] = [
       },
       {
         title: 'Win in the wild',
-        body: exampleBody('Convince your CEO to invest in auth refactor over 3 features.', '"Auth refactor is the safer bet this quarter. Three features assume the current auth holds — it won\'t past 50K users. We\'d ship features onto a cracking foundation. Refactor now unblocks all three features in Q2 with half the risk."'),
+        body: exampleBody('Convince your CEO to invest in auth refactor over 3 features.', '"Auth refactor is the safer bet this quarter. Three features assume the current auth holds - it won\'t past 50K users. We\'d ship features onto a cracking foundation. Refactor now unblocks all three features in Q2 with half the risk."'),
       },
     ],
   },
@@ -217,25 +217,25 @@ const MOVES: MoveData[] = [
 const WORKED = [
   {
     symbol: 'F',
-    title: "Frame — What's the real job?",
-    body: "The question isn't \"which feature?\" — it's why daily active listening dropped among 18-24s. Discovery data shows choice paralysis: too many options, no clear starting point. The real job is reducing friction-to-first-listen, not adding more surfaces.",
+    title: "Frame - What's the real job?",
+    body: "The question isn't \"which feature?\" - it's why daily active listening dropped among 18-24s. Discovery data shows choice paralysis: too many options, no clear starting point. The real job is reducing friction-to-first-listen, not adding more surfaces.",
     chips: ['JTBD reframe', 'Not "which feature"', 'Discovery data'],
   },
   {
     symbol: 'L',
-    title: 'List — Open the space',
-    body: "Solutions generated: AI DJ, social feed, contextual playlists (morning/gym/focus), \"continue from friends\" widget, mood-based radio, one-tap start from home screen. That's six options — not two. The original framing collapsed the solution space prematurely.",
+    title: 'List - Open the space',
+    body: "Solutions generated: AI DJ, social feed, contextual playlists (morning/gym/focus), \"continue from friends\" widget, mood-based radio, one-tap start from home screen. That's six options - not two. The original framing collapsed the solution space prematurely.",
     chips: ['6 options', 'Opportunity tree', 'Expanded framing'],
   },
   {
     symbol: 'O',
-    title: 'Optimize — Score with evidence',
-    body: 'RICE: AI DJ scores 94 — high reach, proven listen-through rate in beta, medium effort. Social feed scores 41 — low confidence, failed twice before. Contextual playlists score 67. AI DJ wins clearly, with data behind it.',
+    title: 'Optimize - Score with evidence',
+    body: 'RICE: AI DJ scores 94 - high reach, proven listen-through rate in beta, medium effort. Social feed scores 41 - low confidence, failed twice before. Contextual playlists score 67. AI DJ wins clearly, with data behind it.',
     chips: ['RICE scoring', 'Beta data', 'AI DJ wins at 94'],
   },
   {
     symbol: 'W',
-    title: 'Win — Position to get buy-in',
+    title: 'Win - Position to get buy-in',
     body: 'Not: "We should build AI DJ (RICE: 94) instead of the social feed." Instead: "For our Gen Z listeners who stall on the home screen, the AI DJ replaces the decision they currently dread. Beta cohort shows 23% lift in listen-through. We can prove Q3 impact in a 4-week sprint." One read, clear yes.',
     chips: ['Outcome-first', 'Named alternative', 'Validation plan'],
   },
@@ -544,7 +544,7 @@ function AuthModal({ moveLabel, onClose }: { moveLabel: string; onClose: () => v
           <span className="font-headline font-bold text-primary">hackproduct</span>
         </div>
         <p className="font-body text-sm text-on-surface-variant mb-5">
-          Practice <strong className="text-on-surface">{moveLabel}</strong> on a real challenge — free.
+          Practice <strong className="text-on-surface">{moveLabel}</strong> on a real challenge - free.
         </p>
 
         {/* Mode toggle */}
@@ -769,7 +769,7 @@ export default function FlowMarketingPage() {
           <div>
             <p className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">HackProduct · The Framework</p>
             <h1 className="font-headline text-4xl font-bold text-on-surface leading-tight mb-2">
-              FLOW — <span className="text-on-surface-variant font-normal italic">how product thinkers think</span>
+              FLOW - <span className="text-on-surface-variant font-normal italic">how product thinkers think</span>
             </h1>
             <p className="font-body text-base text-on-surface-variant leading-relaxed max-w-xl">
               Most engineers solve the stated problem brilliantly. Product thinking is about finding the right problem before writing a single line of code. FLOW is the four-move playbook that gets you there.
@@ -797,12 +797,12 @@ export default function FlowMarketingPage() {
               The old you says: <em className="text-on-surface-variant">&ldquo;Sure, I&apos;ll have it by tomorrow.&rdquo;</em>
             </p>
             <p className="font-body text-base text-on-surface leading-relaxed">
-              The product-thinking you pauses. <strong className="text-primary">Because you know the spinner isn&apos;t the problem — it&apos;s a symptom.</strong> And shipping a symptom fix is how engineers spend careers building the wrong things brilliantly.
+              The product-thinking you pauses. <strong className="text-primary">Because you know the spinner isn&apos;t the problem - it&apos;s a symptom.</strong> And shipping a symptom fix is how engineers spend careers building the wrong things brilliantly.
             </p>
           </div>
 
           <p className="font-body text-sm text-on-surface-variant leading-relaxed mb-6">
-            FLOW gives you four moves that separate the engineers who get promoted from the ones who stay heads-down forever. It&apos;s not a template — it&apos;s a way of thinking.
+            FLOW gives you four moves that separate the engineers who get promoted from the ones who stay heads-down forever. It&apos;s not a template - it&apos;s a way of thinking.
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -836,9 +836,9 @@ export default function FlowMarketingPage() {
             border: 'border-outline-variant',
             svg: svgs.before,
             copy: index === 0
-              ? 'Three solutions in three seconds. None answer the actual question — because nobody asked the actual question yet.'
+              ? 'Three solutions in three seconds. None answer the actual question - because nobody asked the actual question yet.'
               : index === 1
-              ? 'One problem, one solution, shipped by Thursday. This is feature thinking at its most efficient — and most dangerous.'
+              ? 'One problem, one solution, shipped by Thursday. This is feature thinking at its most efficient - and most dangerous.'
               : index === 2
               ? 'All three look reasonable. The loudest voice wins. This is how roadmaps become wish lists.'
               : "You've got the data, you share the RICE scores, and get \"interesting, let's think about it.\" Which means no.",
@@ -863,12 +863,12 @@ export default function FlowMarketingPage() {
             border: 'border-outline-variant',
             svg: svgs.after,
             copy: index === 0
-              ? '"Slow load times" becomes a trust problem. Now you\'re solving something real — and the solution set gets far more interesting.'
+              ? '"Slow load times" becomes a trust problem. Now you\'re solving something real - and the solution set gets far more interesting.'
               : index === 1
               ? 'Four distinct options. Each solves the same underlying problem differently. Now you can have an intelligent conversation about tradeoffs.'
               : index === 2
-              ? 'Slack integration wins at RICE 118. Push notifs score 42. The number makes the decision obvious — and gives you something to defend.'
-              : '"For Slack-native teams, this replaces the copy-paste habit — the thing they currently hate." They get it immediately.',
+              ? 'Slack integration wins at RICE 118. Push notifs score 42. The number makes the decision obvious - and gives you something to defend.'
+              : '"For Slack-native teams, this replaces the copy-paste habit - the thing they currently hate." They get it immediately.',
           },
         ]
 
@@ -1001,7 +1001,7 @@ export default function FlowMarketingPage() {
         <div className="max-w-5xl mx-auto">
           <p className="font-label text-xs font-bold uppercase tracking-widest flex items-center gap-3 mb-6" style={{ color: 'rgba(245,240,232,0.5)' }}>
             <span className="w-6 h-px inline-block" style={{ background: 'rgba(245,240,232,0.3)' }} />
-            Full FLOW — worked example
+            Full FLOW - worked example
           </p>
           <h2 className="font-headline text-4xl font-bold text-inverse-on-surface leading-tight mb-2">
             Spotify&apos;s AI DJ <em className="font-normal" style={{ color: 'rgba(245,240,232,0.55)' }}>decision</em>
@@ -1067,7 +1067,7 @@ export default function FlowMarketingPage() {
             Put FLOW to work on a real challenge
           </h2>
           <p className="font-body text-base text-on-surface-variant leading-relaxed mb-8">
-            Every HackProduct challenge runs you through all four moves — graded on how well you frame, list, optimize, and win. No multiple choice. No templates. Just your thinking, scored.
+            Every HackProduct challenge runs you through all four moves - graded on how well you frame, list, optimize, and win. No multiple choice. No templates. Just your thinking, scored.
           </p>
           <div className="flex gap-3 justify-center flex-wrap mb-4">
             <button

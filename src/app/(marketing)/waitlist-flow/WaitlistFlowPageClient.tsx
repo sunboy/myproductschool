@@ -58,7 +58,7 @@ function WaitlistModal({ trigger, onClose }: { trigger: string; onClose: () => v
           {trigger === 'FLOW' ? 'Join the waitlist' : <>Practice <em style={{ color: '#4A7C59' }}>{trigger}</em> first</>}
         </h3>
         <p style={{ fontFamily: 'var(--wf-body)', fontSize: '0.88rem', color: 'rgba(14,27,21,0.6)', lineHeight: 1.6, marginBottom: '1.75rem' }}>
-          Get early access to HackProduct — the practice gym for product thinking. Free to join, no credit card.
+          Get early access to HackProduct - the practice gym for product thinking. Free to join, no credit card.
         </p>
 
         <WaitlistForm />
@@ -72,9 +72,9 @@ function WaitlistModal({ trigger, onClose }: { trigger: string; onClose: () => v
 }
 
 
-// ── SVG Illustrations (geometry only — no text) ───────────────
+// ── SVG Illustrations (geometry only - no text) ───────────────
 
-// Frame: Before — 3 scattered solution boxes (chaos)
+// Frame: Before - 3 scattered solution boxes (chaos)
 function FrameBeforeSVG() {
   return (
     <svg width="80" height="68" viewBox="0 0 80 68" fill="none">
@@ -91,7 +91,7 @@ function FrameBeforeSVG() {
   )
 }
 
-// Frame: Move — magnifying glass / question mark (asking why)
+// Frame: Move - magnifying glass / question mark (asking why)
 function FrameMoveSVG() {
   return (
     <svg width="80" height="68" viewBox="0 0 80 68" fill="none">
@@ -104,7 +104,7 @@ function FrameMoveSVG() {
   )
 }
 
-// Frame: After — single focused card (clarity)
+// Frame: After - single focused card (clarity)
 function FrameAfterSVG() {
   return (
     <svg width="80" height="68" viewBox="0 0 80 68" fill="none">
@@ -120,7 +120,7 @@ function FrameAfterSVG() {
   )
 }
 
-// List: Before — single node dangling (tunnel vision)
+// List: Before - single node dangling (tunnel vision)
 function ListBeforeSVG() {
   return (
     <svg width="80" height="68" viewBox="0 0 80 68" fill="none">
@@ -135,7 +135,7 @@ function ListBeforeSVG() {
   )
 }
 
-// List: Move — tree branching out (opportunity tree)
+// List: Move - tree branching out (opportunity tree)
 function ListMoveSVG() {
   return (
     <svg width="80" height="68" viewBox="0 0 80 68" fill="none">
@@ -152,7 +152,7 @@ function ListMoveSVG() {
   )
 }
 
-// List: After — 4 tidy rows (structured options)
+// List: After - 4 tidy rows (structured options)
 function ListAfterSVG() {
   return (
     <svg width="80" height="68" viewBox="0 0 80 68" fill="none">
@@ -166,7 +166,7 @@ function ListAfterSVG() {
   )
 }
 
-// Opt: Before — 3 equal columns with a shrug (no decision)
+// Opt: Before - 3 equal columns with a shrug (no decision)
 function OptBeforeSVG() {
   return (
     <svg width="80" height="68" viewBox="0 0 80 68" fill="none">
@@ -184,7 +184,7 @@ function OptBeforeSVG() {
   )
 }
 
-// Opt: Move — horizontal bar chart / scoring rows
+// Opt: Move - horizontal bar chart / scoring rows
 function OptMoveSVG() {
   return (
     <svg width="80" height="68" viewBox="0 0 80 68" fill="none">
@@ -204,7 +204,7 @@ function OptMoveSVG() {
   )
 }
 
-// Opt: After — 3 bars with one clearly tallest (winner)
+// Opt: After - 3 bars with one clearly tallest (winner)
 function OptAfterSVG() {
   return (
     <svg width="80" height="68" viewBox="0 0 80 68" fill="none">
@@ -217,7 +217,7 @@ function OptAfterSVG() {
   )
 }
 
-// Win: Before — person with spreadsheet, no connection (silence)
+// Win: Before - person with spreadsheet, no connection (silence)
 function WinBeforeSVG() {
   return (
     <svg width="80" height="68" viewBox="0 0 80 68" fill="none">
@@ -239,7 +239,7 @@ function WinBeforeSVG() {
   )
 }
 
-// Win: Move — framing boxes with arrow (positioning)
+// Win: Move - framing boxes with arrow (positioning)
 function WinMoveSVG() {
   return (
     <svg width="80" height="68" viewBox="0 0 80 68" fill="none">
@@ -257,7 +257,7 @@ function WinMoveSVG() {
   )
 }
 
-// Win: After — checkmark in circle + thumbs up (shipped)
+// Win: After - checkmark in circle + thumbs up (shipped)
 function WinAfterSVG() {
   return (
     <svg width="80" height="68" viewBox="0 0 80 68" fill="none">
@@ -278,17 +278,17 @@ const STEPS = [
     name: 'Frame',
     sub: 'Find the real job behind the request',
     stepNum: 'Step 1 of 4',
-    body: 'Stop solving the stated problem. Every feature request is a disguised symptom. Framing means surfacing the underlying job-to-be-done — the outcome the user actually wants — before evaluating any solutions.',
+    body: 'Stop solving the stated problem. Every feature request is a disguised symptom. Framing means surfacing the underlying job-to-be-done - the outcome the user actually wants - before evaluating any solutions.',
     badgeClass: 'badge-f',
     accentHex: '#4A7C59',
     panels: [
-      { tag: 'Before', copy: 'Three solutions in three seconds. None answer the actual question — because nobody asked the actual question yet.' },
+      { tag: 'Before', copy: 'Three solutions in three seconds. None answer the actual question - because nobody asked the actual question yet.' },
       { tag: 'The move', copy: "Ask: what job is this person trying to do? The spinner hides latency. It doesn't fix anxiety about whether the action even worked.", accent: true },
-      { tag: 'After', copy: '"Slow load times" becomes a trust problem. Now you\'re solving something real — and the solution set gets far more interesting.' },
+      { tag: 'After', copy: '"Slow load times" becomes a trust problem. Now you\'re solving something real - and the solution set gets far more interesting.' },
     ],
     svgs: [<FrameBeforeSVG key="fb"/>, <FrameMoveSVG key="fm"/>, <FrameAfterSVG key="fa"/>],
     expert: { initials: 'MC', name: 'Marty Cagan · SVPG', role: 'Author, Inspired', quote: '"The most common mistake is confusing the solution with the outcome. Features are hypotheses. The job is to discover which problem is actually worth solving."', avatarStyle: 'avatar-f' },
-    scenario: { label: 'Applied — B2B SaaS notifications', text: "PM says: add real-time push notifications. Framed correctly, the job isn't to notify — it's to keep teams in sync without breaking focus. That's a completely different problem to solve." },
+    scenario: { label: 'Applied - B2B SaaS notifications', text: "PM says: add real-time push notifications. Framed correctly, the job isn't to notify - it's to keep teams in sync without breaking focus. That's a completely different problem to solve." },
     hatchMsg: "Before jumping to solutions, great product thinkers ask one question: what job is this person actually trying to do? The answer is almost never what was stated.",
   },
   {
@@ -297,56 +297,56 @@ const STEPS = [
     name: 'List',
     sub: 'Open the solution space before evaluating anything',
     stepNum: 'Step 2 of 4',
-    body: "Don't commit to a solution yet. Generate every plausible approach to the framed problem — at least five distinct options that vary in effort, reach, and mechanism. The goal is breadth before depth.",
+    body: "Don't commit to a solution yet. Generate every plausible approach to the framed problem - at least five distinct options that vary in effort, reach, and mechanism. The goal is breadth before depth.",
     badgeClass: 'badge-l',
     accentHex: '#705C30',
     panels: [
-      { tag: 'Before', copy: 'One problem, one solution, shipped by Thursday. This is feature thinking at its most efficient — and most dangerous.' },
+      { tag: 'Before', copy: 'One problem, one solution, shipped by Thursday. This is feature thinking at its most efficient - and most dangerous.' },
       { tag: 'The move', copy: "Teresa Torres' Opportunity Solution Tree: branch every possibility before scoring any of them. Generate five. Then generate two more.", accent: true },
       { tag: 'After', copy: 'Four distinct options. Each solves the same underlying problem differently. Now you can have an intelligent conversation about tradeoffs.' },
     ],
     svgs: [<ListBeforeSVG key="lb"/>, <ListMoveSVG key="lm"/>, <ListAfterSVG key="la"/>],
     expert: { initials: 'TT', name: 'Teresa Torres · Product Talk', role: 'Author, Continuous Discovery Habits', quote: '"Jumping to solutions is the product team\'s version of premature optimization. The Opportunity Solution Tree forces you to separate problem discovery from solution generation."', avatarStyle: 'avatar-l' },
-    scenario: { label: 'Applied — B2B SaaS notifications', text: "Listed: push notifs, Slack/Teams integration, daily digest, in-app feed, @mention threads, smart batching. The Slack integration — which nobody asked for — turns out to be the highest-leverage option by far." },
-    hatchMsg: "The first solution you think of is almost never the best one. Generate until you surprise yourself — that's when you know you've actually opened the space.",
+    scenario: { label: 'Applied - B2B SaaS notifications', text: "Listed: push notifs, Slack/Teams integration, daily digest, in-app feed, @mention threads, smart batching. The Slack integration - which nobody asked for - turns out to be the highest-impact option by far." },
+    hatchMsg: "The first solution you think of is almost never the best one. Generate until you surprise yourself - that's when you know you've actually opened the space.",
   },
   {
     key: 'optimize' as FlowMove,
     letter: 'O',
     name: 'Weigh',
-    sub: 'Pick the highest-leverage bet with explicit evidence',
+    sub: 'Pick the highest-impact bet with explicit evidence',
     stepNum: 'Step 3 of 4',
-    body: "Not all solutions are equal. Apply a scoring lens — RICE, ICE, LNO — before you fall in love with any single approach. The goal is to replace preference with evidence and make the tradeoff visible.",
+    body: "Not all solutions are equal. Apply a scoring lens - RICE, ICE, LNO - before you fall in love with any single approach. The goal is to replace preference with evidence and make the tradeoff visible.",
     badgeClass: 'badge-o',
     accentHex: '#8B4513',
     panels: [
       { tag: 'Before', copy: 'All three look reasonable. The loudest voice wins. This is how roadmaps become wish lists.' },
       { tag: 'The move', copy: 'RICE scoring: score every option on Reach, Impact, Confidence, Effort. Force the conversation from opinion to evidence.', accent: true },
-      { tag: 'After', copy: 'Slack integration wins at RICE 118. Push notifs score 42. The number makes the decision obvious — and gives you something to defend.' },
+      { tag: 'After', copy: 'Slack integration wins at RICE 118. Push notifs score 42. The number makes the decision obvious - and gives you something to defend.' },
     ],
     svgs: [<OptBeforeSVG key="ob"/>, <OptMoveSVG key="om"/>, <OptAfterSVG key="oa"/>],
-    expert: { initials: 'SD', name: 'Shreyas Doshi · ex-Stripe, Twitter', role: 'Creator, LNO Framework', quote: '"Product leverage is about finding the work that is 10x more impactful than everything else. Most teams optimize locally — they do a good job on the wrong things."', avatarStyle: 'avatar-o' },
-    scenario: { label: 'Applied — B2B SaaS notifications', text: "RICE scores: Push notifs = 42. Daily digest = 31. Slack bot = 118. The number makes the decision obvious — and gives you something concrete to bring into the planning meeting instead of a preference." },
-    hatchMsg: "A number beats an opinion every time. Even a rough RICE score converts a preference argument into a tradeoff conversation — and that's a much better meeting.",
+    expert: { initials: 'SD', name: 'Shreyas Doshi · ex-Stripe, Twitter', role: 'Creator, LNO Framework', quote: '"Product impact is about finding the work that is 10x more impactful than everything else. Most teams optimize locally - they do a good job on the wrong things."', avatarStyle: 'avatar-o' },
+    scenario: { label: 'Applied - B2B SaaS notifications', text: "RICE scores: Push notifs = 42. Daily digest = 31. Slack bot = 118. The number makes the decision obvious - and gives you something concrete to bring into the planning meeting instead of a preference." },
+    hatchMsg: "A number beats an opinion every time. Even a rough RICE score converts a preference argument into a tradeoff conversation - and that's a much better meeting.",
   },
   {
     key: 'win' as FlowMove,
     letter: 'W',
     name: 'Win',
-    sub: "Position your recommendation — don't just present it",
+    sub: "Position your recommendation - don't just present it",
     stepNum: 'Step 4 of 4',
-    body: "Great analysis that can't be communicated doesn't ship. Positioning means framing your recommendation for the decision-maker's context — not your own. They need a story, not a spreadsheet.",
+    body: "Great analysis that can't be communicated doesn't ship. Positioning means framing your recommendation for the decision-maker's context - not your own. They need a story, not a spreadsheet.",
     badgeClass: 'badge-w',
     accentHex: '#2D5A3E',
     panels: [
       { tag: 'Before', copy: "You've got the data, you share the RICE scores, and get \"interesting, let's think about it.\" Which means no." },
       { tag: 'The move', copy: "April Dunford's positioning: who is it for, what's the alternative they live with now, and what's your unique advantage?", accent: true },
-      { tag: 'After', copy: '"For Slack-native teams, this replaces the copy-paste habit — the thing they currently hate." They get it immediately.' },
+      { tag: 'After', copy: '"For Slack-native teams, this replaces the copy-paste habit - the thing they currently hate." They get it immediately.' },
     ],
     svgs: [<WinBeforeSVG key="wb"/>, <WinMoveSVG key="wm"/>, <WinAfterSVG key="wa"/>],
-    expert: { initials: 'AD', name: 'April Dunford · Obviously Awesome', role: 'Author, positioning strategist', quote: '"Positioning isn\'t about what you build — it\'s the context you create so your audience instantly understands why yours is the right answer. Engineers forget that the decision-maker needs a story, not a spreadsheet."', avatarStyle: 'avatar-w' },
-    scenario: { label: 'Applied — B2B SaaS notifications', text: 'Instead of "we should build a Slack bot (RICE: 118)," you say: "For our enterprise users who run operations in Slack, this replaces their current workflow of switching back to our app — and we can validate it in one sprint." Approved in the meeting.' },
-    hatchMsg: "Engineers think the win is building the right thing. Product thinkers know the win is getting the right thing built. Those are different skills — and this step is where you develop the second one.",
+    expert: { initials: 'AD', name: 'April Dunford · Obviously Awesome', role: 'Author, positioning strategist', quote: '"Positioning isn\'t about what you build - it\'s the context you create so your audience instantly understands why yours is the right answer. Engineers forget that the decision-maker needs a story, not a spreadsheet."', avatarStyle: 'avatar-w' },
+    scenario: { label: 'Applied - B2B SaaS notifications', text: 'Instead of "we should build a Slack bot (RICE: 118)," you say: "For our enterprise users who run operations in Slack, this replaces their current workflow of switching back to our app - and we can validate it in one sprint." Approved in the meeting.' },
+    hatchMsg: "Engineers think the win is building the right thing. Product thinkers know the win is getting the right thing built. Those are different skills - and this step is where you develop the second one.",
   },
 ]
 
@@ -354,25 +354,25 @@ const STEPS = [
 const WORKED = [
   {
     letter: 'F',
-    title: "Frame — What's the real job?",
-    body: "The question isn't \"which feature?\" — it's why daily active listening dropped among 18-24s. Discovery data shows choice paralysis: too many options, no clear starting point. The real job is reducing friction-to-first-listen, not adding more surfaces.",
+    title: "Frame - What's the real job?",
+    body: "The question isn't \"which feature?\" - it's why daily active listening dropped among 18-24s. Discovery data shows choice paralysis: too many options, no clear starting point. The real job is reducing friction-to-first-listen, not adding more surfaces.",
     chips: ['JTBD reframe', 'Not "which feature"', 'Discovery data'],
   },
   {
     letter: 'L',
-    title: 'List — Open the space',
-    body: "Solutions generated: AI DJ, social feed, contextual playlists (morning/gym/focus), \"continue from friends\" widget, mood-based radio, one-tap start from home screen. That's six options — not two. The original framing collapsed the solution space prematurely.",
+    title: 'List - Open the space',
+    body: "Solutions generated: AI DJ, social feed, contextual playlists (morning/gym/focus), \"continue from friends\" widget, mood-based radio, one-tap start from home screen. That's six options - not two. The original framing collapsed the solution space prematurely.",
     chips: ['6 options', 'Opportunity tree', 'Expanded framing'],
   },
   {
     letter: 'O',
-    title: 'Weigh — Score with evidence',
-    body: 'RICE: AI DJ scores 94 — high reach, proven listen-through rate in beta, medium effort. Social feed scores 41 — low confidence, failed twice before. Contextual playlists score 67. AI DJ wins clearly, with data behind it.',
+    title: 'Weigh - Score with evidence',
+    body: 'RICE: AI DJ scores 94 - high reach, proven listen-through rate in beta, medium effort. Social feed scores 41 - low confidence, failed twice before. Contextual playlists score 67. AI DJ wins clearly, with data behind it.',
     chips: ['RICE scoring', 'Beta data', 'AI DJ wins at 94'],
   },
   {
     letter: 'W',
-    title: 'Win — Position to get buy-in',
+    title: 'Win - Position to get buy-in',
     body: 'Not: "We should build AI DJ (RICE: 94) instead of the social feed." Instead: "For our Gen Z listeners who stall on the home screen, the AI DJ replaces the decision they currently dread. Beta cohort shows 23% lift in listen-through. We can prove Q3 impact in a 4-week sprint." One read, clear yes.',
     chips: ['Outcome-first', 'Named alternative', 'Validation plan'],
   },
@@ -516,7 +516,7 @@ export default function WaitlistFlowPage() {
           hackproduct
         </a>
         <ul className="wf-hide-mobile" style={{ display: 'flex', gap: '0.25rem', listStyle: 'none', margin: 0, padding: 0 }}>
-          {[{href:'#frame',label:'F — Frame'},{href:'#list',label:'L — List'},{href:'#optimize',label:'O — Weigh'},{href:'#win',label:'W — Win'}].map(n => (
+          {[{href:'#frame',label:'F - Frame'},{href:'#list',label:'L - List'},{href:'#optimize',label:'O - Weigh'},{href:'#win',label:'W - Win'}].map(n => (
             <li key={n.href}>
               <a className="wf-nav-step" href={n.href}>{n.label}</a>
             </li>
@@ -546,7 +546,7 @@ export default function WaitlistFlowPage() {
             <span style={{ flex: 1, maxWidth: '60px', height: '1px', background: 'rgba(250,246,240,.2)' }} />
           </div>
           <h1 className="wf-display" style={{ fontSize: 'clamp(3.5rem, 8vw, 7rem)', fontWeight: 400, lineHeight: 0.95, letterSpacing: '-3px', marginBottom: '1.5rem', color: '#FAF6F0' }}>
-            FLOW —<br /><em style={{ color: 'rgba(250,246,240,.55)' }}>how product<br />thinkers think</em>
+            FLOW -<br /><em style={{ color: 'rgba(250,246,240,.55)' }}>how product<br />thinkers think</em>
           </h1>
           <p className="wf-body" style={{ fontSize: '1.05rem', lineHeight: 1.7, color: 'rgba(250,246,240,.7)', maxWidth: '540px', marginBottom: '2.25rem' }}>
             Most engineers solve the stated problem brilliantly. Product thinking is about finding the right problem before writing a single line of code. FLOW is the four-move playbook that gets you there.
@@ -584,12 +584,12 @@ export default function WaitlistFlowPage() {
               The old you says: <em style={{ color: 'rgba(14,27,21,.6)' }}>&ldquo;Sure, I&apos;ll have it by tomorrow.&rdquo;</em>
             </p>
             <p className="wf-body" style={{ fontSize: '1.05rem', lineHeight: 1.75, marginTop: '0.75rem' }}>
-              The product-thinking you pauses. <strong style={{ fontWeight: 600, color: '#3D6B4F' }}>Because you know the spinner isn&apos;t the problem — it&apos;s a symptom.</strong> And shipping a symptom fix is how engineers spend careers building the wrong things brilliantly.
+              The product-thinking you pauses. <strong style={{ fontWeight: 600, color: '#3D6B4F' }}>Because you know the spinner isn&apos;t the problem - it&apos;s a symptom.</strong> And shipping a symptom fix is how engineers spend careers building the wrong things brilliantly.
             </p>
           </div>
 
           <p className="wf-body" style={{ fontSize: '0.95rem', color: 'rgba(14,27,21,.6)', lineHeight: 1.7, marginBottom: '2rem' }}>
-            FLOW gives you four moves that separate the engineers who get promoted from the ones who stay heads-down forever. It&apos;s not a template — it&apos;s a way of thinking.
+            FLOW gives you four moves that separate the engineers who get promoted from the ones who stay heads-down forever. It&apos;s not a template - it&apos;s a way of thinking.
           </p>
 
           {/* Flow pills */}
@@ -730,7 +730,7 @@ export default function WaitlistFlowPage() {
         <div style={{ maxWidth: '780px', margin: '0 auto' }}>
           <div className="wf-mono" style={{ fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(250,246,240,.5)', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <span style={{ width: '24px', height: '1px', background: 'rgba(250,246,240,.3)' }} />
-            Full FLOW — worked example
+            Full FLOW - worked example
           </div>
           <h2 className="wf-display" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 400, letterSpacing: '-1.5px', lineHeight: 1.1, marginBottom: '0.75rem' }}>
             Spotify&apos;s AI DJ<br /><em style={{ color: 'rgba(250,246,240,.55)' }}>decision</em>
@@ -789,7 +789,7 @@ export default function WaitlistFlowPage() {
             Put FLOW to work<br />on a real challenge
           </h2>
           <p className="wf-body" style={{ fontSize: '1rem', color: 'rgba(14,27,21,.6)', lineHeight: 1.65, marginBottom: '2rem' }}>
-            Every HackProduct challenge runs you through all four moves — graded on how well you frame, list, weigh, and win. No multiple choice. No templates. Just your thinking, scored.
+            Every HackProduct challenge runs you through all four moves - graded on how well you frame, list, weigh, and win. No multiple choice. No templates. Just your thinking, scored.
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
             <button className="wf-btn-primary" onClick={() => setWaitlistModal('FLOW')}>
