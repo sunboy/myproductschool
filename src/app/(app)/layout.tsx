@@ -7,6 +7,7 @@ import { FloatingHatch } from '@/components/shell/FloatingHatch'
 import { HatchDirector } from '@/components/shell/HatchDirector'
 import { UpgradeModal } from '@/components/shell/UpgradeModal'
 import { IdleTimer } from '@/components/auth/IdleTimer'
+import { FeedbackWidget } from '@/components/feedback/FeedbackWidget'
 import { HatchProvider } from '@/context/HatchContext'
 import { UsageProvider } from '@/context/UsageContext'
 import { createClient } from '@/lib/supabase/client'
@@ -40,6 +41,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <BottomTabs />
           <HatchDirector />
           <FloatingHatch />
+          <FeedbackWidget />
           <IdleTimer />
           <UpgradeModal
             open={upgradeOpen}

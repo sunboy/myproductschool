@@ -22,6 +22,7 @@ type TransactionalEmailKind =
   | 'discussion_reply'
   | 'account_deleted'
   | 'abuse_report'
+  | 'product_feedback'
 
 interface BaseTransactionalInput {
   dedupeKey: string
@@ -76,6 +77,14 @@ interface AbuseReportEmailInput extends BaseTransactionalInput {
   targetType: string
   category: string
   targetUrl?: string | null
+  message?: string | null
+}
+
+interface ProductFeedbackEmailInput extends BaseTransactionalInput {
+  feedbackId: string
+  kind: string
+  rating: number
+  path?: string | null
   message?: string | null
 }
 
@@ -531,5 +540,28 @@ export function sendAbuseReportEmail(admin: SupabaseClient, input: AbuseReportEm
     detail,
     ctaLabel: input.targetUrl ? 'Open reported surface' : null,
     ctaUrl: input.targetUrl ?? null,
+  })
+}
+
+export function sendProductFeedbackEmail(admin: SupabaseClient, input: ProductFeedbackEmailInput) {
+  const detail = [
+    `Feedback ID: ${input.feedbackId}`,
+    `Kind: ${input.kind}`,
+    `Rating: ${input.rating}/5`,
+    input.path ? `Path: ${input.path}` : null,
+    input.message ? `Message: ${input.message.slice(0, 700)}` : null,
+  ].filter(Boolean).join(' | ')
+
+  return sendTransactionalEmail(admin, {
+    ...input,
+    to: input.to ?? configuredReplyTo(),
+    kind: 'product_feedback',
+    subject: 'New HackProduct feedback',
+    eyebrow: 'Product feedback',
+    heading: 'A user sent feedback.',
+    body: 'Review the latest in-app feedback from HackProduct.',
+    detail,
+    ctaLabel: input.path ? 'Open surface' : null,
+    ctaUrl: input.path ? appUrl(input.path) : null,
   })
 }
