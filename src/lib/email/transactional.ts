@@ -20,6 +20,7 @@ type TransactionalEmailKind =
   | 'subscription_reactivated'
   | 'plan_changed'
   | 'discussion_reply'
+  | 'account_deleted'
 
 interface BaseTransactionalInput {
   dedupeKey: string
@@ -487,5 +488,16 @@ export function sendDiscussionReplyEmail(admin: SupabaseClient, input: Discussio
     detail,
     ctaLabel: 'View reply',
     ctaUrl: input.url,
+  })
+}
+
+export function sendAccountDeletedEmail(admin: SupabaseClient, input: BaseTransactionalInput) {
+  return sendTransactionalEmail(admin, {
+    ...input,
+    kind: 'account_deleted',
+    subject: 'Your HackProduct account was deleted',
+    eyebrow: 'Account deleted',
+    heading: 'Your account has been deleted.',
+    body: 'Your HackProduct account and profile data have been removed.',
   })
 }

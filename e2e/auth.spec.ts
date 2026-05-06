@@ -415,4 +415,48 @@ test.describe('Auth launch scenarios', () => {
     await page.goto(`${BASE_URL}/dashboard`)
     await page.waitForURL(/\/login(?:\?.*)?$/, { timeout: 15000 })
   })
+
+  test('N4.8 Account deletion requires reauth and removes auth/profile data', async ({ page }) => {
+    const user = await createOnboardedUser(admin, 'delete')
+    await loginWithApi(page, user.email, user.password)
+
+    const blocked = await appFetch(page, '/api/profile/delete', {
+      method: 'DELETE',
+      data: { email: user.email, confirmation: 'DELETE' },
+    })
+    expect(blocked.status, JSON.stringify(blocked.body)).toBe(403)
+    expect(blocked.body.error).toBe('reauth_required')
+
+    const reauth = await appFetch(page, '/api/auth/reauthenticate', {
+      method: 'POST',
+      data: { password: user.password },
+    })
+    expect(reauth.status, JSON.stringify(reauth.body)).toBe(200)
+
+    const deleted = await appFetch(page, '/api/profile/delete', {
+      method: 'DELETE',
+      data: { email: user.email, confirmation: 'DELETE' },
+    })
+    expect(deleted.status, JSON.stringify(deleted.body)).toBe(200)
+    expect(deleted.body.ok).toBe(true)
+
+    const authUser = await admin.auth.admin.getUserById(user.id)
+    expect(authUser.data.user).toBeNull()
+
+    const { data: profile, error: profileError } = await admin
+      .from('profiles')
+      .select('id')
+      .eq('id', user.id)
+      .maybeSingle()
+    expect(profileError).toBeNull()
+    expect(profile).toBeNull()
+
+    const { data: subscription, error: subscriptionError } = await admin
+      .from('subscriptions')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    expect(subscriptionError).toBeNull()
+    expect(subscription).toBeNull()
+  })
 })
