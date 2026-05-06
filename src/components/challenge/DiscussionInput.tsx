@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { type RefObject, useState } from 'react'
 
 interface Props {
   challengeId: string
   onSubmitted?: () => void
+  inputRef?: RefObject<HTMLInputElement | null>
 }
 
-export function DiscussionInput({ challengeId, onSubmitted }: Props) {
+export function DiscussionInput({ challengeId, onSubmitted, inputRef }: Props) {
   const [content, setContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -49,6 +50,7 @@ export function DiscussionInput({ challengeId, onSubmitted }: Props) {
           className="w-full border-none bg-transparent focus:ring-0 text-sm py-2 placeholder:text-on-surface-variant/60 text-on-surface focus:outline-none"
           placeholder="Add to the discussion..."
           type="text"
+          ref={inputRef}
           value={content}
           onChange={e => {
             setContent(e.target.value.slice(0, 500))
