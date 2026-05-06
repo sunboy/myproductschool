@@ -48,6 +48,12 @@ interface ApiResult {
   body: Record<string, unknown>
 }
 
+interface AppFetchRequest {
+  path: string
+  method?: string
+  data?: unknown
+}
+
 const EMAILS: Record<PersonaKey, string> = {
   freeNew: 'e2e+free-new@hackproduct.com',
   freeActive: 'e2e+free-active@hackproduct.com',
@@ -248,6 +254,28 @@ async function createStripeTestCustomer(user: TestUser) {
   return customer.id
 }
 
+async function createStripeTestPromotionCode() {
+  const stripe = getStripeForTest()
+  const suffix = `${Date.now()}${Math.random().toString(36).slice(2, 6)}`.toUpperCase()
+  const coupon = await stripe.coupons.create({
+    duration: 'once',
+    name: `E2E 100% coupon ${suffix}`,
+    percent_off: 100,
+    metadata: { e2e_seed: 'paywall.spec.ts' },
+  })
+  const promotionCode = await stripe.promotionCodes.create({
+    promotion: { type: 'coupon', coupon: coupon.id },
+    code: `E2E100${suffix}`,
+    metadata: { e2e_seed: 'paywall.spec.ts' },
+  })
+
+  return { coupon, promotionCode }
+}
+
+function checkoutSessionIdFromUrl(url: string) {
+  return url.match(/\/(cs_(?:test|live)_[^#/?]+)/)?.[1] ?? null
+}
+
 async function postStripeWebhook(
   request: APIRequestContext,
   event: Record<string, unknown>
@@ -305,6 +333,39 @@ function invoicePaymentFailedEvent(id: string, user: TestUser) {
     hosted_invoice_url: `${BASE_URL}/settings?invoice=${id}`,
     lines: { data: [{ period: { end: periodEnd } }] },
     subscription: E2E_STRIPE_SUBSCRIPTION_ID,
+  })
+}
+
+function checkoutCompletedEvent(
+  id: string,
+  input: {
+    user: TestUser
+    customerId: string
+    subscriptionId: string
+  }
+) {
+  return stripeEvent('checkout.session.completed', id, {
+    id: `cs_test_${id}`,
+    object: 'checkout.session',
+    amount_total: 0,
+    client_reference_id: input.user.id,
+    currency: 'usd',
+    customer: input.customerId,
+    customer_details: {
+      email: input.user.email,
+      name: 'E2E Free Active',
+    },
+    customer_email: input.user.email,
+    invoice: null,
+    metadata: {
+      user_id: input.user.id,
+      plan: 'monthly',
+      stripe_mode: 'test',
+    },
+    mode: 'subscription',
+    payment_status: 'paid',
+    status: 'complete',
+    subscription: input.subscriptionId,
   })
 }
 
@@ -419,6 +480,31 @@ async function appFetch(
   }, { path, method: options.method ?? 'GET', data: options.data })
 }
 
+async function appFetchMany(page: Page, requests: AppFetchRequest[]): Promise<ApiResult[]> {
+  return page.evaluate(async ({ requests: browserRequests }) => Promise.all(
+    browserRequests.map(async ({ path: requestPath, method, data }) => {
+      const response = await fetch(requestPath, {
+        method: method ?? 'GET',
+        headers: data === undefined ? undefined : { 'Content-Type': 'application/json' },
+        body: data === undefined ? undefined : JSON.stringify(data),
+      })
+      const text = await response.text()
+      let body: Record<string, unknown> = {}
+      try {
+        body = text ? JSON.parse(text) as Record<string, unknown> : {}
+      } catch {
+        body = { raw: text }
+      }
+
+      return {
+        status: response.status,
+        retryAfter: response.headers.get('Retry-After'),
+        body,
+      }
+    })
+  ), { requests })
+}
+
 function expectLimitReached(result: ApiResult, feature: string) {
   expect(result.status).toBe(402)
   expect(result.body.error).toBe('limit_reached')
@@ -467,9 +553,24 @@ test.describe('Paywall scenarios', () => {
       setProfilePlan(admin, users.freeActive.id, 'free'),
       setProfilePlan(admin, users.freeCapped.id, 'free'),
       setProfilePlan(admin, users.proActive.id, 'pro'),
-      setSubscriptionEntitlement(admin, users.freeNew.id, { plan: 'free', status: 'active' }),
-      setSubscriptionEntitlement(admin, users.freeActive.id, { plan: 'free', status: 'active' }),
-      setSubscriptionEntitlement(admin, users.freeCapped.id, { plan: 'free', status: 'active' }),
+      setSubscriptionEntitlement(admin, users.freeNew.id, {
+        plan: 'free',
+        status: 'active',
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+      }),
+      setSubscriptionEntitlement(admin, users.freeActive.id, {
+        plan: 'free',
+        status: 'active',
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+      }),
+      setSubscriptionEntitlement(admin, users.freeCapped.id, {
+        plan: 'free',
+        status: 'active',
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+      }),
       setSubscriptionEntitlement(admin, users.proActive.id, {
         plan: 'pro',
         status: 'active',
@@ -581,24 +682,33 @@ test.describe('Paywall scenarios', () => {
     await setAiCounter(admin, users.freeNew.id, 'hatch_chat_msgs', limit)
     await loginAs(page, users.freeNew.email)
 
-    const statuses: number[] = []
-    let last: ApiResult | null = null
-    for (let i = 0; i < 6; i++) {
-      last = await appFetch(page, '/api/hatch/chat', {
+    const warmup = await appFetchAfterThrottleReset(page, '/api/hatch/chat', {
+      method: 'POST',
+      data: {
+        message: 'Throttle warmup',
+        history: [],
+        pageContext: { pageType: 'dashboard', entityId: null, pathname: '/dashboard' },
+      },
+    })
+    expectLimitReached(warmup, 'hatch_chat_msgs')
+
+    const results = await appFetchMany(
+      page,
+      Array.from({ length: 5 }, (_, index) => ({
+        path: '/api/hatch/chat',
         method: 'POST',
         data: {
-          message: `Throttle check ${i + 1}`,
+          message: `Throttle check ${index + 1}`,
           history: [],
           pageContext: { pageType: 'dashboard', entityId: null, pathname: '/dashboard' },
         },
-      })
-      statuses.push(last.status)
-    }
+      }))
+    )
+    const throttled = results.find(result => result.status === 429)
 
-    expect(statuses.slice(0, 5)).toEqual([402, 402, 402, 402, 402])
-    expect(last?.status).toBe(429)
-    expect(last?.retryAfter).toBeTruthy()
-    expect(last?.body.error).toBe('rate_limited')
+    expect(throttled, JSON.stringify(results.map(result => result.body))).toBeTruthy()
+    expect(throttled?.retryAfter).toBeTruthy()
+    expect(throttled?.body.error).toBe('rate_limited')
   })
 
   test('N2.6 Pro user is not gated on the same AI and interview surfaces', async ({ page }) => {
@@ -798,5 +908,81 @@ test.describe('Paywall scenarios', () => {
     expect(billingState.subscription?.plan).toBe('pro')
     expect(billingState.subscription?.status).toBe('active')
     expect(billingState.subscription?.cancel_at_period_end).toBe(true)
+  })
+
+  test('N2.10 Coupon checkout can promote a free user to Pro', async ({ page, request }) => {
+    test.skip(!HAS_STRIPE_ENV || !HAS_STRIPE_WEBHOOK_ENV, 'Stripe secret and webhook secret are required.')
+
+    const stripe = getStripeForTest()
+    const freeInterviewLimit = await getPlanLimit(admin, 'free', 'interviews', FALLBACK_LIMITS.interviews)
+    const customerId = await createStripeTestCustomer(users.freeActive)
+    const checkoutSubscriptionId = `sub_e2e_coupon_${Date.now()}`
+    const checkoutCompletedId = stripeEventId('checkout_coupon_completed')
+    const { coupon, promotionCode } = await createStripeTestPromotionCode()
+
+    try {
+      await Promise.all([
+        setRollingUsage(admin, users.freeActive.id, 'interviews', freeInterviewLimit),
+        setProfilePlan(admin, users.freeActive.id, 'free'),
+        setSubscriptionEntitlement(admin, users.freeActive.id, {
+          plan: 'free',
+          status: 'active',
+          currentPeriodEnd: null,
+          cancelAtPeriodEnd: false,
+          stripeCustomerId: customerId,
+          stripeSubscriptionId: null,
+        }),
+      ])
+
+      await loginAs(page, users.freeActive.email)
+
+      const beforeCheckout = await appFetch(page, '/api/live-interview/start', {
+        method: 'POST',
+        data: {},
+      })
+      expectLimitReached(beforeCheckout, 'interviews')
+
+      const checkout = await appFetch(page, '/api/stripe/create-checkout', {
+        method: 'POST',
+        data: { plan: 'monthly' },
+      })
+      expect(checkout.status, JSON.stringify(checkout.body)).toBe(200)
+      expect(typeof checkout.body.url).toBe('string')
+
+      const checkoutSessionId = checkoutSessionIdFromUrl(String(checkout.body.url))
+      expect(checkoutSessionId).toBeTruthy()
+      const session = await stripe.checkout.sessions.retrieve(String(checkoutSessionId))
+      expect(session.allow_promotion_codes).toBe(true)
+
+      const webhook = await postStripeWebhook(
+        request,
+        checkoutCompletedEvent(checkoutCompletedId, {
+          user: users.freeActive,
+          customerId,
+          subscriptionId: checkoutSubscriptionId,
+        })
+      )
+      expect(webhook.status, JSON.stringify(webhook.body)).toBe(200)
+      expect(webhook.body.received).toBe(true)
+
+      const billingState = await getBillingState(admin, users.freeActive.id)
+      expect(billingState.profilePlan).toBe('pro')
+      expect(billingState.subscription?.plan).toBe('pro')
+      expect(billingState.subscription?.status).toBe('active')
+
+      const receipt = await getEmailDedupe(admin, `${checkoutCompletedId}:payment_receipt`)
+      expect(receipt?.template).toBe('payment_receipt')
+      expect(['sent', 'failed']).toContain(receipt?.status)
+
+      const afterCheckout = await appFetch(page, '/api/live-interview/start', {
+        method: 'POST',
+        data: {},
+      })
+      expect(afterCheckout.status, JSON.stringify(afterCheckout.body)).toBe(200)
+    } finally {
+      await stripe.promotionCodes.update(promotionCode.id, { active: false }).catch(() => undefined)
+      await stripe.coupons.del(coupon.id).catch(() => undefined)
+      await stripe.customers.del(customerId).catch(() => undefined)
+    }
   })
 })
