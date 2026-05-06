@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { MOCK_ORIENTATION_CHALLENGE } from '@/lib/mock-data'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { Md } from '@/components/ui/Md'
 
 const MAX_CHARS = 1200
 
@@ -53,9 +54,9 @@ export default function OrientationPage() {
 
         <h1 className="font-headline font-bold text-on-surface text-xl">{challenge.title}</h1>
 
-        <p className="text-sm text-on-surface-variant leading-relaxed whitespace-pre-line">
-          {challenge.prompt_text}
-        </p>
+        <div className="text-sm text-on-surface-variant leading-relaxed">
+          <Md variant="compact" tone="inherit">{challenge.prompt_text}</Md>
+        </div>
       </div>
 
       {/* Hatch coaching tip */}

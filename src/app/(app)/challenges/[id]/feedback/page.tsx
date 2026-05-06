@@ -5,6 +5,7 @@ import { FeedbackAccordion } from '@/components/challenge/FeedbackAccordion'
 import { MentalModelsBreakdown } from '@/components/challenge/MentalModelsBreakdown'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
+import { Md } from '@/components/ui/Md'
 import { MOCK_FEEDBACK, MOCK_FEEDBACK_FULL } from '@/lib/mock-data'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -287,9 +288,9 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             <h3 className="font-headline text-xl font-bold text-primary">{challenge.title}</h3>
 
             {/* Prompt text */}
-            <p className="text-sm text-on-surface-variant leading-relaxed whitespace-pre-line">
-              {challenge.prompt_text}
-            </p>
+            <div className="text-sm text-on-surface-variant leading-relaxed">
+              <Md variant="compact" tone="inherit">{challenge.prompt_text ?? ''}</Md>
+            </div>
 
             {/* Tag chips */}
             <div className="flex flex-wrap gap-2 pt-2">

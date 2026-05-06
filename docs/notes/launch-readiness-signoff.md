@@ -112,9 +112,10 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: static audit of `guardedCachedMessage` call sites found the remaining unbudgeted launch exception is `src/lib/content/coaching-warmer.ts`, which is an admin publish-time cache warmer rather than a user-triggered paywall path.
   - Evidence: `npx tsc --noEmit --pretty false`, `npx tsx --test tests/lib/usage/assert-plan-limit.test.ts tests/lib/billing/entitlements.test.ts tests/lib/ai/guarded-client.test.ts`, `npx vitest run tests/unit/affiliate-flow.spec.ts`, `npm run lint`, `npm run build`, and `npm run secrets:scan` passed after the AI grading budget patch.
 - [x] Challenge scenario/context markdown renders without changing surrounding text tone.
-  - Evidence: `CaseContextPane`, `ChallengeWorkspace`, and `FlowWorkspace` now render challenge context prose through markdown components instead of plain JSX text interpolation.
+  - Evidence: `CaseContextPane`, `ChallengeWorkspace`, `FlowWorkspace`, challenge feedback, and orientation now render challenge context prose through markdown components instead of plain JSX text interpolation.
   - Evidence: `Md` supports an explicit `tone="inherit"` mode so embedded scenario prose keeps the existing muted/on-surface color from its container.
-  - Evidence: `npx vitest run tests/components/Md.test.tsx` passed `5/5`, and `npx tsc --noEmit --pretty false`, `npm run lint`, `npm run build`, `npm run secrets:scan`, and the staged secret scan passed before commit `8d31e8a`.
+  - Evidence: `rg -n "\\{challenge\\.prompt_text\\}|challenge\\.prompt_text\\}" src/app src/components` returns only `Md` render sites.
+  - Evidence: `npx vitest run tests/components/Md.test.tsx` passed `5/5`, and `npx tsc --noEmit --pretty false`, `npm run lint`, `npm run build`, `npm run secrets:scan`, and staged secret scans passed before the markdown commits.
 
 ## Accepted Scope Changes
 
