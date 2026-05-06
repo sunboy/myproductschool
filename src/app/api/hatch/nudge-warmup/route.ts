@@ -77,6 +77,7 @@ export async function POST(req: NextRequest) {
     await guardedCachedMessage(systemPrompt, userPrompt, {
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 1,
+      budget: { userId: user.id, userPlan, route: ROUTE_KEY },
     })
   } catch {
     // Warmup failure is silent — never surface to client
