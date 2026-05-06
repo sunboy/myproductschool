@@ -1,5 +1,7 @@
 import type { NextConfig } from 'next'
 
+const projectRoot = process.cwd()
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.stripe.com challenges.cloudflare.com *.posthog.com va.vercel-scripts.com",
@@ -18,6 +20,10 @@ const contentSecurityPolicy = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  turbopack: {
+    root: projectRoot,
+  },
+  outputFileTracingRoot: projectRoot,
   async redirects() {
     return [
       { source: '/domains', destination: '/explore/domains', permanent: true },

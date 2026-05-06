@@ -10,6 +10,7 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 
 - [x] Production build passes.
   - Evidence: `npm run build` passed on May 6, 2026 after the PWA manifest, affiliate-gating, and AI grading budget changes.
+  - Evidence: `npm run build` passed after explicitly setting the Next project root; the previous multiple-lockfile workspace-root warning no longer appears.
 - [x] TypeScript passes.
   - Evidence: `npx tsc --noEmit --pretty false` passed on May 6, 2026 after the PWA manifest, affiliate-gating, and AI grading budget changes.
 - [x] Repo lint exits successfully.
@@ -35,6 +36,9 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 - [x] Local production E2E fallback flags are documented.
   - Evidence: `docs/notes/e2e-test-users.md` documents `RATE_LIMIT_MEMORY_FALLBACK=true`, `DISCUSSION_MODERATION_E2E_FALLBACK=true`, and `TURNSTILE_E2E_FALLBACK=true`.
   - Production note: these flags must stay unset in production.
+- [x] Next project root is explicit.
+  - Evidence: `next.config.ts` sets `turbopack.root` and `outputFileTracingRoot` to the app project root so Next does not infer `/Users/sandeep` because of a parent `package-lock.json`.
+  - Evidence: `npm run build` and `npx next start -p 3017` no longer emit the multiple-lockfile workspace-root warning.
 - [x] Required launch schema is present in Supabase project `tikkhvxlclivixqqqjyb`.
   - Evidence: remote checks confirmed `abuse_reports`, `admin_action_log`, `feedback_submissions`, `feedback_prompt_events`, `challenge_attempts.share_id`, and `nudge_usage.nudge_sequence`.
   - Evidence: service-role REST access passed for those tables and columns.
