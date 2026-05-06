@@ -9,6 +9,7 @@ const adminNav = [
   { href: '/admin/discussions', icon: 'forum', label: 'Discussions' },
   { href: '/admin/voice-violations', icon: 'rule', label: 'Voice Rules' },
   { href: '/admin/revenue', icon: 'payments', label: 'Revenue' },
+  { href: '/admin/coupons', icon: 'local_offer', label: 'Coupons' },
   { href: '/admin/waitlist', icon: 'mail', label: 'Waitlist' },
 ]
 
