@@ -151,7 +151,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
         <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
           <HatchGlyph size={64} state="celebrating" className="text-primary" />
           <p className="text-on-surface-variant text-sm max-w-xs">
-            Your notes become Hatch&apos;s memory &mdash; jot anything down.
+            Your notes become Hatch&apos;s memory. Jot anything down.
           </p>
           <button
             onClick={() => setAdding(true)}

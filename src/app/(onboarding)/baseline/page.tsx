@@ -76,7 +76,7 @@ export default function BaselineResultsPage() {
           Your Thinking Archetype: The Systematic Builder
         </h2>
         <p className="text-sm text-on-surface-variant font-body">
-          You excel at structured methodology — defining frameworks, organizing information, and building systematic approaches.
+          You excel at structured methodology: defining frameworks, organizing information, and building systematic approaches.
           Your gap is in stakeholder narrative: translating your solid analysis into compelling stories that drive alignment and action.
         </p>
       </div>
@@ -89,7 +89,7 @@ export default function BaselineResultsPage() {
         </h3>
         <p className="text-sm text-on-surface-variant font-body italic mb-3">
           &quot;You identified the structural issue quickly and used criteria-based thinking to frame your analysis.
-          Your stakeholder narrative could be stronger — try leading with the business impact before diving into methodology.&quot;
+          Your stakeholder narrative could be stronger. Try leading with the business impact before diving into methodology.&quot;
         </p>
         <div className="flex flex-wrap gap-2">
           <span className="bg-primary-fixed text-primary rounded-full px-3 py-1 text-xs font-label font-semibold">

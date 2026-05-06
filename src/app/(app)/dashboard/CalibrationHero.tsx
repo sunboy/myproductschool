@@ -30,14 +30,14 @@ export function CalibrationHero() {
             <>
               <h2 className="font-headline text-xl font-bold text-on-surface mb-1">Finish your calibration</h2>
               <p className="text-on-surface-variant text-sm leading-relaxed mb-3">
-                You started but didn&apos;t finish. Pick up where you left off — Hatch saved your progress.
+                You started but didn&apos;t finish. Pick up where you left off. Hatch saved your progress.
               </p>
             </>
           ) : (
             <>
               <h2 className="font-headline text-xl font-bold text-on-surface mb-1">Unlock your skill radar</h2>
               <p className="text-on-surface-variant text-sm leading-relaxed mb-3">
-                8 questions. ~5 minutes. No typing — just choices. Hatch will set your baseline and route you to the right challenges.
+                8 questions. ~5 minutes. No typing, just choices. Hatch will set your baseline and route you to the right challenges.
               </p>
             </>
           )}

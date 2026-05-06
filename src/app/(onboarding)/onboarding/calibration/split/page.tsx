@@ -89,7 +89,7 @@ export default function CalibrationSplitPage() {
       <div className="flex items-center gap-2 mb-2">
         <span className="material-symbols-outlined text-primary text-lg">diamond</span>
         <h2 className="font-headline text-lg font-bold text-on-surface">
-          List — Who exactly is affected, and how?
+          List: Who exactly is affected, and how?
         </h2>
       </div>
       <p className="text-sm text-on-surface-variant font-body mb-4">

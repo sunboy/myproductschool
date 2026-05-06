@@ -20,7 +20,7 @@ const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : 
 const FEATURES = [
   { icon: 'fitness_center',    text: '80 challenge starts/month' },
   { icon: 'psychology',        text: 'Fair-use Hatch AI budget' },
-  { icon: 'analytics',         text: 'Learner DNA — competency radar' },
+  { icon: 'analytics',         text: 'Learner DNA, competency radar' },
   { icon: 'school',            text: 'Study plans and autopsies' },
   { icon: 'mic',               text: '12 AI interview starts/month' },
   { icon: 'workspace_premium', text: 'Early access to new features' },
@@ -218,7 +218,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                   </p>
                   {billing === 'annual' && (
                     <p className="font-label text-[10px] text-primary font-semibold">
-                      ~{monthlyCost}/mo — billed annually
+                      ~{monthlyCost}/mo, billed annually
                     </p>
                   )}
                 </div>

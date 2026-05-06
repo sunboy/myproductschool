@@ -23,7 +23,7 @@ export function ProGate({ children, feature = 'This feature' }: ProGateProps) {
             href="/pricing"
             className="block w-full py-3 bg-primary text-on-primary font-medium rounded-xl hover:opacity-90 transition-opacity text-center text-sm"
           >
-            Upgrade to Pro — $12/mo
+            Upgrade to Pro, $12/mo
           </Link>
         </div>
       </div>

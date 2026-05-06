@@ -47,7 +47,7 @@ export default function ResultsPage() {
     try {
       await fetch('/api/onboarding/complete', { method: 'POST' })
     } catch {
-      // Non-fatal — proceed regardless
+      // Non-fatal; proceed regardless.
     }
     router.push('/dashboard')
   }
@@ -112,7 +112,7 @@ export default function ResultsPage() {
               {/* Axes */}
               <line x1="100" y1="20" x2="100" y2="180" stroke="#eae6de" strokeWidth="1" />
               <line x1="20" y1="100" x2="180" y2="100" stroke="#eae6de" strokeWidth="1" />
-              {/* Data Shape computed from scores — animated reveal */}
+              {/* Data Shape computed from scores: animated reveal */}
               <polygon
                 points={`100,${100 - scores.frame * 0.8} ${100 + scores.list * 0.8},100 100,${100 + scores.optimize * 0.8} ${100 - scores.win * 0.8},100`}
                 fill="#4a7c59"
@@ -157,7 +157,7 @@ export default function ResultsPage() {
           </p>
         </section>
 
-        {/* Section 4: Answer Callout — only show when real feedback from API */}
+        {/* Section 4: Answer Callout, only show when real feedback from API */}
         {results?.hatch_observation && (
           <section className="bg-white rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
             <div className="p-5 border-l-4 border-primary">

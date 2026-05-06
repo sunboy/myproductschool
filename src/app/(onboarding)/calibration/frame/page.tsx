@@ -38,7 +38,7 @@ export default function CalibrationFramePage() {
         }),
       })
     } catch {
-      // Non-fatal — proceed regardless
+      // Non-fatal; proceed regardless.
     } finally {
       setIsSubmitting(false)
       router.push('/onboarding/results')
@@ -105,7 +105,7 @@ export default function CalibrationFramePage() {
             </div>
             <div className="flex-grow">
               <p className="text-sm text-on-surface font-medium leading-relaxed">
-                &ldquo;I&apos;ll assess how you <span className="text-primary font-bold">Frame</span> the problem space. There are no right answers — I&apos;m looking at how you think, not what you know.&rdquo;
+                &ldquo;I&apos;ll assess how you <span className="text-primary font-bold">Frame</span> the problem space. There are no right answers. I&apos;m looking at how you think, not what you know.&rdquo;
               </p>
             </div>
           </div>
@@ -127,7 +127,7 @@ export default function CalibrationFramePage() {
               Spotify is seeing a 15% drop in podcast listening among 25-34 year olds
             </h2>
             <p className="text-lg text-on-surface-variant leading-relaxed">
-              You&apos;re the PM. What&apos;s the real problem here — and how would you frame it for your team?
+              You&apos;re the PM. What&apos;s the real problem here, and how would you frame it for your team?
             </p>
           </section>
 

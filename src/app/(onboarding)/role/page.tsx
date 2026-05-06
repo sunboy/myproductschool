@@ -29,7 +29,7 @@ const ROLES = [
     badge: 'ML Eng',
     title: 'ML Engineer',
     description: 'Improve model accuracy but struggle to translate it to business impact',
-    painPoint: 'Your model improved recall by 12% — and nobody in leadership noticed.',
+    painPoint: 'Your model improved recall by 12%, and nobody in leadership noticed.',
   },
   {
     id: 'devops',
@@ -45,14 +45,14 @@ const ROLES = [
     badge: 'EM',
     title: 'Eng Manager',
     description: 'Manage delivery but want to shape direction, not just execute',
-    painPoint: 'You run standups, clear blockers, hit deadlines — but never set the roadmap.',
+    painPoint: 'You run standups, clear blockers, hit deadlines, but never set the roadmap.',
   },
   {
     id: 'founding_eng',
     icon: 'rocket_launch',
     badge: 'Founding Eng',
     title: 'Founding Engineer',
-    description: 'You ARE the product team — need to think like a CPO',
+    description: 'You ARE the product team. You need to think like a CPO',
     painPoint: 'There is no PM. Every product call is on you.',
   },
   {
@@ -137,7 +137,7 @@ export default function RoleSelectionPage() {
         body: JSON.stringify({ role: selectedRole }),
       })
     } catch {
-      // Non-fatal — proceed regardless
+      // Non-fatal; proceed regardless.
     } finally {
       await saveOnboardingState('/calibration', {
         selectedRole,
@@ -279,7 +279,7 @@ export default function RoleSelectionPage() {
           <Link
             href="/dashboard"
             className="flex items-center gap-2 text-secondary font-label text-sm font-semibold hover:text-primary transition-colors"
-            title="Go straight to challenges — you can calibrate later"
+            title="Go straight to challenges. You can calibrate later."
           >
             Skip to challenges
             <span className="material-symbols-outlined text-sm">skip_next</span>

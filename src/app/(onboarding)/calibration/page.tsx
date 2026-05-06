@@ -79,7 +79,7 @@ function WorkshopBg({ opacity = 0.12 }: { opacity?: number }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      {/* Desk 1 — left */}
+      {/* Desk 1: left */}
       <rect x="40" y="320" width="180" height="8" rx="2" />
       <line x1="50" y1="328" x2="50" y2="400" />
       <line x1="210" y1="328" x2="210" y2="400" />
@@ -95,7 +95,7 @@ function WorkshopBg({ opacity = 0.12 }: { opacity?: number }) {
       <circle cx="128" cy="210" r="18" />
       <path d="M110 235 Q128 250 146 235" />
       <line x1="128" y1="228" x2="128" y2="240" />
-      {/* Desk 2 — center */}
+      {/* Desk 2: center */}
       <rect x="300" y="280" width="200" height="8" rx="2" />
       <line x1="310" y1="288" x2="310" y2="360" />
       <line x1="490" y1="288" x2="490" y2="360" />
@@ -110,7 +110,7 @@ function WorkshopBg({ opacity = 0.12 }: { opacity?: number }) {
       <path d="M382 215 Q400 230 418 215" />
       <line x1="400" y1="208" x2="400" y2="220" />
       <path d="M388 218 Q370 235 360 245" />
-      {/* Desk 3 — right */}
+      {/* Desk 3: right */}
       <rect x="580" y="340" width="160" height="8" rx="2" />
       <line x1="590" y1="348" x2="590" y2="420" />
       <line x1="730" y1="348" x2="730" y2="420" />
@@ -119,7 +119,7 @@ function WorkshopBg({ opacity = 0.12 }: { opacity?: number }) {
       <rect x="636" y="318" width="14" height="22" rx="1" />
       <line x1="668" y1="300" x2="695" y2="340" />
       <path d="M668 300 L674 294 L680 300" />
-      {/* Human 3 — standing */}
+      {/* Human 3: standing */}
       <circle cx="700" cy="270" r="18" />
       <line x1="700" y1="288" x2="700" y2="340" />
       <path d="M682 305 Q700 298 718 305" />
@@ -453,7 +453,7 @@ export default function CalibrationPage() {
                 className="text-[15px] text-inverse-on-surface/65 font-body leading-relaxed"
                 style={{ animation: 'calFadeUp 0.5s ease 0.8s both' }}
               >
-                4 choices. Product, systems, data, SQL, code.<br />No wrong answers — just honest ones.
+                4 choices. Product, systems, data, SQL, code.<br />No wrong answers, just honest ones.
               </p>
             </div>
             <button
@@ -607,7 +607,7 @@ export default function CalibrationPage() {
                   Your thinking archetype
                 </p>
                 <h2 className="font-headline font-bold text-[24px] text-inverse-on-surface">
-                  {results?.archetype ?? '—'}
+                  {results?.archetype ?? 'Not set'}
                 </h2>
               </div>
 

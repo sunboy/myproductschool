@@ -6,7 +6,7 @@ import { BILLING_PLANS, formatPlanPrice } from '@/lib/billing/plans'
 const FEATURES = [
   { icon: 'fitness_center', text: '80 challenge starts each month' },
   { icon: 'psychology',     text: 'Fair-use Hatch AI coaching budget' },
-  { icon: 'analytics',      text: 'Learner DNA — competency radar' },
+  { icon: 'analytics',      text: 'Learner DNA, competency radar' },
   { icon: 'school',         text: 'All study plans and autopsies' },
   { icon: 'mic',            text: '12 AI interview starts each month' },
 ]
