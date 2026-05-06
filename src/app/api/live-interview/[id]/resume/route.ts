@@ -17,8 +17,9 @@ export async function POST(
 
   const { data: session } = await adminClient
     .from('live_interview_sessions')
-    .select('*')
+    .select('id, user_id, status, loop_id, round_index, flow_coverage, conversation_memory, company_id, role_id, challenge_id')
     .eq('id', id)
+    .eq('user_id', user.id)
     .single()
 
   if (!session) return new Response('Session not found', { status: 404 })
@@ -85,14 +86,16 @@ export async function POST(
     .update({ status: 'active' })
     .eq('id', s.loop_id)
 
-  const { data: refreshed } = await adminClient
-    .from('live_interview_sessions')
-    .select('*')
-    .eq('id', id)
-    .single()
-
   return Response.json({
-    session: refreshed,
+    session: {
+      id,
+      company_id: s.company_id ?? null,
+      role_id: s.role_id ?? null,
+      challenge_id: s.challenge_id ?? null,
+      loop_id: s.loop_id,
+      round_index: s.round_index ?? 0,
+      status: 'active',
+    },
     resumedAt: now,
     discipline: built.effectiveDiscipline,
   })

@@ -34,7 +34,8 @@ const ArtifactSnapshotSchema = z.object({
 
 const RequestSchema = z.object({
   message: z.string().max(20000).optional(),
-  mode: z.enum(['opening', 'reply']).optional(),
+  mode: z.enum(['opening', 'reply', 'feeler']).optional(),
+  idleSeconds: z.number().int().min(0).max(3600).optional(),
   artifactSnapshot: ArtifactSnapshotSchema.optional(),
 })
 
@@ -77,8 +78,9 @@ export async function POST(
     }
     return apiError(400, 'invalid_json', 'Invalid JSON body')
   }
-  const mode = body.mode === 'opening' ? 'opening' : 'reply'
+  const mode = body.mode === 'opening' || body.mode === 'feeler' ? body.mode : 'reply'
   const message = body.message ?? ''
+  const idleSeconds = body.idleSeconds ?? 45
   const artifactSnapshot = body.artifactSnapshot
   if (mode === 'reply' && !message.trim()) return apiError(400, 'invalid_request', 'Bad Request')
 
@@ -119,6 +121,11 @@ export async function POST(
 
   const conversation = mode === 'opening'
     ? 'The live interview has just opened. The candidate has not spoken yet.'
+    : mode === 'feeler'
+    ? [
+        ...(turnsData ?? []).map((t) => `${t.role === 'hatch' ? 'Interviewer' : 'Candidate'}: ${t.content}`),
+        `[Silence] The candidate has been quiet for about ${idleSeconds} seconds after Hatch's last turn.`,
+      ].join('\n\n')
     : [
         ...(turnsData ?? []).map((t) => `${t.role === 'hatch' ? 'Interviewer' : 'Candidate'}: ${t.content}`),
         `Candidate: ${message.trim()}`,
@@ -152,6 +159,13 @@ The candidate may provide a current canvas/editor snapshot inside USER_INPUT. Tr
     dynamicContext.push(`[OPENING TURN]
 Make the first move now. Send only Hatch's first spoken turn.
 Keep it to 1-2 short sentences. Greet the candidate, optionally include one light personalized signal from the profile/practice context, and invite them into the interview. Do not ask them to type first. Do not present the full case yet unless they already chose to start immediately.`)
+  }
+
+  if (mode === 'feeler') {
+    dynamicContext.push(`[NATURAL CHECK-IN]
+The candidate has been quiet for about ${idleSeconds} seconds. Send exactly one short, humane check-in.
+Use the transcript and workspace context to choose the right tone: "Still with me?", "Want a hint?", "Need a minute?", "Want to take a quick break?", or a similarly natural variant.
+Do not advance the case, grade them, recap your instructions, or use Markdown.`)
   }
 
   // Time-based soft closing signal
@@ -222,8 +236,8 @@ Keep it to 1-2 short sentences. Greet the candidate, optionally include one ligh
     throw error
   }
 
-  // Save turns to DB. Opening mode only creates Hatch's first turn.
-  const turnsToInsert = mode === 'opening'
+  // Save turns to DB. Opening/feeler modes only create Hatch turns.
+  const turnsToInsert = mode === 'opening' || mode === 'feeler'
     ? [
         {
           session_id: id,
@@ -269,7 +283,7 @@ Keep it to 1-2 short sentences. Greet the candidate, optionally include one ligh
     .update(sessionUpdate)
     .eq('id', id)
 
-  if (mode === 'opening') {
+  if (mode !== 'reply') {
     return Response.json({ reply })
   }
 

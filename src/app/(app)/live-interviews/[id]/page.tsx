@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import HatchAvatar, { type HatchAvatarState } from '@/components/live-interview/HatchAvatar'
 import dynamic from 'next/dynamic'
-import DeepgramVoiceSession from '@/components/live-interview/DeepgramVoiceSession'
+import DeepgramVoiceSession, { type DeepgramVoiceSessionHandle } from '@/components/live-interview/DeepgramVoiceSession'
 import type { TalkingHeadHandle } from '@/components/live-interview/TalkingHeadAvatar'
 import { LoopProgressBar } from '@/components/live-interviews/LoopProgressBar'
 import { PriorRoundRecap } from '@/components/live-interviews/PriorRoundRecap'
@@ -106,6 +106,8 @@ const COMPETENCY_LABELS: Record<string, string> = {
 }
 
 const SNAPSHOT_CODE_MAX_CHARS = 40000
+const IDLE_FEELER_DELAY_MS = 45_000
+const IDLE_FEELER_COOLDOWN_MS = 120_000
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -451,7 +453,7 @@ function CtrlBtn({
 }
 
 // ─── Main Page ───
-const ENABLE_DIRECT_VOICE_AGENT = false
+const ENABLE_DIRECT_VOICE_AGENT = true
 
 export default function SessionPage({
   params,
@@ -498,6 +500,7 @@ export default function SessionPage({
   const [currentCaption, setCurrentCaption] = useState('')
   const [recentSignals, setRecentSignals] = useState<Array<CoachingSignal & { id: string; time: number }>>([])
   const talkingHeadRef = useRef<TalkingHeadHandle | null>(null)
+  const voiceSessionRef = useRef<DeepgramVoiceSessionHandle | null>(null)
   const transcriptRef = useRef<HTMLDivElement>(null)
   const chatInputRef = useRef<HTMLInputElement>(null)
   const [chatInput, setChatInput] = useState('')
@@ -520,6 +523,9 @@ export default function SessionPage({
   const eventSourceRef = useRef<EventSource | null>(null)
   const lastSignalTurnIndexRef = useRef<number>(-1)
   const openingRequestedRef = useRef(false)
+  const openingSpokenRef = useRef(false)
+  const idleFeelerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastFeelerAtRef = useRef(0)
   const snapshotPersistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { formatted: timerDisplay, isWarning, isLimitReached } = useInterviewTimer(
@@ -760,6 +766,25 @@ export default function SessionPage({
   }, [buildCurrentArtifactSnapshot, interviewPhase, isVoiceAvailable, sessionId, turns.length])
 
   useEffect(() => {
+    if (
+      !ENABLE_DIRECT_VOICE_AGENT ||
+      openingSpokenRef.current ||
+      !isVoiceActive ||
+      !isVoiceAvailable ||
+      turns.length !== 1
+    ) {
+      return
+    }
+
+    const firstTurn = turns[0]
+    if (firstTurn?.role !== 'hatch') return
+
+    if (voiceSessionRef.current?.injectAgentMessage(firstTurn.content)) {
+      openingSpokenRef.current = true
+    }
+  }, [isVoiceActive, isVoiceAvailable, turns])
+
+  useEffect(() => {
     if (IS_MOCK || interviewPhase !== 'active' || centerMode === 'orb' || !sessionId) return
     const snapshot = buildCurrentArtifactSnapshot()
     if (!snapshot) return
@@ -885,6 +910,7 @@ export default function SessionPage({
   const handleTranscript = useCallback((text: string, role: 'hatch' | 'user') => {
     const { cleanContent, signal } = parseGradingSignal(text)
     if (!cleanContent) return
+    const turnIndex = totalTurns
 
     // Update caption for hatch
     if (role === 'hatch') setCurrentCaption(cleanContent)
@@ -931,9 +957,9 @@ export default function SessionPage({
 
       const turnId = turn.id
 
-      // turn_index for dedup: this user turn is being appended at position `totalTurns`
-      // (the server stores zero-indexed turns; totalTurns increments after this fetch).
-      const userTurnIndex = totalTurns
+      // turn_index for dedup/credit: this user turn is being appended at this
+      // position in the local transcript.
+      const userTurnIndex = turnIndex
 
       fetch(`/api/live-interview/${sessionId}/analyze`, {
         method: 'POST',
@@ -1043,6 +1069,126 @@ export default function SessionPage({
       setIsThinking(false)
     }
   }, [buildCurrentArtifactSnapshot, sessionId])
+
+  const requestHatchFeeler = useCallback(async (idleSeconds: number) => {
+    if (interviewPhase !== 'active' || isThinking || isChatSending || isEnding) return
+
+    const now = Date.now()
+    if (now - lastFeelerAtRef.current < IDLE_FEELER_COOLDOWN_MS) return
+    lastFeelerAtRef.current = now
+
+    if (IS_MOCK) {
+      const mockReply = "Still with me? Want a hint, a minute to think, or a quick break?"
+      setTurns((prev) => [...prev, {
+        id: crypto.randomUUID(),
+        role: 'hatch',
+        content: mockReply,
+        source: 'chat',
+      }])
+      setTotalTurns((prev) => prev + 1)
+      setCurrentCaption(mockReply)
+      setIsChatOpen(true)
+      return
+    }
+
+    setHatchState('thinking')
+    setIsThinking(true)
+
+    try {
+      const artifactSnapshot = buildCurrentArtifactSnapshot()
+      const res = await fetch(`/api/live-interview/${sessionId}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'feeler',
+          idleSeconds,
+          artifactSnapshot: artifactSnapshot ?? undefined,
+        }),
+      })
+
+      if (!res.ok) return
+
+      const { reply } = await res.json()
+      if (!reply) return
+
+      const hatchTurn: TranscriptTurn = {
+        id: crypto.randomUUID(),
+        role: 'hatch',
+        content: reply,
+        source: 'chat',
+      }
+      setTurns((prev) => [...prev, hatchTurn])
+      setTotalTurns((prev) => prev + 1)
+      setCurrentCaption(reply)
+      setIsChatOpen(true)
+    } catch {
+      // Silent feelers should never interrupt the interview with an error toast.
+    } finally {
+      setHatchState('idle')
+      setIsThinking(false)
+    }
+  }, [
+    buildCurrentArtifactSnapshot,
+    interviewPhase,
+    isChatSending,
+    isEnding,
+    isThinking,
+    sessionId,
+  ])
+
+  const handleQuickChatMessage = useCallback(async (text: string) => {
+    if (isChatSending || isThinking) return
+    setIsChatOpen(true)
+    setIsChatSending(true)
+    try {
+      await handleSendChatMessage(text)
+    } finally {
+      setIsChatSending(false)
+    }
+  }, [handleSendChatMessage, isChatSending, isThinking])
+
+  useEffect(() => {
+    if (idleFeelerTimerRef.current) {
+      clearTimeout(idleFeelerTimerRef.current)
+      idleFeelerTimerRef.current = null
+    }
+
+    const lastTurn = turns[turns.length - 1]
+    if (
+      interviewPhase !== 'active' ||
+      !lastTurn ||
+      lastTurn.role !== 'hatch' ||
+      isThinking ||
+      isChatSending ||
+      isEnding ||
+      chatInput.trim()
+    ) {
+      return
+    }
+
+    const sinceLastFeeler = Date.now() - lastFeelerAtRef.current
+    const cooldownDelay = Math.max(0, IDLE_FEELER_COOLDOWN_MS - sinceLastFeeler)
+    const delay = Math.max(IDLE_FEELER_DELAY_MS, cooldownDelay)
+
+    idleFeelerTimerRef.current = setTimeout(() => {
+      void requestHatchFeeler(Math.round(delay / 1000))
+    }, delay)
+
+    return () => {
+      if (idleFeelerTimerRef.current) {
+        clearTimeout(idleFeelerTimerRef.current)
+        idleFeelerTimerRef.current = null
+      }
+    }
+  }, [
+    chatInput,
+    interviewPhase,
+    isChatSending,
+    isEnding,
+    isThinking,
+    requestHatchFeeler,
+    turns,
+  ])
 
   const handleEndInterview = useCallback(() => {
     if (isEnding) return
@@ -1891,8 +2037,8 @@ export default function SessionPage({
 
           <CtrlBtn
             icon="pause"
-            label="Pause"
-            onClick={() => {}}
+            label="Break"
+            onClick={() => { void handleQuickChatMessage('Can we take a quick break?') }}
           />
 
           <CtrlBtn
@@ -2059,15 +2205,17 @@ export default function SessionPage({
 
         {/* Suggestion chips */}
         <div className="shrink-0 flex gap-2 flex-wrap px-4 pb-2">
-          {['Repeat the question', 'Give me a hint', 'Rephrase my answer'].map((chip) => (
+          {["I'm here", 'Give me a hint', 'I need a minute', 'Can we take a quick break?'].map((chip) => (
             <button
               key={chip}
-              onClick={() => handleSendChatMessage(chip)}
+              type="button"
+              disabled={isChatSending || isThinking}
+              onClick={() => { void handleQuickChatMessage(chip) }}
               className="rounded-full px-3 py-1 font-label text-[11px] transition-colors"
               style={{
                 background: 'rgba(255,255,255,0.06)',
                 border: '1px solid rgba(255,255,255,0.09)',
-                color: 'rgba(255,255,255,0.5)',
+                color: isChatSending || isThinking ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.5)',
               }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.11)' }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.06)' }}
@@ -2118,8 +2266,8 @@ export default function SessionPage({
 
       {ENABLE_DIRECT_VOICE_AGENT && (
         <DeepgramVoiceSession
+          ref={voiceSessionRef}
           sessionId={sessionId}
-          systemPrompt=""
           isMuted={isMuted}
           onTranscript={handleTranscript}
           onAgentSpeaking={handleAgentSpeaking}
