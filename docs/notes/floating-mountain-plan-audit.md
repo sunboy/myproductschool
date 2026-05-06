@@ -41,7 +41,7 @@ The current owner-narrowed launch scope is:
 | 18. Sentry receiving | Unknown | No current Sentry evidence recorded. |
 | 19. Status page reachable | Manual blocker | `/api/health` exists and smokes locally; `status.hackproduct.com` DNS/provider setup remains owner-controlled. |
 | 20. PWA installable | Unknown | No latest manifest/installability evidence recorded. |
-| 21. Difficulty taxonomy | Unknown | No latest DB distinct-value audit recorded in this pass. |
+| 21. Difficulty taxonomy | Not complete | Read-only live DB audit found values outside `easy | medium | hard`; see `docs/notes/difficulty-taxonomy-audit.md`. No migration was applied during launch freeze. |
 | 22. Streak + XP correctness | Not complete | `src/lib/xp/calculator.ts`, `docs/notes/xp-streak-audit.md`, and P8 evidence are absent. This is broad correctness work, not safe to invent during launch freeze. |
 | 23. Hatch identity opacity | Partial | Sanitizer and guarded client artifacts exist; latest live user-surface grep/E2E probe has not been recorded. |
 | 24. Markdown rendering | Partial | `src/components/ui/Md.tsx` exists. Full raw-prose replacement and Hatch challenge-link E2E are not recorded. |

@@ -76,6 +76,9 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 - [ ] Supabase performance advisor backlog remains.
   - Evidence: live Supabase performance advisor rerun on May 6, 2026 still reports pre-existing INFO/WARN items such as unindexed foreign keys, multiple permissive RLS policies, and duplicate indexes.
   - Launch note: no blanket performance migration was applied during this pass because the warnings span many legacy/content tables and need a deliberate database tuning pass to avoid unnecessary lock or policy risk.
+- [ ] Difficulty taxonomy is not standardized to `easy | medium | hard`.
+  - Evidence: read-only live DB audit on May 6, 2026 found existing values such as `advanced`, `beginner`, `intermediate`, `standard`, `warmup`, `staff_plus`, and other content-specific labels.
+  - Launch note: no blanket taxonomy migration was applied during launch freeze because this touches content, UI labels, recommendation logic, and legacy cohort data.
 ## Manual Checks Before Launch
 
 - [ ] Owner reviews `/dashboard` against the current dev baseline and confirms no visual regression.
