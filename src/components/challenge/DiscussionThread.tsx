@@ -9,8 +9,10 @@ interface Props {
   challengeId: string
   isOP?: boolean
   upvoted?: boolean
+  currentUserId?: string | null
   onUpvote?: (id: string) => void
   onReplyPosted?: () => void | Promise<void>
+  onDiscussionChanged?: () => void | Promise<void>
   replies?: DiscussionReply[]
 }
 
@@ -37,8 +39,10 @@ export function DiscussionThread({
   challengeId,
   isOP = false,
   upvoted = false,
+  currentUserId = null,
   onUpvote,
   onReplyPosted,
+  onDiscussionChanged,
   replies = [],
 }: Props) {
   const [showReply, setShowReply] = useState(false)
@@ -46,8 +50,61 @@ export function DiscussionThread({
   const [postingReply, setPostingReply] = useState(false)
   const [replyPosted, setReplyPosted] = useState(false)
   const [replyError, setReplyError] = useState<string | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [editContent, setEditContent] = useState(discussion.content)
+  const [savingEdit, setSavingEdit] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
 
   const initials = getInitials(discussion.username ?? 'User')
+  const canModify = Boolean(currentUserId && discussion.user_id === currentUserId)
+
+  async function handleSaveEdit() {
+    if (!editContent.trim() || savingEdit) return
+    setSavingEdit(true)
+    setEditError(null)
+    try {
+      const res = await fetch(`/api/challenges/${challengeId}/discussions/${discussion.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: editContent }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        setEditError(data?.error ?? 'Could not update discussion. Try again.')
+        return
+      }
+      await onDiscussionChanged?.()
+      setEditing(false)
+    } catch {
+      setEditError('Could not update discussion. Try again.')
+    } finally {
+      setSavingEdit(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (deleting || !window.confirm('Delete this discussion?')) return
+    setDeleting(true)
+    setEditError(null)
+    try {
+      const res = await fetch(`/api/challenges/${challengeId}/discussions/${discussion.id}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        setEditError(data?.error ?? 'Could not delete discussion. Try again.')
+        return
+      }
+      await onDiscussionChanged?.()
+    } catch {
+      setEditError('Could not delete discussion. Try again.')
+    } finally {
+      setDeleting(false)
+      setMenuOpen(false)
+    }
+  }
 
   async function handlePostReply() {
     if (!replyContent.trim() || postingReply) return
@@ -122,10 +179,90 @@ export function DiscussionThread({
         </span>
       )}
 
-      <button className="ml-auto material-symbols-outlined text-base text-on-surface-variant hover:text-on-surface transition-colors p-1 rounded-full hover:bg-surface-container-highest">
-        more_horiz
-      </button>
+      {canModify && (
+        <div className="relative ml-auto">
+          <button
+            type="button"
+            onClick={() => setMenuOpen(v => !v)}
+            aria-label="Discussion actions"
+            aria-expanded={menuOpen}
+            className="material-symbols-outlined text-base text-on-surface-variant hover:text-on-surface transition-colors p-1 rounded-full hover:bg-surface-container-highest"
+          >
+            more_horiz
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 top-8 z-10 min-w-28 rounded-lg border border-outline-variant/30 bg-white py-1 shadow-lg">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditing(true)
+                  setEditContent(discussion.content)
+                  setEditError(null)
+                  setMenuOpen(false)
+                }}
+                className="w-full px-3 py-2 text-left text-xs font-semibold text-on-surface hover:bg-surface-container-highest"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="w-full px-3 py-2 text-left text-xs font-semibold text-error hover:bg-surface-container-highest disabled:opacity-50"
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
+  )
+
+  const contentBlock = editing ? (
+    <div className="space-y-2">
+      <textarea
+        className="w-full text-sm bg-surface-container-low rounded-lg border border-outline-variant/40 p-3 resize-none focus:outline-none focus:ring-1 focus:ring-primary/50 text-on-surface"
+        rows={4}
+        value={editContent}
+        onChange={e => {
+          setEditContent(e.target.value.slice(0, 10000))
+          if (editError) setEditError(null)
+        }}
+        disabled={savingEdit}
+      />
+      {editError && (
+        <p className="text-xs font-medium text-error">{editError}</p>
+      )}
+      <div className="flex items-center justify-end gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            setEditing(false)
+            setEditContent(discussion.content)
+            setEditError(null)
+          }}
+          className="text-xs font-semibold text-on-surface-variant hover:text-on-surface transition-colors px-3 py-1.5"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleSaveEdit}
+          disabled={savingEdit || !editContent.trim() || editContent.trim() === discussion.content.trim()}
+          className="bg-primary text-on-primary text-xs font-bold px-4 py-1.5 rounded-full disabled:opacity-50 hover:opacity-90 transition-opacity"
+        >
+          {savingEdit ? 'Saving...' : 'Save'}
+        </button>
+      </div>
+    </div>
+  ) : (
+    <>
+      <p className="text-on-surface text-sm leading-relaxed">{discussion.content}</p>
+      {editError && (
+        <p className="mt-2 text-xs font-medium text-error">{editError}</p>
+      )}
+    </>
   )
 
   const replyInput = showReply && (
@@ -211,7 +348,7 @@ export function DiscussionThread({
               </span>
               <span className="text-xs text-on-surface-variant">· {relativeTime(discussion.created_at)}</span>
             </div>
-            <p className="text-on-surface text-sm leading-relaxed">{discussion.content}</p>
+            {contentBlock}
             {actionRow}
             {replyInput}
             {repliesList}
@@ -235,7 +372,7 @@ export function DiscussionThread({
               </span>
               <span className="text-xs text-on-surface-variant">· {relativeTime(discussion.created_at)}</span>
             </div>
-            <p className="text-on-surface text-sm leading-relaxed">{discussion.content}</p>
+            {contentBlock}
             {actionRow}
             {replyInput}
             {repliesList}
@@ -257,7 +394,7 @@ export function DiscussionThread({
             <span className="font-bold text-on-surface text-sm">{discussion.username ?? 'Anonymous'}</span>
             <span className="text-xs text-on-surface-variant">· {relativeTime(discussion.created_at)}</span>
           </div>
-          <p className="text-on-surface text-sm leading-relaxed">{discussion.content}</p>
+          {contentBlock}
           {actionRow}
           {replyInput}
           {repliesList}

@@ -31,6 +31,7 @@ function ChallengeDiscussionContent() {
   const [challengeTitle, setChallengeTitle] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [upvotedIds, setUpvotedIds] = useState<Set<string>>(new Set())
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   const fetchDiscussions = useCallback(async () => {
     try {
@@ -45,6 +46,19 @@ function ChallengeDiscussionContent() {
   }, [id])
 
   useEffect(() => { fetchDiscussions() }, [fetchDiscussions])
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/profile')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!cancelled) setCurrentUserId(data?.id ?? null)
+      })
+      .catch(() => {
+        if (!cancelled) setCurrentUserId(null)
+      })
+    return () => { cancelled = true }
+  }, [])
 
   useEffect(() => {
     fetch(`/api/challenges/${id}`)
@@ -117,8 +131,10 @@ function ChallengeDiscussionContent() {
                   discussion={d}
                   challengeId={id}
                   upvoted={upvotedIds.has(d.id)}
+                  currentUserId={currentUserId}
                   onUpvote={handleUpvote}
                   onReplyPosted={fetchDiscussions}
+                  onDiscussionChanged={fetchDiscussions}
                   replies={d.replies ?? []}
                 />
               ))}
@@ -141,8 +157,10 @@ function ChallengeDiscussionContent() {
                   challengeId={id}
                   isOP={idx === 0 && expertPicks.length === 0}
                   upvoted={upvotedIds.has(d.id)}
+                  currentUserId={currentUserId}
                   onUpvote={handleUpvote}
                   onReplyPosted={fetchDiscussions}
+                  onDiscussionChanged={fetchDiscussions}
                   replies={d.replies ?? []}
                 />
               ))}

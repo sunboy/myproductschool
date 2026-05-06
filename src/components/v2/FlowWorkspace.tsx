@@ -476,6 +476,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [discussionsLoading, setDiscussionsLoading] = useState(false)
   const [discussionsLoaded, setDiscussionsLoaded] = useState(false)
   const [upvoted, setUpvoted] = useState<Set<string>>(new Set())
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   // Session history for Submissions tab
   const [sessionHistory, setSessionHistory] = useState<SessionRecord[]>([])
@@ -1611,6 +1612,19 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     }
   }, [leftTab])
 
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/profile')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!cancelled) setCurrentUserId(data?.id ?? null)
+      })
+      .catch(() => {
+        if (!cancelled) setCurrentUserId(null)
+      })
+    return () => { cancelled = true }
+  }, [])
+
   async function handleDiscussionUpvote(id: string) {
     if (!challengeId) return
     await fetch(`/api/challenges/${challengeId}/discussions/${id}/upvote`, { method: 'PATCH' })
@@ -2417,8 +2431,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 challengeId={challengeId}
                 isOP
                 upvoted={upvoted.has(d.id)}
+                currentUserId={currentUserId}
                 onUpvote={handleDiscussionUpvote}
                 onReplyPosted={fetchDiscussions}
+                onDiscussionChanged={fetchDiscussions}
                 replies={d.replies ?? []}
               />
             ))}
@@ -2438,8 +2454,10 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             discussion={d}
             challengeId={challengeId}
             upvoted={upvoted.has(d.id)}
+            currentUserId={currentUserId}
             onUpvote={handleDiscussionUpvote}
             onReplyPosted={fetchDiscussions}
+            onDiscussionChanged={fetchDiscussions}
             replies={d.replies ?? []}
           />
         ))}
