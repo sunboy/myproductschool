@@ -1,5 +1,5 @@
 // src/lib/interview-loops/loop-debrief-generator.ts
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import type { LoopDebriefResult, LoopRound, CrossRoundMemoryItem } from './types'
 
 const SYSTEM_PROMPT = `You are an expert interview loop evaluator. You receive per-round debriefs from a multi-round engineering interview loop and must synthesise them into a single cross-round assessment.
@@ -44,7 +44,7 @@ export async function generateLoopDebrief(params: {
     })),
   })
 
-  const response = await createCachedMessage(SYSTEM_PROMPT, userContent, {
+  const response = await guardedCachedMessage(SYSTEM_PROMPT, userContent, {
     model: 'claude-sonnet-4-6',
     max_tokens: 2000,
     budget,

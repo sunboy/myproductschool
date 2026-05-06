@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import type { GradingFeedback, RunResult } from '@/lib/coding/types'
 
 // ---------------------------------------------------------------------------
@@ -207,7 +207,7 @@ export async function gradeCodingAttempt(input: GradingInput): Promise<GradingFe
   const userContent = buildUserPrompt(input)
 
   const callGrader = async (extraNudge = ''): Promise<GradingFeedback> => {
-    const response = await createCachedMessage(
+    const response = await guardedCachedMessage(
       GRADER_SKILL,
       userContent + extraNudge,
       {

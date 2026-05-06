@@ -1,5 +1,5 @@
 // src/lib/interview-loops/loop-context-distiller.ts
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import type { CrossRoundMemoryItem, LoopDiscipline } from './types'
 
 const SYSTEM_PROMPT = `You are a signal extractor for a multi-round interview coach. Given a round debrief JSON, extract 3-5 concise signals about the candidate's thinking patterns and blind spots. Focus on reasoning moves, not topic knowledge. Each signal must be one sentence. Return ONLY a JSON array of strings. No explanation. No markdown.`
@@ -12,7 +12,7 @@ export async function distillRoundContext(params: {
 }): Promise<CrossRoundMemoryItem[]> {
   const { roundDebriefJson, roundIndex, discipline, budget } = params
 
-  const response = await createCachedMessage(
+  const response = await guardedCachedMessage(
     SYSTEM_PROMPT,
     JSON.stringify(roundDebriefJson),
     { model: 'claude-haiku-4-5-20251001', max_tokens: 512, budget }

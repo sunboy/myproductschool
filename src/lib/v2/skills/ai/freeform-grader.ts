@@ -1,9 +1,9 @@
 import { z } from 'zod'
 import type { FlowOption, FlowStep } from '@/lib/types'
 import { getHatchContext } from '@/lib/v2/hatch-context'
-import { loadRubric, getReasoningMove } from '@/lib/v2/skills/rubric-loader'
+import { loadRubric } from '@/lib/v2/skills/rubric-loader'
 import { MENTAL_MODELS_CONTEXT, STEP_PRIMARY_COMPETENCIES } from '@/lib/hatch/system-prompt'
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { FLOW_MAX_SCORE, TIER_CAPS_FIVE } from '@/lib/scoring/flow-scale'
 import type { CompetencySignal } from '@/lib/scoring/competency-signal'
 
@@ -165,7 +165,7 @@ Return ONLY valid JSON:
   }
 
   try {
-    const response = await createCachedMessage(systemPrompt, prompt, {
+    const response = await guardedCachedMessage(systemPrompt, prompt, {
       model: 'claude-opus-4-6',
       max_tokens: 800,
       thinking: { type: 'adaptive' },
@@ -195,7 +195,7 @@ Return ONLY valid JSON:
     // Retry on parse failure
     if (!parsed) {
       try {
-        const retryResponse = await createCachedMessage(
+        const retryResponse = await guardedCachedMessage(
           systemPrompt,
           `${prompt}\n\nPREVIOUS ATTEMPT (invalid JSON):\n${rawText}\n\nInvalid JSON. Return ONLY the raw JSON object. No markdown backticks.`,
           { model: 'claude-opus-4-6', max_tokens: 800, thinking: { type: 'adaptive' } }
@@ -289,7 +289,7 @@ Return ONLY JSON:
   }
 
   try {
-    const response = await createCachedMessage(
+    const response = await guardedCachedMessage(
       'You are a product sense elaboration grading agent. Evaluate whether a learner\'s elaboration adds depth to their selected MCQ option.',
       prompt,
       { model: 'claude-sonnet-4-6', max_tokens: 300, thinking: { type: 'adaptive' } }

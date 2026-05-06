@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { createCachedMessage } from '@/lib/anthropic/cached-client'
+import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { SYSTEM_DESIGN_GRADING_PROMPT } from './prompts/system-design'
 import { DATA_MODELING_GRADING_PROMPT } from './prompts/data-modeling'
 import { validateInterviewGrade } from './schemas/feedback-output'
@@ -65,7 +65,7 @@ ${attempt.conversation_summary ?? 'No conversation recorded.'}
 Grade this session according to the rubric.`
 
   const callGrader = async (extraNudge = '') => {
-    const response = await createCachedMessage(
+    const response = await guardedCachedMessage(
       systemPrompt,
       userContent + extraNudge,
       {
