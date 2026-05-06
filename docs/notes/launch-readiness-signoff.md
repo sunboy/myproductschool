@@ -16,7 +16,7 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: `npm run lint` exits `0` on May 6, 2026.
   - Note: lint still reports warnings. `_archived/` and generated public bundles are excluded from lint, and React compiler-style purity rules are disabled to avoid rewriting established UI flows during launch hardening.
 - [x] Secrets scan passes.
-  - Evidence: `npm run secrets:scan` and staged secret scans passed.
+  - Evidence: `npm run secrets:scan` passed on May 6, 2026; staged secret scans passed on commit.
 - [x] Paywall scenarios pass.
   - Evidence: `e2e/paywall.spec.ts` passed `10/10` against `next start` with seeded Supabase users.
   - Commit: `4f96343 fix(paywall): unblock local production e2e`.
@@ -41,8 +41,10 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 - [x] Core legal, pricing, help, and changelog pages respond locally.
   - Evidence: local production smoke returned `200` for `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog`.
 - [x] Feedback, affiliate, and billing unit coverage passes with the right test runners.
-  - Evidence: `npx vitest run tests/unit/feedback-nps.spec.ts tests/unit/affiliate-flow.spec.ts` passed.
-  - Evidence: `npx tsx --test tests/lib/billing/entitlements.test.ts` passed.
+  - Evidence: `npx vitest run tests/unit/feedback-nps.spec.ts tests/unit/affiliate-flow.spec.ts` passed on May 6, 2026: 3 files, 21 tests.
+  - Evidence: `npx tsx --test tests/lib/billing/entitlements.test.ts` passed on May 6, 2026: 6 tests.
+- [x] Security helper unit coverage passes.
+  - Evidence: `npx tsx --test tests/lib/security/turnstile.test.ts tests/lib/ai/moderation.test.ts tests/lib/security/rate-limit.test.ts` passed on May 6, 2026: 13 tests.
 - [x] Active cohort feature surface is removed from launch.
   - Evidence: deleted `/api/cohort/current`, `/api/cohort/leaderboard`, and `/api/cohort/submit` route handlers plus the unused cohort hook/data helpers.
   - Evidence: `/challenges` no longer fetches cohort leaderboard data; dashboard community CTA now links to practice instead of a weekly room.
