@@ -52,7 +52,7 @@ The current owner-narrowed launch scope is:
 - Supabase Auth leaked-password protection is disabled in dashboard settings.
 - Supabase performance advisor has a broad pre-existing backlog that needs a deliberate tuning pass, not a blanket launch migration.
 - Sentry provider receiving still needs owner/provider verification after `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, and `SENTRY_AUTH_TOKEN` are configured.
-- Production dependency audit has no critical advisories after targeted updates to Next, PostHog, Protobuf, DOMPurify, Picomatch, and UUID. One high advisory remains through Excalidraw's Mermaid parser path (`lodash-es` via `@mermaid-js/parser`/`langium`/`chevrotain`), and the remaining moderate items need a deliberate dependency-upgrade pass.
+- Production dependency audit has no critical or high advisories after targeted updates to Next, PostHog, Protobuf, DOMPurify, Picomatch, UUID, and npm overrides for DOMPurify and Lodash-ES. Eight moderate items remain and need a deliberate dependency-upgrade pass.
 - Production env and provider checks remain owner-controlled: no E2E fallback flags, OpenAI, Turnstile, Upstash, status DNS/provider, security headers.
 - Owner still needs to visually compare `/dashboard` against the current dev baseline. Codex local smokes loaded `/dashboard` with temporary Supabase users, verified the large hero, session CTA, usage card, practice loop, quick take, recommended challenge, FLOW levels, trending/activity, and community pulse sections, found zero visible `Luma` text in current builds, and deleted the temporary users. The `localhost:3000` baseline still differs in small copy/CTA details from the launch-cleaned current build.
 
