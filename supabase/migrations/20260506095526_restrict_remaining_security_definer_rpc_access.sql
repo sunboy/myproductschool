@@ -1,0 +1,25 @@
+REVOKE EXECUTE ON FUNCTION public.append_recipe_output(uuid, jsonb) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.count_artifacts(text, text, text, text) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.get_global_stats() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.get_note_centroids(uuid) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.increment_recording_usage(uuid, integer) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.increment_share_view_count(text) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.initialize_learner_competencies(uuid) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.initialize_move_levels(uuid) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.initialize_user_settings(uuid) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.match_note_chunks(vector, double precision, integer, uuid) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.process_referral(uuid, text) FROM PUBLIC, anon, authenticated;
+
+GRANT EXECUTE ON FUNCTION public.append_recipe_output(uuid, jsonb) TO service_role;
+GRANT EXECUTE ON FUNCTION public.count_artifacts(text, text, text, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.get_global_stats() TO service_role;
+GRANT EXECUTE ON FUNCTION public.get_note_centroids(uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.handle_new_user() TO service_role;
+GRANT EXECUTE ON FUNCTION public.increment_recording_usage(uuid, integer) TO service_role;
+GRANT EXECUTE ON FUNCTION public.increment_share_view_count(text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.initialize_learner_competencies(uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.initialize_move_levels(uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.initialize_user_settings(uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.match_note_chunks(vector, double precision, integer, uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.process_referral(uuid, text) TO service_role;
