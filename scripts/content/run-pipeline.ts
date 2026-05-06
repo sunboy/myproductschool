@@ -1,11 +1,24 @@
 #!/usr/bin/env npx ts-node --esm
-import { execFileSync, execFile } from 'child_process'
-import { promisify } from 'util'
+import { execFileSync, spawn } from 'child_process'
 import { createClient } from '@supabase/supabase-js'
 import * as fs from 'fs'
 import * as path from 'path'
 
-const execFileAsync = promisify(execFile)
+function spawnClaude(prompt: string, args: string[]): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const proc = spawn(CLAUDE_BIN, args, { stdio: ['pipe', 'pipe', 'pipe'] })
+    const chunks: Buffer[] = []
+    const errChunks: Buffer[] = []
+    proc.stdout.on('data', (d: Buffer) => chunks.push(d))
+    proc.stderr.on('data', (d: Buffer) => errChunks.push(d))
+    proc.on('close', (code) => {
+      if (code !== 0) reject(new Error(`claude exited ${code}: ${Buffer.concat(errChunks).toString()}`))
+      else resolve(Buffer.concat(chunks).toString('utf-8'))
+    })
+    proc.stdin.write(prompt, 'utf-8')
+    proc.stdin.end()
+  })
+}
 
 const CONTENT_DIR = path.join(process.cwd(), 'scripts/content')
 const MANIFEST_PATH = path.join(CONTENT_DIR, 'catalog-manifest.json')
@@ -20,30 +33,41 @@ const supabase = createClient(
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-async function callClaude(prompt: string, model?: string): Promise<string> {
+async function callClaude(prompt: string, model?: string, tools?: string[]): Promise<string> {
   const args = ['-p', '--output-format', 'json']
   if (model) args.push('--model', model)
-  const { stdout } = await execFileAsync(CLAUDE_BIN, args, {
-    input: prompt,
-    encoding: 'utf-8',
-    maxBuffer: 20 * 1024 * 1024,
-  })
-  const parsed = JSON.parse(stdout) as { result: string; is_error: boolean; subtype?: string }
+  if (tools?.length) args.push('--allowedTools', tools.join(','))
+  const raw = await spawnClaude(prompt, args)
+  const parsed = JSON.parse(raw) as { result: string; is_error: boolean; subtype?: string }
   if (parsed.is_error || parsed.subtype === 'error') throw new Error(parsed.result)
   return parsed.result.trim()
 }
 
 async function callCodex(brief: string, outputPath: string): Promise<void> {
-  await execFileAsync(CODEX_BIN, ['generate-image', '--prompt', brief, '--output', outputPath], {
+  execFileSync(CODEX_BIN, ['generate-image', brief, '--output', outputPath], {
     encoding: 'utf-8',
     maxBuffer: 5 * 1024 * 1024,
   })
 }
 
-function extractJson<T>(raw: string): T {
+function extractJson<T>(raw: string, context?: string): T {
   const match = raw.match(/```json\n?([\s\S]*?)\n?```/) ?? raw.match(/(\[[\s\S]*\]|\{[\s\S]*\})/)
-  if (!match) throw new Error('No JSON found in response')
+  if (!match) throw new Error(`No JSON found in response${context ? ` (${context})` : ''}.\nRaw (first 500): ${raw.slice(0, 500)}`)
   return JSON.parse(match[1] ?? match[0]) as T
+}
+
+// Run promises with a max concurrency limit
+async function pLimit<T>(tasks: (() => Promise<T>)[], concurrency: number): Promise<T[]> {
+  const results: T[] = new Array(tasks.length)
+  let index = 0
+  async function worker() {
+    while (index < tasks.length) {
+      const i = index++
+      results[i] = await tasks[i]()
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, tasks.length) }, worker))
+  return results
 }
 
 function researchPath(moduleSlug: string, chapterSlug: string): string {
@@ -111,8 +135,8 @@ Respond with ONLY the JSON object. No prose.
 `
 
   console.log(`  [haiku] researching: ${moduleSlug}/${chapterSlug}`)
-  const raw = await callClaude(prompt, 'claude-haiku-4-5-20251001')
-  const research = extractJson<object>(raw)
+  const raw = await callClaude(prompt, 'claude-haiku-4-5-20251001', ['WebSearch', 'WebFetch'])
+  const research = extractJson<object>(raw, `${moduleSlug}/${chapterSlug}`)
   fs.writeFileSync(outPath, JSON.stringify(research, null, 2))
 }
 
@@ -169,16 +193,24 @@ ${JSON.stringify(research, null, 2)}
 
 ${imageInstruction}
 
-Write and return a JSON object with exactly these fields:
-- hook_text: 1-2 sentences, the sharpest most surprising thing about this topic. This is the pull quote shown in the chapter list.
-- body_mdx: the full chapter body in MDX/Markdown. 800-1200 words. Use real headings (##), real code blocks (\`\`\`sql, \`\`\`typescript, etc.), and inline figures where they help. No padding.
+Output your response in this EXACT format with these two delimiters on their own lines:
 
-Respond with ONLY the JSON object. No prose before or after.
+===HOOK===
+<1-2 sentences: the sharpest most surprising thing about this topic. This is the pull quote shown in the chapter list.>
+===BODY===
+<full chapter body in Markdown. 800-1200 words. Use real headings (##), real code blocks, inline figures where they help. No padding.>
+===END===
 `
 
   console.log(`  [sonnet] writing: ${moduleSlug}/${chapterSlug}`)
   const raw = await callClaude(prompt, 'claude-sonnet-4-6')
-  const chapter = extractJson<{ hook_text: string; body_mdx: string }>(raw)
+
+  const hookMatch = raw.match(/===HOOK===\n([\s\S]*?)\n===BODY===/)
+  const bodyMatch = raw.match(/===BODY===\n([\s\S]*?)\n===END===/)
+  if (!hookMatch || !bodyMatch) {
+    throw new Error(`Sonnet output missing delimiters for ${moduleSlug}/${chapterSlug}.\nRaw (first 300): ${raw.slice(0, 300)}`)
+  }
+  const chapter = { hook_text: hookMatch[1].trim(), body_mdx: bodyMatch[1].trim() }
   fs.writeFileSync(mdxOut, JSON.stringify(chapter, null, 2))
   return chapter
 }
@@ -250,18 +282,21 @@ async function main() {
     console.log(`\n[module] ${mod.slug}`)
     const chapterSlugs = mod.chapter_titles.map(slugify)
 
-    // Wave 1: Haiku scrapers in parallel
-    console.log(`  Launching ${chapterSlugs.length} Haiku scraper agents...`)
-    await Promise.all(
-      chapterSlugs.map((cs, i) =>
+    const CONCURRENCY = parseInt(process.env.CONCURRENCY ?? '3', 10)
+
+    // Wave 1: Haiku scrapers in parallel (capped at CONCURRENCY)
+    console.log(`  Launching ${chapterSlugs.length} Haiku scraper agents (concurrency=${CONCURRENCY})...`)
+    await pLimit(
+      chapterSlugs.map((cs, i) => () =>
         runHaikuScraper(mod.slug, cs, mod.chapter_titles[i], mod.learning_objectives)
-      )
+      ),
+      CONCURRENCY
     )
 
     // Wave 2: Sonnet writers in parallel (research packs now exist)
-    console.log(`  Launching ${chapterSlugs.length} Sonnet writer agents...`)
-    const chapters = await Promise.all(
-      chapterSlugs.map((cs, i) =>
+    console.log(`  Launching ${chapterSlugs.length} Sonnet writer agents (concurrency=${CONCURRENCY})...`)
+    const chapters = await pLimit(
+      chapterSlugs.map((cs, i) => () =>
         runSonnetWriter(
           mod.slug, cs,
           mod.chapter_titles[i],
@@ -269,7 +304,8 @@ async function main() {
           mod.image_needed[i] ?? false,
           styleGuide
         )
-      )
+      ),
+      CONCURRENCY
     )
 
     // DB upsert
