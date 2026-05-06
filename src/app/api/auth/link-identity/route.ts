@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server'
-import { z } from 'zod'
+import { z, ZodError } from 'zod'
 import { sameOriginRedirect } from '@/lib/auth/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 
-const linkIdentitySchema = z.object({
+const RequestSchema = z.object({
   redirectTo: z.string().trim().max(2048).optional(),
 })
 
-const unlinkIdentitySchema = z.object({
+const DeleteRequestSchema = z.object({
   provider: z.literal('google').optional().default('google'),
   identityId: z.string().trim().max(256).optional(),
 })
@@ -20,11 +20,25 @@ function providerErrorResponse(message = 'Could not update linked accounts.') {
   return NextResponse.json({ error: message }, { status: 400 })
 }
 
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
+
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({}))
-  const parsed = linkIdentitySchema.safeParse(body)
-  if (!parsed.success) {
-    return providerErrorResponse('Check the redirect URL and try again.')
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
   const supabase = await createClient()
@@ -42,7 +56,7 @@ export async function POST(request: Request) {
   const { data, error } = await supabase.auth.linkIdentity({
     provider: 'google',
     options: {
-      redirectTo: sameOriginRedirect(request, parsed.data.redirectTo, '/auth/callback?next=/settings'),
+      redirectTo: sameOriginRedirect(request, body.redirectTo, '/auth/callback?next=/settings'),
       skipBrowserRedirect: true,
     },
   })
@@ -53,10 +67,17 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const body = await request.json().catch(() => ({}))
-  const parsed = unlinkIdentitySchema.safeParse(body)
-  if (!parsed.success) {
-    return providerErrorResponse()
+  let body: z.infer<typeof DeleteRequestSchema>
+  try {
+    body = DeleteRequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
   const supabase = await createClient()
@@ -68,8 +89,8 @@ export async function DELETE(request: Request) {
 
   const identities = identitiesResult.data.identities
   const target = identities.find(identity =>
-    identity.provider === parsed.data.provider &&
-    (!parsed.data.identityId || identity.identity_id === parsed.data.identityId)
+    identity.provider === body.provider &&
+    (!body.identityId || identity.identity_id === body.identityId)
   )
 
   if (!target) {
