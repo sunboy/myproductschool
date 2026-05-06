@@ -1627,19 +1627,44 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   async function handleDiscussionUpvote(id: string) {
     if (!challengeId) return
-    await fetch(`/api/challenges/${challengeId}/discussions/${id}/upvote`, { method: 'PATCH' })
+    const wasUpvoted = upvoted.has(id)
     setUpvoted(prev => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
       return next
     })
     setDiscussions(prev =>
       prev.map(d =>
         d.id === id
-          ? { ...d, upvote_count: d.upvote_count + (upvoted.has(id) ? -1 : 1) }
+          ? { ...d, upvote_count: d.upvote_count + (wasUpvoted ? -1 : 1) }
           : d
       )
     )
+    try {
+      const res = await fetch(`/api/challenges/${challengeId}/discussions/${id}/upvote`, { method: 'PATCH' })
+      if (!res.ok) throw new Error('Upvote failed')
+      const data = await res.json().catch(() => null)
+      if (typeof data?.upvote_count === 'number') {
+        setDiscussions(prev =>
+          prev.map(d => d.id === id ? { ...d, upvote_count: data.upvote_count } : d)
+        )
+      }
+    } catch {
+      setUpvoted(prev => {
+        const next = new Set(prev)
+        if (wasUpvoted) next.add(id)
+        else next.delete(id)
+        return next
+      })
+      setDiscussions(prev =>
+        prev.map(d =>
+          d.id === id
+            ? { ...d, upvote_count: Math.max(0, d.upvote_count + (wasUpvoted ? 1 : -1)) }
+            : d
+        )
+      )
+    }
   }
 
   // ── Render states ──────────────────────────────────────────────
@@ -2414,9 +2439,19 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {discussionsLoading && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 20, color: 'var(--color-on-surface-variant)', fontSize: 14 }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>progress_activity</span>
-            Loading…
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {[1, 2, 3].map(i => (
+              <div
+                key={i}
+                className="animate-pulse"
+                style={{
+                  height: 112,
+                  borderRadius: 12,
+                  background: 'var(--color-surface-container-highest)',
+                  border: '1px solid var(--color-outline-variant)',
+                }}
+              />
+            ))}
           </div>
         )}
         {!discussionsLoading && expertPicks.length > 0 && (
@@ -2637,11 +2672,46 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 marginBottom: active ? -1 : 0,
                 fontFamily: 'inherit',
                 transition: 'color 120ms',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
               }}
             >
-              {t === 'Submissions' && sessionHistory.length > 0
-                ? `Submissions (${sessionHistory.length})`
-                : t}
+              <span>{t}</span>
+              {t === 'Discussions' && discussionsLoaded && (
+                <span style={{
+                  minWidth: 18,
+                  height: 18,
+                  padding: '0 5px',
+                  borderRadius: 99,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 11,
+                  fontWeight: 800,
+                  background: active ? 'var(--color-primary)' : 'var(--color-surface-container-highest)',
+                  color: active ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
+                }}>
+                  {discussions.length}
+                </span>
+              )}
+              {t === 'Submissions' && sessionHistory.length > 0 && (
+                <span style={{
+                  minWidth: 18,
+                  height: 18,
+                  padding: '0 5px',
+                  borderRadius: 99,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 11,
+                  fontWeight: 800,
+                  background: active ? 'var(--color-primary)' : 'var(--color-surface-container-highest)',
+                  color: active ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
+                }}>
+                  {sessionHistory.length}
+                </span>
+              )}
             </button>
           )
         })}
