@@ -4,8 +4,11 @@ import {
   getClientIp,
 } from '@/lib/auth/rate-limit'
 import { hasValidReauthToken } from '@/lib/auth/reauth'
-import { changePasswordSchema, firstZodError } from '@/lib/auth/validation'
+import { changePasswordSchema } from '@/lib/auth/validation'
 import { createClient } from '@/lib/supabase/server'
+import { z, ZodError } from 'zod'
+
+const RequestSchema = changePasswordSchema
 
 function rateLimitedResponse(retryAfter: number) {
   return NextResponse.json(
@@ -17,11 +20,25 @@ function rateLimitedResponse(retryAfter: number) {
   )
 }
 
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
+
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({}))
-  const parsed = changePasswordSchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json({ error: firstZodError(parsed.error) }, { status: 400 })
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
   const supabase = await createClient()
@@ -44,7 +61,7 @@ export async function POST(request: Request) {
   ])
   if (block) return rateLimitedResponse(block.retryAfter)
 
-  const { currentPassword, password } = parsed.data
+  const { currentPassword, password } = body
   const { error: signInError } = await supabase.auth.signInWithPassword({
     email: user.email,
     password: currentPassword,
