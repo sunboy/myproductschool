@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { gradeCodingAttempt } from '@/lib/coding-grading/grader'
 import type { ChatMessage, SessionEvent } from '@/lib/coding-grading/grader'
+
+const RequestSchema = z.object({
+  attemptId: z.string().uuid(),
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -71,17 +83,20 @@ export async function POST(
   const { id } = await params
 
   // Parse body
-  let body: { attemptId?: string }
+  let body: z.infer<typeof RequestSchema>
   try {
-    body = await req.json()
-  } catch {
+    body = RequestSchema.parse(await req.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
   const { attemptId } = body
-  if (!attemptId) {
-    return NextResponse.json({ error: 'Missing attemptId' }, { status: 400 })
-  }
 
   // ---------------------------------------------------------------------------
   // Idempotency: if a grade already exists for this attempt, return it as-is
