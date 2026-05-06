@@ -209,9 +209,9 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
             Real interview
           </button>
         </AppTooltip>
-        <div className="flex-1" />
-        <span className="font-label text-xs text-on-surface-variant">{resultCount} results</span>
-        <div className="flex items-center border border-outline-variant rounded-lg overflow-hidden">
+        <div className="min-w-0 flex-1" />
+        <span className="shrink-0 font-label text-xs text-on-surface-variant">{resultCount} results</span>
+        <div className="flex shrink-0 items-center overflow-hidden rounded-lg border border-outline-variant">
           <button
             type="button"
             onClick={() => listView && onToggleView()}
@@ -234,7 +234,7 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
       </div>
 
       {/* Mobile filter bar */}
-      <div className="sm:hidden flex items-center gap-2 px-3 py-2 bg-surface-container-low border-b border-outline-variant">
+      <div className="flex items-center gap-2 border-b border-outline-variant bg-surface-container-low px-3 py-2 sm:hidden">
         <button
           type="button"
           onClick={onOpenMobileSheet}
@@ -244,8 +244,8 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
           <span className="material-symbols-outlined text-sm leading-none">tune</span>
           Filter
         </button>
-        <div className="flex-1" />
-        <div className="flex items-center border border-outline-variant rounded-lg overflow-hidden">
+        <div className="min-w-0 flex-1" />
+        <div className="flex shrink-0 items-center overflow-hidden rounded-lg border border-outline-variant">
           <button
             type="button"
             onClick={() => listView && onToggleView()}
@@ -265,7 +265,7 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
             <span className="material-symbols-outlined text-sm leading-none">view_list</span>
           </button>
         </div>
-        <span className="font-label text-xs text-on-surface-variant">{resultCount}</span>
+        <span className="shrink-0 font-label text-xs text-on-surface-variant">{resultCount}</span>
       </div>
     </>
   )

@@ -1,7 +1,10 @@
 import type { NextConfig } from 'next'
+import path from 'node:path'
 import { withSentryConfig } from '@sentry/nextjs'
 
-const projectRoot = process.cwd()
+const projectRoot = process.cwd().includes(`${path.sep}.worktrees${path.sep}`)
+  ? path.resolve(process.cwd(), '../..')
+  : process.cwd()
 const sentrySourceMapsConfigured = Boolean(
   process.env.SENTRY_AUTH_TOKEN
   && process.env.SENTRY_ORG

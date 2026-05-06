@@ -19,18 +19,18 @@ function eventMeta(event: ActivityFeedEvent): string {
 export function CommunityActivityCard({ events }: { events: ActivityFeedEvent[] }) {
   return (
     <section className="rounded-2xl border border-outline-variant/50 bg-surface-container-low p-5">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
           <div className="text-[10px] font-label font-extrabold uppercase tracking-[0.12em] text-primary">
             Community pulse
           </div>
           <h3 className="mt-1 font-headline text-lg font-bold text-on-surface">What peers are doing</h3>
         </div>
         <Link
-          href="/challenges"
-          className="inline-flex items-center gap-1 rounded-full border border-outline-variant px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary-fixed"
+          href="/cohort"
+          className="inline-flex shrink-0 items-center gap-1 rounded-full border border-outline-variant px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary-fixed"
         >
-          Practice
+          Weekly Room
           <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
         </Link>
       </div>

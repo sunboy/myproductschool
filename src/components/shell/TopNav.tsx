@@ -114,7 +114,7 @@ export function TopNav() {
 
   return (
     <header
-      className="sticky top-0 z-40 border-b"
+      className="sticky top-0 z-40 w-full max-w-full border-b"
       style={{
         background: 'rgba(250,246,240,0.82)',
         backdropFilter: 'saturate(140%) blur(12px)',
@@ -122,19 +122,19 @@ export function TopNav() {
         borderColor: 'var(--color-outline-faint)',
       }}
     >
-      <div className="mx-auto flex w-full max-w-[1440px] min-w-0 items-center gap-3 px-4 py-2 sm:gap-8 sm:px-8">
+      <div className="mx-auto flex w-full max-w-[1440px] min-w-0 items-center gap-3 px-3 py-2 sm:gap-5 sm:px-5 lg:gap-8 lg:px-8">
 
         {/* Column 1: Brand. Wordmark file has padding around the glyphs, so it
             needs more pixels than the visible text suggests. */}
         <Link href="/dashboard" className="flex min-w-0 shrink items-center no-underline sm:shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/wordmark.png" alt="HackProduct" className="h-8 max-w-[190px] object-contain sm:h-12 sm:max-w-none" />
+          <img src="/images/wordmark.png" alt="HackProduct" className="h-8 w-auto max-w-[190px] object-contain sm:h-12 sm:max-w-none" />
         </Link>
 
         {/* Column 2: Nav pills (centered) */}
-        <div className="hidden md:flex flex-1 justify-center">
+        <div className="hidden min-w-0 flex-1 justify-center md:flex">
         <nav
-          className="flex gap-1 p-1 rounded-full border"
+          className="flex min-w-0 gap-1 rounded-full border p-1"
           style={{
             background: 'var(--color-surface-container-low)',
             borderColor: 'var(--color-outline-faint)',
@@ -188,7 +188,7 @@ export function TopNav() {
         </div>
 
         {/* Column 3: Right cluster */}
-        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+        <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-4">
 
           {/* Streak */}
           <AppTooltip label="Your current practice streak." side="bottom" className="hidden sm:inline-flex">
@@ -253,7 +253,7 @@ export function TopNav() {
 
             {menuOpen && (
               <div
-                className="absolute right-0 top-12 w-[310px] rounded-xl shadow-lg py-1 z-50 border"
+                className="absolute right-0 top-12 z-50 w-[min(310px,calc(100vw-1.5rem))] rounded-xl border py-1 shadow-lg"
                 style={{
                   background: 'var(--color-background)',
                   borderColor: 'var(--color-outline-variant)',

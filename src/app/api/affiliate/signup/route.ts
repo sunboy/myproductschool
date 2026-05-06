@@ -1,9 +1,17 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import Stripe from 'stripe'
+import type Stripe from 'stripe'
 import { z, ZodError } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { createStripeClient } from '@/lib/stripe/config'
+import {
+  affiliateAccountStatus,
+  affiliateProgramStatusFromAccountStatus,
+  createAffiliateAccountLink,
+  createAffiliateConnectAccount,
+  refreshAffiliateConnectAccount,
+  syncAffiliateConnectAccount,
+} from '@/lib/affiliate/connect'
 import {
   AFFILIATE_DEFAULT_COMMISSION_PCT,
   affiliatesEnabled,
@@ -22,6 +30,10 @@ type AffiliateRow = {
   code: string
   stripe_promo_code_id: string | null
   stripe_connect_account_id: string | null
+  stripe_account_status: string | null
+  stripe_requirements: Record<string, unknown> | null
+  stripe_future_requirements: Record<string, unknown> | null
+  stripe_capabilities: Record<string, unknown> | null
   commission_pct: number | string
   status: 'pending' | 'active' | 'disabled'
   created_at: string
@@ -72,6 +84,19 @@ async function currentUser() {
   return error ? null : user
 }
 
+function userDisplayName(user: Awaited<ReturnType<typeof currentUser>>) {
+  if (!user) return 'HackProduct affiliate'
+  const metadata = user.user_metadata ?? {}
+  const name = metadata.display_name ?? metadata.full_name ?? metadata.name
+  if (typeof name === 'string' && name.trim()) return name.trim()
+  if (user.email) return user.email.split('@')[0] || 'HackProduct affiliate'
+  return 'HackProduct affiliate'
+}
+
+function jsonRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' ? value as Record<string, unknown> : {}
+}
+
 function affiliatePayload(request: NextRequest, affiliate: AffiliateRow | null, stats?: {
   clickCount: number
   pendingCents: number
@@ -85,6 +110,10 @@ function affiliatePayload(request: NextRequest, affiliate: AffiliateRow | null, 
           status: affiliate.status,
           commissionPct: Number(affiliate.commission_pct),
           hasStripeAccount: Boolean(affiliate.stripe_connect_account_id),
+          connectStatus: affiliate.stripe_account_status ?? (affiliate.stripe_connect_account_id ? 'created' : 'not_started'),
+          connectRequirements: affiliate.stripe_requirements ?? {},
+          connectFutureRequirements: affiliate.stripe_future_requirements ?? {},
+          connectCapabilities: affiliate.stripe_capabilities ?? {},
           shareUrl: appUrl(request, `/r/${affiliate.code}`),
           createdAt: affiliate.created_at,
         }
@@ -100,7 +129,7 @@ function affiliatePayload(request: NextRequest, affiliate: AffiliateRow | null, 
 async function getAffiliateDashboard(admin: ReturnType<typeof createAdminClient>, userId: string) {
   const { data: affiliate } = await admin
     .from('affiliates')
-    .select('id, user_id, code, stripe_promo_code_id, stripe_connect_account_id, commission_pct, status, created_at')
+    .select('id, user_id, code, stripe_promo_code_id, stripe_connect_account_id, stripe_account_status, stripe_requirements, stripe_future_requirements, stripe_capabilities, commission_pct, status, created_at')
     .eq('user_id', userId)
     .maybeSingle()
 
@@ -128,37 +157,6 @@ async function getAffiliateDashboard(admin: ReturnType<typeof createAdminClient>
   )
 
   return { affiliate: affiliate as AffiliateRow, stats }
-}
-
-async function createConnectAccount(stripe: Stripe, user: { id: string; email?: string | null }) {
-  return stripe.accounts.create({
-    email: user.email ?? undefined,
-    controller: {
-      fees: { payer: 'application' },
-      losses: { payments: 'application' },
-      requirement_collection: 'stripe',
-      stripe_dashboard: { type: 'express' },
-    },
-    capabilities: {
-      transfers: { requested: true },
-    },
-    metadata: {
-      user_id: user.id,
-      source: 'hackproduct_affiliate',
-    },
-  })
-}
-
-async function createOnboardingUrl(stripe: Stripe, request: NextRequest, accountId: string) {
-  const link = await stripe.accountLinks.create({
-    account: accountId,
-    type: 'account_onboarding',
-    refresh_url: appUrl(request, '/affiliate?connect=refresh'),
-    return_url: appUrl(request, '/api/affiliate/connect-callback'),
-    collection_options: { fields: 'eventually_due' },
-  })
-
-  return link.url
 }
 
 async function ensureUniqueSuggestedCode(
@@ -227,31 +225,52 @@ export async function POST(request: NextRequest) {
   if (existing.affiliate) {
     let accountId = existing.affiliate.stripe_connect_account_id
     if (!accountId) {
-      const account = await createConnectAccount(stripe, user)
+      if (!user.email) {
+        return NextResponse.json({ error: 'Affiliate payouts require an account email.' }, { status: 400 })
+      }
+
+      const account = await createAffiliateConnectAccount(stripe, {
+        email: user.email,
+        displayName: userDisplayName(user),
+        userId: user.id,
+      })
       accountId = account.id
+      const sync = await syncAffiliateConnectAccount(admin, account)
       await admin
         .from('affiliates')
-        .update({ stripe_connect_account_id: account.id, updated_at: new Date().toISOString() })
+        .update({
+          stripe_connect_account_id: account.id,
+          status: sync.programStatus,
+          stripe_account_livemode: account.livemode,
+          stripe_account_status: sync.accountStatus,
+          stripe_requirements: jsonRecord(account.requirements),
+          stripe_future_requirements: jsonRecord(account.future_requirements),
+          stripe_capabilities: jsonRecord(account.configuration?.recipient?.capabilities),
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', existing.affiliate.id)
       existing.affiliate.stripe_connect_account_id = account.id
+      existing.affiliate.status = sync.programStatus
+      existing.affiliate.stripe_account_status = sync.accountStatus
+      existing.affiliate.stripe_requirements = jsonRecord(account.requirements)
+      existing.affiliate.stripe_future_requirements = jsonRecord(account.future_requirements)
+      existing.affiliate.stripe_capabilities = jsonRecord(account.configuration?.recipient?.capabilities)
+    } else {
+      const sync = await refreshAffiliateConnectAccount(stripe, admin, accountId)
+      existing.affiliate.status = sync.programStatus
+      existing.affiliate.stripe_account_status = sync.accountStatus
+      existing.affiliate.stripe_requirements = jsonRecord(sync.account.requirements)
+      existing.affiliate.stripe_future_requirements = jsonRecord(sync.account.future_requirements)
+      existing.affiliate.stripe_capabilities = jsonRecord(sync.account.configuration?.recipient?.capabilities)
     }
 
-    const account = await stripe.accounts.retrieve(accountId)
-    const status = account.capabilities?.transfers === 'active' || account.payouts_enabled
-      ? 'active'
-      : 'pending'
-
-    if (status !== existing.affiliate.status) {
-      await admin
-        .from('affiliates')
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq('id', existing.affiliate.id)
-      existing.affiliate.status = status
-    }
-
-    const onboardingUrl = status === 'active'
+    const onboardingUrl = existing.affiliate.status === 'active'
       ? null
-      : await createOnboardingUrl(stripe, request, accountId)
+      : (await createAffiliateAccountLink(stripe, {
+          accountId,
+          refreshUrl: appUrl(request, '/affiliate?connect=refresh'),
+          returnUrl: appUrl(request, '/api/affiliate/connect-callback'),
+        })).url
 
     return NextResponse.json({
       ...affiliatePayload(request, existing.affiliate, existing.stats),
@@ -289,8 +308,12 @@ export async function POST(request: NextRequest) {
   )
   const code = requestedCode ?? await ensureUniqueSuggestedCode(admin, suggestedCode)
 
+  if (!user.email) {
+    return NextResponse.json({ error: 'Affiliate payouts require an account email.' }, { status: 400 })
+  }
+
   let promotionCode: Stripe.PromotionCode
-  let account: Stripe.Account
+  let account: Stripe.V2.Core.Account
   try {
     [promotionCode, account] = await Promise.all([
       stripe.promotionCodes.create({
@@ -301,10 +324,24 @@ export async function POST(request: NextRequest) {
           source: 'hackproduct_affiliate',
         },
       }),
-      createConnectAccount(stripe, user),
+      createAffiliateConnectAccount(stripe, {
+        email: user.email,
+        displayName: userDisplayName(user),
+        userId: user.id,
+      }),
     ])
   } catch (error) {
     return stripeAffiliateSetupError(error)
+  }
+
+  const accountStatus = affiliateAccountStatus(account)
+  const accountSync = {
+    status: affiliateProgramStatusFromAccountStatus(accountStatus),
+    stripe_account_livemode: account.livemode,
+    stripe_account_status: accountStatus,
+    stripe_requirements: jsonRecord(account.requirements),
+    stripe_future_requirements: jsonRecord(account.future_requirements),
+    stripe_capabilities: jsonRecord(account.configuration?.recipient?.capabilities),
   }
 
   const { data: affiliate, error } = await admin
@@ -315,9 +352,9 @@ export async function POST(request: NextRequest) {
       stripe_promo_code_id: promotionCode.id,
       stripe_connect_account_id: account.id,
       commission_pct: AFFILIATE_DEFAULT_COMMISSION_PCT,
-      status: 'pending',
+      ...accountSync,
     })
-    .select('id, user_id, code, stripe_promo_code_id, stripe_connect_account_id, commission_pct, status, created_at')
+    .select('id, user_id, code, stripe_promo_code_id, stripe_connect_account_id, stripe_account_status, stripe_requirements, stripe_future_requirements, stripe_capabilities, commission_pct, status, created_at')
     .single()
 
   if (error || !affiliate) {
@@ -327,7 +364,11 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const onboardingUrl = await createOnboardingUrl(stripe, request, account.id)
+  const onboardingUrl = (await createAffiliateAccountLink(stripe, {
+    accountId: account.id,
+    refreshUrl: appUrl(request, '/affiliate?connect=refresh'),
+    returnUrl: appUrl(request, '/api/affiliate/connect-callback'),
+  })).url
 
   return NextResponse.json({
     ...affiliatePayload(request, affiliate as AffiliateRow),

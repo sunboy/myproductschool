@@ -33,16 +33,17 @@ export default async function AdminWaitlistPage() {
     .order('created_at', { ascending: false }) as { data: WaitlistEntry[], count: number | null }
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-headline text-2xl font-bold text-on-surface">Waitlist</h1>
           <p className="text-sm text-on-surface-variant mt-0.5">{count ?? 0} signups total</p>
         </div>
       </div>
 
-      <div className="bg-surface-container rounded-xl overflow-hidden border border-outline-variant">
-        <table className="w-full text-sm">
+      <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container">
+        <div className="overflow-x-auto">
+        <table className="min-w-[640px] w-full text-sm">
           <thead>
             <tr className="border-b border-outline-variant bg-surface-container-high">
               <th className="text-left px-4 py-3 font-label font-semibold text-on-surface-variant">Name</th>
@@ -74,6 +75,7 @@ export default async function AdminWaitlistPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )

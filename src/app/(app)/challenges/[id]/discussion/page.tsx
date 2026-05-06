@@ -349,6 +349,18 @@ function ChallengeDiscussionContent() {
             responseCount={discussions.length}
             participantCount={new Set(discussions.map(d => d.user_id)).size}
           />
+          <Link
+            href={challengeHref}
+            className="block rounded-xl border border-outline-variant/50 bg-surface-container-low p-4 no-underline transition-transform hover:-translate-y-0.5"
+          >
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.1em] text-primary">
+              <span className="material-symbols-outlined text-[16px]">groups</span>
+              Answer gallery
+            </div>
+            <p className="mt-2 text-sm leading-5 text-on-surface-variant">
+              Complete the challenge to compare with peer approaches and trade feedback.
+            </p>
+          </Link>
           <TopContributorsPanel discussions={discussions} />
           <RelatedChallengesPanel currentChallengeId={id} />
         </div>

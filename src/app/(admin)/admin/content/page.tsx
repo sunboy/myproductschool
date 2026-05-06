@@ -58,15 +58,15 @@ function AuthoringDrawer({ open, onClose, onJobCreated }: {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-3 sm:px-0" onClick={onClose}>
       <div
-        className="w-full max-w-2xl bg-surface rounded-t-2xl p-6 shadow-xl"
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl bg-surface p-4 shadow-xl sm:p-6"
         onClick={e => e.stopPropagation()}
       >
         <h2 className="font-headline text-xl text-on-surface mb-4">New Challenge</h2>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-4">
+        <div className="mb-4 flex flex-wrap gap-2">
           {(['url', 'text', 'question'] as const).map(t => (
             <button
               key={t}
@@ -98,7 +98,7 @@ function AuthoringDrawer({ open, onClose, onJobCreated }: {
         )}
 
         {/* Mode toggle */}
-        <div className="flex gap-3 mb-6">
+        <div className="mb-6 flex flex-wrap gap-3">
           {(['local', 'api'] as const).map(m => (
             <button
               key={m}
@@ -112,7 +112,7 @@ function AuthoringDrawer({ open, onClose, onJobCreated }: {
 
         {error && <p className="text-error text-sm mb-3">{error}</p>}
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button
             onClick={handleSubmit}
             disabled={loading || !input.trim()}
@@ -156,14 +156,21 @@ export default function AdminContentPage() {
   }
 
   useEffect(() => {
-    fetchJobs()
-    const interval = setInterval(fetchJobs, 3000)
-    return () => clearInterval(interval)
+    const initial = window.setTimeout(() => {
+      void fetchJobs()
+    }, 0)
+    const interval = window.setInterval(() => {
+      void fetchJobs()
+    }, 3000)
+    return () => {
+      window.clearTimeout(initial)
+      window.clearInterval(interval)
+    }
   }, [fetchJobs])
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="mx-auto max-w-5xl p-4 sm:p-6">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="font-headline text-2xl text-on-surface">Content</h1>
         <button
           onClick={() => setDrawerOpen(true)}
@@ -180,8 +187,9 @@ export default function AdminContentPage() {
           <p className="text-on-surface-variant font-body">No jobs yet. Generate your first challenge.</p>
         </div>
       ) : (
-        <div className="bg-surface-container rounded-xl overflow-hidden">
-          <table className="w-full">
+        <div className="overflow-hidden rounded-xl bg-surface-container">
+          <div className="overflow-x-auto">
+          <table className="min-w-[760px] w-full">
             <thead className="bg-surface-container-high">
               <tr>
                 <th className="text-left px-4 py-3 font-label text-on-surface-variant text-sm">Input</th>
@@ -259,6 +267,7 @@ export default function AdminContentPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

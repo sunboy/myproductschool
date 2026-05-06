@@ -102,7 +102,20 @@
 
 /* ── Base ─────────────────────────────────────────────────────── */
 
+html {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+@supports not (overflow: clip) {
+  html {
+    overflow-x: hidden;
+  }
+}
+
 body {
+  min-width: 0;
+  max-width: 100%;
   background-color: #faf6f0;
   background-image:
     radial-gradient(1200px 600px at 15% -10%, rgba(74, 124, 89, 0.06), transparent 60%),

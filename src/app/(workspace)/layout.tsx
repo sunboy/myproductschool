@@ -20,13 +20,13 @@ function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
 
   return (
     <HatchProvider>
-      <div className="flex flex-col h-screen bg-background">
+      <div className="flex h-screen min-w-0 flex-col bg-background">
         <TopNav />
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex min-w-0 flex-1 overflow-hidden">
           {fromPlan && (
             <StudyPlanIndexPanel planSlug={fromPlan} activeChallengeId={cid} />
           )}
-          <main className="flex-1 overflow-hidden relative">
+          <main className="relative min-w-0 flex-1 overflow-hidden">
             {children}
           </main>
         </div>

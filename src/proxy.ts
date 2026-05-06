@@ -76,10 +76,11 @@ export async function proxy(request: NextRequest) {
   const isAuthCallback = AUTH_CALLBACK_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isPublicScorecard = PUBLIC_SCORECARD_ROUTE.test(pathname)
   const isApi       = pathname.startsWith('/api/')
+  const isAdminApi  = pathname.startsWith('/api/admin')
 
   // Pure marketing routes that never need auth (not / or waitlist which need redirect logic)
   const isPureMarketing = isMarketing && !isRoot && !isWaitlist
-  if (isPureMarketing || isAuthCallback || isPublicScorecard || isApi) {
+  if (isPureMarketing || isAuthCallback || isPublicScorecard || (isApi && !isAdminApi)) {
     return NextResponse.next()
   }
 
@@ -109,6 +110,21 @@ export async function proxy(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+
+  if (isAdminApi) {
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+    if (profile?.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    return supabaseResponse
+  }
 
   // Authenticated users visiting / go straight to dashboard.
   // Unauthenticated visitors see the landing page.

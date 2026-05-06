@@ -393,6 +393,7 @@ export interface UserStudyPlan {
 /* ── v2 Community Engagement ──────────────────────────────── */
 
 export type CommunityDisplayMode = 'anonymous' | 'named'
+export type CommunitySubmissionStatus = 'private' | 'published' | 'featured' | 'hidden'
 export type CommunityLensTag = 'metric-first' | 'segment-first' | 'tradeoff-aware' | 'strong win' | 'interesting miss'
 export type CommunityReactionTarget = 'discussion' | 'community_submission' | 'feedback_trade'
 export type CommunityReactionType =
@@ -408,7 +409,76 @@ export type ActivityFeedEventType =
   | 'shared_answer'
   | 'earned_badge'
   | 'expert_picked_answer'
+  | 'weekly_room_milestone'
   | 'feedback_trade'
+
+export interface CommunitySubmission {
+  id: string
+  user_id: string
+  challenge_id: string
+  attempt_id: string | null
+  display_mode: CommunityDisplayMode
+  status: CommunitySubmissionStatus
+  response_text: string
+  excerpt: string
+  lens_tag: CommunityLensTag
+  score: number | null
+  hatch_summary: string | null
+  published_at: string | null
+  created_at: string
+  updated_at: string
+  display_name?: string | null
+  reaction_counts?: Partial<Record<CommunityReactionType, number>>
+  feedback_count?: number
+}
+
+export interface CommunityFeedbackTrade {
+  id: string
+  submission_id: string
+  challenge_id: string
+  reviewer_user_id: string
+  recipient_user_id: string
+  one_sharp_thing: string
+  one_question: string
+  suggested_rewrite: string | null
+  created_at: string
+}
+
+export interface CommunityReaction {
+  id: string
+  user_id: string
+  target_type: CommunityReactionTarget
+  target_id: string
+  reaction_type: CommunityReactionType
+  created_at: string
+}
+
+export interface CommunityBadge {
+  id: string
+  user_id: string
+  badge_key: CommunityBadgeKey
+  source_type: 'reaction' | 'expert_pick' | 'feedback_trade'
+  source_id: string | null
+  source_user_id: string | null
+  reason: string | null
+  created_at: string
+}
+
+export interface WeeklyRoom {
+  id: string
+  cohort_challenge_id: string | null
+  title: string
+  prompt_text: string
+  difficulty: string
+  move_tag: FlowMove | null
+  week_start: string
+  week_end: string
+  is_active: boolean
+  hatch_digest: string | null
+  curated_highlights: Record<string, unknown>[]
+  created_at: string
+  updated_at: string
+}
 
 export interface ActivityFeedEvent {
   id: string
@@ -424,6 +494,13 @@ export interface ActivityFeedEvent {
   created_at: string
   actor_display_name?: string | null
   challenge_title?: string | null
+}
+
+export interface CommunityGalleryResponse {
+  own_submission: CommunitySubmission | null
+  peer_submissions: CommunitySubmission[]
+  has_feedback_trade: boolean
+  locked_count: number
 }
 
 /* ── v2 Settings ──────────────────────────────────────────── */

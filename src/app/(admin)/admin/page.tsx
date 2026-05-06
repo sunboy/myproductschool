@@ -88,14 +88,14 @@ export default async function AdminPage() {
   ]
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="space-y-6 p-4 sm:space-y-8 sm:p-6">
       <div>
         <h1 className="font-headline text-2xl font-bold text-on-surface">Overview</h1>
         <p className="text-on-surface-variant text-sm mt-1">Live platform metrics</p>
       </div>
 
       {/* KPI grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 md:gap-4">
         {kpis.map(kpi => (
           <div key={kpi.label} className="p-4 bg-surface-container rounded-xl border border-outline-variant">
             <div className="flex items-center gap-2 mb-2">
@@ -112,8 +112,9 @@ export default async function AdminPage() {
         <h2 className="font-headline text-lg font-bold text-on-surface mb-3">
           Challenges <span className="text-on-surface-variant font-normal text-sm">({stats.challenges.length})</span>
         </h2>
-        <div className="bg-surface-container rounded-xl border border-outline-variant overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container">
+          <div className="overflow-x-auto">
+          <table className="min-w-[680px] w-full text-sm">
             <thead className="bg-surface-container-high">
               <tr>
                 <th className="text-left px-4 py-3 text-on-surface-variant font-medium">Title</th>
@@ -150,14 +151,16 @@ export default async function AdminPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 
       {/* Recent attempts */}
       <div>
         <h2 className="font-headline text-lg font-bold text-on-surface mb-3">Recent Attempts</h2>
-        <div className="bg-surface-container rounded-xl border border-outline-variant overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container">
+          <div className="overflow-x-auto">
+          <table className="min-w-[620px] w-full text-sm">
             <thead className="bg-surface-container-high">
               <tr>
                 <th className="text-left px-4 py-3 text-on-surface-variant font-medium">User</th>
@@ -199,6 +202,7 @@ export default async function AdminPage() {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 

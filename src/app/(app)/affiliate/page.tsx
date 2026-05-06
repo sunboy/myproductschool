@@ -6,6 +6,10 @@ type Affiliate = {
   id: string
   code: string
   status: 'pending' | 'active' | 'disabled'
+  connectStatus: 'not_started' | 'created' | 'onboarding' | 'active' | 'restricted' | 'disabled'
+  connectRequirements: Record<string, unknown>
+  connectFutureRequirements: Record<string, unknown>
+  connectCapabilities: Record<string, unknown>
   commissionPct: number
   hasStripeAccount: boolean
   shareUrl: string
@@ -42,9 +46,10 @@ function formatDate(value: string) {
   }).format(new Date(value))
 }
 
-function statusCopy(status: Affiliate['status']) {
-  if (status === 'active') return 'Active'
-  if (status === 'disabled') return 'Disabled'
+function statusCopy(affiliate: Pick<Affiliate, 'status' | 'connectStatus'>) {
+  if (affiliate.status === 'active') return 'Active'
+  if (affiliate.status === 'disabled' || affiliate.connectStatus === 'disabled') return 'Disabled'
+  if (affiliate.connectStatus === 'restricted') return 'Needs info'
   return 'Onboarding'
 }
 
@@ -188,7 +193,7 @@ export default function AffiliatePage() {
             <span className="material-symbols-outlined text-[18px] text-primary">
               {affiliate.status === 'active' ? 'verified' : 'pending'}
             </span>
-            {statusCopy(affiliate.status)}
+            {statusCopy(affiliate)}
           </div>
         )}
       </div>
@@ -248,7 +253,10 @@ export default function AffiliatePage() {
 
             <section className="rounded-lg border border-outline-variant bg-surface-container-low p-5">
               <p className="text-xs font-bold uppercase text-on-surface-variant">Stripe Connect</p>
-              <p className="mt-2 text-xl font-black text-on-surface">{statusCopy(affiliate.status)}</p>
+              <p className="mt-2 text-xl font-black text-on-surface">{statusCopy(affiliate)}</p>
+              <p className="mt-1 text-xs font-bold uppercase text-on-surface-variant">
+                Account status: {affiliate.connectStatus.replace(/_/g, ' ')}
+              </p>
               <p className="mt-2 text-sm leading-6 text-on-surface-variant">
                 {affiliate.status === 'active'
                   ? 'Transfers are enabled for monthly commission payouts.'

@@ -690,7 +690,7 @@ export default function ProgressPage() {
         style={{ background: 'linear-gradient(135deg, #1e3528 0%, #14241c 55%, #0e1a14 100%)' }}
       >
         {/* Dot grid bg */}
-        <div aria-hidden style={{
+        <div aria-hidden className="hidden sm:block" style={{
           position: 'absolute', inset: 0,
           backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)',
           backgroundSize: '22px 22px',

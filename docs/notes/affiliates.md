@@ -12,8 +12,9 @@ Required environment:
 
 Stripe setup:
 
-- Enable Stripe Connect in the Stripe Dashboard before launch. `/api/affiliate/signup` creates Express connected accounts, and Stripe rejects that call until Connect is activated for the account.
+- Enable Stripe Connect in the Stripe Dashboard before launch. `/api/affiliate/signup` creates Stripe Accounts v2 recipient accounts with Express Dashboard access, and Stripe rejects that call until Connect is activated for the account.
 - Live coupon created: `1kgAyNZl` with `20% off` for `3 months`.
+- Test affiliate coupon created: `3CFeeIET`.
 - Launch promo codes created in test mode: `MONTHLY20` on `EKhWEHIl` (`20% off` forever) and `YEARLY99` on `79LA9KUP` (`$100 off` / `99 a year`, max redemptions `1000`).
 - Create the shared affiliate coupon in live mode and set `STRIPE_AFFILIATE_COUPON_ID=1kgAyNZl`. For test runs, create a test-mode coupon and set `STRIPE_TEST_AFFILIATE_COUPON_ID`.
 - Keep the coupon terms in Stripe. The app creates one Promotion Code per affiliate against that shared coupon.
@@ -23,7 +24,7 @@ Stripe setup:
 Flow:
 
 1. A logged-in user opens `/affiliate` and creates an affiliate account.
-2. `/api/affiliate/signup` creates a Stripe promotion code and a Stripe Express connected account.
+2. `/api/affiliate/signup` creates a Stripe promotion code and a Stripe Accounts v2 recipient account.
 3. The affiliate completes Stripe onboarding through the account link.
 4. `/r/[code]` records a hashed click, stores `ref_code` for 30 days, and redirects to `/?ref=CODE`.
 5. Email and OAuth signup callbacks read `ref_code` and write `profiles.referral_source` plus `profiles.affiliate_id`.
@@ -34,6 +35,7 @@ Flow:
 Operational notes:
 
 - Keep affiliate discount terms in the shared Stripe coupon; each affiliate gets a distinct promotion code attached to that coupon.
-- Pending affiliates can accrue commissions, but transfers only run after Connect has an active transfers capability.
+- Pending affiliates can accrue commissions, but transfers only run after Accounts v2 reports an active `recipient.stripe_balance.stripe_transfers` capability.
+- The app stores `stripe_account_status`, `stripe_requirements`, `stripe_future_requirements`, and `stripe_capabilities` on `affiliates` so account refreshes, callbacks, and webhooks can keep payout readiness current.
 - Duplicate `invoice.paid` webhooks are idempotent through the `(affiliate_id, invoice_id)` commission uniqueness constraint.
 - Vercel cron schedule is `0 0 1 * *`. If the deployment plan allows only two cron jobs, move this route into the existing daily maintenance fanout with a first-day-of-month guard.

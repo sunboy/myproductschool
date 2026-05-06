@@ -129,9 +129,27 @@ export async function getChallengeDiscussions(challengeId: string, viewerId?: st
 
   if (error) throw error
 
+  const rows = (data ?? []) as unknown as Array<Record<string, unknown> & { id: string }>
+  const ids = rows.map(d => d.id)
+  const reactionCounts = new Map<string, number>()
+  if (ids.length > 0) {
+    const { data: reactions } = await supabase
+      .from('community_reactions')
+      .select('target_id')
+      .eq('target_type', 'discussion')
+      .eq('reaction_type', 'upvote')
+      .in('target_id', ids)
+
+    for (const reaction of reactions ?? []) {
+      const targetId = reaction.target_id as string
+      reactionCounts.set(targetId, (reactionCounts.get(targetId) ?? 0) + 1)
+    }
+  }
+
   // Flatten profiles join
-  const enriched = (data ?? []).map((d: Record<string, unknown>) => ({
+  const enriched = rows.map((d) => ({
     ...d,
+    upvote_count: reactionCounts.get(d.id as string) ?? (d.upvote_count as number | null) ?? 0,
     username: (d.profiles as { display_name?: string } | null)?.display_name
       ?? (d.display_name as string | null)
       ?? 'Anonymous',

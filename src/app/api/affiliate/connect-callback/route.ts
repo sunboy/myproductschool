@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { createStripeClient } from '@/lib/stripe/config'
 import { affiliatesEnabled } from '@/lib/affiliate/config'
+import { refreshAffiliateConnectAccount } from '@/lib/affiliate/connect'
 
 function redirect(request: NextRequest, path: string) {
   return NextResponse.redirect(new URL(path, process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin))
@@ -31,15 +32,11 @@ export async function GET(request: NextRequest) {
     return redirect(request, '/affiliate?connect=missing-account')
   }
 
-  const account = await stripe.accounts.retrieve(affiliate.stripe_connect_account_id)
-  const status = account.capabilities?.transfers === 'active' || account.payouts_enabled
-    ? 'active'
-    : 'pending'
+  const { programStatus } = await refreshAffiliateConnectAccount(
+    stripe,
+    admin,
+    affiliate.stripe_connect_account_id
+  )
 
-  await admin
-    .from('affiliates')
-    .update({ status, updated_at: new Date().toISOString() })
-    .eq('id', affiliate.id)
-
-  return redirect(request, status === 'active' ? '/affiliate?connect=complete' : '/affiliate?connect=pending')
+  return redirect(request, programStatus === 'active' ? '/affiliate?connect=complete' : '/affiliate?connect=pending')
 }

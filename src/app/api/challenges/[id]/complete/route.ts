@@ -16,6 +16,7 @@ import {
   competenciesForSignalInput,
   type CompetencySignalInput,
 } from '@/lib/scoring/competency-rollup'
+import { createCommunitySubmissionCandidate, recordCommunityCompletion } from '@/lib/data/community'
 
 const RequestSchema = z.object({
   attempt_id: z.string().uuid(),
@@ -390,6 +391,13 @@ export async function POST(
       },
     })
     .eq('id', attempt_id)
+
+  try {
+    await createCommunitySubmissionCandidate({ userId, attemptId: attempt_id, challengeId })
+    await recordCommunityCompletion({ userId, attemptId: attempt_id, challengeId, gradeLabel: grade_label })
+  } catch (communityError) {
+    console.warn('[community] failed to create completion candidate', communityError)
+  }
 
   const topDelta = deltaEntries.length > 0
     ? [...deltaEntries].sort((a, b) => (b.after - b.before) - (a.after - a.before))[0]

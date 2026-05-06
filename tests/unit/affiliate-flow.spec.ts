@@ -9,6 +9,12 @@ import {
 } from '../../src/lib/affiliate/config'
 import { applyReferralAttribution } from '../../src/lib/affiliate/attribution'
 import { recordAffiliateCommission } from '../../src/lib/affiliate/commissions'
+import {
+  affiliateAccountStatus,
+  affiliateProgramStatusFromAccountStatus,
+  createAffiliateAccountLink,
+  hasActiveAffiliateTransfers,
+} from '../../src/lib/affiliate/connect'
 import { runAffiliatePayouts } from '../../src/lib/affiliate/payouts'
 import { invoicePromotionCodeId } from '../../src/lib/affiliate/stripe'
 
@@ -268,6 +274,82 @@ describe('affiliate flow helpers', () => {
     } as unknown as Stripe.Invoice
 
     expect(invoicePromotionCodeId(invoice)).toBe('promo_123')
+  })
+
+  it('maps Stripe Accounts v2 recipient capability status to affiliate readiness', () => {
+    const activeAccount = {
+      id: 'acct_v2_active',
+      object: 'v2.core.account',
+      closed: false,
+      livemode: false,
+      configuration: {
+        recipient: {
+          capabilities: {
+            stripe_balance: {
+              stripe_transfers: { status: 'active', status_details: [] },
+            },
+          },
+        },
+      },
+    } as unknown as Stripe.V2.Core.Account
+
+    const restrictedAccount = {
+      ...activeAccount,
+      id: 'acct_v2_restricted',
+      configuration: {
+        recipient: {
+          capabilities: {
+            stripe_balance: {
+              stripe_transfers: { status: 'restricted', status_details: [] },
+            },
+          },
+        },
+      },
+    } as unknown as Stripe.V2.Core.Account
+
+    expect(affiliateAccountStatus(activeAccount)).toBe('active')
+    expect(affiliateProgramStatusFromAccountStatus('active')).toBe('active')
+    expect(hasActiveAffiliateTransfers(activeAccount)).toBe(true)
+    expect(affiliateAccountStatus(restrictedAccount)).toBe('restricted')
+    expect(affiliateProgramStatusFromAccountStatus('restricted')).toBe('pending')
+    expect(hasActiveAffiliateTransfers(restrictedAccount)).toBe(false)
+  })
+
+  it('creates Accounts v2 onboarding links for the recipient configuration', async () => {
+    const calls: unknown[] = []
+    const stripe = {
+      v2: {
+        core: {
+          accountLinks: {
+            create: async (input: unknown) => {
+              calls.push(input)
+              return { url: 'https://connect.stripe.test/onboard' }
+            },
+          },
+        },
+      },
+    } as unknown as Stripe
+
+    const link = await createAffiliateAccountLink(stripe, {
+      accountId: 'acct_v2',
+      refreshUrl: 'https://hackproduct.test/affiliate?connect=refresh',
+      returnUrl: 'https://hackproduct.test/api/affiliate/connect-callback',
+    })
+
+    expect(link.url).toBe('https://connect.stripe.test/onboard')
+    expect(calls).toMatchObject([{
+      account: 'acct_v2',
+      use_case: {
+        type: 'account_onboarding',
+        account_onboarding: {
+          configurations: ['recipient'],
+          collection_options: {
+            fields: 'eventually_due',
+            future_requirements: 'include',
+          },
+        },
+      },
+    }])
   })
 
   it('attributes a valid referral code to an unattributed profile', async () => {

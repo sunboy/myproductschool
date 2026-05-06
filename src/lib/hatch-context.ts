@@ -34,6 +34,14 @@ export interface HatchUserContext {
     averageLiveInterviewScore: number | null
   }
   hatchInsights: string[]
+  communitySignals: {
+    optedIntoSharing: boolean
+    sharedSubmissionCount: number
+    feedbackGivenCount: number
+    feedbackReceivedCount: number
+    badges: Array<{ badge_key: string; reason: string | null }>
+    recentLenses: string[]
+  }
 }
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -74,6 +82,14 @@ const EMPTY_CONTEXT: HatchUserContext = {
     averageLiveInterviewScore: null,
   },
   hatchInsights: [],
+  communitySignals: {
+    optedIntoSharing: false,
+    sharedSubmissionCount: 0,
+    feedbackGivenCount: 0,
+    feedbackReceivedCount: 0,
+    badges: [],
+    recentLenses: [],
+  },
 }
 
 // ── Main query function ──────────────────────────────────────
@@ -91,6 +107,7 @@ export async function getHatchContext(userId: string): Promise<HatchUserContext>
       completionsResult,
       liveInterviewHistoryResult,
       hatchInsightsResult,
+      communitySignalsResult,
     ] = await Promise.all([
       // 1. profiles
       (async () => {
@@ -245,6 +262,46 @@ export async function getHatchContext(userId: string): Promise<HatchUserContext>
           return []
         }
       })(),
+
+      // 9. Community signals: sharing, feedback trades, badges
+      (async () => {
+        try {
+          const [submissionsResult, feedbackGivenResult, feedbackReceivedResult, badgesResult] = await Promise.all([
+            admin
+              .from('community_submissions')
+              .select('status, lens_tag, display_mode')
+              .eq('user_id', userId)
+              .order('created_at', { ascending: false })
+              .limit(8),
+            admin
+              .from('community_feedback_trades')
+              .select('id', { count: 'exact', head: true })
+              .eq('reviewer_user_id', userId),
+            admin
+              .from('community_feedback_trades')
+              .select('id', { count: 'exact', head: true })
+              .eq('recipient_user_id', userId),
+            admin
+              .from('community_badges')
+              .select('badge_key, reason')
+              .eq('user_id', userId)
+              .order('created_at', { ascending: false })
+              .limit(4),
+          ])
+
+          const submissions = submissionsResult.data ?? []
+          return {
+            optedIntoSharing: submissions.some(s => s.status === 'published' || s.status === 'featured'),
+            sharedSubmissionCount: submissions.filter(s => s.status === 'published' || s.status === 'featured').length,
+            feedbackGivenCount: feedbackGivenResult.count ?? 0,
+            feedbackReceivedCount: feedbackReceivedResult.count ?? 0,
+            badges: (badgesResult.data ?? []) as Array<{ badge_key: string; reason: string | null }>,
+            recentLenses: submissions.map(s => s.lens_tag as string).filter(Boolean).slice(0, 4),
+          }
+        } catch {
+          return EMPTY_CONTEXT.communitySignals
+        }
+      })(),
     ])
 
     const competencies = (competenciesResult as Array<{ competency: string; score: number; trend: string }>) ?? []
@@ -310,6 +367,7 @@ export async function getHatchContext(userId: string): Promise<HatchUserContext>
           : null,
       },
       hatchInsights: (hatchInsightsResult as string[]) ?? [],
+      communitySignals: (communitySignalsResult as HatchUserContext['communitySignals']) ?? EMPTY_CONTEXT.communitySignals,
     }
   } catch {
     return { ...EMPTY_CONTEXT }
@@ -330,7 +388,11 @@ function isEmptyContext(ctx: HatchUserContext): boolean {
     ctx.recentStepAttempts.length === 0 &&
     ctx.recentCompletions.length === 0 &&
     ctx.recentLiveInterviews.length === 0 &&
-    ctx.hatchInsights.length === 0
+    ctx.hatchInsights.length === 0 &&
+    ctx.communitySignals.sharedSubmissionCount === 0 &&
+    ctx.communitySignals.feedbackGivenCount === 0 &&
+    ctx.communitySignals.feedbackReceivedCount === 0 &&
+    ctx.communitySignals.badges.length === 0
   )
 }
 
@@ -391,6 +453,7 @@ export function buildHatchContextString(
         `Practice stats: ${practiceStats}`,
         `Recent challenge performance: ${completionStr}`,
         `Recent live interviews: ${recentLiveInterviewStr}`,
+        `Community context: sharing ${ctx.communitySignals.optedIntoSharing ? 'opted in' : 'not opted in'}, feedback given ${ctx.communitySignals.feedbackGivenCount}, feedback received ${ctx.communitySignals.feedbackReceivedCount}`,
       )
       return lines.join('\n')
     }
@@ -416,6 +479,7 @@ export function buildHatchContextString(
         `Recurring patterns to watch: ${patternsStr}`,
         `Recent step quality: ${stepsStr}`,
         `Recent live interviews: ${recentLiveInterviewStr}`,
+        `Community badges: ${ctx.communitySignals.badges.map(b => b.badge_key).join(', ') || 'none yet'}`,
       )
       return lines.join('\n')
     }
@@ -451,6 +515,7 @@ export function buildHatchContextString(
         `Recent challenge completions: ${completionStr}`,
         `Recent live interview debriefs: ${recentLiveInterviewStr}`,
         `Hatch memory / insights:\n${hatchInsightsStr}`,
+        `Community signals: ${ctx.communitySignals.sharedSubmissionCount} shared answers, ${ctx.communitySignals.feedbackGivenCount} reviews given, lenses ${ctx.communitySignals.recentLenses.join(', ') || 'none yet'}`,
       )
       return lines.join('\n')
     }

@@ -8,6 +8,7 @@ import {
 } from '@/lib/email/billing'
 import { affiliatesEnabled } from '@/lib/affiliate/config'
 import { invoiceSubscriptionId, recordAffiliateCommission } from '@/lib/affiliate/commissions'
+import { retrieveAffiliateConnectAccount, syncAffiliateConnectAccount } from '@/lib/affiliate/connect'
 import {
   sendCancellationConfirmedEmail,
   sendCancellationScheduledEmail,
@@ -112,6 +113,37 @@ async function getInvoiceCustomerContact(
   }
 }
 
+function stripeV2RelatedAccountId(event: Stripe.Event) {
+  if (!event.type.startsWith('v2.core.account')) return null
+
+  const related = (event as Stripe.Event & {
+    related_object?: { id?: string; type?: string } | null
+  }).related_object
+  if (related?.type?.includes('account') && related.id) return related.id
+
+  const dataObject = event.data.object as unknown as Record<string, unknown> | undefined
+  const objectId = typeof dataObject?.id === 'string' ? dataObject.id : null
+  if (objectId?.startsWith('acct_')) return objectId
+
+  const account = dataObject?.account
+  if (typeof account === 'string' && account.startsWith('acct_')) return account
+
+  return null
+}
+
+async function syncAffiliateConnectEvent(
+  stripe: Stripe,
+  supabase: ReturnType<typeof createAdminClient>,
+  event: Stripe.Event
+) {
+  const accountId = stripeV2RelatedAccountId(event)
+  if (!accountId) return false
+
+  const account = await retrieveAffiliateConnectAccount(stripe, accountId)
+  await syncAffiliateConnectAccount(supabase, account)
+  return true
+}
+
 export async function POST(req: NextRequest) {
   const { stripe, config: stripeRuntime } = createStripeClient()
 
@@ -141,6 +173,10 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = createAdminClient()
+
+  if (await syncAffiliateConnectEvent(stripe, supabase, event)) {
+    return NextResponse.json({ received: true })
+  }
 
   switch (event.type) {
 

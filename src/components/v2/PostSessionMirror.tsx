@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from 'react'
 import gsap from 'gsap'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { StepDetailModal } from './StepDetailModal'
+import { AnswerGalleryPanel } from '@/components/community/AnswerGalleryPanel'
 import {
   type Verdict,
   VERDICT_COLOR, VERDICT_BG, VERDICT_LABEL, VERDICT_ICON,
@@ -59,6 +60,7 @@ interface PostSessionMirrorProps {
   xpAwarded: number
   stepResults: StepResult[]
   competencyDeltas: CompetencyDelta[]
+  challengeId?: string
   attemptId?: string
   onRunAnother?: () => void
   onDashboard: () => void
@@ -437,6 +439,7 @@ export function PostSessionMirror({
   xpAwarded,
   stepResults,
   competencyDeltas,
+  challengeId,
   attemptId,
   onRunAnother,
   onDashboard,
@@ -649,6 +652,8 @@ export function PostSessionMirror({
             </div>
           )
         })()}
+
+        <AnswerGalleryPanel challengeId={challengeId} attemptId={attemptId} />
       </div>
 
       {/* Footer */}

@@ -1,4 +1,5 @@
 import type Stripe from 'stripe'
+import { hasActiveAffiliateTransfers, retrieveAffiliateConnectAccount } from './connect'
 
 export type CommissionRow = {
   id: string
@@ -63,7 +64,19 @@ export function groupCommissions(rows: CommissionRow[]) {
 }
 
 export function hasActiveTransfers(account: Stripe.Account) {
-  return account.capabilities?.transfers === 'active' || account.payouts_enabled
+  return hasActiveAffiliateTransfers(account)
+}
+
+async function retrieveConnectAccountForPayout(stripe: Stripe, accountId: string) {
+  const stripeWithOptionalV2 = stripe as Stripe & {
+    v2?: { core?: { accounts?: { retrieve?: unknown } } }
+  }
+
+  if (typeof stripeWithOptionalV2.v2?.core?.accounts?.retrieve === 'function') {
+    return retrieveAffiliateConnectAccount(stripe, accountId)
+  }
+
+  return stripe.accounts.retrieve(accountId)
 }
 
 export async function runAffiliatePayouts({
@@ -115,8 +128,8 @@ export async function runAffiliatePayouts({
     }
 
     try {
-      const account = await stripe.accounts.retrieve(affiliate.stripe_connect_account_id)
-      if (!hasActiveTransfers(account)) {
+      const account = await retrieveConnectAccountForPayout(stripe, affiliate.stripe_connect_account_id)
+      if (!hasActiveAffiliateTransfers(account)) {
         skipped.push({ affiliateId, reason: 'transfers_capability_inactive' })
         continue
       }

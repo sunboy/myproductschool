@@ -11,14 +11,14 @@ export default function AdminRevenuePage() {
   const maxMrr = Math.max(...MONTHLY_DATA.map(d => d.mrr))
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="space-y-6 p-4 sm:space-y-8 sm:p-6">
       <div>
         <h1 className="font-headline text-2xl font-bold text-on-surface">Revenue</h1>
         <p className="text-on-surface-variant text-sm mt-1">Subscription and MRR overview</p>
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         {[
           { label: 'MRR', value: '$1,044' },
           { label: 'Pro subscribers', value: '87' },
@@ -34,7 +34,7 @@ export default function AdminRevenuePage() {
       {/* MRR chart (simple bar chart) */}
       <div className="p-5 bg-surface-container rounded-2xl border border-outline-variant">
         <h2 className="font-medium text-on-surface mb-4">MRR Growth</h2>
-        <div className="flex items-end gap-3 h-32">
+        <div className="flex h-32 min-w-0 items-end gap-2 sm:gap-3">
           {MONTHLY_DATA.map(d => (
             <div key={d.month} className="flex-1 flex flex-col items-center gap-1">
               <div
