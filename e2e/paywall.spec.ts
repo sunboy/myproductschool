@@ -1,6 +1,7 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
 import { loadEnvConfig } from '@next/env'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import Stripe from 'stripe'
 
 loadEnvConfig(process.cwd())
 
@@ -10,7 +11,16 @@ const HAS_SUPABASE_ENV = Boolean(
   process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 const HAS_ANTHROPIC_ENV = Boolean(process.env.ANTHROPIC_API_KEY)
+const HAS_STRIPE_WEBHOOK_ENV = Boolean(
+  process.env.STRIPE_WEBHOOK_SECRET && (
+    process.env.STRIPE_TEST_SECRET_KEY ||
+    process.env.STRIPE_SECRET_KEY
+  )
+)
 const IS_MOCK_SERVER = process.env.USE_MOCK_DATA === 'true'
+const STRIPE_EVENT_API_VERSION = '2026-02-25.clover'
+const E2E_STRIPE_CUSTOMER_ID = 'cus_e2e_pro_active'
+const E2E_STRIPE_SUBSCRIPTION_ID = 'sub_e2e_pro_active'
 
 type PersonaKey =
   | 'freeNew'
@@ -155,18 +165,136 @@ async function setSubscriptionEntitlement(
     status: SubscriptionStatus
     currentPeriodEnd?: string | null
     cancelAtPeriodEnd?: boolean
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
   }
 ) {
-  const { error } = await admin.from('subscriptions').upsert({
+  const payload: Record<string, unknown> = {
     user_id: userId,
     plan: input.plan,
     status: input.status,
     current_period_end: input.currentPeriodEnd ?? null,
     cancel_at_period_end: input.cancelAtPeriodEnd ?? false,
     updated_at: new Date().toISOString(),
-  }, { onConflict: 'user_id' })
+  }
+
+  if ('stripeCustomerId' in input) payload.stripe_customer_id = input.stripeCustomerId
+  if ('stripeSubscriptionId' in input) payload.stripe_subscription_id = input.stripeSubscriptionId
+
+  const { error } = await admin.from('subscriptions').upsert(payload, { onConflict: 'user_id' })
 
   if (error) throw new Error(`Could not set subscription entitlement: ${error.message}`)
+}
+
+async function getBillingState(admin: SupabaseClient, userId: string) {
+  const [profileResult, subscriptionResult] = await Promise.all([
+    admin
+      .from('profiles')
+      .select('plan')
+      .eq('id', userId)
+      .maybeSingle(),
+    admin
+      .from('subscriptions')
+      .select('plan, status, current_period_end, cancel_at_period_end, stripe_customer_id, stripe_subscription_id')
+      .eq('user_id', userId)
+      .maybeSingle(),
+  ])
+
+  if (profileResult.error) throw new Error(`Could not load profile billing state: ${profileResult.error.message}`)
+  if (subscriptionResult.error) {
+    throw new Error(`Could not load subscription billing state: ${subscriptionResult.error.message}`)
+  }
+
+  return {
+    profilePlan: profileResult.data?.plan as string | null | undefined,
+    subscription: subscriptionResult.data,
+  }
+}
+
+async function getEmailDedupe(admin: SupabaseClient, dedupeKey: string) {
+  const { data, error } = await admin
+    .from('email_dedupes')
+    .select('template, status, recipient')
+    .eq('dedupe_key', dedupeKey)
+    .maybeSingle()
+
+  if (error) throw new Error(`Could not load email dedupe row: ${error.message}`)
+  return data
+}
+
+function stripeEventId(kind: string) {
+  return `evt_e2e_${kind}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+}
+
+async function postStripeWebhook(
+  request: APIRequestContext,
+  event: Record<string, unknown>
+) {
+  const secret = process.env.STRIPE_WEBHOOK_SECRET
+  if (!secret) throw new Error('STRIPE_WEBHOOK_SECRET is required for signed webhook tests.')
+
+  const payload = JSON.stringify(event)
+  const signature = Stripe.webhooks.generateTestHeaderString({ payload, secret })
+  const response = await request.post(`${BASE_URL}/api/stripe/webhook`, {
+    data: payload,
+    headers: {
+      'content-type': 'application/json',
+      'stripe-signature': signature,
+    },
+  })
+
+  const text = await response.text()
+  let body: Record<string, unknown> = {}
+  try {
+    body = text ? JSON.parse(text) as Record<string, unknown> : {}
+  } catch {
+    body = { raw: text }
+  }
+
+  return { status: response.status(), body }
+}
+
+function stripeEvent(type: string, id: string, object: Record<string, unknown>) {
+  return {
+    id,
+    object: 'event',
+    api_version: STRIPE_EVENT_API_VERSION,
+    created: Math.floor(Date.now() / 1000),
+    data: { object },
+    livemode: false,
+    pending_webhooks: 1,
+    request: { id: null, idempotency_key: null },
+    type,
+  }
+}
+
+function invoicePaymentFailedEvent(id: string, user: TestUser) {
+  const periodEnd = Math.floor((Date.now() + 7 * 24 * 60 * 60 * 1000) / 1000)
+  return stripeEvent('invoice.payment_failed', id, {
+    id: `in_${id}`,
+    object: 'invoice',
+    amount_due: 2900,
+    amount_paid: 0,
+    billing_reason: 'subscription_cycle',
+    currency: 'usd',
+    customer: E2E_STRIPE_CUSTOMER_ID,
+    customer_email: user.email,
+    customer_name: 'E2E Pro Active',
+    hosted_invoice_url: `${BASE_URL}/settings?invoice=${id}`,
+    lines: { data: [{ period: { end: periodEnd } }] },
+    subscription: E2E_STRIPE_SUBSCRIPTION_ID,
+  })
+}
+
+function subscriptionDeletedEvent(id: string, userId: string) {
+  return stripeEvent('customer.subscription.deleted', id, {
+    id: E2E_STRIPE_SUBSCRIPTION_ID,
+    object: 'subscription',
+    canceled_at: Math.floor(Date.now() / 1000),
+    customer: E2E_STRIPE_CUSTOMER_ID,
+    metadata: { user_id: userId },
+    status: 'canceled',
+  })
 }
 
 async function setRollingUsage(
@@ -301,6 +429,8 @@ test.describe('Paywall scenarios', () => {
         plan: 'pro',
         status: 'active',
         currentPeriodEnd: isoDaysFromNow(14),
+        stripeCustomerId: E2E_STRIPE_CUSTOMER_ID,
+        stripeSubscriptionId: E2E_STRIPE_SUBSCRIPTION_ID,
       }),
       setRollingUsage(admin, users.freeActive.id, 'interviews', 0),
       setRollingUsage(admin, users.proActive.id, 'interviews', 0),
@@ -515,5 +645,70 @@ test.describe('Paywall scenarios', () => {
       data: {},
     })
     expectLimitReached(expiredTrial, 'interviews')
+  })
+
+  test('N2.8 Failed payment keeps grace access, then deletion downgrades', async ({ page, request }) => {
+    test.skip(!HAS_STRIPE_WEBHOOK_ENV, 'Stripe secret and webhook secret are required for signed webhook tests.')
+
+    const freeInterviewLimit = await getPlanLimit(admin, 'free', 'interviews', FALLBACK_LIMITS.interviews)
+    const paymentFailedId = stripeEventId('payment_failed')
+    const deletedId = stripeEventId('subscription_deleted')
+
+    await Promise.all([
+      setRollingUsage(admin, users.proActive.id, 'interviews', freeInterviewLimit),
+      setProfilePlan(admin, users.proActive.id, 'pro'),
+      setSubscriptionEntitlement(admin, users.proActive.id, {
+        plan: 'pro',
+        status: 'active',
+        currentPeriodEnd: isoDaysFromNow(14),
+        stripeCustomerId: E2E_STRIPE_CUSTOMER_ID,
+        stripeSubscriptionId: E2E_STRIPE_SUBSCRIPTION_ID,
+      }),
+    ])
+
+    const failedWebhook = await postStripeWebhook(
+      request,
+      invoicePaymentFailedEvent(paymentFailedId, users.proActive)
+    )
+    expect(failedWebhook.status, JSON.stringify(failedWebhook.body)).toBe(200)
+    expect(failedWebhook.body.received).toBe(true)
+
+    const pastDue = await getBillingState(admin, users.proActive.id)
+    expect(pastDue.profilePlan).toBe('pro')
+    expect(pastDue.subscription?.plan).toBe('pro')
+    expect(pastDue.subscription?.status).toBe('past_due')
+
+    const failedEmail = await getEmailDedupe(admin, `${paymentFailedId}:payment_failed`)
+    expect(failedEmail?.template).toBe('payment_failed')
+    expect(['sent', 'failed']).toContain(failedEmail?.status)
+
+    await loginAs(page, users.proActive.email)
+    const graceResult = await appFetch(page, '/api/live-interview/start', {
+      method: 'POST',
+      data: {},
+    })
+    expect(graceResult.status, JSON.stringify(graceResult.body)).toBe(200)
+
+    const deletedWebhook = await postStripeWebhook(
+      request,
+      subscriptionDeletedEvent(deletedId, users.proActive.id)
+    )
+    expect(deletedWebhook.status, JSON.stringify(deletedWebhook.body)).toBe(200)
+    expect(deletedWebhook.body.received).toBe(true)
+
+    const downgraded = await getBillingState(admin, users.proActive.id)
+    expect(downgraded.profilePlan).toBe('free')
+    expect(downgraded.subscription?.plan).toBe('free')
+    expect(downgraded.subscription?.status).toBe('canceled')
+
+    const canceledEmail = await getEmailDedupe(admin, `${deletedId}:cancellation_confirmed`)
+    expect(canceledEmail?.template).toBe('cancellation_confirmed')
+    expect(['sent', 'failed']).toContain(canceledEmail?.status)
+
+    const downgradedResult = await appFetch(page, '/api/live-interview/start', {
+      method: 'POST',
+      data: {},
+    })
+    expectLimitReached(downgradedResult, 'interviews')
   })
 })

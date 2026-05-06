@@ -14,6 +14,10 @@ test('active and trialing pro subscriptions are entitled before expiry', () => {
   assert.equal(subscriptionEntitlesPro({ plan: 'pro', status: 'trialing', current_period_end: FUTURE }, NOW), true)
 })
 
+test('past-due pro subscriptions keep access during billing grace', () => {
+  assert.equal(subscriptionEntitlesPro({ plan: 'pro', status: 'past_due', current_period_end: PAST }, NOW), true)
+})
+
 test('expired trials, canceled subscriptions, and stale cancel-at-period-end rows are not entitled', () => {
   assert.equal(subscriptionEntitlesPro({ plan: 'pro', status: 'trialing', current_period_end: PAST }, NOW), false)
   assert.equal(subscriptionEntitlesPro({ plan: 'pro', status: 'canceled', current_period_end: FUTURE }, NOW), false)

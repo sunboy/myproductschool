@@ -18,7 +18,7 @@ import {
 } from '@/lib/email/transactional'
 
 function subscriptionPlanForStatus(status: Stripe.Subscription.Status): 'free' | 'pro' {
-  return status === 'active' || status === 'trialing' ? 'pro' : 'free'
+  return status === 'active' || status === 'trialing' || status === 'past_due' ? 'pro' : 'free'
 }
 
 async function findUserIdForStripeObject(
@@ -405,6 +405,19 @@ export async function POST(req: NextRequest) {
           .eq('user_id', userId)
           .maybeSingle()
         : { data: null }
+
+      if (userId) {
+        await supabase.from('subscriptions').upsert({
+          user_id: userId,
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subscriptionId,
+          plan: 'pro',
+          status: 'past_due',
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' })
+
+        await supabase.from('profiles').update({ plan: 'pro' }).eq('id', userId)
+      }
 
       await sendPaymentFailedEmail(supabase, {
         dedupeKey: `${event.id}:payment_failed`,

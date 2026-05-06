@@ -32,7 +32,11 @@ export function subscriptionEntitlesPro(
   now = new Date()
 ) {
   if (!subscription || subscription.plan !== 'pro') return false
-  if (subscription.status !== 'active' && subscription.status !== 'trialing') return false
+  if (
+    subscription.status !== 'active' &&
+    subscription.status !== 'trialing' &&
+    subscription.status !== 'past_due'
+  ) return false
   if (subscription.status === 'trialing' && isPastIso(subscription.current_period_end, now)) return false
   if (subscription.cancel_at_period_end && isPastIso(subscription.current_period_end, now)) return false
   return true
