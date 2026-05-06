@@ -129,6 +129,7 @@ export const LEARN_MODULES_SEED: Omit<LearnModule, 'id' | 'created_at'>[] = [
     cover_color: '#1a3a2a',
     accent_color: '#4a7c59',
     sort_order: 1,
+    track: null,
   },
   {
     slug: 'user-models',
@@ -140,6 +141,7 @@ export const LEARN_MODULES_SEED: Omit<LearnModule, 'id' | 'created_at'>[] = [
     cover_color: '#1a2a3a',
     accent_color: '#3b5bdb',
     sort_order: 2,
+    track: null,
   },
   {
     slug: 'root-cause',
@@ -151,6 +153,7 @@ export const LEARN_MODULES_SEED: Omit<LearnModule, 'id' | 'created_at'>[] = [
     cover_color: '#2a1a1a',
     accent_color: '#ef4444',
     sort_order: 3,
+    track: null,
   },
   {
     slug: 'product-debug',
@@ -162,6 +165,7 @@ export const LEARN_MODULES_SEED: Omit<LearnModule, 'id' | 'created_at'>[] = [
     cover_color: '#0f1a2e',
     accent_color: '#3b82f6',
     sort_order: 4,
+    track: null,
   },
   {
     slug: 'north-star',
@@ -173,6 +177,7 @@ export const LEARN_MODULES_SEED: Omit<LearnModule, 'id' | 'created_at'>[] = [
     cover_color: '#1a1a2e',
     accent_color: '#fbbf24',
     sort_order: 5,
+    track: null,
   },
   {
     slug: 'trade-offs',
@@ -184,6 +189,7 @@ export const LEARN_MODULES_SEED: Omit<LearnModule, 'id' | 'created_at'>[] = [
     cover_color: '#1e1a0e',
     accent_color: '#f59e0b',
     sort_order: 6,
+    track: null,
   },
   {
     slug: 'growth-loops',
@@ -195,6 +201,7 @@ export const LEARN_MODULES_SEED: Omit<LearnModule, 'id' | 'created_at'>[] = [
     cover_color: '#0e1a12',
     accent_color: '#10b981',
     sort_order: 7,
+    track: null,
   },
   {
     slug: 'ai-products',
@@ -206,6 +213,7 @@ export const LEARN_MODULES_SEED: Omit<LearnModule, 'id' | 'created_at'>[] = [
     cover_color: '#1a0e2a',
     accent_color: '#a855f7',
     sort_order: 8,
+    track: null,
   },
   {
     slug: 'product-sense',
@@ -217,6 +225,7 @@ export const LEARN_MODULES_SEED: Omit<LearnModule, 'id' | 'created_at'>[] = [
     cover_color: '#1a2e1a',
     accent_color: '#4a7c59',
     sort_order: 9,
+    track: null,
   },
 ]
 

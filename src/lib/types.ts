@@ -837,6 +837,7 @@ export interface LearnModule {
   cover_color: string    // dark hex e.g. '#1a3a2a'
   accent_color: string   // primary accent hex e.g. '#4a7c59'
   sort_order: number
+  track: string | null
   created_at: string
 }
 
