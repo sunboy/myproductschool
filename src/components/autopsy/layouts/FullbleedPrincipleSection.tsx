@@ -71,7 +71,7 @@ export function FullbleedPrincipleSection({ section, hasBeenVisible }: Props) {
           </span>
         </div>
 
-        {/* Principle — word stagger */}
+        {/* Principle - word stagger */}
         <div className="mt-6 mb-8">
           <p
             className="font-headline font-extrabold leading-[1.1]"

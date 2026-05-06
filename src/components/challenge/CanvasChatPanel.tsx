@@ -64,7 +64,7 @@ function getInitialMessage(challengeType: 'system_design' | 'data_modeling' | 'c
   if (challengeType === 'data_modeling') {
     return "Let's model this data together. Draw your entities and relationships, or describe them and I'll add them to the canvas."
   }
-  return "I'm here to help you design this system. You can draw by hand, type here, or speak — I'll help build and critique your diagram."
+  return "I'm here to help you design this system. You can draw by hand, type here, or speak - I'll help build and critique your diagram."
 }
 
 function getSuggestionPrompts(challengeType: 'system_design' | 'data_modeling' | 'coding', language?: string): string[] {
@@ -155,7 +155,7 @@ export function CanvasChatPanel({
       ? "Ask Hatch about your code…"
       : "Ask Hatch, or tell it what to draw from your notes…"
 
-  // Suppress unused variable warnings — grade is reserved for future use; isOpen kept for callers
+  // Suppress unused variable warnings - grade is reserved for future use; isOpen kept for callers
   void grade
   void isOpen
 
@@ -200,7 +200,7 @@ export function CanvasChatPanel({
     setInput('')
     setIsLoading(true)
 
-    // Unified coach endpoint — model decides build vs coach vs both.
+    // Unified coach endpoint - model decides build vs coach vs both.
     try {
       const baseBody = {
         message: text,

@@ -344,7 +344,7 @@ export async function POST(
     }
   }
 
-  // Upsert learner_competencies — fetch current scores first
+  // Upsert learner_competencies - fetch current scores first
   if (debriefResult.competencySignals?.length > 0) {
     const competencies = [...new Set(debriefResult.competencySignals.map((s) => s.competency))]
 

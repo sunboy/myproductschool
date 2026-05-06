@@ -250,7 +250,7 @@ export async function POST(
   const { error: streakError } = await admin.rpc('update_user_streak', { p_user_id: userId })
   if (streakError) console.error('[streak] update_user_streak failed:', streakError.message)
 
-  // Update FLOW move levels based on per-step scores (awaited — direct DB call)
+  // Update FLOW move levels based on per-step scores (awaited - direct DB call)
   const moveScores: Record<string, number> = {}
   for (const s of stepResults) {
     moveScores[s.step] = Math.round(s.step_score * MOVE_XP_MULTIPLIER)
@@ -358,7 +358,7 @@ export async function POST(
       }
     })
 
-  // Update challenge_attempts — store step_breakdown + deltas in feedback_json so history can reconstruct the result
+  // Update challenge_attempts - store step_breakdown + deltas in feedback_json so history can reconstruct the result
   await admin
     .from('challenge_attempts')
     .update({

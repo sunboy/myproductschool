@@ -13,7 +13,7 @@ const STATUS_TEXT: Record<ChallengeMode, string> = {
   live: 'Live mode: real-time coaching with Hatch',
   guided: 'Hatch is tracking your progress across all 4 FLOW steps.',
   freeform: 'Hatch will review all 4 FLOW moves after you submit.',
-  'quick-take': 'Quick take — Hatch will grade in 15 seconds.',
+  'quick-take': 'Quick take - Hatch will grade in 15 seconds.',
 }
 
 export function HatchCoachingStrip({

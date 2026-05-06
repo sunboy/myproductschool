@@ -30,7 +30,7 @@ export default async function ShowcasePage() {
                 Trace the decisions behind products you use every day.
               </h4>
               <p className="text-sm text-on-surface-variant leading-relaxed">
-                Every shipped product hides a decision tree. We&apos;ve traced the non-obvious ones — the calls that look obvious in hindsight but weren&apos;t at the time.
+                Every shipped product hides a decision tree. We&apos;ve traced the non-obvious ones - the calls that look obvious in hindsight but weren&apos;t at the time.
               </p>
             </div>
             <div className="flex flex-col items-end gap-2">

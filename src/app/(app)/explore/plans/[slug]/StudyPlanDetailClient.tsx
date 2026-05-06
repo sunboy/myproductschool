@@ -385,7 +385,7 @@ export function StudyPlanDetailClient({ plan, slug }: { plan: StudyPlanWithItems
             {[
               { label: 'Chapters', value: String(plan.chapter_count) },
               { label: 'Total items', value: String(plan.item_count) },
-              { label: 'Est. time', value: plan.estimated_hours != null ? `~${plan.estimated_hours}h` : '—' },
+              { label: 'Est. time', value: plan.estimated_hours != null ? `~${plan.estimated_hours}h` : '-' },
             ].map(stat => (
               <div key={stat.label} style={{
                 background: 'rgba(255,255,255,0.07)',
@@ -504,7 +504,7 @@ export function StudyPlanDetailClient({ plan, slug }: { plan: StudyPlanWithItems
                   Hatch&rsquo;s Coaching
                 </div>
                 <p style={{ fontFamily: 'var(--font-label)', fontSize: 13, lineHeight: 1.55, color: '#0f3d1f', margin: 0 }}>
-                  This plan is designed for engineers who want to build genuine product intuition. Don&rsquo;t rush — depth beats breadth. Complete each challenge before choosing the model answer.
+                  This plan is designed for engineers who want to build genuine product intuition. Don&rsquo;t rush - depth beats breadth. Complete each challenge before choosing the model answer.
                 </p>
               </div>
             </div>

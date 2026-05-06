@@ -54,7 +54,7 @@ export default function PastInterviews() {
           {sessions.map((s) => {
             const mins = s.durationSeconds ? Math.floor(s.durationSeconds / 60) : 0
             const secs = s.durationSeconds ? s.durationSeconds % 60 : 0
-            const duration = s.durationSeconds ? `${mins}:${String(secs).padStart(2, '0')}` : '—'
+            const duration = s.durationSeconds ? `${mins}:${String(secs).padStart(2, '0')}` : '-'
             const date = s.endedAt
               ? new Date(s.endedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
               : ''

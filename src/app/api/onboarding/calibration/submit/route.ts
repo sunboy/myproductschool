@@ -61,12 +61,12 @@ async function computeRealPercentile(adminClient: ReturnType<typeof createAdminC
 const ARCHETYPES: Record<string, { name: string; description: string }> = {
   strategist:       { name: 'The Strategist',         description: 'You frame problems sharply and land recommendations with conviction. Your instinct is to define the question before answering it.' },
   systematic:       { name: 'The Systematic Builder', description: 'You construct solutions methodically with strong framing and a bias for structured execution. Narrative communication is your next edge.' },
-  analyst:          { name: 'The Analyst',            description: 'You thrive in data and options — breaking problems into clean, testable segments. Converting that rigour into crisp recommendations is your growth area.' },
+  analyst:          { name: 'The Analyst',            description: 'You thrive in data and options - breaking problems into clean, testable segments. Converting that rigour into crisp recommendations is your growth area.' },
   communicator:     { name: 'The Communicator',       description: 'You land ideas clearly and handle rooms well. Building the structured diagnostic beneath your narrative will make your recommendations unassailable.' },
   problem_framer:   { name: 'The Problem Framer',     description: 'You ask the right questions before jumping to answers. Developing your ability to deliver those insights with executive presence is your next move.' },
   operator:         { name: 'The Operator',           description: 'You excel at scoping, prioritising, and shipping under constraints. Strengthening your problem framing will make your solutions harder to second-guess.' },
   well_rounded:     { name: 'The Well-Rounded',       description: 'You show solid instincts across all four FLOW moves. The path forward is deepening each one from competent to exceptional.' },
-  emerging_thinker: { name: 'The Emerging Thinker',  description: 'You have the raw instincts — Hatch will help you build the frameworks to sharpen them into consistent, high-impact product thinking.' },
+  emerging_thinker: { name: 'The Emerging Thinker',  description: 'You have the raw instincts - Hatch will help you build the frameworks to sharpen them into consistent, high-impact product thinking.' },
 }
 
 function deriveArchetype(s: { frame: number; list: number; optimize: number; win: number }) {

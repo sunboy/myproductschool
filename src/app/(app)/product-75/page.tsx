@@ -270,7 +270,7 @@ export default async function Product75Page() {
             <p className="font-body text-sm leading-relaxed text-on-secondary-container/80">
               Focus on{' '}
               <span className="font-bold text-on-secondary-container">Engagement</span>{' '}
-              next &mdash; it will help with your challenge scores.
+              next - it will help with your challenge scores.
             </p>
             <button className="mt-4 w-full bg-on-secondary-container text-secondary-container font-bold py-2 rounded-md text-xs uppercase tracking-widest hover:bg-on-secondary-container/90 transition-colors">
               View Engagement

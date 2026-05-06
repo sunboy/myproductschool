@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
   try {
     const flowStep = body.step as FlowStep | undefined
 
-    let userPrompt = 'Warmup call — priming prompt cache.'
+    let userPrompt = 'Warmup call - priming prompt cache.'
     if (flowStep) {
       const reasoningMove = getReasoningMove(flowStep)
       userPrompt += ` Step: ${flowStep}. Reasoning move: ${reasoningMove}.`
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
       budget: { userId: user.id, userPlan, route: ROUTE_KEY },
     })
   } catch {
-    // Warmup failure is silent — never surface to client
+    // Warmup failure is silent - never surface to client
   }
 
   return NextResponse.json({ ok: true })

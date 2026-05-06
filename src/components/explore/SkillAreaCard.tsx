@@ -27,7 +27,7 @@ export function SkillAreaCard({ domain }: SkillAreaCardProps) {
           </span>
         </div>
 
-        {/* Description — single line */}
+        {/* Description - single line */}
         {domain.description && (
           <p className="text-sm text-on-surface-variant truncate mt-0.5">{domain.description}</p>
         )}

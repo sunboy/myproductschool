@@ -134,7 +134,7 @@ export default async function ChallengeWorkspacePage({ params, searchParams }: {
     if (ch?.id) {
       challengeId = ch.id
       challengeSlug = ch.slug
-      // Quick takes don't have FLOW steps — send to challenges hub
+      // Quick takes don't have FLOW steps - send to challenges hub
       if (ch.challenge_type === 'quick_take') redirect('/challenges')
     } else {
       // Try by UUID

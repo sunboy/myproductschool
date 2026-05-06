@@ -360,7 +360,7 @@ export default function ModulesPage() {
             </div>
           </div>
 
-          {/* Right — stat pills */}
+          {/* Right - stat pills */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
             {[
               { label: 'Guides', value: String(modules.length || 12) },
@@ -414,7 +414,7 @@ export default function ModulesPage() {
               fontFamily: 'var(--font-headline)',
               fontSize: 17, fontWeight: 600, color: 'var(--color-on-primary-container, #0f3d1f)', marginBottom: 4,
             }}>
-              {firstInProgress.name} — pick up where you left off.
+              {firstInProgress.name} - pick up where you left off.
             </div>
             <p style={{
               fontFamily: 'var(--font-body)',

@@ -33,8 +33,8 @@ function getScoreDescriptor(score: number): string {
 function getGradeDescriptor(score: number): string {
   if (score >= 90) return 'Excellent performance'
   if (score >= 75) return 'Strong performance with room to grow'
-  if (score >= 60) return 'Good foundation — focus on the areas below'
-  return 'Keep practicing — review the suggestions below'
+  if (score >= 60) return 'Good foundation - focus on the areas below'
+  return 'Keep practicing - review the suggestions below'
 }
 
 const COMPETENCY_LABELS: Record<string, string> = {

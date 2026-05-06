@@ -53,7 +53,7 @@ export async function POST(
   }
 
   // If the attempt was already marked completed but has NO grade row (orphan
-  // from a prior failed grading), allow re-grading — don't lock the user out.
+  // from a prior failed grading), allow re-grading - don't lock the user out.
   if (attempt.status === 'completed') {
     const { data: existingGrade } = await supabase
       .from('interview_grades')
@@ -64,7 +64,7 @@ export async function POST(
     if (existingGrade) {
       return NextResponse.json({ error: 'Already submitted' }, { status: 409 })
     }
-    // else fall through — re-grade this orphan attempt
+    // else fall through - re-grade this orphan attempt
   }
 
   // Fetch challenge type
@@ -80,7 +80,7 @@ export async function POST(
   }
 
   // Store the final snapshot first so the grader has data to read, but DO NOT
-  // flip status to 'completed' yet — if grading fails we want the user to be
+  // flip status to 'completed' yet - if grading fails we want the user to be
   // able to retry without hitting the "Already submitted" 409.
   const snapshotWithContext = canvasFinalSnapshot || contextPack
     ? {
@@ -105,7 +105,7 @@ export async function POST(
     return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
   }
 
-  // Grading succeeded — NOW mark the attempt completed.
+  // Grading succeeded - NOW mark the attempt completed.
   await supabase
     .from('challenge_attempts')
     .update({

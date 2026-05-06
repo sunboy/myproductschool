@@ -25,7 +25,7 @@ export interface FilterState {
   scope: string[]       // system design only
   topic: string[]       // controlled-vocabulary topic slugs
   technique: string[]   // controlled-vocabulary technique slugs
-  move: string[]        // FLOW move — product_sense only
+  move: string[]        // FLOW move - product_sense only
   real_interview: boolean
 }
 
@@ -148,7 +148,7 @@ export function FilterDropdownBar({ discipline, filters, onChange, resultCount, 
   const taxonomyDiscipline = UI_TO_TAXONOMY[discipline]
   const topicOptions = taxonomyDiscipline
     ? getTopicsForDiscipline(taxonomyDiscipline).map(t => t.slug)
-    : [] // 'all' — too broad to show a meaningful topic list
+    : [] // 'all' - too broad to show a meaningful topic list
   const techniqueOptions = taxonomyDiscipline
     ? getTechniquesForDiscipline(taxonomyDiscipline).map(t => t.slug)
     : []

@@ -377,7 +377,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   } | null>(null)
   const [isFinalizingParts, setIsFinalizingParts] = useState(false)
 
-  // Left panel collapse state — persisted to localStorage
+  // Left panel collapse state - persisted to localStorage
   const [leftCollapsed, setLeftCollapsed] = useState(false)
 
   // Derived: dock fade-out fires when answer has been submitted (phase leaves 'question')
@@ -424,7 +424,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const confidenceCardRef = useRef<HTMLDivElement>(null)
   const reasoningCardRef = useRef<HTMLTextAreaElement>(null)
 
-  // Resizable panel state — left panel width as percentage of container
+  // Resizable panel state - left panel width as percentage of container
   const [leftWidth, setLeftWidth] = useState(30)
   const containerRef = useRef<HTMLDivElement>(null)
   const dragCleanupRef = useRef<(() => void) | null>(null)
@@ -459,7 +459,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const apiChallengeType = isApiMode ? detail?.challenge?.challenge_type : undefined
   const isCanvasChallenge = apiChallengeType === 'system_design' || apiChallengeType === 'data_modeling'
   const isCodingChallenge = apiChallengeType === 'sql' || apiChallengeType === 'algorithm'
-  // Either canvas or coding — both are full-panel interview modes (no MCQ FLOW steps)
+  // Either canvas or coding - both are full-panel interview modes (no MCQ FLOW steps)
   const isInterviewChallenge = isCanvasChallenge || isCodingChallenge
 
   const openContextPack = useCallback(() => {
@@ -542,7 +542,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           setHistoryInterviewGrade(data.grade as InterviewGrade)
         }
       })
-      .catch(() => { /* leave null — render handles empty state */ })
+      .catch(() => { /* leave null - render handles empty state */ })
       .finally(() => setHistoryGradeLoading(false))
   }, [apiChallengeType, selectedHistoryIdx, sessionHistory])
 
@@ -751,7 +751,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (!isCanvasChallenge || !attemptId) return
     pendingDeltaRef.current += added
     if (nudgeTimerRef.current) clearTimeout(nudgeTimerRef.current)
-    // Wait 4s after the last add — if user keeps drawing, we keep waiting.
+    // Wait 4s after the last add - if user keeps drawing, we keep waiting.
     nudgeTimerRef.current = setTimeout(async () => {
       const delta = pendingDeltaRef.current
       pendingDeltaRef.current = 0
@@ -792,7 +792,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         }
       } catch { /* swallow */ }
     }, 4000)
-  // chatPanelOpen intentionally excluded — we only want the snapshot at fire time, not retriggers
+  // chatPanelOpen intentionally excluded - we only want the snapshot at fire time, not retriggers
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCanvasChallenge, attemptId, scene, apiChallengeType, isApiMode, props, emitHatchCue])
 
@@ -924,7 +924,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (supported && supported.length > 0 && !supported.includes(currentLanguage)) {
       setCurrentLanguage(supported[0])
     }
-  // Intentionally omit currentLanguage from deps — would loop on every change.
+  // Intentionally omit currentLanguage from deps - would loop on every change.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detail?.challenge?.id, isCodingChallenge])
 
@@ -940,7 +940,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detail?.challenge?.id, isCodingChallenge, currentLanguage])
 
-  // useCodeRunner hook — always called (React rules of hooks); only active for coding challenges
+  // useCodeRunner hook - always called (React rules of hooks); only active for coding challenges
   const codeChallenge = (isCodingChallenge && detail?.challenge)
     ? { id: detail.challenge.id, metadata: detail.challenge.metadata as Record<string, unknown> }
     : { id: '__no_coding__', metadata: {} }
@@ -1005,7 +1005,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     }
   }, [detail, attemptId, isApiMode, initialRoleId, startAttempt])
 
-  // Load step data when step changes — clear stale data immediately so no
+  // Load step data when step changes - clear stale data immediately so no
   // previous step's questions flash while the new step loads
   useEffect(() => {
     if (phase !== 'question') return
@@ -1053,7 +1053,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     setHatch(activeStepData.nudge ?? 'Pick the best option.', 'listening')
   }, [phase, activeStepData])
 
-  // GSAP session-start animation — fires once when phase first becomes 'question'
+  // GSAP session-start animation - fires once when phase first becomes 'question'
   const hasAnimated = useRef(false)
   useEffect(() => {
     if (phase !== 'question') return
@@ -1180,12 +1180,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         let hatchMsg = ''
         if (isCorrect && hasReasoning) hatchMsg = 'Hatch saw your thinking. Sharp pick.'
         else if (isCorrect) hatchMsg = 'Nice pick. Reasoning next time will get you tier 2.'
-        else if (confidence === 3) hatchMsg = 'Rock solid — but missed. High-value learning moment.'
+        else if (confidence === 3) hatchMsg = 'Rock solid - but missed. High-value learning moment.'
         else if (hasReasoning) hatchMsg = 'Worth looking at. Your reasoning shows the gap.'
         else hatchMsg = 'One to revisit. Think about why the best option works.'
         setHatch(hatchMsg, 'speaking')
 
-        // Fetch coaching in parallel — don't block step advancement on it
+        // Fetch coaching in parallel - don't block step advancement on it
         fetchCoaching({
           attemptId,
           questionId: currentQuestion.id,
@@ -1241,7 +1241,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           let hatchMsg = ''
           if (isCorrect && hasReasoning) hatchMsg = 'Hatch saw your thinking. Sharp pick.'
           else if (isCorrect) hatchMsg = 'Nice pick. Reasoning next time will get you tier 2.'
-          else if (confidence === 3) hatchMsg = 'Rock solid — but missed. High-value learning moment.'
+          else if (confidence === 3) hatchMsg = 'Rock solid - but missed. High-value learning moment.'
           else if (hasReasoning) hatchMsg = 'Worth looking at. Your reasoning shows the gap.'
           else hatchMsg = 'One to revisit. Think about why the best option works.'
           setHatch(hatchMsg, 'speaking')
@@ -1309,7 +1309,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     }
   }, [isApiMode, props, attemptId, canvasScene, contextPack, contextPackText, isSubmittingInterview, playHatchSound])
 
-  // Run handler for coding challenges — fires visible test cases only
+  // Run handler for coding challenges - fires visible test cases only
   const handleCodingRun = useCallback(async () => {
     if (codeRunner.status === 'running') return
     setOutputPanelStatus('running')
@@ -1329,7 +1329,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     }
   }, [codeRunner, currentCode])
 
-  // Submit handler for coding challenges — final correctness first, then Hatch grading.
+  // Submit handler for coding challenges - final correctness first, then Hatch grading.
   const handleCodingSubmit = useCallback(async () => {
     const challengeId = isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : ''
     if (!challengeId || !attemptId || isSubmittingCoding) return
@@ -1605,7 +1605,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     handlingNextRef.current = false
   }, [isApiMode, challengeId, currentStep, attemptId, props, questionRevealHistory, confidence, mirrorStepResults])
 
-  // Handle option select — update Hatch message
+  // Handle option select - update Hatch message
   const handleOptionSelect = useCallback((id: string) => {
     setSelectedOptionId(id)
     setHatch('Good. Now rate your confidence.', 'listening')
@@ -1881,7 +1881,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </div>
       )}
 
-      {/* Context — markdown for coding, plain text otherwise */}
+      {/* Context - markdown for coding, plain text otherwise */}
       {scenarioContext && (
         <div style={{ marginBottom: 20 }}>
           {isCodingChallenge ? (
@@ -1896,7 +1896,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </div>
       )}
 
-      {/* The trigger — hidden for coding challenges (the markdown body covers it) */}
+      {/* The trigger - hidden for coding challenges (the markdown body covers it) */}
       {!isCodingChallenge && scenarioTrigger && (
         <div style={{ marginBottom: 20, background: 'var(--color-amber-soft, #f3e2b9)', border: '1px solid #e8d09a', borderRadius: 12, padding: '14px 16px' }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#8a5c00', marginBottom: 6 }}>
@@ -1908,7 +1908,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </div>
       )}
 
-      {/* Your challenge — hidden for coding challenges */}
+      {/* Your challenge - hidden for coding challenges */}
       {!isCodingChallenge && challengeScenarioQ && (
         <div style={{ marginBottom: 20, background: 'var(--color-primary-container)', border: '1px solid rgba(74,124,89,0.25)', borderRadius: 12, padding: '14px 16px' }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', marginBottom: 6 }}>
@@ -2101,7 +2101,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </div>
       )}
 
-      {/* SQL schema + sample data — only shown for coding challenges with SQL */}
+      {/* SQL schema + sample data - only shown for coding challenges with SQL */}
       {isCodingChallenge && currentLanguage === 'sql' && (() => {
         const metadata = (isApiMode ? detail?.challenge?.metadata : null) as {
           sql_schema?: { schema_diagram?: SchemaDiagramData; sample_data_preview?: Record<string, Record<string, unknown>[]> }
@@ -2131,7 +2131,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         )
       })()}
 
-      {/* ── Parts list — multi-part coding challenges only ── */}
+      {/* ── Parts list - multi-part coding challenges only ── */}
       {isCodingChallenge && codingParts.length > 0 && (
         <div data-testid="parts-list" style={{ padding: '0 16px 16px' }}>
           {/* Section header */}
@@ -2183,7 +2183,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     transition: 'border-color 120ms, background 120ms',
                   }}
                 >
-                  {/* Part header — click to toggle expand */}
+                  {/* Part header - click to toggle expand */}
                   <button
                     data-testid={`part-toggle-${part.id}`}
                     onClick={() => {
@@ -2613,7 +2613,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   )
 
-  // Left description panel — collapses to a 32px rail when leftCollapsed=true
+  // Left description panel - collapses to a 32px rail when leftCollapsed=true
   const leftDescriptionPanel = leftCollapsed ? (
     // ── Collapsed 32px rail ──
     <section style={{
@@ -2682,7 +2682,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </section>
   )
 
-  // Shared top chrome — spans full width so the borderBottom is continuous
+  // Shared top chrome - spans full width so the borderBottom is continuous
   const topChrome = (
     <div style={{
       display: 'flex',
@@ -2691,7 +2691,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       background: 'var(--color-surface)',
       flexShrink: 0,
     }}>
-      {/* Left side: back + tabs — constrained to leftWidth (or 32px rail when collapsed) */}
+      {/* Left side: back + tabs - constrained to leftWidth (or 32px rail when collapsed) */}
       <div style={{ width: leftCollapsed ? 32 : `${leftWidth}%`, display: 'flex', alignItems: 'flex-end', gap: 2, padding: leftCollapsed ? '6px 4px 0' : '6px 8px 0', flexShrink: 0 }}>
         <button
           onClick={props.onExit ?? (() => window.history.back())}
@@ -2762,7 +2762,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             </button>
           )
         })}
-        {/* Collapse button — only shown when expanded and on coding challenges */}
+        {/* Collapse button - only shown when expanded and on coding challenges */}
         {!leftCollapsed && isCodingChallenge && (
           <button
             data-testid="collapse-toggle-button"
@@ -2788,7 +2788,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           </button>
         )}
       </div>
-      {/* Drag handle spacer — only when expanded */}
+      {/* Drag handle spacer - only when expanded */}
       <div style={{ width: leftCollapsed ? 0 : 6, flexShrink: 0 }} />
       {/* Right side: workspace controls only. Challenge type lives in the description tags. */}
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', gap: 16 }}>
@@ -2874,7 +2874,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   )
 
-  // Shared bottom footer — spans full width so the borderTop is continuous
+  // Shared bottom footer - spans full width so the borderTop is continuous
   const bottomFooter = currentQuestion ? (
     <div style={{
       display: 'flex',
@@ -2948,7 +2948,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           </div>
         )}
       </div>
-      {/* Drag handle spacer — matches drag handle visibility */}
+      {/* Drag handle spacer - matches drag handle visibility */}
       <div style={{ width: leftCollapsed ? 0 : 6, flexShrink: 0 }} />
       {/* Right side: prev + submit */}
       <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px' }}>
@@ -2973,7 +2973,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     </div>
   ) : null
 
-  // Shared drag handle — sits between left and right panel; hidden when rail is collapsed
+  // Shared drag handle - sits between left and right panel; hidden when rail is collapsed
   const dragHandle = leftCollapsed ? null : (
     <div
       onMouseDown={handleSeparatorMouseDown}
@@ -3010,7 +3010,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   <span className="material-symbols-outlined msi-sm">arrow_back</span> Back
                 </button>
                 <span style={{ fontFamily: 'var(--font-label)', fontSize: 12, color: 'var(--color-on-surface-variant)' }}>
-                  Attempt {sessionHistory.length - selectedHistoryIdx!} — {historyRecord.completedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  Attempt {sessionHistory.length - selectedHistoryIdx!} - {historyRecord.completedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
             )}
@@ -3022,14 +3022,14 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 <span style={{ fontFamily: 'var(--font-label)', fontSize: 12, fontWeight: 600, color: 'var(--color-on-surface)' }}>
                   {isCodingChallenge
                     ? isLoadingGrading
-                      ? 'Tests complete — Hatch is reviewing your solution'
-                      : 'Review complete — inspect tests, ask Hatch, or return to the editor'
-                    : 'Session complete — reviewing your results'}
+                      ? 'Tests complete - Hatch is reviewing your solution'
+                      : 'Review complete - inspect tests, ask Hatch, or return to the editor'
+                    : 'Session complete - reviewing your results'}
                 </span>
               </div>
             )}
 
-            {/* Interview feedback for canvas challenge types — fills the right panel
+            {/* Interview feedback for canvas challenge types - fills the right panel
                 in place of the canvas, matching product sense PostSessionMirror UX.
                 Renders for both fresh submissions (interviewGrade) and history view
                 (historyInterviewGrade fetched by attempt id). */}
@@ -3069,7 +3069,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               )
             )}
 
-            {/* Coding challenge feedback — two-column correctness + grading view */}
+            {/* Coding challenge feedback - two-column correctness + grading view */}
             {isCodingChallenge && (phase === 'complete' || historyRecord) && (
               <div className="flex-1 min-h-0 overflow-y-auto p-4 animate-step-enter">
                 {historyRecord && historyGradeLoading ? (
@@ -3166,7 +3166,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // phase === 'question'
   return (
     <div className="flex flex-col overflow-hidden h-full">
-      {/* Full-width top chrome: tabs on left, stepper on right — one continuous borderBottom */}
+      {/* Full-width top chrome: tabs on left, stepper on right - one continuous borderBottom */}
       {topChrome}
 
       {/* Middle: resizable two-pane content area */}
@@ -3176,7 +3176,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
         {/* Right pane: scrollable workspace content only */}
         <section style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--color-background)', overflow: 'hidden', minHeight: 0 }}>
-          {/* Grading interstitial — fills the right panel while the model grades. */}
+          {/* Grading interstitial - fills the right panel while the model grades. */}
           {isCanvasChallenge && isSubmittingInterview && (
             <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-4 animate-step-enter">
               <HatchGlyph size={48} state="reviewing" className="text-primary" />
@@ -3193,7 +3193,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
               ? { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', background: 'var(--color-background)' }
               : { flex: '1 1 auto', display: 'flex', minHeight: 0, minWidth: 0, position: 'relative' }
               }>
-              {/* Canvas column — top chrome owns the guide so canvas stays clear. */}
+              {/* Canvas column - top chrome owns the guide so canvas stays clear. */}
               <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                 <div style={{ flex: 1, minWidth: 0, minHeight: 0, position: 'relative' }}>
                   <ExcalidrawCanvas
@@ -3207,7 +3207,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     forceOpen={hintForceOpen}
                     onDismiss={() => setHintForceOpen(false)}
                   />
-                  {/* Exit fullscreen — only visible when maximised, since the
+                  {/* Exit fullscreen - only visible when maximised, since the
                       topChrome (which holds the toggle in the unmaximised view)
                       is hidden behind the fixed overlay. */}
                   {canvasMaximised && (
@@ -3240,13 +3240,13 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             </div>
           )}
 
-          {/* Coding workspace — Monaco editor + output panel + Hatch chat */}
+          {/* Coding workspace - Monaco editor + output panel + Hatch chat */}
           {isCodingChallenge && phase === 'question' && (
             <div style={codingMaximised
               ? { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', background: 'var(--color-background)' }
               : { flex: '1 1 auto', display: 'flex', minHeight: 0, minWidth: 0, position: 'relative' }
             }>
-              {/* Floating tab strip — visible only when panel is collapsed + multi-part */}
+              {/* Floating tab strip - visible only when panel is collapsed + multi-part */}
               {leftCollapsed && codingParts.length > 0 && (
                 <div data-testid="floating-tab-strip" style={{
                   position: 'absolute',
@@ -3386,7 +3386,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                       </>
                     )}
                   </button>
-                  {/* Submit button — "Submit Part" in multi-part mode, "Submit" in single-prompt */}
+                  {/* Submit button - "Submit Part" in multi-part mode, "Submit" in single-prompt */}
                   {codingParts.length > 0 ? (
                     // Multi-part: Submit Part (only active when a coding subtask part is open)
                     activePartId && codingParts.find(p => p.id === activePartId)?.response_type === 'coding_subtask' ? (
@@ -3519,7 +3519,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 </div>
               </div>
 
-              {/* Hatch chat panel — right side */}
+              {/* Hatch chat panel - right side */}
               {(() => {
                 const activePart = codingParts.find(p => p.id === activePartId)
                 return (
@@ -3619,7 +3619,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 padding: '14px 16px',
               }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-on-surface-variant)', marginBottom: 10, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                  Confidence — how sure are you?
+                  Confidence - how sure are you?
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
                   {(['Guessing', 'Not sure', 'Fairly sure', 'Rock solid'] as const).map((c, i) => {
@@ -3689,7 +3689,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </div>
       )}
 
-      {/* Full-width bottom footer: left actions + submit — only for MCQ FLOW challenges */}
+      {/* Full-width bottom footer: left actions + submit - only for MCQ FLOW challenges */}
       {!isInterviewChallenge && bottomFooter}
     </div>
   )

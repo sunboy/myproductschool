@@ -138,7 +138,7 @@ export async function POST(
   const flowCoverage = (session.flow_coverage ?? { frame: 0, list: 0, optimize: 0, win: 0 }) as Record<string, number>
   dynamicContext.push(buildCoverageNote(flowCoverage))
 
-  // Conversation memory — salient items from earlier in the interview
+  // Conversation memory - salient items from earlier in the interview
   const memory = (session.conversation_memory ?? []) as string[]
   if (memory.length > 0) {
     dynamicContext.push(
@@ -183,7 +183,7 @@ Do not advance the case, grade them, recap your instructions, or use Markdown.`)
     ...dynamicContext,
   ].join('\n\n')
 
-  // Generate Hatch's response — no grading signals, pure conversation
+  // Generate Hatch's response - no grading signals, pure conversation
   const model = 'claude-sonnet-4-6'
   const maxTokens = 600
   const userPlan = await getUserPlanForBudget(user.id)
@@ -287,7 +287,7 @@ Do not advance the case, grade them, recap your instructions, or use Markdown.`)
     return Response.json({ reply })
   }
 
-  // Fire async grading — non-blocking, don't await
+  // Fire async grading - non-blocking, don't await
   const recentTurns = [
     // Include last 2 existing turns for context + the new exchange
     ...(turnsData ?? []).slice(-2).map((t) => ({

@@ -75,7 +75,7 @@ function asSqlRows(value: unknown): Record<string, unknown>[] {
   return Array.isArray(value) ? (value as Record<string, unknown>[]) : []
 }
 
-// Diff between expected and actual SQL rows — highlights missing/extra rows
+// Diff between expected and actual SQL rows - highlights missing/extra rows
 function SqlRowDiff({
   expected,
   actual,

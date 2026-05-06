@@ -36,7 +36,7 @@ async function getAdminStats() {
   const scores = (avgScoreRow ?? []).map((r: { score: number }) => r.score).filter(Boolean)
   const avgScore = scores.length > 0
     ? (scores.reduce((a: number, b: number) => a + b, 0) / scores.length).toFixed(1)
-    : '—'
+    : '-'
 
   // Count active streaks: profiles with streak_days > 0
   const { count: activeStreaks } = await admin
@@ -122,7 +122,7 @@ export default async function AdminPage() {
               }) => (
                 <tr key={c.id} className="hover:bg-surface-container-high transition-colors">
                   <td className="px-4 py-3 text-on-surface font-medium max-w-xs truncate">{c.title}</td>
-                  <td className="px-4 py-3 text-on-surface-variant">{c.paradigm ?? '—'}</td>
+                  <td className="px-4 py-3 text-on-surface-variant">{c.paradigm ?? '-'}</td>
                   <td className="px-4 py-3">
                     <span className="text-xs px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant capitalize">
                       {c.difficulty}
@@ -165,17 +165,17 @@ export default async function AdminPage() {
                 <tr key={a.id} className="hover:bg-surface-container-high transition-colors">
                   <td className="px-4 py-3 text-on-surface-variant font-mono text-xs">{a.user_id.slice(0, 8)}…</td>
                   <td className="px-4 py-3 text-on-surface max-w-xs truncate">
-                    {Array.isArray(a.challenges) ? a.challenges[0]?.title : (a.challenges as { title: string } | null)?.title ?? '—'}
+                    {Array.isArray(a.challenges) ? a.challenges[0]?.title : (a.challenges as { title: string } | null)?.title ?? '-'}
                   </td>
                   <td className="px-4 py-3">
                     {a.score != null ? (
                       <span className="font-medium text-on-surface">{a.score}/10</span>
                     ) : (
-                      <span className="text-on-surface-variant">—</span>
+                      <span className="text-on-surface-variant">-</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-on-surface-variant text-xs">
-                    {a.submitted_at ? new Date(a.submitted_at).toLocaleString() : '—'}
+                    {a.submitted_at ? new Date(a.submitted_at).toLocaleString() : '-'}
                   </td>
                 </tr>
               ))}

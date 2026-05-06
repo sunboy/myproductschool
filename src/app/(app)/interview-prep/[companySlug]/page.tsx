@@ -33,7 +33,7 @@ export default async function CompanyProfilePage({
 
       <h1 className="font-headline text-3xl text-on-surface mb-2">{company.name}</h1>
       <p className="text-on-surface-variant mb-8">
-        Interview prep plan — personalized by Hatch
+        Interview prep plan - personalized by Hatch
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

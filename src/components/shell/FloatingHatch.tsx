@@ -121,7 +121,7 @@ export function FloatingHatch() {
   const glyphState = hatchCtx?.state ?? 'idle'
   const { muted, toggleMuted, play } = useHatchSonics()
 
-  // Suppress on the challenge workspace — workspace has its own Hatch affordance
+  // Suppress on the challenge workspace - workspace has its own Hatch affordance
   // (HatchSidePanel for FLOW, CanvasChatPanel for system_design/data_modeling)
   const isInWorkspace = /^\/workspace\/challenges\/[^/]+/.test(pathname)
 

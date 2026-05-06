@@ -42,7 +42,7 @@ function formatTime(value: string) {
 }
 
 function summarize(value: Record<string, unknown> | null) {
-  if (!value) return '—'
+  if (!value) return '-'
   const text = JSON.stringify(value)
   return text.length > 150 ? `${text.slice(0, 147)}...` : text
 }

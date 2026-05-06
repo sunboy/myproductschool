@@ -16,7 +16,7 @@ const CONTENT = {
       <ul className="mt-2 space-y-1.5 list-none">
         <li className="flex items-start gap-1">
           <span className="material-symbols-outlined text-base text-primary mr-1 shrink-0 mt-0.5">library_add</span>
-          <span>Drag shapes from Library (top-left toolbar) — common components like API, DB, cache</span>
+          <span>Drag shapes from Library (top-left toolbar) - common components like API, DB, cache</span>
         </li>
         <li className="flex items-start gap-1">
           <span className="material-symbols-outlined text-base text-primary mr-1 shrink-0 mt-0.5">arrow_forward</span>

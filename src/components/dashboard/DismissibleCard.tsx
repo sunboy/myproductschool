@@ -11,7 +11,7 @@ export function DismissibleCard({ cardId, children }: { cardId: string; children
   if (dismissed) return null
 
   const handleDismiss = () => {
-    setDismissed(true) // optimistic — hide immediately
+    setDismissed(true) // optimistic - hide immediately
     startTransition(async () => {
       await dismissCard(cardId)
       router.refresh()

@@ -106,7 +106,7 @@ export async function POST(
 
   const roleId = attempt.role_id as string
 
-  // Freeform path — no selected option
+  // Freeform path - no selected option
   if (!option_id) {
     const cacheKey = `${user.id}:${challengeId}:${step}:${question_id}:freeform`
 
@@ -124,7 +124,7 @@ export async function POST(
       return NextResponse.json({ role_context: cached.role_context, career_signal: cached.career_signal, cached: true })
     }
 
-    // Cache miss — fetch question + challenge + role lens
+    // Cache miss - fetch question + challenge + role lens
     const [
       { data: question },
       { data: challenge },
@@ -245,7 +245,7 @@ Return ONLY JSON: {"role_context":"...","career_signal":"..."}`
     return NextResponse.json({ role_context: cached.role_context, career_signal: cached.career_signal, cached: true })
   }
 
-  // Cache miss — fetch all needed data in parallel
+  // Cache miss - fetch all needed data in parallel
   const [
     { data: question },
     { data: option },

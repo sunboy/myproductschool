@@ -171,7 +171,7 @@ function Flywheel({
       style={{ maxHeight: 240, overflow: 'visible' }}
       aria-hidden="true"
     >
-      {/* Dashed background ring — optionally spinning */}
+      {/* Dashed background ring - optionally spinning */}
       <circle
         cx={cx}
         cy={cy}
@@ -212,7 +212,7 @@ function Flywheel({
         const nx = cx + radius * Math.cos(angleRad)
         const ny = cy + radius * Math.sin(angleRad)
 
-        // Label offset — push outward from center
+        // Label offset - push outward from center
         const labelRadius = radius + 28
         const lx = cx + labelRadius * Math.cos(angleRad)
         const ly = cy + labelRadius * Math.sin(angleRad)
@@ -466,7 +466,7 @@ function BlockAnatomy({ data, isVisible }: { data: BlockAnatomyData; isVisible: 
       style={{ maxHeight: svgHeight, overflow: 'visible' }}
       aria-hidden="true"
     >
-      {/* Editor chrome — title bar */}
+      {/* Editor chrome - title bar */}
       <rect
         x={0}
         y={0}

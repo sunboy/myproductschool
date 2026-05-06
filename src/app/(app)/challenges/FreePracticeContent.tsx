@@ -81,7 +81,7 @@ export async function FreePracticeContent({ searchParams }: FreePracticeContentP
 
       <BillingUsageFromProfile className="mb-6" />
 
-      {/* Featured Challenges — only when editorially pinned challenges exist and no search query */}
+      {/* Featured Challenges - only when editorially pinned challenges exist and no search query */}
       {featuredChallenges.length > 0 && !hasActiveFilters && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3.5">

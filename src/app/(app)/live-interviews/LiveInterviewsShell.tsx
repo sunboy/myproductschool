@@ -262,7 +262,7 @@ function RoundRow({ round, index, isCurrent }: { round: Round; index: number; is
             Review →
           </button>
         )}
-        {round.status === 'locked' && <span style={{ fontSize: 12, color: T.onSurfaceMuted }}>—</span>}
+        {round.status === 'locked' && <span style={{ fontSize: 12, color: T.onSurfaceMuted }}>-</span>}
       </div>
     </div>
   )
@@ -714,7 +714,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
         <label style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 6 }}>Loop name</label>
         <input
           value={name} onChange={(e) => setName(e.target.value)}
-          placeholder={`${selectedCo} — ${DIFF_LABELS[difficulty]} loop`}
+          placeholder={`${selectedCo} - ${DIFF_LABELS[difficulty]} loop`}
           style={{
             width: '100%', padding: '10px 14px', borderRadius: 10,
             border: `1px solid ${T.outlineVariant}`, background: T.surfaceContainerLow,
@@ -746,7 +746,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
       {/* Rounds */}
       <div>
         <label style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 8 }}>
-          Rounds <span style={{ fontWeight: 400, color: T.onSurfaceMuted }}>— pick 2–5</span>
+          Rounds <span style={{ fontWeight: 400, color: T.onSurfaceMuted }}>- pick 2–5</span>
         </label>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
           {ROUND_OPTIONS.map((r) => {
@@ -842,7 +842,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
 // ── Mock loop data ─────────────────────────────────────────────────────────────
 const MOCK_LOOPS: Loop[] = [
   {
-    id: 'lp1', loopDbId: 'lp1', name: 'Stripe — Senior PM loop', company: 'Stripe', icon: 'credit_card',
+    id: 'lp1', loopDbId: 'lp1', name: 'Stripe - Senior PM loop', company: 'Stripe', icon: 'credit_card',
     status: 'in_progress', progressPct: 33,
     lastActive: 'Resumed 2h ago', totalMins: 120,
     rounds: [
@@ -864,7 +864,7 @@ const MOCK_LOOPS: Loop[] = [
     ],
   },
   {
-    id: 'lp3', loopDbId: 'lp3', name: 'Meta — IC6 PM loop', company: 'Meta', icon: 'groups',
+    id: 'lp3', loopDbId: 'lp3', name: 'Meta - IC6 PM loop', company: 'Meta', icon: 'groups',
     status: 'completed', grade: 'B+', overallScore: 84,
     lastActive: 'Completed Apr 16', totalMins: 110,
     rounds: [
@@ -1034,7 +1034,7 @@ function PastSessionsTable() {
             return {
               id: s.id, company: s.companyName, role: s.roleId,
               score: s.overallScore, grade: s.grade ?? null,
-              duration: s.durationSeconds ? `${mins}:${String(secs).padStart(2, '0')}` : '—',
+              duration: s.durationSeconds ? `${mins}:${String(secs).padStart(2, '0')}` : '-',
               date: s.endedAt ? new Date(s.endedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '',
             }
           }))
@@ -1047,7 +1047,7 @@ function PastSessionsTable() {
   const displaySessions: PastSession[] = sessions.length > 0 ? sessions : [
     { id: 's1', company: 'Meta',   role: 'PM',       score: 82, grade: 'B+', duration: '28:14', date: 'Apr 18' },
     { id: 's2', company: 'Google', role: 'PM',       score: 71, grade: 'B-', duration: '22:50', date: 'Apr 14' },
-    { id: 's3', company: 'Stripe', role: 'SWE',      score: null, grade: null, duration: '—',  date: 'Apr 10' },
+    { id: 's3', company: 'Stripe', role: 'SWE',      score: null, grade: null, duration: '-',  date: 'Apr 10' },
   ]
 
   if (loading) return (

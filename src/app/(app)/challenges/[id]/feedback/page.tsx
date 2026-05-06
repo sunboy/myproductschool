@@ -266,7 +266,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             </span>
           </div>
 
-          {/* Challenge card — sticky on desktop */}
+          {/* Challenge card - sticky on desktop */}
           <div className="bg-surface-container p-5 rounded-xl editorial-shadow space-y-4 lg:sticky lg:top-24">
             {/* Challenge title */}
             <h3 className="font-headline text-xl font-bold text-primary">{challenge.title}</h3>

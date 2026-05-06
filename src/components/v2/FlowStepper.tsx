@@ -65,7 +65,7 @@ export function FlowStepper({ currentStep, completedSteps, onStepClick, question
     }
   }, [currentStep, currentIdx])
 
-  // Mount animation — slide entire stepper in
+  // Mount animation - slide entire stepper in
   useEffect(() => {
     const dots = dotRefs.current.filter(Boolean)
     if (dots.length) {
@@ -150,12 +150,12 @@ export function FlowStepper({ currentStep, completedSteps, onStepClick, question
               </div>
             </button>
 
-            {/* Connector line — animated fill via scaleX */}
+            {/* Connector line - animated fill via scaleX */}
             {idx < STEPS.length - 1 && (
               <div style={{ width: 24, height: 2, flexShrink: 0, position: 'relative', overflow: 'hidden', borderRadius: 999 }}>
                 {/* Base (unfilled) */}
                 <div style={{ position: 'absolute', inset: 0, background: 'var(--color-outline-variant)', borderRadius: 999 }} />
-                {/* Filled layer — GSAP animates scaleX */}
+                {/* Filled layer - GSAP animates scaleX */}
                 <div
                   ref={el => { connectorRefs.current[idx] = el }}
                   style={{

@@ -223,7 +223,7 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
             {[
               { label: 'Challenges', value: String(challenges.length) },
               { label: 'Difficulty tiers', value: String(chapters.length) },
-              { label: 'Completed', value: completedCount > 0 ? `${completedCount}/${challenges.length}` : '—' },
+              { label: 'Completed', value: completedCount > 0 ? `${completedCount}/${challenges.length}` : '-' },
             ].map(stat => (
               <div key={stat.label} style={{
                 background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.09)',

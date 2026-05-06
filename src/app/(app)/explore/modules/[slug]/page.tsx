@@ -165,7 +165,7 @@ function ChapterPane({
         )}
       </div>
 
-      {/* Body — scrollable */}
+      {/* Body - scrollable */}
       <ChapterBody body_mdx={data.body_mdx} figures={data.figures ?? []} />
 
       {/* Footer */}
@@ -359,7 +359,7 @@ function ModulePageInner({ slug }: { slug: string }) {
           <div className="flex items-start gap-2.5 bg-primary-fixed rounded-xl p-3">
             <HatchGlyph size={28} state="speaking" className="text-primary flex-shrink-0" />
             <p className="text-[11px] text-on-surface leading-relaxed">
-              <span className="font-bold">Hatch tip:</span> Complete chapters in order — each builds on the last.
+              <span className="font-bold">Hatch tip:</span> Complete chapters in order - each builds on the last.
             </p>
           </div>
 

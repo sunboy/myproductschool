@@ -75,7 +75,7 @@ export async function addInterview(date: string, meta?: { company?: string; roun
     const label = [meta?.round, meta?.company].filter(Boolean).join(' at ') || 'upcoming interview'
     const content = daysUntil > 0
       ? `You have a ${label} in ${daysUntil} day${daysUntil === 1 ? '' : 's'}.`
-      : `You have a ${label} today — good luck!`
+      : `You have a ${label} today - good luck!`
     await embedAndStoreContext(user.id, 'interview_date', content, interview?.id ?? 'profile', {
       interview_date: date, days_until: daysUntil, company: meta?.company, round: meta?.round,
     })
@@ -110,7 +110,7 @@ export async function setInterviewDate(date: string, meta?: { company?: string; 
     )
     const content = daysUntil > 0
       ? `You're preparing for an interview in ${daysUntil} day${daysUntil === 1 ? '' : 's'}.`
-      : `Your interview is today — good luck!`
+      : `Your interview is today - good luck!`
 
     await embedAndStoreContext(
       user.id,
@@ -120,7 +120,7 @@ export async function setInterviewDate(date: string, meta?: { company?: string; 
       { interview_date: date, days_until: daysUntil }
     )
   } catch {
-    // Non-critical — don't block the date update
+    // Non-critical - don't block the date update
   }
 
   revalidatePath('/dashboard')

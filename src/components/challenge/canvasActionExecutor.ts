@@ -119,7 +119,7 @@ function makeTableBoundLabel(
 }
 
 // ---------------------------------------------------------------------------
-// Tween helper — animates newly placed shapes with a fade-in + slide-down
+// Tween helper - animates newly placed shapes with a fade-in + slide-down
 // ---------------------------------------------------------------------------
 
 type TweenTask = {
@@ -297,7 +297,7 @@ async function applyAction(
             opacity: 100,
             ...baseFields(),
             boundElements: [{ id: textId, type: 'text' }],
-            // strip columns from the Excalidraw element — it's not a native field
+            // strip columns from the Excalidraw element - it's not a native field
             columns: undefined,
           })
           newEls.push(textEl)
@@ -352,7 +352,7 @@ async function applyAction(
 
       api.updateScene({ elements: [...elements, ...newEls] })
 
-      // Tween each new shape (not bound text — it follows containerId automatically)
+      // Tween each new shape (not bound text - it follows containerId automatically)
       for (const { id, targetY } of tweenTargets) {
         tweenElement(api, id, { opacity: 0, y: targetY - 40 }, { opacity: 100, y: targetY }, 250)
       }
@@ -373,7 +373,7 @@ async function applyAction(
       const arrowId = uniqueId()
       const newScene: unknown[] = [...elements]
 
-      // Build arrow with explicit start/end bindings to the entities — the
+      // Build arrow with explicit start/end bindings to the entities - the
       // scene parser uses these to reliably resolve "from"/"to" later.
       const arrow: Record<string, unknown> = {
         id: arrowId,

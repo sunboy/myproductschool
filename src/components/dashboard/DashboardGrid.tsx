@@ -209,7 +209,7 @@ export function DashboardGrid({ visibleCards, dismissedCards, cardData, initialC
           )
         })}
 
-        {/* Add card button — always last, full width */}
+        {/* Add card button - always last, full width */}
         <div className="lg:col-span-3">
           <button
             onClick={() => setPickerOpen(true)}

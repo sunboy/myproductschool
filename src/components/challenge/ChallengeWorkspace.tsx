@@ -58,7 +58,7 @@ const COACHING_PROMPTS: Record<number, { thought: string; tip: string }> = {
     tip: 'Staff-level engineers spend 30% of their time framing. The biggest trap? Jumping to "we should A/B test it" before understanding what broke.',
   },
   1: {
-    thought: 'Who loses here and who gains? Segment by behavior — power users, new users, and casuals react very differently to the same change.',
+    thought: 'Who loses here and who gains? Segment by behavior - power users, new users, and casuals react very differently to the same change.',
     tip: 'The aggregate fallacy kills more analyses than bad data. "Average users" don\'t exist. Be specific about which cohort you\'re diagnosing.',
   },
   2: {
@@ -100,7 +100,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
   const [selectedOptions, setSelectedOptions] = useState<Set<number>>(new Set())
   const [bookmarked, setBookmarked]       = useState(false)
   const [confidence, setConfidence]       = useState<string | null>(null)
-  const [leftWidth, setLeftWidth]         = useState(40) // percent — matches w-2/5 default
+  const [leftWidth, setLeftWidth]         = useState(40) // percent - matches w-2/5 default
   const containerRef = useRef<HTMLDivElement>(null)
   const dragging     = useRef(false)
 
@@ -110,7 +110,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
   // Hatch chat state
   const { mode: hatchMode, panelWidth: hatchWidth, setMode: setHatchMode, setPanelWidth: setHatchWidth, MIN_WIDTH: HATCH_MIN, MAX_WIDTH: HATCH_MAX } = useHatchDockState('flow')
   const [hatchMessages, setHatchMessages] = useState<Array<{ role: 'user' | 'hatch'; content: string }>>([
-    { role: 'hatch', content: "I'm watching your analysis. Ask me anything — framing, tradeoffs, what your metrics mean." },
+    { role: 'hatch', content: "I'm watching your analysis. Ask me anything - framing, tradeoffs, what your metrics mean." },
   ])
   const [hatchInput, setHatchInput] = useState('')
   const [hatchLoading, setHatchLoading] = useState(false)
@@ -329,7 +329,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
     <div className="flex flex-col h-screen bg-background overflow-hidden">
 
       {/* ═══════════════════════════════════════════════════════
-          TOP BAR — matches Stitch exactly
+          TOP BAR - matches Stitch exactly
           ═══════════════════════════════════════════════════════ */}
       <header className="h-12 w-full bg-background border-b border-outline-variant flex items-center justify-between px-6 z-30 flex-shrink-0">
         {/* Left: back + title */}
@@ -394,12 +394,12 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
       </header>
 
       {/* ═══════════════════════════════════════════════════════
-          CONTENT AREA — quick / guided split-pane / freeform scroll
+          CONTENT AREA - quick / guided split-pane / freeform scroll
           ═══════════════════════════════════════════════════════ */}
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
       {mode === 'quick' ? (
         <div className="flex-1 flex overflow-hidden">
-          {/* Left pane — scenario */}
+          {/* Left pane - scenario */}
           <section className="w-2/5 bg-surface-container-lowest border-r border-outline-variant flex flex-col overflow-y-auto p-6">
             <div className="flex items-start justify-between mb-4">
               <h1 className="font-headline text-lg font-bold leading-tight">{challenge.title}</h1>
@@ -422,7 +422,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
             </div>
           </section>
 
-          {/* Right pane — quick take input */}
+          {/* Right pane - quick take input */}
           <section className="flex-1 bg-surface flex flex-col overflow-hidden relative">
             <div className="flex-1 flex flex-col p-6 gap-4">
               <div className="bg-primary-fixed/30 rounded-xl p-4 text-sm text-on-surface">
@@ -452,7 +452,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
             <div className="bg-primary-fixed/30 border-t border-primary/10 px-6 py-3 flex items-center gap-4 flex-shrink-0">
               <HatchGlyph size={28} state="listening" className="text-primary flex-shrink-0" />
               <div className="flex-1 text-sm text-on-primary-container font-medium">
-                <span className="font-bold">Quick Take</span> — no steps needed. Just share your instinct and Hatch will grade it.
+                <span className="font-bold">Quick Take</span> - no steps needed. Just share your instinct and Hatch will grade it.
               </div>
             </div>
           </section>
@@ -471,7 +471,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
       ) : (
       <div className="flex-1 flex flex-col overflow-hidden">
 
-        {/* FLOW stage tabs — above the two-pane split */}
+        {/* FLOW stage tabs - above the two-pane split */}
         <div className="flex items-center gap-1 px-4 py-2 border-b border-outline-variant bg-surface shrink-0">
           {FLOW_STAGES.map((s, i) => {
             const stageIdx = activeStep
@@ -503,7 +503,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
         {/* Two-pane split */}
         <div ref={containerRef} className="flex-1 flex overflow-hidden">
 
-        {/* ── LEFT PANE — Scenario ─────────────────── */}
+        {/* ── LEFT PANE - Scenario ─────────────────── */}
         <section
           className="bg-surface-container-lowest border-r border-outline-variant flex flex-col overflow-y-auto p-6 shrink-0"
           style={{ width: `${leftWidth}%` }}
@@ -549,10 +549,10 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
           className="w-1 bg-outline-variant hover:bg-primary cursor-col-resize shrink-0 transition-colors"
         />
 
-        {/* ── RIGHT PANE — Answer Workspace (flex-1) ───────── */}
+        {/* ── RIGHT PANE - Answer Workspace (flex-1) ───────── */}
         <section className="flex-1 bg-surface flex flex-col overflow-hidden relative">
 
-          {/* Move Progress Bar — Raph Koster: tension arc with completion %  */}
+          {/* Move Progress Bar - Raph Koster: tension arc with completion %  */}
           <div className="border-b border-outline-variant/30 flex-shrink-0">
             {/* Thin progress track at very top */}
             {(() => {
@@ -603,13 +603,13 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
                 })}
               </div>
               <div className="flex items-center gap-3">
-                {/* Completion % badge — Raph Koster: "don't stop now" signal */}
+                {/* Completion % badge - Raph Koster: "don't stop now" signal */}
                 {(() => {
                   const completedSteps = FLOW_STEPS.filter((_, i) => (responses[i] ?? '').trim().length > 0).length
                   const pct = Math.round((completedSteps / FLOW_STEPS.length) * 100)
                   return pct > 0 && pct < 100 ? (
                     <span className="text-[10px] font-bold text-primary bg-primary-fixed/50 px-2 py-0.5 rounded-full">
-                      {pct}% done — keep going
+                      {pct}% done - keep going
                     </span>
                   ) : null
                 })()}
@@ -628,7 +628,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
           <div className="flex-1 p-8 overflow-y-auto">
             <div className="max-w-3xl">
               <h2 className="text-xl font-bold font-headline mb-1">
-                {step.label} — {step.subtitle}
+                {step.label} - {step.subtitle}
               </h2>
               <p className="text-sm text-on-surface-variant mb-6 font-body">
                 {activeStep === 0 && 'Identify the problem before jumping to solutions.'}
@@ -637,7 +637,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
                 {activeStep === 3 && 'Make a clear, specific recommendation.'}
               </p>
 
-              {/* Input mode toggle — only shown when scaffold options exist */}
+              {/* Input mode toggle - only shown when scaffold options exist */}
               {scaffoldOptions.length > 0 && (
                 <div className="flex gap-1 mb-4">
                   <button
@@ -665,7 +665,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
                 </div>
               )}
 
-              {/* Options cards — shown in options mode */}
+              {/* Options cards - shown in options mode */}
               {inputMode === 'options' && scaffoldOptions.length > 0 ? (
                 <div className="space-y-2">
                   {scaffoldOptions.map((opt, i) => {
@@ -694,7 +694,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
                     disabled={selectedOptions.size === 0}
                     className="mt-2 w-full py-2.5 rounded-full bg-secondary-container text-on-secondary-container text-sm font-label font-semibold disabled:opacity-40 hover:bg-primary-fixed transition-colors"
                   >
-                    Use selected — continue in text
+                    Use selected - continue in text
                   </button>
                 </div>
               ) : (
@@ -714,7 +714,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
                 </div>
               )}
 
-              {/* Action row — hidden in options mode */}
+              {/* Action row - hidden in options mode */}
               {inputMode !== 'options' && (
                 <div className="mt-6 flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -734,7 +734,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
                 </div>
               )}
 
-              {/* Data Cards Grid — Hatch thought starter + Add custom segment */}
+              {/* Data Cards Grid - Hatch thought starter + Add custom segment */}
               <div className="mt-12 grid grid-cols-2 gap-4">
                 <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30">
                   <div className="flex items-center gap-2 mb-3">
@@ -820,7 +820,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
       </div>
       )}
 
-      {/* Hatch FAB — closed state */}
+      {/* Hatch FAB - closed state */}
       {hatchMode === 'closed' && (
         <button
           onClick={() => setHatchMode('floating')}

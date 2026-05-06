@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
 
   if (!challenge) return apiError(404, 'prompt_not_found', 'Prompt not found')
 
-  // Grade with Haiku — quality score 0.0–1.0
+  // Grade with Haiku - quality score 0.0–1.0
   let score: number
   let feedback: string
   try {

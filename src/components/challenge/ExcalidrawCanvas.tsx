@@ -117,7 +117,7 @@ export default function ExcalidrawCanvas({
         initialData={{
           ...(initialData ?? {}),
           appState: {
-            // Default new text to Nunito (FONT_FAMILY = 6) — matches the app font.
+            // Default new text to Nunito (FONT_FAMILY = 6) - matches the app font.
             currentItemFontFamily: 6,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ...((initialData?.appState as any) ?? {}),

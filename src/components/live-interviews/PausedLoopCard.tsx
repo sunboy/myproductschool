@@ -76,7 +76,7 @@ export function PausedLoopCard({ loop, rounds }: Props) {
         </div>
         <div className="text-[12px]" style={{ color: 'rgba(243,237,224,0.60)' }}>
           Round {pausedRound.round_index + 1} of {totalCount}
-          {' — '}{DISCIPLINE_LABELS[pausedRound.discipline] ?? pausedRound.discipline}
+          {' - '}{DISCIPLINE_LABELS[pausedRound.discipline] ?? pausedRound.discipline}
         </div>
       </div>
 

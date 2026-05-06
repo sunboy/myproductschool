@@ -57,9 +57,9 @@ export default async function AdminWaitlistPage() {
                 key={entry.id}
                 className={`border-b border-outline-variant/50 last:border-0 ${i % 2 === 0 ? '' : 'bg-surface-container-low/50'}`}
               >
-                <td className="px-4 py-3 text-on-surface font-medium">{entry.name ?? '—'}</td>
+                <td className="px-4 py-3 text-on-surface font-medium">{entry.name ?? '-'}</td>
                 <td className="px-4 py-3 text-on-surface">{entry.email}</td>
-                <td className="px-4 py-3 text-on-surface-variant">{entry.company ?? '—'}</td>
+                <td className="px-4 py-3 text-on-surface-variant">{entry.company ?? '-'}</td>
                 <td className="px-4 py-3 text-on-surface-variant whitespace-nowrap">
                   {new Date(entry.created_at).toLocaleDateString('en-US', {
                     month: 'short', day: 'numeric', year: 'numeric',

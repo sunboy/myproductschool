@@ -6,7 +6,7 @@ import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 export interface HatchSidePanelProps {
   message: string
-  // Fix D: added 'speaking' — appropriate for coaching panels
+  // Fix D: added 'speaking' - appropriate for coaching panels
   hatchState: 'idle' | 'listening' | 'reviewing' | 'speaking'
   stepName?: string
 }

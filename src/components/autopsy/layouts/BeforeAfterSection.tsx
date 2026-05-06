@@ -53,7 +53,7 @@ export function BeforeAfterSection({ section, hasBeenVisible }: Props) {
               transitionDelay: '120ms',
             }}
           >
-            {/* Top accent line — error red */}
+            {/* Top accent line - error red */}
             <div className="h-px w-full mb-6" style={{ backgroundColor: 'rgba(184,50,48,0.4)' }} />
 
             <div className="pr-8 md:pr-12">
@@ -119,7 +119,7 @@ export function BeforeAfterSection({ section, hasBeenVisible }: Props) {
               transitionDelay: '180ms',
             }}
           >
-            {/* Top accent line — green */}
+            {/* Top accent line - green */}
             <div className="h-px w-full mb-6" style={{ backgroundColor: 'rgba(74,124,89,0.5)' }} />
 
             <div className="md:pl-12">

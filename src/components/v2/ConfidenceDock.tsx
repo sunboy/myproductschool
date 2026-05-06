@@ -37,7 +37,7 @@ export function ConfidenceDock({
   const prevConfidence = useRef<number | null>(null)
   const prevSubmitted = useRef(false)
 
-  // Fix C: set initial opacity via GSAP at mount so GSAP owns opacity entirely —
+  // Fix C: set initial opacity via GSAP at mount so GSAP owns opacity entirely -
   // no competing Tailwind opacity classes or inline style opacity on these rows.
   useEffect(() => {
     if (confidenceRowRef.current) {
@@ -135,7 +135,7 @@ export function ConfidenceDock({
 
   return (
     <div ref={dockRef} className="flex flex-col gap-3 w-full">
-      {/* Confidence row — initial opacity set by GSAP at mount (Fix C), no Tailwind opacity class */}
+      {/* Confidence row - initial opacity set by GSAP at mount (Fix C), no Tailwind opacity class */}
       <div
         ref={confidenceRowRef}
         className={`flex gap-2 transition-none ${optionSelected ? '' : 'pointer-events-none'}`}
@@ -164,7 +164,7 @@ export function ConfidenceDock({
         })}
       </div>
 
-      {/* Reasoning row — initial opacity set by GSAP at mount (Fix C), no Tailwind/inline opacity */}
+      {/* Reasoning row - initial opacity set by GSAP at mount (Fix C), no Tailwind/inline opacity */}
       <div
         ref={reasoningRowRef}
         className={`transition-none ${confidence === null ? 'pointer-events-none' : ''}`}

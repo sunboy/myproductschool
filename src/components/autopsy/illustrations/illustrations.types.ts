@@ -1,4 +1,4 @@
-// Per-variant data shapes — narrowed from IllustrationConfig.data
+// Per-variant data shapes - narrowed from IllustrationConfig.data
 
 export interface ComparisonBarsData {
   bars: Array<{

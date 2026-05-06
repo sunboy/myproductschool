@@ -236,7 +236,7 @@ export function StepDetailModal({ stepResult, attemptId, onClose }: StepDetailMo
           </button>
         </div>
 
-        {/* Question tab bar — hidden for single-question steps */}
+        {/* Question tab bar - hidden for single-question steps */}
         {!isOnly && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '8px 24px',

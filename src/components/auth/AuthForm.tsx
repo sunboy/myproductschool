@@ -22,7 +22,7 @@ const AUTH_DISCIPLINES = [
   { label: 'System design', icon: 'hub', color: '#f5a76c', copy: 'Scale and tradeoffs' },
 ] as const
 
-// Hatch mascot as giant outline-only line art — no fills, strokes only
+// Hatch mascot as giant outline-only line art - no fills, strokes only
 function HatchLineArt() {
   // viewBox="0 0 64 72", scaled ~10.5x, centered in left half
   const s = 10.5
@@ -318,7 +318,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
 
   return (
     /*
-     * ONE unified background — the gradient lives here, on a single element.
+     * ONE unified background - the gradient lives here, on a single element.
      * No separate panel backgrounds. The form card floats on top.
      * Mobile: stacks vertically with the same gradient top→bottom.
      */
@@ -328,7 +328,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         background: 'linear-gradient(118deg, #07100c 0%, #0c1610 25%, #163324 48%, #1e4a31 60%, #29623f 70%, #3d7a52 80%, #5a9468 90%, #7ab088 100%)',
       }}
     >
-      {/* Grain overlay — fixed so it doesn't repaint on scroll */}
+      {/* Grain overlay - fixed so it doesn't repaint on scroll */}
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
@@ -341,12 +341,12 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         aria-hidden
       />
 
-      {/* Hatch line art — left half only */}
+      {/* Hatch line art - left half only */}
       <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
         <HatchLineArt />
       </div>
 
-      {/* Radial glow — top left */}
+      {/* Radial glow - top left */}
       <div
         className="absolute pointer-events-none"
         style={{
@@ -357,7 +357,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         aria-hidden
       />
 
-      {/* Content: left brand/headline + right form card — on desktop side by side */}
+      {/* Content: left brand/headline + right form card - on desktop side by side */}
       <div className="relative min-h-[100dvh] flex flex-col md:flex-row md:items-center" style={{ zIndex: 2 }}>
 
         {/* ── Left: brand + headline ───────────────────── */}
@@ -392,7 +392,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
             Practice product, systems, data, SQL, and coding judgment. Stay sharp as AI reshapes the job.
           </p>
 
-          {/* Feature bullets — desktop only */}
+          {/* Feature bullets - desktop only */}
           <ul className="hidden md:flex flex-col gap-3 mt-10">
             {[
               'Product sense, system design, data modeling, SQL, and coding in one track',
@@ -414,7 +414,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
           <DisciplineSignalBoard />
         </div>
 
-        {/* ── Right: form card — glass on the gradient ─── */}
+        {/* ── Right: form card - glass on the gradient ─── */}
         <div className="flex items-center justify-center px-6 py-10 md:py-0 md:px-12 md:w-[460px] md:shrink-0">
           <div
             className="w-full max-w-sm rounded-2xl p-8 space-y-5"
@@ -426,7 +426,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
               boxShadow: '0 16px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)',
             }}
           >
-            {/* Tab switcher — hidden in single-email modes */}
+            {/* Tab switcher - hidden in single-email modes */}
             {activeMode !== 'forgot' && activeMode !== 'magic' && (
               <div className="flex gap-1 p-1 rounded-full w-fit" style={{ background: 'rgba(255,255,255,0.08)' }}>
                 {(['signup', 'login'] as const).map(m => (

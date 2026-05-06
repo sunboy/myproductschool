@@ -28,7 +28,7 @@ const DISCIPLINE_COLORS: Record<string, { bg: string; text: string }> = {
 
 // SVG circuit/node decoration per card slot
 const CARD_SVGS = [
-  // Card 0 — interconnected nodes
+  // Card 0 - interconnected nodes
   <svg key="0" aria-hidden viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', right: -8, top: -8, width: 160, height: 120, opacity: 0.18, pointerEvents: 'none' }}>
     <circle cx="120" cy="30" r="18" stroke="#7ee099" strokeWidth="1.2"/>
     <circle cx="80" cy="70" r="10" stroke="#7ee099" strokeWidth="1"/>
@@ -39,7 +39,7 @@ const CARD_SVGS = [
     <circle cx="120" cy="30" r="4" fill="#7ee099" fillOpacity="0.5"/>
     <circle cx="80" cy="70" r="3" fill="#7ee099" fillOpacity="0.4"/>
   </svg>,
-  // Card 1 — stacked arcs / signal rings
+  // Card 1 - stacked arcs / signal rings
   <svg key="1" aria-hidden viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', right: -10, top: -10, width: 160, height: 120, opacity: 0.18, pointerEvents: 'none' }}>
     <path d="M 130 100 A 50 50 0 0 0 80 50" stroke="#c9933a" strokeWidth="1.2" strokeDasharray="4 4"/>
     <path d="M 148 115 A 72 72 0 0 0 76 43" stroke="#c9933a" strokeWidth="0.8" strokeDasharray="3 5"/>
@@ -47,7 +47,7 @@ const CARD_SVGS = [
     <circle cx="82" cy="57" r="5" fill="#c9933a" fillOpacity="0.45"/>
     <circle cx="130" cy="100" r="3.5" fill="#c9933a" fillOpacity="0.3"/>
   </svg>,
-  // Card 2 — grid / lattice
+  // Card 2 - grid / lattice
   <svg key="2" aria-hidden viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', right: -8, top: -8, width: 160, height: 120, opacity: 0.15, pointerEvents: 'none' }}>
     {[0,1,2,3].map(col => [0,1,2].map(row => (
       <rect key={`${col}-${row}`} x={60 + col * 26} y={10 + row * 32} width="18" height="18" rx="4" stroke="#7ee099" strokeWidth="0.9"/>

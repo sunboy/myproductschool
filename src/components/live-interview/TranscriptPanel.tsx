@@ -20,7 +20,7 @@ export interface TranscriptTurn {
 interface TranscriptPanelProps {
   turns: TranscriptTurn[]
   className?: string
-  /** Show FLOW move coaching chips below Hatch turns. Default false — only enable on debrief/review pages. */
+  /** Show FLOW move coaching chips below Hatch turns. Default false - only enable on debrief/review pages. */
   showCoachingChips?: boolean
 }
 
@@ -60,7 +60,7 @@ function CoachingChip({ signal }: { signal: CoachingSignal }) {
           {signal.competency && (
             <span className="font-label font-semibold" style={{ color: 'var(--color-on-surface-variant, #4a4e4a)' }}>
               {COMPETENCY_LABELS[signal.competency] ?? signal.competency}
-              {signal.signal ? ' — ' : ''}
+              {signal.signal ? ' - ' : ''}
             </span>
           )}
           {signal.signal}

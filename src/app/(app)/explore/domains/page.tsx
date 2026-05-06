@@ -12,7 +12,7 @@ export default async function DomainsPage() {
         <span className="text-on-surface font-bold">Domains</span>
       </div>
       <h1 className="font-headline text-2xl font-bold text-on-surface mb-1">Domains</h1>
-      <p className="font-body text-sm text-on-surface-variant mb-6">Topic areas — each groups related challenges together</p>
+      <p className="font-body text-sm text-on-surface-variant mb-6">Topic areas - each groups related challenges together</p>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {domains.map(d => (

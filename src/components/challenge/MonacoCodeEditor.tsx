@@ -23,7 +23,7 @@ export interface MonacoCodeEditorProps {
   height?: string
 }
 
-// Simple throttle — no lodash dep needed
+// Simple throttle - no lodash dep needed
 function throttle<T extends (...args: Parameters<T>) => void>(fn: T, delayMs: number): T {
   let last = 0
   return ((...args: Parameters<T>) => {
@@ -81,7 +81,7 @@ export function MonacoCodeEditor({
       }
     })
 
-    // Cursor activity — throttled to 5s to avoid noise
+    // Cursor activity - throttled to 5s to avoid noise
     if (onCursorMove) {
       const throttledCursor = throttle((e: editor.ICursorPositionChangedEvent) => {
         onCursorMove(e.position.lineNumber)

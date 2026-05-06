@@ -24,7 +24,7 @@ export function FullbleedCoverSection({ section, hasBeenVisible }: Props) {
       className="relative flex flex-col justify-end overflow-hidden"
       style={{ minHeight: 'calc(100dvh - 52px)', background: '#faf6f0' }}
     >
-      {/* Ambient radial glow — top left */}
+      {/* Ambient radial glow - top left */}
       <div
         className="absolute pointer-events-none"
         style={{
@@ -58,7 +58,7 @@ export function FullbleedCoverSection({ section, hasBeenVisible }: Props) {
         aria-hidden
       />
 
-      {/* Content — bottom aligned */}
+      {/* Content - bottom aligned */}
       <div className="relative z-10 px-8 md:px-16 pb-20 pt-32 max-w-5xl">
         {/* Label */}
         <div
@@ -77,7 +77,7 @@ export function FullbleedCoverSection({ section, hasBeenVisible }: Props) {
           </span>
         </div>
 
-        {/* Headline — word by word stagger */}
+        {/* Headline - word by word stagger */}
         <h1
           className="font-headline font-extrabold leading-[1.05] mb-8"
           style={{

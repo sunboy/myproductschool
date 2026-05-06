@@ -13,7 +13,7 @@ export async function createNote(content: string, color: string = 'default') {
   try {
     embedding = await embedNote(content)
   } catch {
-    // Embedding optional — continue without it if OpenAI key not set
+    // Embedding optional - continue without it if OpenAI key not set
   }
 
   const { data: note, error: insertError } = await supabase.from('user_notes').insert({
@@ -34,7 +34,7 @@ export async function createNote(content: string, color: string = 'default') {
       noteId
     )
   } catch {
-    // Non-critical — don't block note creation
+    // Non-critical - don't block note creation
   }
 
   revalidatePath('/dashboard')

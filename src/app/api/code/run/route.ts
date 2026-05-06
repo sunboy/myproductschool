@@ -18,7 +18,7 @@ const DAILY_LIMIT = 100   // per-user
 const SESSION_LIMIT = 50  // per-session
 
 // ---------------------------------------------------------------------------
-// Helpers — JSON normalization for expected-vs-actual comparison
+// Helpers - JSON normalization for expected-vs-actual comparison
 // ---------------------------------------------------------------------------
 
 /** Parse a Judge0 stdout line into a JS value for deep-equal comparison. */
@@ -56,7 +56,7 @@ async function countDailyRuns(
   today.setUTCHours(0, 0, 0, 0)
 
   // We store code_run events in challenge_attempts.conversation_summary as a
-  // JSON event log.  The daily count is approximate — we scan all attempts
+  // JSON event log.  The daily count is approximate - we scan all attempts
   // belonging to the user that were updated today and count code_run events.
   const { data } = await supabase
     .from('challenge_attempts')
@@ -91,7 +91,7 @@ async function countSessionRuns(
 }
 
 // ---------------------------------------------------------------------------
-// Event log helpers — stored in challenge_attempts.conversation_summary
+// Event log helpers - stored in challenge_attempts.conversation_summary
 // ---------------------------------------------------------------------------
 
 interface CodeRunEvent {
@@ -114,7 +114,7 @@ function parseEventLog(raw: unknown): EventLogEntry[] {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) return parsed as EventLogEntry[]
     } catch {
-      // Not a JSON array — wrap existing content
+      // Not a JSON array - wrap existing content
     }
   }
   return []
@@ -151,9 +151,9 @@ interface TestCase {
   expected: unknown
   hidden: boolean
   compare_mode?: CompareMode
-  /** Positional input types — when present, harness deserializes structured inputs */
+  /** Positional input types - when present, harness deserializes structured inputs */
   input_types?: string[]
-  /** Output type — when present, harness serializes structured output */
+  /** Output type - when present, harness serializes structured output */
   output_type?: string
 }
 
@@ -377,7 +377,7 @@ export async function POST(req: NextRequest) {
       }
 
       if (statusId !== 3) {
-        // Unexpected non-terminal status — treat as error
+        // Unexpected non-terminal status - treat as error
         return {
           id: tc.id,
           label: tc.label,
@@ -390,11 +390,11 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // --- Status 3 = Accepted (ran successfully) — compare output ---
+      // --- Status 3 = Accepted (ran successfully) - compare output ---
       const passed = outputsMatch(judge0Result.stdout, tc.expected, tc.compare_mode)
       const executionStatus = passed ? 'passed' : 'failed'
 
-      // Hidden tests must not include input/output/expected — prevent reverse-engineering.
+      // Hidden tests must not include input/output/expected - prevent reverse-engineering.
       if (tc.hidden) {
         return {
           id: tc.id,
@@ -403,7 +403,7 @@ export async function POST(req: NextRequest) {
           hidden: tc.hidden,
           matchMode: tc.compare_mode,
           durationMs,
-          // No output, no expected — prevent reverse-engineering
+          // No output, no expected - prevent reverse-engineering
         }
       }
 
@@ -432,7 +432,7 @@ export async function POST(req: NextRequest) {
   }
 
   // --- Log code_run event to conversation_summary ---
-  // Fire-and-forget — don't block response on this
+  // Fire-and-forget - don't block response on this
   appendCodeRunEvent(supabase, attemptId, {
     type: 'code_run',
     timestamp: new Date().toISOString(),

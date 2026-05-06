@@ -82,7 +82,7 @@ export function FullbleedCTASection({ section, hasBeenVisible }: Props) {
           </span>
         </div>
 
-        {/* Headline — word stagger */}
+        {/* Headline - word stagger */}
         <div style={{ marginBottom: 20 }}>
           <h2
             className="font-headline font-extrabold leading-[1.05]"

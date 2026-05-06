@@ -31,7 +31,7 @@ export default function GradingPage() {
       try {
         const res = await fetch(`/api/attempts/${attemptId}`)
         if (!res.ok) {
-          // Attempt not ready yet — retry
+          // Attempt not ready yet - retry
           scheduleNext()
           return
         }
@@ -42,7 +42,7 @@ export default function GradingPage() {
           return
         }
       } catch {
-        // Network error — retry
+        // Network error - retry
       }
 
       scheduleNext()
@@ -50,7 +50,7 @@ export default function GradingPage() {
 
     function scheduleNext() {
       if (cancelled || pollCount.current >= MAX_POLLS) {
-        // Timed out — redirect anyway to show partial/mock feedback
+        // Timed out - redirect anyway to show partial/mock feedback
         if (!cancelled) router.replace(`/challenges/${challengeId}/feedback?attempt=${attemptId}`)
         return
       }

@@ -40,7 +40,7 @@ export async function GET(
       scenario_context: 'Spotify has 5M+ podcast titles but only 8% of users who open the Podcasts tab ever save or follow a podcast. The team suspects a discovery problem but hasn\'t yet investigated root causes.',
       scenario_trigger: 'The VP of Content asks you to diagnose the low follow rate and propose a fix before next quarter\'s planning cycle.',
       scenario_question: 'How would you approach this problem?',
-      engineer_standout: 'Frame the problem before proposing features — define what "discovery failure" means with data before jumping to solutions.',
+      engineer_standout: 'Frame the problem before proposing features - define what "discovery failure" means with data before jumping to solutions.',
       paradigm: 'traditional',
       industry: 'consumer-tech',
       sub_vertical: 'audio',
@@ -72,7 +72,7 @@ export async function GET(
     return NextResponse.json({ challenge: mockChallenge, steps: mockSteps, current_attempt: null, codingParts: [] })
   }
 
-  // Fetch challenge — try by id first, then by slug as fallback
+  // Fetch challenge - try by id first, then by slug as fallback
   let { data: challenge, error: challengeError } = await supabase
     .from('challenges')
     .select('*')

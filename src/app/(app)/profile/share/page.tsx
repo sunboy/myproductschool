@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: 'See my ProductIQ score on HackProduct',
   openGraph: {
     title: 'My ProductIQ Score',
-    description: 'ProductIQ: 72.4 — Top 28% of product thinkers',
+    description: 'ProductIQ: 72.4 - Top 28% of product thinkers',
   },
 }
 

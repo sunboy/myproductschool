@@ -61,7 +61,7 @@ export function ShowcaseDetailClient({ product }: ShowcaseDetailClientProps) {
 
           {/* Challenge count label */}
           <p className="mt-3 text-[10px] uppercase tracking-widest text-on-surface-variant font-label">
-            {product.decisions.length} challenges — pick one to start
+            {product.decisions.length} challenges - pick one to start
           </p>
         </div>
 

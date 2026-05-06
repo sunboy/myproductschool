@@ -84,7 +84,7 @@ export default function StartInterviewButton({
       setShowReadyModal(true)
     } catch {
       play('error')
-      setSessionError('Failed to start — please try again.')
+      setSessionError('Failed to start - please try again.')
     } finally {
       setLoading(false)
     }
@@ -150,7 +150,7 @@ export default function StartInterviewButton({
         </button>
       )}
 
-      {/* Ready modal — overlays the list page */}
+      {/* Ready modal - overlays the list page */}
       {showReadyModal && sessionId && (
         <div
           className="fixed inset-0 flex items-center justify-center"
@@ -210,7 +210,7 @@ export default function StartInterviewButton({
                 Ready to begin?
               </h2>
               <p className="font-body text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                Hatch will play the role of your interviewer. Speak naturally — your microphone
+                Hatch will play the role of your interviewer. Speak naturally - your microphone
                 activates when you start. Cover all four FLOW moves: Frame, List, Optimize, Win.
               </p>
             </div>

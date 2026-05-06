@@ -249,7 +249,7 @@ export function DisciplineCard({
         }}
       />
 
-      {/* Indicator dots — top right */}
+      {/* Indicator dots - top right */}
       <div className="absolute top-4 right-6 flex gap-1.5 items-center z-10">
         {ALL_DISCIPLINES.map((d, i) => (
           <div

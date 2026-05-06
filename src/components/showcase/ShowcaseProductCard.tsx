@@ -28,7 +28,7 @@ export function ShowcaseProductCard({ product, completedCount = 0 }: ShowcasePro
         )}
       </div>
 
-      {/* Industry badge — top left glassmorphism pill */}
+      {/* Industry badge - top left glassmorphism pill */}
       {product.industry && (
         <div className="absolute top-4 left-4">
           <span className="bg-white/70 backdrop-blur-xl border border-white/30 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider text-on-background uppercase">
@@ -37,7 +37,7 @@ export function ShowcaseProductCard({ product, completedCount = 0 }: ShowcasePro
         </div>
       )}
 
-      {/* Bottom info panel — glassmorphism */}
+      {/* Bottom info panel - glassmorphism */}
       <div className="absolute inset-x-4 bottom-4 p-5 rounded-xl bg-white/70 backdrop-blur-xl border border-white/30 transition-all duration-300 group-hover:opacity-0 group-hover:translate-y-1">
         <h3 className="text-xl font-headline text-on-background mb-1 leading-tight">{product.name}</h3>
         <p className="text-xs text-on-surface-variant line-clamp-2 mb-3">{product.tagline}</p>
@@ -66,7 +66,7 @@ export function ShowcaseProductCard({ product, completedCount = 0 }: ShowcasePro
         </div>
       </div>
 
-      {/* Hover overlay — dark scrim + two action buttons */}
+      {/* Hover overlay - dark scrim + two action buttons */}
       <div className="absolute inset-0 flex flex-col items-center justify-end pb-6 gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/40 backdrop-blur-[2px]">
         <Link
           href={`/explore/showcase/${product.slug}`}

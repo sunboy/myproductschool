@@ -54,10 +54,10 @@ function getDifficultyStyle(difficulty: ChallengePrompt['difficulty']): string {
 function deriveFrameworkHint(tags: string[], domainTitle: string): string {
   const lower = tags.map(t => t.toLowerCase())
   if (lower.some(t => t.includes('metrics') || t.includes('kpi') || t.includes('analytics'))) {
-    return 'Try HEART framework — track Happiness, Engagement, Adoption, Retention, Task success'
+    return 'Try HEART framework - track Happiness, Engagement, Adoption, Retention, Task success'
   }
   if (lower.some(t => t.includes('priorit') || t.includes('roadmap'))) {
-    return 'Apply RICE scoring — Reach × Impact × Confidence ÷ Effort'
+    return 'Apply RICE scoring - Reach × Impact × Confidence ÷ Effort'
   }
   if (lower.some(t => t.includes('diagnos') || t.includes('root cause') || t.includes('drop'))) {
     return "Use the '5 Whys' + funnel decomposition to isolate the root cause"

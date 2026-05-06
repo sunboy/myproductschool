@@ -161,7 +161,7 @@ function TaxonomyPicker({ label, entries, selected, onChange }: {
   )
 }
 
-/** Suggested tags panel — amber-tinted with Accept / Edit / Reject actions. */
+/** Suggested tags panel - amber-tinted with Accept / Edit / Reject actions. */
 function SuggestedTagsPanel({
   label,
   suggestions,
@@ -183,7 +183,7 @@ function SuggestedTagsPanel({
     <div className="rounded-xl border border-dashed border-tertiary-container bg-tertiary-container/20 p-4 space-y-2">
       <div className="flex items-center gap-2 mb-1">
         <span className="material-symbols-outlined text-base text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-        <p className="font-label text-xs font-semibold text-tertiary uppercase tracking-wide">{label} — Suggested</p>
+        <p className="font-label text-xs font-semibold text-tertiary uppercase tracking-wide">{label} - Suggested</p>
       </div>
       <div className="space-y-1.5">
         {suggestions.map(slug => {
@@ -281,7 +281,7 @@ export default function ChallengeTagsPage() {
 
   function handleEditTopic(slug: string) {
     if (!data) return
-    // Pull into live picker for manual editing — also remove from suggested
+    // Pull into live picker for manual editing - also remove from suggested
     const newLive = data.topic_tags.includes(slug) ? data.topic_tags : [...data.topic_tags, slug]
     const newSuggested = data.topic_tags_suggested.filter(s => s !== slug)
     setData({ ...data, topic_tags: newLive, topic_tags_suggested: newSuggested })

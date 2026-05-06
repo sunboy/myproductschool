@@ -13,15 +13,15 @@ import { IS_MOCK } from '@/lib/mock'
 // Interview risk per pattern (consequence sentence)
 const PATTERN_CONSEQUENCES: Record<string, string> = {
   'FP-01': "In interviews, anchoring on headlines signals you haven't done first-principles thinking.",
-  'FP-02': "Interviewers notice when you name symptoms without explaining the causal chain — it reads as shallow analysis.",
-  'FP-03': "Treating all users as one segment is a red flag — strong PMs immediately ask 'which users?'",
+  'FP-02': "Interviewers notice when you name symptoms without explaining the causal chain - it reads as shallow analysis.",
+  'FP-03': "Treating all users as one segment is a red flag - strong PMs immediately ask 'which users?'",
   'FP-04': "Reciting metrics without explaining your selection criteria signals metric knowledge without metric judgment.",
   'FP-05': "Missing economic implications makes your analysis feel academic rather than business-grounded.",
   'FP-06': "Jumping to solutions before diagnosing the problem is the most common PM interview failure mode.",
   'FP-07': "Completeness without prioritization signals inability to make hard calls under pressure.",
   'FP-08': "Template thinking shows you've memorized frameworks but can't adapt them to novel situations.",
   'FP-09': "In live interviews, an unordered list of investigations reads as inability to prioritize under pressure.",
-  'FP-10': "Never saying what NOT to do signals you don't understand opportunity cost — a core PM skill.",
+  'FP-10': "Never saying what NOT to do signals you don't understand opportunity cost - a core PM skill.",
   'FP-11': "Claims without evidence make interviewers doubt your judgment and rigor.",
   'FP-12': "Vague recommendations are the single most common feedback engineers receive in PM loop debriefs.",
   'FP-13': "When your diagnosis and recommendations don't connect, interviewers lose confidence in your reasoning.",
@@ -153,7 +153,7 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
       </div>
 
       {!hasPatterns ? (
-        /* Empty state — strong submission */
+        /* Empty state - strong submission */
         <div className="flex flex-col items-center text-center py-10 space-y-4 max-w-lg mx-auto">
           <HatchGlyph size={48} className="text-primary" animated />
           <div>
@@ -178,7 +178,7 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
                   {primaryPattern.pattern_id === 'FP-09'
                     ? "You recognized the right area quickly, but failed to prioritize the first move."
                     : primaryPattern.pattern_id === 'FP-04'
-                    ? "You know the right metrics — but you haven't explained why they're the right metrics."
+                    ? "You know the right metrics - but you haven't explained why they're the right metrics."
                     : `Pattern detected: ${primaryPattern.pattern_name}.`}
                 </p>
               </div>
@@ -195,7 +195,7 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
                   {confidenceRating / 5 > displayScore / displayMaxScore + 0.1
                     ? "You tend to overestimate your performance on this type of challenge."
                     : confidenceRating / 5 < displayScore / displayMaxScore - 0.1
-                    ? "You tend to underestimate yourself — trust your product instincts more."
+                    ? "You tend to underestimate yourself - trust your product instincts more."
                     : "Your confidence is well-calibrated to your actual performance."}
                 </p>
               </div>

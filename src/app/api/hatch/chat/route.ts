@@ -45,9 +45,9 @@ function validationIssues(error: ZodError) {
 }
 
 const MOCK_REPLIES = [
-  "That's an interesting framing. Can you tell me more about *why* users would behave that way — what's driving their motivation here?",
+  "That's an interesting framing. Can you tell me more about *why* users would behave that way - what's driving their motivation here?",
   "Good instinct. How would you validate that hypothesis before committing engineering resources to it?",
-  "You mentioned metrics — what would tell you this feature is working *well enough* to ship more?",
+  "You mentioned metrics - what would tell you this feature is working *well enough* to ship more?",
   "Walk me through the trade-offs in your top proposal. What are you giving up by going in that direction?",
   "Interesting. How does this change if the user is a power user vs someone brand new to the product?",
 ]
@@ -135,7 +135,7 @@ async function buildRecommendedChallengesBlock(userId: string): Promise<string> 
 
     if (!picks.length) return ''
 
-    const lines = ['## Recommended Challenges', `Based on the learner's progress, suggest these specific challenges (use exact titles and URLs — do not make up other challenges):`]
+    const lines = ['## Recommended Challenges', `Based on the learner's progress, suggest these specific challenges (use exact titles and URLs - do not make up other challenges):`]
     for (const c of picks) {
       const url = `/workspace/challenges/${c.slug ?? c.id}`
       const tags = (c.move_tags as string[] | null)?.join(', ') ?? 'general'
@@ -154,12 +154,12 @@ async function buildRecommendedChallengesBlock(userId: string): Promise<string> 
 async function buildPageContextBlock(pageContext: PageContext): Promise<string> {
   const { pageType, entityId } = pageContext
   if (!entityId) {
-    // No specific entity — just describe the page type
+    // No specific entity - just describe the page type
     const pageLabels: Record<string, string> = {
-      dashboard: 'User is on the Dashboard — their home screen with streak, XP, quick take, and next challenge.',
-      explore: 'User is on the Explore hub — browsing challenges, study plans, and domains.',
-      practice: 'User is on the Practice hub — browsing FLOW challenges to attempt.',
-      progress: 'User is on the Progress & Analytics page — reviewing their FLOW skill levels, archetype, and certification progress.',
+      dashboard: 'User is on the Dashboard - their home screen with streak, XP, quick take, and next challenge.',
+      explore: 'User is on the Explore hub - browsing challenges, study plans, and domains.',
+      practice: 'User is on the Practice hub - browsing FLOW challenges to attempt.',
+      progress: 'User is on the Progress & Analytics page - reviewing their FLOW skill levels, archetype, and certification progress.',
     }
     const label = pageLabels[pageType]
     return label ? `## Current Page\n${label}` : ''
@@ -169,7 +169,7 @@ async function buildPageContextBlock(pageContext: PageContext): Promise<string> 
 
   try {
     if (pageType === 'challenge' || pageType === 'challenge_feedback') {
-      // entityId may be a slug or UUID — try both
+      // entityId may be a slug or UUID - try both
       const { data: challenge } = await admin
         .from('challenges')
         .select('title, difficulty, domain_id, move_tags, challenge_type, prompt_text, scenario_context, scenario_question, scenario_trigger, scenario_role')
@@ -241,7 +241,7 @@ async function buildPageContextBlock(pageContext: PageContext): Promise<string> 
       return lines.join('\n')
     }
   } catch {
-    // Non-critical — don't fail the whole request
+    // Non-critical - don't fail the whole request
   }
 
   return ''
@@ -308,16 +308,16 @@ export async function POST(req: NextRequest) {
 The user is working on an Excalidraw canvas for a ${challengeType === 'system_design' ? 'system design' : 'data modeling'} interview.
 
 Current canvas state:
-${canvasSummary || "Canvas is empty — user hasn't drawn anything yet."}
+${canvasSummary || "Canvas is empty - user hasn't drawn anything yet."}
 
 Your role:
 - Ask probing questions about the design
 - Highlight gaps based on what's actually on the canvas
-- Challenge assumptions: "You have a single DB — what happens at 100k users?"
+- Challenge assumptions: "You have a single DB - what happens at 100k users?"
 - Be direct, not flattering
 - When answering "what am I missing?", compare canvas to the challenge requirements specifically
 
-Do NOT output canvas action JSON here — that's for the /canvas/interpret route.
+Do NOT output canvas action JSON here - that's for the /canvas/interpret route.
 Respond conversationally.`
       systemPrompt += canvasAddendum
     }

@@ -8,7 +8,7 @@ export function DashboardActionButtons() {
   const [resumeHref, setResumeHref] = useState('/challenges')
 
   useEffect(() => {
-    // Daily Challenge — fetch once per day and cache in localStorage
+    // Daily Challenge - fetch once per day and cache in localStorage
     const today = new Date().toISOString().slice(0, 10)
     const cacheKey = `hackproduct_daily_challenge_${today}`
     const cached = localStorage.getItem(cacheKey)
@@ -27,7 +27,7 @@ export function DashboardActionButtons() {
         .catch(() => {})
     }
 
-    // Resume Learning — last attempted challenge
+    // Resume Learning - last attempted challenge
     fetch('/api/attempts?limit=1')
       .then(r => r.ok ? r.json() : null)
       .then(data => {

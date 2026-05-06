@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
 
       return NextResponse.json({
         type: 'explore',
-        message: `No recurring patterns yet — try a ${leastUsedMode} session to diversify your practice.`,
+        message: `No recurring patterns yet - try a ${leastUsedMode} session to diversify your practice.`,
         prescription: {
           mode: leastUsedMode,
           challenge_slug: '',

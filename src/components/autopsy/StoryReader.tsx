@@ -63,7 +63,7 @@ export function StoryReader({ story, productName, productSlug }: Props) {
 
   return (
     <div className="relative">
-      {/* Scroll progress bar — Terra green */}
+      {/* Scroll progress bar - Terra green */}
       <div
         className="fixed top-0 left-0 right-0 h-[2px] z-50 pointer-events-none"
         style={{
@@ -73,7 +73,7 @@ export function StoryReader({ story, productName, productSlug }: Props) {
         }}
       />
 
-      {/* Breadcrumb — light surface, matches app shell */}
+      {/* Breadcrumb - light surface, matches app shell */}
       <div className="fixed top-[52px] left-0 md:left-56 right-0 z-30 h-10 flex items-center px-4 gap-2 bg-surface-container-low border-b border-outline-variant/40">
         <Link
           href={`/explore/showcase/${productSlug}`}
@@ -88,7 +88,7 @@ export function StoryReader({ story, productName, productSlug }: Props) {
         <span className="font-label text-[11px] text-on-surface-variant/60 shrink-0">{story.read_time}</span>
       </div>
 
-      {/* Section navigation dots — right side, hidden mobile */}
+      {/* Section navigation dots - right side, hidden mobile */}
       <div className="fixed right-5 top-1/2 -translate-y-1/2 z-30 hidden md:flex flex-col gap-2.5">
         {story.sections.map((s, i) => (
           <button
@@ -105,7 +105,7 @@ export function StoryReader({ story, productName, productSlug }: Props) {
         ))}
       </div>
 
-      {/* Story sections — offset for fixed breadcrumb */}
+      {/* Story sections - offset for fixed breadcrumb */}
       <div className="pt-10">
         {story.sections.map((section, i) => (
           <div

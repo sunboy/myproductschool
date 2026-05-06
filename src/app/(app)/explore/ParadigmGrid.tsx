@@ -74,7 +74,7 @@ const PARADIGMS = [
   {
     key: 'Traditional',
     tagline: 'Core craft',
-    desc: 'Metrics, trade-offs, and prioritization — the PM toolkit that never expires.',
+    desc: 'Metrics, trade-offs, and prioritization - the PM toolkit that never expires.',
     quote: '"DAU/MAU looks great but revenue is flat. What\'s going on?"',
     count: 34, badge: 'Core collection',
     bg: '#1e3528', text: '#f3ede0', artColor: '#7ee099',
@@ -92,7 +92,7 @@ const PARADIGMS = [
   {
     key: 'Agentic',
     tagline: 'Autonomous loops',
-    desc: 'Multi-step AI systems — agents, evals, failure modes, and trust boundaries.',
+    desc: 'Multi-step AI systems - agents, evals, failure modes, and trust boundaries.',
     quote: '"Your agent auto-approved 40 refunds overnight. 3 were fraudulent."',
     count: 14, badge: 'Growing',
     bg: '#25143a', text: '#f0e8ff', artColor: '#c89df5',
@@ -101,7 +101,7 @@ const PARADIGMS = [
   {
     key: 'AI-Native',
     tagline: 'New product shapes',
-    desc: "Products that couldn't exist without AI — entirely new interaction models.",
+    desc: "Products that couldn't exist without AI - entirely new interaction models.",
     quote: '"Your AI tutor is great at math but hallucinates history. Ship or hold?"',
     count: 17, badge: 'Emerging',
     bg: '#301a0a', text: '#fdeede', artColor: '#f5a76c',
@@ -242,7 +242,7 @@ export function ParadigmGrid() {
   return (
     <>
       <div className="paradigm-grid">
-        {/* Traditional — big, spans 2 rows on desktop */}
+        {/* Traditional - big, spans 2 rows on desktop */}
         <div className="paradigm-grid__traditional">
           <ParadigmCard p={PARADIGMS[0]} big />
         </div>

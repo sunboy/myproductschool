@@ -126,7 +126,7 @@ export default async function HistoryPage() {
 }
 
 // ---------------------------------------------------------------------------
-// SubmissionRowCard — one row per graded attempt
+// SubmissionRowCard - one row per graded attempt
 // ---------------------------------------------------------------------------
 
 function SubmissionRowCard({ row }: { row: SubmissionRow }) {
@@ -136,7 +136,7 @@ function SubmissionRowCard({ row }: { row: SubmissionRow }) {
         day: 'numeric',
         year: 'numeric',
       })
-    : '—'
+    : '-'
   const time = row.submittedAt
     ? new Date(row.submittedAt).toLocaleTimeString('en-US', {
         hour: '2-digit',

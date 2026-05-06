@@ -8,7 +8,7 @@ import { AppTooltip } from '@/components/ui/AppTooltip'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
 
-/* ── FLOW paradigm palette — matches /explore FLOW strip ─────────── */
+/* ── FLOW paradigm palette - matches /explore FLOW strip ─────────── */
 
 const FLOW_MOVES = [
   { k: 'Frame',    move: 'frame',    sub: 'Define the right problem',  color: '#4a7c59', bg: '#cfe3d3', icon: 'center_focus_strong' },
@@ -570,7 +570,7 @@ function TrajectoryCellCard({
       <div className="w-full rounded-xl border border-outline-variant/45 bg-background p-2">
         <div className="flex items-center justify-between gap-2">
           <span className="font-headline text-[17px] font-bold leading-none" style={{ color: cell.score === null ? 'var(--color-on-surface-muted)' : color }}>
-            {cell.score === null ? '—' : cell.score}
+            {cell.score === null ? '-' : cell.score}
           </span>
           <span className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9.5px] font-label font-black" style={{ background: `${trend.color}16`, color: trend.color }}>
             <span className="material-symbols-outlined text-[12px]">{trend.icon}</span>
@@ -713,7 +713,7 @@ export default function ProgressPage() {
         }}>FLOW</div>
 
         <div className="relative grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_400px]">
-          {/* Left — welcome + reflection + CTAs */}
+          {/* Left - welcome + reflection + CTAs */}
           <div style={{ minWidth: 0 }}>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 10,
@@ -779,7 +779,7 @@ export default function ProgressPage() {
             {/* Inline stat strip */}
             <div className="mb-3 grid grid-cols-3 gap-2">
               <HeroStat k="Readiness" v={`${overallPct}%`} />
-              <HeroStat k="Mastered" v={total > 0 ? `${mastered}/${total}` : '—'} />
+              <HeroStat k="Mastered" v={total > 0 ? `${mastered}/${total}` : '-'} />
               <HeroStat
                 k="Archetype"
                 v={profile?.archetype ?? 'Not set'}
@@ -789,7 +789,7 @@ export default function ProgressPage() {
 
           </div>
 
-          {/* Right — FLOW move grid */}
+          {/* Right - FLOW move grid */}
           <div className="grid grid-cols-2 gap-2">
             {flowMoves.map(m => (
               <div key={m.k} style={{
@@ -925,7 +925,7 @@ export default function ProgressPage() {
                     {recentInterviews.slice(0, 3).map(s => {
                       const mins = s.durationSeconds ? Math.floor(s.durationSeconds / 60) : 0
                       const secs = s.durationSeconds ? s.durationSeconds % 60 : 0
-                      const duration = s.durationSeconds ? `${mins}:${String(secs).padStart(2, '0')}` : '—'
+                      const duration = s.durationSeconds ? `${mins}:${String(secs).padStart(2, '0')}` : '-'
                       const date = s.endedAt ? new Date(s.endedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''
                       return (
                         <Link

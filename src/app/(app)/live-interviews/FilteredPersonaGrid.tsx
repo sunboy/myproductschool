@@ -101,7 +101,7 @@ export default function FilteredPersonaGrid({ personas, scenarios = [], discipli
         ((p as unknown as { disciplines?: string[] }).disciplines ?? ['product_sense']).includes(disciplineFilter)
       )
 
-  // Deduplicate by companyId — one entry per company, left panel shows all
+  // Deduplicate by companyId - one entry per company, left panel shows all
   const seen = new Set<string>()
   const deduped = visiblePersonas.filter(p => {
     if (seen.has(p.companyId)) return false
@@ -239,7 +239,7 @@ export default function FilteredPersonaGrid({ personas, scenarios = [], discipli
         {/* Content */}
         <div className="relative z-10 flex flex-col">
 
-          {/* Role filter pills — filters the scenario list */}
+          {/* Role filter pills - filters the scenario list */}
           <div className="px-5 pt-4 pb-3 flex flex-wrap gap-1.5 shrink-0">
             {FILTER_ROLES.map(role => (
               <button
@@ -257,10 +257,10 @@ export default function FilteredPersonaGrid({ personas, scenarios = [], discipli
             ))}
           </div>
 
-          {/* Scenario list — capped to RIGHT_PAGE_SIZE rows */}
+          {/* Scenario list - capped to RIGHT_PAGE_SIZE rows */}
           <div className="px-5 pb-3 space-y-1.5">
 
-            {/* Free-form card — always at top, color-coded */}
+            {/* Free-form card - always at top, color-coded */}
             <div className="flex items-center justify-between p-4 rounded-xl bg-primary-fixed/50 border border-primary/20">
               <div>
                 <p className="text-sm font-label font-bold text-on-surface">Free-form interview</p>

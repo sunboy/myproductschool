@@ -106,13 +106,13 @@ function loadCodingCoachSkill(): string {
     // Fallback inline prompt if skill file is unavailable
     return `You are Hatch, a coding interview coach for HackProduct. The user is solving a timed coding interview challenge.
 
-Your role: Socratic thinking partner — guide, don't solve. Read their code and recent test results before responding.
+Your role: Socratic thinking partner - guide, don't solve. Read their code and recent test results before responding.
 
 Rules:
 - If user asks for the complete solution: decline and redirect. "Not going to do that. What's your first instinct?"
 - For debugging: read their code, identify the issue, ask a leading question that points them at it.
 - Freely explain: time/space complexity, data structure choices, algorithm theory, language idioms, syntax.
-- If stuck 3+ exchanges: give a stronger hint — still not the full solution.
+- If stuck 3+ exchanges: give a stronger hint - still not the full solution.
 - Always return: { "intent": "coach", "message": "...", "actions": [], "annotations": [] }
 - Never set intent to "build" or "build_and_coach" for coding challenges.`
   }
@@ -120,14 +120,14 @@ Rules:
 
 const COACH_PERSONA = `You are Hatch, a system design and data modeling interview coach for HackProduct.
 Voice: direct, opinionated, slightly Shreyas-Doshi-tweet-thread. Never academic. Never corporate.
-Never write "you are a [role]" or "as a senior engineer" — drop into the situation.
+Never write "you are a [role]" or "as a senior engineer" - drop into the situation.
 Never use em dashes. Never use AI slop ("delve", "leverage", "utilize", "holistic", "robust", "seamlessly").`
 
 const ROUTING_RULES = `You will look at the user's message AND the canvas state, then decide ONE of three intents:
 
 - "build": The user wants you to add/modify/remove things on the canvas. Examples: "add a load balancer", "draw the user flow", "connect users to posts", "remove the cache".
 - "coach": The user is asking a question or wants feedback. Examples: "what's missing?", "is this scalable?", "any concerns?", "explain why I'd need a queue here".
-- "build_and_coach": Both — they're asking you to build something AND want commentary. Example: "add caching and tell me where it makes sense".
+- "build_and_coach": Both - they're asking you to build something AND want commentary. Example: "add caching and tell me where it makes sense".
 
 Decision rules:
 - Imperative verbs about canvas elements ("add", "draw", "connect", "remove", "rename") almost always mean build or build_and_coach.
@@ -157,7 +157,7 @@ const DATA_MODELING_RULES = `Domain-specific guidance for data_modeling challeng
 - Polymorphic association without discriminator
 
 ## Schema-as-text convention
-For data_modeling, every entity rectangle encodes column-level schema in its body text. ALWAYS emit columns when creating tables — never create label-only rectangles.
+For data_modeling, every entity rectangle encodes column-level schema in its body text. ALWAYS emit columns when creating tables - never create label-only rectangles.
 
 Column format: \`name [TYPE] [CONSTRAINTS]\`
 Recognized constraint tokens: PK, FK→<table>.<column>, UNIQUE, NOT NULL, INDEX
@@ -183,20 +183,20 @@ When creating a table, use the \`create\` action with \`columns: string[]\` on t
 Default columns: when the user says "add a users table" without specifying columns, pick 3-5 sensible defaults like \`["id PK", "email UNIQUE", "name", "created_at"]\`. Never create a label-only table for data_modeling.
 
 ## Foreign-key edits via rename
-When the user says "add a foreign key from posts to users" and the \`posts\` entity already exists on the canvas, use a \`rename\` action to update its text — do NOT create a new entity. The \`toLabel_rename\` field becomes the FULL multi-line text including the entity name and all existing columns plus the new FK column:
+When the user says "add a foreign key from posts to users" and the \`posts\` entity already exists on the canvas, use a \`rename\` action to update its text - do NOT create a new entity. The \`toLabel_rename\` field becomes the FULL multi-line text including the entity name and all existing columns plus the new FK column:
 \`\`\`json
 { "action": "rename", "fromLabel": "posts", "toLabel_rename": "posts\n──\nid PK\nbody\nuser_id FK→users.id" }
 \`\`\`
 
 ## Relationship modalities
-Relationships can be expressed three ways — any one is enough; multiple = stronger signal:
+Relationships can be expressed three ways - any one is enough; multiple = stronger signal:
 1. **Inline FK column**: \`tenant_id FK→tenants.id\` in the column list (most precise)
 2. **Labeled connector arrow**: \`connect\` action with cardinality label ("1:N", "N:M", "1:1")
 3. **Articulation in chat**: user describes the relationship in conversation
 
 When the user describes a relationship in chat without drawing it, build BOTH: a \`rename\` action adding the FK column to the source entity AND a \`connect\` action with a cardinality label.
 
-When the user already has both an inline FK AND a labeled arrow for the same relationship, treat that as a strong signal — do not suggest redundant additions.
+When the user already has both an inline FK AND a labeled arrow for the same relationship, treat that as a strong signal - do not suggest redundant additions.
 
 ## Coach mode column references
 MANDATORY: When you mention a column in coach mode for data_modeling, you MUST use \`entity.column_name\` dot notation. This is non-negotiable.
@@ -231,7 +231,7 @@ Hard rules:
 - "coach" intent must have actions: [].
 - "build_and_coach" must include both actions and a substantive message.
 - Always include the "intent" field. Defaults to "coach" if you're unsure.
-- Never invent canvas labels that don't exist when using connect/remove/rename — only act on labels in the provided scene.`
+- Never invent canvas labels that don't exist when using connect/remove/rename - only act on labels in the provided scene.`
 
 function buildSystemPrompt(challengeType: string): string {
   if (challengeType === 'coding') {
@@ -280,9 +280,9 @@ function buildCodingUserContent(body: InterpretBody): string {
     const weight = body.active_part_weight_pct != null ? ` (${body.active_part_weight_pct}% of total)` : ''
     const promptBlock = body.active_part_prompt?.trim()
     parts.push(
-      `# Active part — answer ONLY about this part unless the user asks otherwise\n` +
-      `## ${seq}: ${body.active_part_title} — ${partType}${weight}\n` +
-      (promptBlock ? `\n${promptBlock}` : '(no per-part prompt — see shared context above)')
+      `# Active part - answer ONLY about this part unless the user asks otherwise\n` +
+      `## ${seq}: ${body.active_part_title} - ${partType}${weight}\n` +
+      (promptBlock ? `\n${promptBlock}` : '(no per-part prompt - see shared context above)')
     )
   } else {
     parts.push(
@@ -372,7 +372,7 @@ async function callClaude(
   const raw = response.sanitized.trim()
   if (!raw) throw new Error('Non-text response')
 
-  // For coding mode: the skill may return plain text or JSON — handle both.
+  // For coding mode: the skill may return plain text or JSON - handle both.
   if (isCodingMode) {
     // Try to parse as JSON first (skill instructs JSON output)
     try {
@@ -386,7 +386,7 @@ async function callClaude(
         annotations: [],
       }
     } catch {
-      // Model returned plain text — wrap it
+      // Model returned plain text - wrap it
       return {
         intent: 'coach',
         message: raw,

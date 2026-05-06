@@ -135,7 +135,7 @@ export async function POST(
   let competency_signal: { competency: string; signal: string; framework_hint?: string } | null = null
 
   if (path === 'deterministic') {
-    // pure_mcq — NO freeform-grader import or call
+    // pure_mcq - NO freeform-grader import or call
     if (!selected_option_id) {
       return NextResponse.json({ error: 'selected_option_id required for pure_mcq' }, { status: 400 })
     }
@@ -156,7 +156,7 @@ export async function POST(
     } : null
 
   } else if (path === 'hybrid') {
-    // mcq_plus_elaboration — base score + AI elaboration adjustment
+    // mcq_plus_elaboration - base score + AI elaboration adjustment
     if (!selected_option_id) {
       return NextResponse.json({ error: 'selected_option_id required for mcq_plus_elaboration' }, { status: 400 })
     }
@@ -176,7 +176,7 @@ export async function POST(
       grading_explanation = elaborationResult.adjustment_reason
       grading_confidence = 0.85
     } else {
-      // No elaboration text — use deterministic base score
+      // No elaboration text - use deterministic base score
       score = baseResult.score
       quality_label = baseResult.quality_label
       competencies_demonstrated = baseResult.competencies_demonstrated
@@ -193,7 +193,7 @@ export async function POST(
     } : null
 
   } else {
-    // modified_option or freeform — full AI evaluation
+    // modified_option or freeform - full AI evaluation
     const textToGrade = response_type === 'modified_option' ? (user_text ?? '') : (user_text ?? '')
     if (!textToGrade.trim()) {
       return NextResponse.json({ error: 'user_text required for freeform/modified_option' }, { status: 400 })
@@ -229,7 +229,7 @@ export async function POST(
     })
 
   if (insertError) {
-    // UNIQUE(attempt_id, question_id) violation — user already answered this question
+    // UNIQUE(attempt_id, question_id) violation - user already answered this question
     if (insertError.code === '23505') {
       // Fetch the existing answer and return it as if it were a fresh submission
       const { data: existing } = await adminClient

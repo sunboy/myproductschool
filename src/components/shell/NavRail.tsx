@@ -117,7 +117,7 @@ export function NavRail({ onAskHatch, onUpgrade, compact, isPro }: NavRailProps)
             <span className="ml-auto material-symbols-outlined text-sm text-white/50 group-hover:text-white/70 transition-colors">chevron_right</span>
           </button>
 
-          {/* Pro upgrade — hidden for pro users */}
+          {/* Pro upgrade - hidden for pro users */}
           {isPro ? (
             <div className="flex items-center gap-2 px-3 py-2">
               <span

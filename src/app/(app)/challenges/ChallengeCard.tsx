@@ -38,7 +38,7 @@ const PARADIGM_STYLE: Record<string, {
 function TraditionalArt({ color }: { color: string }) {
   return (
     <svg width="100%" height="100%" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      {/* Concentric compass arcs — foundation / craft */}
+      {/* Concentric compass arcs - foundation / craft */}
       <g opacity="0.18" stroke={color} fill="none" strokeWidth="1.2">
         <circle cx="240" cy="20" r="40" />
         <circle cx="240" cy="20" r="65" />
@@ -81,7 +81,7 @@ function AIAssistedArt({ color }: { color: string }) {
   const edges = [[0,1],[0,4],[0,5],[1,2],[1,3],[1,5],[2,3],[4,5]]
   return (
     <svg width="100%" height="100%" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      {/* Node graph — human+model collaboration */}
+      {/* Node graph - human+model collaboration */}
       <g opacity="0.15" stroke={color} strokeWidth="1">
         {edges.map(([a, b], i) => (
           <line key={i} x1={nodes[a].x} y1={nodes[a].y} x2={nodes[b].x} y2={nodes[b].y} />
@@ -104,7 +104,7 @@ function AIAssistedArt({ color }: { color: string }) {
 function AgenticArt({ color }: { color: string }) {
   return (
     <svg width="100%" height="100%" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      {/* Recursive spiral — autonomous loops */}
+      {/* Recursive spiral - autonomous loops */}
       <g opacity="0.16" stroke={color} fill="none" strokeWidth="1.2">
         <path d="M 250 50 C 280 50 280 90 250 90 C 220 90 200 70 210 50 C 220 30 260 20 270 40 C 280 60 265 95 240 100 C 210 105 190 80 198 55 C 206 30 240 10 258 28" />
       </g>
@@ -135,7 +135,7 @@ function AINativeArt({ color }: { color: string }) {
   })
   return (
     <svg width="100%" height="100%" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      {/* Radial burst — emergence / generative */}
+      {/* Radial burst - emergence / generative */}
       <g stroke={color} fill="none">
         {sparks.map((s, i) => (
           <line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
@@ -291,7 +291,7 @@ export function ChallengeCard({
                 : 'circle'}
           </span>
           <span className="text-[11px] text-on-surface-variant font-label">
-            {attempts > 0 ? attempts : '—'}
+            {attempts > 0 ? attempts : '-'}
           </span>
         </span>
 
@@ -411,7 +411,7 @@ export function ChallengeCard({
         <span className="text-[11px] font-label flex items-center gap-2" style={{ color: `${style.fg}a0` }}>
           <span className="inline-flex items-center gap-1">
             <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 0" }}>group</span>
-            {attempts > 0 ? attempts : '—'}
+            {attempts > 0 ? attempts : '-'}
           </span>
         </span>
 

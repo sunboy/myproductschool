@@ -233,7 +233,7 @@ function HatchOrb({ state }: { state: HatchAvatarState }) {
           </div>
         )}
 
-        {/* Hatch face — simple glowing eyes */}
+        {/* Hatch face - simple glowing eyes */}
         {!isSpeaking && (
           <div className="flex flex-col items-center gap-3">
             <div className="flex gap-4">
@@ -614,7 +614,7 @@ export default function SessionPage({
     }
   }, [turns, isThinking])
 
-  // Start session — if autostart=1 the session was already created by StartInterviewButton
+  // Start session - if autostart=1 the session was already created by StartInterviewButton
   // so we use the id directly and skip the POST, going straight to active.
   useEffect(() => {
     if (IS_MOCK) return
@@ -646,7 +646,7 @@ export default function SessionPage({
           setInterviewPhase('active')
           setInterviewStartedAt(Date.now())
         } catch {
-          // Fall through silently — UI will still render in 'starting' phase
+          // Fall through silently - UI will still render in 'starting' phase
         }
       })()
       return () => { cancelled = true }
@@ -1026,7 +1026,7 @@ export default function SessionPage({
         const hatchReply: TranscriptTurn = {
           id: crypto.randomUUID(),
           role: 'hatch',
-          content: "Hold on — you jumped straight to a solution. What's the actual problem here?",
+          content: "Hold on - you jumped straight to a solution. What's the actual problem here?",
           source: 'chat',
         }
         setTurns((prev) => [...prev, hatchReply])
@@ -1063,7 +1063,7 @@ export default function SessionPage({
         setError('Failed to send message. Please try again.')
       }
     } catch {
-      setError('Network error — check your connection.')
+      setError('Network error - check your connection.')
     } finally {
       setHatchState('idle')
       setIsThinking(false)
@@ -1217,7 +1217,7 @@ export default function SessionPage({
             })
           }
         } catch {
-          // Non-fatal — end still proceeds
+          // Non-fatal - end still proceeds
         }
       }
 
@@ -1319,7 +1319,7 @@ export default function SessionPage({
     )
   }
 
-  // ─── Ready — modal overlay ───
+  // ─── Ready - modal overlay ───
   if (interviewPhase === 'ready') {
     return (
       <div
@@ -1380,7 +1380,7 @@ export default function SessionPage({
               Ready to begin?
             </h2>
             <p className="font-body text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              Hatch will play the role of your interviewer. Speak naturally — your microphone
+              Hatch will play the role of your interviewer. Speak naturally - your microphone
               activates when you start. Cover all four FLOW moves: Frame, List, Optimize, Win.
             </p>
           </div>
@@ -1503,7 +1503,7 @@ export default function SessionPage({
         }
       `}</style>
 
-      {/* Loop progress bar — shown when this session is part of a loop */}
+      {/* Loop progress bar - shown when this session is part of a loop */}
       {loopRounds.length > 0 && loopIdParam && (
         <LoopProgressBar
           loopTitle={companyName ? `${companyName} Loop` : 'Interview Loop'}
@@ -1528,7 +1528,7 @@ export default function SessionPage({
           style={{ background: 'rgba(201,147,58,0.15)', borderBottom: '1px solid rgba(201,147,58,0.25)' }}
         >
           <span className="font-label text-xs font-semibold" style={{ color: '#c9933a' }}>
-            Mock Mode — Voice disabled
+            Mock Mode - Voice disabled
           </span>
         </div>
       )}
@@ -1598,7 +1598,7 @@ export default function SessionPage({
           </div>
         </div>
 
-        {/* Center — Timer */}
+        {/* Center - Timer */}
         <div
           className="rounded-full px-4 py-1 font-mono tabular-nums"
           style={{
@@ -1612,7 +1612,7 @@ export default function SessionPage({
           {timerDisplay}
         </div>
 
-        {/* Right — FLOW mini-bars */}
+        {/* Right - FLOW mini-bars */}
         <div className="flex items-center gap-4">
           {flowMoves.map(({ key, label }) => {
             const score = flowCoverage[key] ?? 0
@@ -1723,7 +1723,7 @@ export default function SessionPage({
           className="flex-1 flex flex-col items-center justify-center relative overflow-hidden"
           style={{ minWidth: 0 }}
         >
-          {/* Ambient radial glow — always visible */}
+          {/* Ambient radial glow - always visible */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
@@ -1754,7 +1754,7 @@ export default function SessionPage({
           </div>
 
           {centerMode === 'orb' && (
-            /* Hatch Orb — existing content, unchanged */
+            /* Hatch Orb - existing content, unchanged */
             <div className="relative z-10 flex flex-col items-center gap-4">
               <div style={{ animation: 'floatHatchAnim 5s ease-in-out infinite' }}>
                 <HatchOrb state={hatchState} />
@@ -1815,7 +1815,7 @@ export default function SessionPage({
             </div>
           )}
 
-          {/* Hatch pip — shown when workspace is active */}
+          {/* Hatch pip - shown when workspace is active */}
           {centerMode !== 'orb' && (
             <div
               className="absolute bottom-4 left-4 z-20 flex items-center justify-center"
@@ -1951,7 +1951,7 @@ export default function SessionPage({
             )}
           </div>
 
-          {/* Recent signals — scrollable */}
+          {/* Recent signals - scrollable */}
           <div className="flex-1 overflow-y-auto px-4 py-3 min-h-0" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}>
             <span
               className="font-label font-semibold tracking-widest uppercase mb-2 block"
@@ -2005,7 +2005,7 @@ export default function SessionPage({
               ))
             )}
 
-            {/* Prior round recap — only visible in loop sessions */}
+            {/* Prior round recap - only visible in loop sessions */}
             {previousRound && (
               <div className="mt-3">
                 <PriorRoundRecap previousRound={previousRound} />
@@ -2055,7 +2055,7 @@ export default function SessionPage({
             onClick={() => setIsChatOpen((o) => !o)}
           />
 
-          {/* Canvas button — system_design or data_modeling rounds */}
+          {/* Canvas button - system_design or data_modeling rounds */}
           {(discipline === 'system_design' || discipline === 'data_modeling') && (
             <CtrlBtn
               icon="draw"
@@ -2065,7 +2065,7 @@ export default function SessionPage({
             />
           )}
 
-          {/* Editor button — coding + sql rounds */}
+          {/* Editor button - coding + sql rounds */}
           {(discipline === 'coding' || discipline === 'sql') && (
             <CtrlBtn
               icon={discipline === 'sql' ? 'terminal' : 'code'}

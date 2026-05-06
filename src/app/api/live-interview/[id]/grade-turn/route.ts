@@ -137,7 +137,7 @@ export async function POST(
     const stepLines: string[] = []
     if (steps) {
       for (const [step, data] of Object.entries(steps)) {
-        const nudge = data.nudge ? ` — ${data.nudge}` : ''
+        const nudge = data.nudge ? ` - ${data.nudge}` : ''
         stepLines.push(`${step.charAt(0).toUpperCase() + step.slice(1)} (weight: ${data.weight})${nudge}`)
       }
     }
@@ -145,7 +145,7 @@ export async function POST(
 SCENARIO CONTEXT:
 ${rubric.scenarioQuestion ?? ''}
 
-RUBRIC — what a strong candidate demonstrates per FLOW move:
+RUBRIC - what a strong candidate demonstrates per FLOW move:
 ${stepLines.join('\n')}
 
 TARGET COMPETENCIES: ${((rubric.primaryCompetencies as string[]) ?? []).join(', ')}

@@ -22,12 +22,12 @@ function buildHatchMessage(
   }
   const topPct = 100 - userPercentile
   if (topPct <= 20 && strongestCompetency) {
-    return `You're in the top ${topPct}% of product thinkers — your ${strongestCompetency} is your standout strength.`
+    return `You're in the top ${topPct}% of product thinkers - your ${strongestCompetency} is your standout strength.`
   }
   if (weakestCompetency) {
-    return `Solid foundation — you're ahead of ${userPercentile}% of learners. Push your ${weakestCompetency} to break into the top tier.`
+    return `Solid foundation - you're ahead of ${userPercentile}% of learners. Push your ${weakestCompetency} to break into the top tier.`
   }
-  return `You're ahead of ${userPercentile}% of learners — keep going to climb further.`
+  return `You're ahead of ${userPercentile}% of learners - keep going to climb further.`
 }
 
 export async function GET() {
@@ -35,7 +35,7 @@ export async function GET() {
     return NextResponse.json({
       levels: BENCHMARK_LEVELS,
       user_level: 'Senior Engineer',
-      hatch_message: "You're in the top 20% of product thinkers — strong work so far.",
+      hatch_message: "You're in the top 20% of product thinkers - strong work so far.",
     })
   }
 
@@ -67,7 +67,7 @@ export async function GET() {
   try {
     hatchCtx = await getHatchContext(user.id)
   } catch {
-    // non-fatal — fall back to no-competency message
+    // non-fatal - fall back to no-competency message
   }
   const competencies = hatchCtx?.competencies ?? []
   const strongestCompetency = competencies.length > 0

@@ -57,7 +57,7 @@ export async function POST(
   }
   const role_id: UserRoleV2 = body.role_id ?? 'swe'
 
-  // In mock mode return a synthetic attempt — no DB write
+  // In mock mode return a synthetic attempt - no DB write
   if (isMock) {
     return NextResponse.json({
       attempt: {
@@ -74,7 +74,7 @@ export async function POST(
 
   const adminClient = createAdminClient()
 
-  // Check for existing in-progress attempt — return it (resume)
+  // Check for existing in-progress attempt - return it (resume)
   const { data: existing } = await adminClient
     .from('challenge_attempts')
     .select('id, challenge_id, role_id, current_step, current_question_sequence, status')

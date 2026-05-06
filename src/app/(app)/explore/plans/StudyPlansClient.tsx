@@ -127,7 +127,7 @@ export function StudyPlansClient({ studyPlans }: Props) {
             </div>
           </div>
 
-          {/* Right — stat pills */}
+          {/* Right - stat pills */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
             {[
               { label: 'Study Plans', value: '12' },

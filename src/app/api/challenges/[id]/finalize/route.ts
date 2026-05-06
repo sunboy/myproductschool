@@ -51,7 +51,7 @@ interface PartBreakdown {
 }
 
 // ---------------------------------------------------------------------------
-// Event log parsing helper — mirrors coding-submit route pattern
+// Event log parsing helper - mirrors coding-submit route pattern
 // ---------------------------------------------------------------------------
 
 function parseEventLog(raw: unknown): SessionEvent[] {
@@ -62,7 +62,7 @@ function parseEventLog(raw: unknown): SessionEvent[] {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) return parsed as SessionEvent[]
     } catch {
-      // Not a JSON array (e.g. canvas text summary) — return empty
+      // Not a JSON array (e.g. canvas text summary) - return empty
     }
   }
   return []
@@ -222,7 +222,7 @@ export async function POST(
   const weightedTotal = totalWeight > 0 ? totalWeightedScore / totalWeight : 0
 
   // ---------------------------------------------------------------------------
-  // Build grader input — pass parts[] so the skill can weight evidence
+  // Build grader input - pass parts[] so the skill can weight evidence
   // ---------------------------------------------------------------------------
 
   const metadata = (challenge.metadata ?? {}) as Record<string, unknown>
@@ -290,7 +290,7 @@ export async function POST(
     chatHistory: [] as ChatMessage[],
     sessionEvents,
     sessionStartedAt: attempt.started_at as string | undefined,
-    // Parts-aware field — T8 will extend the skill to use this
+    // Parts-aware field - T8 will extend the skill to use this
     parts: gradingParts,
   }
 

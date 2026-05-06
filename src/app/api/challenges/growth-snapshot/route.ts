@@ -10,7 +10,7 @@ interface SnapshotEntry {
 }
 
 export async function GET() {
-  // Mock mode — return the same text that was previously hardcoded in the UI
+  // Mock mode - return the same text that was previously hardcoded in the UI
   if (IS_MOCK) {
     return NextResponse.json({
       first: {

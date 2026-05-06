@@ -67,7 +67,7 @@ interface StepQuestionRow {
 }
 
 // ---------------------------------------------------------------------------
-// Event log parsing helpers — mirrors /api/code/run route pattern
+// Event log parsing helpers - mirrors /api/code/run route pattern
 // ---------------------------------------------------------------------------
 
 function parseEventLog(raw: unknown): SessionEvent[] {
@@ -78,7 +78,7 @@ function parseEventLog(raw: unknown): SessionEvent[] {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) return parsed as SessionEvent[]
     } catch {
-      // Not a JSON array (e.g. canvas text summary) — return empty
+      // Not a JSON array (e.g. canvas text summary) - return empty
     }
   }
   return []
@@ -163,7 +163,7 @@ export async function POST(
     partId,
   } = body
 
-  // Verify ownership — user must own this attempt
+  // Verify ownership - user must own this attempt
   const { data: attempt } = await supabase
     .from('challenge_attempts')
     .select('user_id, challenge_id, status, conversation_summary, started_at')
@@ -185,7 +185,7 @@ export async function POST(
     if (existingGrade) {
       return NextResponse.json({ error: 'Already submitted' }, { status: 409 })
     }
-    // Fall through — re-grade an orphan attempt
+    // Fall through - re-grade an orphan attempt
   }
 
   // Verify this is a coding challenge
@@ -200,7 +200,7 @@ export async function POST(
   }
 
   // ---------------------------------------------------------------------------
-  // partId path — per-subquestion submit (no rubric grader, deterministic only)
+  // partId path - per-subquestion submit (no rubric grader, deterministic only)
   // ---------------------------------------------------------------------------
 
   if (partId) {
@@ -242,7 +242,7 @@ export async function POST(
     const score = testsTotal > 0 ? (testsPassed / testsTotal) * 5 : 0
     const weightedScore = score * (partRow.grading_weight_within_step ?? 1.0)
 
-    // Upsert into step_attempts — idempotent via (attempt_id, question_id) unique key
+    // Upsert into step_attempts - idempotent via (attempt_id, question_id) unique key
     const { error: upsertError } = await supabase
       .from('step_attempts')
       .upsert(
@@ -317,7 +317,7 @@ export async function POST(
     return NextResponse.json({ error: 'Grading failed', details: String(err) }, { status: 500 })
   }
 
-  // Grading succeeded — mark attempt completed
+  // Grading succeeded - mark attempt completed
   await supabase
     .from('challenge_attempts')
     .update({

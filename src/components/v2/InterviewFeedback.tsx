@@ -27,7 +27,7 @@ function scoreLabel(score: number) {
 // Animated SVG score ring with count-up
 function ScoreRing({ score }: { score: number }) {
   const [displayed, setDisplayed] = useState(0)
-  // r=44 inside a 120×120 viewBox gives 16px margin each side — strokeWidth=10 fits cleanly
+  // r=44 inside a 120×120 viewBox gives 16px margin each side - strokeWidth=10 fits cleanly
   const radius = 44
   const circumference = 2 * Math.PI * radius
   // Start fully offset (arc hidden), animate to final fill
@@ -85,7 +85,7 @@ function ScoreRing({ score }: { score: number }) {
           <span className="font-label text-xs text-on-surface-variant">/5</span>
         </div>
       </div>
-      {/* Score label badge — outside/below the ring */}
+      {/* Score label badge - outside/below the ring */}
       <span className={`font-label text-xs font-semibold px-3 py-1 rounded-full ${colors.badge}`}>
         {scoreLabel(score)}
       </span>
@@ -123,7 +123,7 @@ function DimensionTile({
         }`}
       style={{ animationDelay: `${index * 80}ms` }}
     >
-      {/* Compact header — always visible */}
+      {/* Compact header - always visible */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <p className="font-headline font-semibold text-base text-on-surface truncate tracking-tight">{label}</p>

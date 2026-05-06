@@ -18,7 +18,7 @@ const MOCK_NEXT = {
   reason: 'Targets your weakest move: Frame',
   targets_move: 'frame' as FlowMove,
   recommendation_type: 'weakest_move',
-  hatch_insight: 'Your list move is at Level 1 — this challenge drills exactly that.',
+  hatch_insight: 'Your list move is at Level 1 - this challenge drills exactly that.',
 }
 
 // Generate a topic-based tip from challenge data (used when user is uncalibrated)
@@ -32,16 +32,16 @@ function topicTip(challenge: { title?: string; move_tags?: string[]; prompt_text
     sell: 'how to communicate decisions to stakeholders',
   }
   const movePhrase = move ? movePhrases[move] ?? 'product thinking' : 'product thinking'
-  return `This challenge teaches you ${movePhrase}. Give it a try — no prior scores needed.`
+  return `This challenge teaches you ${movePhrase}. Give it a try - no prior scores needed.`
 }
 
 // Generate a move-targeted tip (used when user is calibrated)
 function moveTip(move: string, challengeTitle: string): string {
   const tips: Record<string, string> = {
     frame: `Practice defining the right problem before jumping to solutions.`,
-    list: `Work on breaking "${challengeTitle}" into its core components — this sharpens your List move.`,
-    weigh: `This is a great exercise in trade-off thinking — your Weigh move needs the most practice.`,
-    sell: `Focus on how you'd explain your reasoning to a stakeholder — that's your growth area.`,
+    list: `Work on breaking "${challengeTitle}" into its core components - this sharpens your List move.`,
+    weigh: `This is a great exercise in trade-off thinking - your Weigh move needs the most practice.`,
+    sell: `Focus on how you'd explain your reasoning to a stakeholder - that's your growth area.`,
   }
   return tips[move] ?? `This challenge targets your weakest move. Give it a shot.`
 }
@@ -63,7 +63,7 @@ function deriveHatchInsight(
     sell: 'sell',
   }
   const label = moveLabels[weakestFlowMove] ?? weakestFlowMove
-  return `Your ${label} move is at Level ${level} — this challenge drills exactly that.`
+  return `Your ${label} move is at Level ${level} - this challenge drills exactly that.`
 }
 
 export async function GET() {

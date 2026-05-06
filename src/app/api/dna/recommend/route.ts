@@ -60,7 +60,7 @@ export async function GET() {
     win_nudge: null,
   }
 
-  // Find weakest competency — if no competencies, pick a default
+  // Find weakest competency - if no competencies, pick a default
   let weakestCompetency: string
   if (competencyList.length > 0) {
     const { weakest } = identifyWeakness(competencyList, lens)

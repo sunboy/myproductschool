@@ -14,7 +14,7 @@ import type { FlowStep } from '@/lib/types'
 const MOCK_NUDGES = [
   "You've identified the problem well. What data would tell you *why* users aren't taking this action?",
   "Good start on the solution. What's the biggest risk of building this, and how would you validate the idea first?",
-  "Your metric choice is reasonable. What are you willing to let get worse in order to improve it — what's the guardrail?",
+  "Your metric choice is reasonable. What are you willing to let get worse in order to improve it - what's the guardrail?",
   "You've described features, but what's the user's underlying job-to-be-done here?",
 ]
 
