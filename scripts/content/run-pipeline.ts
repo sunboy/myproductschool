@@ -178,8 +178,20 @@ async function runSonnetWriter(
     }
   }
 
+  const diagramInstruction = imageInstruction
+    ? imageInstruction
+    : `
+When a concept benefits from a visual (architecture flow, decision tree, data shape), include a Mermaid diagram in a \`\`\`mermaid code block or a plain ASCII diagram. Do not describe diagrams in prose — render them inline at the point of explanation. At least one diagram per chapter if the topic is architectural.`
+
   const prompt = `
 ${styleGuide}
+
+---
+
+CRITICAL RULES (repeat from the guide above — these are enforced mechanically after you write):
+1. Em dashes (—) are BANNED. Zero exceptions. Use a comma, a period, or rewrite the sentence. If you write an em dash, the chapter will be rejected.
+2. No AI slop words.
+3. No second-person role framing.
 
 ---
 
@@ -191,14 +203,14 @@ Suggested hook: "${chapterHook}" (you can improve this, but keep the sharpness)
 Research material:
 ${JSON.stringify(research, null, 2)}
 
-${imageInstruction}
+${diagramInstruction}
 
 Output your response in this EXACT format with these two delimiters on their own lines:
 
 ===HOOK===
 <1-2 sentences: the sharpest most surprising thing about this topic. This is the pull quote shown in the chapter list.>
 ===BODY===
-<full chapter body in Markdown. 800-1200 words. Use real headings (##), real code blocks, inline figures where they help. No padding.>
+<full chapter body in Markdown. 800-1200 words. Use real headings (##), real code blocks, inline diagrams where they help. No padding.>
 ===END===
 `
 
@@ -210,7 +222,14 @@ Output your response in this EXACT format with these two delimiters on their own
   if (!hookMatch || !bodyMatch) {
     throw new Error(`Sonnet output missing delimiters for ${moduleSlug}/${chapterSlug}.\nRaw (first 300): ${raw.slice(0, 300)}`)
   }
-  const chapter = { hook_text: hookMatch[1].trim(), body_mdx: bodyMatch[1].trim() }
+
+  // Strip any em dashes the model produced despite the ban
+  const sanitize = (s: string) => s.replace(/—/g, ',').replace(/ , /g, ', ')
+
+  const chapter = {
+    hook_text: sanitize(hookMatch[1].trim()),
+    body_mdx: sanitize(bodyMatch[1].trim()),
+  }
   fs.writeFileSync(mdxOut, JSON.stringify(chapter, null, 2))
   return chapter
 }
