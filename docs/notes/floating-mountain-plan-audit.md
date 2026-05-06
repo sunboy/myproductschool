@@ -39,7 +39,7 @@ The current owner-narrowed launch scope is:
 | 16. Security headers | Local complete, production partial | `next.config.ts` defines HSTS, CSP, frame denial, nosniff, referrer, and permissions policies. Local `next start` smoke on `/privacy` returned those headers and no `x-powered-by`. Live `https://www.hackproduct.com/waitlist` check found HSTS, nosniff, frame, referrer, and permissions headers, but CSP was absent and the page is an older waitlist build. |
 | 17. Secret rotation | Partial | Repo/staged secret scans pass. Provider key rotation remains owner-controlled. |
 | 18. Sentry receiving | Unknown | No current Sentry evidence recorded. |
-| 19. Status page reachable | Manual blocker | `/api/health` exists and smokes locally; `status.hackproduct.com` DNS/provider setup remains owner-controlled. |
+| 19. Status page reachable | Partial | `/api/health` exists and smokes locally. `status.hackproduct.com` DNS resolves, but `https://status.hackproduct.com` returned `404` on May 6, so provider/app routing still needs setup. |
 | 20. PWA installable | Partial | Static audit found a linked valid manifest and existing 512px icon; browser installability has not been verified, and the 192px manifest entry points to the 512px file. See `docs/notes/pwa-manifest-audit.md`. |
 | 21. Difficulty taxonomy | Not complete | Read-only live DB audit found values outside `easy | medium | hard`; see `docs/notes/difficulty-taxonomy-audit.md`. No migration was applied during launch freeze. |
 | 22. Streak + XP correctness | Not complete | `src/lib/xp/calculator.ts`, `docs/notes/xp-streak-audit.md`, and P8 evidence are absent. This is broad correctness work, not safe to invent during launch freeze. |
