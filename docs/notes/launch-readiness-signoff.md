@@ -151,8 +151,9 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 ## Open Blockers
 
 - [ ] Production domain appears to be serving an older waitlist build.
-  - Evidence: live browser check on May 6, 2026 showed `https://hackproduct.com/` redirecting to `https://www.hackproduct.com/waitlist`.
-  - Evidence: the live waitlist page still contains legacy "Luma" coach copy, so production does not match the current launch-ready local app.
+  - Evidence: live preflight on May 6, 2026 showed `https://hackproduct.com/` serving an older page with legacy "Luma" copy.
+  - Evidence: `https://hackproduct.com/waitlist` still serves waitlist copy, `/api/health` returns `404`, and `/manifest.json` resolves to login HTML rather than JSON.
+  - Evidence: `/privacy`, `/terms`, `/help`, and `/changelog` resolve to login instead of the current public pages.
   - Evidence: Vercel production deployment points at `main` commit `da0370e8e5cc2c4799f461ec8a5059a43fcbc605`, while local `dev` contains unpublished launch-readiness commits.
   - Evidence: the mismatch remains until `dev` is pushed or an explicit Vercel deployment is created from this checkout.
 - [ ] Affiliate real signup smoke is blocked by Stripe account setup.
@@ -192,10 +193,10 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 - [ ] Owner confirms production has `OPENAI_API_KEY`, `TURNSTILE_SECRET_KEY`, and Upstash Redis env vars. Local `.env.local` presence check did not find these keys.
 - [ ] Owner configures Sentry env vars and verifies a captured staging or production error appears in the Sentry project.
 - [ ] Owner enables Supabase Auth leaked-password protection in the Supabase dashboard.
-- [ ] Owner checks `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog` in production.
+- [ ] Owner checks `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog` in production after the current app is deployed.
 - [ ] Owner reruns browser PWA installability check on the production domain after it serves the current app. Local Chromium installability passes for the current production build.
 - [ ] Owner creates/configures the external status provider and DNS for `status.hackproduct.com`. Live check on May 6, 2026 found DNS resolving, but `https://status.hackproduct.com` returned `404`.
-- [ ] Owner verifies production security headers are present on the deployed domain. Live check on May 6, 2026 found HSTS, nosniff, frame, referrer, and permissions headers on `https://www.hackproduct.com/waitlist`, but CSP was absent.
+- [ ] Owner verifies production security headers are present on the deployed domain. Live check on May 6, 2026 found HSTS, nosniff, frame, referrer, and permissions headers on `https://www.hackproduct.com/`, but CSP was absent.
 
 ## Commands
 

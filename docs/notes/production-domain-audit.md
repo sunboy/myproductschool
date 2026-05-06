@@ -2,13 +2,16 @@
 
 Last updated: May 6, 2026
 
-This is a read-only live check of `https://hackproduct.com` and `https://www.hackproduct.com/waitlist`.
+This is a read-only live check of `https://hackproduct.com`, public launch pages, `/manifest.json`, and `/api/health`.
 
 ## Routing
 
-- `https://hackproduct.com` returns `307` to `https://www.hackproduct.com/`.
-- Browser fetch of `https://hackproduct.com/` resolves to `https://www.hackproduct.com/waitlist`.
-- The live page appears to be an older waitlist build, not the current launch-ready local app.
+- `https://hackproduct.com/` resolves to `https://www.hackproduct.com/` with `200`.
+- `https://hackproduct.com/waitlist` resolves to `https://www.hackproduct.com/waitlist` with `200`.
+- `/privacy`, `/terms`, `/help`, and `/changelog` currently resolve to the login page rather than the public legal/help/changelog pages from the current app.
+- `/api/health` returns `404`.
+- `/manifest.json` resolves to login HTML rather than JSON, so production PWA validation fails.
+- The live domain appears to be an older mixed deployment, not the current launch-ready local app.
 
 ## Vercel State
 
@@ -20,11 +23,11 @@ This is a read-only live check of `https://hackproduct.com` and `https://www.hac
 
 ## Content Mismatch
 
-The live waitlist page still contains legacy "Luma" coach copy. That conflicts with the current Hatch identity work and means production should not be treated as launch-signed-off.
+The live root page still contains legacy "Luma" coach copy. The live waitlist page still contains waitlist copy. Both conflict with the current launch-ready local app state, so production should not be treated as launch-signed-off.
 
 ## Headers
 
-`https://www.hackproduct.com/waitlist` returned:
+`https://www.hackproduct.com/` returned:
 
 - `strict-transport-security: max-age=63072000`
 - `x-content-type-options: nosniff`
@@ -33,7 +36,7 @@ The live waitlist page still contains legacy "Luma" coach copy. That conflicts w
 - `permissions-policy: camera=(), microphone=(self), geolocation=()`
 - no `x-powered-by`
 
-Missing on the live waitlist response:
+Missing on the live root response:
 
 - `content-security-policy`
 
@@ -41,7 +44,10 @@ Missing on the live waitlist response:
 
 Production deployment/domain routing is a blocker. Deploy the current app and recheck:
 
+- `LAUNCH_PREFLIGHT_URL=https://hackproduct.com npm run launch:preflight`
 - `/dashboard` visual parity after login
 - `/privacy`, `/terms`, `/pricing`, `/help`, `/changelog`
 - security headers, especially CSP
 - no legacy Luma/provider/internal copy
+- `/api/health`
+- `/manifest.json`

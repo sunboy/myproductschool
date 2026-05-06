@@ -10,7 +10,7 @@ This is the short owner-facing checklist for moving the current `dev` launch-rea
 - Last launch-code commit before this docs handoff: `dbc6850`.
 - Check current ahead count with `git status --short --branch` before pushing or deploying.
 - Linked Vercel project: `myproductschool` (`prj_BnLtw2GgCcCyCnMciQ3Ps1Wezkff`), team `team_gOiGgobpBZjhBPxPTkIYrSTE`.
-- Production currently serves an older waitlist build with legacy `Luma` copy, so production is not launch-signed-off.
+- Production currently serves an older mixed deployment with legacy `Luma` copy, login redirects for public pages, no `/api/health`, and an invalid manifest response, so production is not launch-signed-off.
 
 ## Code Gates Already Verified Locally
 
@@ -52,6 +52,7 @@ Recorded evidence before this handoff:
    - Confirm `https://hackproduct.com` serves the current app instead of the waitlist.
    - Confirm no visible `Luma`, provider, or system/internal copy.
    - Confirm `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog` return current pages.
+   - Confirm `/api/health` returns JSON and `/manifest.json` returns JSON.
    - Confirm production security headers include CSP.
    - Confirm production PWA installability.
    - Review `/dashboard` visually against the current dev baseline.
