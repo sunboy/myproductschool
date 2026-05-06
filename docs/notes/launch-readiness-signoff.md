@@ -57,6 +57,7 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: `rg` found no remaining active cohort route/helper references, and `npm run build` no longer lists `/api/cohort/*`.
 - [x] Static Hatch identity leak grep passes for user-visible app surfaces.
   - Evidence: `rg -i "claude|anthropic|sonnet|opus|haiku|openai|gpt-|language model|system prompt|tool call"` returned no matches in `src/components`, `src/app/(app)`, `src/app/(marketing)`, `src/app/(auth)`, and `src/lib/email` after excluding AI internals and Hatch system prompt files.
+  - Evidence: `rg -i "\\bluma\\b|luma"` returned no matches in current `src/components`, `src/app`, and `src/lib/email` TypeScript/TSX user-surface files after renaming a stale internal preview export.
 
 ## Accepted Scope Changes
 

@@ -424,5 +424,5 @@ export function RoleWordSearch() {
 export const LivePreview_Practice = PracticeWorkbench
 export const LivePreview_LiveInterview = PracticeWorkbench
 export const LivePreview_StudyPlans = RoadmapPreview
-export const LivePreview_LumaCoach = ToolsSystemPreview
+export const LivePreview_HatchCoach = ToolsSystemPreview
 export const LivePreview_Grading = FeedbackConsole
