@@ -1,4 +1,34 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { z, ZodError } from 'zod'
+
+const ArtifactSnapshotSchema = z.object({
+  type: z.enum(['canvas', 'editor']),
+  discipline: z.string().max(100).optional(),
+  capturedAt: z.number().finite().nonnegative().optional(),
+  elementCount: z.number().int().min(0).max(10000).optional(),
+  elementTypes: z.record(z.string(), z.number().int().min(0)).optional(),
+  textLabels: z.array(z.string().max(1000)).max(1000).optional(),
+  code: z.string().max(200000).optional(),
+  language: z.string().max(80).optional(),
+  cursorLine: z.number().int().min(0).optional(),
+  pasteEvents: z.array(z.object({
+    length: z.number().int().min(0),
+    percentOfBuffer: z.number().finite().min(0).max(1),
+    timestamp: z.number().finite().nonnegative(),
+  })).max(100).optional(),
+  runResult: z.unknown().optional(),
+})
+
+const RequestSchema = z.object({
+  artifactSnapshot: ArtifactSnapshotSchema,
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
 
 export async function PATCH(
   request: Request,
@@ -6,9 +36,17 @@ export async function PATCH(
 ) {
   const { id } = await params
 
-  const body = await request.json() as { artifactSnapshot?: unknown }
-  if (!body.artifactSnapshot) {
-    return Response.json({ ok: false, error: 'artifactSnapshot required' }, { status: 400 })
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return Response.json(
+        { ok: false, error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return Response.json({ ok: false, error: 'Invalid JSON body' }, { status: 400 })
   }
 
   const adminClient = createAdminClient()
