@@ -17,6 +17,7 @@ const contentSecurityPolicy = [
 ].join('; ')
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   async redirects() {
     return [
       { source: '/domains', destination: '/explore/domains', permanent: true },
