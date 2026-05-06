@@ -17,10 +17,24 @@ function validationIssues(error: ZodError) {
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ discussionId: string }> }
+  { params }: { params: Promise<{ id: string; discussionId: string }> }
 ) {
-  const { discussionId } = await params
+  const { id, discussionId } = await params
   const adminClient = createAdminClient()
+
+  const { data: discussion, error: discussionError } = await adminClient
+    .from('challenge_discussions')
+    .select('id')
+    .eq('id', discussionId)
+    .eq('challenge_id', id)
+    .maybeSingle()
+
+  if (discussionError) {
+    return apiError(500, 'discussion_lookup_failed', 'Failed to load discussion')
+  }
+  if (!discussion) {
+    return apiError(404, 'discussion_not_found', 'Discussion not found')
+  }
 
   const { data, error } = await adminClient
     .from('discussion_replies')
@@ -45,9 +59,9 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ discussionId: string }> }
+  { params }: { params: Promise<{ id: string; discussionId: string }> }
 ) {
-  const { discussionId } = await params
+  const { id, discussionId } = await params
   let body: z.infer<typeof RequestSchema>
   try {
     body = RequestSchema.parse(await request.json())
@@ -66,6 +80,20 @@ export async function POST(
   if (authError || !user) return apiError(401, 'auth_required', 'Unauthorized')
 
   const adminClient = createAdminClient()
+
+  const { data: discussion, error: discussionError } = await adminClient
+    .from('challenge_discussions')
+    .select('id')
+    .eq('id', discussionId)
+    .eq('challenge_id', id)
+    .maybeSingle()
+
+  if (discussionError) {
+    return apiError(500, 'discussion_lookup_failed', 'Failed to load discussion')
+  }
+  if (!discussion) {
+    return apiError(404, 'discussion_not_found', 'Discussion not found')
+  }
 
   const { data, error } = await adminClient
     .from('discussion_replies')

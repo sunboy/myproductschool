@@ -7,7 +7,7 @@ export async function PATCH(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string; discussionId: string }> }
 ) {
-  const { discussionId } = await params
+  const { id, discussionId } = await params
 
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -20,9 +20,13 @@ export async function PATCH(
     .from('challenge_discussions')
     .select('upvote_count, upvoted_by')
     .eq('id', discussionId)
-    .single()
+    .eq('challenge_id', id)
+    .maybeSingle()
 
-  if (error || !discussion) {
+  if (error) {
+    return apiError(500, 'discussion_lookup_failed', 'Failed to load discussion')
+  }
+  if (!discussion) {
     return apiError(404, 'discussion_not_found', 'Discussion not found')
   }
 
