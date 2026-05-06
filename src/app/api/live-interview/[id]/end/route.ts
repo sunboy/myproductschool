@@ -4,6 +4,7 @@ import { generateDebrief } from '@/lib/live-interview/debrief-generator'
 import { gradeArtifact } from '@/lib/live-interview/artifact-grader'
 import { FLOW_MAX_SCORE } from '@/lib/scoring/flow-scale'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
+import { z, ZodError } from 'zod'
 
 const INTERVIEW_DIFFICULTY_BASE_XP: Record<string, number> = {
   beginner: 60,
@@ -12,6 +13,17 @@ const INTERVIEW_DIFFICULTY_BASE_XP: Record<string, number> = {
 }
 
 const DEFAULT_INTERVIEW_BASE_XP = 80
+
+const RequestSchema = z.object({
+  abandoned: z.boolean().optional().default(false),
+})
+
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
 
 function aiBudgetResponse(error: unknown) {
   if (!(error instanceof AiBudgetExceededError)) return null
@@ -42,10 +54,18 @@ export async function POST(
   // Handle abandoned sessions (sent via sendBeacon on tab close)
   let abandoned = false
   try {
-    const body = await request.json()
-    abandoned = body?.abandoned === true
-  } catch {
-    // No body or invalid JSON — normal end
+    const text = await request.text()
+    const rawBody = text.trim() ? JSON.parse(text) : {}
+    const body = RequestSchema.parse(rawBody)
+    abandoned = body.abandoned
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return Response.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
   const adminClient = createAdminClient()
