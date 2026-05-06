@@ -95,15 +95,16 @@ export async function POST(req: NextRequest) {
       return apiError(429, 'nudge_limit_reached', 'Nudge limit reached', { remaining: 0 })
     }
 
-    // Record nudge usage.
-    // TODO: add a unique constraint on (user_id, attempt_id, nudge_sequence) to eliminate the
-    // TOCTOU race between the count check above and this insert. Until then, concurrent requests
-    // may exceed the limit by one nudge before either insert is committed.
+    const nudgeSequence = (count ?? 0) + 1
+
     try {
-      await adminClient.from('nudge_usage').insert({ user_id: user.id, attempt_id: attemptId })
-    } catch (insertError) {
+      await adminClient.from('nudge_usage').insert({
+        user_id: user.id,
+        attempt_id: attemptId,
+        nudge_sequence: nudgeSequence,
+      })
+    } catch {
       // If insert fails due to a unique constraint violation treat it as rate-limited.
-      console.warn('nudge_usage insert failed (possible race / constraint):', insertError)
       return apiError(429, 'nudge_limit_reached', 'Nudge limit reached', { remaining: 0 })
     }
   }
