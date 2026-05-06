@@ -37,8 +37,8 @@ body{
   transform:translateX(-50%);
 }
 
-/* ═══════════════ PERSISTENT LUMA ═══════════════ */
-.luma-fixed{
+/* ═══════════════ PERSISTENT HATCH ═══════════════ */
+.hatch-fixed{
   position:fixed;
   bottom:40px;
   right:48px;
@@ -46,38 +46,38 @@ body{
   pointer-events:none;
   opacity:0;
   transform:translateY(20px);
-  animation:lumaFixedEnter .8s 1.6s ease forwards;
+  animation:hatchFixedEnter .8s 1.6s ease forwards;
 }
-@keyframes lumaFixedEnter{to{opacity:1;transform:translateY(0)}}
+@keyframes hatchFixedEnter{to{opacity:1;transform:translateY(0)}}
 
-.luma-fixed-inner{
+.hatch-fixed-inner{
   position:relative;
   animation:idleBob 4s ease-in-out infinite;
 }
 
-/* Luma body — shared across all states */
-.luma-body-wrap{
+/* Hatch body — shared across all states */
+.hatch-body-wrap{
   position:relative;
   width:80px;height:88px;
   filter:drop-shadow(0 6px 20px rgba(61,107,79,.15));
   transition:filter .5s ease;
 }
 /* Invert shadow on dark sections */
-.luma-fixed.on-dark .luma-body-wrap{
+.hatch-fixed.on-dark .hatch-body-wrap{
   filter:drop-shadow(0 6px 24px rgba(0,0,0,.35));
 }
 
 /* Each face is absolutely layered, opacity-swapped */
-.luma-face{
+.hatch-face{
   position:absolute;inset:0;
   opacity:0;
   transition:opacity .45s ease;
   pointer-events:none;
 }
-.luma-face.active{opacity:1}
+.hatch-face.active{opacity:1}
 
 /* Speech bubble */
-.luma-bubble{
+.hatch-bubble{
   position:absolute;
   bottom:calc(100% + 14px);
   right:0;
@@ -94,11 +94,11 @@ body{
   opacity:0;
   transform:scale(.85) translateY(4px);
 }
-.luma-bubble.show{
+.hatch-bubble.show{
   opacity:1;
   transform:scale(1) translateY(0);
 }
-.luma-bubble::after{
+.hatch-bubble::after{
   content:'';position:absolute;
   bottom:-5px;right:24px;
   width:10px;height:10px;
@@ -107,41 +107,41 @@ body{
 }
 
 /* Light-mode bubble variant */
-.luma-fixed.on-light .luma-bubble{
+.hatch-fixed.on-light .hatch-bubble{
   background:var(--green-deep);color:var(--cream);
 }
-.luma-fixed.on-dark .luma-bubble{
+.hatch-fixed.on-dark .hatch-bubble{
   background:var(--cream);color:var(--green-dark);
 }
 
 /* Step indicator dot trail */
-.luma-step-dots{
+.hatch-step-dots{
   display:flex;gap:5px;
   justify-content:center;
   margin-top:10px;
   transition:opacity .4s;
 }
-.luma-step-dot{
+.hatch-step-dot{
   width:6px;height:6px;border-radius:50%;
   background:rgba(61,107,79,.15);
   transition:all .4s cubic-bezier(.34,1.56,.64,1);
 }
-.luma-step-dot.filled{
+.hatch-step-dot.filled{
   background:var(--green);
   transform:scale(1.3);
 }
-.luma-fixed.on-dark .luma-step-dot{
+.hatch-fixed.on-dark .hatch-step-dot{
   background:rgba(250,246,240,.15);
 }
-.luma-fixed.on-dark .luma-step-dot.filled{
+.hatch-fixed.on-dark .hatch-step-dot.filled{
   background:var(--cream);
 }
 
 /* Hide on very small screens */
 @media(max-width:700px){
-  .luma-fixed{right:16px;bottom:20px}
-  .luma-body-wrap{width:56px;height:62px}
-  .luma-bubble{font-size:.65rem;padding:7px 12px}
+  .hatch-fixed{right:16px;bottom:20px}
+  .hatch-body-wrap{width:56px;height:62px}
+  .hatch-bubble{font-size:.65rem;padding:7px 12px}
 }
 
 /* ═══════════════ SECTIONS ═══════════════ */
@@ -275,7 +275,7 @@ body{
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 @keyframes idleBob{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-6px) rotate(1deg)}}
 @keyframes blink{0%,42%,46%,100%{transform:scaleY(1)}44%{transform:scaleY(.08)}}
-.luma-blink{animation:blink 5s ease-in-out infinite}
+.hatch-blink{animation:blink 5s ease-in-out infinite}
 
 /* ═══════════════ RESPONSIVE ═══════════════ */
 @media(max-width:900px){
@@ -552,31 +552,31 @@ body::after{
 <div class="thread"></div>
 
 <!-- ═══════════════════════════════════════════════
-     PERSISTENT LUMA — fixed bottom-right companion
+     PERSISTENT HATCH — fixed bottom-right companion
      ═══════════════════════════════════════════════ -->
-<div class="luma-fixed on-light" id="lumaFixed">
-  <div class="luma-fixed-inner">
+<div class="hatch-fixed on-light" id="hatchFixed">
+  <div class="hatch-fixed-inner">
 
     <!-- Speech bubble — text swapped by JS -->
-    <div class="luma-bubble show" id="lumaBubble">I'll walk you through it</div>
+    <div class="hatch-bubble show" id="hatchBubble">I'll walk you through it</div>
 
     <!-- All face states layered in one SVG container -->
-    <div class="luma-body-wrap">
+    <div class="hatch-body-wrap">
 
       <!-- FACE: Hero — friendly smile -->
-      <svg class="luma-face active" data-face="hero" width="80" height="88" viewBox="0 0 120 130" fill="none">
+      <svg class="hatch-face active" data-face="hero" width="80" height="88" viewBox="0 0 120 130" fill="none">
         <polygon points="60,12 24,30 60,40 96,30" fill="var(--green)" stroke="var(--green-deep)" stroke-width="2"/>
         <rect x="40" y="30" width="40" height="13" rx="2" fill="var(--green)" stroke="var(--green-deep)" stroke-width="1.5"/>
         <line x1="86" y1="30" x2="93" y2="44" stroke="var(--green-deep)" stroke-width="2.5" stroke-linecap="round"/>
         <circle cx="95" cy="46" r="3.5" fill="var(--green)"/><circle cx="95" cy="46" r="1.5" fill="var(--amber)"/>
         <rect x="26" y="46" width="68" height="60" rx="15" fill="var(--cream)" stroke="var(--green)" stroke-width="3"/>
-        <g class="luma-blink"><circle cx="47" cy="72" r="4.5" fill="var(--charcoal)"/><circle cx="45.5" cy="70.5" r="1.4" fill="white"/></g>
-        <g class="luma-blink" style="animation-delay:.15s"><circle cx="73" cy="72" r="4.5" fill="var(--charcoal)"/><circle cx="71.5" cy="70.5" r="1.4" fill="white"/></g>
+        <g class="hatch-blink"><circle cx="47" cy="72" r="4.5" fill="var(--charcoal)"/><circle cx="45.5" cy="70.5" r="1.4" fill="white"/></g>
+        <g class="hatch-blink" style="animation-delay:.15s"><circle cx="73" cy="72" r="4.5" fill="var(--charcoal)"/><circle cx="71.5" cy="70.5" r="1.4" fill="white"/></g>
         <path d="M51 84 Q60 93 69 84" stroke="var(--charcoal)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
       </svg>
 
       <!-- FACE: Frame — squinting, examining -->
-      <svg class="luma-face" data-face="frame" width="80" height="88" viewBox="0 0 120 130" fill="none">
+      <svg class="hatch-face" data-face="frame" width="80" height="88" viewBox="0 0 120 130" fill="none">
         <polygon points="60,12 24,30 60,40 96,30" fill="var(--green)" stroke="var(--green-deep)" stroke-width="2"/>
         <rect x="40" y="30" width="40" height="13" rx="2" fill="var(--green)" stroke="var(--green-deep)" stroke-width="1.5"/>
         <line x1="86" y1="30" x2="93" y2="44" stroke="var(--green-deep)" stroke-width="2.5" stroke-linecap="round"/>
@@ -588,7 +588,7 @@ body::after{
       </svg>
 
       <!-- FACE: List — curious, looking up-right -->
-      <svg class="luma-face" data-face="list" width="80" height="88" viewBox="0 0 120 130" fill="none">
+      <svg class="hatch-face" data-face="list" width="80" height="88" viewBox="0 0 120 130" fill="none">
         <polygon points="60,12 24,30 60,40 96,30" fill="var(--green)" stroke="var(--green-deep)" stroke-width="2"/>
         <rect x="40" y="30" width="40" height="13" rx="2" fill="var(--green)" stroke="var(--green-deep)" stroke-width="1.5"/>
         <line x1="86" y1="30" x2="93" y2="44" stroke="var(--green-deep)" stroke-width="2.5" stroke-linecap="round"/>
@@ -600,19 +600,19 @@ body::after{
       </svg>
 
       <!-- FACE: Optimize — intense thinking -->
-      <svg class="luma-face" data-face="optimize" width="80" height="88" viewBox="0 0 120 130" fill="none">
+      <svg class="hatch-face" data-face="optimize" width="80" height="88" viewBox="0 0 120 130" fill="none">
         <polygon points="60,12 24,30 60,40 96,30" fill="var(--green)" stroke="var(--green-deep)" stroke-width="2"/>
         <rect x="40" y="30" width="40" height="13" rx="2" fill="var(--green)" stroke="var(--green-deep)" stroke-width="1.5"/>
         <line x1="86" y1="30" x2="93" y2="44" stroke="var(--green-deep)" stroke-width="2.5" stroke-linecap="round"/>
         <circle cx="95" cy="46" r="3.5" fill="var(--green)"/><circle cx="95" cy="46" r="1.5" fill="var(--amber)"/>
         <rect x="26" y="46" width="68" height="60" rx="15" fill="var(--cream)" stroke="var(--green)" stroke-width="3"/>
-        <g class="luma-blink"><rect x="39" y="69" width="16" height="5.5" rx="2.7" fill="var(--charcoal)"/></g>
-        <g class="luma-blink" style="animation-delay:.2s"><rect x="65" y="69" width="16" height="5.5" rx="2.7" fill="var(--charcoal)"/></g>
+        <g class="hatch-blink"><rect x="39" y="69" width="16" height="5.5" rx="2.7" fill="var(--charcoal)"/></g>
+        <g class="hatch-blink" style="animation-delay:.2s"><rect x="65" y="69" width="16" height="5.5" rx="2.7" fill="var(--charcoal)"/></g>
         <line x1="50" y1="89" x2="70" y2="89" stroke="var(--charcoal)" stroke-width="2.5" stroke-linecap="round"/>
       </svg>
 
       <!-- FACE: Win — star eyes, big grin -->
-      <svg class="luma-face" data-face="win" width="80" height="88" viewBox="0 0 120 130" fill="none">
+      <svg class="hatch-face" data-face="win" width="80" height="88" viewBox="0 0 120 130" fill="none">
         <polygon points="60,8 24,26 60,36 96,26" fill="var(--green)" stroke="var(--green-deep)" stroke-width="2"/>
         <rect x="40" y="26" width="40" height="13" rx="2" fill="var(--green)" stroke="var(--green-deep)" stroke-width="1.5"/>
         <line x1="86" y1="26" x2="93" y2="40" stroke="var(--green-deep)" stroke-width="2.5" stroke-linecap="round"/>
@@ -626,28 +626,28 @@ body::after{
       </svg>
 
       <!-- FACE: CTA — waving -->
-      <svg class="luma-face" data-face="cta" width="80" height="88" viewBox="0 0 120 130" fill="none">
+      <svg class="hatch-face" data-face="cta" width="80" height="88" viewBox="0 0 120 130" fill="none">
         <polygon points="60,12 24,30 60,40 96,30" fill="var(--green)" stroke="var(--green-deep)" stroke-width="2"/>
         <rect x="40" y="30" width="40" height="13" rx="2" fill="var(--green)" stroke="var(--green-deep)" stroke-width="1.5"/>
         <line x1="86" y1="30" x2="93" y2="44" stroke="var(--green-deep)" stroke-width="2.5" stroke-linecap="round"/>
         <circle cx="95" cy="46" r="3.5" fill="var(--green)"/><circle cx="95" cy="46" r="1.5" fill="var(--amber)"/>
         <rect x="26" y="46" width="68" height="60" rx="15" fill="var(--cream)" stroke="var(--green)" stroke-width="3"/>
-        <g class="luma-blink"><circle cx="47" cy="72" r="4.5" fill="var(--charcoal)"/><circle cx="45.5" cy="70.5" r="1.4" fill="white"/></g>
-        <g class="luma-blink" style="animation-delay:.15s"><circle cx="73" cy="72" r="4.5" fill="var(--charcoal)"/><circle cx="71.5" cy="70.5" r="1.4" fill="white"/></g>
+        <g class="hatch-blink"><circle cx="47" cy="72" r="4.5" fill="var(--charcoal)"/><circle cx="45.5" cy="70.5" r="1.4" fill="white"/></g>
+        <g class="hatch-blink" style="animation-delay:.15s"><circle cx="73" cy="72" r="4.5" fill="var(--charcoal)"/><circle cx="71.5" cy="70.5" r="1.4" fill="white"/></g>
         <path d="M51 84 Q60 93 69 84" stroke="var(--charcoal)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
         <rect x="94" y="68" width="14" height="18" rx="6" fill="var(--cream)" stroke="var(--green)" stroke-width="2" transform="rotate(-10 101 77)">
           <animateTransform attributeName="transform" type="rotate" values="-10 101 77;12 101 77;-10 101 77" dur="1s" repeatCount="indefinite"/>
         </rect>
       </svg>
 
-    </div><!-- /luma-body-wrap -->
+    </div><!-- /hatch-body-wrap -->
 
     <!-- Step progress dots -->
-    <div class="luma-step-dots" id="lumaDots">
-      <div class="luma-step-dot" data-dot="0"></div>
-      <div class="luma-step-dot" data-dot="1"></div>
-      <div class="luma-step-dot" data-dot="2"></div>
-      <div class="luma-step-dot" data-dot="3"></div>
+    <div class="hatch-step-dots" id="hatchDots">
+      <div class="hatch-step-dot" data-dot="0"></div>
+      <div class="hatch-step-dot" data-dot="1"></div>
+      <div class="hatch-step-dot" data-dot="2"></div>
+      <div class="hatch-step-dot" data-dot="3"></div>
     </div>
 
   </div>
@@ -655,7 +655,7 @@ body::after{
 
 
 <!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ HERO ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
-<section class="panel hero" data-luma-face="hero" data-luma-say="I'll walk you through it" data-luma-theme="light">
+<section class="panel hero" data-hatch-face="hero" data-hatch-say="I'll walk you through it" data-hatch-theme="light">
   <p class="hero-eyebrow">Future-Proof Your Thinking</p>
   <h1 class="hero-title">Think in<br><em>FLOW.</em></h1>
   <p class="hero-subtitle">Four moves that turn ambiguous product questions into structured, defensible answers. Every single time.</p>
@@ -663,7 +663,7 @@ body::after{
 </section>
 
 <!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ FRAME ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
-<section class="panel step-panel dark" data-step data-luma-face="frame" data-luma-say="What are we really solving?" data-luma-theme="dark" data-luma-dot="0">
+<section class="panel step-panel dark" data-step data-hatch-face="frame" data-hatch-say="What are we really solving?" data-hatch-theme="dark" data-hatch-dot="0">
   <div class="step-letter">F</div>
   <div class="step-inner">
     <p class="step-number-label" data-reveal>01 of 04</p>
@@ -682,7 +682,7 @@ body::after{
 </section>
 
 <!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ LIST ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
-<section class="panel step-panel light" data-step data-luma-face="list" data-luma-say="Who's affected? What exists?" data-luma-theme="light" data-luma-dot="1">
+<section class="panel step-panel light" data-step data-hatch-face="list" data-hatch-say="Who's affected? What exists?" data-hatch-theme="light" data-hatch-dot="1">
   <div class="step-letter">L</div>
   <div class="step-inner">
     <p class="step-number-label" data-reveal>02 of 04</p>
@@ -700,7 +700,7 @@ body::after{
 </section>
 
 <!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ OPTIMIZE ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
-<section class="panel step-panel dark" data-step data-luma-face="optimize" data-luma-say="Hmm, what's the trade-off?" data-luma-theme="dark" data-luma-dot="2">
+<section class="panel step-panel dark" data-step data-hatch-face="optimize" data-hatch-say="Hmm, what's the trade-off?" data-hatch-theme="dark" data-hatch-dot="2">
   <div class="step-letter">O</div>
   <div class="step-inner">
     <p class="step-number-label" data-reveal>03 of 04</p>
@@ -719,7 +719,7 @@ body::after{
 </section>
 
 <!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ WIN ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
-<section class="panel step-panel light" data-step data-luma-face="win" data-luma-say="Now that's a recommendation!" data-luma-theme="light" data-luma-dot="3">
+<section class="panel step-panel light" data-step data-hatch-face="win" data-hatch-say="Now that's a recommendation!" data-hatch-theme="light" data-hatch-dot="3">
   <div class="step-letter">W</div>
   <div class="step-inner">
     <p class="step-number-label" data-reveal>04 of 04</p>
@@ -738,7 +738,7 @@ body::after{
 </section>
 
 <!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ WAITLIST ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
-<section class="waitlist-panel" data-luma-face="cta" data-luma-say="Your turn — go get 'em!" data-luma-theme="dark">
+<section class="waitlist-panel" data-hatch-face="cta" data-hatch-say="Your turn — go get 'em!" data-hatch-theme="dark">
   <div class="waitlist-layout">
 
     <!-- Left — content + form -->
@@ -752,13 +752,13 @@ body::after{
 
       <div class="waitlist-content" data-reveal>
         <h2 class="waitlist-headline">Built for engineers<br>who <em>think in products.</em></h2>
-        <p class="waitlist-sub">Master product sense for interviews and on the job. Practice real decisions, get feedback from Luma, and build the intuition that gets you hired and promoted.</p>
+        <p class="waitlist-sub">Master product sense for interviews and on the job. Practice real decisions, get feedback from Hatch, and build the intuition that gets you hired and promoted.</p>
       </div>
 
       <div class="waitlist-props" data-reveal>
         <div class="waitlist-prop">
           <div class="prop-check"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>
-          <span><strong>Ace product sense interviews</strong> with Luma-graded practice rounds</span>
+          <span><strong>Ace product sense interviews</strong> with Hatch-graded practice rounds</span>
         </div>
         <div class="waitlist-prop">
           <div class="prop-check"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>
@@ -843,17 +843,17 @@ window.addEventListener('scroll', () => {
   });
 }, { passive: true });
 
-// ─── Persistent Luma state machine ───
-const lumaEl = document.getElementById('lumaFixed');
-const lumaBubble = document.getElementById('lumaBubble');
-const allFaces = document.querySelectorAll('.luma-face');
-const allDots = document.querySelectorAll('.luma-step-dot');
-const panels = document.querySelectorAll('[data-luma-face]');
+// ─── Persistent Hatch state machine ───
+const hatchEl = document.getElementById('hatchFixed');
+const hatchBubble = document.getElementById('hatchBubble');
+const allFaces = document.querySelectorAll('.hatch-face');
+const allDots = document.querySelectorAll('.hatch-step-dot');
+const panels = document.querySelectorAll('[data-hatch-face]');
 
 let currentFace = 'hero';
 let bubbleTimeout = null;
 
-function setLumaState(face, say, theme, dot) {
+function setHatchState(face, say, theme, dot) {
   // Swap face
   if (face !== currentFace) {
     allFaces.forEach(f => f.classList.toggle('active', f.dataset.face === face));
@@ -861,16 +861,16 @@ function setLumaState(face, say, theme, dot) {
   }
 
   // Theme (dark/light adaptation)
-  lumaEl.classList.toggle('on-dark', theme === 'dark');
-  lumaEl.classList.toggle('on-light', theme === 'light');
+  hatchEl.classList.toggle('on-dark', theme === 'dark');
+  hatchEl.classList.toggle('on-light', theme === 'light');
 
   // Speech bubble — hide then show with new text
-  if (say && lumaBubble.textContent !== say) {
-    lumaBubble.classList.remove('show');
+  if (say && hatchBubble.textContent !== say) {
+    hatchBubble.classList.remove('show');
     clearTimeout(bubbleTimeout);
     bubbleTimeout = setTimeout(() => {
-      lumaBubble.textContent = say;
-      lumaBubble.classList.add('show');
+      hatchBubble.textContent = say;
+      hatchBubble.classList.add('show');
     }, 300);
   }
 
@@ -884,8 +884,8 @@ function setLumaState(face, say, theme, dot) {
   }
 }
 
-// Observe each panel to trigger Luma state changes
-const lumaObserver = new IntersectionObserver((entries) => {
+// Observe each panel to trigger Hatch state changes
+const hatchObserver = new IntersectionObserver((entries) => {
   // Find the most visible panel
   let best = null;
   let bestRatio = 0;
@@ -896,16 +896,16 @@ const lumaObserver = new IntersectionObserver((entries) => {
     }
   });
   if (best) {
-    setLumaState(
-      best.dataset.lumaFace,
-      best.dataset.lumaSay,
-      best.dataset.lumaTheme,
-      best.dataset.lumaDot
+    setHatchState(
+      best.dataset.hatchFace,
+      best.dataset.hatchSay,
+      best.dataset.hatchTheme,
+      best.dataset.hatchDot
     );
   }
 }, { threshold: [0.3, 0.5, 0.7] });
 
-panels.forEach(p => lumaObserver.observe(p));
+panels.forEach(p => hatchObserver.observe(p));
 
 // ─── Waitlist form ───
 function handleWaitlist() {
