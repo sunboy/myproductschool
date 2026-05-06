@@ -90,7 +90,7 @@ export function QuickTakeCard({ prompt: initialPrompt, challengeId: initialChall
         <div className="flex items-center gap-3 relative">
           <HatchGlyph size={36} state="celebrating" className="text-on-primary shrink-0" />
           <div>
-            <h3 className="font-headline font-bold text-base leading-tight">Quick Take — graded</h3>
+            <h3 className="font-headline font-bold text-base leading-tight">Quick Take, graded</h3>
             <p className="text-on-primary/70 text-[11px] font-label mt-0.5">+{result.xp_earned} XP earned</p>
           </div>
         </div>

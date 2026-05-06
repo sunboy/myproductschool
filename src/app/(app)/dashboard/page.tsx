@@ -42,8 +42,8 @@ function getGreeting(): string {
 function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1) }
 
 function moveHatchInsight(move: string, level: number): string {
-  if (level <= 2) return `You're building your ${move} foundation — this challenge is the right next rep.`
-  if (level <= 5) return `Your ${move} move needs reps at this difficulty — push through it.`
+  if (level <= 2) return `You're building your ${move} foundation. This challenge is the right next rep.`
+  if (level <= 5) return `Your ${move} move needs reps at this difficulty. Push through it.`
   return `Strong overall. This sharpens your ${move} edge.`
 }
 
@@ -68,9 +68,9 @@ function getPersonalizedGreeting(displayName: string, streakDays: number, lastAt
   if (!isCalibrated) return `Welcome, ${displayName}!`
   const today = new Date().toISOString().split('T')[0]
   const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
-  if (streakDays >= 7) return `${base}, ${displayName} — ${streakDays} days strong.`
+  if (streakDays >= 7) return `${base}, ${displayName}: ${streakDays} days strong.`
   if (lastAttemptDate === today) return `${base}, ${displayName}! You're already on a roll today.`
-  if (lastAttemptDate === yesterday && streakDays > 1) return `${base}, ${displayName} — don't break your ${streakDays}-day streak.`
+  if (lastAttemptDate === yesterday && streakDays > 1) return `${base}, ${displayName}: don't break your ${streakDays}-day streak.`
   if (!lastAttemptDate || streakDays === 0) return `Welcome back, ${displayName}! Ready to get back into it?`
   return `${base}, ${displayName}!`
 }
@@ -415,7 +415,7 @@ export default async function DashboardPage() {
     nextChallenge = normalizeChallenge(fallbackChallenge ?? null)
   }
 
-  // Attach rule-based insight from move level data — no AI call
+  // Attach rule-based insight from move level data; no AI call.
   if (nextChallenge && allMoveLevels.length > 0) {
     const weakestLevel = allMoveLevels[0].level ?? 1
     nextChallenge = { ...nextChallenge, hatch_insight: moveHatchInsight(weakestMove, weakestLevel) }
@@ -476,7 +476,7 @@ export default async function DashboardPage() {
         <UpgradedBanner />
       </Suspense>
 
-      {/* State A — Calibrated */}
+      {/* State A: Calibrated */}
       {isCalibrated && (
         <div className="grid gap-7 grid-cols-1 lg:grid-cols-[1fr_340px]">
           {/* Main column */}
@@ -537,7 +537,7 @@ export default async function DashboardPage() {
 
             <CommunityActivityCard events={communityActivity} />
 
-            {/* Interview Countdown — conditional */}
+            {/* Interview Countdown: conditional */}
             {interviewDate && (
               <InterviewCountdownCard interviews={interviews} />
             )}
@@ -568,7 +568,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* State B — Uncalibrated */}
+      {/* State B: Uncalibrated */}
       {!isCalibrated && (
         <div className="space-y-4">
           {/* Hatch Greeting Bar */}

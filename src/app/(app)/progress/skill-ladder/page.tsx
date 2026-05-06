@@ -18,7 +18,7 @@ import type { CareerBenchmark, Competency, FlowMove } from '@/lib/types'
 
 function buildLinkedInUrl(moveName: string, level: number): string {
   const now = new Date()
-  const certName = encodeURIComponent(`HackProduct ${moveName} Move — Level ${level}`)
+  const certName = encodeURIComponent(`HackProduct ${moveName} Move: Level ${level}`)
   const certUrl = encodeURIComponent('https://hackproduct.io/verify')
   return `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${certName}&issueYear=${now.getFullYear()}&issueMonth=${now.getMonth() + 1}&certUrl=${certUrl}`
 }
@@ -277,7 +277,7 @@ function SkillLadderContent() {
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-2xl font-headline font-bold text-primary">{meta.label} Move</h1>
             <span className="bg-primary-fixed text-primary px-3 py-0.5 rounded-full text-xs font-bold border border-primary/20">
-              Level {moveLevel} — {moveLevelNames[moveLevel - 1]}
+              Level {moveLevel}: {moveLevelNames[moveLevel - 1]}
             </span>
           </div>
           <p className="text-on-surface-variant text-sm mt-1">{meta.description}</p>
@@ -309,7 +309,7 @@ function SkillLadderContent() {
           {/* Skill ladder rungs */}
           <div className="space-y-3">
 
-            {/* Level 1 — completed if level > 1 */}
+            {/* Level 1, completed if level > 1 */}
             {moveLevel >= 2 ? (
               <div className="bg-primary text-white rounded-xl p-5 flex items-center gap-4 relative overflow-hidden border border-primary">
                 <div className="absolute right-0 top-0 h-full w-24 bg-white/10 -skew-x-12 translate-x-10" />
@@ -318,7 +318,7 @@ function SkillLadderContent() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-bold text-sm">Level 1 — {moveLevelNames[0]} · Beginner</h3>
+                    <h3 className="font-bold text-sm">Level 1: {moveLevelNames[0]} · Beginner</h3>
                     <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold">🥉 Earned</span>
                   </div>
                   <p className="text-xs text-white/80 mt-0.5">Typical: APM / Junior PM</p>
@@ -407,7 +407,7 @@ function SkillLadderContent() {
                 level={5}
                 label={moveLevelNames[4]}
                 tier="Master"
-                focus="Full FLOW mastery — all four moves at senior level"
+                focus="Full FLOW mastery across all four moves at senior level"
                 moveLabel={meta.label}
                 moveProgress={moveProgress}
                 moveXp={moveXp}
@@ -481,7 +481,7 @@ function SkillLadderContent() {
             </div>
           </div>
 
-          {/* Related Skills — other FLOW moves */}
+          {/* Related Skills: other FLOW moves */}
           <div className="bg-surface-container rounded-xl p-5 border border-outline-variant">
             <h3 className="text-sm font-bold text-on-surface mb-3">Other FLOW moves</h3>
             <div className="grid grid-cols-1 gap-2">
@@ -642,7 +642,7 @@ function CompletedRung({ level, label, tier }: { level: number; label: string; t
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <h3 className="font-bold text-sm">Level {level} — {label} · {tier}</h3>
+          <h3 className="font-bold text-sm">Level {level}: {label} · {tier}</h3>
           <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold">🥉 Earned</span>
         </div>
       </div>
@@ -662,7 +662,7 @@ function LockedRung({
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <h3 className="font-bold text-on-surface-variant text-sm">Level {level} — {label}</h3>
+          <h3 className="font-bold text-on-surface-variant text-sm">Level {level}: {label}</h3>
           {showBadge && (
             <span className="material-symbols-outlined text-outline text-lg" style={{ fontVariationSettings: "'FILL' 0" }}>workspace_premium</span>
           )}
@@ -699,7 +699,7 @@ function CurrentLevelCard({
       </div>
       <div className="flex justify-between items-start mb-4 flex-wrap gap-2">
         <div>
-          <h3 className="font-bold text-primary text-base">Level {level} — {label} · {tier}</h3>
+          <h3 className="font-bold text-primary text-base">Level {level}: {label} · {tier}</h3>
           {focus && <p className="text-xs text-on-surface-variant font-medium mt-0.5">Focus: {focus}</p>}
         </div>
         <span className="bg-tertiary-container text-tertiary px-3 py-1 rounded-full text-xs font-bold border border-tertiary/20">

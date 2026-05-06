@@ -136,8 +136,8 @@ export default async function ProfilePage() {
               </p>
               Your strongest dimension is <strong>{topDimensionLabel}</strong> at{' '}
               {topDimension.score}/100. You consistently propose actionable next steps
-              backed by evidence. Watch for the <em>Metric Recitation</em> pattern
-              &mdash; you&apos;ve triggered it 5 times this month. Try anchoring
+              backed by evidence. Watch for the <em>Metric Recitation</em> pattern.
+              You&apos;ve triggered it 5 times this month. Try anchoring
               metrics in user behavior rather than listing them.
             </blockquote>
           </div>

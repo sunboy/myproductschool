@@ -65,7 +65,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
         }}
       />
 
-      {/* Mascot halo — bright green bloom on right where it's lighter */}
+      {/* Mascot halo: bright green bloom on right where it's lighter */}
       <div
         aria-hidden
         className="absolute pointer-events-none hidden lg:block"
@@ -80,7 +80,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
         }}
       />
 
-      {/* Diagonal stripe texture — subtle, right-side only */}
+      {/* Diagonal stripe texture: subtle, right-side only */}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none opacity-[0.04] hidden lg:block"
@@ -91,7 +91,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
         }}
       />
 
-      {/* Dot grid — left content area */}
+      {/* Dot grid: left content area */}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none opacity-60"
@@ -103,7 +103,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
         }}
       />
 
-      {/* Mascot — top-anchored, right side */}
+      {/* Mascot: top-anchored, right side */}
       <div className="absolute top-4 right-8 hidden lg:block" aria-hidden>
         <MaskoAvatar size={200} style={{ filter: 'drop-shadow(0 8px 32px rgba(126,224,153,0.35)) drop-shadow(0 2px 8px rgba(0,0,0,0.5))' }} />
       </div>
@@ -168,7 +168,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
           {
             k: 'Current streak',
             v: `${streakDays}`,
-            sub: streakDays === 1 ? 'Day — Keep It Alive' : "Days — You're On Fire",
+            sub: streakDays === 1 ? 'Day, Keep It Alive' : "Days, You're On Fire",
             icon: 'local_fire_department',
           },
           { k: 'XP today', v: `${xpTotal}`, sub: 'Total XP Earned', icon: 'bolt' },

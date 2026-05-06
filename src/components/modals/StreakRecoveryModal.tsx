@@ -36,7 +36,7 @@ export function StreakRecoveryModal({ isOpen, onClose }: StreakRecoveryModalProp
           {/* Speech Bubble */}
           <div className="bg-white border border-outline-variant rounded-xl p-3 mb-6 relative">
             <p className="text-xs text-on-surface-variant text-center leading-relaxed">
-              &ldquo;Your skills didn&apos;t reset &mdash; just the counter. Let&apos;s get your streak back.&rdquo;
+              &ldquo;Your skills didn&apos;t reset, just the counter. Let&apos;s get your streak back.&rdquo;
             </p>
             {/* Tooltip arrow */}
             <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-t border-l border-outline-variant rotate-45" />
@@ -103,7 +103,7 @@ export function StreakRecoveryModal({ isOpen, onClose }: StreakRecoveryModalProp
               >
                 shield
               </span>
-              Earn a Streak Shield after 7 days &mdash; it&apos;ll protect you next time.
+              Earn a Streak Shield after 7 days, and it&apos;ll protect you next time.
             </span>
           </div>
         </div>

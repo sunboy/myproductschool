@@ -37,7 +37,7 @@ const MOVES: MoveData[] = [
     accent: '#4a7c59',
     accentBg: '#e8f1ec',
     accentDeep: '#2e5138',
-    body: 'Stop solving the stated problem. Every feature request is a disguised symptom. Framing means surfacing the underlying job-to-be-done — the outcome the user actually wants — before evaluating any solutions.',
+    body: 'Stop solving the stated problem. Every feature request is a disguised symptom. Framing means surfacing the underlying job-to-be-done, the outcome the user actually wants, before evaluating any solutions.',
     expert: {
       initials: 'MC',
       name: 'Marty Cagan',
@@ -46,12 +46,12 @@ const MOVES: MoveData[] = [
     },
     scenario: {
       label: 'Applied · B2B SaaS notifications',
-      text: "PM says: add real-time push notifications. Framed correctly, the job isn't to notify — it's to keep teams in sync without breaking focus. That's a completely different problem to solve.",
+      text: "PM says: add real-time push notifications. Framed correctly, the job isn't to notify. It's to keep teams in sync without breaking focus. That's a completely different problem to solve.",
     },
     hatchMessage: "Before jumping to solutions, great product thinkers ask one question: what job is this person actually trying to do? The answer is almost never what was stated.",
-    panelBefore: 'Three solutions in three seconds. None answer the actual question — because nobody asked the actual question yet.',
+    panelBefore: 'Three solutions in three seconds. None answer the actual question because nobody asked the actual question yet.',
     panelMove: 'Ask what job this person is really trying to do. The spinner hides latency. It doesn\'t fix the anxiety of not knowing if the action worked.',
-    panelAfter: '"Slow load times" becomes a trust problem. Now you\'re solving something real — and the solution set gets far more interesting.',
+    panelAfter: '"Slow load times" becomes a trust problem. Now you\'re solving something real, and the solution set gets far more interesting.',
   },
   {
     key: 'list',
@@ -63,7 +63,7 @@ const MOVES: MoveData[] = [
     accent: '#c9933a',
     accentBg: '#f7ebc9',
     accentDeep: '#7a5a1e',
-    body: "Don't commit to a solution yet. Generate every plausible approach to the framed problem — at least five distinct options that vary in effort, reach, and mechanism. The goal is breadth before depth.",
+    body: "Don't commit to a solution yet. Generate every plausible approach to the framed problem, at least five distinct options that vary in effort, reach, and mechanism. The goal is breadth before depth.",
     expert: {
       initials: 'TT',
       name: 'Teresa Torres',
@@ -72,10 +72,10 @@ const MOVES: MoveData[] = [
     },
     scenario: {
       label: 'Applied · B2B SaaS notifications',
-      text: 'Listed: push notifs, Slack/Teams integration, daily digest, in-app feed, @mention threads, smart batching. The Slack integration — which nobody asked for — turns out to be the highest-leverage option by far.',
+      text: 'Listed: push notifs, Slack/Teams integration, daily digest, in-app feed, @mention threads, smart batching. The Slack integration, which nobody asked for, turns out to be the highest-leverage option by far.',
     },
-    hatchMessage: "The first solution you think of is almost never the best one. Generate until you surprise yourself — that's when you know you've actually opened the space.",
-    panelBefore: 'One problem, one solution, shipped by Thursday. This is feature thinking at its most efficient — and most dangerous.',
+    hatchMessage: "The first solution you think of is almost never the best one. Generate until you surprise yourself. That's when you know you've actually opened the space.",
+    panelBefore: 'One problem, one solution, shipped by Thursday. This is feature thinking at its most efficient and most dangerous.',
     panelMove: "Teresa Torres' Opportunity Solution Tree: branch every possibility before scoring any of them. Generate five. Then generate two more.",
     panelAfter: 'Four distinct options. Each solves the same underlying problem differently. Now you can have an intelligent conversation about tradeoffs.',
   },
@@ -89,21 +89,21 @@ const MOVES: MoveData[] = [
     accent: '#c2633a',
     accentBg: '#fce0d2',
     accentDeep: '#7a3a18',
-    body: "Not all solutions are equal. Apply a scoring lens — RICE, ICE, LNO — before you fall in love with any single approach. The goal is to replace preference with evidence and make the tradeoff visible.",
+    body: "Not all solutions are equal. Apply a scoring lens like RICE, ICE, or LNO before you fall in love with any single approach. The goal is to replace preference with evidence and make the tradeoff visible.",
     expert: {
       initials: 'SD',
       name: 'Shreyas Doshi',
       role: 'ex-Stripe, Twitter · creator of LNO',
-      quote: 'Product leverage is about finding the work that is 10x more impactful than everything else. Most teams optimize locally — they do a good job on the wrong things.',
+      quote: 'Product leverage is about finding the work that is 10x more impactful than everything else. Most teams optimize locally; they do a good job on the wrong things.',
     },
     scenario: {
       label: 'Applied · B2B SaaS notifications',
-      text: 'RICE scores: Push notifs = 42. Daily digest = 31. Slack bot = 118. The number makes the decision obvious — and gives you something concrete to bring into the planning meeting instead of a preference.',
+      text: 'RICE scores: Push notifs = 42. Daily digest = 31. Slack bot = 118. The number makes the decision obvious and gives you something concrete to bring into the planning meeting instead of a preference.',
     },
-    hatchMessage: "A number beats an opinion every time. Even a rough RICE score converts a preference argument into a tradeoff conversation — and that's a much better meeting.",
+    hatchMessage: "A number beats an opinion every time. Even a rough RICE score converts a preference argument into a tradeoff conversation, and that's a much better meeting.",
     panelBefore: 'All three look reasonable. The loudest voice wins. This is how roadmaps become wish lists.',
     panelMove: 'RICE scoring: score every option on Reach, Impact, Confidence, Effort. Force the conversation from opinion to evidence.',
-    panelAfter: 'Slack integration wins at RICE 118. Push notifs score 42. The number makes the decision obvious — and gives you something to defend.',
+    panelAfter: 'Slack integration wins at RICE 118. Push notifs score 42. The number makes the decision obvious and gives you something to defend.',
   },
   {
     key: 'win',
@@ -115,16 +115,16 @@ const MOVES: MoveData[] = [
     accent: '#5b3aa3',
     accentBg: '#e8e0f7',
     accentDeep: '#3e2470',
-    body: "Great analysis that can't be communicated doesn't ship. Positioning means framing your recommendation for the decision-maker's context — not your own. They need a story, not a spreadsheet.",
+    body: "Great analysis that can't be communicated doesn't ship. Positioning means framing your recommendation for the decision-maker's context, not your own. They need a story, not a spreadsheet.",
     expert: {
       initials: 'AD',
       name: 'April Dunford',
       role: 'Obviously Awesome · positioning',
-      quote: "Positioning isn't about what you build — it's the context you create so your audience instantly understands why yours is the right answer.",
+      quote: "Positioning isn't about what you build. It's the context you create so your audience instantly understands why yours is the right answer.",
     },
     scenario: {
       label: 'Applied · B2B SaaS notifications',
-      text: 'Instead of "we should build a Slack bot (RICE: 118)," you say: "For enterprise users who run operations in Slack, this replaces their current workflow of switching back to our app — and we can validate it in one sprint." Approved in the meeting.',
+      text: 'Instead of "we should build a Slack bot (RICE: 118)," you say: "For enterprise users who run operations in Slack, this replaces their current workflow of switching back to our app, and we can validate it in one sprint." Approved in the meeting.',
     },
     hatchMessage: "Engineers think the win is building the right thing. Product thinkers know the win is getting the right thing built. Those are different skills.",
     panelBefore: "You've got the data. You share the RICE scores. You get 'interesting, let's think about it.' Which means no.",
@@ -137,23 +137,23 @@ const WORKED = [
   {
     k: 'f',
     symbol: 'F',
-    title: "Frame — what's the real job?",
-    body: "The question isn't 'which feature?' — it's why daily active listening dropped among 18-24s. Discovery data shows choice paralysis: too many options, no clear starting point. The real job is reducing friction-to-first-listen, not adding more surfaces.",
+    title: "Frame: what's the real job?",
+    body: "The question isn't 'which feature?' It's why daily active listening dropped among 18-24s. Discovery data shows choice paralysis: too many options, no clear starting point. The real job is reducing friction-to-first-listen, not adding more surfaces.",
     chips: ['JTBD reframe', 'Discovery data', 'Not "which feature"'],
     letterColor: '#7ee099',
   },
   {
     k: 'l',
     symbol: 'L',
-    title: "List — open the space",
-    body: "Solutions generated: AI DJ, social feed, contextual playlists (morning/gym/focus), 'continue from friends' widget, mood radio, one-tap start from home. Six options — not two. The original framing collapsed the space prematurely.",
+    title: "List: open the space",
+    body: "Solutions generated: AI DJ, social feed, contextual playlists (morning/gym/focus), 'continue from friends' widget, mood radio, one-tap start from home. Six options, not two. The original framing collapsed the space prematurely.",
     chips: ['6 options', 'Opportunity tree', 'Expanded framing'],
     letterColor: '#f2d684',
   },
   {
     k: 'o',
     symbol: 'O',
-    title: "Optimize — score with evidence",
+    title: "Optimize: score with evidence",
     body: "RICE: AI DJ = 94 (high reach, proven listen-through rate in beta, medium effort). Social feed = 41 (low confidence, failed twice before). Contextual playlists = 67. AI DJ wins clearly, with data behind it.",
     chips: ['RICE: 94', 'Beta data', 'AI DJ wins'],
     letterColor: '#ee9f6f',
@@ -161,7 +161,7 @@ const WORKED = [
   {
     k: 'w',
     symbol: 'W',
-    title: "Win — position to get buy-in",
+    title: "Win: position to get buy-in",
     body: "Not: 'We should build AI DJ (RICE: 94) instead of the social feed.' Instead: 'For our Gen Z listeners who stall on the home screen, the AI DJ replaces the decision they currently dread. Beta cohort shows 23% lift in listen-through. We can prove Q3 impact in a 4-week sprint.' One read, clear yes.",
     chips: ['Outcome-first', 'Named alternative', 'Validation plan'],
     letterColor: '#c5a7f2',
@@ -539,7 +539,7 @@ export default function LearnFlowPage() {
                   transition: 'all 0.2s',
                 }}
               >
-                {m.symbol} — {m.label}
+                {m.symbol}: {m.label}
               </button>
             ))}
             <Link
@@ -614,7 +614,7 @@ export default function LearnFlowPage() {
             fontSize: 26, lineHeight: 1.4, color: '#1e1b14',
             maxWidth: 820, fontWeight: 500, margin: '32px 0 24px', letterSpacing: '-0.015em',
           }}>
-            The product-thinking you <em>pauses</em>. Because you know the spinner isn&apos;t the problem —{' '}
+            The product-thinking you <em>pauses</em>. Because you know the spinner isn&apos;t the problem.{' '}
             <span style={{ background: 'linear-gradient(180deg, transparent 55%, #fbe88a 55%)', padding: '0 2px' }}>it&apos;s a symptom.</span>{' '}
             And shipping a symptom fix is how engineers spend careers building the wrong things brilliantly.
           </p>
@@ -871,7 +871,7 @@ export default function LearnFlowPage() {
             marginBottom: 32, display: 'flex', alignItems: 'center', gap: 12,
           }}>
             <span style={{ width: 32, height: 1.5, background: 'rgba(250,246,240,0.3)', display: 'block' }} />
-            Full FLOW — worked example
+            Full FLOW, worked example
           </div>
 
           <h2 className="flow-reveal d1" style={{
@@ -962,7 +962,7 @@ export default function LearnFlowPage() {
             fontFamily: 'var(--font-headline, Literata, Georgia, serif)',
             fontSize: 19, lineHeight: 1.55, color: '#3d392e', marginBottom: 36,
           }}>
-            FLOW isn&apos;t a template — it&apos;s how product thinkers think. Practice it on real challenges, get Hatch&apos;s feedback on every move, and watch your recommendations start landing.
+            FLOW isn&apos;t a template. It&apos;s how product thinkers think. Practice it on real challenges, get Hatch&apos;s feedback on every move, and watch your recommendations start landing.
           </p>
           <div className="flow-reveal d2" style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
             <Link
@@ -976,7 +976,7 @@ export default function LearnFlowPage() {
               }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>play_arrow</span>
-              Practice FLOW on a real challenge — free
+              Practice FLOW on a real challenge, free
             </Link>
             <Link
               href="/explore"

@@ -20,11 +20,11 @@ const FLOW_STEPS = [
 
 const STEP_COACHING = [
   {
-    thought: 'Start with what actually happened — not why. Describe the decision in one sentence as if explaining it to a teammate who doesn\'t use the product.',
+    thought: 'Start with what actually happened, not why. Describe the decision in one sentence as if explaining it to a teammate who doesn\'t use the product.',
     tip: 'The best product analysts separate observation from interpretation. What did they ship? Save the "why" for later.',
   },
   {
-    thought: 'Who benefits from this decision? Who loses? Think beyond the obvious user — consider competitors, adjacent teams, the business model.',
+    thought: 'Who benefits from this decision? Who loses? Think beyond the obvious user: consider competitors, adjacent teams, the business model.',
     tip: 'Every product decision has at least three stakeholders most people miss. Work backwards from the outcome to find them.',
   },
   {
@@ -32,7 +32,7 @@ const STEP_COACHING = [
     tip: 'The real reasoning behind a product decision often lives one level deeper than the announced rationale. Look for the strategic constraint.',
   },
   {
-    thought: 'Pick the explanation that generalizes — the one that would help you make a better decision in a different product context.',
+    thought: 'Pick the explanation that generalizes, the one that would help you make a better decision in a different product context.',
     tip: 'The best answer isn\'t just "correct about this product." It teaches a principle you can apply tomorrow.',
   },
 ]
@@ -47,7 +47,7 @@ export function ChallengeViewer({ decision, challenge, productName }: ChallengeV
   return (
     <section className="flex-1 bg-surface flex flex-col overflow-hidden relative h-full">
 
-      {/* ── Progress bar + FLOW step tabs ── */}
+      {/* Progress bar + FLOW step tabs */}
       <div className="border-b border-outline-variant/30 flex-shrink-0">
         {/* Thin progress track */}
         <div className="w-full h-0.5 bg-outline-variant/20">
@@ -96,24 +96,24 @@ export function ChallengeViewer({ decision, challenge, productName }: ChallengeV
           {/* Progress badge */}
           {pct > 0 && pct < 100 && (
             <span className="text-[10px] font-bold text-primary bg-primary-fixed/50 px-2 py-0.5 rounded-full">
-              {pct}% done — keep going
+              {pct}% done, keep going
             </span>
           )}
         </div>
       </div>
 
-      {/* ── Step content ── */}
+      {/* Step content */}
       <div className="flex-1 overflow-y-auto p-8">
         <div className="max-w-3xl">
 
           {/* Step heading */}
           <p className="text-xs text-on-surface-variant font-label mb-1">{productName}</p>
           <h2 className="font-headline text-xl font-bold text-on-surface mb-1">
-            {step.label} — {step.subtitle}
+            {step.label}: {step.subtitle}
           </h2>
           <h3 className="font-headline text-base text-on-surface-variant mb-6">{decision.title}</h3>
 
-          {/* Step 0 — Frame: what they did */}
+          {/* Step 0: Frame, what they did */}
           {activeStep === 0 && (
             <div className="space-y-4">
               <div className="bg-surface-container rounded-xl p-5">
@@ -139,7 +139,7 @@ export function ChallengeViewer({ decision, challenge, productName }: ChallengeV
             </div>
           )}
 
-          {/* Step 1 — List: area + principle + challenge question */}
+          {/* Step 1: List, area + principle + challenge question */}
           {activeStep === 1 && (
             <div className="space-y-4">
               <div className="bg-surface-container rounded-xl p-5">
@@ -168,7 +168,7 @@ export function ChallengeViewer({ decision, challenge, productName }: ChallengeV
             </div>
           )}
 
-          {/* Step 2 — Optimize: real reasoning */}
+          {/* Step 2: Optimize, real reasoning */}
           {activeStep === 2 && (
             <div className="space-y-4">
               <div className="bg-tertiary-container/30 rounded-xl p-5">
@@ -193,12 +193,12 @@ export function ChallengeViewer({ decision, challenge, productName }: ChallengeV
                 onClick={() => setActiveStep(3)}
                 className="w-full mt-2 bg-primary text-on-primary rounded-full py-2.5 text-sm font-label font-bold hover:opacity-90 transition-opacity"
               >
-                Win — Test your understanding →
+                Win: Test your understanding →
               </button>
             </div>
           )}
 
-          {/* Step 3 — Win: MCQ options + Hatch's insight */}
+          {/* Step 3: Win, MCQ options + Hatch's insight */}
           {activeStep === 3 && (
             <div className="space-y-4">
               <p className="text-xs text-on-surface-variant font-label mb-4">
@@ -226,18 +226,18 @@ export function ChallengeViewer({ decision, challenge, productName }: ChallengeV
               <div className="flex items-center gap-2 bg-primary-container/30 rounded-xl p-3 mt-2">
                 <HatchGlyph state="idle" size={22} className="text-primary shrink-0" />
                 <p className="text-xs text-on-surface-variant">
-                  Answer these in Practice Mode — graded FLOW challenges coming soon.
+                  Answer these in Practice Mode. Graded FLOW challenges coming soon.
                 </p>
               </div>
 
-              {/* Hatch's Take — most prominent moment */}
+              {/* Hatch's Take: most prominent moment */}
               <div className="mt-6">
                 <HatchInsightBlock insight={challenge.insight} />
               </div>
             </div>
           )}
 
-          {/* Hatch thought starter — shown on all steps */}
+          {/* Hatch thought starter: shown on all steps */}
           <div className="mt-10 grid grid-cols-2 gap-4">
             <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30">
               <div className="flex items-center gap-2 mb-3">
@@ -278,7 +278,7 @@ export function ChallengeViewer({ decision, challenge, productName }: ChallengeV
         </div>
       </div>
 
-      {/* ── Hatch coaching strip — pinned to bottom ── */}
+      {/* Hatch coaching strip, pinned to bottom */}
       <div className="bg-primary-fixed/30 border-t border-primary/10 px-6 py-3 flex items-center gap-4 flex-shrink-0">
         <HatchGlyph size={28} state="speaking" className="text-primary flex-shrink-0" />
         <div className="flex-1 text-sm text-on-primary-container font-medium">
