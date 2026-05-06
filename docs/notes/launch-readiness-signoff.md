@@ -4,7 +4,7 @@ Last updated: May 6, 2026
 
 This document tracks launch gates by real evidence. A checked item means the gate has been verified in this repo or in the configured Supabase/Stripe test setup. An unchecked item means launch should wait or the owner should explicitly accept the risk.
 
-See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audit. The original plan contains feature streams that remain incomplete and should not be resumed during launch freeze without owner confirmation.
+See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audit and `docs/notes/owner-launch-handoff.md` for the short owner action checklist. The original plan contains feature streams that remain incomplete and should not be resumed during launch freeze without owner confirmation.
 
 ## Verified Gates
 
