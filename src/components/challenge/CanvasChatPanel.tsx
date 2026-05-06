@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { ReportButton } from '@/components/feedback/ReportButton'
 import { Md } from '@/components/ui/Md'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { VoiceInputButton } from './VoiceInputButton'
@@ -415,29 +416,47 @@ export function CanvasChatPanel({
               {msg.role === 'hatch' && (
                 <HatchGlyph size={20} state="idle" className="text-primary shrink-0 mt-0.5" />
               )}
-              <div
-                data-testid={msg.role === 'user' ? 'hatch-message-user' : 'hatch-message-assistant'}
-                className={`rounded-xl px-3 py-2 text-sm max-w-[85%] font-body leading-relaxed ${
-                  msg.role === 'user'
-                    ? 'bg-primary text-on-primary'
-                    : msg.kind === 'canvas_action'
-                      ? 'bg-primary-container text-on-primary-container'
-                      : msg.kind === 'nudge'
-                        ? 'bg-tertiary-container text-on-secondary-container border border-outline-variant'
-                        : 'bg-surface-container-high text-on-surface'
-                }`}
-              >
-                {msg.kind === 'nudge' && (
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-xs font-semibold opacity-70">Hatch noticed</span>
-                    {onDismissNudge && (
-                      <button onClick={onDismissNudge} className="text-xs opacity-60 hover:opacity-100" aria-label="Dismiss nudge">✕</button>
-                    )}
-                  </div>
-                )}
-                {msg.role === 'hatch' ? <Md>{msg.content}</Md> : msg.content}
-                {msg.kind === 'canvas_action' && (
-                  <span className="material-symbols-outlined text-[14px] ml-1 opacity-70">draw</span>
+              <div className={`flex max-w-[85%] flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                <div
+                  data-testid={msg.role === 'user' ? 'hatch-message-user' : 'hatch-message-assistant'}
+                  className={`rounded-xl px-3 py-2 text-sm font-body leading-relaxed ${
+                    msg.role === 'user'
+                      ? 'bg-primary text-on-primary'
+                      : msg.kind === 'canvas_action'
+                        ? 'bg-primary-container text-on-primary-container'
+                        : msg.kind === 'nudge'
+                          ? 'bg-tertiary-container text-on-secondary-container border border-outline-variant'
+                          : 'bg-surface-container-high text-on-surface'
+                  }`}
+                >
+                  {msg.kind === 'nudge' && (
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-xs font-semibold opacity-70">Hatch noticed</span>
+                      {onDismissNudge && (
+                        <button onClick={onDismissNudge} className="text-xs opacity-60 hover:opacity-100" aria-label="Dismiss nudge">✕</button>
+                      )}
+                    </div>
+                  )}
+                  {msg.role === 'hatch' ? <Md>{msg.content}</Md> : msg.content}
+                  {msg.kind === 'canvas_action' && (
+                    <span className="material-symbols-outlined text-[14px] ml-1 opacity-70">draw</span>
+                  )}
+                </div>
+                {msg.role === 'hatch' && (
+                  <ReportButton
+                    compact
+                    targetType="hatch_response"
+                    targetId={`${attemptId}:${i}`}
+                    targetUrl={`/workspace/challenges/${challengeId}`}
+                    metadata={{
+                      attemptId,
+                      challengeId,
+                      challengeType,
+                      messageKind: msg.kind ?? 'chat',
+                      messageExcerpt: msg.content.slice(0, 240),
+                    }}
+                    className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold text-on-surface-variant/70 hover:bg-surface-container-highest hover:text-on-surface disabled:opacity-50"
+                  />
                 )}
               </div>
             </div>
@@ -566,35 +585,53 @@ export function CanvasChatPanel({
             {msg.role === 'hatch' && (
               <HatchGlyph size={20} state="idle" className="text-primary shrink-0 mt-0.5" />
             )}
-            <div
-              data-testid={msg.role === 'user' ? 'hatch-message-user' : 'hatch-message-assistant'}
-              className={`rounded-xl px-3 py-2 text-sm max-w-[85%] font-body leading-relaxed ${
-                msg.role === 'user'
-                  ? 'bg-primary text-on-primary'
-                  : msg.kind === 'canvas_action'
-                    ? 'bg-primary-container text-on-primary-container'
-                    : msg.kind === 'nudge'
-                      ? 'bg-tertiary-container text-on-secondary-container border border-outline-variant'
-                      : 'bg-surface-container-high text-on-surface'
-              }`}
-            >
-              {msg.kind === 'nudge' && (
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <span className="text-xs font-semibold opacity-70">Hatch noticed</span>
-                  {onDismissNudge && (
-                    <button
-                      onClick={onDismissNudge}
-                      className="text-xs opacity-60 hover:opacity-100"
-                      aria-label="Dismiss nudge"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              )}
-              {msg.role === 'hatch' ? <Md>{msg.content}</Md> : msg.content}
-              {msg.kind === 'canvas_action' && (
-                <span className="material-symbols-outlined text-[14px] ml-1 opacity-70">draw</span>
+            <div className={`flex max-w-[85%] flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+              <div
+                data-testid={msg.role === 'user' ? 'hatch-message-user' : 'hatch-message-assistant'}
+                className={`rounded-xl px-3 py-2 text-sm font-body leading-relaxed ${
+                  msg.role === 'user'
+                    ? 'bg-primary text-on-primary'
+                    : msg.kind === 'canvas_action'
+                      ? 'bg-primary-container text-on-primary-container'
+                      : msg.kind === 'nudge'
+                        ? 'bg-tertiary-container text-on-secondary-container border border-outline-variant'
+                        : 'bg-surface-container-high text-on-surface'
+                }`}
+              >
+                {msg.kind === 'nudge' && (
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-xs font-semibold opacity-70">Hatch noticed</span>
+                    {onDismissNudge && (
+                      <button
+                        onClick={onDismissNudge}
+                        className="text-xs opacity-60 hover:opacity-100"
+                        aria-label="Dismiss nudge"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                )}
+                {msg.role === 'hatch' ? <Md>{msg.content}</Md> : msg.content}
+                {msg.kind === 'canvas_action' && (
+                  <span className="material-symbols-outlined text-[14px] ml-1 opacity-70">draw</span>
+                )}
+              </div>
+              {msg.role === 'hatch' && (
+                <ReportButton
+                  compact
+                  targetType="hatch_response"
+                  targetId={`${attemptId}:${i}`}
+                  targetUrl={`/workspace/challenges/${challengeId}`}
+                  metadata={{
+                    attemptId,
+                    challengeId,
+                    challengeType,
+                    messageKind: msg.kind ?? 'chat',
+                    messageExcerpt: msg.content.slice(0, 240),
+                  }}
+                  className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold text-on-surface-variant/70 hover:bg-surface-container-highest hover:text-on-surface disabled:opacity-50"
+                />
               )}
             </div>
           </div>

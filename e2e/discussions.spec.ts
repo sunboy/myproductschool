@@ -234,6 +234,7 @@ async function cleanupRunData(admin: SupabaseClient) {
 
   const ids = (rows ?? []).map(row => row.id as string)
   if (ids.length > 0) {
+    await admin.from('abuse_reports').delete().eq('target_type', 'discussion_comment').in('target_id', ids)
     await admin.from('discussion_reports').delete().in('discussion_id', ids)
     await admin.from('discussion_replies').delete().in('discussion_id', ids)
     await admin.from('challenge_discussions').delete().in('id', ids)
@@ -408,8 +409,10 @@ test.describe('Discussion scenarios', () => {
     const card = threadCard(page, content)
     await expect(card).toBeVisible({ timeout: 30000 })
     await card.locator('button[aria-label="Discussion actions"]').click()
-    page.once('dialog', dialog => dialog.accept(reason))
     await card.getByRole('button', { name: 'Report' }).click()
+    await page.getByRole('radio', { name: /Other/ }).check()
+    await page.getByPlaceholder('Add context for the review team').fill(reason)
+    await page.getByRole('button', { name: 'Send report' }).click()
     await expect(page.getByText('Report sent')).toBeVisible({ timeout: 30000 })
 
     await page.context().clearCookies()

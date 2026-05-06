@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { ReportButton } from '@/components/feedback/ReportButton'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { SITE_NAME, SITE_URL } from '@/lib/seo/site'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -133,6 +134,17 @@ export default async function PublicShareScoreCardPage({ params }: PublicSharePa
             <Link href="/signup" className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-sm font-bold text-white">
               Try HackProduct
             </Link>
+            <ReportButton
+              targetType="share_scorecard"
+              targetId={shareId}
+              targetUrl={`/workspace/challenges/${id}/share/${shareId}`}
+              label="Report"
+              metadata={{
+                challengeId: id,
+                scoreLabel: scorecard.scoreLabel,
+              }}
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/24 px-5 py-3 text-sm font-bold text-white hover:bg-white/10 disabled:opacity-50"
+            />
           </div>
         </section>
       </div>

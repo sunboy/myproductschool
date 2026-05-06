@@ -21,6 +21,7 @@ type TransactionalEmailKind =
   | 'plan_changed'
   | 'discussion_reply'
   | 'account_deleted'
+  | 'abuse_report'
 
 interface BaseTransactionalInput {
   dedupeKey: string
@@ -68,6 +69,14 @@ interface DiscussionReplyInput extends BaseTransactionalInput {
   replyAuthor?: string | null
   excerpt?: string | null
   url: string
+}
+
+interface AbuseReportEmailInput extends BaseTransactionalInput {
+  reportId: string
+  targetType: string
+  category: string
+  targetUrl?: string | null
+  message?: string | null
 }
 
 interface TransactionalEmailPayload extends BaseTransactionalInput {
@@ -499,5 +508,28 @@ export function sendAccountDeletedEmail(admin: SupabaseClient, input: BaseTransa
     eyebrow: 'Account deleted',
     heading: 'Your account has been deleted.',
     body: 'Your HackProduct account and profile data have been removed.',
+  })
+}
+
+export function sendAbuseReportEmail(admin: SupabaseClient, input: AbuseReportEmailInput) {
+  const detail = [
+    `Report ID: ${input.reportId}`,
+    `Surface: ${input.targetType}`,
+    `Category: ${input.category}`,
+    input.message ? `Message: ${input.message.slice(0, 500)}` : null,
+    input.targetUrl ? `Target: ${input.targetUrl}` : null,
+  ].filter(Boolean).join(' | ')
+
+  return sendTransactionalEmail(admin, {
+    ...input,
+    to: input.to ?? configuredReplyTo(),
+    kind: 'abuse_report',
+    subject: 'New HackProduct abuse report',
+    eyebrow: 'Abuse report',
+    heading: 'A report needs review.',
+    body: 'A user reported content in HackProduct.',
+    detail,
+    ctaLabel: input.targetUrl ? 'Open reported surface' : null,
+    ctaUrl: input.targetUrl ?? null,
   })
 }

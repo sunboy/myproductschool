@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ReportButton } from '@/components/feedback/ReportButton'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { ChallengeDiscussion, DiscussionReply } from '@/lib/types'
 
@@ -56,9 +57,6 @@ export function DiscussionThread({
   const [savingEdit, setSavingEdit] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [editError, setEditError] = useState<string | null>(null)
-  const [reporting, setReporting] = useState(false)
-  const [reportError, setReportError] = useState<string | null>(null)
-  const [reportSuccess, setReportSuccess] = useState(false)
 
   const initials = getInitials(discussion.username ?? 'User')
   const isHidden = Boolean(discussion.hidden_at)
@@ -109,34 +107,6 @@ export function DiscussionThread({
     } finally {
       setDeleting(false)
       setMenuOpen(false)
-    }
-  }
-
-  async function handleReport() {
-    if (reporting) return
-    const reason = window.prompt('Why are you reporting this discussion?')
-    if (!reason?.trim()) return
-    setReporting(true)
-    setReportError(null)
-    setReportSuccess(false)
-    try {
-      const res = await fetch(`/api/discussions/${discussion.id}/report`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => null)
-        setReportError(data?.error ?? 'Could not report discussion. Try again.')
-        return
-      }
-      setReportSuccess(true)
-      setMenuOpen(false)
-      setTimeout(() => setReportSuccess(false), 3000)
-    } catch {
-      setReportError('Could not report discussion. Try again.')
-    } finally {
-      setReporting(false)
     }
   }
 
@@ -213,17 +183,6 @@ export function DiscussionThread({
         </span>
       )}
 
-      {reportSuccess && (
-        <span className="text-xs text-primary font-bold flex items-center gap-1">
-          <span className="material-symbols-outlined text-xs">check_circle</span>
-          Report sent
-        </span>
-      )}
-
-      {reportError && (
-        <span className="text-xs text-error font-semibold">{reportError}</span>
-      )}
-
       <div className="relative ml-auto">
         <button
           type="button"
@@ -260,14 +219,16 @@ export function DiscussionThread({
                 </button>
               </>
             )}
-            <button
-              type="button"
-              onClick={handleReport}
-              disabled={reporting}
-              className="w-full px-3 py-2 text-left text-xs font-semibold text-on-surface hover:bg-surface-container-highest disabled:opacity-50"
-            >
-              {reporting ? 'Reporting...' : 'Report'}
-            </button>
+            <ReportButton
+              targetType="discussion_comment"
+              targetId={discussion.id}
+              targetUrl={`/challenges/${challengeId}/discussion`}
+              metadata={{
+                challengeId,
+                authorId: discussion.user_id ?? null,
+              }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-on-surface hover:bg-surface-container-highest disabled:opacity-50"
+            />
           </div>
         )}
       </div>
