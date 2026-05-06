@@ -8,13 +8,13 @@ This is the short owner-facing checklist for moving the current `dev` launch-rea
 
 - Local branch: `dev`.
 - Last launch-code commit before this docs handoff: `dbc6850`.
-- Expected Git state after this note is committed: clean worktree, `dev` ahead of `origin/dev` by 243 commits unless origin changes.
+- Check current ahead count with `git status --short --branch` before pushing or deploying.
 - Linked Vercel project: `myproductschool` (`prj_BnLtw2GgCcCyCnMciQ3Ps1Wezkff`), team `team_gOiGgobpBZjhBPxPTkIYrSTE`.
 - Production currently serves an older waitlist build with legacy `Luma` copy, so production is not launch-signed-off.
 
 ## Code Gates Already Verified Locally
 
-Run these again immediately before deploy if any new commits are added:
+Run these again immediately before deploy if any new commits are added. Run `launch:preflight` with production env loaded; it only prints variable names and status, not values.
 
 ```bash
 npm test
@@ -23,6 +23,7 @@ npx tsc --noEmit --pretty false
 npm run lint
 npm run secrets:scan
 npm audit --omit=dev
+npm run launch:preflight -- --skip-network
 ```
 
 Recorded evidence before this handoff:
@@ -34,6 +35,7 @@ Recorded evidence before this handoff:
 - `npm run secrets:scan` passed.
 - `npm audit --omit=dev` reported `found 0 vulnerabilities`.
 - Paywall E2E passed `10/10`, discussions E2E passed `10/10`, and narrowed auth E2E passed signup/login/forgot-password `3/3`.
+- `npm run launch:preflight -- --skip-network` can be used before deploy to check production env readiness without touching the live domain.
 
 ## Owner Actions Before Production Sign-Off
 
@@ -46,6 +48,7 @@ Recorded evidence before this handoff:
    - Configure OpenAI, Turnstile, and Upstash Redis env vars for production.
    - Configure the external status provider for `status.hackproduct.com`.
 4. After deploy, rerun production checks:
+   - Run `LAUNCH_PREFLIGHT_URL=https://hackproduct.com npm run launch:preflight`.
    - Confirm `https://hackproduct.com` serves the current app instead of the waitlist.
    - Confirm no visible `Luma`, provider, or system/internal copy.
    - Confirm `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog` return current pages.
