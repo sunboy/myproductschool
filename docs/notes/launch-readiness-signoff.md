@@ -50,8 +50,10 @@ This document tracks launch gates by real evidence. A checked item means the gat
   - `npm run lint` currently fails on pre-existing unrelated files, including `_archived/` and older live-interview/showcase code.
   - Changed files in the recent launch-gate work passed targeted lint.
 - [ ] Supabase advisors still report pre-existing security and performance items.
-  - Fixed during this pass: `user_pattern_summary` security-definer view, direct public RPC access to security-definer functions, mutable search paths on app-owned functions, broad listing on the public `avatars` bucket, and missing service-role-only policies on legacy pipeline tables.
-  - Remaining security items include permissive legacy RLS policies, `pg_trgm` installed in `public`, and leaked-password protection disabled.
+  - Fixed during this pass: `user_pattern_summary` security-definer view, direct public RPC access to security-definer functions, mutable search paths on app-owned functions, broad listing on the public `avatars` bucket, missing service-role-only policies on legacy pipeline tables, and broad public insert policies that are not used by the active app.
+  - Remaining security items are `pg_trgm` installed in `public` and leaked-password protection disabled.
+  - Evidence: live Supabase security advisor rerun after the policy migrations only reports those two items.
+  - Evidence: service-role REST smoke inserted and deleted a temporary `waitlist` row after public insert access was removed.
   - Advisor output did not point to the newly applied launch tables as missing policies.
 - [ ] Full auth suite has not been treated as a launch requirement after scope reduction.
   - Verified launch scope is signup, login, and forgot-password reset.
