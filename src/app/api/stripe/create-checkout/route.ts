@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
           },
           unit_amount: config.unitAmount,
           recurring: { interval: config.interval },
+          tax_behavior: 'exclusive',
         },
         quantity: 1,
       }
@@ -70,6 +71,8 @@ export async function POST(req: NextRequest) {
       trial_period_days: PRO_TRIAL_DAYS,
       metadata: { user_id: user.id, plan, stripe_mode: stripeRuntime.mode },
     },
+    billing_address_collection: 'required',
+    automatic_tax: { enabled: true },
     allow_promotion_codes: true,
     branding_settings: getCheckoutBrandingSettings(appUrl),
   }
