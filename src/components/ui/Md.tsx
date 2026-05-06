@@ -16,6 +16,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export type MdVariant = 'default' | 'compact' | 'chat'
+export type MdTone = 'default' | 'inherit'
 
 const ALLOWED_TAGS = [
   'p',
@@ -120,11 +121,12 @@ function withoutNode<T extends { node?: unknown }>(props: T) {
   return rest
 }
 
-export function getMdComponents(variant: MdVariant = 'default'): Components {
+export function getMdComponents(variant: MdVariant = 'default', tone: MdTone = 'default'): Components {
   const classes = variantClass[variant]
+  const inheritedText = tone === 'inherit' ? 'text-inherit' : undefined
 
   return {
-    p: ({ children, className, ...props }) => <p className={cn(classes.p, className)} {...withoutNode(props)}>{children}</p>,
+    p: ({ children, className, ...props }) => <p className={cn(classes.p, inheritedText, className)} {...withoutNode(props)}>{children}</p>,
     strong: ({ children, className, ...props }) => <strong className={cn('font-semibold', className)} {...withoutNode(props)}>{children}</strong>,
     em: ({ children, className, ...props }) => <em className={cn('italic', className)} {...withoutNode(props)}>{children}</em>,
     del: ({ children, className, ...props }) => <del className={cn('line-through', className)} {...withoutNode(props)}>{children}</del>,
@@ -147,12 +149,12 @@ export function getMdComponents(variant: MdVariant = 'default'): Components {
         </a>
       )
     },
-    h1: ({ children, className, ...props }) => <h1 className={cn(classes.h1, className)} {...withoutNode(props)}>{children}</h1>,
-    h2: ({ children, className, ...props }) => <h2 className={cn(classes.h2, className)} {...withoutNode(props)}>{children}</h2>,
-    h3: ({ children, className, ...props }) => <h3 className={cn(classes.h3, className)} {...withoutNode(props)}>{children}</h3>,
-    h4: ({ children, className, ...props }) => <h4 className={cn(classes.h3, className)} {...withoutNode(props)}>{children}</h4>,
-    h5: ({ children, className, ...props }) => <h5 className={cn(classes.h3, className)} {...withoutNode(props)}>{children}</h5>,
-    h6: ({ children, className, ...props }) => <h6 className={cn(classes.h3, className)} {...withoutNode(props)}>{children}</h6>,
+    h1: ({ children, className, ...props }) => <h1 className={cn(classes.h1, inheritedText, className)} {...withoutNode(props)}>{children}</h1>,
+    h2: ({ children, className, ...props }) => <h2 className={cn(classes.h2, inheritedText, className)} {...withoutNode(props)}>{children}</h2>,
+    h3: ({ children, className, ...props }) => <h3 className={cn(classes.h3, inheritedText, className)} {...withoutNode(props)}>{children}</h3>,
+    h4: ({ children, className, ...props }) => <h4 className={cn(classes.h3, inheritedText, className)} {...withoutNode(props)}>{children}</h4>,
+    h5: ({ children, className, ...props }) => <h5 className={cn(classes.h3, inheritedText, className)} {...withoutNode(props)}>{children}</h5>,
+    h6: ({ children, className, ...props }) => <h6 className={cn(classes.h3, inheritedText, className)} {...withoutNode(props)}>{children}</h6>,
     code: ({ children, className, ...props }) => <code className={cn(classes.code, className)} {...withoutNode(props)}>{children}</code>,
     pre: ({ children, className, ...props }) => <pre className={cn(classes.pre, className)} {...withoutNode(props)}>{children}</pre>,
     blockquote: ({ children, className, ...props }) => <blockquote className={cn(classes.blockquote, className)} {...withoutNode(props)}>{children}</blockquote>,
@@ -166,15 +168,16 @@ export function getMdComponents(variant: MdVariant = 'default'): Components {
 interface MdProps {
   children: string
   className?: string
+  tone?: MdTone
   variant?: MdVariant
 }
 
-export function Md({ children, className, variant = 'default' }: MdProps) {
+export function Md({ children, className, tone = 'default', variant = 'default' }: MdProps) {
   if (!children) return null
   return (
     <span className={cn('contents', className)}>
       <ReactMarkdown
-        components={getMdComponents(variant)}
+        components={getMdComponents(variant, tone)}
         rehypePlugins={mdRehypePlugins}
         remarkPlugins={mdRemarkPlugins}
         skipHtml

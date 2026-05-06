@@ -1881,18 +1881,12 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
         </div>
       )}
 
-      {/* Context - markdown for coding, plain text otherwise */}
+      {/* Context */}
       {scenarioContext && (
         <div style={{ marginBottom: 20 }}>
-          {isCodingChallenge ? (
-            <ReactMarkdown components={codingMarkdownComponents}>
-              {stripLeadingH1(scenarioContext)}
-            </ReactMarkdown>
-          ) : (
-            <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, lineHeight: 1.7, color: 'var(--color-on-surface-variant)' }}>
-              {scenarioContext}
-            </p>
-          )}
+          <ReactMarkdown components={codingMarkdownComponents}>
+            {isCodingChallenge ? stripLeadingH1(scenarioContext) : scenarioContext}
+          </ReactMarkdown>
         </div>
       )}
 

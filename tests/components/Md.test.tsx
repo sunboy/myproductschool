@@ -6,13 +6,14 @@ import {
   mdRehypePlugins,
   mdRemarkPlugins,
   safeMarkdownUrl,
+  type MdTone,
   type MdVariant,
 } from '../../src/components/ui/Md'
 
-function renderMd(markdown: string, variant: MdVariant = 'default') {
+function renderMd(markdown: string, variant: MdVariant = 'default', tone: MdTone = 'default') {
   return renderToStaticMarkup(
     <ReactMarkdown
-      components={getMdComponents(variant)}
+      components={getMdComponents(variant, tone)}
       rehypePlugins={mdRehypePlugins}
       remarkPlugins={mdRemarkPlugins}
       skipHtml
@@ -75,5 +76,10 @@ describe('Md renderer', () => {
   it('supports compact and chat variants', () => {
     expect(renderMd('Compact', 'compact')).toContain('mb-0')
     expect(renderMd('Chat', 'chat')).toContain('text-xs leading-relaxed text-inherit')
+  })
+
+  it('can inherit surrounding text color for embedded prose', () => {
+    expect(renderMd('Muted prose', 'compact', 'inherit')).toContain('text-inherit')
+    expect(renderMd('## Muted heading', 'compact', 'inherit')).toContain('text-inherit')
   })
 })

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import type { ChallengePrompt } from '@/lib/types'
+import { Md } from '@/components/ui/Md'
 
 /* ── Types ───────────────────────────────────────────────── */
 
@@ -178,9 +179,9 @@ export function CaseContextPane({ challenge, domainTitle, domainIcon, timerEnabl
         </div>
 
         {/* Body text */}
-        <p className="text-on-surface-variant leading-relaxed font-body">
-          {challenge.prompt_text}
-        </p>
+        <div className="text-on-surface-variant">
+          <Md tone="inherit">{challenge.prompt_text}</Md>
+        </div>
 
         {/* Image placeholder */}
         <div className="rounded-xl overflow-hidden h-48 bg-surface-container-high flex items-center justify-center">

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { ChallengePrompt } from '@/lib/types'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { Md } from '@/components/ui/Md'
 import { useSteps } from '@/hooks/useSteps'
 import { useHatchDockState } from '@/hooks/useHatchDockState'
 
@@ -418,7 +419,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
               </span>
             </div>
             <div className="text-on-surface-variant leading-relaxed text-sm">
-              <p>{challenge.prompt_text}</p>
+              <Md variant="compact" tone="inherit">{challenge.prompt_text}</Md>
             </div>
           </section>
 
@@ -531,7 +532,7 @@ export function ChallengeWorkspace({ challenge, domainTitle, domainIcon }: Chall
 
           {/* Scenario prose */}
           <div className="text-on-surface-variant leading-relaxed text-sm">
-            <p>{challenge.prompt_text}</p>
+            <Md variant="compact" tone="inherit">{challenge.prompt_text}</Md>
           </div>
 
           {/* Hero image placeholder */}
@@ -955,9 +956,9 @@ function FreeformView({
                 </div>
                 <div className="space-y-2">
                   <h3 className="font-bold text-sm text-secondary uppercase tracking-widest">Scenario</h3>
-                  <p className="text-on-surface leading-relaxed text-sm">
-                    {challenge.prompt_text}
-                  </p>
+                  <div className="text-on-surface leading-relaxed text-sm">
+                    <Md variant="compact" tone="inherit">{challenge.prompt_text}</Md>
+                  </div>
                 </div>
               </div>
             </div>
