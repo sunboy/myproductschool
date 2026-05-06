@@ -56,11 +56,12 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: `next.config.ts` wraps the app with `withSentryConfig`, disables Sentry telemetry, removes Sentry debug logging from bundles, and only enables source map upload when `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` are set.
   - Evidence: CSP `connect-src` includes `*.sentry.io`, and `.env.example` documents the required Sentry env vars.
   - Evidence: `npx tsc --noEmit --pretty false`, `npm run lint`, `npm run build`, `npm run secrets:scan`, and `npm audit --omit=dev --audit-level=critical` passed after the change.
-- [x] Critical/high production dependency audit is clean.
+- [x] Production dependency audit is clean.
   - Evidence: `npm audit --omit=dev --audit-level=critical` exits `0` after targeted updates to `next@16.2.4`, `posthog-js@1.372.9`, and transitive `protobufjs@7.5.6`.
   - Evidence: targeted nonbreaking updates also cleared the previous `picomatch` high advisory and the `uuid` advisory.
   - Evidence: npm overrides pin transitive `dompurify@3.4.2` and `lodash-es@4.18.1`, clearing the remaining high Lodash-ES advisory and Monaco's nested DOMPurify advisory.
-  - Evidence: `npm audit --omit=dev --audit-level=high` exits `0`; the remaining production audit findings are moderate.
+  - Evidence: `@anthropic-ai/sdk` is updated to `0.94.0`, and npm overrides pin transitive `nanoid@5.1.11` and `postcss@8.5.12`, clearing the remaining moderate production advisories.
+  - Evidence: `npm audit --omit=dev` exits `0` with `found 0 vulnerabilities`.
 - [x] Core legal, pricing, help, and changelog pages respond locally.
   - Evidence: local production smoke returned `200` for `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog`.
   - Evidence: `src/lib/seo/directory-content.ts` includes `/pricing`, `/privacy`, `/terms`, `/help`, and `/changelog` in `PUBLIC_DIRECTORY_PATHS`, which feeds `src/app/sitemap.ts`.
@@ -172,9 +173,6 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Code-side instrumentation exists, but no staging or production event has been observed in Sentry yet.
   - Required env vars before verification: `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, and `SENTRY_AUTH_TOKEN`.
   - Launch note: source map upload stays disabled until Sentry org, project, and auth token are present.
-- [ ] Production dependency audit still has moderate advisories.
-  - Evidence: `npm audit --omit=dev --json` reports 0 critical, 0 high, and 8 moderate production advisories after targeted patches.
-  - Remaining moderate items include the Anthropic SDK memory-tool advisories, Next's nested PostCSS advisory, and Excalidraw's nested NanoID path. The npm suggested fixes include breaking changes or an invalid Next downgrade path, so they need a deliberate dependency upgrade pass.
 - [ ] Full XP/streak correctness remains partial.
   - Evidence: the same-item duplicate-award paths for FLOW completion and quick takes are fixed and tested, but there is still no XP ledger, shared XP calculator, atomic XP increment, UTC boundary E2E, or simultaneous-completion coverage.
   - Launch note: see `docs/notes/xp-streak-audit.md`.

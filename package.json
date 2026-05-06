@@ -18,7 +18,7 @@
     "postinstall": "mkdir -p public/sql.js && cp node_modules/sql.js/dist/sql-wasm.js node_modules/sql.js/dist/sql-wasm.wasm public/sql.js/"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.80.0",
+    "@anthropic-ai/sdk": "^0.94.0",
     "@excalidraw/excalidraw": "^0.18.1",
     "@monaco-editor/react": "^4.7.0",
     "@notionhq/client": "^5.19.0",
@@ -71,6 +71,8 @@
   },
   "overrides": {
     "dompurify": "3.4.2",
-    "lodash-es": "4.18.1"
+    "lodash-es": "4.18.1",
+    "nanoid": "5.1.11",
+    "postcss": "8.5.12"
   }
 }
