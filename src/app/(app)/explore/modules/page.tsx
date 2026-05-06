@@ -15,12 +15,12 @@ const DIFFICULTIES: Array<{ id: LearnDifficulty | 'all'; label: string }> = [
   { id: 'new-era', label: 'New Era' },
 ]
 
-const TRACK_CONFIG: Record<string, { label: string; accent: string; description: string }> = {
-  'foundations':      { label: 'Foundations',      accent: '#4a7c59', description: 'Data modeling, SQL, coding patterns' },
-  'systems':          { label: 'Systems',           accent: '#4a4a9c', description: 'System design, distributed systems' },
-  'ai-llms':          { label: 'AI & LLMs',         accent: '#c9933a', description: 'LLM internals, agentic systems, RAG' },
-  'new-era':          { label: 'New Era',            accent: '#8b46d4', description: 'Claude Code, Codex, agentic workflows' },
-  'product-thinking': { label: 'Product Thinking',  accent: '#2a7ab5', description: 'FLOW framework, user models, root cause' },
+const TRACK_CONFIG: Record<string, { label: string; accent: string }> = {
+  'foundations':      { label: 'Foundations',      accent: '#4a7c59' },
+  'systems':          { label: 'Systems',           accent: '#4a4a9c' },
+  'ai-llms':          { label: 'AI & LLMs',         accent: '#c9933a' },
+  'new-era':          { label: 'New Era',            accent: '#8b46d4' },
+  'product-thinking': { label: 'Product Thinking',  accent: '#2a7ab5' },
 }
 
 const TRACK_ORDER = ['foundations', 'systems', 'ai-llms', 'new-era', 'product-thinking']
@@ -130,7 +130,7 @@ const MODULE_ICONS: Record<string, string> = {
   'entry-point': 'play_circle',
 }
 
-function ModuleCard({ module, index }: { module: LearnModuleWithProgress; index: number }) {
+function ModuleCard({ module, index: _index }: { module: LearnModuleWithProgress; index: number }) {
   const [hovered, setHovered] = useState(false)
   const diff = module.difficulty ?? 'beginner'
   const cfg = DIFF_CONFIG[diff] ?? DIFF_CONFIG.beginner
