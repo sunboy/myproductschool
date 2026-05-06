@@ -11,6 +11,9 @@ import {
   type CalibrationMove,
   type CalibrationScores,
 } from '@/lib/onboarding/calibration-submit'
+import { z, ZodError } from 'zod'
+
+const RequestSchema = CalibrationSubmitSchema
 
 const TIER_CAPS: Record<OptionQuality, number> = {
   best: 3.0,
@@ -99,6 +102,13 @@ function firstSupabaseError(results: unknown[]) {
   return null
 }
 
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
+
 // answers: { frame: 'A', list: 'C', optimize: 'B', win: 'A' }
 export async function POST(request: Request) {
   if (IS_MOCK) {
@@ -120,28 +130,22 @@ export async function POST(request: Request) {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  let body: unknown
+  let body: z.infer<typeof RequestSchema>
   try {
-    body = await request.json()
-  } catch {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        {
+          error: 'answers object with frame/list/optimize/win is required',
+          issues: validationIssues(error),
+        },
+        { status: 400 }
+      )
+    }
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
-
-  const parsed = CalibrationSubmitSchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json(
-      {
-        error: 'answers object with frame/list/optimize/win is required',
-        issues: parsed.error.issues.map(issue => ({
-          path: issue.path.join('.'),
-          message: issue.message,
-        })),
-      },
-      { status: 400 }
-    )
-  }
-
-  const { answers, role } = parsed.data
+  const { answers, role } = body
 
   const scores: CalibrationScores = {
     frame:    scoreMove('frame',    answers.frame    ?? ''),
