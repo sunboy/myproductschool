@@ -1,8 +1,11 @@
 #!/usr/bin/env npx ts-node --esm
-import { execFileSync } from 'child_process'
+import { execFileSync, execFile } from 'child_process'
+import { promisify } from 'util'
 import { createClient } from '@supabase/supabase-js'
 import * as fs from 'fs'
 import * as path from 'path'
+
+const execFileAsync = promisify(execFile)
 
 const CONTENT_DIR = path.join(process.cwd(), 'scripts/content')
 const MANIFEST_PATH = path.join(CONTENT_DIR, 'catalog-manifest.json')
@@ -17,21 +20,21 @@ const supabase = createClient(
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function callClaude(prompt: string, model?: string): string {
+async function callClaude(prompt: string, model?: string): Promise<string> {
   const args = ['-p', '--output-format', 'json']
   if (model) args.push('--model', model)
-  const result = execFileSync(CLAUDE_BIN, args, {
+  const { stdout } = await execFileAsync(CLAUDE_BIN, args, {
     input: prompt,
     encoding: 'utf-8',
     maxBuffer: 20 * 1024 * 1024,
   })
-  const parsed = JSON.parse(result) as { result: string; is_error: boolean; subtype?: string }
+  const parsed = JSON.parse(stdout) as { result: string; is_error: boolean; subtype?: string }
   if (parsed.is_error || parsed.subtype === 'error') throw new Error(parsed.result)
   return parsed.result.trim()
 }
 
-function callCodex(brief: string, outputPath: string): void {
-  execFileSync(CODEX_BIN, ['generate-image', '--prompt', brief, '--output', outputPath], {
+async function callCodex(brief: string, outputPath: string): Promise<void> {
+  await execFileAsync(CODEX_BIN, ['generate-image', '--prompt', brief, '--output', outputPath], {
     encoding: 'utf-8',
     maxBuffer: 5 * 1024 * 1024,
   })
@@ -61,12 +64,12 @@ function slugify(title: string): string {
 
 // ── Haiku Research Agent ──────────────────────────────────────────────────────
 
-function runHaikuScraper(
+async function runHaikuScraper(
   moduleSlug: string,
   chapterSlug: string,
   chapterTitle: string,
   objectives: string[]
-): void {
+): Promise<void> {
   const outPath = researchPath(moduleSlug, chapterSlug)
   if (fs.existsSync(outPath)) {
     console.log(`  [skip] research exists: ${moduleSlug}/${chapterSlug}`)
@@ -108,21 +111,21 @@ Respond with ONLY the JSON object. No prose.
 `
 
   console.log(`  [haiku] researching: ${moduleSlug}/${chapterSlug}`)
-  const raw = callClaude(prompt, 'claude-haiku-4-5-20251001')
+  const raw = await callClaude(prompt, 'claude-haiku-4-5-20251001')
   const research = extractJson<object>(raw)
   fs.writeFileSync(outPath, JSON.stringify(research, null, 2))
 }
 
 // ── Sonnet Writer Agent ───────────────────────────────────────────────────────
 
-function runSonnetWriter(
+async function runSonnetWriter(
   moduleSlug: string,
   chapterSlug: string,
   chapterTitle: string,
   chapterHook: string,
   imageNeeded: boolean,
   styleGuide: string
-): { hook_text: string; body_mdx: string } {
+): Promise<{ hook_text: string; body_mdx: string }> {
   const mdxOut = chapterPath(moduleSlug, chapterSlug)
   if (fs.existsSync(mdxOut)) {
     console.log(`  [skip] chapter exists: ${moduleSlug}/${chapterSlug}`)
@@ -141,7 +144,7 @@ function runSonnetWriter(
       const brief = `Technical diagram for: "${chapterTitle}". Style: clean, minimal, dark background, labeled components and arrows. For a tech education platform.`
       console.log(`  [codex] generating image: ${moduleSlug}/${chapterSlug}`)
       try {
-        callCodex(brief, imgPath)
+        await callCodex(brief, imgPath)
         imageInstruction = `\nInclude this image in the body_mdx at the most relevant point: ![${chapterTitle}](/content-images/${moduleSlug}/${chapterSlug}.png)`
       } catch {
         console.warn(`  [codex] image generation failed for ${moduleSlug}/${chapterSlug}, continuing without image`)
@@ -174,7 +177,7 @@ Respond with ONLY the JSON object. No prose before or after.
 `
 
   console.log(`  [sonnet] writing: ${moduleSlug}/${chapterSlug}`)
-  const raw = callClaude(prompt, 'claude-sonnet-4-6')
+  const raw = await callClaude(prompt, 'claude-sonnet-4-6')
   const chapter = extractJson<{ hook_text: string; body_mdx: string }>(raw)
   fs.writeFileSync(mdxOut, JSON.stringify(chapter, null, 2))
   return chapter
@@ -251,9 +254,7 @@ async function main() {
     console.log(`  Launching ${chapterSlugs.length} Haiku scraper agents...`)
     await Promise.all(
       chapterSlugs.map((cs, i) =>
-        Promise.resolve().then(() =>
-          runHaikuScraper(mod.slug, cs, mod.chapter_titles[i], mod.learning_objectives)
-        )
+        runHaikuScraper(mod.slug, cs, mod.chapter_titles[i], mod.learning_objectives)
       )
     )
 
@@ -261,14 +262,12 @@ async function main() {
     console.log(`  Launching ${chapterSlugs.length} Sonnet writer agents...`)
     const chapters = await Promise.all(
       chapterSlugs.map((cs, i) =>
-        Promise.resolve().then(() =>
-          runSonnetWriter(
-            mod.slug, cs,
-            mod.chapter_titles[i],
-            mod.chapter_hooks[i] ?? '',
-            mod.image_needed[i] ?? false,
-            styleGuide
-          )
+        runSonnetWriter(
+          mod.slug, cs,
+          mod.chapter_titles[i],
+          mod.chapter_hooks[i] ?? '',
+          mod.image_needed[i] ?? false,
+          styleGuide
         )
       )
     )
