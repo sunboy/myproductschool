@@ -13,6 +13,8 @@ Required environment:
 Stripe setup:
 
 - Enable Stripe Connect in the Stripe Dashboard before launch. `/api/affiliate/signup` creates Express connected accounts, and Stripe rejects that call until Connect is activated for the account.
+- Live coupon created: `1kgAyNZl` with `20% off` for `3 months`.
+- Launch promo codes created in test mode: `MONTHLY20` on `EKhWEHIl` (`20% off` forever) and `YEARLY99` on `79LA9KUP` (`$100 off` / `99 a year`, max redemptions `1000`).
 - Create the shared affiliate coupon in live mode and set `STRIPE_AFFILIATE_COUPON_ID=1kgAyNZl`. For test runs, create a test-mode coupon and set `STRIPE_TEST_AFFILIATE_COUPON_ID`.
 - Keep the coupon terms in Stripe. The app creates one Promotion Code per affiliate against that shared coupon.
 - Keep `NEXT_PUBLIC_ENABLE_AFFILIATES` unset until Connect, coupon ids, hash secret, and the real signup smoke are verified.

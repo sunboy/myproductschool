@@ -66,6 +66,9 @@ Affiliates should remain disabled until Stripe Connect and all affiliate env var
 - `STRIPE_TEST_AFFILIATE_COUPON_ID` is set for test smoke runs if needed.
 - `AFFILIATE_HASH_SECRET` is set.
 - The real affiliate signup and Connect onboarding smoke passes.
+- Launch promo codes exist for the current launch offer:
+  - `MONTHLY20` on `EKhWEHIl`
+  - `YEARLY99` on `79LA9KUP` with `1000` redemptions
 
 When `NEXT_PUBLIC_ENABLE_AFFILIATES` is not exactly `true`, affiliate signup routes, referral attribution, checkout promotion application, webhook commissions, and payout cron stay disabled by default.
 
