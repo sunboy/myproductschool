@@ -26,46 +26,32 @@ function extractJson<T>(raw: string): T {
   return JSON.parse(match[1] ?? match[0]) as T
 }
 
-const TOPICS = [
-  // Foundations track
-  'Data Modeling',
-  'SQL Mastery',
-  'Coding Patterns',
-  // Systems track
-  'System Design',
-  'Distributed Systems',
-  // AI & LLMs track
-  'LLM Internals',
-  'Agentic Systems',
-  'RAG & Vector Search',
-  'Context Engineering',
-  'Agent Memory',
-  // New Era track
-  'Claude Code',
-  'Codex & AI Coding Assistants',
-  'Sub-agents & Orchestration',
-  'Harness Engineering',
-]
-
 const CATALOG_PROMPT = `
 You are designing a tech content library for engineers looking to upskill, change roles, or prepare for interviews. The audience ranges from students to senior engineers. Casual newsletter readers are also a first-class audience.
 
-Produce a JSON array of modules across these topics: ${TOPICS.join(', ')}.
+Produce a JSON array of AT LEAST 40 modules (aim for 45-50) spread across five tracks. Each track must have multiple modules at different difficulty levels so readers can progress.
+
+Track allocation (minimum counts):
+- "foundations": 8-10 modules — data modeling, SQL, coding patterns, algorithms, system fundamentals
+- "systems": 8-10 modules — system design, distributed systems, databases, networking, reliability
+- "ai-llms": 8-10 modules — LLM internals, agentic systems, RAG, embeddings, fine-tuning, evaluation
+- "new-era": 8-10 modules — Claude Code, Codex/AI coding assistants, context engineering, agent memory, sub-agents & orchestration, harness engineering, agentic workflows
+- "product-thinking": 6-8 modules — FLOW framework, user models, root cause analysis, metrics, prioritization, product sense for engineers
 
 Each module must have:
 - slug: kebab-case unique identifier
 - name: short, specific module name (not generic)
 - tagline: one punchy sentence — the sharpest thing about this module
-- track: one of "foundations" | "systems" | "ai-llms" | "new-era"
+- track: one of "foundations" | "systems" | "ai-llms" | "new-era" | "product-thinking"
 - difficulty: one of "foundation" | "beginner" | "intermediate" | "advanced" | "new-era"
 - chapter_titles: array of 5-8 chapter titles — specific, not generic. Each title should make a reader want to click.
 - chapter_hooks: array matching chapter_titles length — one sentence per chapter, the most surprising or useful thing in that chapter
 - learning_objectives: array of 3-5 concrete things a reader will be able to do after the module
 - est_minutes: estimated read time in minutes (800-1200 words per chapter × chapter count ÷ 200 wpm)
-- cover_color: dark hex color matching the track
-- accent_color: lighter hex accent color matching the track
+- cover_color: dark hex color matching the track (foundations=green, systems=indigo, ai-llms=amber, new-era=purple, product-thinking=teal)
+- accent_color: lighter hex accent matching the track
 - sort_order: 1-based integer within the track
-- image_needed: array of booleans matching chapter_titles — true if this chapter benefits from a complex architectural illustration, false if inline HTML/SVG is sufficient
+- image_needed: array of booleans matching chapter_titles — true if this chapter benefits from a complex architectural illustration
 
 Rules for chapter titles:
 - Data Modeling: must include chapters on cardinality explosion, bridge tables, surrogate vs natural keys, slowly changing dimensions, schema evolution
@@ -80,7 +66,7 @@ Rules for chapter titles:
 - No "Introduction to X" titles — drop into the topic immediately
 - Titles read like "Why your query plan lies" not "Understanding query plans"
 
-Respond with ONLY a JSON array. No prose.
+Respond with ONLY a valid JSON array. No prose before or after. The array must have at least 40 elements.
 `
 
 const STYLE_GUIDE_PROMPT = `
