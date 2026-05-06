@@ -5,12 +5,13 @@ import {
   getClientIp,
   sameOriginRedirect,
 } from '@/lib/auth/rate-limit'
-import { firstZodError, protectedSignupSchema } from '@/lib/auth/validation'
+import { protectedSignupSchema } from '@/lib/auth/validation'
 import { isHoneypotFilled, turnstileErrorMessage, verifyTurnstileToken } from '@/lib/security/turnstile'
+import { z, ZodError } from 'zod'
 
-interface SignupBodyExtras {
-  redirectTo?: string
-}
+const RequestSchema = protectedSignupSchema.extend({
+  redirectTo: z.string().trim().max(2048).optional(),
+})
 
 function rateLimitedResponse(retryAfter: number) {
   return NextResponse.json(
@@ -22,13 +23,27 @@ function rateLimitedResponse(retryAfter: number) {
   )
 }
 
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
+}
+
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({})) as SignupBodyExtras
-  const parsed = protectedSignupSchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json({ error: firstZodError(parsed.error) }, { status: 400 })
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
-  const { email, password, name, turnstileToken, website } = parsed.data
+  const { email, password, name, turnstileToken, website } = body
 
   if (isHoneypotFilled(website)) {
     return NextResponse.json({ error: 'Unable to submit this form.' }, { status: 400 })
