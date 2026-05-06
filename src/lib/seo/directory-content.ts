@@ -587,6 +587,7 @@ export const PUBLIC_DIRECTORY_PATHS = [
   '/alternatives/leetcode',
   '/pricing',
   '/privacy',
+  '/terms',
   '/waitlist',
 ]
 
