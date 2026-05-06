@@ -14,6 +14,7 @@ type TransactionalEmailKind =
   | 'payment_receipt'
   | 'payment_failed'
   | 'trial_ending'
+  | 'affiliate_payout'
   | 'cancellation_confirmed'
   | 'cancellation_scheduled'
   | 'subscription_reactivated'
@@ -397,6 +398,22 @@ export function sendTrialEndingEmail(admin: SupabaseClient, input: PaymentEmailI
     detail: trialEnd ? `Trial ends on ${trialEnd}.` : null,
     ctaLabel: 'Manage billing',
     ctaUrl: input.url ?? appUrl('/settings'),
+  })
+}
+
+export function sendAffiliatePayoutEmail(admin: SupabaseClient, input: PaymentEmailInput) {
+  const amount = formatMoney(input.amount, input.currency)
+
+  return sendTransactionalEmail(admin, {
+    ...input,
+    kind: 'affiliate_payout',
+    subject: 'Your HackProduct affiliate payout is on the way',
+    eyebrow: 'Affiliate payout',
+    heading: 'Your referral commission was paid.',
+    body: 'Stripe is sending your HackProduct affiliate payout to your connected account.',
+    detail: amount ? `Payout amount: ${amount}` : null,
+    ctaLabel: 'View affiliate dashboard',
+    ctaUrl: input.url ?? appUrl('/affiliate'),
   })
 }
 

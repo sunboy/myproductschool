@@ -19,6 +19,7 @@ const MARKETING_ROUTES = [
   '/waitlist-quick',
   '/waitlist-flow',
   '/pricing',
+  '/r',
   '/flow',
   '/hatch-preview',
   '/home',

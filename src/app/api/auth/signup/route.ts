@@ -1,5 +1,8 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
+import { AFFILIATE_COOKIE_NAME } from '@/lib/affiliate/config'
+import { applyReferralAttribution } from '@/lib/affiliate/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import {
   findRateLimitBlock,
   getClientIp,
@@ -27,7 +30,7 @@ function validationIssues(error: ZodError) {
   }))
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   let body: z.infer<typeof RequestSchema>
   try {
     body = RequestSchema.parse(await request.json())
@@ -69,6 +72,14 @@ export async function POST(request: Request) {
 
   if (error) {
     return apiError(400, 'signup_failed', error.message)
+  }
+
+  if (data.user?.id) {
+    await applyReferralAttribution(
+      createAdminClient(),
+      data.user.id,
+      request.cookies.get(AFFILIATE_COOKIE_NAME)?.value
+    )
   }
 
   return NextResponse.json({

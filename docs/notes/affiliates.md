@@ -1,0 +1,28 @@
+# Affiliate Workflow
+
+Affiliate referrals use Stripe Promotion Codes for attribution and Stripe Connect transfers for payouts.
+
+Required environment:
+
+- `STRIPE_AFFILIATE_COUPON_ID`: live Stripe coupon used when creating affiliate promotion codes.
+- `STRIPE_TEST_AFFILIATE_COUPON_ID`: optional test-mode coupon override.
+- `AFFILIATE_HASH_SECRET`: HMAC key for hashing referral click IP and user-agent signals.
+- `CRON_SECRET`: authorizes `/api/cron/affiliate-payouts`.
+
+Flow:
+
+1. A logged-in user opens `/affiliate` and creates an affiliate account.
+2. `/api/affiliate/signup` creates a Stripe promotion code and a Stripe Express connected account.
+3. The affiliate completes Stripe onboarding through the account link.
+4. `/r/[code]` records a hashed click, stores `ref_code` for 30 days, and redirects to `/?ref=CODE`.
+5. Email and OAuth signup callbacks read `ref_code` and write `profiles.referral_source` plus `profiles.affiliate_id`.
+6. Checkout pre-applies the affiliate promotion code for attributed users.
+7. `invoice.paid` inserts one pending `affiliate_commissions` row per invoice.
+8. `/api/cron/affiliate-payouts` runs monthly and creates Stripe transfers for active connected accounts.
+
+Operational notes:
+
+- Keep affiliate discount terms in the shared Stripe coupon; each affiliate gets a distinct promotion code attached to that coupon.
+- Pending affiliates can accrue commissions, but transfers only run after Connect has an active transfers capability.
+- Duplicate `invoice.paid` webhooks are idempotent through the `(affiliate_id, invoice_id)` commission uniqueness constraint.
+- Vercel cron schedule is `0 0 1 * *`. If the deployment plan allows only two cron jobs, move this route into the existing daily maintenance fanout with a first-day-of-month guard.

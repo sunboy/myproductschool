@@ -1,4 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { AFFILIATE_COOKIE_NAME } from '@/lib/affiliate/config'
+import { applyReferralAttribution } from '@/lib/affiliate/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
@@ -30,6 +32,12 @@ export async function GET(request: NextRequest) {
   }
 
   const admin = createAdminClient()
+  await applyReferralAttribution(
+    admin,
+    data.user.id,
+    request.cookies.get(AFFILIATE_COOKIE_NAME)?.value
+  )
+
   const { data: profile } = await admin
     .from('profiles')
     .select('onboarding_completed_at')

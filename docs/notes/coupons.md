@@ -1,6 +1,6 @@
 # Coupon Workflow
 
-Stripe promotion codes are enabled in Checkout through `allow_promotion_codes: true` in `src/app/api/stripe/create-checkout/route.ts`.
+Stripe promotion codes are enabled in Checkout through `allow_promotion_codes: true` in `src/app/api/stripe/create-checkout/route.ts` for ordinary checkouts. Referred users get their affiliate promotion code pre-applied, so manual promotion-code entry is omitted for those sessions.
 
 Use `/admin/coupons` to create the discount objects:
 
