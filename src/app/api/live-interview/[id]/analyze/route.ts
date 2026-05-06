@@ -5,21 +5,45 @@ import { guardedCachedMessage } from '@/lib/ai/guarded-client'
 import { AiBudgetExceededError, getUserPlanForBudget } from '@/lib/usage/ai-budget'
 import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limit'
 import { rateLimit } from '@/lib/security/rate-limit'
+import { z, ZodError } from 'zod'
 
 const VALID_FLOW_MOVES = new Set(['frame', 'list', 'optimize', 'win'])
 const ROUTE_KEY = 'live_interview_analyze'
+
+const ArtifactSnapshotSchema = z.object({
+  type: z.enum(['canvas', 'editor']),
+  discipline: z.string().max(100).optional(),
+  capturedAt: z.number().finite().nonnegative().optional(),
+  elementCount: z.number().int().min(0).max(10000).optional(),
+  elementTypes: z.record(z.string(), z.number().int().min(0)).optional(),
+  textLabels: z.array(z.string().max(1000)).max(1000).optional(),
+  code: z.string().max(200000).optional(),
+  language: z.string().max(80).optional(),
+  cursorLine: z.number().int().min(0).optional(),
+  pasteEvents: z.array(z.object({
+    length: z.number().int().min(0),
+    percentOfBuffer: z.number().finite().min(0).max(1),
+    timestamp: z.number().finite().nonnegative(),
+  })).max(100).optional(),
+  runResult: z.unknown().optional(),
+})
+
+const RequestSchema = z.object({
+  content: z.string().max(20000).optional().default(''),
+  role: z.string().max(40).optional().default(''),
+  artifactSnapshot: ArtifactSnapshotSchema.optional(),
+  turnIndex: z.number().int().min(0).optional(),
+})
 
 function retryAfterSeconds(resetAt: Date) {
   return Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000))
 }
 
-interface ArtifactSnapshot {
-  type: 'canvas' | 'editor'
-  elementCount?: number
-  code?: string
-  language?: string
-  runResult?: unknown
-  discipline?: string
+function validationIssues(error: ZodError) {
+  return error.issues.map(issue => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }))
 }
 
 export async function POST(
@@ -36,12 +60,19 @@ export async function POST(
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return new Response('Unauthorized', { status: 401 })
 
-  const { content, role, artifactSnapshot, turnIndex } = await request.json() as {
-    content: string
-    role: string
-    artifactSnapshot?: ArtifactSnapshot
-    turnIndex?: number
+  let body: z.infer<typeof RequestSchema>
+  try {
+    body = RequestSchema.parse(await request.json())
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return Response.json(
+        { error: 'Invalid request body', issues: validationIssues(error) },
+        { status: 400 }
+      )
+    }
+    return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
+  const { content, role, artifactSnapshot, turnIndex } = body
 
   if (!content || role !== 'user') {
     // Only analyze user turns for FLOW move detection
