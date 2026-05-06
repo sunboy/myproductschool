@@ -62,6 +62,10 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: npm overrides pin transitive `dompurify@3.4.2` and `lodash-es@4.18.1`, clearing the remaining high Lodash-ES advisory and Monaco's nested DOMPurify advisory.
   - Evidence: `@anthropic-ai/sdk` is updated to `0.94.0`, and npm overrides pin transitive `nanoid@5.1.11` and `postcss@8.5.12`, clearing the remaining moderate production advisories.
   - Evidence: `npm audit --omit=dev` exits `0` with `found 0 vulnerabilities`.
+- [x] Aggregate launch unit gate exists and passes.
+  - Evidence: `npm test` runs the launch-focused Node and Vitest unit suites through `test:unit`.
+  - Evidence: `npm test` passed on May 6, 2026 with 88 Node tests and 87 Vitest tests.
+  - Note: Playwright E2E remains a separate launch gate because those specs require a production-style server, seeded users, and configured provider/env state.
 - [x] Core legal, pricing, help, and changelog pages respond locally.
   - Evidence: local production smoke returned `200` for `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog`.
   - Evidence: `src/lib/seo/directory-content.ts` includes `/pricing`, `/privacy`, `/terms`, `/help`, and `/changelog` in `PUBLIC_DIRECTORY_PATHS`, which feeds `src/app/sitemap.ts`.
@@ -204,6 +208,7 @@ RATE_LIMIT_MEMORY_FALLBACK=true DISCUSSION_MODERATION_E2E_FALLBACK=true TURNSTIL
 Core launch gates:
 
 ```bash
+npm test
 npm run build
 npx tsc --noEmit --pretty false
 npm run secrets:scan
@@ -221,5 +226,3 @@ npx tsx --test tests/lib/usage/assert-plan-limit.test.ts tests/lib/billing/entit
 npx tsx --test tests/lib/scoring/completed-attempt-result.test.ts
 npx vitest run tests/unit/feedback-nps.spec.ts tests/unit/affiliate-flow.spec.ts
 ```
-
-Note: `package.json` does not currently define an aggregate `npm test` script. Use the focused commands above until a unified test script exists.
