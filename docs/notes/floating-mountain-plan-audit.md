@@ -21,9 +21,9 @@ The current owner-narrowed launch scope is:
 
 | Plan Gate | Status | Evidence / Gap |
 | --- | --- | --- |
-| 1. Build, lint, types, tests clean | Partial | `npm run build`, `npm run lint`, and `npx tsc --noEmit --pretty false` passed on May 6. `package.json` does not define an `npm test` script, so the aggregate test gate cannot run as written. Focused test commands remain the evidence source. |
+| 1. Build, lint, types, tests clean | Partial | `npm run build`, `npm run lint`, `npx tsc --noEmit --pretty false`, and `npm run secrets:scan` passed on May 6 after the copy and identity cleanup. `package.json` does not define an `npm test` script, so the aggregate test gate cannot run as written. Focused test commands remain the evidence source. |
 | 2. Playwright N2/N3/N4 green | Partial | N2 paywall passed `10/10`; N3 discussions passed `10/10`; narrowed N4 auth passed signup/login/forgot-password `3/3`. Full N4 remains out of launch scope per owner direction. |
-| 3. AI guardrails E2E | Partial | AI guardrail unit tests passed on May 6: 15 tests across voice rules, sanitizer, and guarded client. Static app copy still contains em dashes; see `docs/notes/voice-copy-audit.md`. No latest E2E evidence proves a live Hatch response logs `ai_voice_violations` and appears in the admin dashboard. |
+| 3. AI guardrails E2E | Partial | AI guardrail unit tests passed on May 6: 15 tests across voice rules, sanitizer, and guarded client. Static source grep for literal em-dash characters and HTML mdash entities returned no matches across `src/app`, `src/components`, and `src/lib/email`. No latest E2E evidence proves a live Hatch response logs `ai_voice_violations` and appears in the admin dashboard. |
 | 4. Prompt injection | Partial | Guarded client unit tests cover wrapping user input and opacity guard instructions. No latest live Hatch probe evidence is recorded. |
 | 5. Plan limits + throttle | Partial | Paywall N2 coverage passed; full per-route AI throttle/limit verification across every AI route is not recorded. |
 | 6. Discipline workspaces | Not complete | `src/components/challenge/workspace/WorkspaceShell.tsx` and new per-discipline workspace routes are absent. This is broad feature work, not current launch scope. |
@@ -43,7 +43,7 @@ The current owner-narrowed launch scope is:
 | 20. PWA installable | Partial | Static audit found a linked valid manifest and existing 512px icon; browser installability has not been verified, and the 192px manifest entry points to the 512px file. See `docs/notes/pwa-manifest-audit.md`. |
 | 21. Difficulty taxonomy | Not complete | Read-only live DB audit found values outside `easy | medium | hard`; see `docs/notes/difficulty-taxonomy-audit.md`. No migration was applied during launch freeze. |
 | 22. Streak + XP correctness | Not complete | `src/lib/xp/calculator.ts`, `docs/notes/xp-streak-audit.md`, and P8 evidence are absent. This is broad correctness work, not safe to invent during launch freeze. |
-| 23. Hatch identity opacity | Partial | Sanitizer and guarded client artifacts exist. Static grep over user-visible app/components/auth/marketing/email surfaces returned no forbidden provider/internal terms after excluding AI internals and Hatch system prompt files. Live Hatch probe evidence is still not recorded. |
+| 23. Hatch identity opacity | Partial | Sanitizer and guarded client artifacts exist. Static grep over user-visible app/components/auth/marketing/email surfaces returned no forbidden provider/internal terms after excluding AI internals and Hatch system prompt files. Stale `Luma` copy and selectors were removed from public mockups and waitlist HTML. Live Hatch probe evidence is still not recorded. |
 | 24. Markdown rendering | Partial | `src/components/ui/Md.tsx` exists. Full raw-prose replacement and Hatch challenge-link E2E are not recorded. |
 
 ## Current Launch Blockers
@@ -52,7 +52,7 @@ The current owner-narrowed launch scope is:
 - Supabase Auth leaked-password protection is disabled in dashboard settings.
 - Supabase performance advisor has a broad pre-existing backlog that needs a deliberate tuning pass, not a blanket launch migration.
 - Production env and provider checks remain owner-controlled: no E2E fallback flags, OpenAI, Turnstile, Upstash, status DNS/provider, security headers.
-- Owner needs to visually compare `/dashboard` against the current dev baseline.
+- Owner still needs to visually compare `/dashboard` against the current dev baseline. Codex local smoke after the copy cleanup loaded `/dashboard` with a temporary Supabase user, verified the hero, session CTA, quick-take card, multiple card sections, zero visible `Luma` text, and zero visible em dashes, then deleted the temporary user.
 
 ## Guardrail Decision
 
