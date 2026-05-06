@@ -36,8 +36,8 @@ const DATA_SECTIONS = [
     title: 'Third Parties',
     body: [
       'Supabase provides authentication, database, storage, and server-side access controls.',
-      'Anthropic powers Hatch coaching and grading features through large language models.',
-      'OpenAI Moderation may be used to screen user-submitted discussion or abuse-report content.',
+      'AI processing providers support Hatch coaching and grading features.',
+      'Automated moderation providers may be used to screen user-submitted discussion or abuse-report content.',
       'Stripe processes checkout, subscriptions, tax, invoices, refunds, coupons, billing portal sessions, and payment method updates.',
       'Stripe Connect supports affiliate onboarding and commission payouts where available.',
       'Resend sends transactional email.',

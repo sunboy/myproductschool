@@ -43,7 +43,7 @@ The current owner-narrowed launch scope is:
 | 20. PWA installable | Partial | Static audit found a linked valid manifest and existing 512px icon; browser installability has not been verified, and the 192px manifest entry points to the 512px file. See `docs/notes/pwa-manifest-audit.md`. |
 | 21. Difficulty taxonomy | Not complete | Read-only live DB audit found values outside `easy | medium | hard`; see `docs/notes/difficulty-taxonomy-audit.md`. No migration was applied during launch freeze. |
 | 22. Streak + XP correctness | Not complete | `src/lib/xp/calculator.ts`, `docs/notes/xp-streak-audit.md`, and P8 evidence are absent. This is broad correctness work, not safe to invent during launch freeze. |
-| 23. Hatch identity opacity | Partial | Sanitizer and guarded client artifacts exist; latest live user-surface grep/E2E probe has not been recorded. |
+| 23. Hatch identity opacity | Partial | Sanitizer and guarded client artifacts exist. Static grep over user-visible app/components/auth/marketing/email surfaces returned no forbidden provider/internal terms after excluding AI internals and Hatch system prompt files. Live Hatch probe evidence is still not recorded. |
 | 24. Markdown rendering | Partial | `src/components/ui/Md.tsx` exists. Full raw-prose replacement and Hatch challenge-link E2E are not recorded. |
 
 ## Current Launch Blockers

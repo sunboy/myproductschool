@@ -49,6 +49,8 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: deleted `/api/cohort/current`, `/api/cohort/leaderboard`, and `/api/cohort/submit` route handlers plus the unused cohort hook/data helpers.
   - Evidence: `/challenges` no longer fetches cohort leaderboard data; dashboard community CTA now links to practice instead of a weekly room.
   - Evidence: `rg` found no remaining active cohort route/helper references, and `npm run build` no longer lists `/api/cohort/*`.
+- [x] Static Hatch identity leak grep passes for user-visible app surfaces.
+  - Evidence: `rg -i "claude|anthropic|sonnet|opus|haiku|openai|gpt-|language model|system prompt|tool call"` returned no matches in `src/components`, `src/app/(app)`, `src/app/(marketing)`, `src/app/(auth)`, and `src/lib/email` after excluding AI internals and Hatch system prompt files.
 
 ## Accepted Scope Changes
 
