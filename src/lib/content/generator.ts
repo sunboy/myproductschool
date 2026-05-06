@@ -1,5 +1,3 @@
-// src/lib/content/generator.ts
-import Anthropic from '@anthropic-ai/sdk'
 import { scrapeUrl } from './scraper'
 import {
   buildScrapePrompt, buildScenarioPrompt, buildMcqPrompt,
@@ -9,10 +7,11 @@ import {
   type ScrapeResult,
 } from './prompts'
 import { validateChallengeJson } from './validator'
+import { createCachedMessage } from '@/lib/anthropic/cached-client'
 import { getTopicsForDiscipline, getTechniquesForDiscipline, type Discipline } from '@/lib/data/taxonomy'
 import type { ChallengeJson, DraftFlowStep, FlowStep, IntellectualTheme, ScenarioExcerpt } from '@/lib/types'
 
-const client = new Anthropic()
+const CONTENT_GENERATION_SYSTEM_PROMPT = 'Generate HackProduct challenge content. Follow the prompt exactly and return only the requested JSON.'
 
 const FLOW_STEPS: FlowStep[] = ['frame', 'list', 'optimize', 'win']
 const THEME_MAP: Record<FlowStep, { theme: string; theme_name: string }> = {
@@ -31,10 +30,9 @@ const STEP_TOPIC: Record<FlowStep, ScenarioExcerpt['topic']> = {
 }
 
 async function callHaiku(prompt: string): Promise<string> {
-  const msg = await client.messages.create({
+  const msg = await createCachedMessage(CONTENT_GENERATION_SYSTEM_PROMPT, prompt, {
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 1500,
-    messages: [{ role: 'user', content: prompt }],
   })
   const block = msg.content[0]
   if (block.type !== 'text') throw new Error('Haiku returned non-text block')
@@ -42,10 +40,9 @@ async function callHaiku(prompt: string): Promise<string> {
 }
 
 async function callSonnet(prompt: string, maxTokens = 2000): Promise<string> {
-  const msg = await client.messages.create({
+  const msg = await createCachedMessage(CONTENT_GENERATION_SYSTEM_PROMPT, prompt, {
     model: 'claude-sonnet-4-6',
     max_tokens: maxTokens,
-    messages: [{ role: 'user', content: prompt }],
   })
   const block = msg.content[0]
   if (block.type !== 'text') throw new Error('Sonnet returned non-text block')
