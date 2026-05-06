@@ -586,6 +586,7 @@ export const PUBLIC_DIRECTORY_PATHS = [
   '/interviews/live-ai-interviews',
   '/alternatives/leetcode',
   '/pricing',
+  '/privacy',
   '/waitlist',
 ]
 
