@@ -51,14 +51,16 @@ export function DiscussionThread({
   const [replyContent, setReplyContent] = useState('')
   const [postingReply, setPostingReply] = useState(false)
   const [replyPosted, setReplyPosted] = useState(false)
+  const [replyError, setReplyError] = useState<string | null>(null)
 
   const initials = getInitials(discussion.username ?? 'User')
 
   async function handlePostReply() {
     if (!replyContent.trim() || postingReply) return
     setPostingReply(true)
+    setReplyError(null)
     try {
-      await fetch(
+      const res = await fetch(
         `/api/challenges/${challengeId}/discussions/${discussion.id}/replies`,
         {
           method: 'POST',
@@ -66,12 +68,17 @@ export function DiscussionThread({
           body: JSON.stringify({ content: replyContent }),
         }
       )
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        setReplyError(data?.error ?? 'Could not post reply. Try again.')
+        return
+      }
       setReplyContent('')
       setReplyPosted(true)
       setShowReply(false)
       setTimeout(() => setReplyPosted(false), 3000)
     } catch {
-      // silently fail
+      setReplyError('Could not post reply. Try again.')
     } finally {
       setPostingReply(false)
     }
@@ -133,12 +140,22 @@ export function DiscussionThread({
         rows={3}
         placeholder="Write a reply..."
         value={replyContent}
-        onChange={e => setReplyContent(e.target.value.slice(0, 500))}
+        onChange={e => {
+          setReplyContent(e.target.value.slice(0, 500))
+          if (replyError) setReplyError(null)
+        }}
         disabled={postingReply}
       />
+      {replyError && (
+        <p className="text-xs font-medium text-error">{replyError}</p>
+      )}
       <div className="flex items-center justify-end gap-2">
         <button
-          onClick={() => { setShowReply(false); setReplyContent('') }}
+          onClick={() => {
+            setShowReply(false)
+            setReplyContent('')
+            setReplyError(null)
+          }}
           className="text-xs font-semibold text-on-surface-variant hover:text-on-surface transition-colors px-3 py-1.5"
         >
           Cancel
