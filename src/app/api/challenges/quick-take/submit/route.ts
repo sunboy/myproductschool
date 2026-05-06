@@ -190,8 +190,9 @@ export async function POST(req: NextRequest) {
   const { error: attemptInsertError } = await adminClient.from('challenge_attempts').insert({
     user_id: user.id,
     challenge_id,
-    mode: 'quick-take',
     status: 'completed',
+    current_step: 'done',
+    current_question_sequence: 1,
     completed_at: new Date().toISOString(),
     total_score: score,
     max_score: 1,

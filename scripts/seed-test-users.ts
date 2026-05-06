@@ -199,6 +199,83 @@ function stripeSafeKey(key: string): string {
   return key.replace(/[^a-z0-9_]+/gi, '_')
 }
 
+function missingColumnName(errorMessage: string): string | null {
+  return errorMessage.match(/Could not find the '([^']+)' column/)?.[1] ?? null
+}
+
+async function upsertSkippingMissingColumns(
+  admin: SupabaseClient,
+  table: string,
+  row: Record<string, unknown>,
+  onConflict: string,
+  label: string
+) {
+  const payload = { ...row }
+
+  for (;;) {
+    const { error } = await admin.from(table).upsert(payload, { onConflict })
+    if (!error) return
+
+    const column = missingColumnName(error.message)
+    if (column && column in payload) {
+      console.warn(`${label}: skipping missing column ${table}.${column}`)
+      delete payload[column]
+      continue
+    }
+
+    throw new Error(`${label}: ${error.message}`)
+  }
+}
+
+async function upsertRowsSkippingMissingColumns(
+  admin: SupabaseClient,
+  table: string,
+  rows: Array<Record<string, unknown>>,
+  onConflict: string,
+  label: string
+) {
+  if (rows.length === 0) return
+  const payload = rows.map(row => ({ ...row }))
+
+  for (;;) {
+    const { error } = await admin.from(table).upsert(payload, { onConflict })
+    if (!error) return
+
+    const column = missingColumnName(error.message)
+    if (column && payload.some(row => column in row)) {
+      console.warn(`${label}: skipping missing column ${table}.${column}`)
+      for (const row of payload) delete row[column]
+      continue
+    }
+
+    throw new Error(`${label}: ${error.message}`)
+  }
+}
+
+async function insertRowsSkippingMissingColumns(
+  admin: SupabaseClient,
+  table: string,
+  rows: Array<Record<string, unknown>>,
+  label: string
+) {
+  if (rows.length === 0) return
+  const payload = rows.map(row => ({ ...row }))
+
+  for (;;) {
+    const { error } = await admin.from(table).insert(payload)
+    if (!error) return
+
+    const column = missingColumnName(error.message)
+    if (column && payload.some(row => column in row)) {
+      console.warn(`${label}: skipping missing column ${table}.${column}`)
+      for (const row of payload) delete row[column]
+      continue
+    }
+
+    throw new Error(`${label}: ${error.message}`)
+  }
+}
+
 async function listExistingTestUsers(admin: SupabaseClient) {
   const matches: Array<{ id: string; email: string }> = []
   let page = 1
@@ -400,7 +477,7 @@ async function seedProfile(admin: SupabaseClient, persona: Persona, userId: stri
     ? { frame: 62, list: 58, optimize: 54, win: 50 }
     : {}
 
-  const { error } = await admin.from('profiles').upsert({
+  await upsertSkippingMissingColumns(admin, 'profiles', {
     id: userId,
     display_name: persona.displayName,
     avatar_url: null,
@@ -409,7 +486,7 @@ async function seedProfile(admin: SupabaseClient, persona: Persona, userId: stri
     streak_days: persona.streakDays,
     xp_total: persona.xpTotal,
     onboarding_completed_at: persona.onboarded ? timestamp : null,
-    preferred_role: persona.onboarded ? 'swe' : null,
+    preferred_role: null,
     archetype: persona.onboarded ? 'systems_builder' : null,
     archetype_description: persona.onboarded ? 'Practices product judgment with an engineering lens.' : null,
     streak_shield_count: 0,
@@ -419,9 +496,7 @@ async function seedProfile(admin: SupabaseClient, persona: Persona, userId: stri
     has_seen_hatch_intro: persona.onboarded,
     interview_date: persona.onboarded ? dateDaysFromNow(21) : null,
     updated_at: timestamp,
-  }, { onConflict: 'id' })
-
-  if (error) throw new Error(`Failed to seed profile for ${persona.email}: ${error.message}`)
+  }, 'id', `Seed profile for ${persona.email}`)
 }
 
 async function seedSubscription(
@@ -433,7 +508,7 @@ async function seedSubscription(
   const timestamp = new Date().toISOString()
 
   if (persona.plan === 'free') {
-    const { error } = await admin.from('subscriptions').upsert({
+    await upsertSkippingMissingColumns(admin, 'subscriptions', {
       user_id: userId,
       stripe_customer_id: null,
       stripe_subscription_id: null,
@@ -446,15 +521,13 @@ async function seedSubscription(
       cancel_at: null,
       canceled_at: null,
       updated_at: timestamp,
-    }, { onConflict: 'user_id' })
-
-    if (error) throw new Error(`Failed to seed free subscription for ${persona.email}: ${error.message}`)
+    }, 'user_id', `Seed free subscription for ${persona.email}`)
     return
   }
 
   const stripeFixture = await createStripeFixture(stripe, persona, userId)
 
-  const { error } = await admin.from('subscriptions').upsert({
+  await upsertSkippingMissingColumns(admin, 'subscriptions', {
     user_id: userId,
     stripe_customer_id: stripeFixture.customerId,
     stripe_subscription_id: stripeFixture.subscriptionId,
@@ -467,9 +540,7 @@ async function seedSubscription(
     cancel_at: null,
     canceled_at: null,
     updated_at: timestamp,
-  }, { onConflict: 'user_id' })
-
-  if (error) throw new Error(`Failed to seed pro subscription for ${persona.email}: ${error.message}`)
+  }, 'user_id', `Seed pro subscription for ${persona.email}`)
 }
 
 async function seedMoveLevels(admin: SupabaseClient, persona: Persona, userId: string) {
@@ -491,8 +562,13 @@ async function seedMoveLevels(admin: SupabaseClient, persona: Persona, userId: s
     }
   })
 
-  const { error } = await admin.from('move_levels').upsert(rows, { onConflict: 'user_id,move' })
-  if (error) throw new Error(`Failed to seed move levels for ${persona.email}: ${error.message}`)
+  await upsertRowsSkippingMissingColumns(
+    admin,
+    'move_levels',
+    rows,
+    'user_id,move',
+    `Seed move levels for ${persona.email}`
+  )
 }
 
 async function seedStreak(admin: SupabaseClient, persona: Persona, userId: string) {
@@ -558,8 +634,12 @@ async function seedChallengeAttempts(
     }
   })
 
-  const { error } = await admin.from('challenge_attempts').insert(rows)
-  if (error) throw new Error(`Failed to seed challenge attempts for ${persona.email}: ${error.message}`)
+  await insertRowsSkippingMissingColumns(
+    admin,
+    'challenge_attempts',
+    rows,
+    `Seed challenge attempts for ${persona.email}`
+  )
 }
 
 async function seedUsageEvents(admin: SupabaseClient, persona: Persona, userId: string) {
@@ -575,8 +655,12 @@ async function seedUsageEvents(admin: SupabaseClient, persona: Persona, userId: 
     created_at: isoDaysAgo(index),
   }))
 
-  const { error } = await admin.from('usage_events').insert(rows)
-  if (error) throw new Error(`Failed to seed usage events for ${persona.email}: ${error.message}`)
+  await insertRowsSkippingMissingColumns(
+    admin,
+    'usage_events',
+    rows,
+    `Seed usage events for ${persona.email}`
+  )
 }
 
 async function seedCappedUsageCounters(admin: SupabaseClient, userId: string) {
@@ -611,11 +695,13 @@ async function seedCappedUsageCounters(admin: SupabaseClient, userId: string) {
     },
   ]
 
-  const { error } = await admin
-    .from('usage_counters')
-    .upsert(rows, { onConflict: 'user_id,feature,period_start' })
-
-  if (error) throw new Error(`Failed to seed capped usage counters: ${error.message}`)
+  await upsertRowsSkippingMissingColumns(
+    admin,
+    'usage_counters',
+    rows,
+    'user_id,feature,period_start',
+    'Seed capped usage counters'
+  )
 }
 
 async function seedPersona(
