@@ -60,6 +60,7 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 - [x] Static Hatch identity leak grep passes for user-visible app surfaces.
   - Evidence: `rg -i "claude|anthropic|sonnet|opus|haiku|openai|gpt-|language model|system prompt|tool call"` returned no matches in `src/components`, `src/app/(app)`, `src/app/(marketing)`, `src/app/(auth)`, and `src/lib/email` after excluding AI internals and Hatch system prompt files.
   - Evidence: `rg -i "\\bluma\\b|luma"` returned no matches in current `src/components`, `src/app`, and `src/lib/email` TypeScript/TSX user-surface files after renaming a stale internal preview export.
+  - Evidence: stale `Luma` copy and selectors were removed from public static mockups and waitlist HTML; `rg -i "\\bluma\\b|luma" public src/app src/components src/lib/email --glob '!public/sql.js/**' --glob '!public/talkinghead/**' --glob '!public/images/logos/stripe.png'` returned no matches on May 6, 2026.
 
 ## Accepted Scope Changes
 
