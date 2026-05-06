@@ -243,7 +243,7 @@ export function ChallengeViewer({ decision, challenge, productName }: ChallengeV
               <div className="flex items-center gap-2 mb-3">
                 <HatchGlyph size={22} state="speaking" className="text-primary" />
                 <span className="text-[10px] font-bold uppercase text-on-surface-variant tracking-widest">
-                  Hatch's Thought Starter
+                  Hatch&rsquo;s Thought Starter
                 </span>
               </div>
               <p className="text-xs italic text-on-surface-variant leading-relaxed">

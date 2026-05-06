@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 
   // Fetch company names for sessions that have company_id
   const companyIds = [...new Set(sessions.filter((s) => s.company_id).map((s) => s.company_id!))]
-  let companyMap = new Map<string, string>()
+  const companyMap = new Map<string, string>()
   if (companyIds.length > 0) {
     const { data: companies } = await adminClient
       .from('company_profiles')

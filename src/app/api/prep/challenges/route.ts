@@ -21,7 +21,7 @@ export async function GET() {
   if (!challenges) return NextResponse.json({ chapters: [] })
 
   // Fetch user's best scores for these challenges if logged in
-  let scoreMap: Record<string, number> = {}
+  const scoreMap: Record<string, number> = {}
   if (user) {
     const ids = challenges.map(c => c.id)
     const { data: attempts } = await adminClient

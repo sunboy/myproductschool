@@ -30,11 +30,13 @@ export async function applyMoveLevelXp(
     const moves = Object.keys(scores)
     if (!moves.length) return
 
-    let { data: currentLevels, error } = await admin
+    const currentLevelResult = await admin
       .from('move_levels')
       .select('move, xp, level, progress_pct')
       .eq('user_id', userId)
       .in('move', moves)
+    let currentLevels = currentLevelResult.data
+    const error = currentLevelResult.error
 
     if (error) {
       console.error('[applyMoveLevelXp] error fetching current levels:', error)

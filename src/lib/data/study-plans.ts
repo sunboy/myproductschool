@@ -59,7 +59,7 @@ export async function getStudyPlans(userId?: string): Promise<StudyPlanWithItems
     .in('plan_id', plans.map(p => p.id))
 
   // Fetch enrollment state and progress if user is provided
-  let enrolledPlanIds = new Set<string>()
+  const enrolledPlanIds = new Set<string>()
   const progressByPlan = new Map<string, number>()
   if (userId) {
     const { data: enrollments } = await supabase
@@ -131,7 +131,7 @@ export async function getEnrolledPlans(userId: string): Promise<StudyPlanWithIte
   }
 
   // Fetch user's completed challenges
-  let scoreMap: Record<string, number> = {}
+  const scoreMap: Record<string, number> = {}
   if (allChallengeIds.length > 0) {
     const { data: attempts } = await supabase
       .from('challenge_attempts')
@@ -238,8 +238,8 @@ export async function getStudyPlanBySlug(slug: string): Promise<StudyPlanWithIte
   const challengeMap = Object.fromEntries((challenges ?? []).map(c => [c.id, c]))
 
   // Fetch user progress
-  let scoreMap: Record<string, number> = {}
-  let inProgressSet = new Set<string>()
+  const scoreMap: Record<string, number> = {}
+  const inProgressSet = new Set<string>()
   if (allChallengeIds.length > 0) {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {

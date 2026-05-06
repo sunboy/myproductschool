@@ -531,7 +531,7 @@ export function PostSessionMirror({
             <HatchGlyph size={48} state="celebrating" className="text-primary" />
             <div>
               <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-primary)' }}>
-                Hatch's Debrief
+                Hatch&rsquo;s Debrief
               </div>
               <div style={{ fontFamily: 'var(--font-headline)', fontSize: 18, fontWeight: 600, letterSpacing: '-0.01em', marginTop: 2, lineHeight: 1.3 }}>
                 {summaryLine}

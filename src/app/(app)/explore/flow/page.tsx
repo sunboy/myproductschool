@@ -768,7 +768,7 @@ export default function LearnFlowPage() {
                     fontFamily: 'var(--font-headline, Literata, Georgia, serif)',
                     fontSize: 160, lineHeight: 1, fontWeight: 900, fontStyle: 'italic',
                     opacity: 0.12, color: move.accentDeep, pointerEvents: 'none',
-                  }}>"</div>
+                  }}>&quot;</div>
                   <div style={{
                     width: 52, height: 52, borderRadius: '50%', flexShrink: 0,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',

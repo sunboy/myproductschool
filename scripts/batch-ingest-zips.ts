@@ -575,7 +575,7 @@ async function getExistingSourceIds(): Promise<Set<string>> {
 
 async function insertBatch(rows: any[], label: string): Promise<{ inserted: number; skipped: number; failed: number }> {
   let inserted = 0
-  let skipped = 0
+  const skipped = 0
   let failed = 0
   const BATCH = 50
 

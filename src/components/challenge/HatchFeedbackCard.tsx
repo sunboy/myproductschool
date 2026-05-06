@@ -21,7 +21,7 @@ export function HatchFeedbackCard({ challengeId, feedbackExcerpt, attemptId: _at
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-primary text-xl">check_circle</span>
-          <span className="text-sm font-bold text-primary">Hatch's Feedback</span>
+          <span className="text-sm font-bold text-primary">Hatch&rsquo;s Feedback</span>
         </div>
         <span className="bg-primary text-on-primary text-xs font-bold px-3 py-1 rounded-full">AI Coach</span>
       </div>
@@ -34,7 +34,7 @@ export function HatchFeedbackCard({ challengeId, feedbackExcerpt, attemptId: _at
           {hasExcerpt ? (
             <p className="text-sm text-on-surface-variant italic mt-1 leading-relaxed">{excerpt}</p>
           ) : (
-            <p className="text-sm text-on-surface-variant mt-1 leading-relaxed">Complete a challenge to unlock Hatch's feedback</p>
+            <p className="text-sm text-on-surface-variant mt-1 leading-relaxed">Complete a challenge to unlock Hatch&rsquo;s feedback</p>
           )}
         </div>
       </div>
@@ -50,7 +50,7 @@ export function HatchFeedbackCard({ challengeId, feedbackExcerpt, attemptId: _at
             <span className="material-symbols-outlined text-sm">arrow_forward</span>
           </Link>
         ) : (
-          <span className="text-sm text-on-surface-variant">Complete a challenge to unlock Hatch's feedback</span>
+          <span className="text-sm text-on-surface-variant">Complete a challenge to unlock Hatch&rsquo;s feedback</span>
         )}
       </div>
     </div>

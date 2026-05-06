@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { MOCK_COMPANIES } from '@/lib/mock-data'
 import { getChallenges } from '@/lib/data/challenges'
 import { notFound } from 'next/navigation'
@@ -23,9 +24,9 @@ export default async function CompanyProfilePage({
     <div className="max-w-6xl mx-auto px-6 py-10">
       {/* Breadcrumb */}
       <nav className="text-xs text-on-surface-variant mb-6 flex items-center gap-1">
-        <a href="/interview-prep" className="hover:text-primary">
+        <Link href="/interview-prep" className="hover:text-primary">
           Interview Prep
-        </a>
+        </Link>
         <span className="material-symbols-outlined text-xs">chevron_right</span>
         <span className="text-on-surface">{company.name}</span>
       </nav>

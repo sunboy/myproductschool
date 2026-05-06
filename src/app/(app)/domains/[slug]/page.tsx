@@ -27,7 +27,7 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
   const challenges = await getChallenges({ domainId: domain.id })
 
   // Build score map from user's attempts
-  let scoreMap: Record<string, number> = {}
+  const scoreMap: Record<string, number> = {}
   if (user && challenges.length > 0) {
     const ids = challenges.map(c => c.id)
     const { data: attempts } = await supabase

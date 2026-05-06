@@ -318,7 +318,7 @@ export function StepReveal({
         {roleContext ? (
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-primary)', marginBottom: 4 }}>
-              Hatch's Take
+              Hatch&rsquo;s Take
             </div>
             <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--color-on-surface)', margin: 0 }}>{roleContext}</p>
             {careerSignal && (
