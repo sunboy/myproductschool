@@ -51,8 +51,10 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: `npx tsx --test tests/lib/security/turnstile.test.ts tests/lib/ai/moderation.test.ts tests/lib/security/rate-limit.test.ts` passed on May 6, 2026: 13 tests.
 - [x] AI guardrail unit coverage passes.
   - Evidence: `npx tsx --test tests/lib/ai/voice-rules.test.ts tests/lib/ai/sanitize.test.ts tests/lib/ai/guarded-client.test.ts` passed on May 6, 2026: 15 tests.
-- [ ] Static app copy still contains em dashes.
-  - Evidence: static grep for `—` and `&mdash;` across `src/app`, `src/components`, and `src/lib/email` still finds user-visible strings, prompt strings, admin placeholders, and comments. See `docs/notes/voice-copy-audit.md`.
+- [x] Static app copy is clean for em dashes.
+  - Evidence: static grep for literal em-dash characters and HTML mdash entities across `src/app`, `src/components`, and `src/lib/email` returned no matches on May 6, 2026.
+  - Evidence: `npx tsc --noEmit --pretty false` passed after the cleanup.
+  - Evidence: `npm run lint` exited `0` after the cleanup, with the existing warning set.
 - [x] Active cohort feature surface is removed from launch.
   - Evidence: deleted `/api/cohort/current`, `/api/cohort/leaderboard`, and `/api/cohort/submit` route handlers plus the unused cohort hook/data helpers.
   - Evidence: `/challenges` no longer fetches cohort leaderboard data; dashboard community CTA now links to practice instead of a weekly room.
