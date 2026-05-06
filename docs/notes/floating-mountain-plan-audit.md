@@ -40,7 +40,7 @@ The current owner-narrowed launch scope is:
 | 17. Secret rotation | Code-side complete, provider action remains | Repo/staged secret scans pass. Exact grep for committed Supabase service-role JWTs and direct service-key assignments returned no matches. Supabase key rotation remains owner-controlled. |
 | 18. Sentry receiving | Not complete | Static repo audit found no Sentry package and no Sentry instrumentation. |
 | 19. Status page reachable | Partial | `/api/health` exists and smokes locally. `status.hackproduct.com` DNS resolves, but `https://status.hackproduct.com` returned `404` on May 6, so provider/app routing still needs setup. |
-| 20. PWA installable | Partial | Static audit found a linked valid manifest plus dedicated 192px and 512px PNG icons; browser installability has not been verified. See `docs/notes/pwa-manifest-audit.md`. |
+| 20. PWA installable | Partial | Static/local production audit found `/manifest.json` public, valid, and backed by dedicated 192px and 512px PNG icons; browser installability has not been verified. See `docs/notes/pwa-manifest-audit.md`. |
 | 21. Difficulty taxonomy | Not complete | Read-only live DB audit found values outside `easy | medium | hard`; see `docs/notes/difficulty-taxonomy-audit.md`. No migration was applied during launch freeze. |
 | 22. Streak + XP correctness | Not complete | `src/lib/xp/calculator.ts`, `docs/notes/xp-streak-audit.md`, and P8 evidence are absent. This is broad correctness work, not safe to invent during launch freeze. |
 | 23. Hatch identity opacity | Partial | Sanitizer and guarded client artifacts exist. Static grep over user-visible app/components/auth/marketing/email surfaces returned no forbidden provider/internal terms after excluding AI internals and Hatch system prompt files. Stale `Luma` copy and selectors were removed from public mockups and waitlist HTML. Live Hatch probe evidence is still not recorded. |
@@ -48,7 +48,7 @@ The current owner-narrowed launch scope is:
 
 ## Current Launch Blockers
 
-- Affiliate real signup smoke cannot be signed off until Stripe Connect is enabled and `STRIPE_AFFILIATE_COUPON_ID`, `STRIPE_TEST_AFFILIATE_COUPON_ID`, and `AFFILIATE_HASH_SECRET` are set.
+- Affiliate real signup smoke cannot be signed off until Stripe Connect is enabled and `NEXT_PUBLIC_ENABLE_AFFILIATES`, `STRIPE_AFFILIATE_COUPON_ID`, `STRIPE_TEST_AFFILIATE_COUPON_ID`, and `AFFILIATE_HASH_SECRET` are set. Until then, affiliate UI and routes are disabled by default.
 - Supabase Auth leaked-password protection is disabled in dashboard settings.
 - Supabase performance advisor has a broad pre-existing backlog that needs a deliberate tuning pass, not a blanket launch migration.
 - Production env and provider checks remain owner-controlled: no E2E fallback flags, OpenAI, Turnstile, Upstash, status DNS/provider, security headers.

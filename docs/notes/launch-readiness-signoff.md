@@ -9,9 +9,9 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 ## Verified Gates
 
 - [x] Production build passes.
-  - Evidence: `npm run build` passed on May 6, 2026 after the launch health and lint-gate cleanup changes.
+  - Evidence: `npm run build` passed on May 6, 2026 after the PWA manifest and affiliate-gating changes.
 - [x] TypeScript passes.
-  - Evidence: `npx tsc --noEmit --pretty false` passed on May 6, 2026 after the launch health and lint-gate cleanup changes.
+  - Evidence: `npx tsc --noEmit --pretty false` passed on May 6, 2026 after the PWA manifest and affiliate-gating changes.
 - [x] Repo lint exits successfully.
   - Evidence: `npm run lint` exits `0` on May 6, 2026.
   - Note: lint still reports warnings. `_archived/` and generated public bundles are excluded from lint, and React compiler-style purity rules are disabled to avoid rewriting established UI flows during launch hardening.
@@ -88,8 +88,9 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: Vercel production deployment points at `main` commit `da0370e8e5cc2c4799f461ec8a5059a43fcbc605`, while local `dev` contains unpublished launch-readiness commits.
   - Evidence: the mismatch remains until `dev` is pushed or an explicit Vercel deployment is created from this checkout.
 - [ ] Affiliate real signup smoke is blocked by Stripe account setup.
+  - Affiliate UI and affiliate routes are disabled by default unless `NEXT_PUBLIC_ENABLE_AFFILIATES=true` is set at build time.
   - Stripe Connect is not enabled for the account used by `.env.local`.
-  - Required env vars are missing locally: `STRIPE_AFFILIATE_COUPON_ID`, `STRIPE_TEST_AFFILIATE_COUPON_ID`, `AFFILIATE_HASH_SECRET`.
+  - Required env vars are missing locally: `NEXT_PUBLIC_ENABLE_AFFILIATES`, `STRIPE_AFFILIATE_COUPON_ID`, `STRIPE_TEST_AFFILIATE_COUPON_ID`, `AFFILIATE_HASH_SECRET`.
   - Code and unit flow pass, but affiliate launch should not be signed off until Connect and env setup are done and the real signup smoke passes.
 - [ ] Supabase Auth leaked-password protection is disabled.
   - Fixed during this pass: `user_pattern_summary` security-definer view, direct public RPC access to security-definer functions, mutable search paths on app-owned functions, broad listing on the public `avatars` bucket, missing service-role-only policies on legacy pipeline tables, broad public insert policies that are not used by the active app, and `pg_trgm` living in the exposed `public` schema.
@@ -116,7 +117,7 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
 - [ ] Owner confirms production has `OPENAI_API_KEY`, `TURNSTILE_SECRET_KEY`, and Upstash Redis env vars. Local `.env.local` presence check did not find these keys.
 - [ ] Owner enables Supabase Auth leaked-password protection in the Supabase dashboard.
 - [ ] Owner checks `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog` in production.
-- [ ] Owner runs browser PWA installability check. Static repo audit found a valid linked manifest plus dedicated 192px and 512px PNG icons, but no browser installability proof yet.
+- [ ] Owner runs browser PWA installability check. Local production smoke found `/manifest.json` publicly reachable with dedicated 192px and 512px PNG icons, but no browser installability proof yet.
 - [ ] Owner creates/configures the external status provider and DNS for `status.hackproduct.com`. Live check on May 6, 2026 found DNS resolving, but `https://status.hackproduct.com` returned `404`.
 - [ ] Owner verifies production security headers are present on the deployed domain. Live check on May 6, 2026 found HSTS, nosniff, frame, referrer, and permissions headers on `https://www.hackproduct.com/waitlist`, but CSP was absent.
 

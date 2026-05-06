@@ -2,11 +2,12 @@
 
 Last updated: May 6, 2026
 
-This is a static repo audit only. No browser installability check was run.
+This is a static repo plus local production route audit. No browser installability check was run.
 
 ## Evidence
 
 - `src/app/layout.tsx` links `metadata.manifest` to `/manifest.json`.
+- Local production smoke confirmed `/manifest.json` responds without the app auth redirect.
 - `public/manifest.json` parses as valid JSON.
 - Required manifest fields are present: `name`, `short_name`, `start_url`, `display`, and `icons`.
 - Referenced manifest icon files exist: `public/brand/favicon-192.png` and `public/brand/favicon-512.png`.

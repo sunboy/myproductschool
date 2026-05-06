@@ -25,6 +25,8 @@ type AffiliateResponse = {
   error?: string
 }
 
+const AFFILIATES_ENABLED = process.env.NEXT_PUBLIC_ENABLE_AFFILIATES === 'true'
+
 function formatMoney(cents: number) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -84,6 +86,11 @@ export default function AffiliatePage() {
   const codePreview = useMemo(() => code.trim().toUpperCase(), [code])
 
   useEffect(() => {
+    if (!AFFILIATES_ENABLED) {
+      setLoading(false)
+      return
+    }
+
     let ignore = false
     fetch('/api/affiliate/signup', { cache: 'no-store' })
       .then(async response => {
@@ -150,6 +157,20 @@ export default function AffiliatePage() {
     await navigator.clipboard?.writeText(affiliate.shareUrl)
     setCopied(true)
     window.setTimeout(() => setCopied(false), 1600)
+  }
+
+  if (!AFFILIATES_ENABLED) {
+    return (
+      <div className="mx-auto max-w-[720px] px-4 py-12 sm:px-6 lg:px-8">
+        <div className="rounded-lg border border-outline-variant bg-background p-6">
+          <p className="text-xs font-black uppercase text-primary">Affiliate Program</p>
+          <h1 className="mt-2 text-3xl font-black text-on-surface">Referral commissions are unavailable</h1>
+          <p className="mt-3 text-sm leading-6 text-on-surface-variant">
+            Affiliate onboarding is closed while payout setup is being finalized.
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (

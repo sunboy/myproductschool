@@ -20,6 +20,10 @@ function appUrl(request: NextRequest, path: string) {
 export async function GET(request: NextRequest) {
   if (!isAuthorized(request)) return unauthorized()
 
+  if (process.env.NEXT_PUBLIC_ENABLE_AFFILIATES !== 'true') {
+    return NextResponse.json({ ok: true, disabled: true, paid: [], skipped: [], failed: [] })
+  }
+
   const { stripe, config } = createStripeClient()
   if (!stripe) {
     return NextResponse.json(

@@ -4,6 +4,7 @@ Affiliate referrals use Stripe Promotion Codes for attribution and Stripe Connec
 
 Required environment:
 
+- `NEXT_PUBLIC_ENABLE_AFFILIATES=true`: build-time flag that exposes affiliate UI and enables affiliate routes.
 - `STRIPE_AFFILIATE_COUPON_ID`: live Stripe coupon used when creating affiliate promotion codes.
 - `STRIPE_TEST_AFFILIATE_COUPON_ID`: optional test-mode coupon override.
 - `AFFILIATE_HASH_SECRET`: HMAC key for hashing referral click IP and user-agent signals.
@@ -14,6 +15,7 @@ Stripe setup:
 - Enable Stripe Connect in the Stripe Dashboard before launch. `/api/affiliate/signup` creates Express connected accounts, and Stripe rejects that call until Connect is activated for the account.
 - Create the shared affiliate coupon in live mode and set `STRIPE_AFFILIATE_COUPON_ID`. For test runs, create a test-mode coupon and set `STRIPE_TEST_AFFILIATE_COUPON_ID`.
 - Keep the coupon terms in Stripe. The app creates one Promotion Code per affiliate against that shared coupon.
+- Keep `NEXT_PUBLIC_ENABLE_AFFILIATES` unset until Connect, coupon ids, hash secret, and the real signup smoke are verified.
 
 Flow:
 

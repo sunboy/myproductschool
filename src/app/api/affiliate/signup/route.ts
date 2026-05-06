@@ -26,6 +26,10 @@ type AffiliateRow = {
   created_at: string
 }
 
+function affiliatesEnabled() {
+  return process.env.NEXT_PUBLIC_ENABLE_AFFILIATES === 'true'
+}
+
 function appUrl(request: NextRequest, path: string) {
   return new URL(path, process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin).toString()
 }
@@ -182,6 +186,10 @@ async function ensureUniqueSuggestedCode(
 }
 
 export async function GET(request: NextRequest) {
+  if (!affiliatesEnabled()) {
+    return NextResponse.json({ error: 'Affiliate program is not available.' }, { status: 404 })
+  }
+
   const user = await currentUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -192,6 +200,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  if (!affiliatesEnabled()) {
+    return NextResponse.json({ error: 'Affiliate program is not available.' }, { status: 404 })
+  }
+
   const user = await currentUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

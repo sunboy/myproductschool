@@ -36,6 +36,7 @@ const MARKETING_ROUTES = [
   '/alternatives',
   '/robots.txt',
   '/sitemap.xml',
+  '/manifest.json',
   '/llms.txt',
   '/llms-full.txt',
 ]

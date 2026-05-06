@@ -8,6 +8,10 @@ function redirect(request: NextRequest, path: string) {
 }
 
 export async function GET(request: NextRequest) {
+  if (process.env.NEXT_PUBLIC_ENABLE_AFFILIATES !== 'true') {
+    return redirect(request, '/dashboard')
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return redirect(request, '/login')

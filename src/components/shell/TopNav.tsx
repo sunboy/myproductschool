@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { id: 'progress',   href: '/progress',        icon: 'bar_chart',     label: 'Progress'   },
 ]
 
+const AFFILIATES_ENABLED = process.env.NEXT_PUBLIC_ENABLE_AFFILIATES === 'true'
 
 interface ProfileData {
   streak_days: number
@@ -283,16 +284,18 @@ export function TopNav() {
                   <span className="material-symbols-outlined text-base" style={{ color: 'var(--color-on-surface-variant)' }}>settings</span>
                   Settings
                 </Link>
-                <Link
-                  href="/affiliate"
-                  data-hatch-sound="open"
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-surface-container"
-                  style={{ color: 'var(--color-on-surface)' }}
-                >
-                  <span className="material-symbols-outlined text-base" style={{ color: 'var(--color-on-surface-variant)' }}>handshake</span>
-                  Affiliate
-                </Link>
+                {AFFILIATES_ENABLED && (
+                  <Link
+                    href="/affiliate"
+                    data-hatch-sound="open"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-surface-container"
+                    style={{ color: 'var(--color-on-surface)' }}
+                  >
+                    <span className="material-symbols-outlined text-base" style={{ color: 'var(--color-on-surface-variant)' }}>handshake</span>
+                    Affiliate
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
                   data-hatch-sound="close"

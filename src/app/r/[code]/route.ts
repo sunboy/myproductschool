@@ -12,6 +12,10 @@ export async function GET(
   const code = normalizeAffiliateCode(rawCode)
   const destination = new URL('/', request.url)
 
+  if (process.env.NEXT_PUBLIC_ENABLE_AFFILIATES !== 'true') {
+    return NextResponse.redirect(destination)
+  }
+
   if (!code) {
     return NextResponse.redirect(destination)
   }
