@@ -10,25 +10,29 @@ export async function GET() {
   const [profileRes, attemptsRes, moveLevelsRes] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id, display_name, email, role, plan, streak_days, xp_total, created_at')
+      .select('id, display_name, role, plan, streak_days, xp_total, created_at')
       .eq('id', user.id)
       .single(),
     supabase
       .from('challenge_attempts')
-      .select('id, challenge_id, score, submitted_at, created_at')
+      .select('id, challenge_id, total_score, max_score, grade_label, status, completed_at, created_at, feedback_json')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(200),
     supabase
-      .from('user_move_levels')
+      .from('move_levels')
       .select('move, level, xp, progress_pct')
       .eq('user_id', user.id),
   ])
 
   const exportData = {
     exported_at: new Date().toISOString(),
-    profile: profileRes.data,
-    attempts: attemptsRes.data ?? [],
+    profile: profileRes.data ? { ...profileRes.data, email: user.email ?? null } : null,
+    attempts: (attemptsRes.data ?? []).map(attempt => ({
+      ...attempt,
+      score: attempt.total_score,
+      submitted_at: attempt.completed_at,
+    })),
     move_levels: moveLevelsRes.data ?? [],
   }
 

@@ -35,7 +35,7 @@ export default async function DomainDetailPage({ params }: { params: Promise<{ s
       .select('challenge_id, total_score')
       .eq('user_id', user.id)
       .in('challenge_id', ids)
-      .not('submitted_at', 'is', null)
+      .eq('status', 'completed')
       .order('total_score', { ascending: false })
 
     for (const a of attempts ?? []) {

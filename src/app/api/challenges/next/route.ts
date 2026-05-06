@@ -81,7 +81,7 @@ export async function GET() {
   const [{ data: profile }, { data: levels }, { data: completedAttempts }, hatchCtx] = await Promise.all([
     adminClient.from('profiles').select('preferred_role').eq('id', user.id).single(),
     adminClient.from('move_levels').select('move, xp').eq('user_id', user.id).order('xp', { ascending: true }).limit(1),
-    adminClient.from('challenge_attempts').select('challenge_id').eq('user_id', user.id).not('submitted_at', 'is', null),
+    adminClient.from('challenge_attempts').select('challenge_id').eq('user_id', user.id).eq('status', 'completed'),
     getHatchContext(user.id),
   ])
 
@@ -104,48 +104,7 @@ export async function GET() {
     is_active: true,
   }).then(() => {}, () => {})
 
-  // Try semantic novelty path: get user's last 5 response embeddings and compute centroid
-  const { data: recentEmbeddings } = await adminClient
-    .from('challenge_attempts')
-    .select('response_embedding')
-    .eq('user_id', user.id)
-    .not('response_embedding', 'is', null)
-    .order('submitted_at', { ascending: false })
-    .limit(5)
-
-  if (recentEmbeddings && recentEmbeddings.length >= 3) {
-    // Compute centroid of recent response embeddings
-    const vecs = recentEmbeddings.map((r: { response_embedding: number[] }) => r.response_embedding)
-    const dims = vecs[0].length
-    const centroid = Array.from({ length: dims }, (_, i) =>
-      vecs.reduce((sum, v) => sum + v[i], 0) / vecs.length
-    )
-
-    // Find semantically novel challenges (outside comfort zone)
-    const { data: novelChallenges } = await adminClient.rpc('match_novel_challenges', {
-      user_centroid: JSON.stringify(centroid),
-      exclude_ids: completedIds.length > 0 ? completedIds : [],
-      match_count: 5,
-    })
-
-    if (novelChallenges && novelChallenges.length > 0) {
-      const weakestFirst = novelChallenges.find(
-        (c: { move_tags: string[] }) => c.move_tags?.includes(weakestMove)
-      ) ?? novelChallenges[0]
-
-      return NextResponse.json({
-        challenge: weakestFirst,
-        reason: `Hatch picked this to push you outside your thinking comfort zone`,
-        tip: topicTip(weakestFirst),
-        targets_move: weakestMove,
-        recommendation_type: 'semantic_novelty',
-        is_calibrated: isCalibrated,
-        hatch_insight,
-      })
-    }
-  }
-
-  // Fallback: weakest-move SQL filter (no embeddings yet)
+  // Weakest-move SQL filter. Response embeddings are not part of the live launch schema.
   let query = adminClient
     .from('challenges')
     .select('id, slug, title, prompt_text, difficulty, domain_id, move_tags, relevant_roles, paradigm')

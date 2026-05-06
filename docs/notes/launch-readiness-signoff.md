@@ -87,6 +87,12 @@ See `docs/notes/floating-mountain-plan-audit.md` for the full original-plan audi
   - Evidence: `src/app/api/challenges/quick-take/submit/route.ts` returns the stored quick-take result when the same user submits an already completed quick-take challenge, before AI grading, plan-limit reservation, attempt insert, XP write, or streak update.
   - Evidence: `npx tsx --test tests/lib/scoring/completed-attempt-result.test.ts`, `npx tsc --noEmit --pretty false`, `npm run lint`, `npm run build`, and `npm run secrets:scan` passed after the idempotency guard.
   - Note: full XP/streak correctness is still partial; see `docs/notes/xp-streak-audit.md`.
+- [x] Active `challenge_attempts` consumers use the live Supabase schema.
+  - Evidence: live Supabase schema checks confirmed `challenge_attempts` has `completed_at`, `total_score`, `max_score`, `status`, `feedback_json`, `mental_models_breakdown`, `primary_competency`, and `weakest_competency`, and does not have legacy `submitted_at`, `score`, `score_json`, `mode`, or `response_embedding`.
+  - Evidence: admin overview, career benchmark, profile export, analytics summary, feedback, diagnosis, domains, recommendations, drafts, and prescription code paths now use `status`, `completed_at`, `total_score`, `max_score`, `feedback_json`, and `move_levels`.
+  - Evidence: stale-field grep now returns only expected compatibility fields from `/api/attempts`, UI consumers of that compatibility payload, `step_attempts.score`, and onboarding `scores_json`.
+  - Evidence: `npx tsc --noEmit --pretty false`, `npm run lint`, `npm run build`, and `npm run secrets:scan` passed after the schema cleanup.
+  - See: `docs/notes/challenge-attempts-schema-audit.md`.
 
 ## Accepted Scope Changes
 

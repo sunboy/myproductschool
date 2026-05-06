@@ -42,13 +42,13 @@ export async function GET(
       .order('created_at'),
     adminClient
       .from('challenge_attempts')
-      .select('challenge_id, score')
+      .select('challenge_id, total_score')
       .eq('user_id', user.id)
-      .not('submitted_at', 'is', null),
+      .eq('status', 'completed'),
   ])
 
   const completedMap = new Map<string, number | null>(
-    (attemptsResult.data ?? []).map((a: { challenge_id: string; score: number | null }) => [a.challenge_id, a.score])
+    (attemptsResult.data ?? []).map((a: { challenge_id: string; total_score: number | null }) => [a.challenge_id, a.total_score])
   )
 
   const challenges = (challengesResult.data ?? []).map((c: { id: string; [key: string]: unknown }) => ({

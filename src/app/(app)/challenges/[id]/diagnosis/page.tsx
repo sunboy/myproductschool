@@ -57,6 +57,11 @@ const ZERO_DELTAS: SkillDelta[] = [
   { dimension: 'recommendation_strength', delta: 0 },
 ]
 
+function toFiniteNumber(value: unknown): number | null {
+  const number = Number(value)
+  return Number.isFinite(number) ? number : null
+}
+
 export default async function DiagnosisPage({ params, searchParams }: DiagnosisPageProps) {
   const { id } = await params
   const { attempt, confidence } = await searchParams
@@ -83,7 +88,7 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
       const [attemptResult, patternsResult] = await Promise.all([
         adminClient
           .from('challenge_attempts')
-          .select('score_json, feedback_json')
+          .select('feedback_json, total_score, max_score, mental_models_breakdown, weakest_competency')
           .eq('id', attempt)
           .eq('user_id', user.id)
           .single(),
@@ -99,13 +104,14 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
       userPatterns = (patternsResult.data as PatternOccurrence[]) ?? []
 
       if (attemptData) {
-        const scoreJson = attemptData.score_json as Record<string, unknown>
+        const feedbackJson = attemptData.feedback_json && typeof attemptData.feedback_json === 'object'
+          ? attemptData.feedback_json as Record<string, unknown>
+          : null
 
-        // Extract detected patterns from score_json
-        detectedPatterns = (scoreJson?.detected_patterns as FailurePattern[]) ?? []
+        detectedPatterns = (feedbackJson?.detected_patterns as FailurePattern[]) ?? []
 
         // Calculate skill deltas from dimensions (baseline 5.0 on a 0–10 scale)
-        const dimensions = scoreJson?.dimensions as ScoreDimension[] | undefined
+        const dimensions = feedbackJson?.dimensions as ScoreDimension[] | undefined
         if (dimensions && dimensions.length > 0) {
           skillDeltas = dimensions.map((d) => ({
             dimension: d.dimension,
@@ -114,10 +120,17 @@ export default async function DiagnosisPage({ params, searchParams }: DiagnosisP
         }
 
         // Extract overall score for confidence calibration
-        const overallScore = scoreJson?.overall_score
+        const overallScore = feedbackJson?.overall_score
         if (typeof overallScore === 'number') {
-          actualScore = overallScore
-          actualMaxScore = 10
+          actualScore = overallScore / 20
+          actualMaxScore = 5
+        } else {
+          const total = toFiniteNumber(attemptData.total_score)
+          const max = toFiniteNumber(attemptData.max_score)
+          if (total != null && max != null && max > 0) {
+            actualScore = total
+            actualMaxScore = max
+          }
         }
       }
     }

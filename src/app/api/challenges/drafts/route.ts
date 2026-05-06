@@ -6,7 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
  * GET /api/challenges/drafts?limit=1
  *
  * Returns the most recent in-progress challenge attempts for the current user.
- * "In-progress" = a challenge_attempt row where submitted_at IS NULL.
+ * "In-progress" = a challenge_attempt row with status in_progress.
  * Used by the dashboard to surface the "continue where you left off" card.
  */
 export async function GET(req: NextRequest) {
@@ -21,13 +21,13 @@ export async function GET(req: NextRequest) {
 
   const adminClient = createAdminClient()
 
-  // Fetch incomplete attempts (no submitted_at) with challenge title
+  // Fetch incomplete attempts with challenge title
   const { data: drafts, error } = await adminClient
     .from('challenge_attempts')
     .select(`
       id,
       challenge_id,
-      steps_completed,
+      current_question_sequence,
       created_at,
       challenges!inner(
         id,
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
       )
     `)
     .eq('user_id', user.id)
-    .is('submitted_at', null)
+    .eq('status', 'in_progress')
     .order('created_at', { ascending: false })
     .limit(limit)
 
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
   const result = drafts.map((d: {
     id: string
     challenge_id: string
-    steps_completed: number | null
+    current_question_sequence: number | null
     created_at: string
     challenges: { id: string; title: string } | { id: string; title: string }[]
   }) => {
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
       id: d.id,
       challenge_id: d.challenge_id,
       challenge_title: cp?.title ?? 'Untitled Challenge',
-      steps_completed: d.steps_completed ?? 1,
+      steps_completed: d.current_question_sequence ?? 1,
       created_at: d.created_at,
     }
   })

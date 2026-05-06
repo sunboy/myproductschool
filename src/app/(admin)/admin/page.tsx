@@ -1,6 +1,13 @@
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+function scoreOutOfTen(row: { total_score: number | string | null; max_score: number | string | null }) {
+  const total = Number(row.total_score)
+  const max = Number(row.max_score)
+  if (!Number.isFinite(total) || !Number.isFinite(max) || max <= 0) return null
+  return (total / max) * 10
+}
+
 async function getAdminStats() {
   const admin = createAdminClient()
 
@@ -14,7 +21,11 @@ async function getAdminStats() {
   ] = await Promise.all([
     admin.from('profiles').select('*', { count: 'exact', head: true }),
     admin.from('challenge_attempts').select('*', { count: 'exact', head: true }),
-    admin.from('challenge_attempts').select('score').not('score', 'is', null),
+    admin
+      .from('challenge_attempts')
+      .select('total_score, max_score')
+      .eq('status', 'completed')
+      .not('total_score', 'is', null),
     admin
       .from('challenges')
       .select('id, title, paradigm, difficulty, is_published')
@@ -22,9 +33,10 @@ async function getAdminStats() {
       .limit(50),
     admin
       .from('challenge_attempts')
-      .select('id, user_id, challenge_id, score, submitted_at, challenges(title)')
-      .not('submitted_at', 'is', null)
-      .order('submitted_at', { ascending: false })
+      .select('id, user_id, challenge_id, total_score, max_score, completed_at, challenges(title)')
+      .eq('status', 'completed')
+      .not('completed_at', 'is', null)
+      .order('completed_at', { ascending: false })
       .limit(20),
     admin
       .from('admin_content_queue')
@@ -33,7 +45,7 @@ async function getAdminStats() {
       .limit(1),
   ])
 
-  const scores = (avgScoreRow ?? []).map((r: { score: number }) => r.score).filter(Boolean)
+  const scores = (avgScoreRow ?? []).map(scoreOutOfTen).filter((score): score is number => score != null)
   const avgScore = scores.length > 0
     ? (scores.reduce((a: number, b: number) => a + b, 0) / scores.length).toFixed(1)
     : '-'
@@ -158,8 +170,9 @@ export default async function AdminPage() {
               {stats.recentAttempts.map((a: {
                 id: string
                 user_id: string
-                score: number | null
-                submitted_at: string | null
+                total_score: number | string | null
+                max_score: number | string | null
+                completed_at: string | null
                 challenges: { title: string }[] | null
               }) => (
                 <tr key={a.id} className="hover:bg-surface-container-high transition-colors">
@@ -168,14 +181,14 @@ export default async function AdminPage() {
                     {Array.isArray(a.challenges) ? a.challenges[0]?.title : (a.challenges as { title: string } | null)?.title ?? '-'}
                   </td>
                   <td className="px-4 py-3">
-                    {a.score != null ? (
-                      <span className="font-medium text-on-surface">{a.score}/10</span>
+                    {scoreOutOfTen(a) != null ? (
+                      <span className="font-medium text-on-surface">{scoreOutOfTen(a)?.toFixed(1)}/10</span>
                     ) : (
                       <span className="text-on-surface-variant">-</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-on-surface-variant text-xs">
-                    {a.submitted_at ? new Date(a.submitted_at).toLocaleString() : '-'}
+                    {a.completed_at ? new Date(a.completed_at).toLocaleString() : '-'}
                   </td>
                 </tr>
               ))}

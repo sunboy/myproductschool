@@ -12,24 +12,32 @@ function getAdminClient() {
   )
 }
 
+function attemptScoreOutOfTen(attempt: { total_score: unknown; max_score: unknown }): number | null {
+  const total = Number(attempt.total_score)
+  const max = Number(attempt.max_score)
+  if (!Number.isFinite(total) || !Number.isFinite(max) || max <= 0) return null
+  return (total / max) * 10
+}
+
 export async function getUserAnalyticsSummary(userId: string): Promise<AnalyticsSummary> {
   if (USE_MOCK) return MOCK_ANALYTICS_SUMMARY
 
   const supabase = getAdminClient()
 
-  // Fetch last 30 attempts with score_json
+  // Fetch last 30 completed attempts from the live challenge_attempts schema.
   const { data: attempts } = await supabase
     .from('challenge_attempts')
-    .select('id, score_json, created_at, challenge_id')
+    .select('id, total_score, max_score, completed_at, created_at, challenge_id')
     .eq('user_id', userId)
-    .not('score_json', 'is', null)
-    .order('created_at', { ascending: false })
+    .eq('status', 'completed')
+    .not('total_score', 'is', null)
+    .order('completed_at', { ascending: false })
     .limit(30)
 
   if (!attempts || attempts.length === 0) return MOCK_ANALYTICS_SUMMARY
 
   // Aggregate ProductIQ (last 30 attempts avg)
-  const scores = attempts.map(a => (a.score_json as Record<string, number>)?.overall ?? 0).filter(Boolean)
+  const scores = attempts.map(attemptScoreOutOfTen).filter((score): score is number => score != null)
   const productiq_score = scores.length > 0
     ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10
     : 0
@@ -44,17 +52,17 @@ export async function getUserAnalyticsSummary(userId: string): Promise<Analytics
   fourteenDaysAgo.setHours(0, 0, 0, 0)
 
   const recentScores = attempts
-    .filter(a => new Date(a.created_at) >= sevenDaysAgo)
-    .map(a => (a.score_json as Record<string, number>)?.overall ?? 0)
-    .filter(Boolean)
+    .filter(a => new Date(a.completed_at ?? a.created_at) >= sevenDaysAgo)
+    .map(attemptScoreOutOfTen)
+    .filter((score): score is number => score != null)
 
   const prevScores = attempts
     .filter(a => {
-      const d = new Date(a.created_at)
+      const d = new Date(a.completed_at ?? a.created_at)
       return d >= fourteenDaysAgo && d < sevenDaysAgo
     })
-    .map(a => (a.score_json as Record<string, number>)?.overall ?? 0)
-    .filter(Boolean)
+    .map(attemptScoreOutOfTen)
+    .filter((score): score is number => score != null)
 
   const recentAvg = recentScores.length > 0
     ? recentScores.reduce((a, b) => a + b, 0) / recentScores.length
@@ -90,7 +98,7 @@ export async function getUserAnalyticsSummary(userId: string): Promise<Analytics
     dayStart.setDate(now.getDate() - (6 - i))
     const dateStr = dayStart.toISOString().split('T')[0]
     return streakMap.get(dateStr) ? 1 : attempts.filter(a => {
-      const d = new Date(a.created_at)
+      const d = new Date(a.completed_at ?? a.created_at)
       const dayEnd = new Date(dayStart)
       dayEnd.setHours(23, 59, 59, 999)
       dayStart.setHours(0, 0, 0, 0)

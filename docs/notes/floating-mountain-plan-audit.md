@@ -21,7 +21,7 @@ The current owner-narrowed launch scope is:
 
 | Plan Gate | Status | Evidence / Gap |
 | --- | --- | --- |
-| 1. Build, lint, types, tests clean | Partial | `npm run build`, `npm run lint`, `npx tsc --noEmit --pretty false`, and `npm run secrets:scan` passed on May 6 after the copy and identity cleanup. `package.json` does not define an `npm test` script, so the aggregate test gate cannot run as written. Focused test commands remain the evidence source. |
+| 1. Build, lint, types, tests clean | Partial | `npm run build`, `npm run lint`, `npx tsc --noEmit --pretty false`, and `npm run secrets:scan` passed on May 6 after the copy, identity, and live-schema cleanup. `package.json` does not define an `npm test` script, so the aggregate test gate cannot run as written. Focused test commands remain the evidence source. |
 | 2. Playwright N2/N3/N4 green | Partial | N2 paywall passed `10/10`; N3 discussions passed `10/10`; narrowed N4 auth passed signup/login/forgot-password `3/3`. Full N4 remains out of launch scope per owner direction. |
 | 3. AI guardrails E2E | Partial | AI guardrail unit tests passed on May 6: 15 tests across voice rules, sanitizer, and guarded client. Static source grep for literal em-dash characters and HTML mdash entities returned no matches across `src/app`, `src/components`, and `src/lib/email`. No latest E2E evidence proves a live Hatch response logs `ai_voice_violations` and appears in the admin dashboard. |
 | 4. Prompt injection | Partial | Guarded client unit tests cover wrapping user input and opacity guard instructions. No latest live Hatch probe evidence is recorded. |
@@ -30,7 +30,7 @@ The current owner-narrowed launch scope is:
 | 7. Auth | Launch scope complete, full plan not complete | Essential auth paths passed for signup, password login, and forgot-password reset. Magic link, Google linking, reauth, idle timeout, delete account, and 2FA are outside the narrowed launch bar unless re-added. |
 | 8. Stripe | Partial | Paywall checkout/webhook scenarios passed. Affiliate real signup smoke is blocked by Stripe Connect and missing affiliate env vars. Owner/provider setup required. |
 | 9. Onboarding resilience | Partial | Essential signup to onboarding to dashboard passed. Refresh mid-calibration resume has not been reverified in the latest gate. |
-| 10. Mental Models | Unknown | No latest evidence tying weak competency feedback to `motivation_theory` recommendation. |
+| 10. Mental Models | Partial | Live schema confirms `challenge_attempts` stores `mental_models_breakdown`, `primary_competency`, and `weakest_competency`. Completion and Hatch feedback routes write these fields, and feedback/diagnosis pages now read the live fields instead of the removed `score_json` column. No latest end-to-end evidence ties weak competency feedback to a specific `motivation_theory` recommendation. |
 | 11. Discussions | Complete for launch | `e2e/discussions.spec.ts` passed `10/10` against local production server. |
 | 12. Legal/help | Local complete, production blocked | Local production smoke returned `200` for `/privacy`, `/terms`, `/pricing`, `/help`, and `/changelog`. `PUBLIC_DIRECTORY_PATHS` includes those paths for sitemap generation. Live production currently redirects to an older waitlist build, so production page checks remain blocked until deployment/domain routing is updated. |
 | 13. Bookmarks/share/referral display/push/2FA | Not complete | Push and 2FA are not launch scope. Referral display depends on affiliate setup. |

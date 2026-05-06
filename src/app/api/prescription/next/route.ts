@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
       .from('challenge_attempts')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
-      .not('submitted_at', 'is', null)
+      .eq('status', 'completed')
 
     // Fallback: not enough submissions
     if (!submissionCount || submissionCount < 2) {
@@ -73,23 +73,11 @@ export async function GET(req: NextRequest) {
 
     // Fallback: no recurring patterns
     if (recurringPatterns.length === 0) {
-      // Find least-used mode
-      const { data: attempts } = await supabaseAdmin
-        .from('challenge_attempts')
-        .select('mode')
-        .eq('user_id', userId)
-
-      const modeCounts: Record<string, number> = { spotlight: 0, workshop: 0, live: 0, solo: 0 }
-      for (const a of attempts ?? []) {
-        if (a.mode in modeCounts) modeCounts[a.mode]++
-      }
-      const leastUsedMode = Object.entries(modeCounts).sort((a, b) => a[1] - b[1])[0][0]
-
       return NextResponse.json({
         type: 'explore',
-        message: `No recurring patterns yet - try a ${leastUsedMode} session to diversify your practice.`,
+        message: 'No recurring patterns yet - try another session to diversify your practice.',
         prescription: {
-          mode: leastUsedMode,
+          mode: 'live',
           challenge_slug: '',
           challenge_title: 'Any challenge',
           reason: 'Exploring different modes builds versatility.',
@@ -106,7 +94,7 @@ export async function GET(req: NextRequest) {
       .from('challenge_attempts')
       .select('challenge_id')
       .eq('user_id', userId)
-      .not('submitted_at', 'is', null)
+      .eq('status', 'completed')
 
     const completedIds = (completedAttempts ?? []).map((a: { challenge_id: string }) => a.challenge_id)
 

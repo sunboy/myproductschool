@@ -23,6 +23,18 @@ function prettifyDimension(key: string): string {
   return dimensionConfig[key]?.label ?? key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
+function toFiniteNumber(value: unknown): number | null {
+  const number = Number(value)
+  return Number.isFinite(number) ? number : null
+}
+
+function scorePercent(totalValue: unknown, maxValue: unknown): number | null {
+  const total = toFiniteNumber(totalValue)
+  const max = toFiniteNumber(maxValue)
+  if (total == null || max == null || max <= 0) return null
+  return Math.round((total / max) * 100)
+}
+
 interface FeedbackPageProps {
   params: Promise<{ id: string }>
   searchParams: Promise<{ attempt?: string; returnTo?: string }>
@@ -66,7 +78,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
         const adminClient = createAdminClient()
         const { data: attemptData } = await adminClient
           .from('challenge_attempts')
-          .select('feedback_json, score_json, submitted_at, response_text, mental_models_breakdown, weakest_competency')
+          .select('feedback_json, completed_at, response_text, mental_models_breakdown, weakest_competency, total_score, max_score, grade_label')
           .eq('id', attempt)
           .eq('user_id', user.id)
           .single()
@@ -83,8 +95,8 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           if (feedbackDimensions.length > 0) {
             feedback = feedbackDimensions as HatchFeedbackItem[]
           }
-          if (attemptData.submitted_at) {
-            submissionDate = attemptData.submitted_at
+          if (attemptData.completed_at) {
+            submissionDate = attemptData.completed_at
           }
           if (attemptData.response_text) {
             responseText = attemptData.response_text as string
@@ -96,28 +108,29 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
             weakestCompetency = attemptData.weakest_competency
           }
 
-          const scoreJson = attemptData.score_json as Record<string, unknown> | null
-          if (scoreJson) {
-            rawOverallScore = typeof scoreJson.overall_score === 'number'
-              ? scoreJson.overall_score
-              : typeof scoreJson.overall === 'number'
-                ? (scoreJson.overall as number) * 10
-                : null
+          if (feedbackJson) {
+            rawOverallScore = typeof feedbackJson.overall_score === 'number'
+              ? feedbackJson.overall_score
+              : typeof feedbackJson.overall === 'number'
+                ? (feedbackJson.overall as number) * 10
+                : scorePercent(attemptData.total_score, attemptData.max_score)
 
-            const detectedPatterns = Array.isArray(scoreJson.detected_patterns)
-              ? (scoreJson.detected_patterns as Array<Record<string, unknown>>)
+            const detectedPatterns = Array.isArray(feedbackJson.detected_patterns)
+              ? (feedbackJson.detected_patterns as Array<Record<string, unknown>>)
               : []
 
-            const strengths = Array.isArray(scoreJson.strengths)
-              ? (scoreJson.strengths as string[])
+            const strengths = Array.isArray(feedbackJson.strengths)
+              ? (feedbackJson.strengths as string[])
               : []
-            const improvements = Array.isArray(scoreJson.improvements)
-              ? (scoreJson.improvements as string[])
+            const improvements = Array.isArray(feedbackJson.improvements)
+              ? (feedbackJson.improvements as string[])
               : []
 
             feedbackFull = {
-              overall: typeof scoreJson.overall_summary === 'string'
-                ? scoreJson.overall_summary
+              overall: typeof feedbackJson.overall_summary === 'string'
+                ? feedbackJson.overall_summary
+                : typeof feedbackJson.overall === 'string'
+                  ? feedbackJson.overall
                 : (MOCK_FEEDBACK_FULL.overall),
               what_worked: strengths.length > 0 ? strengths : MOCK_FEEDBACK_FULL.what_worked,
               what_to_fix: improvements.length > 0 ? improvements : MOCK_FEEDBACK_FULL.what_to_fix,
@@ -127,11 +140,11 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
                 commentary: f.commentary,
                 suggestions: f.suggestions,
               })),
-              key_insight: typeof scoreJson.key_insight === 'string'
-                ? scoreJson.key_insight
+              key_insight: typeof feedbackJson.key_insight === 'string'
+                ? feedbackJson.key_insight
                 : MOCK_FEEDBACK_FULL.key_insight,
-              percentile: typeof scoreJson.percentile === 'number'
-                ? scoreJson.percentile
+              percentile: typeof feedbackJson.percentile === 'number'
+                ? feedbackJson.percentile
                 : MOCK_FEEDBACK_FULL.percentile,
               detected_patterns: detectedPatterns.map(p => ({
                 pattern_id: String(p.pattern_id ?? ''),
@@ -141,6 +154,8 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
                 question: typeof p.question === 'string' ? p.question : 'q1',
               })),
             }
+          } else {
+            rawOverallScore = scorePercent(attemptData.total_score, attemptData.max_score)
           }
 
           if (!weakestCompetency && typeof feedbackJson?.weakest_competency === 'string') {
