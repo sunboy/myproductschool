@@ -22,7 +22,7 @@ export async function PATCH(
   try {
     const { data: discussion, error: discussionError } = await adminClient
       .from('challenge_discussions')
-      .select('id')
+      .select('id, hidden_at')
       .eq('id', discussionId)
       .eq('challenge_id', identity.id)
       .maybeSingle()
@@ -30,7 +30,7 @@ export async function PATCH(
     if (discussionError) {
       return apiError(500, 'discussion_lookup_failed', 'Failed to load discussion')
     }
-    if (!discussion) {
+    if (!discussion || discussion.hidden_at) {
       return apiError(404, 'discussion_not_found', 'Discussion not found')
     }
 

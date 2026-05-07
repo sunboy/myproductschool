@@ -932,9 +932,55 @@ export default function SessionPage({
       source: 'voice',
       coachingSignal,
     }
+    const localTurnsWithNewTurn = [...turns, turn]
+    const shouldGradeVoiceExchange = role === 'hatch' && turns[turns.length - 1]?.role === 'user'
+    const lastUserTurnIndex = shouldGradeVoiceExchange
+      ? turns.findLastIndex((t) => t.role === 'user')
+      : -1
     setTurns((prev) => [...prev, turn])
     setTotalTurns((prev) => prev + 1)
     if (role === 'hatch') setHatchState('idle')
+
+    const persistVoiceTurn = !IS_MOCK
+      ? fetch(`/api/live-interview/${sessionId}/voice-turn`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: cleanContent,
+          role,
+          turnIndex,
+        }),
+      })
+      : null
+
+    persistVoiceTurn?.then((res) => {
+      if (!res.ok) {
+        console.error('Failed to persist voice turn:', res.status)
+        return
+      }
+
+      if (shouldGradeVoiceExchange && lastUserTurnIndex >= 0) {
+        const artifactSnapshot = buildCurrentArtifactSnapshot()
+        fetch(`/api/live-interview/${sessionId}/grade-turn`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recentTurns: localTurnsWithNewTurn.slice(-4).map((t) => ({
+              role: t.role,
+              content: t.content,
+            })),
+            turnIndex: lastUserTurnIndex,
+            artifactSnapshot: artifactSnapshot ?? undefined,
+          }),
+        }).then((gradeRes) => {
+          if (!gradeRes.ok) console.error('Async voice grade-turn failed:', gradeRes.status)
+        }).catch((err) => {
+          console.error('Async voice grade-turn failed:', err)
+        })
+      }
+    }).catch((err) => {
+      console.error('Failed to persist voice turn:', err)
+    })
 
     const CLOSING_PHRASES = ["wrap up", "stop here", "covered good ground", "have what i need", "call it", "good session", "shall we stop", "want to stop"]
     const lower = cleanContent.toLowerCase()
@@ -983,7 +1029,7 @@ export default function SessionPage({
         }
       }).catch(() => {})
     }
-  }, [sessionId, router, totalTurns, buildCurrentArtifactSnapshot])
+  }, [sessionId, router, totalTurns, buildCurrentArtifactSnapshot, turns])
 
   const handleAgentSpeaking = useCallback(() => {
     setHatchState('speaking')

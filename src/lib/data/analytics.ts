@@ -132,10 +132,11 @@ export async function getChallengeDiscussions(challengeId: string, viewerId?: st
   const rows = (data ?? []) as unknown as Array<Record<string, unknown> & { id: string }>
   const ids = rows.map(d => d.id)
   const reactionCounts = new Map<string, number>()
+  const viewerUpvotedIds = new Set<string>()
   if (ids.length > 0) {
     const { data: reactions } = await supabase
       .from('community_reactions')
-      .select('target_id')
+      .select('target_id, user_id')
       .eq('target_type', 'discussion')
       .eq('reaction_type', 'upvote')
       .in('target_id', ids)
@@ -143,6 +144,9 @@ export async function getChallengeDiscussions(challengeId: string, viewerId?: st
     for (const reaction of reactions ?? []) {
       const targetId = reaction.target_id as string
       reactionCounts.set(targetId, (reactionCounts.get(targetId) ?? 0) + 1)
+      if (viewerId && reaction.user_id === viewerId) {
+        viewerUpvotedIds.add(targetId)
+      }
     }
   }
 
@@ -150,6 +154,8 @@ export async function getChallengeDiscussions(challengeId: string, viewerId?: st
   const enriched = rows.map((d) => ({
     ...d,
     upvote_count: reactionCounts.get(d.id as string) ?? (d.upvote_count as number | null) ?? 0,
+    viewer_has_upvoted: viewerUpvotedIds.has(d.id as string),
+    upvoted_by: viewerUpvotedIds.has(d.id as string) && viewerId ? [viewerId] : [],
     username: (d.profiles as { display_name?: string } | null)?.display_name
       ?? (d.display_name as string | null)
       ?? 'Anonymous',

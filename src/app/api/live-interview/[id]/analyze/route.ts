@@ -198,7 +198,6 @@ If nothing notable, reply "none".`
       const sessionUpdate: Record<string, unknown> = {
         flow_coverage: result.coverage,
         flow_coverage_credits: result.credits,
-        total_turns: (session.total_turns ?? 0) + 1,
       }
       if (artifactSnapshot) {
         sessionUpdate.calibration_snapshot = {

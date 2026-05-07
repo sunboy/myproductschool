@@ -482,7 +482,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (!userId) return new Set<string>()
     return new Set(
       items
-        .filter(d => Array.isArray(d.upvoted_by) && d.upvoted_by.includes(userId))
+        .filter(d => d.viewer_has_upvoted || (Array.isArray(d.upvoted_by) && d.upvoted_by.includes(userId)))
         .map(d => d.id)
     )
   }, [])
@@ -498,7 +498,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       ? Array.from(new Set([...previous, userId]))
       : previous.filter(id => id !== userId)
 
-    return { ...discussion, upvoted_by: next }
+    return { ...discussion, upvoted_by: next, viewer_has_upvoted: isUpvoted }
   }, [])
 
   // Session history for Submissions tab

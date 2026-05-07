@@ -20,7 +20,7 @@ function deriveUpvotedIds(discussions: ChallengeDiscussion[], userId: string | n
   if (!userId) return new Set<string>()
   return new Set(
     discussions
-      .filter(d => Array.isArray(d.upvoted_by) && d.upvoted_by.includes(userId))
+      .filter(d => d.viewer_has_upvoted || (Array.isArray(d.upvoted_by) && d.upvoted_by.includes(userId)))
       .map(d => d.id)
   )
 }
@@ -36,7 +36,7 @@ function applyUpvoteState(
     ? Array.from(new Set([...previous, userId]))
     : previous.filter(id => id !== userId)
 
-  return { ...discussion, upvoted_by: next }
+  return { ...discussion, upvoted_by: next, viewer_has_upvoted: upvoted }
 }
 
 export default function ChallengeDiscussionPage() {

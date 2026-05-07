@@ -76,6 +76,8 @@ CREATE INDEX IF NOT EXISTS idx_feedback_trades_reviewer_challenge
   ON community_feedback_trades(reviewer_user_id, challenge_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_feedback_trades_recipient
   ON community_feedback_trades(recipient_user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_feedback_trades_challenge
+  ON community_feedback_trades(challenge_id, created_at DESC);
 
 ALTER TABLE community_feedback_trades ENABLE ROW LEVEL SECURITY;
 
@@ -158,6 +160,9 @@ CREATE TABLE IF NOT EXISTS community_badges (
 
 CREATE INDEX IF NOT EXISTS idx_community_badges_user
   ON community_badges(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_community_badges_source_user
+  ON community_badges(source_user_id)
+  WHERE source_user_id IS NOT NULL;
 
 ALTER TABLE community_badges ENABLE ROW LEVEL SECURITY;
 
@@ -193,6 +198,9 @@ CREATE TABLE IF NOT EXISTS weekly_rooms (
 
 CREATE INDEX IF NOT EXISTS idx_weekly_rooms_active
   ON weekly_rooms(is_active, week_start DESC);
+CREATE INDEX IF NOT EXISTS idx_weekly_rooms_created_by
+  ON weekly_rooms(created_by)
+  WHERE created_by IS NOT NULL;
 
 ALTER TABLE weekly_rooms ENABLE ROW LEVEL SECURITY;
 
@@ -203,10 +211,22 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE POLICY "Admins manage weekly rooms"
-    ON weekly_rooms FOR ALL
+  CREATE POLICY "Admins insert weekly rooms"
+    ON weekly_rooms FOR INSERT
+    WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE id = (select auth.uid()) AND role = 'admin'));
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Admins update weekly rooms"
+    ON weekly_rooms FOR UPDATE
     USING (EXISTS (SELECT 1 FROM profiles WHERE id = (select auth.uid()) AND role = 'admin'))
     WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE id = (select auth.uid()) AND role = 'admin'));
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Admins delete weekly rooms"
+    ON weekly_rooms FOR DELETE
+    USING (EXISTS (SELECT 1 FROM profiles WHERE id = (select auth.uid()) AND role = 'admin'));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
@@ -243,6 +263,12 @@ CREATE INDEX IF NOT EXISTS idx_activity_feed_events_visible
   ON activity_feed_events(visibility, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_activity_feed_events_actor
   ON activity_feed_events(actor_user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_activity_feed_events_challenge
+  ON activity_feed_events(challenge_id, created_at DESC)
+  WHERE challenge_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_activity_feed_events_submission
+  ON activity_feed_events(submission_id, created_at DESC)
+  WHERE submission_id IS NOT NULL;
 
 ALTER TABLE activity_feed_events ENABLE ROW LEVEL SECURITY;
 
@@ -257,3 +283,32 @@ DO $$ BEGIN
     ON activity_feed_events FOR ALL
     USING (auth.role() = 'service_role');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+REVOKE ALL ON TABLE
+  public.community_submissions,
+  public.community_feedback_trades,
+  public.community_reactions,
+  public.community_badges,
+  public.weekly_rooms,
+  public.activity_feed_events
+FROM PUBLIC, anon, authenticated, service_role;
+
+GRANT SELECT ON public.community_submissions TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.community_submissions TO authenticated;
+GRANT ALL ON public.community_submissions TO service_role;
+
+GRANT SELECT, INSERT ON public.community_feedback_trades TO authenticated;
+GRANT ALL ON public.community_feedback_trades TO service_role;
+
+GRANT SELECT ON public.community_reactions TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.community_reactions TO authenticated;
+GRANT ALL ON public.community_reactions TO service_role;
+
+GRANT SELECT ON public.community_badges TO authenticated;
+GRANT ALL ON public.community_badges TO service_role;
+
+GRANT SELECT ON public.weekly_rooms TO anon, authenticated;
+GRANT ALL ON public.weekly_rooms TO service_role;
+
+GRANT SELECT ON public.activity_feed_events TO anon, authenticated;
+GRANT ALL ON public.activity_feed_events TO service_role;

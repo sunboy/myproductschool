@@ -662,7 +662,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
     if (initialDifficulty) return DIFF_LABEL_TO_KEY[initialDifficulty] ?? initialDifficulty
     return 'advanced'
   })
-  const voiceMode = false
+  const [voiceMode, setVoiceMode] = useState(true)
   const [name, setName] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -798,9 +798,9 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
         <div>
           <label style={{ fontSize: 12, fontWeight: 700, color: T.onSurfaceVariant, display: 'block', marginBottom: 8 }}>Options</label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'not-allowed', fontSize: 13, color: T.onSurfaceMuted }}>
-              <input type="checkbox" checked={voiceMode} readOnly disabled style={{ accentColor: T.primary, width: 15, height: 15 }} />
-              Chat mode
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: T.onSurface }}>
+              <input type="checkbox" checked={voiceMode} onChange={(e) => setVoiceMode(e.target.checked)} style={{ accentColor: T.primary, width: 15, height: 15 }} />
+              Voice mode on
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: T.onSurface }}>
               <input type="checkbox" defaultChecked style={{ accentColor: T.primary, width: 15, height: 15 }} />
@@ -818,7 +818,7 @@ function LoopBuilder({ editLoopId, initialCompany, initialDifficulty, initialRou
       }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: T.onSurface }}>{selectedRounds.length} rounds · ~{totalMins} min total</div>
-          <div style={{ fontSize: 12, color: T.onSurfaceMuted }}>{selectedCo} · {DIFF_LABELS[difficulty]} · Chat mode</div>
+          <div style={{ fontSize: 12, color: T.onSurfaceMuted }}>{selectedCo} · {DIFF_LABELS[difficulty]}{voiceMode ? ' · Voice on' : ''}</div>
         </div>
         <button onClick={onCancel} data-hatch-sound="close" style={{
           padding: '8px 16px', borderRadius: 999, cursor: 'pointer', fontSize: 13, fontWeight: 700,

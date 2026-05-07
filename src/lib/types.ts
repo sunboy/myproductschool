@@ -265,6 +265,7 @@ export interface ChallengeDiscussion {
   username?: string
   reply_count?: number
   upvoted_by?: string[]
+  viewer_has_upvoted?: boolean
   replies?: DiscussionReply[]
 }
 
