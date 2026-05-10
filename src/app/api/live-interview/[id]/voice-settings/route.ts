@@ -6,7 +6,7 @@ import { createLiveInterviewVoiceToken } from '@/lib/live-interview/voice-token'
 export const runtime = 'nodejs'
 
 const SAMPLE_RATE = 16000
-const DEEPGRAM_TOKEN_TTL_SECONDS = 60
+const DEEPGRAM_TOKEN_TTL_SECONDS = 3600
 
 function publicOrigin(request: Request) {
   const configured = process.env.DEEPGRAM_VOICE_THINK_BASE_URL
@@ -80,7 +80,6 @@ export async function GET(
         output: { encoding: 'linear16', sample_rate: SAMPLE_RATE },
       },
       agent: {
-        language: 'en',
         listen: {
           provider: {
             type: 'deepgram',
