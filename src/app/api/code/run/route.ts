@@ -220,6 +220,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields: sessionId, code, language' }, { status: 400 })
   }
 
+  // --- Guard: Judge0 not configured ---
+  if (!process.env.JUDGE0_RAPIDAPI_KEY) {
+    return NextResponse.json(
+      { error: 'Run unavailable — code runner not configured. Please contact support.' },
+      { status: 503 }
+    )
+  }
+
   // --- Reject SQL (handled by sql.js worker in browser) ---
   if (language === 'sql') {
     return NextResponse.json(

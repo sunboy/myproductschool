@@ -13,6 +13,7 @@ import { apiError } from '@/lib/api/error'
 import { z, ZodError } from 'zod'
 
 const ROUTE_KEY = 'live_interview_chat'
+const FLOW_ORDER = ['frame', 'list', 'optimize', 'win'] as const
 
 const ArtifactSnapshotSchema = z.object({
   type: z.enum(['canvas', 'editor']),
@@ -48,6 +49,80 @@ function validationIssues(error: ZodError) {
     path: issue.path.join('.'),
     message: issue.message,
   }))
+}
+
+function providerErrorMessage(error: unknown) {
+  if (!error || typeof error !== 'object') return ''
+  const record = error as Record<string, unknown>
+  const directMessage = typeof record.message === 'string' ? record.message : ''
+  const apiErrorEnvelope = record.error
+  const nestedMessage = apiErrorEnvelope && typeof apiErrorEnvelope === 'object'
+    ? typeof (apiErrorEnvelope as Record<string, unknown>).message === 'string'
+      ? (apiErrorEnvelope as Record<string, unknown>).message as string
+      : (() => {
+          const nested = (apiErrorEnvelope as Record<string, unknown>).error
+          return nested && typeof nested === 'object' && typeof (nested as Record<string, unknown>).message === 'string'
+            ? (nested as Record<string, unknown>).message as string
+            : ''
+        })()
+    : ''
+  return `${directMessage} ${nestedMessage}`.trim()
+}
+
+function isProviderUnavailable(error: unknown) {
+  const message = providerErrorMessage(error).toLowerCase()
+  return (
+    message.includes('credit balance') ||
+    message.includes('billing') ||
+    message.includes('rate limit') ||
+    message.includes('overloaded') ||
+    message.includes('temporarily unavailable') ||
+    message.includes('api key')
+  )
+}
+
+function shouldUseLocalInterviewFallback() {
+  return process.env.NODE_ENV !== 'production' || process.env.LIVE_INTERVIEW_LOCAL_FALLBACK === 'true'
+}
+
+function nextFlowMove(flowCoverage: Record<string, number>) {
+  return FLOW_ORDER.reduce((lowest, move) => (
+    (flowCoverage[move] ?? 0) < (flowCoverage[lowest] ?? 0) ? move : lowest
+  ), FLOW_ORDER[0])
+}
+
+function localFallbackReply({
+  mode,
+  message,
+  flowCoverage,
+}: {
+  mode: 'opening' | 'reply' | 'feeler'
+  message: string
+  flowCoverage: Record<string, number>
+}) {
+  if (mode === 'opening') {
+    return "I’m here in local fallback mode, so I’ll keep this focused. Start by framing the problem: who is the user, what are they trying to do, and what would make this worth solving?"
+  }
+
+  if (mode === 'feeler') {
+    return "Still with me? Take a minute, then give me the frame before you jump into solutions."
+  }
+
+  const move = nextFlowMove(flowCoverage)
+  if (move === 'frame') {
+    return "Good, but slow down one step. Frame it first: who exactly is the user, what outcome matters, and what constraint would change your answer?"
+  }
+  if (move === 'list') {
+    return "Now list the important pieces before choosing. What users, metrics, constraints, and failure modes would you put on the board?"
+  }
+  if (move === 'optimize') {
+    return "Pick the tradeoff explicitly. What are you optimizing for, what are you willing to sacrifice, and why is that the right call here?"
+  }
+
+  const trimmed = message.trim()
+  return trimmed
+    ? "Bring it home with a crisp recommendation. Name the bet, the first experiment, the success metric, and the risk you would watch."
+    : "Give me your recommendation in one clear pass: decision, metric, first step, and risk."
 }
 
 export async function POST(
@@ -201,6 +276,7 @@ Do not advance the case, grade them, recap your instructions, or use Markdown.`)
   }
 
   let reply = ''
+  let degraded = false
   try {
     await assertPlanLimit(user.id, userPlan, 'live_interview_turns')
 
@@ -233,7 +309,15 @@ Do not advance the case, grade them, recap your instructions, or use Markdown.`)
         windowDays: error.windowDays,
       })
     }
-    throw error
+
+    if (isProviderUnavailable(error) && shouldUseLocalInterviewFallback()) {
+      degraded = true
+      console.warn('Live interview chat using local fallback because provider is unavailable:', providerErrorMessage(error))
+      reply = localFallbackReply({ mode, message, flowCoverage })
+    } else {
+      console.error('Live interview chat failed:', providerErrorMessage(error) || error)
+      return apiError(503, 'hatch_unavailable', 'Hatch is temporarily unavailable. Try again in a moment.')
+    }
   }
 
   // Save turns to DB. Opening/feeler modes only create Hatch turns.
@@ -284,7 +368,7 @@ Do not advance the case, grade them, recap your instructions, or use Markdown.`)
     .eq('id', id)
 
   if (mode !== 'reply') {
-    return Response.json({ reply })
+    return Response.json({ reply, degraded })
   }
 
   // Fire async grading - non-blocking, don't await
@@ -303,7 +387,7 @@ Do not advance the case, grade them, recap your instructions, or use Markdown.`)
   const forwardedProto = request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim()
   const gradeBaseUrl = origin ?? (host ? `${forwardedProto ?? 'http'}://${host}` : null)
 
-  if (gradeBaseUrl) {
+  if (gradeBaseUrl && !degraded) {
     const gradeHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
     const cookie = request.headers.get('cookie')
     const authorization = request.headers.get('authorization')
@@ -326,5 +410,5 @@ Do not advance the case, grade them, recap your instructions, or use Markdown.`)
     })
   }
 
-  return Response.json({ reply })
+  return Response.json({ reply, degraded })
 }

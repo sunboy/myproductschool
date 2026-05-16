@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState, useEffect, Suspense } from 'react'
+import { use, useState, useEffect, useRef, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useLearnModule } from '@/hooks/useLearnModule'
@@ -8,6 +8,7 @@ import { useLearnChapter } from '@/hooks/useLearnChapter'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { LEARN_MODULES_SEED } from '@/lib/learn-seed'
 import { ChapterBody } from '@/components/learning/ChapterBody'
+import { motion, useScrollCollapse } from '@/components/motion'
 import type { LearnModule, LearnChapterWithProgress, LearnDifficulty } from '@/lib/types'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -130,12 +131,21 @@ function ChapterPane({
 }) {
   const { data, isLoading, markComplete, isMarkingComplete } = useLearnChapter(moduleSlug, chapterSlug)
   const [markedDone, setMarkedDone] = useState(false)
+  const bodyRef = useRef<HTMLDivElement>(null)
+  const { isCollapsed: isTitleCollapsed } = useScrollCollapse(bodyRef, {
+    threshold: 88,
+    revealOffset: 10,
+    resetKey: data?.id ?? chapterSlug,
+  })
 
   const chapters = moduleData?.chapters ?? []
   const currentIdx = chapters.findIndex(c => c.slug === chapterSlug)
   const nextChapter = chapters[currentIdx + 1]
 
-  useEffect(() => { setMarkedDone(false) }, [chapterSlug])
+  useEffect(() => {
+    setMarkedDone(false)
+    bodyRef.current?.scrollTo({ top: 0 })
+  }, [chapterSlug])
 
   if (isLoading) {
     return (
@@ -151,22 +161,64 @@ function ChapterPane({
   if (!data) return null
 
   const coverColor = moduleData?.module.cover_color ?? '#1a3a2a'
+  const moduleName = moduleData?.module.name ?? 'Learning module'
 
   return (
-    <div className="flex flex-col h-[calc(100vh-52px)] overflow-hidden">
+    <div
+      className="flex flex-col h-[calc(100vh-52px)] overflow-hidden"
+      data-hatch-context-root
+      data-hatch-page-type="learning_module"
+      data-hatch-entity-id={moduleSlug}
+      data-hatch-active-chapter={chapterSlug}
+    >
       {/* Hook card */}
-      <div className="px-6 py-5 flex-shrink-0" style={{ background: coverColor }}>
+      <motion.div
+        data-hatch-context="Active chapter header"
+        layout
+        initial={false}
+        animate={isTitleCollapsed ? 'collapsed' : 'visible'}
+        variants={{
+          visible: {
+            opacity: 1,
+            y: 0,
+            maxHeight: 240,
+            paddingTop: 20,
+            paddingBottom: 20,
+          },
+          collapsed: {
+            opacity: 0,
+            y: -14,
+            maxHeight: 0,
+            paddingTop: 0,
+            paddingBottom: 0,
+          },
+        }}
+        transition={{ type: 'spring', stiffness: 320, damping: 34, mass: 0.8 }}
+        className="overflow-hidden px-6 flex-shrink-0"
+        style={{ background: coverColor }}
+        aria-hidden={isTitleCollapsed}
+      >
         <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-1.5">
           Chapter {data.sort_order} · {data.subtitle}
         </p>
-        <h1 className="font-headline text-xl font-bold text-white leading-snug mb-2">{data.title}</h1>
+        <h1
+          className="font-headline text-xl font-bold text-white leading-snug mb-2"
+          data-hatch-page-title
+        >
+          {moduleName}: {data.title}
+        </h1>
         {data.hook_text && (
           <p className="text-sm leading-relaxed italic text-white/75">{data.hook_text}</p>
         )}
-      </div>
+      </motion.div>
 
       {/* Body - scrollable */}
-      <ChapterBody body_mdx={data.body_mdx} figures={data.figures ?? []} />
+      <ChapterBody
+        ref={bodyRef}
+        body_mdx={data.body_mdx}
+        figures={data.figures ?? []}
+        hatchContextLabel="Active chapter body"
+      />
 
       {/* Footer */}
       <div className="px-5 py-3 border-t border-outline-variant bg-surface-container-low flex items-center justify-between flex-shrink-0">

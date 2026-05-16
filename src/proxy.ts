@@ -7,7 +7,7 @@ import { IS_MOCK } from '@/lib/mock'
 // Flip to false (or remove the block) when ready to launch.
 const PRE_LAUNCH = false
 
-const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist', '/hatch-preview']
+const LAUNCH_ALLOWED = ['/waitlist', '/api/waitlist', '/hatch-preview', '/hatch-motion']
 
 // ── Post-launch route config ─────────────────────────────────
 // Marketing / auth pages — accessible without any session.
@@ -26,7 +26,11 @@ const MARKETING_ROUTES = [
   '/r',
   '/flow',
   '/hatch-preview',
+  '/hatch-motion',
   '/home',
+  '/role-transitions',
+  '/uplevel',
+  '/salary-negotiation',
   '/skills',
   '/companies',
   '/study-plans',
@@ -42,6 +46,7 @@ const MARKETING_ROUTES = [
 ]
 const AUTH_ROUTES      = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/magic-link-sent']
 const AUTH_CALLBACK_ROUTES = ['/auth/callback']
+const EXACT_MARKETING_ROUTES = ['/interview-prep']
 const PUBLIC_SCORECARD_ROUTE =
   /^\/workspace\/challenges\/[^/]+\/share(?:\/[^/]+(?:\/(?:opengraph-image|twitter-image)[^/]*)?)?$/
 
@@ -50,6 +55,12 @@ const APP_PUBLIC_ROUTES = ['/onboarding', '/welcome', '/role', '/calibration', '
 
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+
+  if (pathname === '/marketing' || pathname.startsWith('/marketing/')) {
+    const destination = request.nextUrl.clone()
+    destination.pathname = pathname === '/marketing' ? '/' : pathname.replace(/^\/marketing/, '') || '/'
+    return NextResponse.redirect(destination, 308)
+  }
 
   // ── Post-launch: normal auth flow ──────────────────────
   // Bypass auth in mock/testing mode
@@ -71,6 +82,7 @@ export async function proxy(request: NextRequest) {
   const WAITLIST_ROUTES = ['/waitlist', '/waitlist-quick', '/waitlist-flow']
   const isRoot      = pathname === '/'
   const isMarketing = MARKETING_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
+  const isExactMarketing = EXACT_MARKETING_ROUTES.includes(pathname)
   const isWaitlist  = WAITLIST_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isAuthRoute = AUTH_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isAuthCallback = AUTH_CALLBACK_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
@@ -79,7 +91,7 @@ export async function proxy(request: NextRequest) {
   const isAdminApi  = pathname.startsWith('/api/admin')
 
   // Pure marketing routes that never need auth (not / or waitlist which need redirect logic)
-  const isPureMarketing = isMarketing && !isRoot && !isWaitlist
+  const isPureMarketing = (isMarketing && !isRoot && !isWaitlist) || isExactMarketing
   if (isPureMarketing || isAuthCallback || isPublicScorecard || (isApi && !isAdminApi)) {
     return NextResponse.next()
   }

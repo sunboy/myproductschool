@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Raleway, Literata } from "next/font/google";
 import { AnalyticsGate } from "@/components/legal/AnalyticsGate";
 import { CookieBanner } from "@/components/legal/CookieBanner";
+import { MotionProvider } from "@/components/motion";
 import { PostHogProvider } from "@/components/PostHogProvider";
 import { HatchSonicSurface } from "@/components/shell/HatchSonicSurface";
 import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, imageUrl, SITE_URL } from "@/lib/seo/site";
@@ -104,11 +105,13 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-background text-on-surface">
-        <PostHogProvider>
-          <HatchSonicSurface />
-          {children}
-          <CookieBanner />
-        </PostHogProvider>
+        <MotionProvider>
+          <PostHogProvider>
+            <HatchSonicSurface />
+            {children}
+            <CookieBanner />
+          </PostHogProvider>
+        </MotionProvider>
         <AnalyticsGate />
       </body>
     </html>

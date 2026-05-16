@@ -29,6 +29,12 @@ export function TodaysPathCard({ steps, completedCount }: TodaysPathCardProps) {
         </span>
       </div>
 
+      {completedCount === 0 && (
+        <p className="mb-3 text-sm text-on-surface-variant font-label">
+          Three quick reps to start the day. The first one is the warm-up.
+        </p>
+      )}
+
       <div className="flex flex-col gap-0.5 relative">
         {steps.map((step, i) => {
           const inner = (

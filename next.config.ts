@@ -13,10 +13,10 @@ const sentrySourceMapsConfigured = Boolean(
 
 const contentSecurityPolicy = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.stripe.com challenges.cloudflare.com *.posthog.com va.vercel-scripts.com",
-  "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.stripe.com challenges.cloudflare.com *.posthog.com va.vercel-scripts.com https://cdn.jsdelivr.net",
+  "style-src 'self' 'unsafe-inline' fonts.googleapis.com https://cdn.jsdelivr.net",
   "img-src 'self' data: blob: https:",
-  "font-src 'self' fonts.gstatic.com data:",
+  "font-src 'self' fonts.gstatic.com https://cdn.jsdelivr.net data:",
   "connect-src 'self' *.supabase.co api.anthropic.com api.openai.com api.stripe.com *.posthog.com api.resend.com *.upstash.io *.vercel-insights.com vitals.vercel-insights.com *.sentry.io ws: wss: http://localhost:*",
   "frame-src 'self' *.stripe.com challenges.cloudflare.com",
   "media-src 'self' data: blob: https:",
@@ -35,13 +35,14 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: projectRoot,
   async redirects() {
     return [
+      { source: '/marketing', destination: '/', permanent: true },
+      { source: '/marketing/:path*', destination: '/:path*', permanent: true },
       { source: '/domains', destination: '/explore/domains', permanent: true },
       { source: '/domains/:slug', destination: '/explore/domains/:slug', permanent: true },
       { source: '/product-75', destination: '/explore', permanent: true },
       { source: '/frameworks', destination: '/explore', permanent: true },
       { source: '/flashcards', destination: '/explore', permanent: true },
       { source: '/simulation', destination: '/prep', permanent: true },
-      { source: '/interview-prep', destination: '/prep', permanent: true },
       { source: '/interview-prep/:slug', destination: '/prep/:slug', permanent: true },
       // Learn → Explore redirects (merged sections)
       { source: '/learn', destination: '/explore', permanent: true },

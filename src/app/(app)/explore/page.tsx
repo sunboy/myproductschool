@@ -149,10 +149,16 @@ export default async function ExplorePage() {
         const sorted = [...counts.entries()]
           .sort((a, b) => b[1].length - a[1].length)
           .slice(0, 4)
-        return sorted.map(([company, challenges]) => ({
-          company,
-          challenges: challenges.slice(0, 5),
-        }))
+        // Dedupe challenges across groups: each challenge id appears in only one group (the first that claims it)
+        const seenIds = new Set<string>()
+        return sorted.map(([company, challenges]) => {
+          const unique = challenges.filter(c => {
+            if (seenIds.has(c.id)) return false
+            seenIds.add(c.id)
+            return true
+          })
+          return { company, challenges: unique.slice(0, 5) }
+        }).filter(g => g.challenges.length > 0)
       } catch { return [] }
     })(),
   ])
@@ -171,8 +177,8 @@ export default async function ExplorePage() {
     : PLANS_STATIC
 
   const modules = modulesRaw.length > 0 ? modulesRaw.slice(0, 4) : MODULES_STATIC
-  const autopsies = showcaseProducts.slice(0, 4)
-  const topDomains = domains.slice(0, 6)
+  const autopsies = showcaseProducts.filter(p => (p.decision_count ?? 0) >= 1).slice(0, 4)
+  const topDomains = domains.filter(d => (d.challenge_count ?? 0) >= 1).slice(0, 6)
 
   return (
     <main className="animate-fade-in-up relative isolate mx-auto max-w-[1240px] px-4 py-7 pb-24 sm:px-6 lg:px-8">
@@ -235,7 +241,7 @@ export default async function ExplorePage() {
         ))}
       </section>
 
-      <SectionHeading title="Guides" href="/explore/modules" linkLabel="All guides" />
+      <SectionHeading title="Guides" href="/explore/modules" linkLabel={`See all (${modules.length})`} />
       <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {modules.map((module, index) => (
           <ModuleCard key={module.slug} module={module} index={index} />
@@ -244,7 +250,7 @@ export default async function ExplorePage() {
 
       {autopsies.length > 0 && (
         <>
-          <SectionHeading title="Autopsies" href="/explore/showcase" linkLabel="View all" />
+          <SectionHeading title="Autopsies" href="/explore/showcase" linkLabel={`See all (${autopsies.length})`} />
           <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {autopsies.map((product, index) => (
               <AutopsyCard key={product.slug} product={product} index={index} />
@@ -255,7 +261,7 @@ export default async function ExplorePage() {
 
       {topDomains.length > 0 && (
         <>
-          <SectionHeading title="Domains" href="/domains" linkLabel="All domains" />
+          <SectionHeading title="Domains" href="/domains" linkLabel={`See all (${topDomains.length})`} />
           <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {topDomains.map((domain, index) => (
               <DomainRow key={domain.slug} domain={domain} index={index} />
@@ -269,7 +275,7 @@ export default async function ExplorePage() {
         <RealInterviewSpotlight companyGroups={topCompanyChallenges} />
       )}
 
-      <SectionHeading title="Study Plans" href="/explore/plans" linkLabel="All plans" />
+      <SectionHeading title="Study Plans" href="/explore/plans" linkLabel={`See all (${plans.length})`} />
       <StudyPlanGrid plans={plans} personalisedPlan={personalisedPlan} />
     </main>
   )

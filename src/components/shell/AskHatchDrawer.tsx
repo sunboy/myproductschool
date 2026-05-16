@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { HatchGlyph } from './HatchGlyph'
+import { buildHatchPageContext, parseHatchPageContext } from '@/lib/hatch/page-context'
 
 interface Message {
   role: 'user' | 'hatch'
@@ -50,31 +51,6 @@ function Bold({ text }: { text: string }) {
   )
 }
 
-/** Derive entity type + ID from the current pathname */
-function parsePageContext(pathname: string): { pageType: string; entityId: string | null } {
-  const challengeWorkspace = pathname.match(/^\/workspace\/challenges\/([^/]+)/)
-  if (challengeWorkspace) return { pageType: 'challenge', entityId: challengeWorkspace[1] }
-
-  const challengeFeedback = pathname.match(/^\/challenges\/([^/]+)\/feedback/)
-  if (challengeFeedback) return { pageType: 'challenge_feedback', entityId: challengeFeedback[1] }
-
-  const studyPlan = pathname.match(/^\/explore\/plans\/([^/]+)/)
-  if (studyPlan) return { pageType: 'study_plan', entityId: studyPlan[1] }
-
-  const domain = pathname.match(/^\/explore\/domains\/([^/]+)/)
-  if (domain) return { pageType: 'domain', entityId: domain[1] }
-
-  const domainAlt = pathname.match(/^\/domains\/([^/]+)/)
-  if (domainAlt) return { pageType: 'domain', entityId: domainAlt[1] }
-
-  if (pathname.startsWith('/dashboard')) return { pageType: 'dashboard', entityId: null }
-  if (pathname.startsWith('/explore')) return { pageType: 'explore', entityId: null }
-  if (pathname.startsWith('/challenges')) return { pageType: 'practice', entityId: null }
-  if (pathname.startsWith('/progress')) return { pageType: 'progress', entityId: null }
-
-  return { pageType: 'general', entityId: null }
-}
-
 export function AskHatchDrawer({ open, onClose }: AskHatchDrawerProps) {
   const pathname = usePathname()
   const [messages, setMessages] = useState<Message[]>([])
@@ -102,7 +78,7 @@ export function AskHatchDrawer({ open, onClose }: AskHatchDrawerProps) {
     setInput('')
     setLoading(true)
 
-    const { pageType, entityId } = parsePageContext(pathname)
+    const pageContext = buildHatchPageContext(pathname)
 
     try {
       const res = await fetch('/api/hatch/chat', {
@@ -113,7 +89,7 @@ export function AskHatchDrawer({ open, onClose }: AskHatchDrawerProps) {
           history: messages,
           challengeId: null,
           challengePrompt: null,
-          pageContext: { pageType, entityId, pathname },
+          pageContext,
         }),
       })
       const data = res.ok ? await res.json() : null
@@ -135,10 +111,11 @@ export function AskHatchDrawer({ open, onClose }: AskHatchDrawerProps) {
 
   if (!open) return null
 
-  const { pageType } = parsePageContext(pathname)
+  const { pageType } = parseHatchPageContext(pathname)
   const contextLabel: Record<string, string> = {
     challenge: 'Talking about this challenge',
     challenge_feedback: 'Reviewing your feedback',
+    learning_module: 'Reading this module',
     study_plan: 'Talking about this plan',
     domain: 'Talking about this topic',
     dashboard: 'Your dashboard',
@@ -153,12 +130,14 @@ export function AskHatchDrawer({ open, onClose }: AskHatchDrawerProps) {
     <>
       {/* Backdrop */}
       <div
+        data-hatch-ignore
+        data-hatch-chat
         className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Drawer */}
-      <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-80 bg-background flex flex-col shadow-2xl border-l border-outline-variant">
+      <div data-hatch-ignore data-hatch-chat className="fixed inset-y-0 right-0 z-50 w-full sm:w-80 bg-background flex flex-col shadow-2xl border-l border-outline-variant">
 
         {/* Header */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-outline-variant/40 bg-primary-fixed">

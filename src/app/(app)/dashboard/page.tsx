@@ -510,13 +510,23 @@ export default async function DashboardPage() {
                 challengeId={quickTakePrompt?.id ?? 'orientation'}
                 hatchContext={null}
               />
-              <NextChallengeCard
-                title={nextChallenge?.title ?? 'Designing a Metric Dashboard for a B2B SaaS Tool'}
-                domain={nextChallenge?.domainName ?? 'Product Strategy'}
-                difficulty={nextChallenge?.difficulty ?? 'standard'}
-                challengeId={nextChallenge?.slug ?? nextChallenge?.id ?? 'orientation'}
-                hatchInsight={nextChallenge?.hatch_insight ?? null}
-              />
+              {nextChallenge?.domainName ? (
+                <NextChallengeCard
+                  title={nextChallenge.title}
+                  domain={nextChallenge.domainName}
+                  difficulty={nextChallenge.difficulty ?? 'standard'}
+                  challengeId={nextChallenge.slug ?? nextChallenge.id}
+                  hatchInsight={nextChallenge.hatch_insight ?? null}
+                />
+              ) : (
+                <NextChallengeCard
+                  title="Designing a Metric Dashboard for a B2B SaaS Tool"
+                  domain="Product Sense"
+                  difficulty="standard"
+                  challengeId="orientation"
+                  hatchInsight={null}
+                />
+              )}
             </div>
 
             {/* FLOW Move Levels */}

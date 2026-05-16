@@ -1,6 +1,7 @@
 'use client'
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react'
+import { stripMarkdownForSpeech } from '@/lib/text/stripMarkdownForSpeech'
 
 export interface DeepgramVoiceSessionHandle {
   injectAgentMessage: (content: string) => boolean
@@ -76,7 +77,9 @@ const DeepgramVoiceSession = forwardRef<DeepgramVoiceSessionHandle, DeepgramVoic
         if (suppressedAgentMessagesRef.current.length > 5) {
           suppressedAgentMessagesRef.current.shift()
         }
-        return sendJson({ type: 'InjectAgentMessage', message: trimmed })
+        // Strip markdown before sending to TTS so symbols like ** are not read aloud
+        const ttsText = stripMarkdownForSpeech(trimmed)
+        return sendJson({ type: 'InjectAgentMessage', message: ttsText })
       },
       injectUserMessage(content: string) {
         const trimmed = content.trim()

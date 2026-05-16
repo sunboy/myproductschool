@@ -6,12 +6,12 @@ import Link from 'next/link'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 
 const DISCIPLINES = [
-  { name: 'Product Sense', short: 'PS', score: 86, color: '#2563eb' },
-  { name: 'System Design', short: 'SD', score: 79, color: '#111827' },
-  { name: 'Data Modeling', short: 'DM', score: 72, color: '#16a34a' },
-  { name: 'SQL', short: 'SQL', score: 81, color: '#d97706' },
-  { name: 'Coding', short: 'CODE', score: 76, color: '#0891b2' },
-  { name: 'PM Loop', short: 'PM', score: 68, color: '#7c3aed' },
+  { name: 'Product Sense', short: 'PS', score: 86, color: '#4a7c59' },
+  { name: 'System Design', short: 'SD', score: 79, color: '#6b6358' },
+  { name: 'Data Modeling', short: 'DM', score: 72, color: '#705c30' },
+  { name: 'SQL', short: 'SQL', score: 81, color: '#c9933a' },
+  { name: 'Coding', short: 'CODE', score: 76, color: '#2f7a4a' },
+  { name: 'AI Native', short: 'AI', score: 68, color: '#8b5cf6' },
 ]
 
 const TASKS = [
@@ -150,10 +150,10 @@ export function OrchestrationMap() {
 
 export function CurriculumStack() {
   const chapters = [
-    ['Chapter I', 'Frame ambiguous product problems', 'Define user, metric, and scope before ideas.'],
-    ['Chapter II', 'Build technical judgment', 'Systems, data models, APIs, SQL, and trade-offs.'],
-    ['Chapter III', 'Practice live pressure', 'Voice interviews, interruptions, clarifying questions.'],
-    ['Chapter IV', 'Review like a hiring panel', 'Receipts, weakness drills, and progress loops.'],
+    ['Rep I', 'Pick the career moment', 'Interview loop, promotion packet, role transition, or proof of level.'],
+    ['Rep II', 'Answer in the workspace', 'Work through product, systems, data, SQL, coding, or AI-native prompts.'],
+    ['Rep III', 'Let Hatch follow up', 'Pressure-test assumptions, missed segments, and shallow trade-offs.'],
+    ['Rep IV', 'Score FLOW and queue the drill', 'See the weak move, save the receipt, and train the next rep.'],
   ]
 
   return (
@@ -165,7 +165,9 @@ export function CurriculumStack() {
             <h3>{title}</h3>
           </div>
           <p>{body}</p>
-          <Link href="/study-plans">Read chapter {index + 1}</Link>
+          <Link href={index === 0 ? '/interview-prep' : index === 1 ? '/practice' : index === 2 ? '/flow' : '/login?returnTo=/progress'}>
+            {index === 0 ? 'Choose goal' : index === 1 ? 'Browse reps' : index === 2 ? 'See FLOW' : 'Save progress'}
+          </Link>
         </article>
       ))}
     </div>
@@ -177,14 +179,14 @@ export function RoadmapPreview() {
     { name: 'Diagnostic', done: 3, total: 3 },
     { name: 'Product Sense', done: 4, total: 6 },
     { name: 'Systems', done: 2, total: 5 },
-    { name: 'Panel Ready', done: 0, total: 4 },
+    { name: 'Proof Ready', done: 0, total: 4 },
   ]
 
   return (
     <div className="hp-preview hp-roadmap-preview">
       <div className="hp-preview-head">
-        <span>Interview roadmap</span>
-        <b>Senior PM loop</b>
+        <span>Career roadmap</span>
+        <b>Staff-ready judgment</b>
       </div>
       <div className="hp-roadmap-lanes">
         {stages.map((stage, index) => (
@@ -196,13 +198,13 @@ export function RoadmapPreview() {
                 <span key={itemIndex} className={itemIndex < stage.done ? 'is-done' : ''} />
               ))}
             </div>
-            <p>{index === 0 ? 'Baseline complete' : index === 1 ? 'Weakest move: List' : index === 2 ? 'Trade-offs queued' : 'Mock panel locked'}</p>
+            <p>{index === 0 ? 'Baseline complete' : index === 1 ? 'Weakest move: List' : index === 2 ? 'Trade-offs queued' : 'Artifacts locked'}</p>
           </div>
         ))}
       </div>
       <div className="hp-roadmap-footer">
         <span>Next task</span>
-        <b>Diagnose a marketplace liquidity drop</b>
+        <b>Write the recommendation your promotion packet needs</b>
         <button>Start rep</button>
       </div>
     </div>
@@ -333,7 +335,7 @@ export function AnalyticsBoard() {
 }
 
 export function ToolsSystemPreview() {
-  const tools = ['Calendar', 'Voice room', 'Rubric engine', 'Study plan', 'Notes', 'Replay', 'Weakness drills', 'LLM context']
+  const tools = ['Goal', 'Rep', 'Hatch', 'FLOW score', 'Weak move', 'Receipt', 'Next drill', 'Proof']
 
   return (
     <div className="hp-tools-art">
@@ -349,17 +351,17 @@ export function ToolsSystemPreview() {
           <span />
           <b>Hatch task</b>
         </div>
-        <h3>Create a five-day prep sprint for Meta Product Sense</h3>
+        <h3>Create a five-day sprint for promotion-ready product judgment</h3>
         <div className="hp-tool-steps">
-          <span className="is-done">Pull recent scores</span>
-          <span className="is-done">Select weak FLOW moves</span>
-          <span>Generate live prompts</span>
-          <span>Schedule debrief</span>
+          <span className="is-done">Pull recent FLOW receipts</span>
+          <span className="is-done">Select weakest career signal</span>
+          <span>Generate systems and product reps</span>
+          <span>Save promotion-ready artifacts</span>
         </div>
       </div>
       <div className="hp-tool-window hp-tool-window--secondary">
         <b>Approval needed</b>
-        <p>Replace tomorrow&apos;s SQL drill with marketplace diagnosis?</p>
+        <p>Replace tomorrow&apos;s SQL drill with staff-level trade-off practice?</p>
         <div>
           <button>Approve</button>
           <button>Adjust</button>
@@ -370,12 +372,12 @@ export function ToolsSystemPreview() {
 }
 
 const ROLE_GRID = [
-  'STAFFPMLOOP',
+  'STAFFREADY',
   'SQLAIDATAQ',
-  'PLATFORMER',
-  'GROWTHBETA',
+  'PRODUCTPM',
+  'PROMOTIONX',
   'SYSTEMFLOW',
-  'MOBILECASE',
+  'SALARYPROOF',
   'MARKETDEEP',
   'FOUNDEROPS',
 ]
@@ -413,7 +415,7 @@ export function RoleWordSearch() {
         ))}
       </div>
       <div className="hp-word-tags">
-        {['Staff PM', 'SQL + Data', 'Platform', 'Growth', 'Systems', 'Mobile', 'Marketplace', 'Founder'].map((word) => (
+        {['Staff-ready', 'SQL + Data', 'Product', 'Promotion', 'Systems', 'Salary proof', 'Marketplace', 'Founder'].map((word) => (
           <b key={word}>{word}</b>
         ))}
       </div>

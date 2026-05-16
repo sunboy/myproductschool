@@ -17,7 +17,7 @@ export async function POST(
 
   const { data: session } = await adminClient
     .from('live_interview_sessions')
-    .select('id, user_id, status, loop_id, round_index, flow_coverage, conversation_memory, company_id, role_id, challenge_id')
+    .select('id, user_id, status, loop_id, round_index, flow_coverage, conversation_memory, company_id, role_id, challenge_id, calibration_snapshot')
     .eq('id', id)
     .eq('user_id', user.id)
     .single()
@@ -33,6 +33,7 @@ export async function POST(
     company_id?: string | null
     role_id?: string | null
     challenge_id?: string | null
+    calibration_snapshot?: Record<string, unknown> | null
   }
   const s = session as SessionRow
 
@@ -70,7 +71,13 @@ export async function POST(
       conversation_memory: snapshot?.conversation_memory ?? s.conversation_memory,
       system_prompt: built.systemPrompt,
       scenario_rubric: built.scenarioRubric,
-      calibration_snapshot: built.calibrationSnapshot,
+      calibration_snapshot: {
+        ...(s.calibration_snapshot ?? {}),
+        ...built.calibrationSnapshot,
+        companyName: built.companyName ?? s.calibration_snapshot?.companyName ?? null,
+        scenarioTitle: built.scenarioTitle ?? s.calibration_snapshot?.scenarioTitle ?? null,
+        effectiveDiscipline: built.effectiveDiscipline ?? s.calibration_snapshot?.effectiveDiscipline ?? null,
+      },
     })
     .eq('id', id)
 

@@ -3,9 +3,9 @@ import type { Metadata } from 'next'
 export const SITE_NAME = 'HackProduct'
 export const SITE_URL = 'https://hackproduct.dev'
 export const OG_IMAGE_PATH = '/brand/og-image-1200x630.png'
-export const DEFAULT_TITLE = 'HackProduct | AI-Native Learning for Product-Minded Engineers'
+export const DEFAULT_TITLE = 'HackProduct | Practice Gym for Product and Technical Judgment'
 export const DEFAULT_DESCRIPTION =
-  'HackProduct is the AI-native learning platform for product-minded engineers and PMs. Practice product sense, system design, data modeling, SQL, coding, and live interviews with Hatch coaching you in real time.'
+  'HackProduct is the AI-native practice gym for career-changing product and technical judgment. Train interviews, role transitions, promotion readiness, and salary negotiation proof with Hatch and FLOW.'
 
 export function canonicalUrl(path = '/') {
   const normalized = path.startsWith('/') ? path : `/${path}`

@@ -1,5 +1,4 @@
-import '@/app/(marketing)/home/landing.css'
-import '@/app/(marketing)/home/cofounder.css'
+import '@/app/(marketing)/home/marketplace.css'
 import { LandingNav } from '@/components/landing/LandingNav'
 import { LandingHero } from '@/components/landing/LandingHero'
 import { LogoStrip } from '@/components/landing/LogoStrip'
@@ -18,10 +17,10 @@ import {
 } from '@/lib/seo/directory-content'
 
 export const metadata = buildMetadata({
-  title: 'HackProduct | AI-Native Learning for Product-Minded Engineers',
+  title: 'HackProduct | Train Product and Technical Judgment',
   description: HACKPRODUCT_POSITIONING.subhead,
   path: '/',
-  keywords: ['AI-native learning platform', 'product-minded engineers', 'product sense practice', 'LeetCode alternative', 'live AI interviews'],
+  keywords: ['interview prep', 'product sense practice', 'staff engineer promotion readiness', 'engineer to product', 'AI-native workflows'],
 })
 
 export default function RootPage() {

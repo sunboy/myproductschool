@@ -7,6 +7,7 @@ import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { useMoveLevels } from '@/hooks/useMoveLevels'
 import { useProfile } from '@/hooks/useProfile'
+import { formatScore } from '@/lib/format/score'
 
 /* ── FLOW paradigm palette - matches /explore FLOW strip ─────────── */
 
@@ -367,6 +368,17 @@ function ReasoningTrajectorySection({
   const lowSignal = trajectory?.summary.lowSignalCells ?? 0
   const totalSignals = trajectory?.summary.totalSignals ?? 0
 
+  // Dedupe evidence by href (same challenge can appear multiple times across moves)
+  const dedupedEvidence = (() => {
+    if (!trajectory) return []
+    const seen = new Set<string>()
+    return trajectory.evidence.filter(item => {
+      if (seen.has(item.href)) return false
+      seen.add(item.href)
+      return true
+    }).slice(0, 4)
+  })()
+
   return (
     <>
       <SectionHeading
@@ -422,6 +434,9 @@ function ReasoningTrajectorySection({
 
             <div className="overflow-x-auto">
               <div className="min-w-[780px]">
+                <p className="mb-2 px-1 text-xs text-on-surface-variant font-label">
+                  Score · Δ vs last week · reps · confidence
+                </p>
                 <div
                   className="mb-1 grid items-center gap-1.5 px-1 text-[10px] font-label font-black uppercase tracking-[0.10em] text-on-surface-muted"
                   style={{ gridTemplateColumns: '170px repeat(4, minmax(132px, 1fr))' }}
@@ -500,12 +515,12 @@ function ReasoningTrajectorySection({
                     Evidence ledger
                   </div>
                   <span className="text-[10.5px] font-bold text-on-surface-variant">
-                    Latest {Math.min(trajectory.evidence.length, 6)}
+                    Latest {dedupedEvidence.length}
                   </span>
                 </div>
-                {trajectory.evidence.length > 0 ? (
+                {dedupedEvidence.length > 0 ? (
                   <div className="grid grid-cols-1 gap-1.5 md:grid-cols-2">
-                    {trajectory.evidence.slice(0, 4).map(item => (
+                    {dedupedEvidence.map(item => (
                       <Link
                         key={item.id}
                         href={item.href}
@@ -610,9 +625,13 @@ function MiniSparkline({ values, color }: { values: number[]; color: string }) {
 
 function TrendDot({ trend, delta }: { trend: TrajectoryTrend; delta: number }) {
   const meta = TREND_META[trend]
+  // Bind icon to delta sign with ±2 deadband, override API trend label
+  const icon = trend === 'insufficient_data'
+    ? meta.icon
+    : delta >= 2 ? 'trending_up' : delta <= -2 ? 'trending_down' : 'trending_flat'
   return (
     <span className="inline-flex items-center gap-0.5" style={{ color: meta.color }}>
-      <span className="material-symbols-outlined text-[12px]">{meta.icon}</span>
+      <span className="material-symbols-outlined text-[12px]">{icon}</span>
       {trend === 'insufficient_data' ? meta.label : `${delta > 0 ? '+' : ''}${delta}`}
     </span>
   )
@@ -661,6 +680,7 @@ export default function ProgressPage() {
       ...m,
       level: row?.level ?? 1,
       pct: row?.progress_pct ?? 0,
+      hasReps: row !== undefined,
     }
   })
 
@@ -778,8 +798,8 @@ export default function ProgressPage() {
 
             {/* Inline stat strip */}
             <div className="mb-3 grid grid-cols-3 gap-2">
-              <HeroStat k="Readiness" v={`${overallPct}%`} />
-              <HeroStat k="Mastered" v={total > 0 ? `${mastered}/${total}` : '-'} />
+              <HeroStat k="Readiness score" v={overallPct > 0 ? `${overallPct}%` : 'Start a rep'} />
+              <HeroStat k="Challenges mastered" v={total > 0 ? `${mastered} of ${total}` : 'None yet'} />
               <HeroStat
                 k="Archetype"
                 v={profile?.archetype ?? 'Not set'}
@@ -824,7 +844,13 @@ export default function ProgressPage() {
                   <div style={{ height: 5, borderRadius: 999, background: 'rgba(0,0,0,0.08)', overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${m.pct}%`, background: m.color, borderRadius: 999, transition: 'width 700ms cubic-bezier(0.2,0.8,0.2,1)' }} />
                   </div>
-                  <div style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(0,0,0,0.55)', marginTop: 5, fontVariantNumeric: 'tabular-nums' }}>{m.pct}%</div>
+                  {m.hasReps ? (
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(0,0,0,0.55)', marginTop: 5, fontVariantNumeric: 'tabular-nums' }}>{m.pct}%</div>
+                  ) : (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', marginTop: 5, padding: '1px 7px', borderRadius: 999, background: 'rgba(0,0,0,0.07)', fontSize: 10, fontWeight: 800, color: 'rgba(0,0,0,0.45)', letterSpacing: '0.02em' }}>
+                      Building reps
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -873,35 +899,49 @@ export default function ProgressPage() {
                     All
                   </Link>
                 </div>
-                {recentAttempts.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    {recentAttempts.slice(0, 3).map((a, i) => (
-                      <Link
-                        key={i}
-                        href={`/challenges/${a.challenge_id}/feedback`}
-                        className="hover:bg-surface-container"
-                        style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          padding: '8px 9px', borderRadius: 10, textDecoration: 'none',
-                          transition: 'background 150ms',
-                        }}
-                      >
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                          <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--color-on-surface)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {a.challenge_title}
-                          </div>
-                          <div style={{ fontSize: 10.5, color: 'var(--color-on-surface-variant)', marginTop: 1 }}>
-                            {a.pattern_name ? `${a.pattern_name} · ` : ''}
-                            {new Date(a.submitted_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                          </div>
-                        </div>
-                        <span className="material-symbols-outlined" style={{ fontSize: 14, color: 'var(--color-on-surface-variant)', opacity: 0.55 }}>
-                          chevron_right
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
+                {recentAttempts.length > 0 ? (() => {
+                  // Count occurrences per challenge_id to label repeated attempts
+                  const idCount = new Map<string, number>()
+                  const idSeen = new Map<string, number>()
+                  for (const a of recentAttempts) {
+                    idCount.set(a.challenge_id, (idCount.get(a.challenge_id) ?? 0) + 1)
+                  }
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      {recentAttempts.slice(0, 3).map((a, i) => {
+                        const repeatTotal = idCount.get(a.challenge_id) ?? 1
+                        const attemptN = (idSeen.get(a.challenge_id) ?? 0) + 1
+                        idSeen.set(a.challenge_id, attemptN)
+                        const attemptSuffix = repeatTotal > 1 ? ` · Attempt ${attemptN}` : ''
+                        return (
+                          <Link
+                            key={i}
+                            href={`/challenges/${a.challenge_id}/feedback`}
+                            className="hover:bg-surface-container"
+                            style={{
+                              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                              padding: '8px 9px', borderRadius: 10, textDecoration: 'none',
+                              transition: 'background 150ms',
+                            }}
+                          >
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--color-on-surface)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {a.challenge_title}{attemptSuffix}
+                              </div>
+                              <div style={{ fontSize: 10.5, color: 'var(--color-on-surface-variant)', marginTop: 1 }}>
+                                {a.pattern_name ? `${a.pattern_name} · ` : ''}
+                                {new Date(a.submitted_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              </div>
+                            </div>
+                            <span className="material-symbols-outlined" style={{ fontSize: 14, color: 'var(--color-on-surface-variant)', opacity: 0.55 }}>
+                              chevron_right
+                            </span>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )
+                })() : (
                   <p style={{ fontSize: 12, color: 'var(--color-on-surface-variant)', padding: '8px 9px', margin: 0 }}>
                     No practice challenges yet.
                   </p>
@@ -927,6 +967,8 @@ export default function ProgressPage() {
                       const secs = s.durationSeconds ? s.durationSeconds % 60 : 0
                       const duration = s.durationSeconds ? `${mins}:${String(secs).padStart(2, '0')}` : '-'
                       const date = s.endedAt ? new Date(s.endedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''
+                      const displayName = s.companyName && s.companyName !== 'Unknown' ? s.companyName : 'Practice interview'
+                      const formattedScore = formatScore(s.overallScore)
                       return (
                         <Link
                           key={s.id}
@@ -940,19 +982,19 @@ export default function ProgressPage() {
                         >
                           <div style={{ minWidth: 0, flex: 1 }}>
                             <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--color-on-surface)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {s.companyName}
+                              {displayName}
                             </div>
                             <div style={{ fontSize: 10.5, color: 'var(--color-on-surface-variant)', marginTop: 1 }}>
                               {s.roleId} · {duration} · {date}
                             </div>
                           </div>
-                          {s.status === 'completed' && s.overallScore != null ? (
+                          {s.status === 'completed' && formattedScore != null ? (
                             <span style={{
                               background: 'var(--color-primary-fixed)', color: 'var(--color-primary)',
                               padding: '2px 8px', borderRadius: 999,
                               fontSize: 10.5, fontWeight: 800, fontVariantNumeric: 'tabular-nums',
                             }}>
-                              {s.overallScore}
+                              {formattedScore}
                             </span>
                           ) : s.status === 'abandoned' ? (
                             <span style={{

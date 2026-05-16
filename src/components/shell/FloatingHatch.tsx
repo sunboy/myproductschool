@@ -2,11 +2,13 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { CSSProperties, Dispatch, SetStateAction } from 'react'
+import { motion, PresencePanel } from '@/components/motion'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { HatchChoreography } from '@/components/shell/HatchChoreography'
 import { useHatchContext } from '@/context/HatchContext'
 import type { HatchChatMessage, HatchCue } from '@/context/HatchContext'
 import { useHatchSonics } from '@/hooks/useHatchSonics'
+import { buildHatchPageContext, parseHatchPageContext } from '@/lib/hatch/page-context'
 
 // ── Page context ──────────────────────────────────────────────
 
@@ -16,6 +18,8 @@ const noopSetMessages: Dispatch<SetStateAction<HatchChatMessage[]>> = () => unde
 const PAGE_PROMPTS: { pattern: RegExp; message: string }[] = [
   { pattern: /^\/workspace\/challenges\//, message: "Need a nudge on your approach?" },
   { pattern: /^\/challenges\/[^/]+\/feedback/, message: "Want to dig into your feedback?" },
+  { pattern: /^\/explore\/modules\//, message: "Want me to unpack this chapter?" },
+  { pattern: /^\/learn\//, message: "Want me to unpack this chapter?" },
   { pattern: /^\/explore\/plans\//, message: "Thinking about this plan? I can tell you if it fits your gaps." },
   { pattern: /^\/explore\/domains\//, message: "Want to know which challenges here will help you most?" },
   { pattern: /^\/explore/, message: "Not sure where to start? Tell me your role." },
@@ -31,20 +35,50 @@ function getPagePrompt(pathname: string): string {
   return "Ask me anything about FLOW or product thinking."
 }
 
-function parsePageContext(pathname: string): { pageType: string; entityId: string | null } {
-  const m = pathname.match(/^\/workspace\/challenges\/([^/]+)/)
-  if (m) return { pageType: 'challenge', entityId: m[1] }
-  const fb = pathname.match(/^\/challenges\/([^/]+)\/feedback/)
-  if (fb) return { pageType: 'challenge_feedback', entityId: fb[1] }
-  const sp = pathname.match(/^\/explore\/plans\/([^/]+)/)
-  if (sp) return { pageType: 'study_plan', entityId: sp[1] }
-  const dm = pathname.match(/^\/explore\/domains\/([^/]+)/)
-  if (dm) return { pageType: 'domain', entityId: dm[1] }
-  if (pathname.startsWith('/dashboard')) return { pageType: 'dashboard', entityId: null }
-  if (pathname.startsWith('/explore')) return { pageType: 'explore', entityId: null }
-  if (pathname.startsWith('/challenges')) return { pageType: 'practice', entityId: null }
-  if (pathname.startsWith('/progress')) return { pageType: 'progress', entityId: null }
-  return { pageType: 'general', entityId: null }
+const MARKER_SIZE = 34
+const MARKER_MARGIN = 14
+const MARKER_TOP_GUARD = 76
+const MARKER_BOTTOM_GUARD = 76
+
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value))
+}
+
+function isReducedMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+function resolveHatchTarget(targetId: string) {
+  return document.querySelector<HTMLElement>(`[data-hatch-target="${CSS.escape(targetId)}"]`)
+}
+
+function markerPositionForRect(rect: DOMRect, keepVisible: boolean): CSSProperties | null {
+  if (rect.width <= 0 || rect.height <= 0) return null
+  if (window.innerWidth <= MARKER_MARGIN * 2 || window.innerHeight <= MARKER_TOP_GUARD) return null
+
+  const horizontallyReachable = rect.right >= 0 && rect.left <= window.innerWidth
+  const verticallyReachable = rect.bottom >= 0 && rect.top <= window.innerHeight
+  if (!keepVisible && (!horizontallyReachable || !verticallyReachable)) return null
+
+  const maxLeft = Math.max(MARKER_MARGIN, window.innerWidth - MARKER_SIZE - MARKER_MARGIN)
+  const left = clamp(rect.left + rect.width / 2 - MARKER_SIZE / 2, MARKER_MARGIN, maxLeft)
+  const maxTop = Math.max(MARKER_TOP_GUARD, window.innerHeight - MARKER_SIZE - MARKER_BOTTOM_GUARD)
+
+  if (rect.bottom < MARKER_TOP_GUARD) {
+    return keepVisible ? { left, top: MARKER_TOP_GUARD, opacity: 0.7 } : null
+  }
+
+  if (rect.top > window.innerHeight - MARKER_BOTTOM_GUARD) {
+    return keepVisible ? { left, top: maxTop, opacity: 0.7 } : null
+  }
+
+  const placeBelow = rect.top < 120
+  const naturalTop = placeBelow ? rect.bottom + 12 : rect.top - MARKER_SIZE - 12
+  return {
+    left,
+    top: clamp(naturalTop, MARKER_TOP_GUARD, maxTop),
+    opacity: 1,
+  }
 }
 
 // ── Markdown renderer ─────────────────────────────────────────
@@ -165,11 +199,73 @@ export function FloatingHatch() {
 
   useEffect(() => {
     const highlighted = new Set<Element>()
+    let target: HTMLElement | null = null
+    let frame = 0
+    let retryCount = 0
     let scrolledTargetIntoView = false
+    let resizeObserver: ResizeObserver | null = null
+    let mutationObserver: MutationObserver | null = null
 
     function clearHighlights() {
       highlighted.forEach((el) => el.classList.remove('hatch-target-highlight'))
       highlighted.clear()
+    }
+
+    function setObservedTarget(nextTarget: HTMLElement | null) {
+      if (target === nextTarget) return
+      resizeObserver?.disconnect()
+      resizeObserver = null
+      clearHighlights()
+      target = nextTarget
+
+      if (!target) return
+
+      target.classList.add('hatch-target-highlight')
+      highlighted.add(target)
+
+      if (typeof ResizeObserver !== 'undefined') {
+        resizeObserver = new ResizeObserver(requestSync)
+        resizeObserver.observe(target)
+      }
+    }
+
+    function syncMarker(options: { allowScrollIntoView?: boolean } = {}) {
+      if (!activeCue?.target) return
+
+      const nextTarget = resolveHatchTarget(activeCue.target)
+      setObservedTarget(nextTarget)
+
+      if (!target) {
+        setMarkerPosition(null)
+        if (retryCount < 40) {
+          retryCount += 1
+          requestSync()
+        }
+        return
+      }
+
+      retryCount = 0
+      const rect = target.getBoundingClientRect()
+      const outsideComfortZone = rect.bottom < MARKER_TOP_GUARD || rect.top > window.innerHeight - MARKER_BOTTOM_GUARD
+
+      if (options.allowScrollIntoView && activeCue.source === 'tour' && outsideComfortZone && !scrolledTargetIntoView) {
+        scrolledTargetIntoView = true
+        target.scrollIntoView({
+          block: 'center',
+          inline: 'nearest',
+          behavior: isReducedMotion() ? 'auto' : 'smooth',
+        })
+      }
+
+      setMarkerPosition(markerPositionForRect(rect, activeCue.source === 'tour'))
+    }
+
+    function requestSync() {
+      if (frame) return
+      frame = window.requestAnimationFrame(() => {
+        frame = 0
+        syncMarker()
+      })
     }
 
     if (!activeCue?.target || typeof window === 'undefined') {
@@ -177,51 +273,27 @@ export function FloatingHatch() {
       return clearHighlights
     }
 
-    const selector = `[data-hatch-target="${CSS.escape(activeCue.target)}"]`
-    const target = document.querySelector<HTMLElement>(selector)
-    if (!target) {
-      setMarkerPosition(null)
-      return clearHighlights
-    }
-
-    target.classList.add('hatch-target-highlight')
-    highlighted.add(target)
-
-    const keepTargetReachable = () => {
-      const rect = target.getBoundingClientRect()
-      const offscreen = rect.bottom < 72 || rect.top > window.innerHeight - 72
-      if (offscreen && activeCue.source === 'tour' && !scrolledTargetIntoView) {
-        scrolledTargetIntoView = true
-        target.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' })
-        return
-      }
-      if (offscreen) {
-        setMarkerPosition(null)
-        return
-      }
-
-      const markerWidth = 34
-      const left = Math.max(14, Math.min(window.innerWidth - markerWidth - 14, rect.left + rect.width / 2 - markerWidth / 2))
-      const placeBelow = rect.top < 120
-      const top = placeBelow
-        ? Math.min(window.innerHeight - 58, rect.bottom + 12)
-        : Math.max(78, rect.top - 46)
-
-      setMarkerPosition({
-        left,
-        top,
-      })
-    }
-
-    keepTargetReachable()
-    target.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' })
+    syncMarker({ allowScrollIntoView: true })
     if (activeCue.source === 'tour') play('nudge')
-    window.addEventListener('resize', keepTargetReachable)
-    window.addEventListener('scroll', keepTargetReachable, true)
+
+    window.addEventListener('resize', requestSync)
+    window.addEventListener('scroll', requestSync, true)
+    window.visualViewport?.addEventListener('resize', requestSync)
+    window.visualViewport?.addEventListener('scroll', requestSync)
+
+    if (typeof MutationObserver !== 'undefined') {
+      mutationObserver = new MutationObserver(requestSync)
+      mutationObserver.observe(document.body, { childList: true, subtree: true })
+    }
 
     return () => {
-      window.removeEventListener('resize', keepTargetReachable)
-      window.removeEventListener('scroll', keepTargetReachable, true)
+      if (frame) window.cancelAnimationFrame(frame)
+      window.removeEventListener('resize', requestSync)
+      window.removeEventListener('scroll', requestSync, true)
+      window.visualViewport?.removeEventListener('resize', requestSync)
+      window.visualViewport?.removeEventListener('scroll', requestSync)
+      resizeObserver?.disconnect()
+      mutationObserver?.disconnect()
       clearHighlights()
       setMarkerPosition(null)
     }
@@ -254,7 +326,7 @@ export function FloatingHatch() {
     setInput('')
     setLoading(true)
 
-    const { pageType, entityId } = parsePageContext(pathname)
+    const pageContext = buildHatchPageContext(pathname)
 
     try {
       const res = await fetch('/api/hatch/chat', {
@@ -265,7 +337,7 @@ export function FloatingHatch() {
           history: messages,
           challengeId: null,
           challengePrompt: null,
-          pageContext: { pageType, entityId, pathname },
+          pageContext,
         }),
       })
       const data = res.ok ? await res.json() : null
@@ -390,11 +462,14 @@ export function FloatingHatch() {
   const wrapperPositionClass = `right-4 md:right-5 ${isWorkspace ? 'bottom-24 md:bottom-20' : 'bottom-24 md:bottom-5'}`
   const currentAnimation = activeCue?.animation ?? (open ? 'listening' : 'idle-hover')
   const currentGlyphState = open ? 'listening' : activeCue?.state ?? glyphState
+  const currentPageType = parseHatchPageContext(pathname).pageType
 
   if (isInWorkspace && !activeCue) return null
 
   return (
     <div
+      data-hatch-ignore
+      data-hatch-chat
       data-testid="floating-hatch"
       className={`fixed z-[60] flex flex-col items-end gap-2 pointer-events-none ${wrapperPositionClass}`}
     >
@@ -410,8 +485,8 @@ export function FloatingHatch() {
       )}
 
       {/* ── Floating chat panel ── */}
-      {open && (
-        <div
+      <PresencePanel
+        isOpen={open}
           className="flex flex-col rounded-2xl overflow-hidden pointer-events-auto"
           style={{
             width: 320,
@@ -419,7 +494,6 @@ export function FloatingHatch() {
             background: 'var(--color-surface)',
             border: '1px solid var(--color-outline-variant)',
             boxShadow: '0 16px 48px -8px rgba(30,27,20,0.22), 0 2px 8px rgba(30,27,20,0.08)',
-            animation: 'hatchSlideUp 0.2s cubic-bezier(0.34,1.56,0.64,1) both',
           }}
         >
           {/* Header */}
@@ -434,8 +508,9 @@ export function FloatingHatch() {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-on-surface font-headline leading-tight">Hatch</p>
               <p className="text-[10px] text-on-surface-variant leading-tight">
-                {parsePageContext(pathname).pageType === 'challenge' ? 'Coaching on this challenge' :
-                 parsePageContext(pathname).pageType === 'progress' ? 'Reviewing your progress' :
+                {currentPageType === 'challenge' ? 'Coaching on this challenge' :
+                 currentPageType === 'learning_module' ? 'Reading this module with you' :
+                 currentPageType === 'progress' ? 'Reviewing your progress' :
                  'Your product thinking coach'}
               </p>
             </div>
@@ -554,14 +629,13 @@ export function FloatingHatch() {
               </button>
             </div>
           </div>
-        </div>
-      )}
+      </PresencePanel>
 
       {/* ── Contextual bubble ── */}
-      {showBubble && (
-        <div
+      <PresencePanel
+        isOpen={showBubble}
           className={`relative select-none pointer-events-auto ${activeCue ? 'cursor-default' : 'cursor-pointer'}`}
-          style={{ maxWidth: activeCue ? 260 : 220, animation: 'hatchFadeUp 0.2s ease both' }}
+          style={{ maxWidth: activeCue ? 260 : 220 }}
           onClick={activeCue ? undefined : toggleOpen}
           data-testid={activeCue ? 'hatch-cue-bubble' : 'hatch-page-bubble'}
         >
@@ -597,20 +671,37 @@ export function FloatingHatch() {
             style={{ background: 'var(--color-inverse-surface)' }}
           />
           <button
+            type="button"
             onClick={activeCue ? dismissCue : dismissBubble}
-            className="absolute -top-2 -right-2 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
-            style={{ background: 'var(--color-surface-container-highest)', color: 'var(--color-on-surface-variant)' }}
+            className="absolute -top-3 -right-3 flex h-7 w-7 items-center justify-center rounded-full border text-on-surface shadow-[0_10px_24px_-12px_rgba(0,0,0,0.55)] transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/45"
+            style={{
+              background: 'var(--color-surface)',
+              borderColor: 'rgba(255,255,255,0.55)',
+              color: 'var(--color-on-surface)',
+            }}
             aria-label="Dismiss"
+            title="Dismiss"
           >
-            ×
+            <span className="material-symbols-outlined text-[16px] leading-none">close</span>
           </button>
-        </div>
-      )}
+      </PresencePanel>
 
       {/* ── FAB ── */}
-      <button
+      <motion.button
         onClick={activeCue ? handleCuePrimary : toggleOpen}
         className="pointer-events-auto rounded-2xl flex items-center justify-center relative transition-transform active:scale-95 hover:scale-105"
+        animate={{
+          y: open ? 0 : [0, -2, 0],
+          boxShadow: activeCue
+            ? '0 10px 28px -8px rgba(36,62,40,0.62)'
+            : '0 6px 24px -6px rgba(36,62,40,0.45)',
+        }}
+        transition={{
+          y: { duration: 3.6, repeat: Infinity, ease: 'easeInOut' },
+          boxShadow: { duration: 0.22 },
+        }}
+        whileHover={{ scale: 1.05, y: -2 }}
+        whileTap={{ scale: 0.95 }}
         style={{
           width: 52,
           height: 52,
@@ -618,7 +709,6 @@ export function FloatingHatch() {
             ? 'linear-gradient(135deg, #264a34, #1a3325)'
             : 'linear-gradient(135deg, #4a7c59, #264a34)',
           border: '1px solid rgba(255,255,255,0.15)',
-          boxShadow: '0 6px 24px -6px rgba(36,62,40,0.45)',
         }}
         aria-label={open ? 'Close Hatch' : 'Ask Hatch'}
         data-testid="hatch-fab"
@@ -633,18 +723,7 @@ export function FloatingHatch() {
             style={{ background: 'var(--color-tertiary)', borderColor: 'var(--color-background)' }}
           />
         )}
-      </button>
-
-      <style>{`
-        @keyframes hatchSlideUp {
-          from { opacity: 0; transform: translateY(12px) scale(0.96); }
-          to   { opacity: 1; transform: translateY(0)    scale(1); }
-        }
-        @keyframes hatchFadeUp {
-          from { opacity: 0; transform: translateY(6px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
+      </motion.button>
     </div>
   )
 }

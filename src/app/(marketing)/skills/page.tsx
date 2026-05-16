@@ -9,13 +9,14 @@ import {
 import { JsonLdScript, breadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { buildMetadata, canonicalUrl } from '@/lib/seo/site'
 import { HACKPRODUCT_POSITIONING, itemListJsonLd, SKILL_DIRECTORIES } from '@/lib/seo/directory-content'
+import { OUTCOME_PAGES } from '@/lib/seo/outcomes'
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Tech Skills Directory for AI-Era Interviews | HackProduct',
+  title: 'Skills Catalog for Career-Changing Judgment | HackProduct',
   description:
-    'Explore HackProduct skill directories for product sense, system design, data modeling, SQL, coding, and AI-native interview practice.',
+    'Explore HackProduct discipline tracks for product sense, system design, data modeling, SQL, coding, and AI-native workflows, mapped to interviews, role transitions, promotions, and proof of level.',
   path: '/skills',
-  keywords: ['product sense practice', 'system design practice', 'data modeling practice', 'SQL interview practice', 'coding interview alternative'],
+  keywords: ['product sense practice', 'system design practice', 'data modeling practice', 'SQL interview practice', 'AI-native workflows'],
 })
 
 export default function SkillsDirectoryPage() {
@@ -37,16 +38,36 @@ export default function SkillsDirectoryPage() {
         ]}
       />
       <DirectoryHero
-        eyebrow="Skill directory"
-        title="Practice the judgment layer of modern tech careers."
+        eyebrow="Skills catalog"
+        title="Pick the discipline that strengthens your next career move."
         description={HACKPRODUCT_POSITIONING.subhead}
-        secondaryHref="/alternatives/leetcode"
-        secondaryLabel="Compare with LeetCode"
+        ctaHref="/practice"
+        ctaLabel="Browse reps"
+        secondaryHref="/flow"
+        secondaryLabel="See FLOW"
       />
       <DirectorySection
+        eyebrow="Outcome filters"
+        title="Start from the career goal, then choose the track."
+        description="Each skill page shows what the discipline trains, where FLOW applies, and which public reps prove the skill without replacing the full app workspace."
+      >
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+          {OUTCOME_PAGES.map((outcome) => (
+            <DirectoryCard
+              key={outcome.slug}
+              href={outcome.path}
+              title={outcome.shortTitle}
+              description={outcome.summary}
+              meta="Career goal"
+            />
+          ))}
+        </div>
+      </DirectorySection>
+      <DirectorySection
         eyebrow="All tracks"
-        title="One directory for product, systems, data, SQL, and coding."
-        description="Each public hub explains the skill, shows representative scenarios, and points to related study plans, concepts, and live interview practice."
+        title="One catalog for product, systems, data, SQL, coding, and AI-native work."
+        description="Each public hub explains the skill, shows FLOW mapping, previews representative reps, and points toward the career outcomes where that skill creates leverage."
+        shaded
       >
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {SKILL_DIRECTORIES.map((skill) => (

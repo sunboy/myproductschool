@@ -8,14 +8,15 @@ export function DirectoryNav() {
           HackProduct
         </Link>
         <div className="hidden items-center gap-5 text-sm font-semibold text-on-surface-variant md:flex">
+          <Link className="hover:text-primary" href="/interview-prep">Outcomes</Link>
+          <Link className="hover:text-primary" href="/flow">FLOW</Link>
           <Link className="hover:text-primary" href="/skills">Skills</Link>
           <Link className="hover:text-primary" href="/practice">Practice</Link>
           <Link className="hover:text-primary" href="/study-plans">Study plans</Link>
-          <Link className="hover:text-primary" href="/companies">Companies</Link>
-          <Link className="hover:text-primary" href="/glossary">Glossary</Link>
         </div>
         <Link
           href="/login"
+          prefetch={false}
           className="inline-flex items-center rounded-full bg-[#1e3528] px-4 py-2 text-sm font-bold text-[#f3ede0] no-underline transition-transform hover:-translate-y-0.5"
         >
           Start free
@@ -198,10 +199,10 @@ export function BulletGrid({ items }: { items: string[] }) {
 }
 
 export function CtaBand({
-  title = 'Practice with Hatch when you are ready.',
-  description = 'Public directories show the map. The app gives you live reps, rubric feedback, and AI coaching across the full interview loop.',
+  title = 'Start training for your next career move.',
+  description = 'Public previews show the map. The app gives you reps, Hatch follow-ups, FLOW feedback, weak-move drills, and saved proof of progress.',
   href = '/login',
-  label = 'Start free',
+  label = 'Start a free rep',
 }: {
   title?: string
   description?: string

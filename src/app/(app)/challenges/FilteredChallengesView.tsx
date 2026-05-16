@@ -6,6 +6,7 @@ import { type Discipline } from '@/components/challenges/DisciplineTabStrip'
 import { FilterDropdownBar, type FilterState } from '@/components/challenges/FilterDropdownBar'
 import { ActiveFilterPills } from '@/components/challenges/ActiveFilterPills'
 import { FilterBottomSheet } from '@/components/challenges/FilterBottomSheet'
+import { MotionList } from '@/components/motion'
 import { AppTooltip } from '@/components/ui/AppTooltip'
 import { LockedChallengeGrid } from './LockedChallengeGrid'
 import type { ChallengeWithDomain } from '@/lib/types'
@@ -281,8 +282,9 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
 
   const disciplineCounts = useMemo(() => {
     const counts = new Map<Discipline, number>()
+    const SUB_DISCIPLINES = DISCIPLINES.filter(e => e.key !== 'all')
 
-    DISCIPLINES.forEach((entry) => {
+    SUB_DISCIPLINES.forEach((entry) => {
       counts.set(
         entry.key,
         challenges.filter((challenge) => (
@@ -290,6 +292,10 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
         )).length,
       )
     })
+
+    // "All practice" total = sum of categorised sub-disciplines (avoids orphaned types inflating count)
+    const subTotal = SUB_DISCIPLINES.reduce((sum, e) => sum + (counts.get(e.key) ?? 0), 0)
+    counts.set('all', subTotal)
 
     return counts
   }, [challenges, filters])
@@ -310,11 +316,17 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
   }
 
   function handleToggleView() {
-    updateParams((params) => {
-      if (listView) params.set('view', 'grid')
-      else params.delete('view')
-    })
+    const params = new URLSearchParams(searchString)
+    if (listView) params.set('view', 'grid')
+    else params.delete('view')
+
+    const nextSearch = params.toString()
+    window.history.replaceState(null, '', nextSearch ? `${pathname}?${nextSearch}` : pathname)
   }
+
+  const resultsLayoutClass = listView
+    ? 'grid grid-cols-1 gap-2'
+    : 'grid grid-cols-1 sm:grid-cols-3 gap-3'
 
   return (
     <div className="-mx-4 flex min-w-0 flex-col sm:-mx-6">
@@ -408,6 +420,24 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
 
       {/* Results */}
       <div className="px-4 pt-4 sm:px-6">
+        {listView && filteredChallenges.length > 0 && discipline !== 'all' && (
+          <p className="mb-2 text-[11px] font-label text-on-surface-variant">
+            <span className="inline-flex items-center gap-1">
+              <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 0" }}>radio_button_unchecked</span>
+              Not started
+            </span>
+            {' · '}
+            <span className="inline-flex items-center gap-1">
+              <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 0" }}>change_history</span>
+              Attempted
+            </span>
+            {' · '}
+            <span className="inline-flex items-center gap-1">
+              <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+              Completed
+            </span>
+          </p>
+        )}
         {filteredChallenges.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
             <p className="font-headline text-base font-bold text-on-surface">No challenges match those filters</p>
@@ -457,27 +487,33 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
                       see all {discChallenges.length} →
                     </button>
                   </div>
-                  <div className={listView ? 'flex flex-col gap-2' : 'grid grid-cols-1 sm:grid-cols-3 gap-3'}>
+                  <MotionList
+                    layoutKey={`practice-${disc}`}
+                    className={resultsLayoutClass}
+                  >
                     <LockedChallengeGrid
                       challenges={preview}
                       paradigms={previewParadigms}
                       listView={listView}
                       returnHref={returnHref}
                     />
-                  </div>
+                  </MotionList>
                 </section>
               )
             })}
           </div>
         ) : (
-          <div className={listView ? 'flex flex-col gap-2' : 'grid grid-cols-1 sm:grid-cols-3 gap-3'}>
+          <MotionList
+            layoutKey={`practice-${discipline}`}
+            className={resultsLayoutClass}
+          >
             <LockedChallengeGrid
               challenges={filteredChallenges}
               paradigms={paradigms}
               listView={listView}
               returnHref={returnHref}
             />
-          </div>
+          </MotionList>
         )}
       </div>
     </div>

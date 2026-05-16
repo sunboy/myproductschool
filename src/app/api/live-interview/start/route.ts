@@ -79,7 +79,12 @@ export async function POST(request: Request) {
       started_at: new Date().toISOString(),
       system_prompt: built.systemPrompt,
       scenario_rubric: built.scenarioRubric,
-      calibration_snapshot: built.calibrationSnapshot,
+      calibration_snapshot: {
+        ...built.calibrationSnapshot,
+        companyName: built.companyName,
+        scenarioTitle: built.scenarioTitle,
+        effectiveDiscipline: built.effectiveDiscipline,
+      },
     })
     .select('id')
     .single()

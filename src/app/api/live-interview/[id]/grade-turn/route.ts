@@ -73,6 +73,16 @@ interface GradingResult {
   emotionalBeat: string
   sessionPhase: string
   memoryItems: string[]
+  focusEvent: LiveInterviewFocusEvent | null
+}
+
+interface LiveInterviewFocusEvent {
+  id: string
+  kind: 'challenge' | 'topic' | 'rubric' | 'flow-signal' | 'memory'
+  title: string
+  body: string
+  confidence?: number
+  sourceTurnId?: string
 }
 
 /**
@@ -255,6 +265,7 @@ Guidelines:
       emotionalBeat: 'neutral',
       sessionPhase: 'middle',
       memoryItems: [],
+      focusEvent: null,
     } satisfies GradingResult)
   }
 
@@ -282,6 +293,25 @@ Guidelines:
 
   const rubricAlignment = typeof parsed.rubric_alignment === 'string' && VALID_RUBRIC_ALIGNMENTS.has(parsed.rubric_alignment)
     ? parsed.rubric_alignment
+    : null
+
+  const focusEvent: LiveInterviewFocusEvent | null = signal
+    ? {
+        id: `turn-${typeof turnIndex === 'number' ? turnIndex : Date.now()}-${flowMove ?? 'signal'}`,
+        kind: rubricAlignment ? 'rubric' : 'flow-signal',
+        title: rubricAlignment
+          ? `Rubric signal: ${rubricAlignment.replace('_', ' ')}`
+          : `${flowMove ? flowMove.charAt(0).toUpperCase() + flowMove.slice(1) : 'Interview'} signal detected`,
+        body: signal,
+        confidence: rubricAlignment === 'strong' ? 0.9 : rubricAlignment === 'partial' ? 0.7 : undefined,
+      }
+    : memoryItems[0]
+    ? {
+        id: `memory-${typeof turnIndex === 'number' ? turnIndex : Date.now()}`,
+        kind: 'memory',
+        title: 'Important thread to remember',
+        body: memoryItems[0],
+      }
     : null
 
   // Consolidate session updates into a single DB call
@@ -312,7 +342,7 @@ Guidelines:
     ...(typeof session.calibration_snapshot === 'object' && session.calibration_snapshot !== null
       ? session.calibration_snapshot
       : {}),
-    _latestGrading: { emotionalBeat, sessionPhase },
+    _latestGrading: { emotionalBeat, sessionPhase, focusEvent },
   }
 
   if (Object.keys(sessionUpdate).length > 0) {
@@ -353,6 +383,7 @@ Guidelines:
     emotionalBeat,
     sessionPhase,
     memoryItems,
+    focusEvent,
   }
 
   return Response.json(result)

@@ -7,7 +7,7 @@ import { HatchGlyph } from './HatchGlyph'
 const navItems = [
   { href: '/dashboard',       icon: 'home',           label: 'Home'       },
   { href: '/explore',         icon: 'explore',        label: 'Explore'    },
-  { href: '/challenges',      icon: 'fitness_center', label: 'Practice'   },
+  { href: '/challenges',      icon: 'track_changes', label: 'Practice'   },
   { href: '/live-interviews', icon: 'mic',            label: 'Interviews' },
   { href: '/progress',        icon: 'bar_chart',      label: 'Progress'   },
 ]

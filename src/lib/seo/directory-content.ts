@@ -72,11 +72,11 @@ export interface GlossaryDirectoryEntry {
 }
 
 export const HACKPRODUCT_POSITIONING = {
-  headline: 'The AI-native learning platform for product-minded engineers.',
+  headline: 'Train for the career moments where judgment gets tested.',
   subhead:
-    'Practice product sense, system design, data modeling, SQL, coding, and live interviews with Hatch coaching you in real time. Build the judgment AI cannot hand you.',
+    'HackProduct helps you prepare for interviews, transition roles, uplevel on the job, and negotiate from stronger evidence by practicing product sense, systems, data, SQL, coding, and AI-native workflows with Hatch.',
   llmSummary:
-    'HackProduct helps engineers, PMs, data builders, and students practice durable tech judgment in an AI world: product sense, systems thinking, data modeling, SQL, coding, and live interview communication.',
+    'HackProduct is an AI-native practice gym for career-changing product and technical judgment. Learners run reps across product sense, systems thinking, data modeling, SQL, coding, AI-native workflows, and live interview communication with Hatch coaching and FLOW feedback.',
   primaryAudiences: ['Software engineers', 'Product managers', 'Data engineers', 'ML engineers', 'technical founders', 'students preparing for tech interviews'],
 }
 
@@ -259,6 +259,43 @@ export const SKILL_DIRECTORIES: SkillDirectoryEntry[] = [
       {
         q: 'Does coding practice include product thinking?',
         a: 'Yes. Real engineering interviews increasingly test whether you understand constraints, users, APIs, data, and trade-offs, not just syntax.',
+      },
+    ],
+  },
+  {
+    slug: 'ai-native-workflows',
+    title: 'AI-native workflow practice',
+    shortTitle: 'AI-native workflows',
+    eyebrow: 'Work judgment with AI in the loop',
+    metaTitle: 'AI-Native Workflow Practice for Product-Minded Builders | HackProduct',
+    metaDescription:
+      'Practice AI-native workflows: context engineering, model evaluation, agent handoffs, human review, and product judgment with Hatch coaching.',
+    summary:
+      'AI-native workflow practice trains the judgment behind using models well: what context to provide, when to trust output, how to review it, and how to turn model work into product value.',
+    thesis:
+      'AI raises the floor on execution. Career leverage shifts toward people who can design, evaluate, and communicate AI-assisted work instead of merely prompting for output.',
+    audience: ['Engineers adapting to AI-assisted development', 'PMs shipping AI products', 'Founders building model-backed workflows'],
+    outcomes: ['Design useful human-in-the-loop workflows', 'Review AI output critically', 'Define evals and acceptance criteria', 'Communicate AI trade-offs'],
+    practiceTypes: ['Context engineering', 'AI-assisted debugging', 'Evals', 'Agentic workflow design', 'Model quality trade-offs'],
+    samplePrompts: [
+      'Design an AI support triage workflow that escalates safely.',
+      'Review a generated implementation plan and find the missing constraints.',
+      'Define evaluation criteria for an AI feature that summarizes customer calls.',
+    ],
+    related: [
+      { label: 'Coding practice', href: '/skills/coding' },
+      { label: 'AI-assisted coding preview', href: '/practice/ai-assisted-coding-debugging' },
+      { label: 'AI product sense study plan', href: '/study-plans/ai-product-sense' },
+      { label: 'Role transitions', href: '/role-transitions' },
+    ],
+    faqs: [
+      {
+        q: 'Is this just prompt engineering?',
+        a: 'No. Prompts are one piece. The harder skill is designing the workflow, choosing evidence, reviewing output, and deciding what should happen next.',
+      },
+      {
+        q: 'Why practice AI-native workflows for interviews?',
+        a: 'More interviews now ask how you use AI responsibly: constraints, evals, review loops, and trade-offs matter more than flashy demos.',
       },
     ],
   },
@@ -573,6 +610,11 @@ export function getGlossaryTerm(slug: string) {
 
 export const PUBLIC_DIRECTORY_PATHS = [
   '/',
+  '/interview-prep',
+  '/role-transitions',
+  '/uplevel',
+  '/salary-negotiation',
+  '/flow',
   '/skills',
   ...SKILL_DIRECTORIES.map((entry) => `/skills/${entry.slug}`),
   '/companies',

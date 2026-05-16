@@ -1,26 +1,67 @@
-import { RoleWordSearch, ToolsSystemPreview } from './LivePreviews'
+import Link from 'next/link'
+import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { FeedbackConsole, RoadmapPreview } from './LivePreviews'
+
+const STEPS = [
+  ['1', 'Pick a career moment', 'Interview loop, role transition, promotion packet, or proof of level.'],
+  ['2', 'Run a realistic rep', 'Answer a product, systems, data, SQL, coding, or AI-native prompt.'],
+  ['3', 'Get pushed by Hatch', 'Follow-up questions expose shallow frames and missing trade-offs.'],
+  ['4', 'Save the receipt', 'FLOW scores, weak moves, and artifacts become evidence you can revisit.'],
+] as const
+
+const PROOF = [
+  ['Weak-move map', 'See whether Frame, List, Optimize, or Win is holding you back.'],
+  ['Career artifacts', 'Turn strong reps into decision memos, interview notes, and level evidence.'],
+  ['Learner DNA', 'Track where your operating judgment is getting stronger over time.'],
+] as const
 
 export function Quotes() {
   return (
     <>
-      <section className="land-tools">
-        <div className="pixel-tree pixel-tree--tools-left" aria-hidden />
-        <div className="pixel-tree pixel-tree--tools-right" aria-hidden />
-        <div className="land-tools-inner">
-          <div>
-            <h2>All the tools and systems your prep needs</h2>
-            <p>You stay in control. Hatch can plan, coach, grade, replay, and schedule the next rep, but nothing replaces your judgment.</p>
+      <section className="mkt-section mkt-steps">
+        <div className="mkt-section-head">
+          <p>Practice gym</p>
+          <h2>One loop, repeated until your answer holds up.</h2>
+        </div>
+        <div className="mkt-step-showcase">
+          <div className="mkt-step-grid">
+            {STEPS.map(([number, title, body]) => (
+              <article key={title} className="mkt-step-card">
+                <span>{number}</span>
+                <h3>{title}</h3>
+                <p>{body}</p>
+              </article>
+            ))}
           </div>
-          <ToolsSystemPreview />
+          <RoadmapPreview />
         </div>
       </section>
 
-      <section className="land-industries">
-        <div className="land-section-head land-section-head--center">
-          <h2>Build across roles and interview loops</h2>
-          <p>From software products to marketplaces, data platforms, AI agents, and growth loops.</p>
+      <section id="proof" className="mkt-section mkt-proof">
+        <div className="mkt-proof-panel">
+          <div className="mkt-proof-copy">
+            <p>Proof of progress</p>
+            <h2>Receipts beat vibes.</h2>
+            <p>
+              HackProduct does not promise compensation outcomes. It helps you
+              build inspectable proof of operating judgment before interviews,
+              promotion conversations, and negotiation prep.
+            </p>
+            <Link href="/salary-negotiation" className="mkt-text-link">See salary proof path</Link>
+          </div>
+          <div className="mkt-proof-list">
+            <FeedbackConsole />
+            {PROOF.map(([title, body]) => (
+              <article key={title}>
+                <HatchGlyph state="reviewing" size={30} />
+                <div>
+                  <h3>{title}</h3>
+                  <p>{body}</p>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
-        <RoleWordSearch />
       </section>
     </>
   )

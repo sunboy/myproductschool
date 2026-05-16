@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { LiveInterviewPersona } from '@/lib/mock-live-interviews'
 import type { ScenarioBrief } from './page'
 import type { LoopDiscipline } from '@/lib/interview-loops/types'
-import StartInterviewButton from './StartInterviewButton'
 import SingleRoundPicker from './SingleRoundPicker'
+import { MotionList, MotionListItem, useMotionPreference } from '@/components/motion'
 
 // ── Design tokens (exact from styles.css) ─────────────────────────────────────
 const T = {
@@ -34,18 +34,6 @@ const T = {
   success:               '#2f7a4a',
   btnDarkBg:             '#1f2421',
   btnDarkText:           '#f0ede4',
-}
-
-const DIFF_LABEL: Record<string, string> = {
-  standard: 'Standard',
-  advanced: 'Advanced',
-  staff_plus: 'Staff+',
-}
-
-const DIFF_DOT: Record<string, string> = {
-  standard: T.primary,
-  advanced: T.amber,
-  staff_plus: T.danger,
 }
 
 // ── Chip (matches .chip from styles.css) ──────────────────────────────────────
@@ -1013,11 +1001,15 @@ interface PastSession {
   id: string; company: string; role: string
   score: number | null; grade: string | null
   duration: string; date: string
+  status: 'completed' | 'abandoned' | string
+  scenarioTitle: string | null
+  disciplineLabel: string | null
 }
 
 function PastSessionsTable() {
   const [sessions, setSessions] = useState<PastSession[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/live-interview/history')
@@ -1028,6 +1020,9 @@ function PastSessionsTable() {
             id: string; companyName: string; roleId: string
             overallScore: number | null; grade?: string | null
             durationSeconds: number | null; endedAt: string | null
+            status?: string
+            scenarioTitle?: string | null
+            disciplineLabel?: string | null
           }) => {
             const mins = s.durationSeconds ? Math.floor(s.durationSeconds / 60) : 0
             const secs = s.durationSeconds ? s.durationSeconds % 60 : 0
@@ -1036,19 +1031,16 @@ function PastSessionsTable() {
               score: s.overallScore, grade: s.grade ?? null,
               duration: s.durationSeconds ? `${mins}:${String(secs).padStart(2, '0')}` : '-',
               date: s.endedAt ? new Date(s.endedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '',
+              status: s.status ?? 'completed',
+              scenarioTitle: s.scenarioTitle ?? null,
+              disciplineLabel: s.disciplineLabel ?? null,
             }
           }))
         }
       })
-      .catch(() => {})
+      .catch(() => setError('Could not load past sessions.'))
       .finally(() => setLoading(false))
   }, [])
-
-  const displaySessions: PastSession[] = sessions.length > 0 ? sessions : [
-    { id: 's1', company: 'Meta',   role: 'PM',       score: 82, grade: 'B+', duration: '28:14', date: 'Apr 18' },
-    { id: 's2', company: 'Google', role: 'PM',       score: 71, grade: 'B-', duration: '22:50', date: 'Apr 14' },
-    { id: 's3', company: 'Stripe', role: 'SWE',      score: null, grade: null, duration: '-',  date: 'Apr 10' },
-  ]
 
   if (loading) return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1056,50 +1048,113 @@ function PastSessionsTable() {
     </div>
   )
 
-  return (
-    <div style={{ background: T.surface, border: `1px solid ${T.outlineFaint}`, borderRadius: 24, overflow: 'hidden' }}>
-      {displaySessions.map((s, i) => (
-        <div key={s.id} style={{
-          display: 'grid', gridTemplateColumns: '28px 1fr auto auto',
-          alignItems: 'center', gap: 16, padding: '14px 20px',
-          borderBottom: i < displaySessions.length - 1 ? `1px solid ${T.outlineFaint}` : 'none',
-        }}>
-          <span className="material-symbols-outlined" style={{
-            fontSize: 20, fontVariationSettings: "'FILL' 1",
-            color: s.score != null ? T.success : T.onSurfaceMuted,
-          }}>
-            {s.score != null ? 'check_circle' : 'cancel'}
-          </span>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 14, color: T.onSurface }}>
-              {s.company} <span style={{ fontWeight: 400, color: T.onSurfaceMuted }}>· {s.role}</span>
-            </div>
-            <div style={{ fontSize: 12, color: T.onSurfaceMuted }}>{s.duration} · {s.date}</div>
-          </div>
-          {s.score != null ? (
-            <span style={{ fontSize: 13, fontWeight: 800, color: T.primary, background: T.primaryFixed, padding: '4px 10px', borderRadius: 999 }}>
-              {s.score} · {s.grade}
-            </span>
-          ) : (
-            <span style={{ fontSize: 12, color: T.onSurfaceMuted, fontStyle: 'italic' }}>incomplete</span>
-          )}
-          {s.score != null ? (
-            <Link
-              href={`/live-interviews/${s.id}/debrief`}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
-                padding: '6px 12px', borderRadius: 999, textDecoration: 'none',
-                background: 'transparent', color: T.onSurface,
-                border: `1px solid ${T.outlineVariant}`,
-                fontSize: 12, fontWeight: 700,
-              }}
-            >
-              Debrief <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_forward</span>
-            </Link>
-          ) : <span />}
-        </div>
-      ))}
+  if (error) return (
+    <div style={{ borderRadius: 20, padding: 18, background: T.surface, border: `1px solid ${T.outlineFaint}`, color: T.onSurfaceVariant, fontSize: 13 }}>
+      {error}
     </div>
+  )
+
+  if (sessions.length === 0) return (
+    <div style={{
+      borderRadius: 24,
+      padding: 22,
+      background: T.surface,
+      border: `1px dashed ${T.outlineVariant}`,
+      display: 'grid',
+      gridTemplateColumns: '44px 1fr',
+      gap: 14,
+      alignItems: 'start',
+    }}>
+      <span className="material-symbols-outlined" style={{
+        width: 44, height: 44, borderRadius: 16,
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        background: T.primaryContainer, color: T.primary, fontSize: 22, fontVariationSettings: "'FILL' 1",
+      }}>
+        history
+      </span>
+      <span>
+        <span style={{ display: 'block', fontSize: 15, fontWeight: 800, color: T.onSurface }}>No past sessions yet.</span>
+        <span style={{ display: 'block', marginTop: 4, fontSize: 13, lineHeight: 1.55, color: T.onSurfaceMuted }}>
+          Completed interviews will appear here with company, role, prompt, discipline, score, and debrief access.
+        </span>
+      </span>
+    </div>
+  )
+
+  return (
+    <MotionList layoutKey="past-live-interview-sessions" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {sessions.map((s) => {
+        const isScored = s.score != null
+        const statusLabel = s.status === 'abandoned' ? 'Incomplete' : isScored ? 'Debrief ready' : 'Completed'
+        return (
+          <MotionListItem key={s.id}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '36px minmax(0, 1fr)',
+              alignItems: 'start',
+              gap: 16,
+              padding: '14px 20px',
+              background: T.surface,
+              border: `1px solid ${T.outlineFaint}`,
+              borderRadius: 20,
+            }}>
+              <span className="material-symbols-outlined" style={{
+                width: 36,
+                height: 36,
+                borderRadius: 14,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: isScored ? T.primaryContainer : T.surfaceContainerLow,
+                fontSize: 20,
+                fontVariationSettings: "'FILL' 1",
+                color: isScored ? T.success : T.onSurfaceMuted,
+              }}>
+                {isScored ? 'check_circle' : s.status === 'abandoned' ? 'pause_circle' : 'task_alt'}
+              </span>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
+                  <div style={{ minWidth: 0, flex: '1 1 260px' }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: T.onSurface }}>
+                      {s.company} <span style={{ fontWeight: 400, color: T.onSurfaceMuted }}>· {s.role}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: T.onSurfaceMuted, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {s.scenarioTitle ?? 'Persona-led interview'}{s.disciplineLabel ? ` · ${s.disciplineLabel}` : ''}
+                    </div>
+                  </div>
+                  {isScored ? (
+                    <span style={{ fontSize: 13, fontWeight: 800, color: T.primary, background: T.primaryFixed, padding: '4px 10px', borderRadius: 999 }}>
+                      {s.score} · {s.grade}
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: 12, color: T.onSurfaceMuted, fontStyle: 'italic' }}>{s.status === 'abandoned' ? 'stopped' : 'unscored'}</span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginTop: 10 }}>
+                  <div style={{ fontSize: 11.5, color: T.onSurfaceMuted }}>
+                    {s.duration} · {s.date || 'Date unavailable'} · {statusLabel}
+                  </div>
+                  {isScored ? (
+                    <Link
+                      href={`/live-interviews/${s.id}/debrief`}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                        padding: '6px 12px', borderRadius: 999, textDecoration: 'none',
+                        background: 'transparent', color: T.onSurface,
+                        border: `1px solid ${T.outlineVariant}`,
+                        fontSize: 12, fontWeight: 700,
+                      }}
+                    >
+                      Debrief <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_forward</span>
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </MotionListItem>
+        )
+      })}
+    </MotionList>
   )
 }
 
@@ -1112,6 +1167,23 @@ export function LiveInterviewsShell({
   scenarios: ScenarioBrief[]
 }) {
   const [mode, setMode] = useState<'single' | 'loop'>('single')
+  const activePanelRef = useRef<HTMLDivElement | null>(null)
+  const { prefersReducedMotion } = useMotionPreference()
+
+  const selectMode = useCallback((nextMode: 'single' | 'loop') => {
+    setMode(nextMode)
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const panel = activePanelRef.current
+        if (!panel) return
+        panel.scrollIntoView({
+          behavior: prefersReducedMotion ? 'auto' : 'smooth',
+          block: 'start',
+        })
+        panel.focus({ preventScroll: true })
+      })
+    })
+  }, [prefersReducedMotion])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -1122,7 +1194,7 @@ export function LiveInterviewsShell({
         {/* Single Round */}
         <ModeCard
           active={mode === 'single'}
-          onClick={() => setMode('single')}
+          onClick={() => selectMode('single')}
           activeStyle={{
             background: T.surface,
             border: `2px solid ${T.primary}`,
@@ -1166,7 +1238,7 @@ export function LiveInterviewsShell({
         {/* Full Loop */}
         <ModeCard
           active={mode === 'loop'}
-          onClick={() => setMode('loop')}
+          onClick={() => selectMode('loop')}
           activeStyle={{
             background: 'linear-gradient(135deg, #1e3528 0%, #14241c 100%)',
             color: '#f3ede0',
@@ -1267,7 +1339,14 @@ export function LiveInterviewsShell({
       </div>
 
       {/* ── Body ── */}
-      {mode === 'loop' ? <FullLoopPanel /> : <SingleRoundPicker personas={personas} scenarios={scenarios} />}
+      <div
+        ref={activePanelRef}
+        tabIndex={-1}
+        aria-label={mode === 'loop' ? 'Full loop setup panel' : 'Single round setup panel'}
+        style={{ scrollMarginTop: 96, outline: 'none' }}
+      >
+        {mode === 'loop' ? <FullLoopPanel /> : <SingleRoundPicker personas={personas} scenarios={scenarios} />}
+      </div>
 
       {/* ── Past sessions ── */}
       <div>

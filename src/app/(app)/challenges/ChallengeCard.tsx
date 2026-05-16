@@ -2,8 +2,9 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { motion, motionTokens } from '@/components/motion'
 import { appendReturnTo } from '@/lib/navigation/return-to'
-import { cleanDisplayCopy } from '@/lib/copy/display'
+import { cleanDisplayCopy, cardSummary } from '@/lib/copy/display'
 import type { ChallengeWithDomain } from '@/lib/types'
 import { getTopicLabelAny, getTechniqueLabelAny } from '@/lib/data/taxonomy'
 
@@ -179,18 +180,20 @@ export function ChallengeCard({
   listView = false,
   locked = false,
   returnHref,
+  layoutId,
 }: {
   challenge: ChallengeWithDomain
   paradigm: string
   listView?: boolean
   locked?: boolean
   returnHref?: string
+  layoutId?: string
 }) {
   const style = PARADIGM_STYLE[paradigm] ?? PARADIGM_STYLE.Traditional
   const diff = DIFFICULTY_CONFIG[challenge.difficulty] ?? { label: challenge.difficulty, dot: '#74796e' }
   const attempts = challenge.attempt_count ?? 0
   const title = cleanDisplayCopy(challenge.title) || challenge.title
-  const promptText = cleanDisplayCopy(challenge.prompt_text)
+  const promptText = cardSummary(challenge.prompt_text)
   const challengePath = `/workspace/challenges/${challenge.slug ?? challenge.id}`
   const challengeHref = appendReturnTo(challengePath, returnHref)
   const discussionHref = appendReturnTo(`/challenges/${challenge.slug ?? challenge.id}/discussion`, returnHref)
@@ -202,9 +205,18 @@ export function ChallengeCard({
 
   if (listView) {
     return (
-      <div
-        className="flex items-center gap-4 px-4 py-3 group transition-all duration-200 hover:bg-surface-container/50"
-        style={{ backgroundColor: '#f5f1ea' }}
+      <motion.div
+        layout
+        layoutId={layoutId}
+        layoutDependency={listView}
+        initial={false}
+        transition={motionTokens.spring.layout}
+        className="group flex items-center gap-4 overflow-hidden border border-transparent px-4 py-3 transition-colors duration-150 hover:bg-surface-container/50"
+        style={{
+          backgroundColor: '#f5f1ea',
+          borderRadius: 14,
+          transformOrigin: 'center left',
+        }}
       >
         {/* Difficulty dot */}
         <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: diff.dot }} />
@@ -315,19 +327,27 @@ export function ChallengeCard({
             <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
           </Link>
         )}
-      </div>
+      </motion.div>
     )
   }
 
   const Art = PARADIGM_ART[paradigm] ?? PARADIGM_ART.Traditional
 
   return (
-    <div
-      className="rounded-2xl p-4 flex flex-col gap-2 group relative overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_6px_20px_-8px_rgba(30,27,20,0.22)]"
+    <motion.div
+      layout
+      layoutId={layoutId}
+      layoutDependency={listView}
+      initial={false}
+      transition={motionTokens.spring.layout}
+      whileHover={{ y: -3 }}
+      className="group relative flex flex-col gap-2 overflow-hidden p-4 transition-shadow duration-200 hover:shadow-[0_6px_20px_-8px_rgba(30,27,20,0.22)]"
       style={{
         backgroundColor: style.bg,
         border: '1px solid rgba(0,0,0,0.04)',
+        borderRadius: 16,
         minHeight: 140,
+        transformOrigin: 'center',
       }}
     >
       {/* SVG art background */}
@@ -446,6 +466,6 @@ export function ChallengeCard({
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

@@ -89,19 +89,12 @@ export function IdleTimer() {
     ]
     activityEvents.forEach(event => window.addEventListener(event, markActivity, { passive: true }))
 
-    const originalFetch = window.fetch
-    window.fetch = (...args) => {
-      markActivity()
-      return originalFetch(...args)
-    }
-
     scheduleWarning()
 
     return () => {
       clearWarningTimer()
       clearCountdownTimer()
       activityEvents.forEach(event => window.removeEventListener(event, markActivity))
-      if (window.fetch !== originalFetch) window.fetch = originalFetch
     }
   }, [router, timeoutMs, resetCount])
 

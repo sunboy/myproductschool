@@ -1,6 +1,6 @@
 'use client'
 
-import { Component, use, useCallback, useEffect, useRef, useState } from 'react'
+import { Component, use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -29,6 +29,14 @@ const MonacoCodeEditor = dynamic(
 
 import type { PasteEvent } from '@/components/challenge/MonacoCodeEditor'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import {
+  AnimatedProgress,
+  CollapsiblePanel,
+  FocusSurface,
+  PresencePanel,
+  motion,
+  type FocusSurfaceEvent,
+} from '@/components/motion'
 import { Md } from '@/components/ui/Md'
 import { useInterviewTimer } from '@/hooks/useInterviewTimer'
 import { InterviewLimitModal } from '@/components/paywalls/InterviewLimitModal'
@@ -111,6 +119,25 @@ const IDLE_FEELER_COOLDOWN_MS = 120_000
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
+}
+
+async function liveInterviewErrorMessage(response: Response) {
+  const fallback = response.status === 503
+    ? 'Hatch is temporarily unavailable. Try again in a moment.'
+    : 'Failed to send message. Please try again.'
+  const body = await response.json().catch(() => null) as { error?: unknown } | null
+  return typeof body?.error === 'string' && body.error.trim() ? body.error : fallback
+}
+
+function isFocusSurfaceEvent(value: unknown): value is FocusSurfaceEvent {
+  if (!isRecord(value)) return false
+  return (
+    typeof value.id === 'string' &&
+    typeof value.title === 'string' &&
+    typeof value.body === 'string' &&
+    typeof value.kind === 'string' &&
+    ['challenge', 'topic', 'rubric', 'flow-signal', 'memory'].includes(value.kind)
+  )
 }
 
 function summarizeCanvasElements(elements: unknown[]) {
@@ -431,6 +458,7 @@ function CtrlBtn({
           }
         }}
         aria-label={label}
+        aria-pressed={typeof active === 'boolean' ? active : undefined}
       >
         <span
           className="material-symbols-outlined"
@@ -493,6 +521,12 @@ export default function SessionPage({
   const [isVoiceAvailable, setIsVoiceAvailable] = useState(false)
   const [isCaptionsOn, setIsCaptionsOn] = useState(true)
   const [isChatOpen, setIsChatOpen] = useState(false)
+  const [isTranscriptOpen, setIsTranscriptOpen] = useState(true)
+  const [isFlowPanelOpen, setIsFlowPanelOpen] = useState(true)
+  const [isFocusMode, setIsFocusMode] = useState(false)
+  const [focusCollapsed, setFocusCollapsed] = useState(false)
+  const [focusDismissedId, setFocusDismissedId] = useState<string | null>(null)
+  const [remoteFocusEvent, setRemoteFocusEvent] = useState<FocusSurfaceEvent | null>(null)
   const [isEnding, setIsEnding] = useState(false)
   const [showEndConfirm, setShowEndConfirm] = useState(false)
   const [showLimitModal, setShowLimitModal] = useState(false)
@@ -512,7 +546,6 @@ export default function SessionPage({
 
   // Artifact workspace state
   const [centerMode, setCenterMode] = useState<'orb' | 'canvas' | 'editor'>('orb')
-  const [isFlowHudCollapsed, setIsFlowHudCollapsed] = useState(false)
   const [canvasScene, setCanvasScene] = useState<{ elements: unknown[]; appState: unknown } | null>(null)
   const [currentCode, setCurrentCode] = useState('')
   const [currentLanguage, setCurrentLanguage] = useState<'python' | 'javascript' | 'java' | 'cpp' | 'go' | 'sql'>('python')
@@ -712,6 +745,7 @@ export default function SessionPage({
   useEffect(() => {
     if (interviewPhase !== 'active' || !sessionId || turns.length > 0 || openingRequestedRef.current) return
     openingRequestedRef.current = true
+    setError(null)
 
     if (IS_MOCK) {
       setTurns([{
@@ -728,6 +762,7 @@ export default function SessionPage({
     let cancelled = false
     setHatchState('thinking')
     setIsThinking(true)
+    setError(null)
 
     fetch(`/api/live-interview/${sessionId}/chat`, {
       method: 'POST',
@@ -737,7 +772,10 @@ export default function SessionPage({
         artifactSnapshot: buildCurrentArtifactSnapshot() ?? undefined,
       }),
     })
-      .then((res) => res.ok ? res.json() : Promise.reject(new Error('opening_failed')))
+      .then(async (res) => {
+        if (res.ok) return res.json()
+        throw new Error(await liveInterviewErrorMessage(res))
+      })
       .then((data) => {
         if (cancelled || !data?.reply) return
         setTurns((prev) => prev.length > 0 ? prev : [{
@@ -753,8 +791,12 @@ export default function SessionPage({
           setTimeout(() => chatInputRef.current?.focus(), 50)
         }
       })
-      .catch(() => {
+      .catch((err) => {
         openingRequestedRef.current = false
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Hatch is temporarily unavailable. Try again in a moment.')
+          setIsChatOpen(true)
+        }
       })
       .finally(() => {
         if (cancelled) return
@@ -859,6 +901,9 @@ export default function SessionPage({
               return updated
             })
           }
+        }
+        if (isFocusSurfaceEvent(data.focusEvent)) {
+          setRemoteFocusEvent(data.focusEvent)
         }
         if (data.sessionPhase === 'done' && !isEnding) {
           setTimeout(() => {
@@ -1103,10 +1148,8 @@ export default function SessionPage({
         }
         setTurns((prev) => [...prev, hatchTurn])
         setTotalTurns((prev) => prev + 1)
-      } else if (res.status === 410) {
-        setError('This session has ended.')
       } else {
-        setError('Failed to send message. Please try again.')
+        setError(res.status === 410 ? 'This session has ended.' : await liveInterviewErrorMessage(res))
       }
     } catch {
       setError('Network error - check your connection.')
@@ -1276,6 +1319,40 @@ export default function SessionPage({
       setInterviewPhase('active')
     }
   }, [sessionId, router, centerMode, buildCurrentArtifactSnapshot])
+
+  const latestSignalFocus = useMemo<FocusSurfaceEvent | null>(() => {
+    const signal = recentSignals[0]
+    if (!signal) return null
+    return {
+      id: `local-signal-${signal.id}`,
+      kind: 'flow-signal',
+      title: `${FLOW_NAMES[signal.flowMove] ?? signal.flowMove} signal detected`,
+      body: signal.signal,
+    }
+  }, [recentSignals])
+
+  const scenarioFocus = useMemo<FocusSurfaceEvent | null>(() => {
+    if (!scenarioTitle && !discipline && !IS_MOCK) return null
+    return {
+      id: `scenario-${sessionId}`,
+      kind: 'challenge',
+      title: scenarioTitle ?? (IS_MOCK ? 'Mock interview challenge' : 'Interview challenge'),
+      body: discipline
+        ? `Keep the center of gravity on ${DISCIPLINE_META[discipline].label}. Hatch will watch for Frame, List, Optimize, and Win signals as the conversation develops.`
+        : IS_MOCK
+        ? 'Keep the prompt visible while you practice. As grading signals arrive, the most useful challenge context will stay centered here.'
+        : 'Keep the challenge prompt visible while you work through the conversation.',
+    }
+  }, [discipline, scenarioTitle, sessionId])
+
+  const activeFocusEvent = remoteFocusEvent ?? latestSignalFocus ?? scenarioFocus
+  const activeFocusEventId = activeFocusEvent?.id ?? null
+  const visibleFocusEvent = activeFocusEvent?.id === focusDismissedId ? null : activeFocusEvent
+
+  useEffect(() => {
+    if (!activeFocusEventId || activeFocusEventId === focusDismissedId) return
+    setFocusCollapsed(false)
+  }, [activeFocusEventId, focusDismissedId])
 
   // ─── Loading ───
   if (interviewPhase === 'loading') {
@@ -1509,6 +1586,8 @@ export default function SessionPage({
       : ''
 
   const captionIsItalic = hatchState !== 'speaking'
+  const showTranscriptPanel = isTranscriptOpen && !isFocusMode
+  const showFlowPanel = isFlowPanelOpen && !isFocusMode
 
   return (
     <div
@@ -1728,41 +1807,34 @@ export default function SessionPage({
       <div className="flex min-h-0 flex-1 overflow-hidden">
 
         {/* LEFT: Transcript (320px) */}
-        <div
-          className="hidden shrink-0 flex-col overflow-hidden lg:flex"
-          style={{
-            width: 320,
-            borderRight: '1px solid rgba(255,255,255,0.07)',
-          }}
-        >
-          {/* Header */}
-          <div className="shrink-0 px-4 pt-3 pb-2">
-            <span
-              className="font-label font-semibold tracking-widest uppercase"
-              style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.25)' }}
-            >
-              Transcript
-            </span>
-          </div>
-
-          {/* Turns */}
-          <div
-            ref={transcriptRef}
-            className="flex-1 overflow-y-auto px-4 pb-4"
-            style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}
+        <PresencePanel isOpen={showTranscriptPanel} className="hidden shrink-0 lg:flex">
+          <CollapsiblePanel
+            open
+            onOpenChange={setIsTranscriptOpen}
+            title="Transcript"
+            icon="notes"
+            className="h-full w-[320px] border-r border-white/10"
+            headerClassName="px-4 pt-3 pb-2 font-label text-[10.5px] font-semibold uppercase tracking-widest text-white/25 [&_button]:text-white/35 [&_button:hover]:bg-white/10"
+            bodyClassName="flex flex-col"
           >
-            {turns.length === 0 ? (
-              <p
-                className="font-body text-sm text-center mt-8"
-                style={{ color: 'rgba(255,255,255,0.2)' }}
-              >
-                Conversation will appear here
-              </p>
-            ) : (
-              turns.map((turn) => <TurnBubble key={turn.id} turn={turn} />)
-            )}
-          </div>
-        </div>
+            <div
+              ref={transcriptRef}
+              className="flex-1 overflow-y-auto px-4 pb-4"
+              style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}
+            >
+              {turns.length === 0 ? (
+                <p
+                  className="font-body text-sm text-center mt-8"
+                  style={{ color: 'rgba(255,255,255,0.2)' }}
+                >
+                  Conversation will appear here
+                </p>
+              ) : (
+                turns.map((turn) => <TurnBubble key={turn.id} turn={turn} />)
+              )}
+            </div>
+          </CollapsiblePanel>
+        </PresencePanel>
 
         {/* CENTER: Hatch orb / canvas / editor */}
         <div
@@ -1797,6 +1869,18 @@ export default function SessionPage({
             <span className="font-label text-[10.5px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
               {centerMode === 'orb' ? (isVoiceAvailable ? 'Voice mode' : 'Chat mode') : centerMode === 'canvas' ? 'Canvas' : 'Editor'}
             </span>
+          </div>
+
+          <div className="absolute left-1/2 top-14 z-20 w-[min(620px,calc(100%-32px))] -translate-x-1/2">
+            <FocusSurface
+              event={visibleFocusEvent}
+              collapsed={focusCollapsed}
+              onCollapsedChange={setFocusCollapsed}
+              onDismiss={() => {
+                if (activeFocusEvent) setFocusDismissedId(activeFocusEvent.id)
+              }}
+              tone="dark"
+            />
           </div>
 
           {centerMode === 'orb' && (
@@ -1889,176 +1973,152 @@ export default function SessionPage({
         </div>
 
         {/* RIGHT: FLOW HUD (280px) */}
-        <div
-          className="hidden shrink-0 flex-col overflow-hidden lg:flex"
-          style={{
-            width: 280,
-            background: 'rgba(0,0,0,0.15)',
-            borderLeft: '1px solid rgba(255,255,255,0.07)',
-          }}
-        >
-          {/* FLOW Coverage header with collapse toggle */}
-          <div className="shrink-0 px-4 pt-4 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-            <div className="flex items-center justify-between mb-3">
-              <span
-                className="font-label font-semibold tracking-widest uppercase"
-                style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.25)' }}
-              >
-                FLOW Coverage
-              </span>
-              <button
-                onClick={() => setIsFlowHudCollapsed(c => !c)}
-                className="flex items-center justify-center rounded w-5 h-5 transition-colors"
-                style={{ color: 'rgba(255,255,255,0.25)' }}
-                aria-label={isFlowHudCollapsed ? 'Expand FLOW HUD' : 'Collapse FLOW HUD'}
-                aria-expanded={!isFlowHudCollapsed}
-              >
-                <span className="material-symbols-outlined text-[14px]">
-                  {isFlowHudCollapsed ? 'expand_more' : 'expand_less'}
-                </span>
-              </button>
-            </div>
-
-            {!isFlowHudCollapsed && (
-              <>
-                <div className="flex flex-col gap-3">
-                  {flowMoves.map(({ key, name }) => {
-                    const score = flowCoverage[key] ?? 0
-                    const pct = Math.round(score * 100)
-                    const color = FLOW_COLORS[key]
-                    const active = score > 0.5
-                    return (
-                      <div key={key}>
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-1.5">
-                            <span className="material-symbols-outlined text-[14px]" style={{ color: active ? color : 'rgba(255,255,255,0.25)' }}>
-                              {key === 'frame' ? 'frame_inspect' : key === 'list' ? 'list' : key === 'optimize' ? 'tune' : 'emoji_events'}
-                            </span>
-                            <span className="font-label text-[12px] font-semibold" style={{ color: active ? 'rgba(243,237,224,0.85)' : 'rgba(255,255,255,0.35)' }}>
-                              {name}
-                            </span>
-                          </div>
-                          <span className="font-label text-[11px] tabular-nums" style={{ color: active ? color : 'rgba(255,255,255,0.25)' }}>
-                            {pct}%
+        <PresencePanel isOpen={showFlowPanel} className="hidden shrink-0 lg:flex">
+          <CollapsiblePanel
+            open
+            onOpenChange={setIsFlowPanelOpen}
+            title="FLOW Coverage"
+            icon="analytics"
+            className="h-full w-[280px] border-l border-white/10 bg-black/15"
+            headerClassName="px-4 pt-4 pb-3 font-label text-[10.5px] font-semibold uppercase tracking-widest text-white/25 [&_button]:text-white/35 [&_button:hover]:bg-white/10"
+            bodyClassName="flex flex-col"
+          >
+            <div className="shrink-0 px-4 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="flex flex-col gap-3">
+                {flowMoves.map(({ key, name }) => {
+                  const score = flowCoverage[key] ?? 0
+                  const pct = Math.round(score * 100)
+                  const color = FLOW_COLORS[key]
+                  const active = score > 0.5
+                  return (
+                    <div key={key}>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-[14px]" style={{ color: active ? color : 'rgba(255,255,255,0.25)' }}>
+                            {key === 'frame' ? 'frame_inspect' : key === 'list' ? 'list' : key === 'optimize' ? 'tune' : 'emoji_events'}
+                          </span>
+                          <span className="font-label text-[12px] font-semibold" style={{ color: active ? 'rgba(243,237,224,0.85)' : 'rgba(255,255,255,0.35)' }}>
+                            {name}
                           </span>
                         </div>
-                        <div
-                          className="w-full rounded-full overflow-hidden"
-                          style={{ height: 5, background: 'rgba(255,255,255,0.07)' }}
-                        >
-                          <div
-                            className="h-full rounded-full transition-all duration-700"
-                            style={{
-                              width: `${pct}%`,
-                              background: color,
-                              boxShadow: active ? `0 0 8px ${color}88` : 'none',
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Overall score card */}
-                <div
-                  className="mt-4 rounded-xl p-3 flex items-center justify-between"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
-                >
-                  <div>
-                    <p className="font-label text-[11px] uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                      Overall signal
-                    </p>
-                    <p
-                      className="font-label text-[12px] font-semibold mt-0.5"
-                      style={{ color: overallScore >= 60 ? '#7ee099' : overallScore >= 35 ? '#c9933a' : 'rgba(255,255,255,0.4)' }}
-                    >
-                      {overallScore >= 60 ? 'Strong' : overallScore >= 35 ? 'Building' : 'Developing'}
-                    </p>
-                  </div>
-                  <span
-                    className="font-headline font-bold"
-                    style={{ fontSize: 28, color: 'rgba(243,237,224,0.9)' }}
-                  >
-                    {overallScore}
-                    <span className="font-label font-normal text-[13px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                      /100
-                    </span>
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="material-symbols-outlined text-[12px]" style={{ color: 'rgba(255,255,255,0.25)' }}>swap_horiz</span>
-                  <span className="font-label text-[10.5px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                    {totalTurns} exchanges
-                  </span>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Recent signals - scrollable */}
-          <div className="flex-1 overflow-y-auto px-4 py-3 min-h-0" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}>
-            <span
-              className="font-label font-semibold tracking-widest uppercase mb-2 block"
-              style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.25)' }}
-            >
-              Recent Signals
-            </span>
-
-            {recentSignals.length === 0 ? (
-              <p
-                className="font-body text-[12px] text-center mt-4"
-                style={{ color: 'rgba(255,255,255,0.2)' }}
-              >
-                Signals appear as you answer
-              </p>
-            ) : (
-              recentSignals.map((s) => (
-                <div
-                  key={s.id}
-                  className="rounded-[10px] p-3 mb-2"
-                  style={{
-                    background: `${FLOW_COLORS[s.flowMove] ?? '#4a7c59'}12`,
-                    border: `1px solid ${FLOW_COLORS[s.flowMove] ?? '#4a7c59'}25`,
-                    animation: 'fadeUp 0.3s ease-out',
-                  }}
-                >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: FLOW_COLORS[s.flowMove] ?? '#4a7c59' }} />
-                      <span
-                        className="font-label text-[11px] font-semibold uppercase tracking-wider"
-                        style={{ color: FLOW_COLORS[s.flowMove] ?? '#4a7c59' }}
-                      >
-                        {FLOW_NAMES[s.flowMove] ?? s.flowMove}
-                      </span>
-                      {s.competency && (
-                        <span className="font-label text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                          · {COMPETENCY_LABELS[s.competency] ?? s.competency}
+                        <span className="font-label text-[11px] tabular-nums" style={{ color: active ? color : 'rgba(255,255,255,0.25)' }}>
+                          {pct}%
                         </span>
-                      )}
+                      </div>
+                      <AnimatedProgress
+                        value={pct}
+                        state={active ? 'complete' : pct > 0 ? 'active' : 'idle'}
+                        trackClassName="h-[5px] bg-white/10"
+                        barStyle={{
+                          background: color,
+                          boxShadow: active ? `0 0 8px ${color}88` : 'none',
+                        }}
+                      />
                     </div>
-                    <span className="material-symbols-outlined text-[14px]" style={{ color: '#7ee099' }}>thumb_up</span>
-                  </div>
-                  <p className="font-body text-[12px] leading-[1.5]" style={{ color: 'rgba(243,237,224,0.7)' }}>
-                    {s.signal}
+                  )
+                })}
+              </div>
+
+              {/* Overall score card */}
+              <div
+                className="mt-4 rounded-xl p-3 flex items-center justify-between"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+              >
+                <div>
+                  <p className="font-label text-[11px] uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    Overall signal
                   </p>
-                  <p className="font-label text-[11px] mt-1.5" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                    {totalTurns} exchanges · {Math.round((Date.now() - s.time) / 60000)}m ago
+                  <p
+                    className="font-label text-[12px] font-semibold mt-0.5"
+                    style={{ color: overallScore >= 60 ? '#7ee099' : overallScore >= 35 ? '#c9933a' : 'rgba(255,255,255,0.4)' }}
+                  >
+                    {overallScore >= 60 ? 'Strong' : overallScore >= 35 ? 'Building' : 'Developing'}
                   </p>
                 </div>
-              ))
-            )}
-
-            {/* Prior round recap - only visible in loop sessions */}
-            {previousRound && (
-              <div className="mt-3">
-                <PriorRoundRecap previousRound={previousRound} />
+                <span
+                  className="font-headline font-bold"
+                  style={{ fontSize: 28, color: 'rgba(243,237,224,0.9)' }}
+                >
+                  {overallScore}
+                  <span className="font-label font-normal text-[13px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    /100
+                  </span>
+                </span>
               </div>
-            )}
-          </div>
-        </div>
+
+              <div className="flex items-center gap-2 mt-2">
+                <span className="material-symbols-outlined text-[12px]" style={{ color: 'rgba(255,255,255,0.25)' }}>swap_horiz</span>
+                <span className="font-label text-[10.5px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                  {totalTurns} exchanges
+                </span>
+              </div>
+            </div>
+
+            {/* Recent signals - scrollable */}
+            <div className="flex-1 overflow-y-auto px-4 py-3 min-h-0" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}>
+              <span
+                className="font-label font-semibold tracking-widest uppercase mb-2 block"
+                style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.25)' }}
+              >
+                Recent Signals
+              </span>
+
+              {recentSignals.length === 0 ? (
+                <p
+                  className="font-body text-[12px] text-center mt-4"
+                  style={{ color: 'rgba(255,255,255,0.2)' }}
+                >
+                  Signals appear as you answer
+                </p>
+              ) : (
+                recentSignals.map((s) => (
+                  <motion.div
+                    key={s.id}
+                    layout
+                    className="rounded-[10px] p-3 mb-2"
+                    style={{
+                      background: `${FLOW_COLORS[s.flowMove] ?? '#4a7c59'}12`,
+                      border: `1px solid ${FLOW_COLORS[s.flowMove] ?? '#4a7c59'}25`,
+                    }}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: FLOW_COLORS[s.flowMove] ?? '#4a7c59' }} />
+                        <span
+                          className="font-label text-[11px] font-semibold uppercase tracking-wider"
+                          style={{ color: FLOW_COLORS[s.flowMove] ?? '#4a7c59' }}
+                        >
+                          {FLOW_NAMES[s.flowMove] ?? s.flowMove}
+                        </span>
+                        {s.competency && (
+                          <span className="font-label text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                            · {COMPETENCY_LABELS[s.competency] ?? s.competency}
+                          </span>
+                        )}
+                      </div>
+                      <span className="material-symbols-outlined text-[14px]" style={{ color: '#7ee099' }}>thumb_up</span>
+                    </div>
+                    <p className="font-body text-[12px] leading-[1.5]" style={{ color: 'rgba(243,237,224,0.7)' }}>
+                      {s.signal}
+                    </p>
+                    <p className="font-label text-[11px] mt-1.5" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                      {totalTurns} exchanges · {Math.round((Date.now() - s.time) / 60000)}m ago
+                    </p>
+                  </motion.div>
+                ))
+              )}
+
+              {/* Prior round recap - only visible in loop sessions */}
+              {previousRound && (
+                <div className="mt-3">
+                  <PriorRoundRecap previousRound={previousRound} />
+                </div>
+              )}
+            </div>
+          </CollapsiblePanel>
+        </PresencePanel>
       </div>
 
       {/* ── Controls Bar (96px) ── */}
@@ -2071,7 +2131,7 @@ export default function SessionPage({
           borderTop: '1px solid rgba(255,255,255,0.07)',
         }}
       >
-        <div className="flex items-center gap-4">
+        <div className="flex max-w-full items-center gap-3 overflow-x-auto px-4">
           {isVoiceAvailable && (
             <CtrlBtn
               icon={isMuted ? 'mic_off' : 'mic'}
@@ -2095,10 +2155,40 @@ export default function SessionPage({
           />
 
           <CtrlBtn
+            icon="notes"
+            label="Transcript"
+            active={showTranscriptPanel}
+            onClick={() => {
+              setIsFocusMode(false)
+              setIsTranscriptOpen((open) => !open)
+            }}
+          />
+
+          <CtrlBtn
+            icon="analytics"
+            label="FLOW"
+            active={showFlowPanel}
+            onClick={() => {
+              setIsFocusMode(false)
+              setIsFlowPanelOpen((open) => !open)
+            }}
+          />
+
+          <CtrlBtn
             icon="chat"
             label="Chat"
             active={isChatOpen}
             onClick={() => setIsChatOpen((o) => !o)}
+          />
+
+          <CtrlBtn
+            icon="center_focus_strong"
+            label="Focus"
+            active={isFocusMode}
+            onClick={() => {
+              setIsFocusMode((focused) => !focused)
+              if (activeFocusEvent) setFocusDismissedId(null)
+            }}
           />
 
           {/* Canvas button - system_design or data_modeling rounds */}
@@ -2138,17 +2228,18 @@ export default function SessionPage({
       </div>
 
       {/* ── Chat Slide-in Panel (340px) ── */}
-      <div
+      <PresencePanel
+        isOpen={isChatOpen}
         className="fixed top-0 right-0 h-full flex flex-col z-40"
+        initial={{ opacity: 0, x: 36 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 36 }}
         style={{
           width: 340,
           background: 'rgba(13,20,16,0.97)',
           backdropFilter: 'blur(16px)',
           borderLeft: '1px solid rgba(255,255,255,0.07)',
-          transform: isChatOpen ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform 0.3s ease',
         }}
-        aria-hidden={!isChatOpen}
       >
         {/* Chat header */}
         <div
@@ -2308,7 +2399,7 @@ export default function SessionPage({
             <span className="material-symbols-outlined text-[18px]" style={{ color: '#fff' }}>send</span>
           </button>
         </form>
-      </div>
+      </PresencePanel>
 
       {ENABLE_DIRECT_VOICE_AGENT && (
         <DeepgramVoiceSession

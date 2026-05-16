@@ -45,6 +45,12 @@ export function AchievementsCard({ achievements, unlockedCount, totalCount }: Ac
         </span>
       </div>
 
+      {unlockedCount === 0 && (
+        <p className="mb-3 text-[12px] text-on-surface-variant font-label">
+          Your first badge unlocks after one challenge. First Step is the closest.
+        </p>
+      )}
+
       <div className="grid grid-cols-4 gap-2">
         {achievements.map(a => (
           <div

@@ -355,7 +355,7 @@ export function HatchGlyph({
 
       {/* ── Idle: ZZZ ── */}
       {state === 'idle' && (
-        <g>
+        <g aria-hidden="true">
           <text x="46" y="28" fontSize="7" fontWeight="bold" fill="#4a7c59" opacity="0">
             z
             <animate attributeName="opacity" values="0;0.6;0" dur="4s" repeatCount="indefinite" />

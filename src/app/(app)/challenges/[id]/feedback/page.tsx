@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { FeedbackAccordion } from '@/components/challenge/FeedbackAccordion'
 import { MentalModelsBreakdown } from '@/components/challenge/MentalModelsBreakdown'
+import { AnimatedProgress, MotionSection } from '@/components/motion'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { Md } from '@/components/ui/Md'
@@ -348,7 +349,7 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
           <h2 className="font-headline text-2xl font-bold text-on-surface">Submission Review</h2>
 
           {/* Score Summary Card */}
-          <div className="bg-surface-container p-5 rounded-xl editorial-shadow border-t-4 border-primary">
+          <MotionSection className="bg-surface-container p-5 rounded-xl editorial-shadow border-t-4 border-primary">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <HatchGlyph size={40} className="text-primary flex-shrink-0" />
@@ -380,19 +381,19 @@ export default async function FeedbackPage({ params, searchParams }: FeedbackPag
                   <div key={item.dimension} className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/15 flex items-center justify-between shadow-sm">
                     <div className="flex flex-col gap-2 w-full mr-4">
                       <span className="text-sm font-bold text-on-surface">{prettifyDimension(item.dimension)}</span>
-                      <div className="h-1.5 w-full bg-background rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${barColor} rounded-full transition-all duration-700`}
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
+                      <AnimatedProgress
+                        value={percentage}
+                        state={item.score >= 7 ? 'complete' : 'active'}
+                        trackClassName="h-1.5 bg-background"
+                        barClassName={barColor}
+                      />
                     </div>
                     <span className="font-headline font-extrabold text-primary">{item.score.toFixed(1)}</span>
                   </div>
                 )
               })}
             </div>
-          </div>
+          </MotionSection>
 
           {/* What Worked / What to Fix */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

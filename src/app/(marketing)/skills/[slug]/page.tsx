@@ -13,9 +13,49 @@ import {
 import { JsonLdScript, breadcrumbJsonLd } from '@/lib/seo/json-ld'
 import { buildMetadata, canonicalUrl, SITE_NAME, SITE_URL } from '@/lib/seo/site'
 import { getSkill, itemListJsonLd, SKILL_DIRECTORIES } from '@/lib/seo/directory-content'
+import { OUTCOME_PAGES } from '@/lib/seo/outcomes'
 
 type Props = {
   params: Promise<{ slug: string }>
+}
+
+const FLOW_MAPPING: Record<string, string[]> = {
+  'product-sense': [
+    'Frame the user, segment, metric, and actual job-to-be-done.',
+    'List hypotheses, segments, solution paths, and trade-offs before picking one.',
+    'Optimize with impact, confidence, effort, and evidence quality.',
+    'Win with a clear recommendation, risks, and next validation step.',
+  ],
+  'system-design': [
+    'Frame product requirements, scale, reliability, latency, and durability constraints.',
+    'List components, APIs, storage choices, queues, and failure modes.',
+    'Optimize for the bottleneck that matters most to the product.',
+    'Win by defending the architecture and naming what breaks first.',
+  ],
+  'data-modeling': [
+    'Frame the product domain, actors, rules, and access patterns.',
+    'List entities, relationships, events, and invariants.',
+    'Optimize normalization, denormalization, history, and tenant boundaries.',
+    'Win by explaining how the model answers future product questions.',
+  ],
+  sql: [
+    'Frame the business question and define the metric precisely.',
+    'List tables, join paths, filters, and edge cases.',
+    'Optimize query shape, assumptions, and result interpretation.',
+    'Win by translating output into a decision someone can trust.',
+  ],
+  coding: [
+    'Frame constraints, input shape, correctness bar, and communication plan.',
+    'List approaches and edge cases before committing to implementation.',
+    'Optimize complexity, maintainability, and confidence in the proof.',
+    'Win by explaining trade-offs and reviewing AI output critically.',
+  ],
+  'ai-native-workflows': [
+    'Frame the workflow, human risk, model role, and acceptance criteria.',
+    'List context sources, evals, review loops, and fallback paths.',
+    'Optimize for quality, latency, cost, safety, and product value.',
+    'Win by making model behavior and human control legible.',
+  ],
 }
 
 export function generateStaticParams() {
@@ -113,6 +153,22 @@ export default async function SkillDirectoryDetailPage({ params }: Props) {
       >
         <BulletGrid items={skill.outcomes} />
       </DirectorySection>
+      <DirectorySection
+        eyebrow="FLOW mapping"
+        title={`How FLOW scores ${skill.shortTitle.toLowerCase()}`}
+        description="The same four moves apply across every discipline, but the evidence changes by track."
+      >
+        <div className="grid gap-3 md:grid-cols-2">
+          {(FLOW_MAPPING[skill.slug] ?? FLOW_MAPPING['product-sense']).map((item, index) => (
+            <div key={item} className="rounded-xl bg-surface-container-lowest p-5 ring-1 ring-outline-variant/35">
+              <div className="mb-2 text-xs font-black uppercase tracking-[0.12em] text-primary">
+                {['Frame', 'List', 'Optimize', 'Win'][index]}
+              </div>
+              <p className="text-sm font-semibold leading-6 text-on-surface-variant">{item}</p>
+            </div>
+          ))}
+        </div>
+      </DirectorySection>
       <DirectorySection eyebrow="Practice formats" title="Representative prompts">
         <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
           <div>
@@ -127,7 +183,25 @@ export default async function SkillDirectoryDetailPage({ params }: Props) {
           </div>
         </div>
       </DirectorySection>
-      <DirectorySection shaded title="Related directories">
+      <DirectorySection
+        shaded
+        eyebrow="Career outcomes"
+        title="Where this skill creates leverage"
+        description="HackProduct sells the career moment first, then routes you into the reps and disciplines that prove the skill."
+      >
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {OUTCOME_PAGES.map((outcome) => (
+            <DirectoryCard
+              key={outcome.slug}
+              href={outcome.path}
+              title={outcome.shortTitle}
+              description={outcome.proofPoint}
+              meta="Outcome"
+            />
+          ))}
+        </div>
+      </DirectorySection>
+      <DirectorySection title="Related directories">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {skill.related.map((link) => (
             <DirectoryCard

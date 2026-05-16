@@ -137,11 +137,11 @@ body {
 
 .land-hero {
   position: relative;
-  min-height: 900px;
-  padding: 0;
+  min-height: 820px;
+  padding: 132px 22px 88px;
   overflow: hidden;
   color: #fff;
-  background: var(--cf-blue);
+  background: #101914;
   isolation: isolate;
 }
 
@@ -150,12 +150,14 @@ body {
   inset: 0;
   overflow: hidden;
   background:
-    linear-gradient(90deg, rgba(35, 60, 48, 0.23) 0%, rgba(35, 60, 48, 0.05) 44%, rgba(12, 28, 24, 0.18) 100%),
-    linear-gradient(180deg, rgba(28, 84, 146, 0.08) 0%, rgba(28, 84, 146, 0) 34%, rgba(31, 47, 32, 0.2) 100%),
-    url("/hackproduct/pixel-hero-meadow.png");
+    linear-gradient(90deg, rgba(151, 207, 140, 0.14) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(151, 207, 140, 0.11) 1px, transparent 1px),
+    radial-gradient(circle at 18% 82%, rgba(119, 173, 85, 0.44), transparent 34%),
+    radial-gradient(circle at 78% 12%, rgba(226, 158, 74, 0.28), transparent 28%),
+    conic-gradient(from 205deg at 58% 46%, rgba(91, 164, 235, 0.16), transparent 22%, rgba(127, 189, 100, 0.22), transparent 52%, rgba(255,255,255,0.08), transparent 78%),
+    linear-gradient(135deg, #0e1712 0%, #15241b 45%, #0c1411 100%);
   background-position: center center;
-  background-size: cover;
-  image-rendering: pixelated;
+  background-size: 34px 34px, 34px 34px, auto, auto, auto, auto;
 }
 
 .land-pixel-sky::after {
@@ -163,9 +165,15 @@ body {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(0,0,0,0) 0 72%, rgba(20, 38, 24, 0.14) 100%),
-    radial-gradient(circle at 22% 18%, rgba(255,255,255,0.08), transparent 34%);
+    linear-gradient(110deg, transparent 0 18%, rgba(255,255,255,0.11) 23%, transparent 31% 48%, rgba(151,207,140,0.12) 55%, transparent 67%),
+    linear-gradient(180deg, rgba(0,0,0,0) 0 68%, rgba(0,0,0,0.24) 100%);
   pointer-events: none;
+  animation: beamSweep 12s ease-in-out infinite alternate;
+}
+
+@keyframes beamSweep {
+  from { transform: translateX(-2%) skewX(-2deg); opacity: 0.65; }
+  to { transform: translateX(2%) skewX(2deg); opacity: 0.95; }
 }
 
 .cloud {
@@ -201,9 +209,9 @@ body {
   position: absolute;
   top: -40px;
   right: 58px;
-  width: 140px;
+  width: 180px;
   height: 820px;
-  background: rgba(255,255,255,0.1);
+  background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(151, 207, 140, 0.04));
   clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
   transform: rotate(17deg);
   opacity: 0.65;
@@ -214,32 +222,43 @@ body {
   opacity: 0.55;
 }
 
+.land-hero-shell {
+  position: relative;
+  z-index: 6;
+  display: grid;
+  grid-template-columns: minmax(0, .95fr) minmax(420px, .85fr);
+  gap: clamp(28px, 5vw, 78px);
+  align-items: center;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
 .land-hero-copy {
   position: relative;
   z-index: 6;
   max-width: 720px;
-  padding: 140px 22px 0;
+  padding: 0;
 }
 
 .land-hero h1 {
-  max-width: 720px;
+  max-width: 780px;
   margin: 0 0 20px;
   color: #fff;
   font-family: var(--font-body);
-  font-size: 46px;
+  font-size: clamp(40px, 5vw, 72px);
   font-weight: 500;
-  line-height: 1.22;
+  line-height: 1.04;
   letter-spacing: 0;
   text-shadow: 0 2px 12px rgba(30, 48, 46, 0.18);
 }
 
 .land-hero p {
-  max-width: 560px;
+  max-width: 650px;
   margin: 0 0 28px;
   color: rgba(255,255,255,0.92);
-  font-size: 15.5px;
+  font-size: 17px;
   font-weight: 600;
-  line-height: 1.5;
+  line-height: 1.58;
   text-shadow: 0 1px 8px rgba(30, 48, 46, 0.16);
 }
 
@@ -249,11 +268,12 @@ body {
   gap: 12px;
 }
 
-.land-hero-actions a {
+.land-hero-actions a,
+.land-shad-btn {
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
-  padding: 0 15px;
+  min-height: 44px;
+  padding: 0 16px;
   border: 1px solid rgba(255,255,255,0.35);
   border-radius: 8px;
   background: rgba(255,255,255,0.17);
@@ -265,10 +285,193 @@ body {
   backdrop-filter: blur(8px);
 }
 
-.land-hero-actions a:first-child {
+.land-hero-actions a:first-child,
+.land-shad-btn--primary {
   color: #171817;
   background: #fff;
   border-color: rgba(0,0,0,0.15);
+}
+
+.land-shad-btn--ghost {
+  color: #fff;
+  background: rgba(255,255,255,0.14);
+}
+
+.land-outcome-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 680px;
+  margin-top: 26px;
+}
+
+.land-outcome-links a {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 8px;
+  padding: 0 11px;
+  color: rgba(255,255,255,0.82);
+  background: rgba(12, 22, 16, 0.28);
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 800;
+  backdrop-filter: blur(8px);
+}
+
+.land-hero-console {
+  position: relative;
+  z-index: 7;
+  border-color: rgba(255,255,255,0.14) !important;
+  border-radius: 8px !important;
+  background: rgba(246, 242, 232, 0.12) !important;
+  color: #fff !important;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.24), inset 0 1px rgba(255,255,255,0.18) !important;
+  overflow: hidden;
+  backdrop-filter: blur(18px);
+}
+
+.land-hero-console::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255,255,255,0.16) 1px, transparent 1px);
+  background-size: 18px 18px;
+  opacity: 0.28;
+}
+
+.land-console-head,
+.land-console-body {
+  position: relative;
+  z-index: 1;
+}
+
+.land-console-head {
+  display: flex !important;
+  grid-template-columns: none !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding: 18px !important;
+}
+
+.land-console-head [data-slot="card-title"] {
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.land-console-head p {
+  margin: 4px 0 0;
+  color: rgba(255,255,255,0.58);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.land-console-badge {
+  border-radius: 6px;
+  background: #bde9b3 !important;
+  color: #14231a !important;
+}
+
+.land-console-body {
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr);
+  gap: 14px;
+  padding: 18px !important;
+}
+
+.land-flow-rail {
+  display: grid;
+  gap: 10px;
+}
+
+.land-flow-pill {
+  display: grid;
+  gap: 7px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 10px;
+  background: rgba(0,0,0,0.14);
+}
+
+.land-flow-pill span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 6px;
+  background: #f7f3e7;
+  color: #14231a;
+  font-family: var(--cf-pixel);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.land-flow-pill b {
+  font-size: 11px;
+}
+
+.land-flow-progress {
+  height: 5px !important;
+  background: rgba(255,255,255,0.14) !important;
+}
+
+.land-flow-progress [data-slot="progress-indicator"] {
+  background: #bde9b3 !important;
+}
+
+.land-console-workspace {
+  display: grid;
+  gap: 12px;
+}
+
+.land-console-prompt,
+.land-console-answer,
+.land-console-hatch {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  background: rgba(0,0,0,0.16);
+  padding: 14px;
+}
+
+.land-console-prompt span,
+.land-console-answer span {
+  display: block;
+  margin-bottom: 8px;
+  color: rgba(255,255,255,0.52);
+  font-family: var(--cf-pixel);
+  font-size: 10px;
+}
+
+.land-console-prompt p,
+.land-console-answer p,
+.land-console-hatch p {
+  margin: 0;
+  color: rgba(255,255,255,0.86);
+  text-shadow: none;
+}
+
+.land-console-prompt p {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.32;
+}
+
+.land-console-answer p,
+.land-console-hatch p {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.land-console-hatch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(189, 233, 179, 0.12);
 }
 
 .land-hero-hatch {
@@ -776,6 +979,67 @@ body {
   color: #444744;
 }
 
+.land-goal-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 1180px;
+  margin: 70px auto 0;
+}
+
+.land-goal-card {
+  border: 1px solid #dcddd8 !important;
+  border-radius: 8px !important;
+  background: rgba(255,255,255,0.84) !important;
+  box-shadow: 0 24px 46px rgba(48, 54, 52, 0.08) !important;
+  overflow: hidden;
+}
+
+.land-goal-card-content {
+  display: flex;
+  min-height: 320px;
+  flex-direction: column;
+  gap: 22px;
+  padding: 24px !important;
+}
+
+.land-goal-icon {
+  width: 34px;
+  height: 34px;
+  color: #526f44;
+  stroke-width: 1.8;
+}
+
+.land-goal-card h3 {
+  margin: 0 0 12px;
+  color: #3d3f3e;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.12;
+}
+
+.land-goal-card p {
+  margin: 0;
+  color: #626662;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.48;
+}
+
+.land-goal-card a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  border-top: 1px solid #e4e5df;
+  padding-top: 16px;
+  color: #526f44;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 900;
+}
+
 .hp-curriculum-art {
   display: grid;
   grid-template-columns: repeat(2, minmax(240px, 1fr));
@@ -830,7 +1094,7 @@ body {
 
 .hp-chapter-card::after {
   counter-increment: chapter;
-  content: "Chapter " counter(chapter);
+  content: "Rep " counter(chapter);
   position: absolute;
   top: 120px;
   left: 36px;
@@ -1785,12 +2049,8 @@ body {
     display: block;
   }
 
-  .pixel-laptop {
-    right: 80px;
-  }
-
-  .pixel-tree--right {
-    right: -90px;
+  .land-hero-shell {
+    grid-template-columns: 1fr;
   }
 
   .hp-orchestration-art {
@@ -1824,43 +2084,32 @@ body {
   }
 
   .land-hero {
-    min-height: 900px;
+    min-height: auto;
+    padding-top: 112px;
   }
 
   .land-hero-copy {
-    padding-top: 140px;
+    padding-top: 0;
   }
 
   .land-hero h1 {
     max-width: 620px;
-    font-size: 36px;
+    font-size: 38px;
   }
 
   .land-pixel-sky {
-    background-position: 42% center;
-  }
-
-  .land-hero-hatch {
-    right: 36px;
-    bottom: 330px;
-    width: 210px;
-    opacity: 0.96;
+    opacity: 0.86;
   }
 
   .pixel-hero-notes {
-    left: 42px;
-    bottom: 238px;
+    left: 28px;
+    bottom: 34px;
     transform: scale(0.86);
     transform-origin: left bottom;
   }
 
-  .pixel-tree--right {
-    transform: scale(1.25);
-  }
-
-  .pixel-city {
-    left: 80px;
-    right: 80px;
+  .land-console-body {
+    grid-template-columns: 1fr;
   }
 
   .land-section-head h2,
@@ -1874,6 +2123,10 @@ body {
   .land-tools-inner,
   .land-final-cta {
     grid-template-columns: 1fr;
+  }
+
+  .land-goal-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .hp-curriculum-art {
@@ -1923,24 +2176,25 @@ body {
   }
 
   .land-hero h1 {
-    font-size: 31px;
+    font-size: 34px;
   }
 
   .land-hero-copy {
-    padding-left: 18px;
-    padding-right: 18px;
-  }
-
-  .land-hero-hatch {
-    right: 12px;
-    bottom: 300px;
-    width: 164px;
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .pixel-hero-notes {
-    left: 22px;
-    bottom: 224px;
-    transform: scale(0.74);
+    display: none;
+  }
+
+  .land-hero-console {
+    display: none !important;
+  }
+
+  .land-outcome-links a {
+    flex: 1 1 100%;
+    justify-content: center;
   }
 
   .land-orchestration,
@@ -1987,6 +2241,10 @@ body {
   .hp-orbit-node--6 { left: 16px; top: 152px; }
 
   .hp-roadmap-lanes,
+  .land-goal-grid,
+  .land-pillars,
+  .land-tools-inner,
+  .land-final-cta,
   .hp-analytics-table {
     grid-template-columns: 1fr;
   }

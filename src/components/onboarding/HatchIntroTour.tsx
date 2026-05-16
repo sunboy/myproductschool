@@ -54,6 +54,10 @@ function targetRect(selector: string): TargetRect | null {
   }
 }
 
+function targetIsOutsideViewport(rect: TargetRect) {
+  return rect.top + rect.height < 72 || rect.top > window.innerHeight - 72
+}
+
 export function HatchIntroTour({ show }: HatchIntroTourProps) {
   const [open, setOpen] = useState(show)
   const [stepIndex, setStepIndex] = useState(0)
@@ -69,17 +73,62 @@ export function HatchIntroTour({ show }: HatchIntroTourProps) {
   useEffect(() => {
     if (!open) return
 
-    function syncRect() {
-      setRect(targetRect(step.target))
+    let frame = 0
+    let scrolledTargetIntoView = false
+    let resizeObserver: ResizeObserver | null = null
+    let target: Element | null = null
+
+    function observeTarget(nextTarget: Element | null) {
+      if (target === nextTarget) return
+      resizeObserver?.disconnect()
+      resizeObserver = null
+      target = nextTarget
+
+      if (target && typeof ResizeObserver !== 'undefined') {
+        resizeObserver = new ResizeObserver(requestSync)
+        resizeObserver.observe(target)
+      }
     }
 
-    syncRect()
-    window.addEventListener('resize', syncRect)
-    window.addEventListener('scroll', syncRect, true)
+    function syncRect(options: { allowScrollIntoView?: boolean } = {}) {
+      const nextTarget = document.querySelector(step.target)
+      observeTarget(nextTarget)
+
+      const nextRect = targetRect(step.target)
+      setRect(nextRect)
+
+      if (!nextRect || !target || !options.allowScrollIntoView || scrolledTargetIntoView) return
+      if (!targetIsOutsideViewport(nextRect)) return
+
+      scrolledTargetIntoView = true
+      target.scrollIntoView({
+        block: 'center',
+        inline: 'nearest',
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      })
+    }
+
+    function requestSync() {
+      if (frame) return
+      frame = window.requestAnimationFrame(() => {
+        frame = 0
+        syncRect()
+      })
+    }
+
+    syncRect({ allowScrollIntoView: true })
+    window.addEventListener('resize', requestSync)
+    window.addEventListener('scroll', requestSync, true)
+    window.visualViewport?.addEventListener('resize', requestSync)
+    window.visualViewport?.addEventListener('scroll', requestSync)
 
     return () => {
-      window.removeEventListener('resize', syncRect)
-      window.removeEventListener('scroll', syncRect, true)
+      if (frame) window.cancelAnimationFrame(frame)
+      window.removeEventListener('resize', requestSync)
+      window.removeEventListener('scroll', requestSync, true)
+      window.visualViewport?.removeEventListener('resize', requestSync)
+      window.visualViewport?.removeEventListener('scroll', requestSync)
+      resizeObserver?.disconnect()
     }
   }, [open, step.target])
 

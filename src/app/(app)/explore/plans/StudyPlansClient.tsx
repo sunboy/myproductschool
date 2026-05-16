@@ -114,16 +114,18 @@ export function StudyPlansClient({ studyPlans }: Props) {
                 <span className="material-symbols-outlined" style={{ fontSize: 18, fontVariationSettings: "'FILL' 1" }}>school</span>
                 Browse all plans
               </Link>
-              <button style={{
+              {/* TODO: wire builder modal when Hatch plan-generator endpoint is ready */}
+              <Link href="/explore/plans?builder=hatch" style={{
                 display: 'inline-flex', alignItems: 'center', gap: 7,
                 background: 'rgba(255,255,255,0.08)', color: '#f3ede0',
                 border: '1px solid rgba(255,255,255,0.14)',
                 padding: '14px 24px', borderRadius: 999,
-                fontFamily: 'var(--font-label)', fontWeight: 700, fontSize: 15, cursor: 'pointer',
+                fontFamily: 'var(--font-label)', fontWeight: 700, fontSize: 15,
+                textDecoration: 'none',
               }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 18 }}>auto_awesome</span>
                 Hatch builds mine
-              </button>
+              </Link>
             </div>
           </div>
 

@@ -85,6 +85,9 @@ ${priorContextBlock}`
     archetype: profile?.archetype ?? 'Analyst',
     target_company: loop.target_company,
     target_role: loop.target_role,
+    companyName: loop.target_company,
+    scenarioTitle: `${loop.target_company ?? 'Full loop'} ${disciplineLabel} round`,
+    effectiveDiscipline: (currentRound as { discipline: string }).discipline,
   }
 
   const { data: session, error: sessionError } = await adminClient

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { AnimatedProgress, MotionCard, MotionList, MotionListItem, PresencePanel } from '@/components/motion'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import type { StudyPlanItem, StudyPlanWithItems } from '@/lib/types'
 
@@ -59,9 +60,10 @@ interface ChapterRowProps {
   items: StudyPlanItem[]
   chapterIdx: number
   slug: string
+  nextItemId?: string
 }
 
-function ChapterRow({ chapterTitle, items, chapterIdx, slug }: ChapterRowProps) {
+function ChapterRow({ chapterTitle, items, chapterIdx, slug, nextItemId }: ChapterRowProps) {
   const [open, setOpen] = useState(chapterIdx === 0)
   const completedInChapter = items.filter(i => i.challenge?.is_completed).length
   const totalInChapter = items.length
@@ -69,7 +71,7 @@ function ChapterRow({ chapterTitle, items, chapterIdx, slug }: ChapterRowProps) 
   const hasProgress = completedInChapter > 0 && !isFullyDone
 
   return (
-    <div style={{
+    <MotionCard style={{
       background: '#fdfbf6',
       border: '1px solid #e7dfc9',
       borderRadius: 24,
@@ -112,10 +114,13 @@ function ChapterRow({ chapterTitle, items, chapterIdx, slug }: ChapterRowProps) 
             {chapterTitle}
           </div>
           {hasProgress && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-              <div style={{ height: 3, width: 80, background: '#ede6d6', borderRadius: 999, overflow: 'hidden' }}>
-                <div style={{ width: `${Math.round((completedInChapter / totalInChapter) * 100)}%`, height: '100%', background: '#4a7c59', borderRadius: 999 }} />
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, width: 150 }}>
+              <AnimatedProgress
+                value={Math.round((completedInChapter / totalInChapter) * 100)}
+                state="active"
+                trackClassName="h-[3px] bg-[#ede6d6]"
+                barClassName="bg-[#4a7c59]"
+              />
               <span style={{ fontFamily: 'var(--font-label)', fontSize: 11, color: '#78715f' }}>in progress</span>
             </div>
           )}
@@ -143,8 +148,7 @@ function ChapterRow({ chapterTitle, items, chapterIdx, slug }: ChapterRowProps) 
         </span>
       </button>
 
-      {open && (
-        <div style={{ borderTop: '1px solid #e7dfc9' }}>
+      <PresencePanel isOpen={open} style={{ borderTop: '1px solid #e7dfc9' }}>
           {items.map((item, itemIdx) => {
             const typeLabel = ITEM_TYPE_LABEL[item.item_type] ?? item.item_type
             const title = item.challenge?.title ?? (item as { concept?: { title?: string } }).concept?.title ?? 'Untitled'
@@ -156,6 +160,7 @@ function ChapterRow({ chapterTitle, items, chapterIdx, slug }: ChapterRowProps) 
                 : '#'
             const isCompleted = item.challenge?.is_completed ?? false
             const isInProgress = item.challenge?.is_in_progress ?? false
+            const isNext = item.id === nextItemId && !isCompleted
             const actionLabel = isCompleted ? 'Review' : isInProgress ? 'Continue' : 'Start'
 
             const typeBadgeStyle: React.CSSProperties =
@@ -166,77 +171,93 @@ function ChapterRow({ chapterTitle, items, chapterIdx, slug }: ChapterRowProps) 
                 : { background: '#e4dcc8', color: '#4e4a3f' }
 
             return (
-              <Link
+              <MotionListItem
                 key={item.id}
-                href={href}
+                layoutId={`study-plan-item-${item.id}`}
+                animate={isNext ? { opacity: 1, y: 0, scale: [1, 1.01, 1] } : undefined}
+                transition={isNext ? { duration: 2.4, repeat: Infinity, ease: 'easeInOut' } : undefined}
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: '28px auto 1fr auto',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: '12px 20px',
                   borderBottom: itemIdx < items.length - 1 ? '1px solid #e7dfc9' : 'none',
-                  cursor: 'pointer',
-                  transition: 'background 150ms',
-                  textDecoration: 'none',
-                  color: 'inherit',
-                  background: 'transparent',
+                  background: isNext ? '#f4eee2' : 'transparent',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#f4eee2')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
-                {isCompleted ? (
-                  <span className="material-symbols-outlined" style={{ fontSize: 22, color: '#4a7c59', fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                ) : isInProgress ? (
-                  <span className="material-symbols-outlined" style={{ fontSize: 22, color: '#705c30', fontVariationSettings: "'FILL' 1" }}>play_circle</span>
-                ) : (
-                  <span className="material-symbols-outlined" style={{ fontSize: 22, color: '#d5cab1' }}>radio_button_unchecked</span>
-                )}
-
-                <span style={{
-                  ...typeBadgeStyle,
-                  fontFamily: 'var(--font-label)',
-                  fontSize: 11, fontWeight: 700,
-                  padding: '3px 9px', borderRadius: 999,
-                  whiteSpace: 'nowrap' as const,
-                }}>
-                  {typeLabel}
-                </span>
-
-                <span style={{
-                  fontFamily: 'var(--font-label)',
-                  fontSize: 14, fontWeight: isCompleted ? 500 : 600,
-                  color: isCompleted ? '#78715f' : '#1e1b14',
-                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const,
-                }}>
-                  {title}
-                </span>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                  {isCompleted && item.challenge?.best_score != null && (
-                    <span style={{
-                      fontFamily: 'var(--font-label)',
-                      fontSize: 13, fontWeight: 800, color: '#4a7c59',
-                      background: '#cfe3d3', padding: '3px 8px', borderRadius: 999,
-                    }}>
-                      +{item.challenge.best_score.toFixed(1)}
-                    </span>
+                <Link
+                  href={href}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '28px auto 1fr auto',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '12px 20px',
+                    cursor: 'pointer',
+                    transition: 'background 150ms',
+                    textDecoration: 'none',
+                    color: 'inherit',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#f4eee2')}
+                  onMouseLeave={e => (e.currentTarget.style.background = isNext ? '#f4eee2' : 'transparent')}
+                >
+                  {isCompleted ? (
+                    <span className="material-symbols-outlined" style={{ fontSize: 22, color: '#4a7c59', fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                  ) : isInProgress ? (
+                    <span className="material-symbols-outlined" style={{ fontSize: 22, color: '#705c30', fontVariationSettings: "'FILL' 1" }}>play_circle</span>
+                  ) : (
+                    <span className="material-symbols-outlined" style={{ fontSize: 22, color: isNext ? '#4a7c59' : '#d5cab1' }}>radio_button_unchecked</span>
                   )}
+
+                  <span style={{
+                    ...typeBadgeStyle,
+                    fontFamily: 'var(--font-label)',
+                    fontSize: 11, fontWeight: 700,
+                    padding: '3px 9px', borderRadius: 999,
+                    whiteSpace: 'nowrap' as const,
+                  }}>
+                    {typeLabel}
+                  </span>
+
                   <span style={{
                     fontFamily: 'var(--font-label)',
-                    fontSize: 12, fontWeight: 700, color: '#4e4a3f',
-                    border: '1px solid #d5cab1', borderRadius: 999,
-                    padding: '6px 12px', display: 'inline-block',
+                    fontSize: 14, fontWeight: isCompleted ? 500 : 600,
+                    color: isCompleted ? '#78715f' : '#1e1b14',
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const,
                   }}>
-                    {actionLabel}
+                    {title}
                   </span>
-                </div>
-              </Link>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                    {isNext && (
+                      <span style={{
+                        fontFamily: 'var(--font-label)',
+                        fontSize: 11, fontWeight: 800, color: '#0f3d1f',
+                        background: '#cfe3d3', padding: '3px 8px', borderRadius: 999,
+                      }}>
+                        Next
+                      </span>
+                    )}
+                    {isCompleted && item.challenge?.best_score != null && (
+                      <span style={{
+                        fontFamily: 'var(--font-label)',
+                        fontSize: 13, fontWeight: 800, color: '#4a7c59',
+                        background: '#cfe3d3', padding: '3px 8px', borderRadius: 999,
+                      }}>
+                        +{item.challenge.best_score.toFixed(1)}
+                      </span>
+                    )}
+                    <span style={{
+                      fontFamily: 'var(--font-label)',
+                      fontSize: 12, fontWeight: 700, color: '#4e4a3f',
+                      border: '1px solid #d5cab1', borderRadius: 999,
+                      padding: '6px 12px', display: 'inline-block',
+                    }}>
+                      {actionLabel}
+                    </span>
+                  </div>
+                </Link>
+              </MotionListItem>
             )
           })}
-        </div>
-      )}
-    </div>
+      </PresencePanel>
+    </MotionCard>
   )
 }
 
@@ -330,21 +351,17 @@ export function StudyPlanDetailClient({ plan, slug }: { plan: StudyPlanWithItems
               </p>
             )}
 
-            {pct > 0 && (
-              <div style={{ maxWidth: 520, marginTop: 16 }}>
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between',
-                  fontSize: 12, color: 'rgba(243,237,224,0.55)', fontWeight: 700,
-                  marginBottom: 6, fontFamily: 'var(--font-label)',
-                }}>
-                  <span>Your progress</span>
-                  <span>{pct}%</span>
-                </div>
-                <div style={{ height: 6, background: 'rgba(255,255,255,0.12)', borderRadius: 999, overflow: 'hidden' }}>
-                  <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #7ee099, #4a7c59)', borderRadius: 999 }} />
-                </div>
-              </div>
-            )}
+            <div style={{ maxWidth: 520, marginTop: 16 }}>
+              <AnimatedProgress
+                value={pct}
+                label="Your progress"
+                showValue
+                state={pct >= 100 ? 'complete' : pct > 0 ? 'active' : 'idle'}
+                className="text-[rgba(243,237,224,0.55)]"
+                trackClassName="h-[6px] bg-white/10"
+                barClassName="bg-[#7ee099]"
+              />
+            </div>
 
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
               <Link
@@ -426,7 +443,7 @@ export function StudyPlanDetailClient({ plan, slug }: { plan: StudyPlanWithItems
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <MotionList layoutKey={`study-plan-${slug}`} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {Array.from(chapters.entries()).map(([chapterTitle, items], chapterIdx) => (
               <ChapterRow
                 key={chapterTitle}
@@ -434,9 +451,10 @@ export function StudyPlanDetailClient({ plan, slug }: { plan: StudyPlanWithItems
                 items={items}
                 chapterIdx={chapterIdx}
                 slug={slug}
+                nextItemId={firstIncomplete?.id}
               />
             ))}
-          </div>
+          </MotionList>
         </div>
 
         {/* Right: Sticky sidebar */}

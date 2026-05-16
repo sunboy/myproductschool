@@ -76,10 +76,14 @@ function StudyPlanCard({ pl, index }: { pl: PlanItem; index: number }) {
       </div>
 
       <div className="relative mt-5 flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-1.5 font-label text-[12px] font-bold text-black/50">
-          <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>group</span>
-          {pl.enrolled.toLocaleString()}
-        </span>
+        {pl.enrolled >= 10 ? (
+          <span className="inline-flex items-center gap-1.5 font-label text-[12px] font-bold text-black/50">
+            <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>group</span>
+            {pl.enrolled.toLocaleString()} enrolled
+          </span>
+        ) : (
+          <span />
+        )}
         <span className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 font-label text-[12px] font-extrabold text-white shadow-[0_10px_20px_-16px_rgba(0,0,0,0.75)]" style={{ background: pl.color }}>
           Start
           <span className="material-symbols-outlined text-[14px] transition-transform group-hover:translate-x-0.5">arrow_forward</span>

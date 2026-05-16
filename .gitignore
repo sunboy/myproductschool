@@ -52,9 +52,15 @@ next-env.d.ts
 
 # local tooling (Claude Code, Playwright MCP, Superpowers)
 .codex/
+.claire/
 .claude/
 .playwright-mcp/
 .superpowers/
+__pycache__/
+*.pyc
+
+# local credentials
+hackproduct-*.json
 
 # enrichment intermediates / backups (never commit)
 seeds/staged-interview-challenges.backup-*.json

@@ -1,73 +1,63 @@
 import Link from 'next/link'
-import {
-  AnalyticsBoard,
-  FeedbackConsole,
-  PracticeWorkbench,
-  RoadmapPreview,
-} from './LivePreviews'
+import { PracticeWorkbench } from './LivePreviews'
 
 const FEATURES = [
   {
-    id: 'build',
-    image: 'I',
-    title: 'A full roadmap matched to your interview loop',
-    body: "When prep feels fuzzy, HackProduct turns your target role into sequenced tasks: diagnostics, weak moves, live reps, and review blocks.",
-    link: 'Learn how to start',
-    href: '/study-plans',
-    visual: <RoadmapPreview />,
+    id: 'frame',
+    move: 'Frame',
+    title: 'Name the real problem before solving it.',
+    body: 'Separate symptoms from the business, user, and technical constraint that actually matters.',
+    href: '/flow',
   },
   {
-    id: 'practice',
-    image: 'II',
-    title: 'Build interview answers with specialist AI coaches',
-    body: 'Practice with product, systems, SQL, data modeling, and coding coaches that ask the follow-up your interviewer would ask.',
-    link: 'Learn how to build',
-    href: '/practice',
-    visual: <PracticeWorkbench />,
+    id: 'list',
+    move: 'List',
+    title: 'Generate options without collapsing too early.',
+    body: 'List hypotheses, architectures, data cuts, and trade-offs before choosing the path.',
+    href: '/flow',
   },
   {
-    id: 'review',
-    image: 'III',
-    title: 'Review every answer with receipts, not vibes',
-    body: 'Hatch scores the FLOW moves, highlights the sentence that earned or lost the point, and queues the next drill.',
-    link: 'Learn how to review',
-    href: '/skills',
-    visual: <FeedbackConsole />,
+    id: 'optimize',
+    move: 'Optimize',
+    title: 'Use evidence to make the best next move.',
+    body: 'Pressure-test metrics, constraints, cost, risk, and reversibility before recommending.',
+    href: '/flow',
   },
   {
-    id: 'scale',
-    image: 'IV',
-    title: 'Scale from daily reps to hiring-panel readiness',
-    body: 'Progress analytics show which disciplines are compounding, which weak moves still leak points, and where to spend the next session.',
-    link: 'Learn how to scale',
-    href: '/progress',
-    visual: <AnalyticsBoard />,
+    id: 'win',
+    move: 'Win',
+    title: 'Land a crisp recommendation people can act on.',
+    body: 'State the decision, the evidence, the risk, and the follow-up in a promotion-ready form.',
+    href: '/flow',
   },
-]
+] as const
 
 export function FeatureRows() {
   return (
-    <section className="land-agent-section">
-      <div className="land-agent-intro">
-        <h2>Build real interview judgment with the help of specialized coaches</h2>
-        <p>From your first product-sense case to a final staff panel, HackProduct supports the whole loop.</p>
+    <section id="flow" className="mkt-section mkt-flow">
+      <div className="mkt-section-head">
+        <p>FLOW feedback</p>
+        <h2>Courses explain. HackProduct trains.</h2>
+        <p>
+          Every rep is scored against the same four judgment moves. That makes
+          progress visible across product, systems, data, SQL, coding, and AI work.
+        </p>
       </div>
 
-      <div className="land-agent-flow">
+      <div className="mkt-flow-showcase">
+        <div className="mkt-flow-visual">
+          <PracticeWorkbench />
+        </div>
+        <div className="mkt-flow-grid">
         {FEATURES.map((feature) => (
-          <article key={feature.id} id={feature.id} className="land-agent-row">
-            <div className="land-agent-copy">
-              <div className="land-agent-icon">{feature.image}</div>
-              <h3>{feature.title}</h3>
-              <p>{feature.body}</p>
-              <Link href={feature.href}>{feature.link}</Link>
-            </div>
-            <div className="land-agent-divider" aria-hidden />
-            <div className="land-agent-visual">
-              {feature.visual}
-            </div>
+          <article key={feature.id} className="mkt-flow-card">
+            <span>{feature.move}</span>
+            <h3>{feature.title}</h3>
+            <p>{feature.body}</p>
+            <Link href={feature.href}>Explore FLOW</Link>
           </article>
         ))}
+        </div>
       </div>
     </section>
   )
