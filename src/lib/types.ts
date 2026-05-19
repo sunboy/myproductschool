@@ -711,6 +711,7 @@ export interface ChallengeAttemptV2 {
   primary_competency?: string | null
   weakest_competency?: string | null
   canvas_final_snapshot?: Record<string, unknown>
+  canvas_png_url?: string | null
   draft_snapshot?: Record<string, unknown>
   draft_updated_at?: string
   conversation_summary?: string

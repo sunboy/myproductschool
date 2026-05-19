@@ -9,6 +9,9 @@ import './excalidraw-theme.css'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ExcalidrawAPI = any
 
+let exportToBlobFn: ((opts: Record<string, unknown>) => Promise<Blob>) | null = null
+import('@excalidraw/excalidraw').then((m) => { exportToBlobFn = m.exportToBlob })
+
 const Excalidraw = dynamic(
   () => import('@excalidraw/excalidraw').then((m) => m.Excalidraw),
   { ssr: false }
@@ -22,6 +25,7 @@ interface ExcalidrawCanvasProps {
   readOnly?: boolean
   annotations?: CanvasAnnotation[]
   apiRef?: React.MutableRefObject<ExcalidrawAPI | null>
+  exportRef?: React.MutableRefObject<(() => Promise<Blob | null>) | null>
 }
 
 export default function ExcalidrawCanvas({
@@ -32,11 +36,30 @@ export default function ExcalidrawCanvas({
   readOnly = false,
   annotations = [],
   apiRef: externalApiRef,
+  exportRef,
 }: ExcalidrawCanvasProps) {
   const internalApiRef = useRef<ExcalidrawAPI | null>(null)
   const apiRef = externalApiRef ?? internalApiRef
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevElementCount = useRef(0)
+
+  useEffect(() => {
+    if (!exportRef) return
+    exportRef.current = async () => {
+      if (!apiRef.current || !exportToBlobFn) return null
+      try {
+        return await exportToBlobFn({
+          elements: apiRef.current.getSceneElements(),
+          appState: apiRef.current.getAppState(),
+          files: apiRef.current.getFiles(),
+          mimeType: 'image/png',
+        })
+      } catch {
+        return null
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exportRef, apiRef.current])
 
   useEffect(() => {
     if (!apiRef.current) return
