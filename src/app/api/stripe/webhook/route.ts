@@ -95,7 +95,9 @@ function appReturnUrl(request: NextRequest, path = '/settings') {
 }
 
 function invoiceSubscriptionId(invoice: Stripe.Invoice) {
-  const value = invoice.subscription
+  const parent = invoice.parent
+  if (!parent || parent.type !== 'subscription_details') return null
+  const value = parent.subscription_details?.subscription
   return typeof value === 'string' ? value : value?.id ?? null
 }
 
