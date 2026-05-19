@@ -622,7 +622,7 @@ export type FlowStep = 'frame' | 'list' | 'optimize' | 'win'
 /** Extended FlowStep that includes the coding sentinel step added in migration 072. */
 export type FlowStepAll = FlowStep | 'coding'
 export type OptionQuality = 'best' | 'good_but_incomplete' | 'surface' | 'plausible_wrong'
-export type ResponseType = 'pure_mcq' | 'mcq_plus_elaboration' | 'modified_option' | 'freeform' | 'coding_subtask'
+export type ResponseType = 'pure_mcq' | 'mcq_plus_elaboration' | 'modified_option' | 'freeform' | 'coding_subtask' | 'multi_select_mcq'
 
 /** A single part of a multi-part coding challenge (loaded from flow_steps + step_questions). */
 export interface CodingPart {
@@ -690,6 +690,7 @@ export interface StepQuestionWithCoding extends StepQuestion {
 export interface StepQuestion {
   id: string; flow_step_id: string; question_text: string; question_nudge: string | null
   sequence: number; grading_weight_within_step: number; target_competencies: string[]
+  allow_multiple?: boolean
 }
 
 export interface FlowOption {

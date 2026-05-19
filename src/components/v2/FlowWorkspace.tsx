@@ -332,7 +332,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   // Per-question state
   const [questionIdx, setQuestionIdx] = useState(0)
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null)
+  const [selectedOptionIds, setSelectedOptionIds] = useState<string[]>([])
   const [reasoning, setReasoning] = useState('')
+  const [elaboration, setElaboration] = useState('')
   const [revealedOptions, setRevealedOptions] = useState<RevealedOption[]>([])
   const [stepScore, setStepScore] = useState(0)
   const [stepTotalScore, setStepTotalScore] = useState<number | null>(null) // step_score from API on final question
@@ -408,6 +410,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
   // Accumulates per-question results for the reveal screen
   const [questionRevealHistory, setQuestionRevealHistory] = useState<QuestionRevealRecord[]>([])
+
+  // Context panel (situation + trigger) collapsed by default
+  const [showContext, setShowContext] = useState(false)
 
   // Adapter-mode state
   const [adapterChallenge, setAdapterChallenge] = useState<SyntheticChallenge | null>(null)
@@ -1034,7 +1039,9 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     if (phase !== 'question') return
     setQuestionIdx(0)
     setSelectedOptionId(null)
+    setSelectedOptionIds([])
     setReasoning('')
+    setElaboration('')
     setConfidence(null)
     setRevealedOptions([])
     handlingSubmitRef.current = false
@@ -2147,6 +2154,41 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
           </div>
         )
       })()}
+
+      {/* Context disclosure (situation + trigger) - FLOW challenges */}
+      {!isCodingChallenge && (ch?.scenario_context || ch?.scenario_trigger) && (
+        <div className="space-y-3">
+          <button
+            onClick={() => setShowContext(v => !v)}
+            className="flex items-center gap-1.5 font-label text-xs text-on-surface-variant hover:text-primary transition-colors"
+          >
+            <span
+              className="material-symbols-outlined text-[14px] transition-transform"
+              style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", transform: showContext ? 'rotate(90deg)' : 'rotate(0deg)' }}
+            >
+              chevron_right
+            </span>
+            Background context
+          </button>
+
+          {showContext && (
+            <div className="space-y-3 pl-4 border-l-2 border-outline-variant">
+              {ch?.scenario_context && (
+                <div className="space-y-1">
+                  <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-wide">The situation</p>
+                  <p className="font-body text-sm text-on-surface leading-relaxed">{ch.scenario_context}</p>
+                </div>
+              )}
+              {ch?.scenario_trigger && (
+                <div className="space-y-1">
+                  <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-wide">What just happened</p>
+                  <p className="font-body text-sm text-on-surface leading-relaxed">{ch.scenario_trigger}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Parts list - multi-part coding challenges only ── */}
       {isCodingChallenge && codingParts.length > 0 && (
@@ -3618,11 +3660,23 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   question={currentQuestion}
                   responseType={currentQuestion.response_type}
                   selectedOptionId={selectedOptionId}
-                  elaboration={reasoning}
-                  revealed={false}
-                  onOptionSelect={handleOptionSelect}
-                  onElaborationChange={setReasoning}
-                  disabled={activeSubmitting}
+                  selectedOptionIds={selectedOptionIds}
+                  allowMultiple={currentQuestion.allow_multiple}
+                  elaboration={reasoning || elaboration}
+                  revealed={revealed}
+                  revealedOptions={revealedOptions}
+                  onOptionSelect={(id) => {
+                    if (currentQuestion.allow_multiple) {
+                      setSelectedOptionIds((prev) =>
+                        prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+                      )
+                    } else {
+                      setSelectedOptionId(id)
+                      setHatch('Good. Now rate your confidence.', 'listening')
+                    }
+                  }}
+                  onElaborationChange={(text) => { setReasoning(text); setElaboration(text) }}
+                  disabled={activeSubmitting || (revealed && !currentQuestion.allow_multiple)}
                   elaborationRef={reasoningCardRef}
                 />
               </div>

@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { FlowOption, FlowStep } from '@/lib/types'
-import { routeResponse, gradePureMCQ } from '@/lib/v2/skills/grading-router'
+import { IS_MOCK } from '@/lib/mock'
+import type { FlowOption, FlowStep, ResponseType } from '@/lib/types'
+import { routeResponse, gradePureMCQ, gradeMultiSelectMCQ } from '@/lib/v2/skills/grading-router'
 import { scoreOption } from '@/lib/v2/skills/option-scorer'
 import { calculateStepScore } from '@/lib/v2/skills/step-score-calculator'
 import { STEP_PRIMARY_COMPETENCIES } from '@/lib/hatch/system-prompt'
@@ -13,11 +14,13 @@ import { PlanLimitExceeded, assertPlanLimit } from '@/lib/usage/assert-plan-limi
 
 // ── Request body ─────────────────────────────────────────────
 
+<<<<<<< HEAD
 const RequestSchema = z.object({
   attempt_id: z.string().uuid(),
   question_id: z.string().uuid(),
-  response_type: z.enum(['pure_mcq', 'mcq_plus_elaboration', 'modified_option', 'freeform', 'coding_subtask']),
+  response_type: z.enum(['pure_mcq', 'mcq_plus_elaboration', 'modified_option', 'freeform', 'coding_subtask', 'multi_select_mcq']),
   selected_option_id: z.string().uuid().nullable().optional(),
+  selected_option_ids: z.array(z.string().uuid()).optional(),
   user_text: z.string().max(50000).nullable().optional(),
   time_spent_seconds: z.number().int().min(0).max(24 * 60 * 60).optional().default(0),
 })
@@ -163,6 +166,7 @@ export async function POST(
     question_id,
     response_type,
     selected_option_id,
+    selected_option_ids,
     user_text,
     time_spent_seconds = 0,
   } = body
@@ -282,6 +286,18 @@ export async function POST(
       framework_hint: hint,
     } : null
 
+  } else if (path === 'multi_deterministic') {
+    // multi_select_mcq — array of selected option ids
+    if (!selected_option_ids || selected_option_ids.length === 0) {
+      return NextResponse.json({ error: 'selected_option_ids required for multi_select_mcq' }, { status: 400 })
+    }
+    const result = gradeMultiSelectMCQ(selected_option_ids, options)
+    score = result.score
+    quality_label = result.quality_label
+    competencies_demonstrated = result.competencies_demonstrated
+    grading_explanation = result.grading_explanation
+    grading_confidence = result.confidence
+
   } else if (path === 'hybrid') {
     // mcq_plus_elaboration - base score + AI elaboration adjustment
     if (!selected_option_id) {
@@ -360,7 +376,8 @@ export async function POST(
       question_id,
       step,
       response_type,
-      selected_option_id: selected_option_id ?? null,
+      selected_option_id: path !== 'multi_deterministic' ? (selected_option_id ?? null) : null,
+      selected_option_ids: path === 'multi_deterministic' ? (selected_option_ids ?? null) : null,
       user_text: user_text ?? null,
       score,
       quality_label,

@@ -25,6 +25,8 @@ interface StepQuestionProps {
   }
   responseType: ResponseType
   selectedOptionId: string | null
+  selectedOptionIds?: string[]
+  allowMultiple?: boolean
   elaboration: string
   revealed: boolean
   revealedOptions?: RevealedOption[]
@@ -50,6 +52,8 @@ export function StepQuestion({
   question,
   responseType,
   selectedOptionId,
+  selectedOptionIds,
+  allowMultiple,
   elaboration,
   revealed,
   revealedOptions,
@@ -59,26 +63,33 @@ export function StepQuestion({
   elaborationRef,
 }: StepQuestionProps) {
   const showOptions = responseType !== 'freeform'
-  const showElaboration = responseType !== 'pure_mcq'
+  const showElaboration = responseType !== 'pure_mcq' && responseType !== 'multi_select_mcq'
   const elaborationLabel = ELABORATION_LABELS[responseType] ?? 'Your answer'
   const elaborationPlaceholder = ELABORATION_PLACEHOLDERS[responseType] ?? 'Write your answer…'
 
   return (
     <div className="space-y-4">
       <p className="font-label text-2xl text-on-surface leading-snug" style={{ letterSpacing: '-0.02em', fontWeight: 800 }}>{question.question_text}</p>
+      {allowMultiple && !revealed && (
+        <p className="text-xs text-on-surface-variant font-label">Select all that apply</p>
+      )}
 
       {showOptions && (
         <div className="space-y-2">
           {[...question.options].sort((a, b) => a.option_label.localeCompare(b.option_label)).map((opt) => {
             const revealData = revealedOptions?.find((r) => r.id === opt.id)
+            const isSelected = allowMultiple
+              ? (selectedOptionIds ?? []).includes(opt.id)
+              : selectedOptionId === opt.id
             return (
               <OptionCard
                 key={opt.id}
                 option={opt}
-                selected={selectedOptionId === opt.id}
+                selected={isSelected}
                 revealed={revealed}
                 revealData={revealData}
                 disabled={disabled}
+                multiSelect={allowMultiple}
                 onSelect={onOptionSelect}
               />
             )

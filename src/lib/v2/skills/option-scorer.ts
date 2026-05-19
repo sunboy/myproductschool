@@ -15,3 +15,35 @@ export function scoreOption(selectedOptionId: string, options: FlowOption[]) {
     is_correct: option.quality === 'best',
   }
 }
+
+export function scoreMultiSelect(selectedOptionIds: string[], options: FlowOption[]) {
+  const selected = options.filter(o => selectedOptionIds.includes(o.id))
+
+  if (selected.length === 0 || selected.some(o => o.quality === 'plausible_wrong')) {
+    return {
+      score: TIER_CAPS[0],
+      quality_label: 'plausible_wrong' as OptionQuality,
+      competencies_demonstrated: [] as string[],
+      grading_explanation: selected.length === 0
+        ? 'No options selected.'
+        : selected.find(o => o.quality === 'plausible_wrong')?.explanation ?? 'One or more selections were incorrect.',
+      is_correct: false,
+    }
+  }
+
+  const avgPoints = selected.reduce((sum, o) => sum + QUALITY_POINTS[o.quality], 0) / selected.length
+  const score = TIER_CAPS[Math.round(avgPoints)]
+  const quality_label: OptionQuality = selected.every(o => o.quality === 'best')
+    ? 'best'
+    : selected.some(o => o.quality === 'best')
+    ? 'good_but_incomplete'
+    : 'surface'
+
+  return {
+    score,
+    quality_label,
+    competencies_demonstrated: [...new Set(selected.flatMap(o => o.competencies))],
+    grading_explanation: selected.map(o => o.explanation).join(' '),
+    is_correct: selected.every(o => o.quality === 'best'),
+  }
+}
