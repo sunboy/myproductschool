@@ -25,10 +25,12 @@ const COLOR_VAR: Record<'primary' | 'secondary' | 'tertiary', string> = {
   tertiary: 'var(--color-tertiary)',
 }
 
+const EMPTY_BARS: ComparisonBarsData['bars'] = []
+
 // ── 1. Comparison Bars ────────────────────────────────────────────────────────
 
 function ComparisonBars({ data, isVisible }: { data: ComparisonBarsData; isVisible: boolean }) {
-  const bars = data.bars ?? []
+  const bars = data?.bars ?? EMPTY_BARS
   const maxBarWidth = 160
   const labelWidth = 80
   const barHeight = 20
@@ -36,7 +38,7 @@ function ComparisonBars({ data, isVisible }: { data: ComparisonBarsData; isVisib
   const svgHeight = bars.length * rowHeight + 16
   const svgWidth = 280
 
-  const [displayedValues, setDisplayedValues] = React.useState<number[]>(() => data.bars.map(() => 0))
+  const [displayedValues, setDisplayedValues] = React.useState<number[]>(() => bars.map(() => 0))
 
   React.useEffect(() => {
     if (!isVisible) return
@@ -155,7 +157,7 @@ function Flywheel({
   isVisible: boolean
   animationTrigger: IllustrationConfig['animationTrigger']
 }) {
-  const steps = data.steps ?? []
+  const steps = data?.steps ?? []
   const count = steps.length || 1
   const cx = 120
   const cy = 120
@@ -298,7 +300,7 @@ function Flywheel({
 // ── 3. Tool Stack ─────────────────────────────────────────────────────────────
 
 function ToolStack({ data, isVisible }: { data: ToolStackData; isVisible: boolean }) {
-  const replaced = data.replaced ?? []
+  const replaced = data?.replaced ?? []
   const rowHeight = 36
   const svgHeight = (replaced.length + 1) * rowHeight + 16
   const svgWidth = 240
@@ -436,7 +438,7 @@ function ToolStack({ data, isVisible }: { data: ToolStackData; isVisible: boolea
                 transitionDelay: `${i * 0.1 + 0.05}s`,
               }}
             >
-              {data.replacement}
+              {data?.replacement ?? 'Replacement'}
             </text>
           </g>
         )
@@ -448,7 +450,7 @@ function ToolStack({ data, isVisible }: { data: ToolStackData; isVisible: boolea
 // ── 4. Block Anatomy ──────────────────────────────────────────────────────────
 
 function BlockAnatomy({ data, isVisible }: { data: BlockAnatomyData; isVisible: boolean }) {
-  const blocks = data.blocks ?? []
+  const blocks = data?.blocks ?? []
   const blockHeight = 44
   const svgHeight = blocks.length * blockHeight + 48
   const svgWidth = 260
@@ -679,7 +681,7 @@ export function IllustrationAnimated({ config, isVisible, className = '' }: Prop
               <div className="text-[10px] font-label font-bold text-on-surface-variant uppercase tracking-wide mb-1">{tier.name}</div>
               <div className="text-lg font-bold text-primary font-headline">{tier.price}</div>
               <ul className="mt-2 space-y-1">
-                {tier.features.slice(0, 3).map(f => (
+                {(tier.features ?? []).slice(0, 3).map(f => (
                   <li key={f} className="text-[9px] text-on-surface-variant flex items-center gap-1">
                     <span className="material-symbols-outlined text-primary" style={{ fontSize: 10 }}>check_small</span>
                     {f}

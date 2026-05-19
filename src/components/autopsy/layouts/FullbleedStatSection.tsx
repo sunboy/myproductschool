@@ -10,7 +10,7 @@ interface Props {
 
 export function FullbleedStatSection({ section, hasBeenVisible }: Props) {
   const { stat, context, source } = section.content
-  const [entered, setEntered] = React.useState(false)
+  const [entered, setEntered] = React.useState(hasBeenVisible)
 
   React.useEffect(() => {
     if (hasBeenVisible) {

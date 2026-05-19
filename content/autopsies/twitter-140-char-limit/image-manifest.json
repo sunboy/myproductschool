@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "twitter",
+  "story_slug": "twitter-140-char-limit",
+  "story_title": "Twitter's 140-Character Limit",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/twitter-140-char-limit/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/twitter-140-char-limit/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch inside a text box nearly at the 140-character limit, editing intently.",
+      "caption": "Hatch inside a text box nearly at the 140-character limit, editing intently.",
+      "prompt": "Twitter's 140-Character Limit | hero: Hatch mascot (the HackProduct robot with the graduation cap and growth arrow) standing inside an oversized text box that is almost full — with a character counter showing \"138/140\" at the bottom right of the box. Hatch's expression is focused, editing intently. Cream background, no speech bubble. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/twitter-140-char-limit/hero.png",
+      "generated_image_sha256": "922b103466737bc1a3cb41fafb27ce0e868c404c2133df0718c0924fc33870b9",
+      "final_image_sha256": "bcffd7be6870b41e0d20dd3d615884f98388575ad4a20c35a47987a42cfd30ee",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/twitter-140-char-limit/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/twitter-140-char-limit/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/twitter-140-char-limit/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch explaining the connection between SMS 160 characters and Twitter's 140-character limit.",
+      "caption": "Hatch explaining the connection between SMS 160 characters and Twitter's 140-character limit.",
+      "prompt": "Twitter's 140-Character Limit | hatch-narrator: Hatch in narrator pose, gesturing at a simple visual of an SMS phone from 2006 with a \"160 chars\" label, connected by an arrow to a Twitter bird icon with \"140 chars\" label, showing the SMS origin of the constraint. Clean, explanatory diagram style. Cream background. No speech bubble. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/twitter-140-char-limit/hatch-narrator.png",
+      "generated_image_sha256": "449b6948a0be809dc0cbee9c4440293145ea70841f3f48bc5512fba02fd1fcbc",
+      "final_image_sha256": "b8288baf0db73944c41a8b765eb5206d7b8da35a220e1a14b420b870c33091db",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/twitter-140-char-limit/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/twitter-140-char-limit/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/twitter-140-char-limit/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch comparing a verbose version and a sharp 140-character version of the same sentence.",
+      "caption": "Hatch comparing a verbose version and a sharp 140-character version of the same sentence.",
+      "prompt": "Twitter's 140-Character Limit | failure-mechanism: Hatch in thinking pose, looking at two drafts of the same sentence side by side: a verbose 280-word version crossed out, and a sharp 140-character version circled in green. The editing process made visible. Cream background. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/twitter-140-char-limit/failure-mechanism.png",
+      "generated_image_sha256": "11a203b1b0896848448654e49961e7d2c4c2412c759a946e25c19022bdaedb92",
+      "final_image_sha256": "7cf8b2d57b914a64b0357cc807b2e3012ceb64a24307390f5391d70f51967f78",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/twitter-140-char-limit/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/twitter-140-char-limit/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/twitter-140-char-limit/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at two near-identical tweet length distributions before and after the 280-character expansion.",
+      "caption": "Hatch pointing at two near-identical tweet length distributions before and after the 280-character expansion.",
+      "prompt": "Twitter's 140-Character Limit | evidence-card: Hatch pointing at a small chart showing tweet length distribution before and after the 280-character expansion — two bell curves, essentially identical, with only a tiny tail reaching 280. The visual argument: nothing changed. Cream background. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/twitter-140-char-limit/evidence-card.png",
+      "generated_image_sha256": "5043a7ad1305fb485a8fc1843fc33184ba0bf4701f0a5511bc0af1d6f045975a",
+      "final_image_sha256": "123ad49490e180ee75fa1b5d935969eba8a524076b70c21159191a2ae3d6e18f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/twitter-140-char-limit/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/twitter-140-char-limit/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/twitter-140-char-limit/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a now-larger text box still containing a short, tight sentence — the expansion changed little.",
+      "caption": "Hatch beside a now-larger text box still containing a short, tight sentence — the expansion changed little.",
+      "prompt": "Twitter's 140-Character Limit | lesson-frame: Hatch in calm coaching pose, standing beside a text box that has grown larger (the 280 expansion) while the content inside it is still short — a small tight sentence in the middle of a large empty box. The visual makes the point without text. Cream background. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/twitter-140-char-limit/lesson-frame.png",
+      "generated_image_sha256": "da37e0f154371a7ed48687ee2ae63cb89b400fcabb5de1a6b89765ba30070d01",
+      "final_image_sha256": "2cd90aa72af3e499aa3df3ac3b335b4e6e6fe2dc2dc949f5b66765d42be7b96d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/twitter-140-char-limit/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/twitter-140-char-limit/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/twitter-140-char-limit/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch inside a small text box showing the 140-character limit, thumbnail version.",
+      "caption": "Hatch inside a small text box showing the 140-character limit, thumbnail version.",
+      "prompt": "Hatch mascot small and recognizable, standing inside a tiny text box with \"140\" visible. Cream background, no other text. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/twitter-140-char-limit/hero.png",
+      "generated_image_sha256": "922b103466737bc1a3cb41fafb27ce0e868c404c2133df0718c0924fc33870b9",
+      "final_image_sha256": "994c95a2140b219be2587bc1c3a7216c880cfa24f3a5b3bab3c23e71a24a2635",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/twitter-140-char-limit/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/twitter-140-char-limit/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/twitter-140-char-limit/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch at the 140-character limit inside a text box, for social sharing card.",
+      "caption": "Hatch at the 140-character limit inside a text box, for social sharing card.",
+      "prompt": "Hatch mascot in hero pose adapted for OG card: standing inside the text box at \"138/140\" characters, focused expression. Title text area below. Cream background. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/twitter-140-char-limit/hero.png",
+      "generated_image_sha256": "922b103466737bc1a3cb41fafb27ce0e868c404c2133df0718c0924fc33870b9",
+      "final_image_sha256": "a50f257bef40bc815a687b2eefe06f00f3205e66c3c3d1ab26dc6938fd44d284",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/twitter-140-char-limit/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/twitter-140-char-limit/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/twitter-140-char-limit/v1"
+}

@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "dropbox",
+  "story_slug": "dropbox-referral",
+  "story_title": "Dropbox Referral Program",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/dropbox-referral/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/dropbox-referral/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two cream storage boxes connected by a forest-green arrow with a soft amber 60% badge, with Hatch standing at lower right pointing at the link.",
+      "caption": "Two users, one shared reward, paid in the product itself.",
+      "prompt": "Dropbox Referral Program | hero: A flat geometric HackProduct autopsy hero illustration for Dropbox referral program. Canvas role hero, 2400x1350 with quiet space in the upper left for a title overlay. Show a small forest-green Dropbox-style box on the left tipping a stream of small cream storage tiles toward a second box on the right, with a forest-green arrow connecting them and a soft amber percentage badge reading sixty percent floating above. Use Hatch as a small narrator from the official mascot asset, standing at lower right, pointing toward the storage stream with one mitten hand. Preserve Hatch's rounded forest-green head frame, cream face and body, graduation cap, growth arrow above the cap, green H mark on chest, bright eyes, mitten hands, and friendly coach expression. Palette is cream `#faf6f0` background, forest `#4a7c59` structure, deep forest `#244232` outlines, amber `#705c30` for the percentage badge, soft amber `#c9ad68` for highlights, charcoal `#1e211c` linework. Crisp vector edges. No human faces, no photorealism, no real product screenshots, no neon. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/dropbox-referral/hero.png",
+      "generated_image_sha256": "cb77fe69d745ff51b9908e707f6bc67e4495742556255c6f566c90f41f623dd6",
+      "final_image_sha256": "77c83796d753c27752cae44b280b236e0d80158d255a40c88b0dbc734aafde54",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dropbox-referral/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dropbox-referral/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/dropbox-referral/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing in front of a cream desk showing a steep paid-acquisition cost line above a small $99 price tag, looking concerned.",
+      "caption": "Hatch standing in front of a cream desk showing a steep paid-acquisition cost line above a small $99 price tag, looking concerned.",
+      "prompt": "Dropbox Referral Program | hatch-narrator: A flat geometric HackProduct autopsy scene illustration for Dropbox in 2008. Canvas role hatch-narrator, 1600x1600 centered composition. Show a single cream desk with a small forest-green laptop screen displaying a stack of money symbols and a steep upward cost line labelled with the small text \"CPA $233 to $388\", set against a warm cream background. To the right, a quiet receipt-shaped card shows a small label \"annual price $99\". Use Hatch from the official mascot asset as the main narrator, standing in front of the desk at narrator pose with mitten hands open, looking at the cost chart with a concerned but composed coach expression. Preserve Hatch's rounded forest-green head frame, cream face and body, graduation cap, growth arrow above the cap, green H mark on chest, bright eyes, mitten hands. Palette uses cream `#faf6f0`, forest `#4a7c59`, deep forest `#244232`, amber `#705c30`, soft amber `#c9ad68`, charcoal `#1e211c`, mist `#dfe6dc`. Crisp vector edges, no shading gradients, no real screenshots, no human faces. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/dropbox-referral/hatch-narrator.png",
+      "generated_image_sha256": "66507557fbff0e60ca3b52d5af2bdc9e85ee03a00464d4943f55e09b9d2ed218",
+      "final_image_sha256": "3b8ba30285c02eb8d24d2064e58a62d3c4f75aea97cb1ef88e7ed5e392bfb55c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dropbox-referral/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dropbox-referral/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/dropbox-referral/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A circular two-sided referral diagram with two cream user circles connected through a central install node, soft amber storage tiles behind each user, and Hatch pointing at the install node from the left.",
+      "caption": "A circular two-sided referral diagram with two cream user circles connected through a central install node, soft amber storage tiles behind each user, and Hatch pointing at the install node from the left.",
+      "prompt": "Dropbox Referral Program | failure-mechanism: A flat geometric HackProduct autopsy mechanism diagram for the Dropbox two-sided referral loop. Canvas role failure-mechanism, 1800x1200, 3:2 composition with the loop centered. Show two cream user circles at left and right, each labelled with a tiny outline of a person silhouette, connected by a circular forest-green arrow path that runs through a central pale-mist node labelled \"install\". On both sides, soft amber tiles fan out behind each user to represent extra storage granted on a successful install. A small ledger in the lower right shows three short tick marks labelled in single words \"invite\", \"install\", \"reward\". Use Hatch from the official mascot asset in thinking pose on the left margin pointing one mitten hand at the central install node. Preserve Hatch's official traits including cap, growth arrow, H mark, cream face and body. Palette is cream `#faf6f0`, forest `#4a7c59`, deep forest `#244232`, amber `#705c30`, soft amber `#c9ad68`, mist `#dfe6dc`, charcoal `#1e211c`. Crisp vector edges, no shading gradients. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/dropbox-referral/failure-mechanism.png",
+      "generated_image_sha256": "0edb76327aa42d6b71e82fe7662177401cc6f2964c83ce05855b7856e8b11564",
+      "final_image_sha256": "2af58101081abcde881ff1511b76c2ed488076b0bfda6d545fa69b98154abd62",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dropbox-referral/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dropbox-referral/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/dropbox-referral/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A short forest-green bar beside a tall amber bar labelled 60% permanent signup lift, with a small timeline ribbon below showing September 2008 100K to January 2010 4M, and Hatch pointing at the amber bar from the lower left.",
+      "caption": "A short forest-green bar beside a tall amber bar labelled 60% permanent signup lift, with a small timeline ribbon below showing September 2008 100K to January 2010 4M, and Hatch pointing at the amber bar from the lower left.",
+      "prompt": "Dropbox Referral Program | evidence-card: A flat geometric HackProduct autopsy evidence card for the Dropbox referral data. Canvas role evidence-card, 1600x1000, 8:5 composition with content kept readable after a centered 1:1 crop. Show a single tall amber bar on the right labelled in one short line \"60% permanent signup lift\", next to a smaller forest-green bar on the left labelled \"before\". Below the bars, a horizontal timeline ribbon marks two cream nodes, one labelled \"Sep 2008 100K\" and one labelled \"Jan 2010 4M\", with a small forest-green arrow connecting them. Use Hatch from the official mascot asset in pointing pose at the lower left, one mitten hand reaching toward the tall amber bar, kept small at about 15 percent of canvas height. Preserve cap, growth arrow, H mark, cream body. Palette cream `#faf6f0`, forest `#4a7c59`, deep forest `#244232`, amber `#705c30`, soft amber `#c9ad68`, charcoal `#1e211c`, mist `#dfe6dc`. Crisp vector edges. No dense text, no real screenshots, no human faces. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/dropbox-referral/evidence-card.png",
+      "generated_image_sha256": "7427de064559471a3631a61d38cccbe7191cc540bd4751608a6d03bea1208ba6",
+      "final_image_sha256": "e29c3a9aebcb6b6088db862358322f5de39f0abccd5c1f7f6fd8ab88c4c80c89",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dropbox-referral/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dropbox-referral/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/dropbox-referral/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A cream coin engraved with a storage-box mark beside a forest-green dollar symbol crossed out, with Hatch in coaching pose between them gesturing toward the cream coin.",
+      "caption": "A cream coin engraved with a storage-box mark beside a forest-green dollar symbol crossed out, with Hatch in coaching pose between them gesturing toward the cream coin.",
+      "prompt": "Dropbox Referral Program | lesson-frame: A flat geometric HackProduct autopsy lesson illustration for the Dropbox referral takeaway. Canvas role lesson-frame, 1800x1200, 3:2 composition with calm centered focus. Show a single cream coin on the left engraved with a small storage-box mark and a forest-green dollar symbol on the right with a soft red diagonal line through it, separated by a vertical mist divider. Above the coin, a single short label in calm small caps reads \"the currency the product mints\". Use Hatch from the official mascot asset in coaching pose at the center bottom, standing slightly forward with mitten hands open in a calm gesture toward the cream coin. Preserve Hatch's rounded forest-green head frame, cream face and body, graduation cap, growth arrow above the cap, green H mark, bright eyes. Palette cream `#faf6f0` background, forest `#4a7c59`, deep forest `#244232`, amber `#705c30`, soft amber `#c9ad68`, charcoal `#1e211c`, mist `#dfe6dc`. Editorial flat illustration style with crisp vector edges. No human faces, no photorealism, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/dropbox-referral/lesson-frame.png",
+      "generated_image_sha256": "5eefc41cce115100a5d441cc6704d4b9f4c2871f59a6183cfd0539b1ed342967",
+      "final_image_sha256": "6eee0bce9644440ae18edc2219ec0c44e9a21d67a8d4534867977e5545d2f8ff",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dropbox-referral/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dropbox-referral/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/dropbox-referral/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A cream storage box with a forest-green loop arrow connecting to a smaller storage box, a small amber 60% badge at upper right, and a tiny Hatch mark at lower left.",
+      "caption": "A cream storage box with a forest-green loop arrow connecting to a smaller storage box, a small amber 60% badge at upper right, and a tiny Hatch mark at lower left.",
+      "prompt": "A flat geometric HackProduct autopsy thumbnail for Dropbox referral program. Canvas role thumbnail, 1200x900, 4:3 composition that reads at 320 pixels wide. Show one strong focal shape, a single cream storage box with a forest-green arrow looping out of the top and back into a smaller storage box at lower right, evoking a referral loop. Add a small soft amber percentage badge reading sixty percent at upper right. Use Hatch from the official mascot asset only as a tiny watermark-adjacent pose at the lower left, no larger than 12 percent of canvas height, preserving cap, growth arrow, H mark, and cream body. Keep negative space generous so the loop reads instantly at small size. Palette cream `#faf6f0` background, forest `#4a7c59`, deep forest `#244232`, amber `#705c30`, soft amber `#c9ad68`, charcoal `#1e211c`. Crisp vector edges, no gradients, no human faces, no real product UI. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/dropbox-referral/thumbnail.png",
+      "generated_image_sha256": "cb77fe69d745ff51b9908e707f6bc67e4495742556255c6f566c90f41f623dd6",
+      "final_image_sha256": "3db28f7d21e5bc9b2545ae9f949d87be89e6085f0f264f8c9720ce5edf98e74a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dropbox-referral/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dropbox-referral/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/dropbox-referral/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two cream storage boxes connected by a bold forest-green loop arrow with a soft amber 60% badge over the midpoint, and small Hatch narrator at lower right pointing at the arrow.",
+      "caption": "Two cream storage boxes connected by a bold forest-green loop arrow with a soft amber 60% badge over the midpoint, and small Hatch narrator at lower right pointing at the arrow.",
+      "prompt": "A flat geometric HackProduct autopsy social cover for Dropbox referral program. Canvas role social-cover, 2400x1260, 1.91:1 composition with center 70 percent kept clear of edge-critical details so it survives 1200x630 and 1600x900 share previews. Show two cream storage boxes connected by a single bold forest-green arrow looping across the middle of the canvas, with a soft amber percentage badge reading sixty percent positioned over the arrow midpoint, and the text-free phrase suggestion implied by the visual composition only. Use Hatch from the official mascot asset as a small narrator at the lower right edge, no larger than 18 percent of canvas height, pointing one mitten hand toward the arrow midpoint, preserving rounded forest-green head frame, cream face and body, cap, growth arrow, and H chest mark. Palette cream `#faf6f0`, forest `#4a7c59`, deep forest `#244232`, amber `#705c30`, soft amber `#c9ad68`, mist `#dfe6dc`, charcoal `#1e211c`. Crisp vector edges. No human faces, no fake screenshots, no neon, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/dropbox-referral/social-cover.png",
+      "generated_image_sha256": "cb77fe69d745ff51b9908e707f6bc67e4495742556255c6f566c90f41f623dd6",
+      "final_image_sha256": "6e7f6ee7b4b420bd0d073b9baffcca95068b5e26dcc2a03056648d221fc14d8e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dropbox-referral/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dropbox-referral/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/dropbox-referral/v1"
+}

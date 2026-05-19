@@ -1,9 +1,12 @@
 import Link from 'next/link'
-import type { StudyPlan, AutopsyProduct, LearnModule, DomainWithProgress } from '@/lib/types'
+import type { StudyPlan, LearnModule, DomainWithProgress, AutopsyProduct } from '@/lib/types'
 import { getStudyPlanSummaries } from '@/lib/data/study-plans'
 import { getShowcaseProducts } from '@/lib/data/showcase'
 import { getLearnModuleSummaries } from '@/lib/data/learn-modules'
 import { getDomainsWithProgress } from '@/lib/data/domains'
+import { getReadableAppCompanies, getReadableLegacyOnlyShowcaseProducts } from '@/lib/autopsies/app-library'
+import { getAutopsyCompanies } from '@/lib/autopsies/queries'
+import type { AutopsyCompanyWithStories } from '@/lib/autopsies/types'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
@@ -44,6 +47,10 @@ interface PlanItem {
   icon: string
   slug: string
 }
+
+type ExploreAutopsyCardItem =
+  | { kind: 'modern'; product: AutopsyCompanyWithStories; legacyProduct?: AutopsyProduct }
+  | { kind: 'legacy'; product: AutopsyProduct }
 
 const PLANS_STATIC: PlanItem[] = [
   { title: 'Staff Engineer Path', sub: '6 weeks', diff: 'Intermediate', color: '#4a7c59', bg: '#dfe7e1', enrolled: 1243, icon: 'route', slug: 'staff-engineer-path' },
@@ -105,8 +112,9 @@ export default async function ExplorePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [studyPlansRaw, showcaseProducts, modulesRaw, domains, personalisedPlan, topCompanyChallenges] = await Promise.all([
+  const [studyPlansRaw, autopsyCompanies, legacyProducts, modulesRaw, domains, personalisedPlan, topCompanyChallenges] = await Promise.all([
     getStudyPlanSummaries(4).catch(() => [] as StudyPlan[]),
+    getAutopsyCompanies().catch(() => [] as AutopsyCompanyWithStories[]),
     getShowcaseProducts().catch(() => [] as AutopsyProduct[]),
     getLearnModuleSummaries(4).catch(() => [] as LearnModule[]),
     getDomainsWithProgress().catch(() => [] as DomainWithProgress[]),
@@ -177,7 +185,22 @@ export default async function ExplorePage() {
     : PLANS_STATIC
 
   const modules = modulesRaw.length > 0 ? modulesRaw.slice(0, 4) : MODULES_STATIC
-  const autopsies = showcaseProducts.filter(p => (p.decision_count ?? 0) >= 1).slice(0, 4)
+  const autopsyHubs = getReadableAppCompanies(autopsyCompanies)
+  const legacyOnlyAutopsyHubs = getReadableLegacyOnlyShowcaseProducts(
+    legacyProducts,
+    autopsyHubs.map(hub => hub.slug)
+  )
+  const legacyProductsBySlug = new Map(legacyProducts.map(product => [product.slug, product]))
+  const autopsyCards: ExploreAutopsyCardItem[] = [
+    ...autopsyHubs.map(product => ({
+      kind: 'modern' as const,
+      product,
+      legacyProduct: legacyProductsBySlug.get(product.slug),
+    })),
+    ...legacyOnlyAutopsyHubs.map(product => ({ kind: 'legacy' as const, product })),
+  ]
+  const totalAutopsyHubs = autopsyCards.length
+  const autopsies = autopsyCards.slice(0, 4)
   const topDomains = domains.filter(d => (d.challenge_count ?? 0) >= 1).slice(0, 6)
 
   return (
@@ -200,7 +223,7 @@ export default async function ExplorePage() {
           </h1>
           <div className="mt-4 flex flex-wrap gap-2">
             <MetaChip icon="menu_book" label={`${modules.length} guides`} />
-            {autopsies.length > 0 && <MetaChip icon="troubleshoot" label={`${autopsies.length} autopsies`} />}
+            {totalAutopsyHubs > 0 && <MetaChip icon="troubleshoot" label={`${totalAutopsyHubs} autopsy hubs`} />}
             {topDomains.length > 0 && <MetaChip icon="category" label={`${topDomains.length} domains`} />}
           </div>
         </div>
@@ -250,10 +273,10 @@ export default async function ExplorePage() {
 
       {autopsies.length > 0 && (
         <>
-          <SectionHeading title="Autopsies" href="/explore/showcase" linkLabel={`See all (${autopsies.length})`} />
+          <SectionHeading title="Autopsies" href="/explore/showcase" linkLabel={`See all (${totalAutopsyHubs})`} />
           <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {autopsies.map((product, index) => (
-              <AutopsyCard key={product.slug} product={product} index={index} />
+            {autopsies.map((item, index) => (
+              <AutopsyCard key={item.product.slug} item={item} index={index} />
             ))}
           </section>
         </>
@@ -462,8 +485,24 @@ function ModuleCard({ module, index }: {
   )
 }
 
-function AutopsyCard({ product, index }: { product: AutopsyProduct; index: number }) {
-  const bg = product.cover_color ?? '#1e1b14'
+function AutopsyCard({ item, index }: { item: ExploreAutopsyCardItem; index: number }) {
+  const product = item.product
+  const bg = item.kind === 'modern' ? item.product.accent : item.product.cover_color ?? '#1e1b14'
+  const teardownCount = item.kind === 'modern'
+    ? item.product.stories.filter(story => story.storyType === 'company_teardown').length
+      + Math.max(
+        0,
+        (item.legacyProduct?.story_count ?? 0)
+          - item.product.stories.filter(story => story.storyType === 'company_teardown').length
+      )
+    : item.product.story_count ?? 0
+  const featureCount = item.kind === 'modern'
+    ? item.product.stories.filter(story => story.storyType === 'feature_autopsy').length
+    : 0
+  const dek = item.kind === 'modern' ? item.product.dek : item.product.tagline
+  const industry = item.kind === 'modern'
+    ? item.product.industry
+    : item.product.industry ?? item.product.paradigm ?? 'Company teardown'
 
   return (
     <Link
@@ -475,24 +514,26 @@ function AutopsyCard({ product, index }: { product: AutopsyProduct; index: numbe
       <ModuleTexture accent="#f3ede0" />
       <span className="relative">
         <span className="flex items-center gap-2">
-          {product.logo_emoji && <span className="text-[22px] leading-none">{product.logo_emoji}</span>}
-          {product.industry && (
-            <span className="font-label text-[10px] font-bold uppercase tracking-[0.08em] text-white/65">
-              {product.industry}
-            </span>
-          )}
+          <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/14 font-label text-[11px] font-black tracking-[0.02em] text-white">
+            {getCompanyMark(product.name)}
+          </span>
+          <span className="font-label text-[10px] font-bold uppercase tracking-[0.08em] text-white/65">
+            {industry}
+          </span>
         </span>
         <span className="mt-3 block font-headline text-[18px] font-bold leading-tight text-white">
           {product.name}
         </span>
-        {product.tagline && (
-          <span className="mt-1 line-clamp-2 block text-[12.5px] font-semibold leading-snug text-white/72">
-            {product.tagline}
-          </span>
-        )}
+        <span className="mt-1 line-clamp-2 block text-[12.5px] font-semibold leading-snug text-white/72">
+          {dek}
+        </span>
       </span>
       <span className="relative mt-4 flex items-center justify-between text-[12px] font-label font-semibold text-white/62">
-        <span>{product.decision_count} decisions</span>
+        <span>
+          {item.kind === 'modern'
+            ? `${teardownCount > 0 ? `${teardownCount} teardown · ` : ''}${featureCount} features`
+            : `${teardownCount} ${teardownCount === 1 ? 'teardown' : 'teardowns'}`}
+        </span>
         <span className="material-symbols-outlined text-[15px] transition-transform group-hover:translate-x-0.5">
           arrow_forward
         </span>

@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "gumroad",
+  "story_slug": "gumroad",
+  "story_title": "Gumroad",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/gumroad/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/gumroad/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A cream editorial illustration with a single forest-green URL bar at the centre, surrounded by crossed-out storefront shapes, and Hatch pointing at the URL bar.",
+      "caption": "One URL, one file, one price.",
+      "prompt": "Gumroad | hero: Create a flat geometric HackProduct autopsy hero illustration for Gumroad's 2011 founding story. Canvas role: hero, aspect 2400x1350. Compose a warm cream #faf6f0 background. In the centre, draw a single forest-green #4a7c59 URL bar — a long rounded rectangle with a small file icon on the left and a soft amber #c9ad68 dollar sign on the right. Below the URL bar, draw a deep forest #244232 download arrow pointing downward, thin and precise. Around the URL bar, scatter three faded mist #dfe6dc storefront shapes — a column of shelves, a tax form grid, an inventory table — each crossed out with a single charcoal #1e211c diagonal line. The URL bar is the only element in full colour. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right, pointing one mitten hand at the URL bar with a calm expression. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Leave quiet space in the upper left for title overlay. No human faces, no photorealism, no recreated screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/gumroad/hero.png",
+      "generated_image_sha256": "9a7d2f41b86fa91de87855b7d49c586f0a56fa7385dc2e42a31ebd4383dbcfe8",
+      "final_image_sha256": "5bcc7ca4c088b662176907f56498f9bdd5eb0c1bf852c479f486992c4e0250fa",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gumroad/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gumroad/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/gumroad/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing beside a minimalist desk with a laptop showing a three-field form and a pencil sketch in soft amber beside the keyboard.",
+      "caption": "Hatch standing beside a minimalist desk with a laptop showing a three-field form and a pencil sketch in soft amber beside the keyboard.",
+      "prompt": "Gumroad | hatch-narrator: Flat geometric scene illustration for Sahil Lavingia's 2011 apartment weekend build, aspect 1600x1600. Show a cream #faf6f0 room with a low forest-green #4a7c59 desk, a single laptop screen showing a minimal form with three fields — a file upload square, a price text box, and a green URL button — and a small sketchbook beside the keyboard with a pencil drawn in soft amber #c9ad68. A window shows mist #dfe6dc outside light. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as the main narrator, standing beside the desk in a narrator pose, one mitten hand resting on the laptop lid. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Use amber #705c30 for lamp glow. No human figures other than Hatch, no photorealism, no real screenshots or logos. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/gumroad/hatch-narrator.png",
+      "generated_image_sha256": "91f0f282775a7405db5291991e768251fbb4be2271ee80ef18dff943b6de2508",
+      "final_image_sha256": "ac5ae3441ecaa1465048b54785b362450db64c6e4f9c92b4aace08870975eef3",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gumroad/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gumroad/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/gumroad/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A four-stage pipeline from file upload to buyer download, with Hatch pointing at the price-and-URL stage as the product's essential exchange.",
+      "caption": "A four-stage pipeline from file upload to buyer download, with Hatch pointing at the price-and-URL stage as the product's essential exchange.",
+      "prompt": "Gumroad | failure-mechanism: Flat geometric mechanism diagram for Gumroad's one-link selling flow, aspect 1800x1200. Lay out four horizontal stages on cream #faf6f0. Stage one: a deep forest #244232 cube labelled FILE, with a small upload arrow. Stage two: a forest-green #4a7c59 form panel with two field outlines — PRICE and URL — with a soft amber #c9ad68 dot on the URL field. Stage three: a mist #dfe6dc browser bar with a thin green URL string inside. Stage four: a cream tile labelled BUYER with a small download arrow leaving the tile downward. Connect stages with thin charcoal #1e211c lines. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a thinking pose at the lower right, pointing one mitten hand at stage two to mark the price-plus-URL moment as the entire product. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No screenshots, no real UI recreations. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/gumroad/failure-mechanism.png",
+      "generated_image_sha256": "eb73d1147981e1344119da853588683aeff5d40ad6966374a89347b298de7aaf",
+      "final_image_sha256": "8375d3aa6faf7f0aefcc163c9a17f671ebf32af3ae9785169554c56127b1c2a2",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gumroad/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gumroad/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/gumroad/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two bars showing Gumroad GMV at $73M in 2019 and $142M in 2020, with Hatch pointing at the taller bar and a profitability marker below.",
+      "caption": "Two bars showing Gumroad GMV at $73M in 2019 and $142M in 2020, with Hatch pointing at the taller bar and a profitability marker below.",
+      "prompt": "Gumroad | evidence-card: Flat geometric evidence card for Gumroad's GMV growth, aspect 1600x1000. Draw two vertical bars side by side on cream #faf6f0. Left bar: mist #dfe6dc, shorter, labelled 2019 — $73M GMV. Right bar: forest-green #4a7c59, taller, labelled 2020 — $142M GMV. Between them draw a soft amber #c9ad68 upward arrow with +94% beside it. In the upper left, place a small charcoal #1e211c text block: NET PROFIT $1.08M. Below the bars, place a thin deep forest #244232 horizontal line labelled PROFITABLE SINCE 2017. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png standing to the right of the bars in a pointing pose, one mitten hand on the green bar. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/gumroad/evidence-card.png",
+      "generated_image_sha256": "870af09ef1d603859bfa8a15f9cb30594ab9b3da2f1a194755af733bdf7388dd",
+      "final_image_sha256": "430bfbc3b56214c679c6c33fdd72aeb06be6d2d30f2ef2a96441f0e19619314e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gumroad/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gumroad/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/gumroad/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A central CONSTRAINT box with a crossed-out VC SCALE arrow on the left and a soft amber ribbon flowing to a TRUST cluster on the right, with Hatch in a coaching pose.",
+      "caption": "A central CONSTRAINT box with a crossed-out VC SCALE arrow on the left and a soft amber ribbon flowing to a TRUST cluster on the right, with Hatch in a coaching pose.",
+      "prompt": "Gumroad | lesson-frame: Flat geometric lesson illustration for the takeaway that a growth-blocking constraint can become a long-term brand signal, aspect 1800x1200. Background is warm cream #faf6f0. In the centre, draw a single forest-green #4a7c59 rectangle labelled CONSTRAINT. From its left edge, draw a mist #dfe6dc crossed-out arrow labelled VC SCALE. From its right edge, draw a soft amber #c9ad68 ribbon flowing into a cluster of three small deep forest #244232 product tiles labelled TRUST. Above the constraint box, place a thin charcoal #1e211c label reading SAME THING. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a calm coaching pose to the left, one mitten hand resting on the constraint box edge, facing the viewer. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no photorealism. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/gumroad/lesson-frame.png",
+      "generated_image_sha256": "4ec8da0ae8c18b4f5fc93fa23f942f5240ccc224afe8fa2cbfaddd3e861c59ea",
+      "final_image_sha256": "3316511457a765eebe6b1878e51b2a4604a1514135ba29121d3e83f8b6bb2943",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gumroad/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gumroad/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/gumroad/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A single forest-green URL bar with a soft amber dollar mark and a clean download arrow below, with a tiny Hatch mark in the lower left.",
+      "caption": "A single forest-green URL bar with a soft amber dollar mark and a clean download arrow below, with a tiny Hatch mark in the lower left.",
+      "prompt": "Flat geometric thumbnail for the Gumroad autopsy, aspect 1200x900. On warm cream #faf6f0, render one bold focal shape: a single forest-green #4a7c59 URL bar — a wide rounded rectangle — with a soft amber #c9ad68 dollar mark inside on the right. Below it, a deep forest #244232 download arrow pointing down, clean and precise. No other shapes. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny watermark-adjacent mark in the bottom left, no larger than 12 percent of canvas height. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Keep readable at small size with one strong focal shape. No labels, no screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/gumroad/hero.png",
+      "generated_image_sha256": "9a7d2f41b86fa91de87855b7d49c586f0a56fa7385dc2e42a31ebd4383dbcfe8",
+      "final_image_sha256": "341846bf4f6a9a0e2f133c652f2638b0eb6b0b5fa22d66c4d1292265a2565c72",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gumroad/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gumroad/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/gumroad/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide cover showing a forest-green URL bar labelled ONE LINK with crossed-out storefront shapes on the left and Hatch pointing at the bar from the upper right.",
+      "caption": "A wide cover showing a forest-green URL bar labelled ONE LINK with crossed-out storefront shapes on the left and Hatch pointing at the bar from the upper right.",
+      "prompt": "Flat geometric social cover image for the Gumroad autopsy, aspect 2400x1260. On warm cream #faf6f0, place a central composition occupying the middle 70 percent of the canvas: a forest-green #4a7c59 URL bar in the foreground, below it a deep forest #244232 download arrow, and flanking the left side three mist #dfe6dc crossed-out storefront shapes (a shelf column, a form grid, an inventory table). Keep edge-critical details within the safe zone. One short charcoal #1e211c label on the URL bar reading ONE LINK. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right corner, pointing one mitten hand at the URL bar. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No fake screenshots, no human faces. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/gumroad/hero.png",
+      "generated_image_sha256": "9a7d2f41b86fa91de87855b7d49c586f0a56fa7385dc2e42a31ebd4383dbcfe8",
+      "final_image_sha256": "b9ea0278de2350d24fa1c141c765967c1adb3972cfc3751af7e00c49d52aaddd",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/gumroad/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/gumroad/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/gumroad/v1"
+}

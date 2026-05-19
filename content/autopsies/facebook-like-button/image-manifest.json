@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "meta",
+  "story_slug": "facebook-like-button",
+  "story_title": "The Facebook Like Button",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/facebook-like-button/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/facebook-like-button/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A green thumbs-up rises out of a stack of discarded rating concepts while Hatch watches from the corner.",
+      "caption": "The one button that beat every heavier rating system on its way to launch.",
+      "prompt": "The Facebook Like Button | hero: A flat geometric HackProduct autopsy hero illustration for the Facebook Like Button origin story. Canvas role hero at aspect 2400x1350. Show a forest green thumbs-up shape rising out of a stack of three rejected sticky note designs labelled with simple star, heart, and plus-minus icons. The rejected stickies are tinted soft amber and mist with charcoal linework. The thumbs-up is filled forest green on a cream background. Small Hatch as narrator at the lower left of the canvas, about 14 percent of canvas height, in narrator pose holding a clipboard, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Leave quiet space in the upper left for title overlay. No human faces, no fake Facebook UI screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/facebook-like-button/hero.png",
+      "generated_image_sha256": "980836415ebaf0092b8a4761c80f196542b807e2e7f2a1cac412722970f644ea",
+      "final_image_sha256": "ec84ba27fb83401a58e11d103f187e49d62dd4c04ca273477bf152454bf0d537",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/facebook-like-button/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/facebook-like-button/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/facebook-like-button/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch stands beside a corkboard with the crossed-out word Props and a fresh sketch reading Awesome in a dim office at dawn.",
+      "caption": "Hatch stands beside a corkboard with the crossed-out word Props and a fresh sketch reading Awesome in a dim office at dawn.",
+      "prompt": "The Facebook Like Button | hatch-narrator: A flat geometric HackProduct illustration of the 2007 internal hackathon scene. Canvas role hatch-narrator at aspect 1600x1600. Show a glowing window into a dim Palo Alto office, a low coffee table with three open laptops, a paper sketch reading Awesome pinned to a corkboard with the word Props crossed out above it, and a wall clock reading 5:47. Use deep forest as the night sky, cream walls, soft amber lamp glow, charcoal linework. Hatch in narrator pose at center, about 28 percent of canvas height, gesturing toward the corkboard, with cap and growth arrow visible and the green H mark on chest. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no real product UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/facebook-like-button/hatch-narrator.png",
+      "generated_image_sha256": "061dff1bdbde0ba9973b085befe977d89f856ce83b86db9e10f71188fa27340c",
+      "final_image_sha256": "33b0da0abd39eede5ddb1d2e37c5370d3b04b270944b5a84c9a0fdfb0ecb3ac9",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/facebook-like-button/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/facebook-like-button/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/facebook-like-button/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A thumbs-up at the bottom left feeds an arrow that lifts three post tiles upward as Hatch points at the rising stack.",
+      "caption": "A thumbs-up at the bottom left feeds an arrow that lifts three post tiles upward as Hatch points at the rising stack.",
+      "prompt": "The Facebook Like Button | failure-mechanism: A flat geometric HackProduct illustration of how the Like button feeds the News Feed. Canvas role failure-mechanism at aspect 1800x1200. Show a single forest green thumbs-up at the lower left connected by a forest green arrow to a stack of three abstract post tiles climbing diagonally to the upper right, each post tile slightly larger than the one below it to convey ranking lift. Add small charcoal tick marks on each tile to represent comments accumulating. Use cream background, mist accent shapes, soft amber arrow tip. Hatch in thinking pose at the upper left, about 18 percent of canvas height, pointing at the lifting tiles, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no fake Facebook UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/facebook-like-button/failure-mechanism.png",
+      "generated_image_sha256": "f1d9ee5068e3682d3c260c91485b4c5fd41de4103265ac80df51571463d5bf99",
+      "final_image_sha256": "edbe39f0347556e1c308722402fc7af71a7e46e24c84b23172845fc5cf754645",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/facebook-like-button/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/facebook-like-button/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/facebook-like-button/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A timeline runs from a small thumbs-up dated February 2009 to a larger one dated April 2010 with thirty partner sites called out.",
+      "caption": "A timeline runs from a small thumbs-up dated February 2009 to a larger one dated April 2010 with thirty partner sites called out.",
+      "prompt": "The Facebook Like Button | evidence-card: A flat geometric HackProduct evidence card visualising the F8 2010 launch numbers. Canvas role evidence-card at aspect 1600x1000. Show a horizontal forest green timeline running from a small thumbs-up labelled Feb 9 2009 on the left to a larger thumbs-up labelled Apr 21 2010 on the right. Below the right thumb, a cream rectangle with the number 30 in large charcoal numerals and a small label reading partner sites. Beneath that, a small mist-coloured cloud shape with the phrase 1B likes in 24 hours rendered in charcoal. Hatch absent from this card to preserve label legibility. Use cream background, deep forest linework, soft amber accents. Use one short label and one visible artifact shape only. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/facebook-like-button/evidence-card.png",
+      "generated_image_sha256": "8c61743214db2c6619eb1b2375c5b1ec46dcf1acaa19c7924d15cf9ada1ec843",
+      "final_image_sha256": "8b4960d70b49ea4ad24790e36ca40eee8e73b2f3487dae6779eb88174baa8f19",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/facebook-like-button/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/facebook-like-button/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/facebook-like-button/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A single thumbs-up on the left connects via a forest green arrow to six smaller reaction shapes on the right while Hatch stands below in coaching pose.",
+      "caption": "A single thumbs-up on the left connects via a forest green arrow to six smaller reaction shapes on the right while Hatch stands below in coaching pose.",
+      "prompt": "The Facebook Like Button | lesson-frame: A flat geometric HackProduct lesson illustration. Canvas role lesson-frame at aspect 1800x1200. Show a single large forest green thumbs-up on the left side of the canvas connected to a row of six small reaction shapes on the right, a heart, an open-mouth wow, a tear, a frown, a laugh, and a flame, each in mist with charcoal outlines and a soft amber dot beneath. The arrow between them is forest green and thick. Hatch in coaching pose at the lower center, about 22 percent of canvas height, calm and explanatory, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Cream background. No human faces, no fake product UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/facebook-like-button/lesson-frame.png",
+      "generated_image_sha256": "68166880ac6d6e593486db805343b141b9ec7700efba10ca87b67cbf4818f155",
+      "final_image_sha256": "e47a2f7a283beb6c58194811bfb8ddebb54fbad0df8638bc6f1b0f46b5b1e205",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/facebook-like-button/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/facebook-like-button/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/facebook-like-button/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A bold forest green thumbs-up fills the thumbnail with a 2009 badge and a tiny Hatch head silhouette in the corner.",
+      "caption": "A bold forest green thumbs-up fills the thumbnail with a 2009 badge and a tiny Hatch head silhouette in the corner.",
+      "prompt": "A flat geometric HackProduct thumbnail composition for the Facebook Like Button autopsy. Canvas role thumbnail at aspect 1200x900. Show one strong forest green thumbs-up shape filling the center two-thirds of the canvas with a small soft amber circular badge in the upper right corner reading 2009 in charcoal. Cream background, deep forest outline. A tiny Hatch mark, just the rounded green head silhouette with the cap and growth arrow, sits in the bottom left at about 8 percent of canvas height. Make the decision readable at small size with one strong focal shape. No human faces, no fake Facebook UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/facebook-like-button/thumbnail.png",
+      "generated_image_sha256": "980836415ebaf0092b8a4761c80f196542b807e2e7f2a1cac412722970f644ea",
+      "final_image_sha256": "b7c2c72a04429327811242a9de9697ae49cf960b1412b8d220aa36cdfa2251d3",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/facebook-like-button/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/facebook-like-button/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/facebook-like-button/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A large forest green thumbs-up centered on cream with ghosted alternative reaction shapes behind it and a small Hatch in the corner.",
+      "caption": "A large forest green thumbs-up centered on cream with ghosted alternative reaction shapes behind it and a small Hatch in the corner.",
+      "prompt": "A flat geometric HackProduct social cover for the Facebook Like Button autopsy. Canvas role social-cover at aspect 2400x1260. Show a single large forest green thumbs-up centered on a cream background with three faint discarded ghost shapes behind it, a star, a heart, and a plus-minus, each rendered at 25 percent opacity in deep forest. A horizontal soft amber band at the very bottom holds the words Told by Hatch in small charcoal type. A small Hatch at the lower right at about 12 percent of canvas height in narrator pose, with cap and growth arrow visible. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Keep the center 70 percent clear of edge-critical details. No human faces, no fake Facebook UI. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/first-five/generated-sources/facebook-like-button/social-cover.png",
+      "generated_image_sha256": "980836415ebaf0092b8a4761c80f196542b807e2e7f2a1cac412722970f644ea",
+      "final_image_sha256": "9ff8bf7adc3b68636bc3177a6e5433624f1d5684afb757b2bd4749969dc86d9b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/facebook-like-button/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/facebook-like-button/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/facebook-like-button/v1"
+}

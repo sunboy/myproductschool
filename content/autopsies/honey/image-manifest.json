@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "honey",
+  "story_slug": "honey",
+  "story_title": "Honey",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/honey/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/honey/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A cream editorial illustration showing a stack of discount codes being tested against a checkout form, with a Honey-style popup announcing a saving, and Hatch in the corner pointing at the result.",
+      "caption": "Every code, tried in seconds, at the moment the shopper is ready to pay.",
+      "prompt": "Honey | hero: Create a flat geometric HackProduct autopsy hero illustration for Honey's browser extension, aspect 2400x1350. Canvas background is warm cream #faf6f0. On the left side, show a simplified e-commerce checkout form in mist #dfe6dc with a promo-code field highlighted in soft amber #c9ad68, and a stack of label-shaped discount codes fanned above it in varying shades of cream and forest green #4a7c59. On the right, show a large forest-green browser popup card with a bold amber saving amount displayed at its centre, indicating a successful code application. Between them, draw a cluster of thin deep forest #244232 arrows from the stack of codes into the popup, suggesting rapid testing. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right corner, wearing its graduation cap and growth arrow, holding one mitten hand toward the popup card with a calm coaching gesture. Preserve Hatch's rounded green head frame, cream face and body, H chest mark, bright eyes, and friendly expression. Leave quiet space at top-left for title overlay. No human faces, no photorealism, no recreated Chrome or retail UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/honey/hero.png",
+      "generated_image_sha256": "6daebd6d093447df7a9f0481c7a346fb5260cf84df69b5569d89dea2754c16c8",
+      "final_image_sha256": "f4011c6a538eac0218911e76f379b43c52ac7388aea60443b6183060aa28a046",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/honey/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/honey/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/honey/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing at a glass table in a sparse late-night office, gesturing toward a laptop showing a promo-code field, with a pizza box beside it.",
+      "caption": "Hatch standing at a glass table in a sparse late-night office, gesturing toward a laptop showing a promo-code field, with a pizza box beside it.",
+      "prompt": "Honey | hatch-narrator: Flat geometric scene illustration for Ryan Hudson's 2012 late-night moment in a Pasadena sublet office, aspect 1600x1600. Background is warm cream #faf6f0. Show a low-ceilinged room with a glass table holding two laptops, a stack of printed coupon printouts with soft amber #c9ad68 highlights, and a small takeout pizza box in mist #dfe6dc beside an open browser tab outline showing a checkout promo-code field. A narrow window at the back shows a charcoal #1e211c night sky. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as the main narrator, standing beside the glass table in a narrator pose, one mitten hand gesturing toward the laptop and pizza box. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Use forest green #4a7c59 for the desk lamp glow and deep forest #244232 for wall outlines. No human figures other than Hatch, no photorealism, no real screenshots, no logos. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/honey/hatch-narrator.png",
+      "generated_image_sha256": "5eb45472e6e16e06373b19a442e960d326401a7a9bcea7eb5fd2f38855e30ef6",
+      "final_image_sha256": "07b835c93ed3962c2e5930496ff9818722c8f4153d341ee5369d260ba206a092",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/honey/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/honey/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/honey/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Six-stage pipeline from checkout detection to code application and commission capture, with Hatch pointing at the dual-outcome final stage.",
+      "caption": "Six-stage pipeline from checkout detection to code application and commission capture, with Hatch pointing at the dual-outcome final stage.",
+      "prompt": "Honey | failure-mechanism: Flat geometric mechanism diagram for Honey's checkout-testing loop, aspect 1800x1200. Lay out six horizontal stages left to right on warm cream #faf6f0. Stage one: a deep forest #244232 browser icon labelled SHOPPER REACHES CHECKOUT. Stage two: a forest green #4a7c59 cloud shape labelled EXTENSION FETCHES CODE LIST, with a thin antenna line. Stage three: a mist #dfe6dc loop of small code tiles with test arrows looping back, labelled TRY EACH CODE. Stage four: a soft amber #c9ad68 highlight on the winning tile labelled BEST CODE WINS. Stage five: a cream checkout form with a filled promo field and a green tick, labelled CODE APPLIED. Stage six split vertically: top half is a forest-green popup card labelled SHOPPER SEES SAVING, bottom half is a small deep forest commission token labelled HONEY EARNS COMMISSION. Connect stages with thin charcoal #1e211c arrows. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a thinking pose at the lower right, one mitten hand pointing at stage six's commission token. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No screenshots, no real UI, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/honey/failure-mechanism.png",
+      "generated_image_sha256": "7dfcdd994fabf203e24487edbd9e661a21a0d9e389a9cc19cc46f6270f8236aa",
+      "final_image_sha256": "cc63f03a5a00cf47c50ab7930a6269147c8630b1900de2c9e5a7f876d2f709ac",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/honey/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/honey/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/honey/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Three paired bar charts showing Honey's user count, savings-vs-acquisition-price ratio, and merchant network, with Hatch pointing at the acquisition multiple.",
+      "caption": "Three paired bar charts showing Honey's user count, savings-vs-acquisition-price ratio, and merchant network, with Hatch pointing at the acquisition multiple.",
+      "prompt": "Honey | evidence-card: Flat geometric evidence card showing three paired metrics for Honey's scale at acquisition, aspect 1600x1000. Background is warm cream #faf6f0. Draw three vertical bar pairs arranged left to right. First pair: a tall forest green #4a7c59 bar labelled 17M USERS and a short mist #dfe6dc bar labelled AT LAUNCH (tiny). Second pair: two equal bars in deep forest #244232 and soft amber #c9ad68 labelled $1B SAVINGS and $4B PRICE to show the acquisition multiple. Third pair: a wide mist bar labelled 30,000 MERCHANTS and a narrow charcoal #1e211c bar labelled 2012 (no merchants) to show network growth. Connect each pair with a thin arrow. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png standing between the second and third pairs, in a pointing pose, one mitten hand toward the $4B bar. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Minimal labels, one short label per bar. No fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/honey/evidence-card.png",
+      "generated_image_sha256": "b3c21e5ccdc6a3e6e2163d38e5b98de54ab9d5d1482494dfcd88b59addf64bdb",
+      "final_image_sha256": "140563839cccde7544c6c5b7fcb570c8f447f4bddc42ee3d40ac4260469397fc",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/honey/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/honey/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/honey/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide checkout-seam band separating shopper and merchant, with a creator affiliate thread interrupted by an extension popup and a commission token, and Hatch coaching from the side.",
+      "caption": "A wide checkout-seam band separating shopper and merchant, with a creator affiliate thread interrupted by an extension popup and a commission token, and Hatch coaching from the side.",
+      "prompt": "Honey | lesson-frame: Flat geometric lesson illustration for the takeaway that sitting between the shopper and checkout makes ignored constraints visible, aspect 1800x1200. Background is warm cream #faf6f0. Draw a wide horizontal band in the centre in mist #dfe6dc labelled THE CHECKOUT SEAM. On the left side of the band, place a forest green #4a7c59 rectangle labelled SHOPPER. On the right side, place a deep forest #244232 rectangle labelled MERCHANT. Above the band, place a thin soft amber #c9ad68 thread labelled CREATOR AFFILIATE LINK crossing from left to right. Inside the band, place a small charcoal #1e211c extension popup shape interrupting the amber thread, with a small deep forest commission token hanging from it. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a calm coaching pose to the left of the band, one mitten hand resting on the seam label, facing the reader. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no photorealism, no recreated screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/honey/lesson-frame.png",
+      "generated_image_sha256": "021a4558c53fa87b4fc08ee18a10a534b126a4902b268f816b37014cefc441dd",
+      "final_image_sha256": "88178b4df158a8d351f591b771b331f441663167701a815b6f5b70899a1bdd1f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/honey/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/honey/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/honey/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A large amber coupon label with a green checkmark, flanked by a fan of smaller code labels and a Hatch figure in the corner.",
+      "caption": "A large amber coupon label with a green checkmark, flanked by a fan of smaller code labels and a Hatch figure in the corner.",
+      "prompt": "Flat geometric thumbnail for Honey's autopsy, aspect 1200x900. On warm cream #faf6f0, place one bold focal composition: a large soft amber #c9ad68 coupon label shape in the centre with a forest green #4a7c59 checkmark on it, and a cluster of three smaller mist #dfe6dc code labels fanning behind it, all at a slight upward tilt. Add a single deep forest #244232 arrow curving from the cluster into the large label. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small watermark-adjacent figure in the bottom-left, no larger than 12 percent of canvas height. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly expression. Keep composition readable at thumbnail size. No labels, no screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/honey/hero.png",
+      "generated_image_sha256": "6daebd6d093447df7a9f0481c7a346fb5260cf84df69b5569d89dea2754c16c8",
+      "final_image_sha256": "2a371d4f778d84daae8c58663b0959d62996b177347037950b8aed7e4be18737",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/honey/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/honey/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/honey/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide social cover showing a checkout form, a cluster of tested coupon codes, and a savings popup card, with a small commission token beneath it and Hatch gesturing from the upper right.",
+      "caption": "A wide social cover showing a checkout form, a cluster of tested coupon codes, and a savings popup card, with a small commission token beneath it and Hatch gesturing from the upper right.",
+      "prompt": "Flat geometric social cover for Honey's autopsy, aspect 2400x1260. On warm cream #faf6f0, fill the centre 70 percent with a composition: a mist #dfe6dc checkout form outline on the left, a cluster of soft amber #c9ad68 coupon tiles in the middle testing against it (shown with thin deep forest #244232 arrows), and a large forest green #4a7c59 popup card on the right with the label SAVED. Below the popup card, place a small charcoal #1e211c token shape labelled COMMISSION with a short arrow pointing at it, subtly distinguished from the popup. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right, one mitten hand gesturing toward the popup card. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Keep centre 70 percent clear of edge-critical detail. One short charcoal label on the popup reading SAVED. No fake screenshots, no human faces, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/honey/hero.png",
+      "generated_image_sha256": "6daebd6d093447df7a9f0481c7a346fb5260cf84df69b5569d89dea2754c16c8",
+      "final_image_sha256": "f809fe818cbf02165985ef4ebcaadcd541b52a48ec4fb383999743fa160bf9bc",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/honey/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/honey/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/honey/v1"
+}

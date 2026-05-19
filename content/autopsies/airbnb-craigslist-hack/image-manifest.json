@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "airbnb",
+  "story_slug": "airbnb-craigslist-hack",
+  "story_title": "Airbnb's Craigslist Hack",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/airbnb-craigslist-hack/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/airbnb-craigslist-hack/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A cream-and-forest editorial illustration showing an Airbnb listing crossing into a Craigslist-style classifieds column, with Hatch in the upper right pointing at the arrow.",
+      "caption": "A bot, a borrowed audience, and a forwarded URL.",
+      "prompt": "Airbnb's Craigslist Hack | hero: Create a flat geometric HackProduct autopsy hero illustration for Airbnb's 2010 Craigslist cross-posting bot. Canvas role: hero, aspect 2400x1350. Compose two stacked surfaces in cream #faf6f0: a small Airbnb-shaped listing card on the left with a warm cream room photo block and forest-green #4a7c59 caption, and a larger faded Craigslist-style classifieds column on the right rendered in mist #dfe6dc with charcoal #1e211c monospaced rows. Between them, draw a single deep forest #244232 arrow carrying the listing across, with a soft amber #c9ad68 pulse at the tip. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right, pointing at the arrow. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Leave quiet space in the upper left for title overlay. No human faces, no photorealism, no recreated Craigslist or Airbnb screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/airbnb-craigslist-hack/hero.png",
+      "generated_image_sha256": "3a4ff34f38fdf8d50959993f2f9c3eac1f39f6406f9a7687166b40d1c2b66485",
+      "final_image_sha256": "6980d965afa9a908dcf11322e89100148be66ce7a49ce6ffa25e912e5ef746ce",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/airbnb-craigslist-hack/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/airbnb-craigslist-hack/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/airbnb-craigslist-hack/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing beside a small desk lit by a warm lamp, gesturing toward a laptop showing two side-by-side abstract windows.",
+      "caption": "Hatch standing beside a small desk lit by a warm lamp, gesturing toward a laptop showing two side-by-side abstract windows.",
+      "prompt": "Airbnb's Craigslist Hack | hatch-narrator: Flat geometric scene illustration for the Airbnb founders' early 2010 office moment, aspect 1600x1600. Show a warm cream #faf6f0 room with a low forest-green #4a7c59 desk, a single laptop screen showing two side-by-side window outlines labelled with simple shapes for Airbnb and Craigslist, a small stack of printed paper listings tied with twine, and a window with mist #dfe6dc light. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as the main narrator, standing beside the desk in a narrator pose, gesturing toward the laptop with one mitten hand. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Use amber #705c30 for the desk lamp glow and soft amber #c9ad68 for paper edges. No human figures other than Hatch, no photorealism, no real screenshots, no logos. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/airbnb-craigslist-hack/hatch-narrator.png",
+      "generated_image_sha256": "3582871c3002be5cc1dbe40c8e06dddc2c1a0874c93b013cb35d0312e86609a1",
+      "final_image_sha256": "9622626505f80b54cc991f533ca81d7b30515a93e733488c227973c2d8b388dc",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/airbnb-craigslist-hack/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/airbnb-craigslist-hack/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/airbnb-craigslist-hack/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A five-stage pipeline from host publish to human-publish, with Hatch pointing at the city-picker stage.",
+      "caption": "A five-stage pipeline from host publish to human-publish, with Hatch pointing at the city-picker stage.",
+      "prompt": "Airbnb's Craigslist Hack | failure-mechanism: Flat geometric mechanism diagram for Airbnb's cross-posting bot, aspect 1800x1200. Lay out five horizontal stages from left to right on cream #faf6f0. Stage one: a small forest-green #4a7c59 cube labelled HOST PUBLISHES, with a tiny mitten icon. Stage two: a deep forest #244232 server cube labelled FETCH UNIQUE URL, with a single thread arrow. Stage three: a mist #dfe6dc grid of small region tiles labelled CITY PICKER, with a soft amber #c9ad68 dot on one tile. Stage four: a cream form panel with three filled rows for TITLE, PHOTOS, LINK BACK. Stage five: a deep forest button labelled HUMAN CLICKS PUBLISH with a small soft amber arrow leaving the frame. Connect stages with thin charcoal #1e211c lines. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a thinking pose at the lower right, pointing one mitten hand at stage three to mark the region trick. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No screenshots, no real UI recreations, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/airbnb-craigslist-hack/failure-mechanism.png",
+      "generated_image_sha256": "f9618489441250efca1bee8a5520948ab4682ce8fb82e0ef2c6a33f7cd865a62",
+      "final_image_sha256": "e104a4396f291bc184d25dea3653e3ca753fe95fdf9e1eeb3fde2674c5b53732",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/airbnb-craigslist-hack/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/airbnb-craigslist-hack/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/airbnb-craigslist-hack/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two cylinders of unequal height labelled with Airbnb 2009 guests and Craigslist monthly visitors, with Hatch standing between them.",
+      "caption": "Two cylinders of unequal height labelled with Airbnb 2009 guests and Craigslist monthly visitors, with Hatch standing between them.",
+      "prompt": "Airbnb's Craigslist Hack | evidence-card: Flat geometric evidence card showing the asymmetry between Airbnb and Craigslist audiences in 2009, aspect 1600x1000. On the left, draw a small forest-green #4a7c59 cylinder about one-fifth the height of the right cylinder, labelled 20K AIRBNB GUESTS / YEAR. On the right, draw a tall mist #dfe6dc cylinder with charcoal #1e211c top, labelled 42M CRAIGSLIST VISITORS / MONTH. Connect them with a single deep forest #244232 arrow looping from the tall cylinder back down to the small one, with a soft amber #c9ad68 pulse on the loop. Background is warm cream #faf6f0. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png standing between the two cylinders in a pointing pose, with one mitten hand on the small Airbnb cylinder and gaze toward the tall Craigslist one. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Use one short label per cylinder and one visible artifact shape only. No fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/airbnb-craigslist-hack/evidence-card.png",
+      "generated_image_sha256": "5c6600e06ab19a670914d68e8470c2dac3aca1ad5fc1b9d28a98ae0f029221ab",
+      "final_image_sha256": "aa965d7c859428acc876ed7a5d9977043453913145a3bd1901f65cf443d86162",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/airbnb-craigslist-hack/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/airbnb-craigslist-hack/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/airbnb-craigslist-hack/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A central form-shaped rectangle with a ribbon flowing into a cluster of listing tiles, with Hatch coaching from the left in a calm stance.",
+      "caption": "A central form-shaped rectangle with a ribbon flowing into a cluster of listing tiles, with Hatch coaching from the left in a calm stance.",
+      "prompt": "Airbnb's Craigslist Hack | lesson-frame: Flat geometric lesson illustration for the takeaway that distribution can be a product decision, aspect 1800x1200. Background is warm cream #faf6f0. Draw a single forest-green #4a7c59 rectangle in the centre labelled FORM, with charcoal #1e211c thin field outlines inside. From the right edge of the form, draw a soft amber #c9ad68 ribbon flowing into a deep forest #244232 cluster of small listing tiles labelled AUDIENCE. Above the form, draw a thin mist #dfe6dc band labelled CHANNEL, with a small charcoal pin in the centre. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a calm coaching pose to the left of the form, one mitten hand resting on the form edge, facing the reader. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human faces, no photorealism, no recreated screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/airbnb-craigslist-hack/lesson-frame.png",
+      "generated_image_sha256": "c24638aa81bce3da07ca1a5abd5d05a44aefbf3d03e6f0286cda7c846c437b0b",
+      "final_image_sha256": "540d91457f20f94de6c76a58ff3604529b488cea008d184f23dcfca05a9b7851",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/airbnb-craigslist-hack/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/airbnb-craigslist-hack/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/airbnb-craigslist-hack/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A small listing card on the left with a forest-green arrow arcing into a tall mist-coloured column on the right, with a tiny Hatch mark in the corner.",
+      "caption": "A small listing card on the left with a forest-green arrow arcing into a tall mist-coloured column on the right, with a tiny Hatch mark in the corner.",
+      "prompt": "Flat geometric thumbnail composition for the Airbnb Craigslist hack, aspect 1200x900. On warm cream #faf6f0, render one bold focal shape, a single deep forest #244232 arrow leaving a small forest-green #4a7c59 listing card on the left and arcing into a tall mist #dfe6dc column on the right. Add a soft amber #c9ad68 dot at the tip of the arrow. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny watermark-adjacent mark in the bottom-left, no larger than 12 percent of canvas height. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Keep the decision readable at small size with one strong focal shape. No labels, no screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/airbnb-craigslist-hack/hero.png",
+      "generated_image_sha256": "3a4ff34f38fdf8d50959993f2f9c3eac1f39f6406f9a7687166b40d1c2b66485",
+      "final_image_sha256": "49a612e8d5f0edaba1155d104ecc6b25db90f6d57d0da0eb7784e27b1063b448",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/airbnb-craigslist-hack/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/airbnb-craigslist-hack/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/airbnb-craigslist-hack/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide cover image showing an Airbnb-style listing card connected by a forest arrow to a classifieds column, with small Hatch narrator in the upper right and a short label reading FORM AS API.",
+      "caption": "A wide cover image showing an Airbnb-style listing card connected by a forest arrow to a classifieds column, with small Hatch narrator in the upper right and a short label reading FORM AS API.",
+      "prompt": "Flat geometric social cover image for the Airbnb Craigslist hack, aspect 2400x1260. On warm cream #faf6f0, place a central composition that occupies the centre 70 percent of the canvas: a forest-green #4a7c59 listing card on the left, a deep forest #244232 arrow crossing to a mist #dfe6dc classifieds column on the right, and a soft amber #c9ad68 pulse on the arrow tip. Keep the centre 70 percent clear of edge-critical details. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right corner, pointing one mitten hand at the arrow. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Use one short charcoal #1e211c label on the arrow reading FORM AS API. No fake screenshots, no human faces, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/airbnb-craigslist-hack/hero.png",
+      "generated_image_sha256": "3a4ff34f38fdf8d50959993f2f9c3eac1f39f6406f9a7687166b40d1c2b66485",
+      "final_image_sha256": "c9671b8c4f581ec85aa867cd512260dd6cfe4ca660c1b42759fd54c3575cfb48",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/airbnb-craigslist-hack/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/airbnb-craigslist-hack/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/airbnb-craigslist-hack/v1"
+}

@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "pinterest",
+  "story_slug": "pinterest",
+  "story_title": "Pinterest's Visual Discovery",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/pinterest/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/pinterest/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing in front of a large virtual pin board covered in colorful organized image cards on cream background.",
+      "caption": "Hatch standing in front of a large virtual pin board covered in colorful organized image cards on cream background.",
+      "prompt": "Pinterest's Visual Discovery | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing in front of a large virtual pin board covered in colorful image cards organized into categories. Cap tilted, arms slightly raised showing the board. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/pinterest/hero.png",
+      "generated_image_sha256": "f51677225c71529e3c95308a68ba318038629c5b97be04636b3d5084bc42a029",
+      "final_image_sha256": "e72892015459f3d94a49c2ae6cde4b15c34999f2bebc12dc7289f1396eab8e04",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pinterest/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pinterest/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/pinterest/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing at the contrast between a messy text bookmark folder and a clean visual image board.",
+      "caption": "Hatch gesturing at the contrast between a messy text bookmark folder and a clean visual image board.",
+      "prompt": "Pinterest's Visual Discovery | hatch-narrator: Hatch in narrator pose — standing slightly turned, gesturing toward a cluttered browser bookmarks folder on one side versus a clean visual board of images on the other. The contrast is between text-only memory and visual memory. Cream background, no text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/pinterest/hatch-narrator.png",
+      "generated_image_sha256": "99886c81a2be758996b41903fcabc87360f749d3647a327de483e0ce6c6f939f",
+      "final_image_sha256": "c7ac71e17fd4daebf461d19e589751d53d65e0ab1612f92e2243bb924f544fcc",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pinterest/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pinterest/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/pinterest/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch looking at a board organized by intent categories showing how Pinterest organizes future goals not social connections.",
+      "caption": "Hatch looking at a board organized by intent categories showing how Pinterest organizes future goals not social connections.",
+      "prompt": "Pinterest's Visual Discovery | failure-mechanism: Hatch in thinking pose, looking at a board layout with column headers as intent categories: \"Kitchen ideas,\" \"Travel bucket list,\" \"Things to make.\" Small image cards populate each column. The diagram shows organization by goal, not by person. Cream background. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/pinterest/failure-mechanism.png",
+      "generated_image_sha256": "d00cc2b099b5d687fd6f4cd4112baa90fa50997f04a3199543d0f8b6c1bd257f",
+      "final_image_sha256": "0ea8fb515cb5d7a9d2362e8d0848d0186fd4f5c3c8afdb509cae027bb1921e0f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pinterest/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pinterest/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/pinterest/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a chart comparing advertiser value of Pinterest intent signals versus social feed impressions.",
+      "caption": "Hatch pointing at a chart comparing advertiser value of Pinterest intent signals versus social feed impressions.",
+      "prompt": "Pinterest's Visual Discovery | evidence-card: Hatch pointing at a simple comparison chart: Pinterest user saving an image (labeled \"planning to buy\") versus social feed scroll (labeled \"browsing\"). Below each action, an advertiser value bar — Pinterest bar is clearly taller. Cream background. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/pinterest/evidence-card.png",
+      "generated_image_sha256": "9678eea31db76a872b615b6628072659b23fb1685cff7f554ca5240be2934191",
+      "final_image_sha256": "a9641e20e685a52089b8397ad5cc6ea776f6b7245834aae7267ed6ac1dd74738",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pinterest/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pinterest/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/pinterest/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in coaching stance comparing social graph organization versus intent-based board organization.",
+      "caption": "Hatch in coaching stance comparing social graph organization versus intent-based board organization.",
+      "prompt": "Pinterest's Visual Discovery | lesson-frame: Hatch in coaching pose — calm, standing with arms slightly open. Behind Hatch, two columns: left column shows social graph connections (circles and lines representing people); right column shows a board with intent categories (organized image tiles). The visual metaphor is two different ways of organizing information. Cream background. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/pinterest/lesson-frame.png",
+      "generated_image_sha256": "18335f695b1ca608ecbe581eb89ddf2f0002d2033952136ed9cc365a20a2b2fd",
+      "final_image_sha256": "729b6bd23e8ffb51ace72f8a07cf0383ceaaab3b71ac91f5ad3b66fb34c478ed",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pinterest/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pinterest/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/pinterest/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch thumbnail holding a small pin card on cream background.",
+      "caption": "Hatch thumbnail holding a small pin card on cream background.",
+      "prompt": "Hatch mascot small and recognizable, holding a small pin card, cream background. Compact framing. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/pinterest/hero.png",
+      "generated_image_sha256": "f51677225c71529e3c95308a68ba318038629c5b97be04636b3d5084bc42a029",
+      "final_image_sha256": "1d853c5dd6da9d63eaf5ba2888eed0deb08cb7b5ac43ddf007e2c71524d1918d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pinterest/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pinterest/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/pinterest/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in hero pose in front of a colorful pin board for social sharing.",
+      "caption": "Hatch in hero pose in front of a colorful pin board for social sharing.",
+      "prompt": "Hatch in hero pose adapted for OG sharing — standing in front of a colorful pin board, cap straight, cream background. Large HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/pinterest/hero.png",
+      "generated_image_sha256": "f51677225c71529e3c95308a68ba318038629c5b97be04636b3d5084bc42a029",
+      "final_image_sha256": "843387f2f8bac311dfd4f63f17d85b1c4c0ee596d97c86e7f6f4a9e4d3d1c0c5",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/pinterest/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/pinterest/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/pinterest/v1"
+}

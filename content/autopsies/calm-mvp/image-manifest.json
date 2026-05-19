@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "calm",
+  "story_slug": "calm-mvp",
+  "story_title": "Calm's Minimum Viable App",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/calm-mvp/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/calm-mvp/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch sitting peacefully with eyes closed in front of a screen showing a lake and a two-minute countdown timer, illustrating Calm's minimal MVP.",
+      "caption": "Hatch sitting peacefully with eyes closed in front of a screen showing a lake and a two-minute countdown timer, illustrating Calm's minimal MVP.",
+      "prompt": "Calm's Minimum Viable App | hero: Hatch mascot (the HackProduct robot with the graduation cap and growth arrow) sitting very still, eyes closed, in front of a simple glowing screen showing a calm lake scene and a countdown timer reading \"2:00.\" The scene is peaceful and slightly humorous — a robot meditating. Cream background. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/calm-mvp/hero.png",
+      "generated_image_sha256": "8e23b132dfd1dc10d039d505400a4e7f95d6228d5ba517966856f79549d4694e",
+      "final_image_sha256": "af93739f9ad2b5270763ed8afca8d95f3f4e30066bc56535305d0ec90ae7d624",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/calm-mvp/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/calm-mvp/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/calm-mvp/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing toward a cloud of noisy app icons, illustrating the cluttered context into which Calm launched its minimal stillness experiment.",
+      "caption": "Hatch gesturing toward a cloud of noisy app icons, illustrating the cluttered context into which Calm launched its minimal stillness experiment.",
+      "prompt": "Calm's Minimum Viable App | hatch-narrator: Hatch in narrator pose, gesturing toward a chaotic floating cloud of app icons — productivity apps, social media, notification badges. The contrast between the noise and the idea of stillness is the point. Cream background, no speech bubble. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/calm-mvp/hatch-narrator.png",
+      "generated_image_sha256": "4f62a78e1c1b5567d9080615863c62357d082229e7e3b7ddd9e5ec5a1022b90e",
+      "final_image_sha256": "b6a33ce401bcd44ac3ba88d8e1968c1dc35af3d4914ed34cf5a7181f7c594c5f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/calm-mvp/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/calm-mvp/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/calm-mvp/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a diagram showing a bare webpage with a timer generating a crowd of interested users, illustrating how the MVP revealed demand.",
+      "caption": "Hatch examining a diagram showing a bare webpage with a timer generating a crowd of interested users, illustrating how the MVP revealed demand.",
+      "prompt": "Calm's Minimum Viable App | failure-mechanism: Hatch in thinking pose, looking at a simple diagram: a bare webpage with a timer on one side, and an arrow pointing to a growing crowd of silhouettes on the other side. The concept is \"minimum viable experience reveals real demand.\" Cream background. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/calm-mvp/failure-mechanism.png",
+      "generated_image_sha256": "04d94685f51c8da677c8dc58c5dc6389de142bdbc6822b93b833496d5d770525",
+      "final_image_sha256": "62e1d410c9f4a0ac641580ff8d379be5938c8812cfd4b7be8f3653d60eabb7c9",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/calm-mvp/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/calm-mvp/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/calm-mvp/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a chart showing Calm's growth from the 2012 MVP experiment through two billion-dollar valuation milestones.",
+      "caption": "Hatch examining a chart showing Calm's growth from the 2012 MVP experiment through two billion-dollar valuation milestones.",
+      "prompt": "Calm's Minimum Viable App | evidence-card: Hatch pointing at a simple chart: a traffic spike labeled \"Do Nothing for 2 Minutes — 2012,\" a rising line, and two milestone markers: \"$1B valuation — 2019\" and \"$2B valuation — 2020.\" Hatch's expression is analytical. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/calm-mvp/evidence-card.png",
+      "generated_image_sha256": "d8298d35a6643d23bef59fd655c3f723238d85d0815738acac094f8b9f4db6a0",
+      "final_image_sha256": "d4acc3702df4fb57cb444319101b7c92e0235225d2d5ed372e92bb4d5e49d59d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/calm-mvp/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/calm-mvp/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/calm-mvp/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in a calm, grounded coaching pose, illustrating the lesson from Calm's minimum viable stillness experiment.",
+      "caption": "Hatch in a calm, grounded coaching pose, illustrating the lesson from Calm's minimum viable stillness experiment.",
+      "prompt": "Calm's Minimum Viable App | lesson-frame: Hatch in coaching pose — calm, grounded, hands at rest. The background is simple and uncluttered, matching the stillness theme of the story. No props, no charts. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/calm-mvp/lesson-frame.png",
+      "generated_image_sha256": "a27faf6e49f31a28acd6ac9f79da5c9899a459d3efb8dfc3cebecc2686b4a676",
+      "final_image_sha256": "37e72b4a99ba41b91d90d755b81d6c4078063896db700fb976ab0b904781b64f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/calm-mvp/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/calm-mvp/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/calm-mvp/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch sitting peacefully in front of a lake screen, thumbnail image for the Calm MVP autopsy.",
+      "caption": "Hatch sitting peacefully in front of a lake screen, thumbnail image for the Calm MVP autopsy.",
+      "prompt": "Hatch mascot, small and centered, eyes closed, sitting peacefully in front of a miniature lake screen. Clean cream background. Readable at small sizes. HackProduct watermark bottom-right, 60% opacity. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/calm-mvp/hero.png",
+      "generated_image_sha256": "8e23b132dfd1dc10d039d505400a4e7f95d6228d5ba517966856f79549d4694e",
+      "final_image_sha256": "35ad4ba22135459dbab66c35276687039bfd199e6aa300f9b92da9767e30d5cc",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/calm-mvp/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/calm-mvp/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/calm-mvp/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch sitting peacefully with a lake scene and timer in the background, social share image for the Calm MVP autopsy.",
+      "caption": "Hatch sitting peacefully with a lake scene and timer in the background, social share image for the Calm MVP autopsy.",
+      "prompt": "Hatch mascot in hero pose, sitting peacefully with a lake and timer visible in background. Large enough to read clearly on a social card. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Text area clear for OG title overlay. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/calm-mvp/hero.png",
+      "generated_image_sha256": "8e23b132dfd1dc10d039d505400a4e7f95d6228d5ba517966856f79549d4694e",
+      "final_image_sha256": "246b589b9eb751daa74dad7bd08cde629b15604fbe13fed70b1c16af2c0fa230",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/calm-mvp/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/calm-mvp/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/calm-mvp/v1"
+}

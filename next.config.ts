@@ -10,6 +10,11 @@ const sentrySourceMapsConfigured = Boolean(
   && process.env.SENTRY_ORG
   && process.env.SENTRY_PROJECT
 )
+const supabaseStorageImagePattern = (() => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  if (!supabaseUrl) return null
+  return new URL('/storage/v1/object/public/autopsy-images/**', supabaseUrl)
+})()
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -17,7 +22,7 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline' fonts.googleapis.com https://cdn.jsdelivr.net",
   "img-src 'self' data: blob: https:",
   "font-src 'self' fonts.gstatic.com https://cdn.jsdelivr.net data:",
-  "connect-src 'self' *.supabase.co api.anthropic.com api.openai.com api.stripe.com *.posthog.com api.resend.com *.upstash.io *.vercel-insights.com vitals.vercel-insights.com *.sentry.io ws: wss: http://localhost:*",
+  "connect-src 'self' *.supabase.co api.anthropic.com api.openai.com api.stripe.com *.posthog.com api.resend.com *.upstash.io *.vercel-insights.com vitals.vercel-insights.com *.sentry.io ws: wss: http://localhost:* http://127.0.0.1:*",
   "frame-src 'self' *.stripe.com challenges.cloudflare.com",
   "media-src 'self' data: blob: https:",
   "worker-src 'self' blob:",
@@ -29,10 +34,16 @@ const contentSecurityPolicy = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  allowedDevOrigins: ['127.0.0.1'],
   turbopack: {
     root: projectRoot,
   },
   outputFileTracingRoot: projectRoot,
+  images: {
+    remotePatterns: [
+      ...(supabaseStorageImagePattern ? [supabaseStorageImagePattern] : []),
+    ],
+  },
   async redirects() {
     return [
       { source: '/marketing', destination: '/', permanent: true },

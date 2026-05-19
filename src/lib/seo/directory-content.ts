@@ -1,4 +1,5 @@
 import { canonicalUrl, imageUrl, SITE_NAME, SITE_URL } from './site'
+import { autopsyStories, companyHubs } from '@/lib/autopsies/data'
 
 export interface DirectoryLink {
   label: string
@@ -623,6 +624,11 @@ export const PUBLIC_DIRECTORY_PATHS = [
   ...STUDY_PLAN_DIRECTORIES.map((entry) => `/study-plans/${entry.slug}`),
   '/practice',
   ...PRACTICE_DIRECTORIES.map((entry) => `/practice/${entry.slug}`),
+  '/autopsies',
+  ...companyHubs.map((entry) => `/autopsies/${entry.slug}`),
+  ...autopsyStories
+    .filter((entry) => entry.status === 'published')
+    .map((entry) => entry.canonicalPath),
   '/glossary',
   ...GLOSSARY_DIRECTORIES.map((entry) => `/glossary/${entry.slug}`),
   '/interviews/live-ai-interviews',

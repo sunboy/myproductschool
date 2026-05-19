@@ -10,7 +10,7 @@ interface Props {
 
 export function FullbleedPrincipleSection({ section, hasBeenVisible }: Props) {
   const { principle, attribution } = section.content
-  const [entered, setEntered] = React.useState(false)
+  const [entered, setEntered] = React.useState(hasBeenVisible)
 
   const words = principle.split(' ')
 
@@ -25,7 +25,7 @@ export function FullbleedPrincipleSection({ section, hasBeenVisible }: Props) {
     <div
       className="relative flex flex-col justify-center overflow-hidden"
       style={{
-        minHeight: 'min(85vh, 700px)',
+        minHeight: 'min(64vh, 560px)',
         background: '#f0ece4',
       }}
     >
@@ -55,7 +55,7 @@ export function FullbleedPrincipleSection({ section, hasBeenVisible }: Props) {
         </span>
       </div>
 
-      <div className="relative z-10 px-10 py-20 md:px-20 md:py-28 max-w-5xl">
+      <div className="relative z-10 max-w-5xl px-10 py-16 md:px-20 md:py-20">
         {/* Label */}
         <div
           style={{

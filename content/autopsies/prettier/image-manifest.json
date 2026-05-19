@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "prettier",
+  "story_slug": "prettier",
+  "story_title": "Prettier",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/prettier/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/prettier/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch comparing messy unformatted code to clean Prettier-formatted code",
+      "caption": "Hatch comparing messy unformatted code to clean Prettier-formatted code",
+      "prompt": "Prettier | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing in front of a \"BEFORE and AFTER\" display. Left side shows messy, inconsistently formatted code. Right side shows the same code, clean and uniform. Both panels are identical content but wildly different formatting. Cream background (#faf6f0). Hatch's expression is satisfied. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/prettier/hero.png",
+      "generated_image_sha256": "5745a9a07dfa31ccaf21bd64ebe3ac89ae5e73a5acdc9be89b4a9afdc7865f06",
+      "final_image_sha256": "8e19bd459c9af4d99c8d1a266c310aa029b1c72ffa62dbb612c2524f56ce26e1",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/prettier/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/prettier/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/prettier/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch watching two developers argue about tabs versus spaces",
+      "caption": "Hatch watching two developers argue about tabs versus spaces",
+      "prompt": "Prettier | hatch-narrator: Hatch in narrator stance looking at two developers arguing over a whiteboard. One writes \"TABS\" on the board with a checkmark. The other writes \"SPACES\" underneath. Both look frustrated. Hatch watches with patient expression, holding up a small sign that reads \"There is another way.\" Cream background. HackProduct wordmark watermark. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/prettier/hatch-narrator.png",
+      "generated_image_sha256": "c8c3e51fd9a59277d66aa0c285391c020cb1ec6c82e4707db7f4dd5b8f20e052",
+      "final_image_sha256": "d7f9265c7cc571eba9ef14530084fe8978b10f111222a5565070125f9b00e225",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/prettier/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/prettier/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/prettier/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at Prettier automatically reformatting code in a terminal",
+      "caption": "Hatch pointing at Prettier automatically reformatting code in a terminal",
+      "prompt": "Prettier | failure-mechanism: Hatch pointing at a terminal showing \"prettier --write .\" with a green success indicator. In the background, a code file transforms from jagged inconsistent formatting to uniform clean code. The visual emphasis is on the automatic transformation. Cream background, forest green (#4a7c59) terminal text. HackProduct wordmark watermark. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/prettier/failure-mechanism.png",
+      "generated_image_sha256": "87e6db31014f8e76b48a92b468ce04edb43cc61b6e0c112dc8ffe016c434edd4",
+      "final_image_sha256": "bac3c9214eb9ac8d7d8a8ccfc5beb9a4fb72512208a4114d5d179c9eb216e4b8",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/prettier/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/prettier/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/prettier/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at Prettier's 55 million weekly downloads statistic",
+      "caption": "Hatch pointing at Prettier's 55 million weekly downloads statistic",
+      "prompt": "Prettier | evidence-card: Hatch pointing at a simple statistic display: \"55M downloads/week\" in large amber (#705c30) numbers. Below it in smaller text: \"Most installed developer formatting tool.\" Cream background, minimal design. Hatch's expression is impressed. HackProduct wordmark watermark. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/prettier/evidence-card.png",
+      "generated_image_sha256": "f0088feab1057ccd0d37844f0502457e4036372ebdc2d74df42cce6a8adf24b8",
+      "final_image_sha256": "f5fef9d2dd94538eb8653f00fecfb5b27d802970b6c2adab52c8be7ab8ca088b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/prettier/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/prettier/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/prettier/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding up a crossed-out config file while a developer team works peacefully",
+      "caption": "Hatch holding up a crossed-out config file while a developer team works peacefully",
+      "prompt": "Prettier | lesson-frame: Hatch in coaching pose holding a config file with a large X through it. Behind Hatch, a team of developer figures is visibly relaxed — no argument, no debate, just work. The visual metaphor is \"the absence of choice as the feature.\" Cream background. HackProduct wordmark watermark. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/prettier/lesson-frame.png",
+      "generated_image_sha256": "7a04af0be27bc581d20671ee7dfa7bd19a30e2985da262fb7bd0dd134ead16a3",
+      "final_image_sha256": "974f2a18fc1ad984fb75ace0f167642ca5cc5504a5d2d38ef369941662f685be",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/prettier/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/prettier/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/prettier/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a No Config sign",
+      "caption": "Hatch holding a No Config sign",
+      "prompt": "Hatch mascot holding up a small sign with a star and \"No Config\" written on it. Compact square composition. Cream background. HackProduct wordmark watermark. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/prettier/hero.png",
+      "generated_image_sha256": "5745a9a07dfa31ccaf21bd64ebe3ac89ae5e73a5acdc9be89b4a9afdc7865f06",
+      "final_image_sha256": "3fb40269e53e1d2addd35dc2d5cf0957c6438503fe016d8d3d66c71eb66d9551",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/prettier/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/prettier/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/prettier/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch comparing formatted and unformatted code for social sharing",
+      "caption": "Hatch comparing formatted and unformatted code for social sharing",
+      "prompt": "Hatch at the before/after display (same as hero, wider crop). Text-safe zone on left third for OG overlay. Cream background. HackProduct wordmark watermark. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/prettier/hero.png",
+      "generated_image_sha256": "5745a9a07dfa31ccaf21bd64ebe3ac89ae5e73a5acdc9be89b4a9afdc7865f06",
+      "final_image_sha256": "ae2008fa4e103e0d12824b54a5a9060b2fbb0c77b95533544ce9b077496a6c6b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/prettier/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/prettier/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/prettier/v1"
+}

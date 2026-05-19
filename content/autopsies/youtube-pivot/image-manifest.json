@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "google",
+  "story_slug": "youtube-pivot",
+  "story_title": "YouTube's Pivot to Creators",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/youtube-pivot/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/youtube-pivot/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch the HackProduct mascot standing in front of a play button with a subtle dollar sign on cream background.",
+      "caption": "Hatch the HackProduct mascot standing in front of a play button with a subtle dollar sign on cream background.",
+      "prompt": "YouTube's Pivot to Creators | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing in front of an oversized play button on a cream background, cap slightly tilted, arms relaxed. The play button has a subtle dollar sign embedded in the triangle. No text in scene. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/youtube-pivot/hero.png",
+      "generated_image_sha256": "d43f5ddd35287e1f1dd71fc78dc91bc87b52a76b812953aa41a70cb7e368a32e",
+      "final_image_sha256": "11e29f46c16a493108872fee076862586307f685da7546692c500126a613159d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/youtube-pivot/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/youtube-pivot/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/youtube-pivot/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing toward a creator at a desk looking uncertain about why they are investing time in content.",
+      "caption": "Hatch gesturing toward a creator at a desk looking uncertain about why they are investing time in content.",
+      "prompt": "YouTube's Pivot to Creators | hatch-narrator: Hatch in narrator pose — standing slightly turned, gesturing toward a creator at a desk recording a video, looking uncertain. The desk has a laptop and a camera but no indicators of income. The creator expression is one of \"why am I doing this.\" Cream background, no text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/youtube-pivot/hatch-narrator.png",
+      "generated_image_sha256": "5fc099ee38bab144c0c6225c1d5c06d2a8f582e110c635cfa680a4a3e743400c",
+      "final_image_sha256": "c0995e82556022cdc2f9ee9fd401c04034b919d20a6ca6fadbde25cd1f67b227",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/youtube-pivot/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/youtube-pivot/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/youtube-pivot/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch looking at a revenue split diagram showing ad revenue flowing to both creators and YouTube.",
+      "caption": "Hatch looking at a revenue split diagram showing ad revenue flowing to both creators and YouTube.",
+      "prompt": "YouTube's Pivot to Creators | failure-mechanism: Hatch in thinking pose, looking at a simple flow diagram: Ad revenue → Platform → split arrow → Creator (55%) and YouTube (45%). The diagram is clean and minimal against cream. Hatch's expression suggests \"yes, this is the insight.\" Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/youtube-pivot/failure-mechanism.png",
+      "generated_image_sha256": "c456624c644f92b89494b3736fbdf65929df01751fa1fb74e5adfe09a24dd8a5",
+      "final_image_sha256": "342081f35030bd468457c922ab84ad87c0ab781c676c98b6e898b677b904ba8f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/youtube-pivot/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/youtube-pivot/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/youtube-pivot/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a bar chart showing YouTube creator payout growth culminating at $30B.",
+      "caption": "Hatch pointing at a bar chart showing YouTube creator payout growth culminating at $30B.",
+      "prompt": "YouTube's Pivot to Creators | evidence-card: Hatch pointing at a bar chart showing creator payout growth from 2007 to 2019, with a \"$30B\" highlighted on the rightmost bar. The chart is simple with 5-6 bars showing exponential growth. Cream background. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/youtube-pivot/evidence-card.png",
+      "generated_image_sha256": "147e736dcd21416b5dc25d450657c8c238a95bffb24fc6395f059541c7d4b7b6",
+      "final_image_sha256": "4bec48db50b0209f75ea264becc939e8e9c36ed4f0cbafd91c47a00f667476a3",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/youtube-pivot/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/youtube-pivot/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/youtube-pivot/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in coaching stance in front of two parallel upward arrows representing aligned platform and creator growth.",
+      "caption": "Hatch in coaching stance in front of two parallel upward arrows representing aligned platform and creator growth.",
+      "prompt": "YouTube's Pivot to Creators | lesson-frame: Hatch in coaching pose — calm, standing with arms slightly open. Behind Hatch, two arrows point upward in parallel: one labeled \"Platform\" and one labeled \"Creator.\" The visual metaphor is aligned growth. Cream background, no additional text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/youtube-pivot/lesson-frame.png",
+      "generated_image_sha256": "dc7151825f53aa28b27d967383d09440cec83e8064a8d0b856ad3534d649020c",
+      "final_image_sha256": "f44cbfc1d266602c862e97b3df7dce63ac88fad0319898ed4dc8c125dec8c26c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/youtube-pivot/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/youtube-pivot/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/youtube-pivot/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch thumbnail in front of a play button with dollar sign on cream background.",
+      "caption": "Hatch thumbnail in front of a play button with dollar sign on cream background.",
+      "prompt": "Hatch mascot small and recognizable, standing in front of a play button with a dollar sign, cream background. Compact framing. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/youtube-pivot/hero.png",
+      "generated_image_sha256": "d43f5ddd35287e1f1dd71fc78dc91bc87b52a76b812953aa41a70cb7e368a32e",
+      "final_image_sha256": "d0cca18be7ef11699d37d9c48cfd9e8203ec59d3e1ab44c64ce7c190d956391b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/youtube-pivot/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/youtube-pivot/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/youtube-pivot/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in hero pose for social sharing in front of a play button with dollar sign.",
+      "caption": "Hatch in hero pose for social sharing in front of a play button with dollar sign.",
+      "prompt": "Hatch in hero pose adapted for OG sharing — standing confidently in front of a large play button with dollar sign, cap straight, cream background. Large HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/youtube-pivot/hero.png",
+      "generated_image_sha256": "d43f5ddd35287e1f1dd71fc78dc91bc87b52a76b812953aa41a70cb7e368a32e",
+      "final_image_sha256": "b25e7a1204e7f804a08e41a9880370b2b341a21bfedc49cc6299900245151a31",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/youtube-pivot/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/youtube-pivot/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/youtube-pivot/v1"
+}

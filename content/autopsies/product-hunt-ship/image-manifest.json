@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "producthunt",
+  "story_slug": "product-hunt-ship",
+  "story_title": "Product Hunt Ship",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/product-hunt-ship/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/product-hunt-ship/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot standing before a launch pad with a growing subscriber list, representing the pre-launch community concept.",
+      "caption": "Product Hunt Ship — distribution before the product exists.",
+      "prompt": "Product Hunt Ship | hero: Hatch mascot (the HackProduct robot with the graduation cap and growth arrow) standing in front of a stylized launch pad with a \"COMING SOON\" sign, holding a clipboard with a growing list of subscribers. The background is a warm cream, and the subscriber count on the sign is visibly increasing. Cap tilted, friendly expression, no speech bubble. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/product-hunt-ship/hero.png",
+      "generated_image_sha256": "90717a512277b2d6224075a278a97cab49e3a05cd60a4527f0f70dfa2d5ba723",
+      "final_image_sha256": "22e1de65cc4ea6705ed9c1d29dd6bb752f8691418a04ea1e4d3793d4ed21fc5b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/product-hunt-ship/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/product-hunt-ship/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/product-hunt-ship/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing at a launch day calendar surrounded by empty chairs, illustrating the cold-start problem.",
+      "caption": "Hatch gesturing at a launch day calendar surrounded by empty chairs, illustrating the cold-start problem.",
+      "prompt": "Product Hunt Ship | hatch-narrator: Hatch in narrator pose, gesturing toward a calendar with \"Launch Day\" circled, surrounded by empty chairs representing an absent audience. The scene communicates the cold-start problem: a maker appearing on launch day with no existing community. Cream background, no speech bubble, no copy. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/product-hunt-ship/hatch-narrator.png",
+      "generated_image_sha256": "e33a9f59fb7ef4c2eb27f75f3f385d01e3d2a9abef004888578635d435ac3fe3",
+      "final_image_sha256": "f13325b1b47b87374e92f5db84fb130dbae682731115ac8af83cc1fc11e26739",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/product-hunt-ship/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/product-hunt-ship/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/product-hunt-ship/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch observing a pipeline connecting a maker building to a launch moment through subscriber collection.",
+      "caption": "Hatch observing a pipeline connecting a maker building to a launch moment through subscriber collection.",
+      "prompt": "Product Hunt Ship | failure-mechanism: Hatch in thinking pose, looking at two connected panels: on the left, a maker building a product; on the right, a growing list of subscriber names flowing toward a \"LAUNCH\" moment. An arrow connects the two panels through a Product Hunt logo. The visual shows pre-launch audience collection as a pipeline. Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/product-hunt-ship/failure-mechanism.png",
+      "generated_image_sha256": "1109de712df6cfb3b27ad0ae9c7ac1687223a8cc31c0828e0d766b560a64d04d",
+      "final_image_sha256": "378675039667b8b940c9ba1d1b48db9d95947d2696ad8bcc32b18fa197c6d17f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/product-hunt-ship/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/product-hunt-ship/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/product-hunt-ship/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a chart showing the advantage of pre-launch subscriber collection versus launching cold.",
+      "caption": "Hatch pointing at a chart showing the advantage of pre-launch subscriber collection versus launching cold.",
+      "prompt": "Product Hunt Ship | evidence-card: Hatch pointing at a simple chart showing two lines: \"launch with Ship subscribers\" tracking upward versus \"launch without pre-launch audience\" tracking flat. The chart is minimal and clean, showing the distribution advantage. Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/product-hunt-ship/evidence-card.png",
+      "generated_image_sha256": "82093ed529be271579764ee7519c29f53a7e8da336505da953c165f2dca47c83",
+      "final_image_sha256": "924dcae11f38e45843ea1efbb9b509b3b13eab51320daa2902d35179f92c2ec0",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/product-hunt-ship/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/product-hunt-ship/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/product-hunt-ship/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside an icon merging a tool and a community, representing distribution embedded in tooling.",
+      "caption": "Hatch beside an icon merging a tool and a community, representing distribution embedded in tooling.",
+      "prompt": "Product Hunt Ship | lesson-frame: Hatch in calm coaching pose, standing beside a simple visual of a tool and a community merged into one icon — a wrench overlapping a group of people. The composition communicates that the tool's value is inseparable from its distribution context. Cream background. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/product-hunt-ship/lesson-frame.png",
+      "generated_image_sha256": "f99f20be003df286a14e3e808c8efae793417196d4bffb2aa9147dd2ecd22db9",
+      "final_image_sha256": "638a290088a1cb25ba5e33e3700ebab266b1a5d0a86905449f2992b5a0cdbdbe",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/product-hunt-ship/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/product-hunt-ship/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/product-hunt-ship/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a Coming Soon sign with a subscriber counter.",
+      "caption": "Hatch holding a Coming Soon sign with a subscriber counter.",
+      "prompt": "Small, recognisable Hatch mascot holding a \"COMING SOON\" sign with a subscriber count ticker. Clean cream background, no text, no speech. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/product-hunt-ship/hero.png",
+      "generated_image_sha256": "90717a512277b2d6224075a278a97cab49e3a05cd60a4527f0f70dfa2d5ba723",
+      "final_image_sha256": "c9a5f52d0bd2275cab8d14f8506f0018b82e32bfdfb3331200f4fc435fc49eba",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/product-hunt-ship/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/product-hunt-ship/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/product-hunt-ship/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch before a Product Hunt Ship interface for social sharing.",
+      "caption": "Hatch before a Product Hunt Ship interface for social sharing.",
+      "prompt": "Hero pose Hatch mascot adapted for OG share card: Hatch standing confidently in front of a stylized upcoming-page interface, with \"PRODUCT HUNT SHIP\" as a visual backdrop. Cream background, HackProduct watermark bottom-right 60% opacity JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/product-hunt-ship/hero.png",
+      "generated_image_sha256": "90717a512277b2d6224075a278a97cab49e3a05cd60a4527f0f70dfa2d5ba723",
+      "final_image_sha256": "f082ecddebe49a243660dfdfc483c872b9ecb80c76e46f3cf4b696bd52ed9644",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/product-hunt-ship/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/product-hunt-ship/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/product-hunt-ship/v1"
+}

@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "tailwind",
+  "story_slug": "tailwind-css",
+  "story_title": "Tailwind CSS",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/tailwind-css/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/tailwind-css/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch comparing a bloated CSS file to compact utility-first HTML markup",
+      "caption": "Hatch comparing a bloated CSS file to compact utility-first HTML markup",
+      "prompt": "Tailwind CSS | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing in front of two side-by-side code editors. Left screen shows a long growing stylesheet with red X marks. Right screen shows compact HTML with inline utility classes and a green checkmark. Cream background (#faf6f0). Hatch's posture is \"look at this, it's obvious when you see it.\" HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/tailwind-css/hero.png",
+      "generated_image_sha256": "afb0194abd9639aff996fc165cce731009f7ccf92f62f09a72ca3b676f60305b",
+      "final_image_sha256": "cc9e7342392392e0bdcf6a7077df89b7be875527a9fcf313c5866290132a9eb9",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/tailwind-css/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/tailwind-css/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/tailwind-css/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch looking at an endless growing CSS stylesheet with exasperated recognition",
+      "caption": "Hatch looking at an endless growing CSS stylesheet with exasperated recognition",
+      "prompt": "Tailwind CSS | hatch-narrator: Hatch in narrator stance looking at a massive stylesheet scroll — the scroll is so long it falls off the bottom of the visible area. Class names visible: .card-header, .card-footer, .user-profile-header, .btn-primary, .btn-primary-large (all piling up). Hatch's expression is exasperated recognition. Cream background, forest green (#4a7c59) text on the stylesheet. HackProduct wordmark watermark. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/tailwind-css/hatch-narrator.png",
+      "generated_image_sha256": "4355683a3cc26c4fa71d564de4985a8434d5448c23be923d1a745f1335cc435f",
+      "final_image_sha256": "a16fa90376522edc20330df48f6d02f379d7618d2970d922e18528f6b3887670",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/tailwind-css/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/tailwind-css/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/tailwind-css/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch demonstrating utility class composition producing a styled component",
+      "caption": "Hatch demonstrating utility class composition producing a styled component",
+      "prompt": "Tailwind CSS | failure-mechanism: Hatch pointing at HTML code that uses utility classes: class=\"flex items-center p-4 bg-white rounded-lg shadow\". The code is clean and compact. On the right, an arrow shows this HTML directly producing the styled component. No separate CSS file visible. Hatch's pose is demonstrating how the system works. Cream background. HackProduct wordmark watermark. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/tailwind-css/failure-mechanism.png",
+      "generated_image_sha256": "7d83d0ea3316f736c7f2aeba045f5fd1971011d4ec9e6abc9c67ba1957726f58",
+      "final_image_sha256": "a7a3cd8458c5bab7fe1fdaaa8c694e5d8f617db72457d458c28672788e6c9786",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/tailwind-css/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/tailwind-css/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/tailwind-css/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a bar chart showing Tailwind's highest developer satisfaction score",
+      "caption": "Hatch pointing at a bar chart showing Tailwind's highest developer satisfaction score",
+      "prompt": "Tailwind CSS | evidence-card: Hatch pointing at a survey bar chart. The top bar reads \"Tailwind CSS — Satisfaction: 94%\". Other bars below it show older frameworks at lower satisfaction scores. Chart is minimal: cream background, forest green bars, amber labels. Hatch's expression is satisfied but not smug. HackProduct wordmark watermark. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/tailwind-css/evidence-card.png",
+      "generated_image_sha256": "8df2ee83d1ac62aeb0d69d7d61710deeae0e1bec532596f789c08a6a00348ec0",
+      "final_image_sha256": "b09478d8fde245626f894e0a8ce59b0eb6513931549a2d4a2aaba3b461c70a7c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/tailwind-css/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/tailwind-css/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/tailwind-css/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a broken \"separation of concerns\" chain revealing clarity behind it",
+      "caption": "Hatch examining a broken \"separation of concerns\" chain revealing clarity behind it",
+      "prompt": "Tailwind CSS | lesson-frame: Hatch in coaching pose with a graduation cap, looking at a broken chain — one link is labeled \"Separation of Concerns\" and it's clearly the weak link. Behind the broken chain is a clear, elegant structure. Cream background. The tone is gentle insight, not triumphalism. HackProduct wordmark watermark. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/tailwind-css/lesson-frame.png",
+      "generated_image_sha256": "e3805882ffcf11dbb3470bacf2593ca6ab87f74fc936896a0eec6a9527ec890f",
+      "final_image_sha256": "a6ca66a840608172945a3ce81fa902c4183d8b0cb0a569b47da610eb08c98736",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/tailwind-css/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/tailwind-css/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/tailwind-css/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch comparing long semantic class name to short utility classes",
+      "caption": "Hatch comparing long semantic class name to short utility classes",
+      "prompt": "Hatch mascot holding up two code snippets — one is a long class name, the other is compact utilities. Compact square composition. Cream background. HackProduct wordmark watermark. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/tailwind-css/hero.png",
+      "generated_image_sha256": "afb0194abd9639aff996fc165cce731009f7ccf92f62f09a72ca3b676f60305b",
+      "final_image_sha256": "f6794ce05185f3ebba807b82f0c3e2eaba984d6d411f7b37a655365a53c14d44",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/tailwind-css/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/tailwind-css/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/tailwind-css/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch comparing stylesheet approaches for social sharing",
+      "caption": "Hatch comparing stylesheet approaches for social sharing",
+      "prompt": "Hatch at the two-screen comparison (same as hero, wider crop). Left side text-safe for OG overlay. Cream background. HackProduct wordmark watermark. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/tailwind-css/hero.png",
+      "generated_image_sha256": "afb0194abd9639aff996fc165cce731009f7ccf92f62f09a72ca3b676f60305b",
+      "final_image_sha256": "65a614f673f8f2c0f8a78917ee9eaa74e7675fc2a8854e56c0076942e84daee2",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/tailwind-css/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/tailwind-css/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/tailwind-css/v1"
+}

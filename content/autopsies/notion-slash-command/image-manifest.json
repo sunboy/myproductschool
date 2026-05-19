@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "notion",
+  "story_slug": "notion-slash-command",
+  "story_title": "Notion's Slash Command",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/notion-slash-command/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/notion-slash-command/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A blank page with a forward slash opening a short menu of abstract block shapes, with Hatch pointing toward the menu.",
+      "caption": "One keystroke, anchored to the cursor, replaces a toolbar of buttons.",
+      "prompt": "Notion's Slash Command | hero: Flat geometric HackProduct autopsy hero illustration for Notion's slash command. Canvas role: hero, aspect 2400x1350. Show a calm blank page in cream with a single large forest green forward slash character at the cursor position, opening into a short vertical menu of three or four abstract block shapes labelled with simple icons, not text. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the lower right, gesturing toward the open menu. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Background cream #faf6f0, primary structures forest #4a7c59 and deep forest #244232, amber accents #c9ad68, charcoal linework #1e211c. Leave quiet space in the upper left for the title overlay. No human faces, no photorealism, no fake Notion screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/notion-slash-command/hero.png",
+      "generated_image_sha256": "1148a71bdcd4460565aea127f580526d24638fafc2c5636070025752b8cd5ec1",
+      "final_image_sha256": "fbb964b26bc9c6e6dd47087b96cedab336dc5be4acd7ff51268bf42408dd84af",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-slash-command/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-slash-command/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/notion-slash-command/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing between a busy toolbar editor and a near-empty editor with a single slash glyph at the cursor.",
+      "caption": "Hatch standing between a busy toolbar editor and a near-empty editor with a single slash glyph at the cursor.",
+      "prompt": "Notion's Slash Command | hatch-narrator: Flat geometric HackProduct autopsy scene illustration. Canvas role: scene, aspect 1600x1600. Show two stylised editor surfaces side by side as small panels, both cream. Left panel is dense with a top toolbar of small button shapes, dropdown carets, and a sidebar gallery of template tiles, painted in muted amber and charcoal to feel heavy. Right panel is almost empty, just a forest green cursor and a single floating slash glyph. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as the main narrator standing between the two panels, pointing at the empty right one with a calm coach gesture. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Cream #faf6f0 background, forest #4a7c59 cursor, deep forest #244232 frames, soft amber #c9ad68 highlights, charcoal #1e211c lines. No real Notion UI, no human faces. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/notion-slash-command/hatch-narrator.png",
+      "generated_image_sha256": "719f2653148922b63c2d2dd4351d16cea7e3947c62989c412773e0d8d37bb28b",
+      "final_image_sha256": "ab6e419bef49aa249dd1b8c74875f613555d33edb88ffa7d6a6a64e914dbe327",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-slash-command/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-slash-command/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/notion-slash-command/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A three-step strip showing a slash, then a block menu, then the chosen block in place, with Hatch pointing across the steps.",
+      "caption": "A three-step strip showing a slash, then a block menu, then the chosen block in place, with Hatch pointing across the steps.",
+      "prompt": "Notion's Slash Command | failure-mechanism: Flat geometric HackProduct autopsy mechanism illustration. Canvas role: failure-mechanism, aspect 1800x1200. Show a horizontal three-step strip on a cream background. Step one, a single forward slash on a line. Step two, a small vertical menu appearing beneath the slash with five abstract block shapes representing heading, list, table, image, and toggle, each tagged with a one-word label in JetBrains Mono. Step three, the same line transformed into one of those block shapes in place, with the cursor sitting inside it. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as the pointing narrator on the far left, gesturing across the three steps. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Use forest #4a7c59 for structure, amber #705c30 for the active block, mist #dfe6dc for inactive blocks, charcoal #1e211c lines, cream #faf6f0 background. No fake screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/notion-slash-command/failure-mechanism.png",
+      "generated_image_sha256": "173e5dbede77cf7dc467fd7618d3f801a8d9dd29cfd143bcc0fce36fcb6158ef",
+      "final_image_sha256": "e6ac82250b8db497fedef5329e85b679c7003b5018cd1da42a74436a9902c617",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-slash-command/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-slash-command/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/notion-slash-command/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A three-bar chart of Notion users at 1 million, 20 million, and 100 million, with Hatch pointing at the tallest bar.",
+      "caption": "A three-bar chart of Notion users at 1 million, 20 million, and 100 million, with Hatch pointing at the tallest bar.",
+      "prompt": "Notion's Slash Command | evidence-card: Flat geometric HackProduct autopsy evidence illustration. Canvas role: evidence-card, aspect 1600x1000. Show a single large vertical bar chart with three bars on a cream background, labelled in JetBrains Mono. First bar small, labelled \"1M 2020\". Second bar taller, labelled \"20M 2022\". Third bar tallest, labelled \"100M 2024\". Above the chart, a small subtitle reads \"Users since the slash menu became default\". Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny pointer at the foot of the largest bar, looking up at it. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Bars in forest #4a7c59 with deep forest #244232 outline. Background cream #faf6f0. Charcoal #1e211c labels. Use one short label and one visible artifact shape only. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/notion-slash-command/evidence-card.png",
+      "generated_image_sha256": "81ea6f673fe7d083e850fc485fba21ee754ea2933568deffddabb987333eea4c",
+      "final_image_sha256": "8de1f472a2ed3b86863936155dde8f5bbebdd05ad7f682cb8e3078c3f8561dc7",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-slash-command/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-slash-command/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/notion-slash-command/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A near-empty page with a green cursor and slash glyph, soft amber arcs behind it, Hatch coaching in the corner.",
+      "caption": "A near-empty page with a green cursor and slash glyph, soft amber arcs behind it, Hatch coaching in the corner.",
+      "prompt": "Notion's Slash Command | lesson-frame: Flat geometric HackProduct autopsy lesson illustration. Canvas role: lesson-frame, aspect 1800x1200. Show a single large cream page with a faint dotted grid, almost empty except for a forest green cursor and a small green slash glyph beside it. Behind the page, a soft amber halo radiates outward in concentric arcs, representing the unseen library of blocks. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a coaching narrator in the lower right, palms open in a calm explaining gesture toward the page. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Use cream #faf6f0 background, forest #4a7c59 cursor, soft amber #c9ad68 halo arcs, charcoal #1e211c outline. No text on the page. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/notion-slash-command/lesson-frame.png",
+      "generated_image_sha256": "74f7d0a9d5c2c5acab7225480fe83ce85361daaae2133279999fab5a0ea01a8d",
+      "final_image_sha256": "40ccc33351055cbec351f774a4a0e55ca938adca1b88757796fac086f6d5cd7c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-slash-command/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-slash-command/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/notion-slash-command/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A large green slash glyph above three small block shapes, with a tiny Hatch mark in the corner.",
+      "caption": "A large green slash glyph above three small block shapes, with a tiny Hatch mark in the corner.",
+      "prompt": "Flat geometric HackProduct autopsy thumbnail. Canvas role: thumbnail, aspect 1200x900. Single strong focal composition for small listing surfaces. Show a large forest green forward slash centered on cream background, with a thin amber underline beneath it and a short stack of three abstract block shapes immediately below, like a menu opening. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny watermark-adjacent mark in the lower right corner only, no detail. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Cream #faf6f0 background, forest #4a7c59 slash, soft amber #c9ad68 underline, mist #dfe6dc block shapes, charcoal #1e211c outline. Make the decision readable at small size with one strong focal shape. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/notion-slash-command/hero.png",
+      "generated_image_sha256": "1148a71bdcd4460565aea127f580526d24638fafc2c5636070025752b8cd5ec1",
+      "final_image_sha256": "9058b4c2bf9a92739c7d681b5ab9b85812a15df84482fe4840caa369b56fa7cd",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-slash-command/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-slash-command/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/notion-slash-command/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A central green slash glyph opening a four-item block menu, with Hatch as a small corner narrator.",
+      "caption": "A central green slash glyph opening a four-item block menu, with Hatch as a small corner narrator.",
+      "prompt": "Flat geometric HackProduct autopsy social cover. Canvas role: social-cover, aspect 2400x1260. Center the composition on a single large forward slash glyph in forest green opening into a short menu of four abstract block shapes labelled with simple icons. Surround with quiet cream space. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator on the lower right, gesturing toward the menu, no larger than 12 percent of canvas height. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Cream #faf6f0 background, forest #4a7c59 main glyph, deep forest #244232 menu frame, soft amber #c9ad68 accent, charcoal #1e211c outline. Keep the center 70 percent clear of edge-critical details. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/notion-slash-command/hero.png",
+      "generated_image_sha256": "1148a71bdcd4460565aea127f580526d24638fafc2c5636070025752b8cd5ec1",
+      "final_image_sha256": "898d75524560c7a393b0d348748fec05fdd869fe6aaab723fbcbe549cba2ed6a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/notion-slash-command/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/notion-slash-command/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/notion-slash-command/v1"
+}

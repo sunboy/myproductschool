@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "lex",
+  "story_slug": "lex-page",
+  "story_title": "Lex",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/lex-page/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/lex-page/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch sitting at a desk looking at a blank document with a blinking cursor — representing the moment before writing begins",
+      "caption": "Hatch sitting at a desk looking at a blank document with a blinking cursor — representing the moment before writing begins",
+      "prompt": "Lex | hero: Hatch mascot (HackProduct robot with graduation cap and growth arrow) sitting at a desk looking at a large, completely empty document on a cream-colored screen. The cursor blinks at the top of the blank page. Hatch's expression is thoughtful and calm — not intimidated. The scene conveys the blank page moment without drama. Cream background, no text overlays. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/lex-page/hero.png",
+      "generated_image_sha256": "bf6960470528ddfc68e7c54c5925ba636550b304f3bdbe293f299cda215b2533",
+      "final_image_sha256": "2b2b31ec86af7e672ddb647a921978fbdbeb4c43ccf5ff71409a1fbe84780f65",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/lex-page/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/lex-page/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/lex-page/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing toward two writers — one frozen by a blank page, one active with inline AI assistance",
+      "caption": "Hatch gesturing toward two writers — one frozen by a blank page, one active with inline AI assistance",
+      "prompt": "Lex | hatch-narrator: Hatch in narrator pose, gesturing toward two writers at separate desks: one is staring at a blank screen frozen and frustrated, the other has invoked an AI assistant directly inside their document and is now actively writing. The contrast is visible but not exaggerated. Cream background, no speech bubble. Watermark same as hero. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/lex-page/hatch-narrator.png",
+      "generated_image_sha256": "56e4aaceaeca52c6aabf36ce7ffdb8479859d474b48ab756313d398e86366271",
+      "final_image_sha256": "a4f030241328f0ed5ce5d74beab54fc9ea98965e4b25157a330acc104be121fd",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/lex-page/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/lex-page/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/lex-page/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch observing an AI prompt appearing inline inside a document editor at a blank line",
+      "caption": "Hatch observing an AI prompt appearing inline inside a document editor at a blank line",
+      "prompt": "Lex | failure-mechanism: Hatch in a thinking pose, observing a document editor where the cursor is at a blank line and a soft AI prompt has appeared inline — inside the document, not in a sidebar. The document is centered; the AI is a guest inside it rather than a parallel pane. Cream background. Watermark same. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/lex-page/failure-mechanism.png",
+      "generated_image_sha256": "4fcbbd281cd789dcd970872a8df2d364f2f52d5cadc3d71e68688e112be688a9",
+      "final_image_sha256": "61d781d072f56ec9b3b518be7e7cfa9e53f62746d8f22f7d1749301b04f3551b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/lex-page/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/lex-page/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/lex-page/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a gallery representing newsletter writers, executives, and essayists as Lex's core user base",
+      "caption": "Hatch pointing at a gallery representing newsletter writers, executives, and essayists as Lex's core user base",
+      "prompt": "Lex | evidence-card: Hatch pointing at a small gallery of user types: newsletter writer with a coffee cup, executive reviewing a draft, essayist in a quiet room. Each figure represents Lex's intended audience — people with a serious relationship to long-form prose. Cream background. Watermark same. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/lex-page/evidence-card.png",
+      "generated_image_sha256": "e647fa6197e1dffbbe3f6b68ae61e2ea8a05dd5e91bec2cf101c74c811b83a06",
+      "final_image_sha256": "fde28b03fe76cbc1be55de1b020ee6136d07d084be53657ffc0a37f34ffb0a44",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/lex-page/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/lex-page/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/lex-page/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in coaching pose beside a document with its first sentence written, the blank page now broken",
+      "caption": "Hatch in coaching pose beside a document with its first sentence written, the blank page now broken",
+      "prompt": "Lex | lesson-frame: Hatch in a coaching pose, calm, standing beside a document that has the first sentence written — just the first sentence, but written. The blank page has been broken. The rest of the document stretches forward. Cream background. Watermark same. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/lex-page/lesson-frame.png",
+      "generated_image_sha256": "370d271733e11b1eb12fdcf93eaf85fa73fc93632a321e72bbf66b6a645f0697",
+      "final_image_sha256": "4a9d85b4f3959a057e56c0939d022aefa692e29866fd19fd56b630549ee6e126",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/lex-page/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/lex-page/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/lex-page/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Small Hatch holding a tiny blank document with a blinking cursor",
+      "caption": "Small Hatch holding a tiny blank document with a blinking cursor",
+      "prompt": "Small, recognisable Hatch holding a miniature document with a blinking cursor at the top — the blank page moment in compact form. High-contrast, readable at small size. Cream background. Watermark same. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/lex-page/hero.png",
+      "generated_image_sha256": "bf6960470528ddfc68e7c54c5925ba636550b304f3bdbe293f299cda215b2533",
+      "final_image_sha256": "45802a0f4a2234a3ea4d4b7b9aa85f53a6aafe204ae8f99b6a7ac8bf8920cdab",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/lex-page/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/lex-page/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/lex-page/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a document editor with an AI suggestion appearing on a blank page",
+      "caption": "Hatch beside a document editor with an AI suggestion appearing on a blank page",
+      "prompt": "Hatch in hero pose to the left of a large document editor showing a blank page with a single AI suggestion appearing inline. Wide OG card format. No text. Cream background, HackProduct watermark bottom-right. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/lex-page/hero.png",
+      "generated_image_sha256": "bf6960470528ddfc68e7c54c5925ba636550b304f3bdbe293f299cda215b2533",
+      "final_image_sha256": "d5a8c77d4fea7f8404aeae69316aed335bff502fbaddafed5c4ab33cbeceafc7",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/lex-page/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/lex-page/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/lex-page/v1"
+}

@@ -9,9 +9,12 @@ interface Props {
   story: AutopsyStory
   productName: string
   productSlug: string
+  backHref?: string
+  sidebarOffset?: boolean
+  forceVisible?: boolean
 }
 
-export function StoryReader({ story, productName, productSlug }: Props) {
+export function StoryReader({ story, productName, productSlug, backHref, sidebarOffset = true, forceVisible = false }: Props) {
   const [activeIndex, setActiveIndex] = React.useState(0)
   const [visibleSet, setVisibleSet] = React.useState<Set<number>>(new Set())
   const [visitedSet, setVisitedSet] = React.useState<Set<number>>(new Set())
@@ -21,18 +24,23 @@ export function StoryReader({ story, productName, productSlug }: Props) {
 
   React.useEffect(() => {
     const main = document.querySelector('main')
-    if (!main) return
+    const scrollTarget = main && main.scrollHeight > main.clientHeight + 2 ? main : window
     const handleScroll = () => {
-      const pct = main.scrollHeight - main.clientHeight > 0
-        ? (main.scrollTop / (main.scrollHeight - main.clientHeight)) * 100
+      const scrollEl = scrollTarget === window ? document.documentElement : main
+      if (!scrollEl) return
+      const pct = scrollEl.scrollHeight - scrollEl.clientHeight > 0
+        ? (scrollEl.scrollTop / (scrollEl.scrollHeight - scrollEl.clientHeight)) * 100
         : 0
       setScrollPct(pct)
     }
-    main.addEventListener('scroll', handleScroll, { passive: true })
-    return () => main.removeEventListener('scroll', handleScroll)
+    scrollTarget.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => scrollTarget.removeEventListener('scroll', handleScroll)
   }, [])
 
   React.useEffect(() => {
+    const main = document.querySelector('main')
+    const observerRoot = main && main.scrollHeight > main.clientHeight + 2 ? main : null
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -51,10 +59,20 @@ export function StoryReader({ story, productName, productSlug }: Props) {
           }
         })
       },
-      { threshold: 0.3 }
+      { root: observerRoot, rootMargin: '0px 0px -12% 0px', threshold: 0.08 }
     )
     sectionRefs.current.forEach(ref => { if (ref) observer.observe(ref) })
-    return () => observer.disconnect()
+
+    const visibilityFallback = window.setTimeout(() => {
+      const allSections = story.sections.map((_, index) => index)
+      setVisibleSet(new Set(allSections))
+      setVisitedSet(new Set(allSections))
+    }, 700)
+
+    return () => {
+      observer.disconnect()
+      window.clearTimeout(visibilityFallback)
+    }
   }, [story.sections])
 
   const scrollToSection = (id: string) => {
@@ -74,9 +92,9 @@ export function StoryReader({ story, productName, productSlug }: Props) {
       />
 
       {/* Breadcrumb - light surface, matches app shell */}
-      <div className="fixed top-[52px] left-0 md:left-56 right-0 z-30 h-10 flex items-center px-4 gap-2 bg-surface-container-low border-b border-outline-variant/40">
+      <div className={cn('fixed top-[52px] left-0 right-0 z-30 h-10 flex items-center px-4 gap-2 bg-surface-container-low border-b border-outline-variant/40', sidebarOffset && 'md:left-56')}>
         <Link
-          href={`/explore/showcase/${productSlug}`}
+          href={backHref ?? `/explore/showcase/${productSlug}`}
           className="font-label text-xs text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
         >
           <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>arrow_back</span>
@@ -116,8 +134,8 @@ export function StoryReader({ story, productName, productSlug }: Props) {
           >
             <StorySection
               section={section}
-              isVisible={visibleSet.has(i)}
-              hasBeenVisible={visitedSet.has(i)}
+              isVisible={forceVisible || visibleSet.has(i)}
+              hasBeenVisible={forceVisible || visitedSet.has(i)}
             />
           </div>
         ))}

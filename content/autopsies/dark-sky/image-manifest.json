@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "apple",
+  "story_slug": "dark-sky",
+  "story_title": "Dark Sky",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/dark-sky/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/dark-sky/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A cream editorial illustration showing a narrow precipitation timeline bar beside a faded 10-day forecast grid, with a rain drop above a GPS pin and Hatch narrating from the upper right.",
+      "caption": "One question. One hour. One answer.",
+      "prompt": "Dark Sky | hero: Create a flat geometric HackProduct autopsy hero illustration for Dark Sky's 2012 hyperlocal weather app decision. Canvas role: hero, aspect 2400x1350. Set the background in warm cream #faf6f0. In the center, draw a single vertical precipitation timeline bar in forest green #4a7c59, divided into minute-by-minute segments, with a soft amber #c9ad68 pulse halfway up the bar labelled 11 MIN. To the left, draw a wide grey mist #dfe6dc panel showing a conventional 10-day forecast grid, rendered smaller and further away to suggest distance and irrelevance. To the right, a single rain drop shape in deep forest #244232 falls toward a small GPS pin in amber #705c30 at the base of the timeline bar. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right corner, pointing one mitten hand at the timeline bar. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Leave quiet space in the upper left for title overlay. No photorealism, no fake app screenshots, no human faces, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/dark-sky/hero.png",
+      "generated_image_sha256": "3f636a30e7dd1ba4b7167b898e4a34a595cd8de54733c7176e95397380a7ca4c",
+      "final_image_sha256": "1ff6904a9fd95dce85be58f3695b90f0b2fe9b81fecf136ce875b76172dc2415",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dark-sky/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dark-sky/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/dark-sky/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing in a spare home office beside a laptop showing a wide forecast grid and a narrow timeline bar side by side.",
+      "caption": "Hatch standing in a spare home office beside a laptop showing a wide forecast grid and a narrow timeline bar side by side.",
+      "prompt": "Dark Sky | hatch-narrator: Flat geometric scene illustration for the Jackadam founding moment in Troy, New York in 2011, aspect 1600x1600. Background is warm cream #faf6f0. Draw a sparse home-office desk with a single laptop in forest green #4a7c59 outline, showing two abstract windows side by side: a wide busy grid (the 10-day forecast that existed) in mist #dfe6dc on the left, and a narrow tall bar (the 60-minute idea) in forest green on the right. Add a small window above the desk with soft amber #c9ad68 light suggesting late afternoon. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as the main narrator standing beside the desk in a thinking pose, one mitten hand resting on the chin, gaze on the laptop. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No human figures other than Hatch, no logos, no photorealism, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/dark-sky/hatch-narrator.png",
+      "generated_image_sha256": "9cf7ccdcbc5cfe0f03b9b773a709f6672a9f6f02493b198621c11952078d6382",
+      "final_image_sha256": "6dde699647f596ae546712fb2a2a8da618af8f7f1b77d2cdfed3684bfc5534b8",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dark-sky/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dark-sky/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/dark-sky/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A three-stage pipeline from radar frames to movement extrapolation to a minute-by-minute arrival timeline, with Hatch pointing at the extrapolation stage.",
+      "caption": "A three-stage pipeline from radar frames to movement extrapolation to a minute-by-minute arrival timeline, with Hatch pointing at the extrapolation stage.",
+      "prompt": "Dark Sky | failure-mechanism: Flat geometric mechanism diagram for Dark Sky's radar-extrapolation method, aspect 1800x1200. Background is warm cream #faf6f0. Lay out three horizontal stages from left to right. Stage one on the left: two stacked radar frame squares in mist #dfe6dc with a forest green #4a7c59 blob shifted slightly between frames, labelled RADAR FRAMES. Stage two in the center: a thin charcoal #1e211c arrow showing direction and speed, with the label EXTRAPOLATE MOVEMENT. Stage three on the right: a tall vertical timeline strip in forest green divided into minute segments, with a soft amber #c9ad68 circle at one segment labelled ARRIVAL. Below the pipeline, draw a small GPS pin in deep forest #244232 anchored to the bottom of stage three. Connect stages with deep forest #244232 arrows. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a pointing pose at lower right, one mitten hand extended toward stage two marking the extrapolation step. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No fake screenshots, no photorealism, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/dark-sky/failure-mechanism.png",
+      "generated_image_sha256": "306a4f16131a8fc9ff7ffb9067908a701387ba8716cafe481a901f0c2c7b8b51",
+      "final_image_sha256": "d266202fcf677c87775ac1d84a5d7bf5043451b51acb4a4f56e8debc75c6ada7",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dark-sky/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dark-sky/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/dark-sky/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Two vertical bars showing Dark Sky's user count at 35,000 in August 2012 and 500,000 in January 2014, with a rising amber arrow and Hatch pointing at the tall bar.",
+      "caption": "Two vertical bars showing Dark Sky's user count at 35,000 in August 2012 and 500,000 in January 2014, with a rising amber arrow and Hatch pointing at the tall bar.",
+      "prompt": "Dark Sky | evidence-card: Flat geometric evidence card for Dark Sky's user growth from 35,000 to 500,000, aspect 1600x1000. Background is warm cream #faf6f0. Draw two vertical bar shapes in forest green #4a7c59, the left bar small labelled 35K — AUG 2012, the right bar taller labelled 500K — JAN 2014. Between them, draw a rising soft amber #c9ad68 diagonal arrow connecting the tops of the two bars. To the right of the bars, draw a small charcoal #1e211c tag reading $3.99 PAID. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png standing between the two bars in a pointing pose, one mitten hand on the tall bar. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Use one short label per bar and no other text. No fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/dark-sky/evidence-card.png",
+      "generated_image_sha256": "0dded6a86fd7341fc4f4e089d22d2a894f8b0a8a1cf5c32c2d2f86fdcff748a6",
+      "final_image_sha256": "9d6f820d963960ca5811a05341ff724e5e278a9ee096b7bfcc2d10f89ccd26e4",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dark-sky/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dark-sky/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/dark-sky/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide mist band labelled the 10-day window above a narrow forest-green band labelled the 60-minute window, with an arrow pointing down and Hatch coaching from the left.",
+      "caption": "A wide mist band labelled the 10-day window above a narrow forest-green band labelled the 60-minute window, with an arrow pointing down and Hatch coaching from the left.",
+      "prompt": "Dark Sky | lesson-frame: Flat geometric lesson illustration for the principle that precision in a narrow window beats accuracy across a wide one, aspect 1800x1200. Background is warm cream #faf6f0. Draw a wide mist #dfe6dc horizontal band at the top of the canvas labelled THE WIDE WINDOW — 10 DAYS with many thin vertical lines spaced evenly across it. Below it, draw a narrow forest green #4a7c59 vertical band labelled THE NARROW WINDOW — 60 MIN with a single soft amber #c9ad68 pulse inside it and a GPS pin at the base. Between the two bands, draw a charcoal #1e211c arrow pointing from the wide band down to the narrow one. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png in a calm coaching pose to the left of both bands, one mitten hand resting on the narrow green band, facing toward the reader. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No fake screenshots, no human faces, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/dark-sky/lesson-frame.png",
+      "generated_image_sha256": "94c7980092218f4e0380934e0f759daa7fe43e7faec231121006a60a93aefd01",
+      "final_image_sha256": "0061dbd9999e080bdcd7ba4c5afa70bea9a255d5c9c2dbc12dd0a18a6357e488",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dark-sky/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dark-sky/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/dark-sky/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A narrow forest-green precipitation timeline bar with an amber arrival marker and a rain drop above a GPS pin, with a tiny Hatch mark in the corner.",
+      "caption": "A narrow forest-green precipitation timeline bar with an amber arrival marker and a rain drop above a GPS pin, with a tiny Hatch mark in the corner.",
+      "prompt": "Flat geometric thumbnail for Dark Sky's 60-minute precipitation insight, aspect 1200x900. On warm cream #faf6f0, render one bold focal element: a tall narrow forest green #4a7c59 timeline bar with a single soft amber #c9ad68 circle part-way up it, and a small deep forest #244232 rain drop falling toward a GPS pin at the base. Keep the composition centered and readable at small size. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a tiny watermark-adjacent mark in the bottom-left corner, no larger than 12 percent of canvas height. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No labels, no fake screenshots, no dense text. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/dark-sky/hero.png",
+      "generated_image_sha256": "3f636a30e7dd1ba4b7167b898e4a34a595cd8de54733c7176e95397380a7ca4c",
+      "final_image_sha256": "4d81b269dc8b2d42068e30dd26c0106173fd16adf4e10e0a92239ca8eac9bc6d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dark-sky/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dark-sky/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/dark-sky/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "A wide social cover showing a faded 10-day grid on the left, a narrow forest-green 60-minute timeline bar in the center with an 11-MIN label, and small Hatch narrating from the upper right.",
+      "caption": "A wide social cover showing a faded 10-day grid on the left, a narrow forest-green 60-minute timeline bar in the center with an 11-MIN label, and small Hatch narrating from the upper right.",
+      "prompt": "Flat geometric social cover for Dark Sky's hyperlocal precision decision, aspect 2400x1260. On warm cream #faf6f0, compose a central image occupying the center 70 percent of the canvas: a tall narrow forest green #4a7c59 timeline bar in the middle, a mist #dfe6dc wide 10-day forecast panel pushed to the far left edge as a faded background element, and a soft amber #c9ad68 rain drop descending to a deep forest #244232 GPS pin at the base of the green bar. Add a single short charcoal #1e211c label inside the green bar reading 11 MIN. Use the canonical Hatch reference at public/images/hatch/hatch-official-mascot.png as a small narrator in the upper right corner, pointing one mitten hand toward the timeline bar. Preserve Hatch's rounded green head frame, cream face and body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. Keep the center 70 percent clear of edge-critical details. No human faces, no photorealism, no fake app screenshots. Watermark: HackProduct wordmark bottom-right, 60% opacity, JetBrains Mono.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/dark-sky/hero.png",
+      "generated_image_sha256": "3f636a30e7dd1ba4b7167b898e4a34a595cd8de54733c7176e95397380a7ca4c",
+      "final_image_sha256": "cab375db04fc5805e218099ff57fcf8ea9c11a99e659ef9ca70310753c1b790f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dark-sky/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dark-sky/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/dark-sky/v1"
+}

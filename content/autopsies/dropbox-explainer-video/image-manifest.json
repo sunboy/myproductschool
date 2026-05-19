@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "dropbox",
+  "story_slug": "dropbox-explainer-video",
+  "story_title": "Dropbox Explainer Video",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/dropbox-explainer-video/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/dropbox-explainer-video/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a camera pointed at a laptop showing a file sync demo, representing the Dropbox explainer video concept.",
+      "caption": "Hatch holding a camera pointed at a laptop showing a file sync demo, representing the Dropbox explainer video concept.",
+      "prompt": "Dropbox Explainer Video | hero: Hatch mascot (the HackProduct robot with the graduation cap and growth arrow) holding a small video camera pointed at a laptop screen showing a file sync animation. Hatch's expression is focused and entrepreneurial. Cream background, no speech bubble. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/dropbox-explainer-video/hero.png",
+      "generated_image_sha256": "8fa5d8b870673e4c706779a589c9208460c5d4f752ef9f921bb32f6431b63ccd",
+      "final_image_sha256": "d98c27ec19e328d679887b390d71f8d8957c8895a4a0444b0c9e37454387cdf9",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dropbox-explainer-video/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dropbox-explainer-video/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/dropbox-explainer-video/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing at Drew Houston at a laptop, about to record the Dropbox screencast.",
+      "caption": "Hatch gesturing at Drew Houston at a laptop, about to record the Dropbox screencast.",
+      "prompt": "Dropbox Explainer Video | hatch-narrator: Hatch in narrator pose, gesturing at Drew Houston sitting at a laptop with a screencasting interface open, about to record. The scene is a 2007 dorm room or startup office — minimal, focused. Cream background. No speech bubble. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/dropbox-explainer-video/hatch-narrator.png",
+      "generated_image_sha256": "f4e9b2b6e0e0ff81b895df8bee554198574119ca6dd2ce41ab57054808b4e5b9",
+      "final_image_sha256": "1faa2e2bc5b73502361518bccdd9ee2fce0a2538d7d54d143167a6bd89a8bb8e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dropbox-explainer-video/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dropbox-explainer-video/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/dropbox-explainer-video/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a funnel showing the Hacker News post leading to email signups jumping from 5K to 75K.",
+      "caption": "Hatch examining a funnel showing the Hacker News post leading to email signups jumping from 5K to 75K.",
+      "prompt": "Dropbox Explainer Video | failure-mechanism: Hatch in thinking pose, looking at a funnel diagram: \"Hacker News post\" at top → \"Video views\" → \"Email signups (5K before, 75K after)\" → \"Beta waitlist.\" Simple funnel, cream background. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/dropbox-explainer-video/failure-mechanism.png",
+      "generated_image_sha256": "53c4f6013f8e5f4c7aaca3e8cfe2bd757c8353bf29b3737743c886ee256cb048",
+      "final_image_sha256": "16a3bde192c960d1aaea1b36a999fae4a1f2241655c0b75d569227b2a048c6c3",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dropbox-explainer-video/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dropbox-explainer-video/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/dropbox-explainer-video/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a before/after chart showing signups jumping from 5K to 75K in 24 hours.",
+      "caption": "Hatch pointing at a before/after chart showing signups jumping from 5K to 75K in 24 hours.",
+      "prompt": "Dropbox Explainer Video | evidence-card: Hatch pointing at a simple before/after chart: left side shows \"5,000 signups\" (before video), right side shows \"75,000 signups\" (after video). Arrow between them labeled \"24 hours.\" Cream background, minimal style. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/dropbox-explainer-video/evidence-card.png",
+      "generated_image_sha256": "102328dcc0cc80ba51627d18a0f62c6feb09cbfcaca77dab5f8e01a749453fcc",
+      "final_image_sha256": "d3cf528b32b5578f2b733fcb922f93641aa4e36b2dc4fb2fb0901bdefeb14649",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dropbox-explainer-video/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dropbox-explainer-video/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/dropbox-explainer-video/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a scale where Build for 6 months is heavy with risk and Record a video is light with validation.",
+      "caption": "Hatch beside a scale where Build for 6 months is heavy with risk and Record a video is light with validation.",
+      "prompt": "Dropbox Explainer Video | lesson-frame: Hatch in calm coaching pose, standing beside a scale that balances \"Build for 6 months\" (heavy, labeled \"risk\") against \"Record a video\" (light, labeled \"validation\"). The scale tips heavily toward validation. Cream background. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/dropbox-explainer-video/lesson-frame.png",
+      "generated_image_sha256": "22e95e97fca7f7f3f31cbc61293dec46fd955908ab28d1031eadfc193722f7e2",
+      "final_image_sha256": "5f03522100eafceec7f0f57b0edb96f6d3736bfc0cc528707264ee33e3b1d043",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dropbox-explainer-video/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dropbox-explainer-video/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/dropbox-explainer-video/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a small video camera, thumbnail version.",
+      "caption": "Hatch holding a small video camera, thumbnail version.",
+      "prompt": "Hatch mascot small and recognizable, holding a tiny video camera. Cream background, no text. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/dropbox-explainer-video/hero.png",
+      "generated_image_sha256": "8fa5d8b870673e4c706779a589c9208460c5d4f752ef9f921bb32f6431b63ccd",
+      "final_image_sha256": "019a797cbdf14158eddd9080972f2208bc5a46cefbde33c8481cdde8b16e271f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dropbox-explainer-video/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dropbox-explainer-video/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/dropbox-explainer-video/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch with video camera and laptop for social sharing card.",
+      "caption": "Hatch with video camera and laptop for social sharing card.",
+      "prompt": "Hatch mascot in hero pose adapted for OG card: holding the video camera pointed at the laptop screen. Title text area below. Cream background. Watermark: \"HackProduct\" bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/dropbox-explainer-video/hero.png",
+      "generated_image_sha256": "8fa5d8b870673e4c706779a589c9208460c5d4f752ef9f921bb32f6431b63ccd",
+      "final_image_sha256": "957486abdde75c26b398383a8d9cad7db522e4997efff48ebd10d4530b614309",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/dropbox-explainer-video/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/dropbox-explainer-video/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/dropbox-explainer-video/v1"
+}

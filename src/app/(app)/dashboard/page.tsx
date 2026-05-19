@@ -28,6 +28,8 @@ import { StreakCalendarCard } from '@/components/dashboard/cards/StreakCalendarC
 import { PausedLoopCard } from '@/components/live-interviews/PausedLoopCard'
 import { DisciplineExplorer } from '@/components/flow-disciplines'
 import { BillingDashboardNudge } from '@/components/billing/BillingDashboardNudge'
+import { FeaturedAutopsyCard } from '@/components/dashboard/cards/FeaturedAutopsyCard'
+import { getFeaturedAutopsyForDashboard } from '@/lib/autopsies/queries'
 import type { UserInterview } from '@/lib/data/dashboard'
 import type { InterviewLoop, LoopRound } from '@/lib/interview-loops/types'
 import { difficultyLabel } from '@/lib/utils'
@@ -127,7 +129,7 @@ function HatchOperatingSystemCard() {
     {
       label: 'Autopsies',
       sub: 'Read the decision trees behind real products.',
-      href: '/explore/showcase',
+      href: '/autopsies',
       icon: 'biotech',
       tone: '#c9933a',
     },
@@ -235,12 +237,13 @@ export default async function DashboardPage() {
   const userId = user?.id ?? ''
   const adminClient = createAdminClient()
 
-  const [hotChallenges, leaderboard, enrolledPlans, latestInterview, communityActivity] = await Promise.all([
+  const [hotChallenges, leaderboard, enrolledPlans, latestInterview, communityActivity, featuredAutopsy] = await Promise.all([
     getHotChallenges(),
     userId ? getLeaderboardPeek(userId) : [],
     userId ? getEnrolledPlans(userId) : [],
     userId ? getLatestInterview(userId) : null,
     userId ? getCommunityActivityFeed(6) : [],
+    getFeaturedAutopsyForDashboard(),
   ])
 
   // Fetch paused loops for PausedLoopCard
@@ -500,6 +503,10 @@ export default async function DashboardPage() {
 
             <HatchOperatingSystemCard />
 
+            {featuredAutopsy && (
+              <FeaturedAutopsyCard story={featuredAutopsy.story} company={featuredAutopsy.company} />
+            )}
+
             {/* FLOW Disciplines explorer card */}
             <DisciplineExplorer />
 
@@ -595,6 +602,9 @@ export default async function DashboardPage() {
             </div>
           </div>
           <CalibrationHero />
+          {featuredAutopsy && (
+            <FeaturedAutopsyCard story={featuredAutopsy.story} company={featuredAutopsy.company} />
+          )}
           <LockedMoveLevels />
           <HotChallengesCard challenges={hotChallenges} />
         </div>

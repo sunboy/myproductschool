@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "curl",
+  "story_slug": "curl",
+  "story_title": "curl",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/curl/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/curl/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a curl command surrounded by diverse device silhouettes all running it.",
+      "caption": "Hatch holding a curl command surrounded by diverse device silhouettes all running it.",
+      "prompt": "curl | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) holding a tiny terminal window with \"curl https://example.com\" on it, surrounded by floating device silhouettes — phone, laptop, car dashboard, smart TV, medical monitor — all connected to the same curl command. Background is warm cream. Hatch looks calm and slightly amused. No speech bubble. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/curl/hero.png",
+      "generated_image_sha256": "875d0ead0adaa4a6914e5e3bda87a5c7553968cc2c01ac5965510f96ca33b9e9",
+      "final_image_sha256": "e1fea51d55299c902ee791a36cd87f560fad0ba8944a38609ec1c88291af20d2",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/curl/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/curl/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/curl/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch standing beside a vintage computer showing the IRC bot origin of curl.",
+      "caption": "Hatch standing beside a vintage computer showing the IRC bot origin of curl.",
+      "prompt": "curl | hatch-narrator: Hatch in narrator pose: standing beside a 1996-era desktop computer running an IRC chat window, with a small C program file visible — the moment Stenberg needed to fetch currency data for a bot. Cream background, friendly nostalgic tone. No copy. Watermark same as hero. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/curl/hatch-narrator.png",
+      "generated_image_sha256": "f01603fe6d2ebde15550f00a4c51e872d38ed99146bb2f4051c2339478e1be83",
+      "final_image_sha256": "9f090dc8ec2b66f21890999dce43543d4e5ee1a2c5f29703933130b0eaebe1a9",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/curl/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/curl/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/curl/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch explaining curl as a Unix pipe component — one step in a chain, not the whole chain.",
+      "caption": "Hatch explaining curl as a Unix pipe component — one step in a chain, not the whole chain.",
+      "prompt": "curl | failure-mechanism: Hatch in thinking pose, gesturing at a Unix pipe diagram: \"curl https://api.example.com/data | jq '.price'\" with each component as a box connected by arrows. Simple, clean, the Unix philosophy made visual. Cream background. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/curl/failure-mechanism.png",
+      "generated_image_sha256": "6548ad40a2c42afeeb85f57b652415d0ceee44d7de573502281ee52e44710163",
+      "final_image_sha256": "e705286d76b846fb8c63a82f34d6feba1770fb8c2d6b5efb672090b849f9cd6c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/curl/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/curl/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/curl/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at 20 billion alongside device category icons showing curl's deployment scale.",
+      "caption": "Hatch pointing at 20 billion alongside device category icons showing curl's deployment scale.",
+      "prompt": "curl | evidence-card: Hatch pointing at a large number — \"20,000,000,000\" — with device category icons below it: smartphones, laptops, servers, embedded devices, IoT sensors, smart TVs. The scale feels genuinely vast. Cream background, infographic style. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/curl/evidence-card.png",
+      "generated_image_sha256": "7190cd04399e13a372af4fcf65d18517093a0e0f383a6525adb4c0629dbaa39b",
+      "final_image_sha256": "54aa9318826321cfa711b64a89f1180768d5eced687e335b37c502d5cf64a1ec",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/curl/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/curl/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/curl/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch illustrating the trade-off between feature additions and deployment breadth.",
+      "caption": "Hatch illustrating the trade-off between feature additions and deployment breadth.",
+      "prompt": "curl | lesson-frame: Hatch in coaching pose, standing in front of two columns: left column shows a growing list of features with each addition making the icon heavier and smaller; right column shows curl staying lean with a growing list of device silhouettes beside it. The lesson is visual. Cream background. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/curl/lesson-frame.png",
+      "generated_image_sha256": "11e64c7a3c7f4538d726d1c9d031838bdc1b0c1d7f853681d97e6dd9220c3116",
+      "final_image_sha256": "6d5991b73375b54e8cdf6869315a664377d72c019d401201a79c9a9ee5601b78",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/curl/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/curl/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/curl/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch thumbnail holding a terminal with a curl command.",
+      "caption": "Hatch thumbnail holding a terminal with a curl command.",
+      "prompt": "Small, bold composition: Hatch's face and torso holding a small terminal window showing \"curl\". Clean cream background. Recognizable at small size. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/curl/hero.png",
+      "generated_image_sha256": "875d0ead0adaa4a6914e5e3bda87a5c7553968cc2c01ac5965510f96ca33b9e9",
+      "final_image_sha256": "59faaf36ac3872b2d4daa3950ec4304e80ec17ee421949807bd36c21b65078fb",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/curl/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/curl/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/curl/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "curl social cover with Hatch and a diverse set of devices all running curl.",
+      "caption": "curl social cover with Hatch and a diverse set of devices all running curl.",
+      "prompt": "Hero pose adapted for OG share card: Hatch holding a terminal window surrounded by device silhouettes on a cream background. Bold composition with \"curl\" in large Literata type above. HackProduct watermark bottom-right. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/curl/hero.png",
+      "generated_image_sha256": "875d0ead0adaa4a6914e5e3bda87a5c7553968cc2c01ac5965510f96ca33b9e9",
+      "final_image_sha256": "754e19ebfad9593a26c59e764e9418fff8a25512beb6b0d17a6fde0d49ffae7d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/curl/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/curl/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/curl/v1"
+}

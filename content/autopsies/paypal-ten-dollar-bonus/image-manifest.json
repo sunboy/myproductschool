@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "paypal",
+  "story_slug": "paypal-ten-dollar-bonus",
+  "story_title": "PayPal's $10 Referral Bonus",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/paypal-ten-dollar-bonus/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/paypal-ten-dollar-bonus/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot holding an oversized ten-dollar bill, illustrating PayPal's signup bonus growth strategy.",
+      "caption": "Hatch mascot holding an oversized ten-dollar bill, illustrating PayPal's signup bonus growth strategy.",
+      "prompt": "PayPal's $10 Referral Bonus | hero: Hatch mascot (the HackProduct robot with the graduation cap and growth arrow) holding an oversized $10 bill on a warm cream background. Hatch's expression is curious, slightly surprised — as if demonstrating the act of handing money to a stranger. The bill is clearly a prop, illustrating the concept rather than celebrating wealth. No speech bubble. No text overlay except the HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/paypal-ten-dollar-bonus/hero.png",
+      "generated_image_sha256": "fb9f79ffebb7b25f925961719bdabb480f2c92813e394dd9c99d8a2819b46123",
+      "final_image_sha256": "818f843010438df0d068115d72cea6e555df3bb9803609f3118e3a3c3b8242d4",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/paypal-ten-dollar-bonus/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/paypal-ten-dollar-bonus/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/paypal-ten-dollar-bonus/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing to an early eBay auction listing showing payment by money order, illustrating the friction PayPal solved.",
+      "caption": "Hatch pointing to an early eBay auction listing showing payment by money order, illustrating the friction PayPal solved.",
+      "prompt": "PayPal's $10 Referral Bonus | hatch-narrator: Hatch in narrator pose, gesturing toward a simplified eBay auction listing on a floating screen. The scene depicts the world before PayPal — a \"Payment: Money Order or Check\" notice visible on the listing. Hatch's body language reads as \"look at this friction.\" Cream background, no speech bubble, no copy. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/paypal-ten-dollar-bonus/hatch-narrator.png",
+      "generated_image_sha256": "99036e3d5b72766b6875bc3679049d284ec790c61a5145506e58aeb67dd30f98",
+      "final_image_sha256": "505b948b3c4193e7ce60b35158cbf44fd58f66d797ac31d966e33d943d1f7070",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/paypal-ten-dollar-bonus/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/paypal-ten-dollar-bonus/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/paypal-ten-dollar-bonus/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch studying a referral tree diagram showing how the PayPal ten-dollar bonus created exponential user growth.",
+      "caption": "Hatch studying a referral tree diagram showing how the PayPal ten-dollar bonus created exponential user growth.",
+      "prompt": "PayPal's $10 Referral Bonus | failure-mechanism: Hatch in thinking pose, looking at a small branching diagram that shows: one user → $10 → three referred users → $30. The diagram is simple, hand-drawn style floating in the air beside Hatch. The concept is the referral flywheel — not abstract finance. Cream background. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/paypal-ten-dollar-bonus/failure-mechanism.png",
+      "generated_image_sha256": "3e3f5880ed9cd6ccb674ae54fe5c609e198212f2ff7954d41b9c6ed7eaf22df0",
+      "final_image_sha256": "3e29267955d024fbed3fc924a7b77ed863270a60339f9b89e61c235463661d59",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/paypal-ten-dollar-bonus/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/paypal-ten-dollar-bonus/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/paypal-ten-dollar-bonus/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a bar chart of PayPal user growth from 1999 launch through the 2002 IPO.",
+      "caption": "Hatch examining a bar chart of PayPal user growth from 1999 launch through the 2002 IPO.",
+      "prompt": "PayPal's $10 Referral Bonus | evidence-card: Hatch pointing at a simple bar chart showing user growth: a small bar labeled \"1999 launch,\" a medium bar labeled \"2000 peak bonus,\" and a tall bar labeled \"2002 IPO — 13M users.\" The bars are in the HackProduct cream and green palette. Hatch's expression is analytical. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/paypal-ten-dollar-bonus/evidence-card.png",
+      "generated_image_sha256": "70b69c746af5211050cba1ba3e1ad902b976c6937c6d474056c4d3c8f6e09712",
+      "final_image_sha256": "94cd5d120e9515225147003e3d60b2710ecf03f1d5cf735ca4cd2bd787e8b88e",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/paypal-ten-dollar-bonus/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/paypal-ten-dollar-bonus/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/paypal-ten-dollar-bonus/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in a calm coaching stance, illustrating the lesson from PayPal's subsidy-as-experiment strategy.",
+      "caption": "Hatch in a calm coaching stance, illustrating the lesson from PayPal's subsidy-as-experiment strategy.",
+      "prompt": "PayPal's $10 Referral Bonus | lesson-frame: Hatch in coaching pose — calm, standing slightly forward, one hand open as if offering an insight. The background is clean cream. No charts, no props, no text except the HackProduct watermark. The image reads as a quiet moment of reflection after a story has been told. HackProduct watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/paypal-ten-dollar-bonus/lesson-frame.png",
+      "generated_image_sha256": "bb2bf61f0697100be3176e0d749ee7f918d967cb6ba8980f1342cf00755235a4",
+      "final_image_sha256": "d97c2dc3ad2aed622d493b360e189a7bcbc6d2e6cec85e774c56fd2c5be2cc52",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/paypal-ten-dollar-bonus/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/paypal-ten-dollar-bonus/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/paypal-ten-dollar-bonus/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a ten-dollar bill, thumbnail image for the PayPal referral bonus autopsy.",
+      "caption": "Hatch holding a ten-dollar bill, thumbnail image for the PayPal referral bonus autopsy.",
+      "prompt": "Hatch mascot, small and centered, holding a ten-dollar bill prop. Clean cream background. Readable at small sizes — clear silhouette, no fine detail. HackProduct watermark bottom-right, 60% opacity. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/paypal-ten-dollar-bonus/hero.png",
+      "generated_image_sha256": "fb9f79ffebb7b25f925961719bdabb480f2c92813e394dd9c99d8a2819b46123",
+      "final_image_sha256": "9a00122a0ee8523180c86378454cc40811f71028919c72cb7a8abe7e65038fe4",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/paypal-ten-dollar-bonus/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/paypal-ten-dollar-bonus/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/paypal-ten-dollar-bonus/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a ten-dollar bill on a cream background, social share image for the PayPal referral bonus autopsy.",
+      "caption": "Hatch holding a ten-dollar bill on a cream background, social share image for the PayPal referral bonus autopsy.",
+      "prompt": "Hatch mascot in hero pose, holding the ten-dollar bill prop with a slightly theatrical gesture. Cream background. Large enough to read clearly on a social card. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Text area left clear for OG title overlay. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/paypal-ten-dollar-bonus/hero.png",
+      "generated_image_sha256": "fb9f79ffebb7b25f925961719bdabb480f2c92813e394dd9c99d8a2819b46123",
+      "final_image_sha256": "fb6431adc6b1b16e3f54cad1b781e11cdc679bfa39a29ea9648953e71b602cc6",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/paypal-ten-dollar-bonus/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/paypal-ten-dollar-bonus/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/paypal-ten-dollar-bonus/v1"
+}

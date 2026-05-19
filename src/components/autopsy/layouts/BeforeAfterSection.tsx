@@ -10,7 +10,7 @@ interface Props {
 
 export function BeforeAfterSection({ section, hasBeenVisible }: Props) {
   const { title, before, after } = section.content
-  const [entered, setEntered] = React.useState(false)
+  const [entered, setEntered] = React.useState(hasBeenVisible)
 
   React.useEffect(() => {
     if (hasBeenVisible) {
@@ -22,9 +22,9 @@ export function BeforeAfterSection({ section, hasBeenVisible }: Props) {
   return (
     <div
       className="relative overflow-hidden"
-      style={{ minHeight: 'min(80vh, 700px)', background: '#faf6f0' }}
+      style={{ minHeight: 'min(64vh, 600px)', background: '#faf6f0' }}
     >
-      <div className="relative z-10 flex flex-col justify-center h-full px-8 py-16 md:px-16 md:py-24 gap-12">
+      <div className="relative z-10 flex h-full flex-col justify-center gap-10 px-8 py-12 md:px-16 md:py-20">
         {/* Title */}
         <div
           style={{

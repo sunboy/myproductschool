@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "slack",
+  "story_slug": "slack-origin",
+  "story_title": "Slack's Accidental Origin",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/slack-origin/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/slack-origin/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot at a fork in the road, one path labeled Glitch and one labeled Slack",
+      "caption": "Hatch mascot at a fork in the road, one path labeled Glitch and one labeled Slack",
+      "prompt": "Slack's Accidental Origin | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing at a forked road sign. One sign reads \"GLITCH\" pointing left into fog. The other reads \"SLACK\" pointing right into sunlight. Cream background (#faf6f0). Hatch's expression is curious, not triumphant — this is a moment of noticing, not celebration. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/slack-origin/hero.png",
+      "generated_image_sha256": "f354023b4b79d204a2c837733a33b17b532d026638feea562e4217f166d9eece",
+      "final_image_sha256": "516ab406e289ffa1ff5730242d7f529fc4dafadc5fe85bff0e4d43375ed1cfc6",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-origin/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-origin/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/slack-origin/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing toward the empty Glitch game world",
+      "caption": "Hatch pointing toward the empty Glitch game world",
+      "prompt": "Slack's Accidental Origin | hatch-narrator: Hatch in narrator stance, gesturing toward a browser window showing a colorful but empty multiplayer game world. The screen is titled \"GLITCH\" and shows zero active players. Hatch's other hand points off-panel, toward something more interesting. Cream background, no speech bubble. Forest green (#4a7c59) accent on the browser chrome. HackProduct wordmark watermark. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/slack-origin/hatch-narrator.png",
+      "generated_image_sha256": "0a22f052e427be4041689140e46a66868fd8d1e18e8d729886364023bee7b957",
+      "final_image_sha256": "5313230092e503ce0829a699342e602b8f07e763de7da314b7e4d86481a98e66",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-origin/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-origin/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/slack-origin/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a Slack-style channel sidebar showing persistent organized channels",
+      "caption": "Hatch examining a Slack-style channel sidebar showing persistent organized channels",
+      "prompt": "Slack's Accidental Origin | failure-mechanism: Hatch in a thinking pose, looking at a channel list on a screen: #engineering, #design, #random, #general. Each channel has a small badge showing recent message count. The visual emphasis is on the channel sidebar structure — the archive, the persistence. Cream background, forest green typography. HackProduct wordmark watermark. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/slack-origin/failure-mechanism.png",
+      "generated_image_sha256": "8d7b84bf331d436e3c5df7ca47d7411f145163ffafaa671d22f4920d1d2d2d29",
+      "final_image_sha256": "7436653b2a909db83f326574dcea692991a8d9b46eba193b53bfadd5ef008d72",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-origin/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-origin/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/slack-origin/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a steep growth chart from Slack's first day",
+      "caption": "Hatch pointing at a steep growth chart from Slack's first day",
+      "prompt": "Slack's Accidental Origin | evidence-card: Hatch pointing at a simple chart showing user growth from 8,000 on day one to a steep upward curve. The chart is minimal — cream background, forest green line, amber (#705c30) annotation dots. Chart title reads \"Day 1 — 8,000 teams\". Hatch's expression is impressed. HackProduct wordmark watermark. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/slack-origin/evidence-card.png",
+      "generated_image_sha256": "4afb07fcb524fec9a70eae338ed6afbd4ef1ae8ce5425501fe79e2af72091d17",
+      "final_image_sha256": "5d018ef43f767ffdfc34c4f32c0bcf9ea5bf4e197629006ed2b72a5e310bc36d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-origin/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-origin/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/slack-origin/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in coaching stance between a fading game controller and a growing chat bubble",
+      "caption": "Hatch in coaching stance between a fading game controller and a growing chat bubble",
+      "prompt": "Slack's Accidental Origin | lesson-frame: Hatch in coaching pose — standing slightly turned, calm expression, graduation cap tilted. Behind it: a faint outline of a game controller fading out on the left, a chat bubble coming into focus on the right. The visual metaphor is noticing what you've already made. Cream background. HackProduct wordmark watermark. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/slack-origin/lesson-frame.png",
+      "generated_image_sha256": "6f51cf65362e3728233de823dbf433f6c41f1072466dfe03a8c36e8ef9c57b87",
+      "final_image_sha256": "ec58311954ef07eab00f4ef9c154bb436974b858a31a8f883fcb438901e4c404",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-origin/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-origin/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/slack-origin/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot with a channel hash symbol speech bubble",
+      "caption": "Hatch mascot with a channel hash symbol speech bubble",
+      "prompt": "Hatch mascot with a small chat bubble containing the # symbol (channel icon). Cream background, compact square composition. HackProduct wordmark watermark. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/slack-origin/hero.png",
+      "generated_image_sha256": "f354023b4b79d204a2c837733a33b17b532d026638feea562e4217f166d9eece",
+      "final_image_sha256": "97b7b682a3429495e28cdfc8e3c70f2a74842ac2b6a72330734355929f8740ac",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-origin/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-origin/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/slack-origin/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch at the fork between Glitch and Slack for social sharing",
+      "caption": "Hatch at the fork between Glitch and Slack for social sharing",
+      "prompt": "Hatch at the forked road (same as hero but wider crop, text-safe zones on left third). Title text area left clear for OG overlay. Cream background. HackProduct wordmark watermark. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-11-40/generated-sources/slack-origin/hero.png",
+      "generated_image_sha256": "f354023b4b79d204a2c837733a33b17b532d026638feea562e4217f166d9eece",
+      "final_image_sha256": "ad2d884034f3fcbd12891e06da3c490a1bf14f37f8a59c11efa8c36731c52e8c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/slack-origin/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/slack-origin/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/slack-origin/v1"
+}

@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "reddit",
+  "story_slug": "reddit-upvote",
+  "story_title": "Reddit's Upvote",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/reddit-upvote/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/reddit-upvote/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot standing beside a large upvote arrow with a subtle glow, representing Reddit's voting mechanic.",
+      "caption": "Hatch mascot standing beside a large upvote arrow with a subtle glow, representing Reddit's voting mechanic.",
+      "prompt": "Reddit's Upvote | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing beside an oversized upvote arrow (triangle pointing up) on a cream background. The arrow has a subtle glow suggesting it has been clicked. Hatch's expression is thoughtful and engaged. No speech bubble, no copy. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/reddit-upvote/hero.png",
+      "generated_image_sha256": "2cd3809c73e71b4823c6a33d9b7527807b80c89ccab0abd135ee5cd87f56fa9f",
+      "final_image_sha256": "df5949829e802446fc167ab57a1ba29758c56cfc5d11d07b64580293274ffd30",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/reddit-upvote/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/reddit-upvote/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/reddit-upvote/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing toward a comment feed sorted by votes, showing quality rising to the top.",
+      "caption": "Hatch gesturing toward a comment feed sorted by votes, showing quality rising to the top.",
+      "prompt": "Reddit's Upvote | hatch-narrator: Hatch in narrator pose, gesturing toward a comment feed where posts are sorted with the highest-voted at top, visually represented by a gradient from bright to dim as you go down. The contrast between quality-sorted and unsorted is implied by the ordering. Cream background, no speech bubble. Watermark same as hero. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/reddit-upvote/hatch-narrator.png",
+      "generated_image_sha256": "e8a19180f95bed54049bec816d578cdce92139417919b2561448592ed591f1c7",
+      "final_image_sha256": "7ce309fe305f40934bbfc3ed9d5cda6f97b3f264422bce544421c13c3639637a",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/reddit-upvote/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/reddit-upvote/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/reddit-upvote/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a diagram showing how many small anonymous votes combine into a single quality signal.",
+      "caption": "Hatch examining a diagram showing how many small anonymous votes combine into a single quality signal.",
+      "prompt": "Reddit's Upvote | failure-mechanism: Hatch in a thinking pose, looking at a simple diagram: many small anonymous figures each pointing a small arrow at a post, and the aggregate arrows combining into one large upward arrow that lifts the post to the top of a feed. The mechanic of collective sorting made visual. Cream background. Watermark bottom-right. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/reddit-upvote/failure-mechanism.png",
+      "generated_image_sha256": "1e8c4487f6c710ab2e5b012b3757578b6575481f3cab0c986141c2655de907ab",
+      "final_image_sha256": "bf3ea35107fcb37f8e4d55a7cf063458d912604ac22172df77a1740000d38e49",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/reddit-upvote/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/reddit-upvote/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/reddit-upvote/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a Reddit user growth timeline with the upvote launch marked at the start.",
+      "caption": "Hatch pointing at a Reddit user growth timeline with the upvote launch marked at the start.",
+      "prompt": "Reddit's Upvote | evidence-card: Hatch pointing at a simple timeline chart showing Reddit's user growth from 2005 to 2023, with the upvote launch marked at the start. The chart is minimal and clean, cream background. Watermark bottom-right. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/reddit-upvote/evidence-card.png",
+      "generated_image_sha256": "cbea275c9e76804dd65a2ce5bd32cd318dd2025aa89562b292bb22e9fd052d82",
+      "final_image_sha256": "6a3c1b60028e33b7f74f2539726fdfac77c73c595668323d74e46b3b301d088c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/reddit-upvote/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/reddit-upvote/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/reddit-upvote/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in a calm coaching pose against a cream background with a faint upvote arrow.",
+      "caption": "Hatch in a calm coaching pose against a cream background with a faint upvote arrow.",
+      "prompt": "Reddit's Upvote | lesson-frame: Hatch in coaching pose, calm and settled, standing slightly turned with one hand open as if presenting a thought. Background is cream with a faint upvote arrow at very low opacity. No copy, no speech bubble. Considered and complete feeling. Watermark bottom-right. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/reddit-upvote/lesson-frame.png",
+      "generated_image_sha256": "52bf324efec3b4fadbce104b87986c992e7ce0d85dedd1a4bb7c856b38e42afb",
+      "final_image_sha256": "c296c3ff321c6475271fbf10fa538bf3990cca7243d047d19a098c53f1147238",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/reddit-upvote/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/reddit-upvote/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/reddit-upvote/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a small upvote arrow.",
+      "caption": "Hatch holding a small upvote arrow.",
+      "prompt": "Hatch mascot small and recognisable, holding a miniature upvote arrow. Cream background, no text. Watermark bottom-right at small scale. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/reddit-upvote/hero.png",
+      "generated_image_sha256": "2cd3809c73e71b4823c6a33d9b7527807b80c89ccab0abd135ee5cd87f56fa9f",
+      "final_image_sha256": "d98ca01cac40d4da10dfb1897ded05c660747b337a6d42feca59f8ce2b935349",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/reddit-upvote/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/reddit-upvote/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/reddit-upvote/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot beside a large upvote arrow, HackProduct wordmark visible.",
+      "caption": "Hatch mascot beside a large upvote arrow, HackProduct wordmark visible.",
+      "prompt": "Hero composition adapted for OG share card: Hatch beside the oversized upvote arrow with a subtle glow, cream background, \"HackProduct\" wordmark visible at bottom-right. Composition tightened for 2400x1260 format. No additional copy.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/reddit-upvote/hero.png",
+      "generated_image_sha256": "2cd3809c73e71b4823c6a33d9b7527807b80c89ccab0abd135ee5cd87f56fa9f",
+      "final_image_sha256": "56310b5a0b0880fc7da9b4b92002b73c16f4cd4df19fe674a320b6d980aaffdf",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/reddit-upvote/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/reddit-upvote/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/reddit-upvote/v1"
+}

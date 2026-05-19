@@ -223,7 +223,7 @@ function GoDeeper({ stage, accentColor }: { stage: AarrrStageContent; accentColo
         <div style={{ padding: '0 22px 24px', display: 'flex', flexDirection: 'column', gap: 28 }}>
 
           {/* Metric definitions */}
-          {gd.metric_definitions && gd.metric_definitions.length > 0 && (
+          {(gd.metric_definitions ?? []).length > 0 && (
             <div>
               <div style={sectionLabelStyle}>Key Metric Definitions</div>
               <div style={{ overflowX: 'auto' }}>
@@ -236,7 +236,7 @@ function GoDeeper({ stage, accentColor }: { stage: AarrrStageContent; accentColo
                     </tr>
                   </thead>
                   <tbody>
-                    {gd.metric_definitions.map((m, i) => (
+                    {(gd.metric_definitions ?? []).map((m, i) => (
                       <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#f8f5ef', borderBottom: '1px solid #e7dfc9' }}>
                         <td style={{ padding: '9px 12px', fontWeight: 600, color: '#2e3230', fontFamily: 'var(--font-label)', fontSize: 12, whiteSpace: 'nowrap' }}>{m.metric}</td>
                         <td style={{ padding: '9px 12px', color: '#4a4e4a', fontFamily: 'var(--font-body)', lineHeight: 1.5 }}>{m.definition}</td>
@@ -255,7 +255,7 @@ function GoDeeper({ stage, accentColor }: { stage: AarrrStageContent; accentColo
             <div>
               <div style={sectionLabelStyle}>System Design</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {gd.system_design.components.map((c, i) => (
+                {(gd.system_design.components ?? []).map((c, i) => (
                   <div key={i} style={{ background: '#fff', borderRadius: 10, padding: '14px 16px', border: '1px solid #e7dfc9' }}>
                     <div style={{ fontFamily: 'var(--font-label)', fontSize: 12, fontWeight: 700, color: '#2e3230', marginBottom: 6 }}>{c.component}</div>
                     <div style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, color: '#4a4e4a', lineHeight: 1.55, marginBottom: 6 }}>{c.what_it_does}</div>
@@ -263,9 +263,9 @@ function GoDeeper({ stage, accentColor }: { stage: AarrrStageContent; accentColo
                   </div>
                 ))}
               </div>
-              {gd.system_design.links.length > 0 && (
+              {(gd.system_design.links ?? []).length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
-                  {gd.system_design.links.map((lk, i) => (
+                  {(gd.system_design.links ?? []).map((lk, i) => (
                     <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #e7dfc9', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontFamily: 'var(--font-label)', color: '#2e3230' }}>
                       <span style={{ fontSize: 10, fontWeight: 700, background: '#e4e0d8', borderRadius: 4, padding: '1px 6px', color: '#4a4e4a' }}>{lk.tag}</span>
                       {lk.label}
@@ -277,11 +277,11 @@ function GoDeeper({ stage, accentColor }: { stage: AarrrStageContent; accentColo
           )}
 
           {/* Failures */}
-          {gd.failures && gd.failures.length > 0 && (
+          {(gd.failures ?? []).length > 0 && (
             <div>
               <div style={{ ...sectionLabelStyle, color: '#b83230', borderBottomColor: '#ffd5d6' }}>What Didn&apos;t Work</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
-                {gd.failures.map((f, i) => (
+                {(gd.failures ?? []).map((f, i) => (
                   <div key={i} style={{ background: '#fff5f5', borderRadius: 12, padding: '16px 18px', borderLeft: '4px solid #b83230' }}>
                     <div style={{ fontFamily: 'var(--font-label)', fontSize: 10, fontWeight: 700, color: '#b83230', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{f.name}</div>
                     <div style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, color: '#2e3230', marginBottom: 8, lineHeight: 1.55 }}>{f.what}</div>
@@ -302,8 +302,8 @@ function GoDeeper({ stage, accentColor }: { stage: AarrrStageContent; accentColo
                 <div style={{ background: '#fff', borderRadius: 12, padding: '18px 20px', borderTop: '4px solid #27ae60' }}>
                   <div style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 800, color: '#27ae60', marginBottom: 12, letterSpacing: '0.08em' }}>DO</div>
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {gd.do_dont.dos.map((item, i) => (
-                      <li key={i} style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, color: '#4a4e4a', lineHeight: 1.55, paddingBottom: 8, borderBottom: i < gd.do_dont!.dos.length - 1 ? '1px solid #f0ece4' : 'none' }}>
+                    {(gd.do_dont.dos ?? []).map((item, i) => (
+                      <li key={i} style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, color: '#4a4e4a', lineHeight: 1.55, paddingBottom: 8, borderBottom: i < (gd.do_dont!.dos ?? []).length - 1 ? '1px solid #f0ece4' : 'none' }}>
                         <span style={{ color: '#27ae60', fontWeight: 700, marginRight: 6 }}>✓</span>{item}
                       </li>
                     ))}
@@ -312,8 +312,8 @@ function GoDeeper({ stage, accentColor }: { stage: AarrrStageContent; accentColo
                 <div style={{ background: '#fff', borderRadius: 12, padding: '18px 20px', borderTop: '4px solid #e74c3c' }}>
                   <div style={{ fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 800, color: '#e74c3c', marginBottom: 12, letterSpacing: '0.08em' }}>DON&apos;T</div>
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {gd.do_dont.donts.map((item, i) => (
-                      <li key={i} style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, color: '#4a4e4a', lineHeight: 1.55, paddingBottom: 8, borderBottom: i < gd.do_dont!.donts.length - 1 ? '1px solid #f0ece4' : 'none' }}>
+                    {(gd.do_dont.donts ?? []).map((item, i) => (
+                      <li key={i} style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, color: '#4a4e4a', lineHeight: 1.55, paddingBottom: 8, borderBottom: i < (gd.do_dont!.donts ?? []).length - 1 ? '1px solid #f0ece4' : 'none' }}>
                         <span style={{ color: '#e74c3c', fontWeight: 700, marginRight: 6 }}>✗</span>{item}
                       </li>
                     ))}
@@ -331,16 +331,16 @@ function GoDeeper({ stage, accentColor }: { stage: AarrrStageContent; accentColo
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
                   <thead>
                     <tr style={{ background: '#1a4a8a' }}>
-                      {gd.competitor_table.columns.map((col, i) => (
+                      {(gd.competitor_table.columns ?? []).map((col, i) => (
                         <th key={i} style={{ padding: '10px 14px', color: '#fff', fontFamily: 'var(--font-label)', fontSize: 11, fontWeight: 600, textAlign: 'left' }}>{col}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {gd.competitor_table.rows.map((row, ri) => (
+                    {(gd.competitor_table.rows ?? []).map((row, ri) => (
                       <tr key={ri} style={{ background: ri % 2 === 0 ? '#fff' : '#f5f8ff', borderBottom: '1px solid #e8eef8' }}>
                         <td style={{ padding: '9px 14px', fontWeight: 600, color: '#1a4a8a', fontFamily: 'var(--font-label)', fontSize: 12 }}>{row.dimension}</td>
-                        {row.values.map((v, vi) => (
+                        {(row.values ?? []).map((v, vi) => (
                           <td key={vi} style={{ padding: '9px 14px', fontFamily: 'var(--font-body)', color: v.outcome === 'win' ? '#1a7a3a' : v.outcome === 'loss' ? '#b0192a' : '#8a6a00', fontWeight: v.outcome === 'tie' ? 400 : 600 }}>
                             {v.text}
                           </td>
@@ -528,7 +528,7 @@ function StageSection({ stage, accentColor, isEven, sectionRef }: StageSectionPr
         )}
 
         {/* Data tables */}
-        {stage.data_tables && stage.data_tables.map((tbl, ti) => (
+        {(stage.data_tables ?? []).map((tbl, ti) => (
           <div key={ti} style={{ marginBottom: 36, maxWidth: 700 }}>
             <div style={{ fontFamily: 'var(--font-label)', fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9c9589', marginBottom: 10 }}>
               {tbl.label}
@@ -537,15 +537,15 @@ function StageSection({ stage, accentColor, isEven, sectionRef }: StageSectionPr
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
                   <tr style={{ background: '#2e3230' }}>
-                    {tbl.columns.map((col, ci) => (
+                    {(tbl.columns ?? []).map((col, ci) => (
                       <th key={ci} style={{ padding: '9px 14px', color: '#fff', fontFamily: 'var(--font-label)', fontSize: 10, fontWeight: 700, textAlign: 'left', letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{col}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {tbl.rows.map((row, ri) => (
+                  {(tbl.rows ?? []).map((row, ri) => (
                     <tr key={ri} style={{ background: ri % 2 === 0 ? '#fff' : '#faf6f0', borderBottom: '1px solid #f0ece4' }}>
-                      {row.map((cell, ci) => (
+                      {(row ?? []).map((cell, ci) => (
                         <td key={ci} style={{ padding: '9px 14px', fontFamily: 'var(--font-body)', color: ci === 0 ? '#2e3230' : '#4a4e4a', lineHeight: 1.5, fontWeight: ci === 0 ? 600 : 400 }}>{cell}</td>
                       ))}
                     </tr>
@@ -562,7 +562,7 @@ function StageSection({ stage, accentColor, isEven, sectionRef }: StageSectionPr
             ref={metricsRef}
             style={{ display: 'flex', gap: 16, marginBottom: 40, flexWrap: 'wrap' }}
           >
-            {stage.metrics.map((m, i) => (
+            {(stage.metrics ?? []).map((m, i) => (
               <div
                 key={i}
                 data-metric-card
@@ -606,7 +606,7 @@ function StageSection({ stage, accentColor, isEven, sectionRef }: StageSectionPr
               War Room
             </div>
             <div style={{ background: '#f5f1ea', borderRadius: 12, overflow: 'hidden', border: '1px solid #e7dfc9' }}>
-              {stage.war_room.map((row, i) => {
+              {(stage.war_room ?? []).map((row, i) => {
                 const roleStyle = ROLE_COLORS[row.role] ?? { bg: '#e4e0d8', text: '#4a4e4a' }
                 return (
                   <div
@@ -616,7 +616,7 @@ function StageSection({ stage, accentColor, isEven, sectionRef }: StageSectionPr
                       display: 'flex',
                       gap: 14,
                       padding: '12px 18px',
-                      borderBottom: i < stage.war_room!.length - 1 ? '1px solid #e7dfc9' : 'none',
+                      borderBottom: i < (stage.war_room ?? []).length - 1 ? '1px solid #e7dfc9' : 'none',
                       alignItems: 'flex-start',
                     }}
                   >
@@ -678,9 +678,17 @@ function StageSection({ stage, accentColor, isEven, sectionRef }: StageSectionPr
 
 interface Props {
   product: AutopsyProductDetail
+  backHref?: string
+  backLabel?: string
+  closingHref?: string
 }
 
-export function AutopsyReaderClient({ product }: Props) {
+export function AutopsyReaderClient({
+  product,
+  backHref = '/explore/showcase',
+  backLabel = 'All autopsies',
+  closingHref,
+}: Props) {
   const stages = getStages(product)
   const hero = getHero(product)
   const closing = getClosing(product)
@@ -858,11 +866,11 @@ export function AutopsyReaderClient({ product }: Props) {
 
           <div style={{ padding: '16px 20px', borderTop: '1px solid #e0d8c8' }}>
             <Link
-              href="/explore/showcase"
+              href={backHref}
               style={{ fontFamily: 'var(--font-label)', fontSize: 11, color: '#78715f', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 5 }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_back</span>
-              All autopsies
+              {backLabel}
             </Link>
           </div>
         </aside>
@@ -944,7 +952,7 @@ export function AutopsyReaderClient({ product }: Props) {
 
               <Link
                 ref={closingCtaRef}
-                href={closing.cta_path}
+                href={closingHref ?? closing.cta_path}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',

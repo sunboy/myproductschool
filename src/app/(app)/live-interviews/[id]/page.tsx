@@ -4,9 +4,10 @@ import { Component, use, useCallback, useEffect, useMemo, useRef, useState } fro
 import type { ErrorInfo, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import HatchAvatar, { type HatchAvatarState } from '@/components/live-interview/HatchAvatar'
+import type { HatchAvatarState } from '@/components/live-interview/HatchAvatar'
 import dynamic from 'next/dynamic'
 import DeepgramVoiceSession, { type DeepgramVoiceSessionHandle } from '@/components/live-interview/DeepgramVoiceSession'
+import { HatchConversationMascot } from '@/components/live-interview/HatchConversationMascot'
 import type { TalkingHeadHandle } from '@/components/live-interview/TalkingHeadAvatar'
 import { LoopProgressBar } from '@/components/live-interviews/LoopProgressBar'
 import { PriorRoundRecap } from '@/components/live-interviews/PriorRoundRecap'
@@ -195,112 +196,6 @@ function SignalCard({ signal, index }: { signal: CoachingSignal; index: number }
       <p className="font-body text-[12px] leading-[1.5]" style={{ color: 'rgba(243,237,224,0.75)' }}>
         {signal.signal}
       </p>
-    </div>
-  )
-}
-
-// ─── Hatch Orb ───
-function HatchOrb({ state }: { state: HatchAvatarState }) {
-  const isActive = state === 'speaking' || state === 'listening'
-  const isSpeaking = state === 'speaking'
-
-  return (
-    <div className="relative flex items-center justify-center" style={{ width: 200, height: 200 }}>
-      {/* Expanding rings */}
-      {isActive && (
-        <>
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="absolute rounded-full"
-              style={{
-                width: 200,
-                height: 200,
-                border: '1px solid rgba(74,124,89,0.4)',
-                animation: `orbRing 2s ease-out ${i * 0.6}s infinite`,
-              }}
-            />
-          ))}
-        </>
-      )}
-
-      {/* Main orb */}
-      <div
-        className="relative rounded-full flex items-center justify-center overflow-hidden"
-        style={{
-          width: 200,
-          height: 200,
-          background: isSpeaking
-            ? 'radial-gradient(circle at 40% 35%, #6fa87a, #3a6347 50%, #1e3a28)'
-            : 'radial-gradient(circle at 40% 35%, #527a60, #2d5240 50%, #162a20)',
-          boxShadow: isSpeaking
-            ? '0 0 60px rgba(74,124,89,0.5), 0 0 120px rgba(74,124,89,0.2)'
-            : isActive
-            ? '0 0 30px rgba(74,124,89,0.25)'
-            : '0 0 20px rgba(74,124,89,0.1)',
-          animation: 'floatHatch 5s ease-in-out infinite',
-          transition: 'box-shadow 0.5s ease',
-        }}
-      >
-        {/* Wave bars when speaking */}
-        {isSpeaking && (
-          <div className="flex items-end gap-1" style={{ height: 40 }}>
-            {[0, 1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="rounded-full"
-                style={{
-                  width: 5,
-                  height: 24,
-                  background: 'rgba(126,224,153,0.7)',
-                  animation: `wavebar 0.6s ease-in-out ${i * 0.1}s infinite alternate`,
-                }}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Hatch face - simple glowing eyes */}
-        {!isSpeaking && (
-          <div className="flex flex-col items-center gap-3">
-            <div className="flex gap-4">
-              {[0, 1].map((i) => (
-                <div
-                  key={i}
-                  className="rounded-full"
-                  style={{
-                    width: 10,
-                    height: 10,
-                    background: state === 'listening' ? '#7ee099' : 'rgba(126,224,153,0.5)',
-                    boxShadow: state === 'listening' ? '0 0 8px #7ee099' : 'none',
-                    animation: 'blink 3s ease-in-out infinite',
-                    animationDelay: `${i * 0.1}s`,
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <style jsx>{`
-        @keyframes orbRing {
-          0% { transform: scale(1); opacity: 0.6; }
-          100% { transform: scale(1.35); opacity: 0; }
-        }
-        @keyframes wavebar {
-          0% { transform: scaleY(0.4); }
-          100% { transform: scaleY(1); }
-        }
-        @keyframes floatHatch {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
-        }
-        @keyframes blink {
-          0%, 90%, 100% { transform: scaleY(1); }
-          95% { transform: scaleY(0.1); }
-        }
-      `}</style>
     </div>
   )
 }
@@ -984,7 +879,6 @@ export default function SessionPage({
       : -1
     setTurns((prev) => [...prev, turn])
     setTotalTurns((prev) => prev + 1)
-    if (role === 'hatch') setHatchState('idle')
 
     const persistVoiceTurn = !IS_MOCK
       ? fetch(`/api/live-interview/${sessionId}/voice-turn`, {
@@ -1884,10 +1778,9 @@ export default function SessionPage({
           </div>
 
           {centerMode === 'orb' && (
-            /* Hatch Orb - existing content, unchanged */
             <div className="relative z-10 flex flex-col items-center gap-4">
               <div style={{ animation: 'floatHatchAnim 5s ease-in-out infinite' }}>
-                <HatchOrb state={hatchState} />
+                <HatchConversationMascot state={hatchState === 'speaking' ? 'speaking' : 'listening'} />
               </div>
               <span
                 className="font-label uppercase tracking-widest text-[12px]"

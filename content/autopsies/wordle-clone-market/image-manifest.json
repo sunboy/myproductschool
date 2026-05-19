@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "nyt",
+  "story_slug": "wordle-clone-market",
+  "story_title": "Wordle and the Clone Market",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/wordle-clone-market/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/wordle-clone-market/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch robot standing in front of an oversized Wordle grid in green, yellow, and gray squares on cream background.",
+      "caption": "Hatch robot standing in front of an oversized Wordle grid in green, yellow, and gray squares on cream background.",
+      "prompt": "Wordle and the Clone Market | hero: Hatch mascot (the HackProduct robot with the graduation cap and growth arrow) standing in front of a giant five-letter word grid on a cream background. The grid squares are styled in Wordle's green, yellow, and gray palette. Hatch's expression is delighted, cap slightly tilted. No speech bubble, no copy in the image. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono font. Aspect 2400×1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/wordle-clone-market/hero.png",
+      "generated_image_sha256": "1d1fce3e8b0316e7c1a431020f42f8311214baa46cc5fe8907192425c7353e26",
+      "final_image_sha256": "8d55d7fcb7f00b1c18c537e38f49f52a7cfafb3189656618e61e89e32b2b998f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/wordle-clone-market/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/wordle-clone-market/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/wordle-clone-market/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing toward a simple laptop showing a plain browser-based word puzzle game.",
+      "caption": "Hatch gesturing toward a simple laptop showing a plain browser-based word puzzle game.",
+      "prompt": "Wordle and the Clone Market | hatch-narrator: Hatch in narrator pose, gesturing toward a small laptop screen showing a simple browser-based word puzzle on a plain white webpage. The scene reads as \"someone has just finished the one daily puzzle and closed the tab.\" Cream background, no speech bubble. The laptop should look modest — this is a personal project, not a tech company product. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600×1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/wordle-clone-market/hatch-narrator.png",
+      "generated_image_sha256": "51600f4db9b8c1510eaa7398d98985385c57ebe3591f6fea0df301ad4b4c0ce4",
+      "final_image_sha256": "f613a8312e711197025270f530c81bec5ac529e4bbb24ae801bb87e4ce7eff6c",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/wordle-clone-market/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/wordle-clone-market/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/wordle-clone-market/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a smartphone showing a shareable Wordle emoji grid posted to social media.",
+      "caption": "Hatch examining a smartphone showing a shareable Wordle emoji grid posted to social media.",
+      "prompt": "Wordle and the Clone Market | failure-mechanism: Hatch in thinking pose, looking at a smartphone screen displaying an emoji grid (six rows of colored squares — green, yellow, gray). A Twitter-style interface frames the phone, suggesting the grid has been posted to social media. Small crowd of Hatch-style robot silhouettes visible in the background, all looking at their own phones. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800×1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/wordle-clone-market/failure-mechanism.png",
+      "generated_image_sha256": "8211b823497ae6c123640c3d0e2e3ea2e1fc0d30aa188b5cee7022505557c234",
+      "final_image_sha256": "3a346efc90cf0ee5cf2eb1d7dd56a6b7cf8832395cbbf032e0b2f5774c6078aa",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/wordle-clone-market/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/wordle-clone-market/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/wordle-clone-market/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at a bar chart showing Wordle's player growth from 90 users in November 2021 to 300,000 in January 2022.",
+      "caption": "Hatch pointing at a bar chart showing Wordle's player growth from 90 users in November 2021 to 300,000 in January 2022.",
+      "prompt": "Wordle and the Clone Market | evidence-card: Hatch pointing at a simple bar chart showing player growth: a tiny bar for November 2021 (90 players), growing bars through December 2021, a dramatic vertical spike in January 2022 reaching 300,000. The bars are in green and amber tones. No dollar signs, no complex axes — just the growth curve. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600×1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/wordle-clone-market/evidence-card.png",
+      "generated_image_sha256": "cddde5739f3cbd3038b264a5ce9a3857871ddf26624782003ea15f4e409a96f9",
+      "final_image_sha256": "7763b644129ed7499d3efa9b92b88f5f0eb5948f0b0c48ed3f9eb13ee2d25fde",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/wordle-clone-market/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/wordle-clone-market/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/wordle-clone-market/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in coaching stance with a clock showing one daily puzzle limit behind them.",
+      "caption": "Hatch in coaching stance with a clock showing one daily puzzle limit behind them.",
+      "prompt": "Wordle and the Clone Market | lesson-frame: Hatch in coaching pose — standing calmly, one hand slightly raised as if making a point to a small audience. Behind Hatch, a simple illustration of a clock face showing \"1x per day\" — the daily limit represented as a single tick. Cream background, warm lighting, no text in the image. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800×1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/wordle-clone-market/lesson-frame.png",
+      "generated_image_sha256": "2439391ce8ca360ea8a80abbe9e325c03e0899e82d93dc8ad74ff5a3f0403485",
+      "final_image_sha256": "4c4770c1f7da33e8968db327a9c4032c6e0f4e48b4bf8de9d7efc394baa729b6",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/wordle-clone-market/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/wordle-clone-market/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/wordle-clone-market/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Close crop of Hatch robot with a small Wordle emoji grid floating beside them.",
+      "caption": "Close crop of Hatch robot with a small Wordle emoji grid floating beside them.",
+      "prompt": "Small tight crop of Hatch's face and upper body, expression curious and engaged, with a tiny Wordle-style emoji grid (three rows of green and yellow squares) floating beside Hatch's head. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1200×900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/wordle-clone-market/hero.png",
+      "generated_image_sha256": "1d1fce3e8b0316e7c1a431020f42f8311214baa46cc5fe8907192425c7353e26",
+      "final_image_sha256": "c9ccb8edc0e8fade04f2aff6f3206520070e94e6a409c497813d93e1f656610b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/wordle-clone-market/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/wordle-clone-market/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/wordle-clone-market/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding a smartphone showing a completed Wordle grid with green squares, for social media sharing.",
+      "caption": "Hatch holding a smartphone showing a completed Wordle grid with green squares, for social media sharing.",
+      "prompt": "Hatch mascot centered on a cream background, holding up a smartphone showing a completed Wordle grid. Green squares prominent in the result rows. Hatch's graduation cap tilted slightly, expression triumphant. Clean composition suitable for Twitter and LinkedIn share cards. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400×1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/wordle-clone-market/hero.png",
+      "generated_image_sha256": "1d1fce3e8b0316e7c1a431020f42f8311214baa46cc5fe8907192425c7353e26",
+      "final_image_sha256": "cf926ee231beb0012f04218ffb3094d09479cd5145dc41f2b6e4c01ee3b73884",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/wordle-clone-market/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/wordle-clone-market/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/wordle-clone-market/v1"
+}

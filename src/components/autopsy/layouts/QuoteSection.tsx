@@ -10,7 +10,7 @@ interface Props {
 
 export function QuoteSection({ section, hasBeenVisible }: Props) {
   const { quote, attribution, context } = section.content
-  const [entered, setEntered] = React.useState(false)
+  const [entered, setEntered] = React.useState(hasBeenVisible)
 
   React.useEffect(() => {
     if (hasBeenVisible) {
@@ -22,7 +22,7 @@ export function QuoteSection({ section, hasBeenVisible }: Props) {
   return (
     <div
       className="relative flex flex-col justify-center overflow-hidden"
-      style={{ minHeight: 'min(70vh, 560px)', background: '#f5f1ea' }}
+      style={{ minHeight: 'min(56vh, 460px)', background: '#f5f1ea' }}
     >
       {/* Left accent bar */}
       <div
@@ -32,7 +32,7 @@ export function QuoteSection({ section, hasBeenVisible }: Props) {
       />
 
       {/* Content */}
-      <div className="relative z-10 px-12 py-20 md:px-24 max-w-4xl">
+      <div className="relative z-10 max-w-4xl px-10 py-14 md:px-20 md:py-16">
         {/* Opening mark */}
         <div
           style={{

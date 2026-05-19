@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "yelp",
+  "story_slug": "yelp",
+  "story_title": "Yelp's Reviewer Identity",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/yelp/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/yelp/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot standing before a named review card, illustrating the identity-first design decision at the heart of Yelp.",
+      "caption": "Hatch mascot standing before a named review card, illustrating the identity-first design decision at the heart of Yelp.",
+      "prompt": "Yelp's Reviewer Identity | hero: Hatch mascot (the HackProduct robot with graduation cap and growth arrow) standing in front of a large review card on a cream background. The card shows a star rating with a name and profile photo placeholder on it — the name is visible, not anonymized. Hatch's expression is thoughtful, cap slightly tilted. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/yelp/hero.png",
+      "generated_image_sha256": "84a1f781de689198f84bc94e4779d72e10861a160ffb89509f6f3bbb14dbf2b8",
+      "final_image_sha256": "db1d4132d59b5473d153ae38512153ea9142f20d70748c8c85d812789ad99b02",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/yelp/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/yelp/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/yelp/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch illustrating the choice between anonymous ratings and named reviewer profiles.",
+      "caption": "Hatch illustrating the choice between anonymous ratings and named reviewer profiles.",
+      "prompt": "Yelp's Reviewer Identity | hatch-narrator: Hatch in narrator stance, slightly turned, gesturing toward a split image: on the left, an anonymous star rating form with no names; on the right, a named reviewer profile with photo, review count, and a vote tally. The contrast is the point. Cream background, no speech bubble. Watermark: \"HackProduct\" wordmark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/yelp/hatch-narrator.png",
+      "generated_image_sha256": "f6a6d3393349514b596631c2ee4917b79c3e383fee141b8194793ad99170aec6",
+      "final_image_sha256": "5c7bec114ac3fe985af18bce3ce04521160893154f24430eb3e517e748668890",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/yelp/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/yelp/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/yelp/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining the components of a named reviewer identity — photo, history, and Elite badge — that together create reputational accountability.",
+      "caption": "Hatch examining the components of a named reviewer identity — photo, history, and Elite badge — that together create reputational accountability.",
+      "prompt": "Yelp's Reviewer Identity | failure-mechanism: Hatch in thinking pose, looking at a Yelp-style reviewer profile card. The card shows a stack of reviews with vote counts, a photo avatar, and an \"Elite\" badge. Hatch points to the badge with one arm and to the vote count with the other, illustrating how identity creates accountability. Cream background, no copy. Watermark same as hero. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/yelp/failure-mechanism.png",
+      "generated_image_sha256": "90df43084062156e457d2527a5395c0780aa10b3439e782503045c102ac94815",
+      "final_image_sha256": "26abbf3c6a3915e17580b9f96e6ddd8e5409a7ad6aed2d27406cf8b230e5f9a7",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/yelp/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/yelp/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/yelp/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing to Yelp's review volume growth chart, showing 27 million reviews accumulated by the 2012 IPO.",
+      "caption": "Hatch pointing to Yelp's review volume growth chart, showing 27 million reviews accumulated by the 2012 IPO.",
+      "prompt": "Yelp's Reviewer Identity | evidence-card: Hatch pointing at a simple bar chart showing review count growth from 2004 to 2012, reaching 27 million at IPO. The chart is clean and unlabeled except for the milestone point. Hatch's expression is calm and analytical. Cream background. Watermark same as hero. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/yelp/evidence-card.png",
+      "generated_image_sha256": "2943205c9d7d6e5c2a1f2ac732da36747a2b1a1e0b184aace1d1b3ce31722023",
+      "final_image_sha256": "dceeb53fac82567930350acabf2b4eb5186277338cba87bdecccae9d2c168be4",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/yelp/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/yelp/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/yelp/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch in coaching stance, surrounded by named review cards, representing the durable community that named identity produces.",
+      "caption": "Hatch in coaching stance, surrounded by named review cards, representing the durable community that named identity produces.",
+      "prompt": "Yelp's Reviewer Identity | lesson-frame: Hatch in coaching pose — upright, calm, graduation cap settled — standing next to a large quotation mark. Behind Hatch, a faint wall of named review cards suggests depth and volume. The mood is conclusive and wise. Cream background, no copy. Watermark same as hero. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/yelp/lesson-frame.png",
+      "generated_image_sha256": "bb40bde48af9adbb395ba6a464717d889f25702035e0b83d25d9648a2bcc5c16",
+      "final_image_sha256": "2495d653a5459db676d0a1002653b25ebfdd39a5719186c2a5e9e511645fd50b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/yelp/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/yelp/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/yelp/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside a named star review — thumbnail for the Yelp reviewer identity autopsy.",
+      "caption": "Hatch beside a named star review — thumbnail for the Yelp reviewer identity autopsy.",
+      "prompt": "Small, recognizable Hatch mascot bust next to a single star rating with a visible name tag. Clean cream background. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/yelp/hero.png",
+      "generated_image_sha256": "84a1f781de689198f84bc94e4779d72e10861a160ffb89509f6f3bbb14dbf2b8",
+      "final_image_sha256": "379dd73579d2d189c4f80a109fc385b759c8848a3ae49b1ef0b12006125e0c91",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/yelp/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/yelp/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/yelp/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch mascot with a named review card for the Yelp reviewer identity social share card.",
+      "caption": "Hatch mascot with a named review card for the Yelp reviewer identity social share card.",
+      "prompt": "Hatch mascot in hero pose adapted for OG share card. Large named review card behind Hatch, \"HackProduct\" wordmark prominent bottom-right. Cream background. The scene reads as: accountability is the product. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-41-70/generated-sources/yelp/hero.png",
+      "generated_image_sha256": "84a1f781de689198f84bc94e4779d72e10861a160ffb89509f6f3bbb14dbf2b8",
+      "final_image_sha256": "614faab47477fc047705b1038e622b8724853d45b3c238fc525da2e0b81c8b7d",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/yelp/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/yelp/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/yelp/v1"
+}

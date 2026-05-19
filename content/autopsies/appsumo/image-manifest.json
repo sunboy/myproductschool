@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "product_slug": "appsumo",
+  "story_slug": "appsumo",
+  "story_title": "AppSumo's Email Growth Loop",
+  "image_system": "hatch-autopsy-v1",
+  "style_bible": "content/autopsies/hatch-visual-style-bible.md",
+  "asset_root": "public/images/autopsies/appsumo/final",
+  "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+  "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+  "shared_rules": {
+    "palette": [
+      "#faf6f0",
+      "#4a7c59",
+      "#244232",
+      "#705c30",
+      "#c9ad68",
+      "#1e211c",
+      "#dfe6dc"
+    ],
+    "hatch_consistency": "Use the official Hatch mascot reference as the source of truth.",
+    "no_human_faces": true,
+    "no_photorealism": true,
+    "no_fake_screenshots": true,
+    "watermark_text_options": [
+      "HackProduct Autopsy",
+      "Told by Hatch · HackProduct"
+    ]
+  },
+  "assets": [
+    {
+      "role": "hero",
+      "path": "public/images/autopsies/appsumo/final/hero.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "pointing narrator integrated into story scene",
+      "size_px": {
+        "width": 2400,
+        "height": 1350
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch at a desk with a spreadsheet and a stack of cold email envelopes on a cream background.",
+      "caption": "Hatch at a desk with a spreadsheet and a stack of cold email envelopes on a cream background.",
+      "prompt": "AppSumo's Email Growth Loop | hero: Hatch mascot (HackProduct robot with graduation cap and growth arrow) sitting at a vintage desk with a spreadsheet open on one side and a stack of envelopes on the other. Cream background. Expression focused, cap tilted slightly, one hand on the spreadsheet tracking rows of names. No speech bubble. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1350. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/appsumo/hero.png",
+      "generated_image_sha256": "aa67cc4a6f933f07807d1b1afa3ee1196fe9b013449b3a01b2e9d3f5c538ac83",
+      "final_image_sha256": "2f7236e4f0a2bb5230aab63e319fadbca266d39fa46ee330e32ca1d74541f77f",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/appsumo/v1/hero.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/appsumo/v1/hero.webp"
+    },
+    {
+      "role": "hatch-narrator",
+      "path": "public/images/autopsies/appsumo/final/hatch-narrator.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "narrator integrated into setup scene",
+      "size_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch gesturing at a cold email targeted at Mint.com users in 2010.",
+      "caption": "Hatch gesturing at a cold email targeted at Mint.com users in 2010.",
+      "prompt": "AppSumo's Email Growth Loop | hatch-narrator: Hatch in narrator pose, standing beside an oversized inbox showing one unread email with the subject line \"Want a deal on software?\" Open on a Mint.com logo in the background. The scene reads as: a single targeted email to a warm audience. Cream background. No speech bubble. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1600. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/appsumo/hatch-narrator.png",
+      "generated_image_sha256": "048bdbc53ae631bd0e87a8d565c2129d12b74363847b2f0acce4096fa85159b0",
+      "final_image_sha256": "ba013201d63fca5aec9b5cc866a2968dfbbf2954ab7a782d5cafd505fbb5cc25",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/appsumo/v1/hatch-narrator.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/appsumo/v1/hatch-narrator.webp"
+    },
+    {
+      "role": "failure-mechanism",
+      "path": "public/images/autopsies/appsumo/final/failure-mechanism.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach pointing at mechanism",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch examining a flywheel diagram showing how each AppSumo deal compounds the email list.",
+      "caption": "Hatch examining a flywheel diagram showing how each AppSumo deal compounds the email list.",
+      "prompt": "AppSumo's Email Growth Loop | failure-mechanism: Hatch in thinking pose, looking at a flywheel diagram. Arrow 1: \"Deal goes out\" → Arrow 2: \"Subscribers share\" → Arrow 3: \"New subscribers join\" → Arrow 4: \"Next deal reaches more people\". The flywheel is labeled \"The email list compounds\". Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/appsumo/failure-mechanism.png",
+      "generated_image_sha256": "0cc90eead94159cd795ed08bdca8e4b454de24f7c615789cae4fe766b83c63e2",
+      "final_image_sha256": "a04fd956e058ec46945326b8852d63138f56aee70c9d1d5358f57df51107c191",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/appsumo/v1/failure-mechanism.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/appsumo/v1/failure-mechanism.webp"
+    },
+    {
+      "role": "evidence-card",
+      "path": "public/images/autopsies/appsumo/final/evidence-card.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "reading or pointing evidence narrator",
+      "size_px": {
+        "width": 1600,
+        "height": 1000
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch pointing at two charts showing paid ad spend resetting versus email list compounding.",
+      "caption": "Hatch pointing at two charts showing paid ad spend resetting versus email list compounding.",
+      "prompt": "AppSumo's Email Growth Loop | evidence-card: Hatch pointing at two side-by-side line charts. Left chart: \"Paid ad spend\" — spiky, resets to zero after each campaign. Right chart: \"Email list size\" — steady upward slope, never resets. Hatch's finger points at the right chart. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1600x1000. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/appsumo/evidence-card.png",
+      "generated_image_sha256": "c8d2d8c2ba7746a2b4b58f6af069afda71cc38025d11e91f21bb01df85fb962e",
+      "final_image_sha256": "d99e3bca49f1d78bdb7a05ced78d11fae57af14a5c6aadf54425763b86379a91",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/appsumo/v1/evidence-card.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/appsumo/v1/evidence-card.webp"
+    },
+    {
+      "role": "lesson-frame",
+      "path": "public/images/autopsies/appsumo/final/lesson-frame.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "coach beside transferable lesson model",
+      "size_px": {
+        "width": 1800,
+        "height": 1200
+      },
+      "watermark": {
+        "required": true,
+        "text": "Told by Hatch · HackProduct",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch beside two treasure chests showing the difference between rented and owned distribution channels.",
+      "caption": "Hatch beside two treasure chests showing the difference between rented and owned distribution channels.",
+      "prompt": "AppSumo's Email Growth Loop | lesson-frame: Hatch in coaching pose, calm, standing beside two treasure chests. Left chest: smaller, labeled \"Paid campaigns (rented)\". Right chest: larger and overflowing, labeled \"Email list (owned)\". Hatch's hand rests on the right chest. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1800x1200. Use case: illustration-story. Use the official Hatch mascot as a strict character reference, not as a pasted sticker. Preserve Hatch's rounded green head frame, cream face/body, graduation cap, growth arrow, H chest mark, bright eyes, mitten hands, and friendly coach expression. No exact logos, no fake screenshots, no real person likenesses, no implied company endorsement. Do not include a watermark in the generated source because watermarking is applied after approval.",
+      "crop_notes": "Center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "reader-or-editorial-support",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/appsumo/lesson-frame.png",
+      "generated_image_sha256": "96c6e7cf1973cdfac43ad98297803017ae6bbe55d1c8110b88bc55616b643b12",
+      "final_image_sha256": "e81a5270dc2e55fa26af744213a8c76d914e24a2f80e91e7e0a226722ec9c34b",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/appsumo/v1/lesson-frame.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/appsumo/v1/lesson-frame.webp"
+    },
+    {
+      "role": "thumbnail",
+      "path": "public/images/autopsies/appsumo/final/thumbnail.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small watermark-adjacent pose or derived focal crop",
+      "size_px": {
+        "width": 1200,
+        "height": 900
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch holding an AppSumo cold email envelope on a cream background.",
+      "caption": "Hatch holding an AppSumo cold email envelope on a cream background.",
+      "prompt": "Hatch small and recognisable, holding a single envelope with a tiny AppSumo logo on it. Expression confident. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 1200x900.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/appsumo/hero.png",
+      "generated_image_sha256": "aa67cc4a6f933f07807d1b1afa3ee1196fe9b013449b3a01b2e9d3f5c538ac83",
+      "final_image_sha256": "60ad9a27624e1d8c6c5bd20b6deb4d6e504ee55d1e5598e20ee1fce7a4b99646",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/appsumo/v1/thumbnail.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/appsumo/v1/thumbnail.webp"
+    },
+    {
+      "role": "social-cover",
+      "path": "public/images/autopsies/appsumo/final/social-cover.webp",
+      "status": "approved",
+      "qaStatus": "approved",
+      "reference_asset": "public/images/hatch/hatch-official-mascot.png",
+      "reference_sha256": "ef5b1d4f624c6c61b586f4f495e1c4a9e1cfc37054e951e55337f58a5b6d865c",
+      "hatch_variant": "small narrator or derived social crop",
+      "size_px": {
+        "width": 2400,
+        "height": 1260
+      },
+      "watermark": {
+        "required": true,
+        "text": "HackProduct Autopsy",
+        "placement": "bottom-right",
+        "opacity": 0.86,
+        "rendered": true
+      },
+      "alt": "Hatch surrounded by multiplying email envelopes for AppSumo social share card.",
+      "caption": "Hatch surrounded by multiplying email envelopes for AppSumo social share card.",
+      "prompt": "Hatch hero pose adapted for OG share card. Hatch in center, surrounded by stylized envelopes multiplying outward in rings. Text area left clear for title overlay. Cream background. HackProduct wordmark watermark bottom-right, 60% opacity, JetBrains Mono. Aspect 2400x1260.",
+      "crop_notes": "Derived from hero; center-cover crop checked against role safe zone.",
+      "qa": [
+        "Official Hatch reference required by prompt and manifest.",
+        "Watermark applied in post-processing.",
+        "No exact logos, fake screenshots, real person likenesses, or implied endorsement."
+      ],
+      "usage": "distribution",
+      "generated_image_source": ".autopsy-image-batches/batch-71-100/generated-sources/appsumo/hero.png",
+      "generated_image_sha256": "aa67cc4a6f933f07807d1b1afa3ee1196fe9b013449b3a01b2e9d3f5c538ac83",
+      "final_image_sha256": "b6b7f2b083eba9b40672347f1ab60847c4697f3e56cb37a6877a169558c59c93",
+      "storage_bucket": "autopsy-images",
+      "storage_path": "stories/appsumo/v1/social-cover.webp",
+      "storage_version": "v1",
+      "public_url": "https://tikkhvxlclivixqqqjyb.supabase.co/storage/v1/object/public/autopsy-images/stories/appsumo/v1/social-cover.webp"
+    }
+  ],
+  "storage_bucket": "autopsy-images",
+  "storage_version": "v1",
+  "storage_asset_root": "autopsy-images/stories/appsumo/v1"
+}
