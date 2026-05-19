@@ -64,10 +64,7 @@ export async function PATCH(
   if (lookupError) {
     return apiError(500, 'discussion_lookup_failed', 'Failed to load discussion')
   }
-  if (!discussion) {
-    return apiError(404, 'discussion_not_found', 'Discussion not found')
-  }
-  if (discussion.hidden_at) {
+  if (!discussion || discussion.hidden_at) {
     return apiError(404, 'discussion_not_found', 'Discussion not found')
   }
   if (discussion.user_id !== user.id) {
@@ -117,10 +114,7 @@ export async function DELETE(
   if (lookupError) {
     return apiError(500, 'discussion_lookup_failed', 'Failed to load discussion')
   }
-  if (!discussion) {
-    return apiError(404, 'discussion_not_found', 'Discussion not found')
-  }
-  if (discussion.hidden_at) {
+  if (!discussion || discussion.hidden_at) {
     return apiError(404, 'discussion_not_found', 'Discussion not found')
   }
   if (discussion.user_id !== user.id) {

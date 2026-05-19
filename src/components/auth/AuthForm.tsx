@@ -341,7 +341,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         aria-hidden
       />
 
-      {/* Hatch line art - left half only */}
+      {/* Hatch line art — left half only */}
       <div className="absolute inset-0 hidden pointer-events-none sm:block" style={{ zIndex: 1 }}>
         <HatchLineArt />
       </div>
@@ -357,7 +357,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         aria-hidden
       />
 
-      {/* Content: left brand/headline + right form card - on desktop side by side */}
+      {/* Content: left brand/headline + right form card — on desktop side by side */}
       <div className="relative flex min-h-[100svh] flex-col md:min-h-[100dvh] md:flex-row md:items-center" style={{ zIndex: 2 }}>
 
         {/* ── Left: brand + headline ───────────────────── */}
@@ -389,7 +389,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
             Practice product, systems, data, SQL, and coding judgment. Stay sharp as AI reshapes the job.
           </p>
 
-          {/* Feature bullets - desktop only */}
+          {/* Feature bullets — desktop only */}
           <ul className="mt-10 hidden flex-col gap-3 min-[1200px]:flex">
             {[
               'Product sense, system design, data modeling, SQL, and coding in one track',
@@ -411,7 +411,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
           <DisciplineSignalBoard />
         </div>
 
-        {/* ── Right: form card - glass on the gradient ─── */}
+        {/* ── Right: form card — glass on the gradient ─── */}
         <div className="flex items-start justify-center px-4 pb-6 pt-2 sm:px-6 sm:pb-10 md:w-[460px] md:shrink-0 md:items-center md:px-10 md:py-8 lg:px-12">
           <div
             className="w-full max-w-sm space-y-4 rounded-2xl p-5 sm:space-y-5 sm:p-7 md:p-8"

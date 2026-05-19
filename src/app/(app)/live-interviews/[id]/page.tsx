@@ -1631,7 +1631,7 @@ export default function SessionPage({
           {timerDisplay}
         </div>
 
-        {/* Right - FLOW mini-bars */}
+        {/* Right — FLOW mini-bars */}
         <div className="hidden items-center gap-4 sm:flex">
           {flowMoves.map(({ key, label }) => {
             const score = flowCoverage[key] ?? 0

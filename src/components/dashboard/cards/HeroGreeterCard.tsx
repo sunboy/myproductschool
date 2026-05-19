@@ -98,7 +98,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
         }}
       />
 
-      {/* Mascot: responsive right-side anchor */}
+      {/* Mascot — responsive right-side anchor */}
       <div
         className="absolute right-[-8px] top-3 z-0 pointer-events-none opacity-80 sm:right-2 sm:top-4 sm:opacity-90 md:right-5 md:top-1/2 md:-translate-y-1/2 lg:right-8 lg:opacity-100"
         aria-hidden

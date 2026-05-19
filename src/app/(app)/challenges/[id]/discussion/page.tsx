@@ -16,6 +16,7 @@ import type { ChallengeDiscussion } from '@/lib/types'
 type DiscussionSort = 'top' | 'new' | 'mine'
 const PAGE_SIZE = 20
 
+
 function deriveUpvotedIds(discussions: ChallengeDiscussion[], userId: string | null) {
   if (!userId) return new Set<string>()
   return new Set(

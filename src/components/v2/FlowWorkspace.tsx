@@ -40,6 +40,29 @@ import type { ChallengeDiscussion } from '@/lib/types'
 const ExcalidrawCanvas = dynamic(() => import('@/components/challenge/ExcalidrawCanvas'), { ssr: false })
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })
 
+function deriveDiscussionUpvotes(items: ChallengeDiscussion[], userId: string | null) {
+  if (!userId) return new Set<string>()
+  return new Set(
+    items
+      .filter(d => d.viewer_has_upvoted || (Array.isArray(d.upvoted_by) && d.upvoted_by.includes(userId)))
+      .map(d => d.id)
+  )
+}
+
+function applyDiscussionUpvoteState(
+  discussion: ChallengeDiscussion,
+  userId: string | null,
+  upvoted: boolean
+): ChallengeDiscussion {
+  if (!userId) return discussion
+  const previous = Array.isArray(discussion.upvoted_by) ? discussion.upvoted_by : []
+  const next = upvoted
+    ? Array.from(new Set([...previous, userId]))
+    : previous.filter(id => id !== userId)
+
+  return { ...discussion, upvoted_by: next, viewer_has_upvoted: upvoted }
+}
+
 type ContextPackKey = 'assumptions' | 'constraints' | 'interfaces' | 'risks'
 type ContextPackState = Record<ContextPackKey, string>
 

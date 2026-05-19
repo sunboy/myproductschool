@@ -118,7 +118,7 @@ export async function getUserAnalyticsSummary(userId: string): Promise<Analytics
 }
 
 export async function getChallengeDiscussions(challengeId: string, viewerId?: string | null): Promise<ChallengeDiscussion[]> {
-  if (USE_MOCK) return MOCK_DISCUSSIONS.filter(d => d.challenge_id === challengeId || true)
+  if (USE_MOCK) return MOCK_DISCUSSIONS.filter(d => d.challenge_id === challengeId)
 
   const supabase = getAdminClient()
   const { data, error } = await supabase
@@ -160,6 +160,7 @@ export async function getChallengeDiscussions(challengeId: string, viewerId?: st
       ?? (d.display_name as string | null)
       ?? 'Anonymous',
   })) as Array<Record<string, unknown> & { id: string; username: string }>
+
   const visibleDiscussions = enriched.flatMap(d => {
     if (!d.hidden_at) return [d]
     if (viewerId && d.user_id === viewerId) return []
@@ -171,6 +172,8 @@ export async function getChallengeDiscussions(challengeId: string, viewerId?: st
       is_expert_pick: false,
       upvote_count: 0,
       reply_count: 0,
+      viewer_has_upvoted: false,
+      upvoted_by: [],
     }]
   }) as Array<Record<string, unknown> & { id: string; username: string }>
 

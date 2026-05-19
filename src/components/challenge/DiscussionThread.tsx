@@ -162,13 +162,6 @@ export function DiscussionThread({
         </span>
       </button>
 
-      <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-highest text-on-surface-variant text-sm font-medium hover:bg-surface-dim transition-colors border border-transparent">
-        <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 0" }}>
-          lightbulb
-        </span>
-        <span>{discussion.upvote_count}</span>
-      </button>
-
       <button
         onClick={() => setShowReply(v => !v)}
         className="text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors px-2 py-1.5"
@@ -348,66 +341,37 @@ export function DiscussionThread({
     </div>
   )
 
-  // OP variant with green left border
-  if (displayAsOP) {
-    return (
-      <div className="bg-white rounded-xl p-5 shadow-sm border border-outline-variant/20 border-l-4 border-l-primary">
-        <div className="flex items-start gap-3">
+  const frameClassName = displayAsOP
+    ? 'bg-white rounded-xl p-5 shadow-sm border border-outline-variant/20 border-l-4 border-l-primary'
+    : displayAsExpertPick
+      ? 'bg-white rounded-xl p-5 shadow-sm border border-outline-variant/20 border-l-4 border-l-tertiary'
+      : 'bg-white rounded-xl p-5 shadow-sm border border-outline-variant/20'
+
+  return (
+    <div className={frameClassName}>
+      <div className="flex items-start gap-3">
+        {displayAsExpertPick ? (
+          <HatchGlyph size={36} state="speaking" className="text-primary shrink-0" />
+        ) : (
           <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
             <span className="text-on-primary-container font-bold text-sm">{initials}</span>
           </div>
-          <div className="flex-grow min-w-0">
-            <div className="flex items-center gap-2 flex-wrap mb-2">
-              <span className="font-bold text-on-surface text-sm">{discussion.username ?? 'Anonymous'}</span>
+        )}
+        <div className="flex-grow min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-2">
+            <span className="font-bold text-on-surface text-sm">
+              {displayAsExpertPick ? "Hatch's Team" : discussion.username ?? 'Anonymous'}
+            </span>
+            {displayAsOP && (
               <span className="bg-primary text-on-primary text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">
                 OP
               </span>
-              <span className="text-xs text-on-surface-variant">· {relativeTime(discussion.created_at)}</span>
-            </div>
-            {contentBlock}
-            {actionRow}
-            {replyInput}
-            {repliesList}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // Expert pick variant with amber/tertiary left border and Hatch branding
-  if (displayAsExpertPick) {
-    return (
-      <div className="bg-white rounded-xl p-5 shadow-sm border border-outline-variant/20 border-l-4 border-l-tertiary">
-        <div className="flex items-start gap-3">
-          <HatchGlyph size={36} state="speaking" className="text-primary shrink-0" />
-          <div className="flex-grow min-w-0">
-            <div className="flex items-center gap-2 flex-wrap mb-2">
-              <span className="font-bold text-on-surface text-sm">Hatch&apos;s Team</span>
+            )}
+            {displayAsExpertPick && (
               <span className="bg-tertiary-container text-tertiary text-[10px] px-2 py-0.5 rounded-full uppercase font-bold">
                 Expert Pick
               </span>
-              <span className="text-xs text-on-surface-variant">· {relativeTime(discussion.created_at)}</span>
-            </div>
-            {contentBlock}
-            {actionRow}
-            {replyInput}
-            {repliesList}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // Regular post variant
-  return (
-    <div className="bg-white rounded-xl p-5 shadow-sm border border-outline-variant/20">
-      <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
-          <span className="text-on-primary-container font-bold text-sm">{initials}</span>
-        </div>
-        <div className="flex-grow min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-2">
-            <span className="font-bold text-on-surface text-sm">{discussion.username ?? 'Anonymous'}</span>
+            )}
             <span className="text-xs text-on-surface-variant">· {relativeTime(discussion.created_at)}</span>
           </div>
           {contentBlock}

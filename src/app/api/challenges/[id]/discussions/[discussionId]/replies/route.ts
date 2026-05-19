@@ -114,6 +114,19 @@ async function maybeSendReplyNotification({
   }
 }
 
+async function getVisibleDiscussion(
+  adminClient: ReturnType<typeof createAdminClient>,
+  challengeId: string,
+  discussionId: string
+) {
+  return adminClient
+    .from('challenge_discussions')
+    .select('id, user_id, hidden_at')
+    .eq('id', discussionId)
+    .eq('challenge_id', challengeId)
+    .maybeSingle()
+}
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string; discussionId: string }> }
@@ -123,20 +136,16 @@ export async function GET(
   const identity = await resolveChallengeIdentity(id, adminClient)
   if (!identity) return apiError(404, 'challenge_not_found', 'Challenge not found')
 
-  const { data: discussion, error: discussionError } = await adminClient
-    .from('challenge_discussions')
-    .select('id, user_id, hidden_at')
-    .eq('id', discussionId)
-    .eq('challenge_id', identity.id)
-    .maybeSingle()
+  const { data: discussion, error: discussionError } = await getVisibleDiscussion(
+    adminClient,
+    identity.id,
+    discussionId
+  )
 
   if (discussionError) {
     return apiError(500, 'discussion_lookup_failed', 'Failed to load discussion')
   }
-  if (!discussion) {
-    return apiError(404, 'discussion_not_found', 'Discussion not found')
-  }
-  if (discussion.hidden_at) {
+  if (!discussion || discussion.hidden_at) {
     return apiError(404, 'discussion_not_found', 'Discussion not found')
   }
 
@@ -187,20 +196,16 @@ export async function POST(
   const identity = await resolveChallengeIdentity(id, adminClient)
   if (!identity) return apiError(404, 'challenge_not_found', 'Challenge not found')
 
-  const { data: discussion, error: discussionError } = await adminClient
-    .from('challenge_discussions')
-    .select('id, user_id, hidden_at')
-    .eq('id', discussionId)
-    .eq('challenge_id', identity.id)
-    .maybeSingle()
+  const { data: discussion, error: discussionError } = await getVisibleDiscussion(
+    adminClient,
+    identity.id,
+    discussionId
+  )
 
   if (discussionError) {
     return apiError(500, 'discussion_lookup_failed', 'Failed to load discussion')
   }
-  if (!discussion) {
-    return apiError(404, 'discussion_not_found', 'Discussion not found')
-  }
-  if (discussion.hidden_at) {
+  if (!discussion || discussion.hidden_at) {
     return apiError(404, 'discussion_not_found', 'Discussion not found')
   }
 

@@ -275,6 +275,16 @@ export function TopNav() {
                   <FreemiumUsageSummary plan={profile?.plan} compact />
                 </div>
                 <Link
+                  href="/affiliates"
+                  data-hatch-sound="open"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-surface-container"
+                  style={{ color: 'var(--color-on-surface)' }}
+                >
+                  <span className="material-symbols-outlined text-base" style={{ color: 'var(--color-on-surface-variant)' }}>handshake</span>
+                  Affiliates
+                </Link>
+                <Link
                   href="/settings"
                   data-hatch-sound="open"
                   onClick={() => setMenuOpen(false)}

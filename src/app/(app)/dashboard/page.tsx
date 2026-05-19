@@ -554,7 +554,7 @@ export default async function DashboardPage() {
 
             <CommunityActivityCard events={communityActivity} />
 
-            {/* Interview Countdown: conditional */}
+            {/* Interview Countdown — conditional */}
             {interviewDate && (
               <InterviewCountdownCard interviews={interviews} />
             )}

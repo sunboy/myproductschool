@@ -6,9 +6,11 @@ import {
   invoicePeriodEnd,
   planLabelFromInterval,
 } from '@/lib/email/billing'
-import { affiliatesEnabled } from '@/lib/affiliate/config'
-import { invoiceSubscriptionId, recordAffiliateCommission } from '@/lib/affiliate/commissions'
-import { retrieveAffiliateConnectAccount, syncAffiliateConnectAccount } from '@/lib/affiliate/connect'
+import {
+  processAffiliateInvoicePaid,
+  updateAffiliateAccountFromStripeAccount,
+  upsertAffiliateReferralFromCheckoutSession,
+} from '@/lib/stripe/affiliates'
 import {
   sendCancellationConfirmedEmail,
   sendCancellationScheduledEmail,
@@ -92,6 +94,11 @@ function appReturnUrl(request: NextRequest, path = '/settings') {
   return new URL(path, process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin).toString()
 }
 
+function invoiceSubscriptionId(invoice: Stripe.Invoice) {
+  const value = invoice.subscription
+  return typeof value === 'string' ? value : value?.id ?? null
+}
+
 async function getInvoiceCustomerContact(
   stripe: Stripe,
   invoice: Stripe.Invoice,
@@ -111,37 +118,6 @@ async function getInvoiceCustomerContact(
     email: customer.email,
     name: customer.name,
   }
-}
-
-function stripeV2RelatedAccountId(event: Stripe.Event) {
-  if (!event.type.startsWith('v2.core.account')) return null
-
-  const related = (event as Stripe.Event & {
-    related_object?: { id?: string; type?: string } | null
-  }).related_object
-  if (related?.type?.includes('account') && related.id) return related.id
-
-  const dataObject = event.data.object as unknown as Record<string, unknown> | undefined
-  const objectId = typeof dataObject?.id === 'string' ? dataObject.id : null
-  if (objectId?.startsWith('acct_')) return objectId
-
-  const account = dataObject?.account
-  if (typeof account === 'string' && account.startsWith('acct_')) return account
-
-  return null
-}
-
-async function syncAffiliateConnectEvent(
-  stripe: Stripe,
-  supabase: ReturnType<typeof createAdminClient>,
-  event: Stripe.Event
-) {
-  const accountId = stripeV2RelatedAccountId(event)
-  if (!accountId) return false
-
-  const account = await retrieveAffiliateConnectAccount(stripe, accountId)
-  await syncAffiliateConnectAccount(supabase, account)
-  return true
 }
 
 export async function POST(req: NextRequest) {
@@ -173,12 +149,9 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = createAdminClient()
+  const eventType = event.type as string
 
-  if (await syncAffiliateConnectEvent(stripe, supabase, event)) {
-    return NextResponse.json({ received: true })
-  }
-
-  switch (event.type) {
+  switch (eventType) {
 
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session
@@ -197,6 +170,8 @@ export async function POST(req: NextRequest) {
         status: 'active',
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
+
+      await upsertAffiliateReferralFromCheckoutSession(supabase, session)
 
       await sendPaymentReceiptEmail(supabase, {
         dedupeKey: `${event.id}:payment_receipt`,
@@ -324,10 +299,6 @@ export async function POST(req: NextRequest) {
 
     case 'invoice.paid': {
       const invoice = event.data.object as Stripe.Invoice
-      if (affiliatesEnabled()) {
-        await recordAffiliateCommission(stripe, supabase, invoice)
-      }
-
       const subscriptionId = invoiceSubscriptionId(invoice)
       const customerId = invoiceCustomerId(invoice)
       const contact = await getInvoiceCustomerContact(stripe, invoice, customerId)
@@ -357,6 +328,8 @@ export async function POST(req: NextRequest) {
         periodEnd: invoicePeriodEnd(invoice),
         url: invoice.hosted_invoice_url ?? invoice.invoice_pdf ?? appReturnUrl(req),
       })
+
+      await processAffiliateInvoicePaid({ stripe, supabase, invoice, eventId: event.id })
       break
     }
 
@@ -402,6 +375,22 @@ export async function POST(req: NextRequest) {
         periodEnd: invoicePeriodEnd(invoice),
         url: invoice.hosted_invoice_url ?? appReturnUrl(req),
       })
+      break
+    }
+
+    case 'v2.core.account.updated':
+    case 'v2.core.account[configuration.recipient].updated':
+    case 'v2.core.account[configuration.recipient].capability_status_updated':
+    case 'v2.core.account[requirements].updated':
+    case 'v2.core.account_link.returned': {
+      const object = event.data.object as { id?: string; account?: string }
+      const accountId = object.id ?? object.account
+      if (!accountId) break
+
+      const account = await stripe.v2.core.accounts.retrieve(accountId, {
+        include: ['configuration.recipient', 'requirements', 'future_requirements'],
+      })
+      await updateAffiliateAccountFromStripeAccount(supabase, account)
       break
     }
   }

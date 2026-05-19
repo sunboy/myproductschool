@@ -8,35 +8,12 @@ import {
   getCheckoutBrandingSettings,
   getStripePlanConfig,
 } from '@/lib/stripe/config'
-import { affiliatesEnabled } from '@/lib/affiliate/config'
+import {
+  affiliateCheckoutMetadata,
+  resolveAffiliateForCheckout,
+} from '@/lib/stripe/affiliates'
 
 const PRO_TRIAL_DAYS = 7
-
-async function getAffiliateDiscountForUser(userId: string) {
-  if (!affiliatesEnabled()) return null
-
-  const admin = createAdminClient()
-  const { data: profile } = await admin
-    .from('profiles')
-    .select('affiliate_id')
-    .eq('id', userId)
-    .maybeSingle()
-
-  if (!profile?.affiliate_id) return null
-
-  const { data: affiliate } = await admin
-    .from('affiliates')
-    .select('id, stripe_promo_code_id, status')
-    .eq('id', profile.affiliate_id)
-    .maybeSingle()
-
-  if (!affiliate?.stripe_promo_code_id || affiliate.status === 'disabled') return null
-
-  return {
-    affiliateId: affiliate.id as string,
-    promotionCodeId: affiliate.stripe_promo_code_id as string,
-  }
-}
 
 export async function POST(req: NextRequest) {
   const { stripe, config: stripeRuntime } = createStripeClient()
@@ -71,13 +48,8 @@ export async function POST(req: NextRequest) {
 
   const config = getStripePlanConfig(plan)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const affiliateDiscount = await getAffiliateDiscountForUser(user.id)
-  const sessionMetadata = {
-    user_id: user.id,
-    plan,
-    stripe_mode: stripeRuntime.mode,
-    ...(affiliateDiscount ? { affiliate_id: affiliateDiscount.affiliateId } : {}),
-  }
+  const affiliate = await resolveAffiliateForCheckout(createAdminClient(), req, user.id)
+  const referralMetadata = affiliateCheckoutMetadata(affiliate)
 
   const lineItem: Stripe.Checkout.SessionCreateParams.LineItem = config.priceId
     ? { price: config.priceId, quantity: 1 }
@@ -101,17 +73,15 @@ export async function POST(req: NextRequest) {
     line_items: [lineItem],
     customer_email: user.email,
     client_reference_id: user.id,
-    metadata: sessionMetadata,
+    metadata: { user_id: user.id, plan, stripe_mode: stripeRuntime.mode, ...referralMetadata },
     subscription_data: {
       trial_period_days: PRO_TRIAL_DAYS,
-      metadata: sessionMetadata,
+      metadata: { user_id: user.id, plan, stripe_mode: stripeRuntime.mode, ...referralMetadata },
     },
     billing_address_collection: 'required',
     automatic_tax: { enabled: true },
     branding_settings: getCheckoutBrandingSettings(appUrl),
-    ...(affiliateDiscount
-      ? { discounts: [{ promotion_code: affiliateDiscount.promotionCodeId }] }
-      : { allow_promotion_codes: true }),
+    allow_promotion_codes: true,
   }
 
   if (embedded) {
