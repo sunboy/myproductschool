@@ -31,9 +31,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <HatchProvider>
       <UsageProvider>
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen min-w-0 bg-background">
           <TopNav />
-          <main className="pb-20 md:pb-8">
+          <main className="min-w-0 pb-20 md:pb-8">
             {children}
           </main>
           <BottomTabs />

@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from 'react'
 import gsap from 'gsap'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { StepDetailModal } from './StepDetailModal'
+import { AnswerGalleryPanel } from '@/components/community/AnswerGalleryPanel'
 import {
   type Verdict,
   VERDICT_COLOR, VERDICT_BG, VERDICT_LABEL, VERDICT_ICON,
@@ -59,6 +60,7 @@ interface PostSessionMirrorProps {
   xpAwarded: number
   stepResults: StepResult[]
   competencyDeltas: CompetencyDelta[]
+  challengeId?: string
   attemptId?: string
   onRunAnother?: () => void
   onDashboard: () => void
@@ -437,6 +439,7 @@ export function PostSessionMirror({
   xpAwarded,
   stepResults,
   competencyDeltas,
+  challengeId,
   attemptId,
   onRunAnother,
   onDashboard,
@@ -531,7 +534,7 @@ export function PostSessionMirror({
             <HatchGlyph size={48} state="celebrating" className="text-primary" />
             <div>
               <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-primary)' }}>
-                Hatch's Debrief
+                Hatch&apos;s Debrief
               </div>
               <div style={{ fontFamily: 'var(--font-headline)', fontSize: 18, fontWeight: 600, letterSpacing: '-0.01em', marginTop: 2, lineHeight: 1.3 }}>
                 {summaryLine}
@@ -649,6 +652,8 @@ export function PostSessionMirror({
             </div>
           )
         })()}
+
+        <AnswerGalleryPanel challengeId={challengeId} attemptId={attemptId} />
       </div>
 
       {/* Footer */}

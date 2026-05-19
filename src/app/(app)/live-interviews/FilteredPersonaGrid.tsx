@@ -142,11 +142,11 @@ export default function FilteredPersonaGrid({ personas, scenarios = [], discipli
   if (!activePersona) return null
 
   return (
-    <div className="flex flex-row gap-0 rounded-2xl overflow-hidden border border-outline-variant/40 bg-surface-container-low">
+    <div className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-outline-variant/40 bg-surface-container-low lg:flex-row">
 
       {/* ── Left: Company Roster ───────────────────────────── */}
-      <div className="shrink-0 flex flex-col border-r border-outline-variant/30" style={{ width: '260px' }}>
-        <div className="overflow-y-auto px-3 py-3 space-y-1.5">
+      <div className="flex max-h-[320px] w-full shrink-0 flex-col border-b border-outline-variant/30 lg:max-h-none lg:w-[260px] lg:border-b-0 lg:border-r">
+        <div className="space-y-1.5 overflow-y-auto px-3 py-3">
           {leftPagedItems.map(persona => {
             const isActive = activePersona.companyId === persona.companyId
             const dotColor = DIFFICULTY_DOT[persona.difficulty]
@@ -221,7 +221,7 @@ export default function FilteredPersonaGrid({ personas, scenarios = [], discipli
       </div>
 
       {/* ── Right: Scenarios Pane ─────────────────────────────────── */}
-      <div className="relative flex-1 flex flex-col overflow-hidden">
+      <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
 
         {/* Ambient icon backdrop */}
         <div

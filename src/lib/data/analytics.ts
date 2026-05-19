@@ -1,4 +1,4 @@
-import { AnalyticsSummary, ChallengeDiscussion } from '@/lib/types'
+import { AnalyticsSummary, ChallengeDiscussion, DiscussionReply } from '@/lib/types'
 import { MOCK_ANALYTICS_SUMMARY, MOCK_DISCUSSIONS } from '@/lib/mock-data'
 import { createClient } from '@supabase/supabase-js'
 import { IS_MOCK } from '@/lib/mock'
@@ -109,22 +109,99 @@ export async function getUserAnalyticsSummary(userId: string): Promise<Analytics
   }
 }
 
-export async function getChallengeDiscussions(challengeId: string): Promise<ChallengeDiscussion[]> {
-  if (USE_MOCK) return MOCK_DISCUSSIONS.filter(d => d.challenge_id === challengeId || true)
+export async function getChallengeDiscussions(challengeId: string, viewerId?: string | null): Promise<ChallengeDiscussion[]> {
+  if (USE_MOCK) return MOCK_DISCUSSIONS.filter(d => d.challenge_id === challengeId)
 
   const supabase = getAdminClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('challenge_discussions')
-    .select('*, profiles(username)')
+    .select('*, profiles!challenge_discussions_user_id_fkey(display_name)')
     .eq('challenge_id', challengeId)
     .order('created_at', { ascending: false })
 
+  if (error) throw error
+
+  const rows = (data ?? []) as unknown as Array<Record<string, unknown> & { id: string }>
+  const ids = rows.map(d => d.id)
+  const reactionCounts = new Map<string, number>()
+  const viewerUpvotedIds = new Set<string>()
+  if (ids.length > 0) {
+    const { data: reactions } = await supabase
+      .from('community_reactions')
+      .select('target_id, user_id')
+      .eq('target_type', 'discussion')
+      .eq('reaction_type', 'upvote')
+      .in('target_id', ids)
+
+    for (const reaction of reactions ?? []) {
+      const targetId = reaction.target_id as string
+      reactionCounts.set(targetId, (reactionCounts.get(targetId) ?? 0) + 1)
+      if (viewerId && reaction.user_id === viewerId) {
+        viewerUpvotedIds.add(targetId)
+      }
+    }
+  }
+
   // Flatten profiles join
-  const enriched = (data ?? []).map((d: Record<string, unknown>) => ({
+  const enriched = rows.map((d) => ({
     ...d,
-    username: (d.profiles as { username?: string } | null)?.username ?? 'Anonymous',
-  }))
-  return enriched as ChallengeDiscussion[]
+    upvote_count: reactionCounts.get(d.id as string) ?? (d.upvote_count as number | null) ?? 0,
+    viewer_has_upvoted: viewerUpvotedIds.has(d.id as string),
+    upvoted_by: viewerUpvotedIds.has(d.id as string) && viewerId ? [viewerId] : [],
+    username: (d.profiles as { display_name?: string } | null)?.display_name
+      ?? (d.display_name as string | null)
+      ?? 'Anonymous',
+  })) as Array<Record<string, unknown> & { id: string; username: string }>
+
+  const visibleDiscussions = enriched.flatMap(d => {
+    if (!d.hidden_at) return [d]
+    if (viewerId && d.user_id === viewerId) return []
+    return [{
+      ...d,
+      content: '[Removed by moderator]',
+      username: 'Removed',
+      display_name: null,
+      is_expert_pick: false,
+      upvote_count: 0,
+      reply_count: 0,
+      viewer_has_upvoted: false,
+      upvoted_by: [],
+    }]
+  }) as Array<Record<string, unknown> & { id: string; username: string }>
+
+  const discussionIds = visibleDiscussions
+    .filter(d => !d.hidden_at)
+    .map(d => d.id)
+  if (discussionIds.length === 0) {
+    return visibleDiscussions.map(d => ({ ...d, replies: [] })) as unknown as ChallengeDiscussion[]
+  }
+
+  const { data: replies, error: repliesError } = await supabase
+    .from('discussion_replies')
+    .select('*, profiles(display_name)')
+    .in('discussion_id', discussionIds)
+    .order('created_at', { ascending: true })
+
+  if (repliesError) throw repliesError
+
+  const repliesByDiscussion = new Map<string, DiscussionReply[]>()
+  for (const reply of replies ?? []) {
+    const row = reply as Record<string, unknown>
+    const discussionId = row.discussion_id as string
+    const existing = repliesByDiscussion.get(discussionId) ?? []
+    existing.push({
+      ...(row as unknown as DiscussionReply),
+      username: (row.profiles as { display_name?: string } | null)?.display_name
+        ?? (row.display_name as string | null)
+        ?? 'Anonymous',
+    })
+    repliesByDiscussion.set(discussionId, existing)
+  }
+
+  return visibleDiscussions.map(d => ({
+    ...d,
+    replies: d.hidden_at ? [] : (repliesByDiscussion.get(d.id) ?? []),
+  })) as ChallengeDiscussion[]
 }
 
 export async function postDiscussion(

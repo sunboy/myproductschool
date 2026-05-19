@@ -31,11 +31,13 @@ export async function GET(
     .from('challenge_attempts')
     .select(`
       id,
-      score,
+      total_score,
+      max_score,
+      grade_label,
+      feedback_json,
       user_id,
       challenge_id,
-      challenges(title, move_tags),
-      move_level_history(xp_delta)
+      challenges(title, move_tags, slug)
     `)
     .eq('id', id)
     .single()
@@ -51,18 +53,21 @@ export async function GET(
     .single()
 
   const prompt = attempt.challenges as unknown as { title: string; move_tags: string[] } | null
-  const xpHistory = attempt.move_level_history as { xp_delta: number }[] | null
-  const xpEarned = xpHistory?.reduce((sum, h) => sum + (h.xp_delta ?? 0), 0) ?? 0
+  const feedback = attempt.feedback_json as { xp_awarded?: number } | null
+  const score = attempt.max_score && attempt.max_score > 0 && attempt.total_score !== null
+    ? Math.round((attempt.total_score / attempt.max_score) * 100)
+    : 0
+  const xpEarned = feedback?.xp_awarded ?? 0
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hackproduct.io'
 
   return NextResponse.json({
-    score: attempt.score ?? 0,
+    score,
     challenge_title: prompt?.title ?? 'Challenge',
     move: prompt?.move_tags?.[0] ?? 'frame',
     user_display_name: profile?.display_name ?? 'Anonymous',
     xp_earned: xpEarned,
-    percentile: attempt.score ? Math.round(attempt.score * 0.85) : 50,
+    percentile: score ? Math.max(50, Math.round(score * 0.85)) : 50,
     share_url: `${appUrl}/workspace/challenges/${id}/share`,
   })
 }

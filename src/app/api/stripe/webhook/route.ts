@@ -7,6 +7,11 @@ import {
   planLabelFromInterval,
   sendBillingEmail,
 } from '@/lib/email/billing'
+import {
+  processAffiliateInvoicePaid,
+  updateAffiliateAccountFromStripeAccount,
+  upsertAffiliateReferralFromCheckoutSession,
+} from '@/lib/stripe/affiliates'
 
 function subscriptionPlanForStatus(status: Stripe.Subscription.Status): 'free' | 'pro' {
   return status === 'active' || status === 'trialing' ? 'pro' : 'free'
@@ -111,8 +116,9 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = createAdminClient()
+  const eventType = event.type as string
 
-  switch (event.type) {
+  switch (eventType) {
 
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session
@@ -129,6 +135,8 @@ export async function POST(req: NextRequest) {
         status: 'active',
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
+
+      await upsertAffiliateReferralFromCheckoutSession(supabase, session)
 
       break
     }
@@ -281,6 +289,8 @@ export async function POST(req: NextRequest) {
         invoiceUrl: invoice.hosted_invoice_url,
         invoicePdf: invoice.invoice_pdf,
       })
+
+      await processAffiliateInvoicePaid({ stripe, supabase, invoice, eventId: event.id })
       break
     }
 
@@ -316,6 +326,22 @@ export async function POST(req: NextRequest) {
         invoicePdf: invoice.invoice_pdf,
         hostedPaymentUrl: invoice.hosted_invoice_url,
       })
+      break
+    }
+
+    case 'v2.core.account.updated':
+    case 'v2.core.account[configuration.recipient].updated':
+    case 'v2.core.account[configuration.recipient].capability_status_updated':
+    case 'v2.core.account[requirements].updated':
+    case 'v2.core.account_link.returned': {
+      const object = event.data.object as { id?: string; account?: string }
+      const accountId = object.id ?? object.account
+      if (!accountId) break
+
+      const account = await stripe.v2.core.accounts.retrieve(accountId, {
+        include: ['configuration.recipient', 'requirements', 'future_requirements'],
+      })
+      await updateAffiliateAccountFromStripeAccount(supabase, account)
       break
     }
   }

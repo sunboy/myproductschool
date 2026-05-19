@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { isBillingPlanId } from '@/lib/billing/plans'
 import {
   createStripeClient,
   getCheckoutBrandingSettings,
   getStripePlanConfig,
 } from '@/lib/stripe/config'
+import {
+  affiliateCheckoutMetadata,
+  resolveAffiliateForCheckout,
+} from '@/lib/stripe/affiliates'
 
 export async function POST(req: NextRequest) {
   const { stripe, config: stripeRuntime } = createStripeClient()
@@ -41,6 +46,8 @@ export async function POST(req: NextRequest) {
 
   const config = getStripePlanConfig(plan)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const affiliate = await resolveAffiliateForCheckout(createAdminClient(), req, user.id)
+  const referralMetadata = affiliateCheckoutMetadata(affiliate)
 
   const lineItem: Stripe.Checkout.SessionCreateParams.LineItem = config.priceId
     ? { price: config.priceId, quantity: 1 }
@@ -63,9 +70,9 @@ export async function POST(req: NextRequest) {
     line_items: [lineItem],
     customer_email: user.email,
     client_reference_id: user.id,
-    metadata: { user_id: user.id, plan, stripe_mode: stripeRuntime.mode },
+    metadata: { user_id: user.id, plan, stripe_mode: stripeRuntime.mode, ...referralMetadata },
     subscription_data: {
-      metadata: { user_id: user.id, plan, stripe_mode: stripeRuntime.mode },
+      metadata: { user_id: user.id, plan, stripe_mode: stripeRuntime.mode, ...referralMetadata },
     },
     allow_promotion_codes: true,
     branding_settings: getCheckoutBrandingSettings(appUrl),

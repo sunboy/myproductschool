@@ -2,6 +2,7 @@
 
 import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
 import { DiscussionThread } from '@/components/challenge/DiscussionThread'
 import { DiscussionInput } from '@/components/challenge/DiscussionInput'
@@ -11,6 +12,29 @@ import { RelatedChallengesPanel } from '@/components/challenge/RelatedChallenges
 import { AppBreadcrumbs } from '@/components/navigation/AppBreadcrumbs'
 import { appendReturnTo, sanitizeReturnTo } from '@/lib/navigation/return-to'
 import type { ChallengeDiscussion } from '@/lib/types'
+
+function deriveUpvotedIds(discussions: ChallengeDiscussion[], userId: string | null) {
+  if (!userId) return new Set<string>()
+  return new Set(
+    discussions
+      .filter(d => d.viewer_has_upvoted || (Array.isArray(d.upvoted_by) && d.upvoted_by.includes(userId)))
+      .map(d => d.id)
+  )
+}
+
+function applyUpvoteState(
+  discussion: ChallengeDiscussion,
+  userId: string | null,
+  upvoted: boolean
+): ChallengeDiscussion {
+  if (!userId) return discussion
+  const previous = Array.isArray(discussion.upvoted_by) ? discussion.upvoted_by : []
+  const next = upvoted
+    ? Array.from(new Set([...previous, userId]))
+    : previous.filter(id => id !== userId)
+
+  return { ...discussion, upvoted_by: next, viewer_has_upvoted: upvoted }
+}
 
 export default function ChallengeDiscussionPage() {
   return (
@@ -31,20 +55,40 @@ function ChallengeDiscussionContent() {
   const [challengeTitle, setChallengeTitle] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [upvotedIds, setUpvotedIds] = useState<Set<string>>(new Set())
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   const fetchDiscussions = useCallback(async () => {
     try {
       const res = await fetch(`/api/challenges/${id}/discussions`)
       if (res.ok) {
         const data = await res.json()
-        setDiscussions(Array.isArray(data) ? data : [])
+        const nextDiscussions = Array.isArray(data) ? data : []
+        setDiscussions(nextDiscussions)
+        setUpvotedIds(deriveUpvotedIds(nextDiscussions, currentUserId))
       }
     } catch { /* silent */ } finally {
       setIsLoading(false)
     }
-  }, [id])
+  }, [id, currentUserId])
 
   useEffect(() => { fetchDiscussions() }, [fetchDiscussions])
+
+  useEffect(() => {
+    setUpvotedIds(deriveUpvotedIds(discussions, currentUserId))
+  }, [currentUserId, discussions])
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/profile')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!cancelled) setCurrentUserId(data?.id ?? null)
+      })
+      .catch(() => {
+        if (!cancelled) setCurrentUserId(null)
+      })
+    return () => { cancelled = true }
+  }, [])
 
   useEffect(() => {
     fetch(`/api/challenges/${id}`)
@@ -54,12 +98,17 @@ function ChallengeDiscussionContent() {
   }, [id])
 
   async function handleUpvote(discussionId: string) {
+    const wasUpvoted = upvotedIds.has(discussionId)
+
     // Optimistic update
-    setDiscussions(prev => prev.map(d =>
-      d.id === discussionId
-        ? { ...d, upvote_count: upvotedIds.has(discussionId) ? d.upvote_count - 1 : d.upvote_count + 1 }
-        : d
-    ))
+    setDiscussions(prev => prev.map(d => {
+      if (d.id !== discussionId) return d
+      return applyUpvoteState(
+        { ...d, upvote_count: wasUpvoted ? d.upvote_count - 1 : d.upvote_count + 1 },
+        currentUserId,
+        !wasUpvoted
+      )
+    }))
     setUpvotedIds(prev => {
       const next = new Set(prev)
       if (next.has(discussionId)) next.delete(discussionId)
@@ -68,8 +117,41 @@ function ChallengeDiscussionContent() {
     })
 
     try {
-      await fetch(`/api/challenges/${id}/discussions/${discussionId}/upvote`, { method: 'PATCH' })
-    } catch { /* silent */ }
+      const res = await fetch(`/api/challenges/${id}/discussions/${discussionId}/upvote`, { method: 'PATCH' })
+      if (!res.ok) throw new Error('Upvote failed')
+      const data = await res.json().catch(() => null)
+      if (typeof data?.upvote_count === 'number') {
+        setDiscussions(prev => prev.map(d =>
+          d.id === discussionId
+            ? applyUpvoteState({ ...d, upvote_count: data.upvote_count }, currentUserId, Boolean(data.upvoted))
+            : d
+        ))
+      }
+      if (typeof data?.upvoted === 'boolean') {
+        setUpvotedIds(prev => {
+          const next = new Set(prev)
+          if (data.upvoted) next.add(discussionId)
+          else next.delete(discussionId)
+          return next
+        })
+      }
+    } catch {
+      setDiscussions(prev => prev.map(d =>
+        d.id === discussionId
+          ? applyUpvoteState(
+            { ...d, upvote_count: Math.max(0, d.upvote_count + (wasUpvoted ? 1 : -1)) },
+            currentUserId,
+            wasUpvoted
+          )
+          : d
+      ))
+      setUpvotedIds(prev => {
+        const next = new Set(prev)
+        if (wasUpvoted) next.add(discussionId)
+        else next.delete(discussionId)
+        return next
+      })
+    }
   }
 
   const expertPicks = discussions.filter(d => d.is_expert_pick)
@@ -117,7 +199,11 @@ function ChallengeDiscussionContent() {
                   discussion={d}
                   challengeId={id}
                   upvoted={upvotedIds.has(d.id)}
+                  currentUserId={currentUserId}
                   onUpvote={handleUpvote}
+                  onReplyPosted={fetchDiscussions}
+                  onDiscussionChanged={fetchDiscussions}
+                  replies={d.replies ?? []}
                 />
               ))}
             </div>
@@ -139,7 +225,11 @@ function ChallengeDiscussionContent() {
                   challengeId={id}
                   isOP={idx === 0 && expertPicks.length === 0}
                   upvoted={upvotedIds.has(d.id)}
+                  currentUserId={currentUserId}
                   onUpvote={handleUpvote}
+                  onReplyPosted={fetchDiscussions}
+                  onDiscussionChanged={fetchDiscussions}
+                  replies={d.replies ?? []}
                 />
               ))}
             </div>
@@ -163,6 +253,18 @@ function ChallengeDiscussionContent() {
             responseCount={discussions.length}
             participantCount={new Set(discussions.map(d => d.user_id)).size}
           />
+          <Link
+            href={challengeHref}
+            className="block rounded-xl border border-outline-variant/50 bg-surface-container-low p-4 no-underline transition-transform hover:-translate-y-0.5"
+          >
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.1em] text-primary">
+              <span className="material-symbols-outlined text-[16px]">groups</span>
+              Answer gallery
+            </div>
+            <p className="mt-2 text-sm leading-5 text-on-surface-variant">
+              Complete the challenge to compare with peer approaches and trade feedback.
+            </p>
+          </Link>
           <TopContributorsPanel discussions={discussions} />
           <RelatedChallengesPanel currentChallengeId={id} />
         </div>

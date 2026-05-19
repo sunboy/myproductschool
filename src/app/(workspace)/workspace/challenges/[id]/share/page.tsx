@@ -1,128 +1,149 @@
 import Link from 'next/link'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { HatchGlyph } from '@/components/shell/HatchGlyph'
+import { COMMUNITY_LENS_LABELS, formatCommunityDisplayName } from '@/lib/community-shared'
+import type { CommunityDisplayMode, CommunityLensTag } from '@/lib/types'
 
-export default function ShareScoreCardPage() {
+type AttemptShareRow = {
+  id: string
+  user_id: string
+  challenge_id: string
+  total_score: number | null
+  max_score: number | null
+  grade_label: string | null
+  feedback_json: Record<string, unknown> | null
+  completed_at: string | null
+  challenges?: { title?: string | null; slug?: string | null; move_tags?: string[] | null } | { title?: string | null; slug?: string | null; move_tags?: string[] | null }[] | null
+  profiles?: { display_name?: string | null } | { display_name?: string | null }[] | null
+}
+
+type SubmissionShareRow = {
+  display_mode: CommunityDisplayMode
+  status: string
+  lens_tag: CommunityLensTag
+  excerpt: string
+}
+
+function firstJoin<T>(value: T | T[] | null | undefined): T | null {
+  if (!value) return null
+  return Array.isArray(value) ? (value[0] ?? null) : value
+}
+
+function getXp(feedback: Record<string, unknown> | null): number {
+  const raw = feedback?.xp_awarded
+  return typeof raw === 'number' ? raw : 0
+}
+
+export default async function ShareScoreCardPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const admin = createAdminClient()
+
+  const { data: attempt } = await admin
+    .from('challenge_attempts')
+    .select('id, user_id, challenge_id, total_score, max_score, grade_label, feedback_json, completed_at, challenges(title, slug, move_tags), profiles(display_name)')
+    .eq('id', id)
+    .eq('status', 'completed')
+    .maybeSingle()
+
+  if (!attempt) {
+    return (
+      <main className="min-h-screen bg-background px-4 py-12 text-on-surface">
+        <div className="mx-auto max-w-lg rounded-2xl border border-outline-variant bg-surface p-8 text-center">
+          <HatchGlyph size={44} state="idle" className="mx-auto text-primary" />
+          <h1 className="mt-4 font-headline text-2xl font-bold">Share receipt not found</h1>
+          <p className="mt-2 text-sm text-on-surface-variant">This practice receipt may be private or no longer available.</p>
+          <Link href="/challenges" className="mt-5 inline-flex rounded-full bg-primary px-4 py-2 text-sm font-bold text-on-primary">
+            Try a challenge
+          </Link>
+        </div>
+      </main>
+    )
+  }
+
+  const attemptRow = attempt as AttemptShareRow
+  const challenge = firstJoin(attemptRow.challenges)
+  const profile = firstJoin(attemptRow.profiles)
+
+  const { data: submission } = await admin
+    .from('community_submissions')
+    .select('display_mode, status, lens_tag, excerpt')
+    .eq('attempt_id', id)
+    .in('status', ['published', 'featured'])
+    .maybeSingle()
+
+  const publishedSubmission = submission as SubmissionShareRow | null
+  const score = attemptRow.max_score && attemptRow.max_score > 0 && attemptRow.total_score !== null
+    ? Math.round((attemptRow.total_score / attemptRow.max_score) * 100)
+    : 0
+  const move = challenge?.move_tags?.[0] ?? 'frame'
+  const challengeHref = `/workspace/challenges/${challenge?.slug ?? attemptRow.challenge_id}`
+  const displayName = formatCommunityDisplayName(publishedSubmission?.display_mode ?? 'anonymous', profile?.display_name ?? null)
+
   return (
-    <div className="bg-inverse-surface/80 min-h-screen flex items-center justify-center font-body text-on-surface p-4">
-      {/* Top Right Close */}
-      <Link href="/dashboard" className="fixed top-6 right-8 text-white flex items-center gap-2 font-medium hover:opacity-80 transition-opacity z-10">
+    <main className="min-h-screen bg-inverse-surface px-4 py-8 text-on-surface">
+      <Link href="/dashboard" className="fixed right-6 top-6 z-10 flex items-center gap-2 text-sm font-bold text-white/80 hover:text-white">
         <span className="material-symbols-outlined text-lg">close</span>
-        <span>Close</span>
+        Close
       </Link>
 
-      <div className="flex flex-col items-center gap-8 w-full max-w-[420px]">
-        {/* Score Card */}
-        <div className="w-[360px] bg-surface rounded-2xl border border-primary/20 shadow-2xl overflow-hidden flex flex-col items-center p-6 relative">
-          {/* Card Header */}
-          <div className="flex justify-between items-center w-full mb-6">
+      <div className="mx-auto flex w-full max-w-[460px] flex-col items-center gap-6">
+        <section className="w-full overflow-hidden rounded-2xl border border-primary/25 bg-surface p-6 shadow-2xl">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <HatchGlyph size={32} state="idle" className="text-primary" />
-              <span className="font-headline font-bold text-primary text-lg">HackProduct</span>
+              <span className="font-headline text-lg font-bold text-primary">HackProduct</span>
             </div>
+            {publishedSubmission && (
+              <span className="rounded-full bg-primary-fixed px-3 py-1 text-xs font-bold text-primary">
+                {COMMUNITY_LENS_LABELS[publishedSubmission.lens_tag]}
+              </span>
+            )}
           </div>
 
-          {/* Score Display */}
-          <div className="text-center mb-2">
-            <span className="font-headline text-[64px] font-bold text-primary leading-none">84</span>
+          <div className="mt-8 text-center">
+            <span className="font-headline text-[68px] font-bold leading-none text-primary">{score}</span>
             <span className="font-headline text-2xl text-primary/60">/100</span>
           </div>
 
-          <div className="text-center mb-4">
-            <p className="font-semibold text-on-surface text-base px-4">The Feature That Backfired</p>
-            <div className="mt-2 inline-flex items-center gap-1 bg-tertiary-container/30 text-tertiary px-3 py-1 rounded-full text-xs font-bold">
-              <span>Optimize</span>
-              <span
-                className="material-symbols-outlined text-[10px]"
-                style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
-              >
-                diamond
-              </span>
+          <div className="mt-3 text-center">
+            <p className="px-4 text-base font-semibold text-on-surface">{challenge?.title ?? 'Practice challenge'}</p>
+            <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-tertiary-container/30 px-3 py-1 text-xs font-bold capitalize text-tertiary">
+              <span>{move}</span>
+              <span className="material-symbols-outlined text-[10px]" style={{ fontVariationSettings: "'FILL' 1" }}>diamond</span>
             </div>
           </div>
 
-          {/* Mini Radar Chart Mockup */}
-          <div className="relative w-[120px] h-[120px] mb-6 flex items-center justify-center">
-            <div
-              className="absolute inset-0 border border-outline-variant opacity-20"
-              style={{ clipPath: 'polygon(50% 10%, 90% 40%, 75% 90%, 25% 90%, 10% 40%)' }}
-            />
-            <div
-              className="absolute inset-2 bg-primary/20 border border-primary/40"
-              style={{ clipPath: 'polygon(50% 10%, 90% 40%, 75% 90%, 25% 90%, 10% 40%)' }}
-            />
-            <div className="absolute -top-4 text-[8px] font-bold text-outline">FRAME</div>
-            <div className="absolute -right-6 top-1/2 -translate-y-1/2 text-[8px] font-bold text-outline">WIN</div>
-            <div className="absolute -left-8 top-1/2 -translate-y-1/2 text-[8px] font-bold text-outline">LENS</div>
+          <div className="mt-6 flex items-center justify-center gap-3 rounded-lg bg-surface-container px-4 py-2 text-xs font-semibold text-on-surface-variant">
+            <span>{attemptRow.grade_label ?? 'Completed'}</span>
+            <span className="text-outline-variant">|</span>
+            <span>XP +{getXp(attemptRow.feedback_json)}</span>
+            <span className="text-outline-variant">|</span>
+            <span>{displayName}</span>
           </div>
 
-          {/* Stats Bar */}
-          <div className="flex items-center gap-3 text-xs text-on-surface-variant font-medium bg-surface-container rounded-lg px-4 py-2 mb-6">
-            <span>Time: 4m 12s</span>
-            <span className="text-outline-variant">&bull;</span>
-            <span>XP: +120</span>
-            <span className="text-outline-variant">&bull;</span>
-            <span>Level: 3</span>
+          <div className="mt-6 border-t border-outline-variant/40 pt-4 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-outline-variant">hackproduct.com</p>
           </div>
+        </section>
 
-          {/* Footer Logo/URL */}
-          <div className="mt-auto border-t border-outline-variant/30 pt-4 w-full text-center">
-            <p className="text-[10px] tracking-widest uppercase font-bold text-outline-variant">hackproduct.com</p>
-          </div>
-        </div>
-
-        {/* Action Area */}
-        <div className="flex flex-col items-center w-full gap-6">
-          {/* Hatch Bubble */}
-          <div className="flex items-start gap-4 max-w-[380px]">
-            <HatchGlyph size={64} state="celebrating" className="text-primary flex-shrink-0" />
-            <div className="bg-surface-container rounded-xl p-4 text-sm text-on-surface relative mt-2 border border-outline-variant/20 shadow-sm">
-              <div className="absolute -left-2 top-4 w-4 h-4 bg-surface-container border-l border-t border-outline-variant/20 rotate-[-45deg]" />
-              <p className="relative z-10">Share your score and challenge your network. Who else can crack this one?</p>
+        <section className="w-full rounded-2xl border border-white/10 bg-white/10 p-5 text-white">
+          <div className="flex items-start gap-3">
+            <HatchGlyph size={46} state="celebrating" className="shrink-0 text-primary-fixed" />
+            <div>
+              <h2 className="font-headline text-lg font-bold">Try the same prompt first</h2>
+              <p className="mt-1 text-sm leading-6 text-white/75">
+                {publishedSubmission
+                  ? 'Their answer is in the gallery, but the best comparison happens after you take your own swing.'
+                  : 'This receipt is based on a real completed attempt. Take the challenge and compare your result.'}
+              </p>
             </div>
           </div>
-
-          {/* Social Buttons */}
-          <div className="flex flex-col gap-3 w-full">
-            <button className="bg-[#0A66C2] text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all">
-              Share to LinkedIn <span className="material-symbols-outlined text-base">arrow_forward</span>
-            </button>
-            <button className="bg-on-surface text-white w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-all">
-              Share to Twitter/X <span className="material-symbols-outlined text-base">arrow_forward</span>
-            </button>
-            <button className="border-2 border-primary text-primary w-full py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary/5 transition-all">
-              <span className="material-symbols-outlined text-base">content_copy</span>
-              Copy image
-            </button>
-          </div>
-
-          {/* Caption Preview */}
-          <div className="w-full bg-on-surface/10 rounded-lg p-3 border border-white/10">
-            <p className="text-[11px] text-white/70 leading-relaxed italic">
-              Pre-filled caption: &ldquo;I just scored 84/100 on The Feature That Backfired (Optimize move) on HackProduct 🎯&rdquo;
-            </p>
-          </div>
-
-          {/* Back to Dashboard */}
-          <Link href="/dashboard" className="text-sm text-white/70 hover:text-white underline underline-offset-2 transition-colors">
-            Back to Dashboard
+          <Link href={challengeHref} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary-fixed px-4 py-3 text-sm font-bold text-on-primary-fixed hover:brightness-105">
+            Attempt this challenge
+            <span className="material-symbols-outlined text-base">arrow_forward</span>
           </Link>
-
-          {/* Context Strip */}
-          <div className="flex flex-col items-center gap-3 pt-2">
-            <div className="flex -space-x-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="w-8 h-8 rounded-full border-2 border-inverse-surface bg-surface-container-high flex items-center justify-center overflow-hidden">
-                  <span className="material-symbols-outlined text-on-surface-variant text-sm">person</span>
-                </div>
-              ))}
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-white/80">3 friends from your network have also attempted this challenge</p>
-              <Link href="/progress" className="text-xs text-primary-fixed font-bold hover:underline mt-1 inline-block">See your progress &rarr;</Link>
-            </div>
-          </div>
-        </div>
+        </section>
       </div>
-    </div>
+    </main>
   )
 }

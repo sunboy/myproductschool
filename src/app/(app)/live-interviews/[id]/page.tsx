@@ -1250,7 +1250,7 @@ export default function SessionPage({
         }}
       >
         {/* Left */}
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <button
             onClick={() => router.push('/live-interviews')}
             className="flex items-center justify-center rounded-full transition-colors"
@@ -1269,19 +1269,19 @@ export default function SessionPage({
 
           {companyName && (
             <span
-              className="rounded-full px-2.5 py-0.5 font-label text-xs font-semibold"
+              className="max-w-[120px] truncate rounded-full px-2.5 py-0.5 font-label text-xs font-semibold sm:max-w-none"
               style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)' }}
             >
               {companyName}
             </span>
           )}
           {discipline && (
-            <span className="font-label text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            <span className="hidden font-label text-sm font-semibold sm:inline" style={{ color: 'rgba(255,255,255,0.7)' }}>
               {DISCIPLINE_META[discipline].label}
             </span>
           )}
           {roleName && (
-            <span className="font-label text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <span className="hidden font-label text-xs md:inline" style={{ color: 'rgba(255,255,255,0.45)' }}>
               · {roleName}
             </span>
           )}
@@ -1306,7 +1306,7 @@ export default function SessionPage({
 
         {/* Center — Timer */}
         <div
-          className="rounded-full px-4 py-1 font-mono tabular-nums"
+          className="shrink-0 rounded-full px-3 py-1 font-mono tabular-nums sm:px-4"
           style={{
             fontSize: 20,
             fontWeight: 500,
@@ -1319,7 +1319,7 @@ export default function SessionPage({
         </div>
 
         {/* Right — FLOW mini-bars */}
-        <div className="flex items-center gap-4">
+        <div className="hidden items-center gap-4 sm:flex">
           {flowMoves.map(({ key, label }) => {
             const score = flowCoverage[key] ?? 0
             const color = FLOW_COLORS[key]
@@ -1385,11 +1385,11 @@ export default function SessionPage({
       )}
 
       {/* ── Body: 3-column ── */}
-      <div className="flex-1 flex overflow-hidden min-h-0">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
 
         {/* LEFT: Transcript (320px) */}
         <div
-          className="shrink-0 flex flex-col overflow-hidden"
+          className="hidden shrink-0 flex-col overflow-hidden lg:flex"
           style={{
             width: 320,
             borderRight: '1px solid rgba(255,255,255,0.07)',
@@ -1549,7 +1549,7 @@ export default function SessionPage({
 
         {/* RIGHT: FLOW HUD (280px) */}
         <div
-          className="shrink-0 flex flex-col overflow-hidden"
+          className="hidden shrink-0 flex-col overflow-hidden lg:flex"
           style={{
             width: 280,
             background: 'rgba(0,0,0,0.15)',

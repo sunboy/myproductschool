@@ -89,7 +89,7 @@ function HatchLineArt() {
 
 function DisciplineSignalBoard() {
   return (
-    <div className="hidden md:grid max-w-[520px] grid-cols-5 gap-2 pt-7">
+    <div className="hidden min-[1200px]:grid max-w-[520px] grid-cols-5 gap-2 pt-7">
       {AUTH_DISCIPLINES.map((discipline) => (
         <div
           key={discipline.label}
@@ -225,10 +225,10 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
     /*
      * ONE unified background — the gradient lives here, on a single element.
      * No separate panel backgrounds. The form card floats on top.
-     * Mobile: stacks vertically with the same gradient top→bottom.
+     * Mobile: stacks vertically with the same gradient top to bottom.
      */
     <div
-      className="relative min-h-[100dvh] overflow-hidden"
+      className="relative min-h-[100svh] overflow-x-hidden"
       style={{
         background: 'linear-gradient(118deg, #07100c 0%, #0c1610 25%, #163324 48%, #1e4a31 60%, #29623f 70%, #3d7a52 80%, #5a9468 90%, #7ab088 100%)',
       }}
@@ -247,7 +247,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       />
 
       {/* Hatch line art — left half only */}
-      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
+      <div className="absolute inset-0 hidden pointer-events-none sm:block" style={{ zIndex: 1 }}>
         <HatchLineArt />
       </div>
 
@@ -263,16 +263,16 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
       />
 
       {/* Content: left brand/headline + right form card — on desktop side by side */}
-      <div className="relative min-h-[100dvh] flex flex-col md:flex-row md:items-center" style={{ zIndex: 2 }}>
+      <div className="relative flex min-h-[100svh] flex-col md:min-h-[100dvh] md:flex-row md:items-center" style={{ zIndex: 2 }}>
 
         {/* ── Left: brand + headline ───────────────────── */}
-        <div className="flex flex-col justify-center px-10 py-12 md:px-16 md:py-0 md:flex-1">
+        <div className="flex flex-col justify-center px-5 pb-5 pt-6 sm:px-8 sm:pt-8 md:flex-1 md:px-12 md:py-0 lg:px-16">
           {/* Brand mark */}
-          <div className="flex items-center gap-2 mb-10 md:mb-12">
+          <div className="mb-6 flex items-center gap-2 md:mb-10 lg:mb-12">
             <HatchGlyph size={30} state="idle" className="text-primary" />
             <span
               className="font-headline font-bold text-white"
-              style={{ fontSize: 19, letterSpacing: '-0.01em' }}
+              style={{ fontSize: 19, letterSpacing: 0 }}
             >
               HackProduct
             </span>
@@ -280,25 +280,22 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
 
           {/* Headline */}
           <h1
-            className="font-headline font-extrabold text-white"
+            className="font-headline text-[34px] font-extrabold leading-[1.06] text-white sm:text-[44px] lg:text-[64px]"
             style={{
-              fontSize: 'clamp(32px, 4.5vw, 68px)',
-              lineHeight: 1.04,
-              letterSpacing: '-0.03em',
+              letterSpacing: 0,
               maxWidth: '11ch',
             } as React.CSSProperties}
           >
             Build with judgment.
           </h1>
           <p
-            className="font-body mt-4 leading-relaxed"
-            style={{ fontSize: 'clamp(13px, 1.2vw, 16px)', color: 'rgba(255,255,255,0.45)', maxWidth: '38ch' }}
+            className="font-body mt-3 max-w-[38ch] text-sm leading-relaxed text-white/55 sm:mt-4 sm:text-base md:text-white/45"
           >
             Practice product, systems, data, SQL, and coding judgment. Stay sharp as AI reshapes the job.
           </p>
 
           {/* Feature bullets — desktop only */}
-          <ul className="hidden md:flex flex-col gap-3 mt-10">
+          <ul className="mt-10 hidden flex-col gap-3 min-[1200px]:flex">
             {[
               'Product sense, system design, data modeling, SQL, and coding in one track',
               'Hatch coaches in real time and pushes back when you hand-wave',
@@ -320,9 +317,9 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
         </div>
 
         {/* ── Right: form card — glass on the gradient ─── */}
-        <div className="flex items-center justify-center px-6 py-10 md:py-0 md:px-12 md:w-[460px] md:shrink-0">
+        <div className="flex items-start justify-center px-4 pb-6 pt-2 sm:px-6 sm:pb-10 md:w-[460px] md:shrink-0 md:items-center md:px-10 md:py-8 lg:px-12">
           <div
-            className="w-full max-w-sm rounded-2xl p-8 space-y-5"
+            className="w-full max-w-sm space-y-4 rounded-2xl p-5 sm:space-y-5 sm:p-7 md:p-8"
             style={{
               background: 'rgba(8,18,12,0.72)',
               backdropFilter: 'blur(28px)',

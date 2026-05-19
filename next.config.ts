@@ -1,8 +1,18 @@
 import type { NextConfig } from 'next'
+import path from 'node:path'
+
+const projectRoot = process.cwd().includes(`${path.sep}.worktrees${path.sep}`)
+  ? path.resolve(process.cwd(), '../..')
+  : process.cwd()
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: projectRoot,
+  },
   async redirects() {
     return [
+      { source: '/marketing', destination: '/', permanent: true },
+      { source: '/marketing/:path*', destination: '/:path*', permanent: true },
       { source: '/domains', destination: '/explore/domains', permanent: true },
       { source: '/domains/:slug', destination: '/explore/domains/:slug', permanent: true },
       { source: '/product-75', destination: '/explore', permanent: true },

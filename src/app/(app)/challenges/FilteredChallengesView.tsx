@@ -317,8 +317,8 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
   }
 
   return (
-    <div className="flex flex-col -mx-6">
-      <section className="px-6 pb-4">
+    <div className="-mx-4 flex min-w-0 flex-col sm:-mx-6">
+      <section className="px-4 pb-4 sm:px-6">
         <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-6">
           {DISCIPLINES.map((entry) => {
             const active = discipline === entry.key
@@ -407,7 +407,7 @@ export function FilteredChallengesView({ challenges, paradigms }: Props) {
       />
 
       {/* Results */}
-      <div className="px-6 pt-4">
+      <div className="px-4 pt-4 sm:px-6">
         {filteredChallenges.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
             <p className="font-headline text-base font-bold text-on-surface">No challenges match those filters</p>

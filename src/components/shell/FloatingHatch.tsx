@@ -598,12 +598,18 @@ export function FloatingHatch() {
             style={{ background: 'var(--color-inverse-surface)' }}
           />
           <button
+            type="button"
             onClick={activeCue ? dismissCue : dismissBubble}
-            className="absolute -top-2 -right-2 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
-            style={{ background: 'var(--color-surface-container-highest)', color: 'var(--color-on-surface-variant)' }}
+            className="absolute -top-3 -right-3 flex h-7 w-7 items-center justify-center rounded-full border text-on-surface shadow-[0_10px_24px_-12px_rgba(0,0,0,0.55)] transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/45"
+            style={{
+              background: 'var(--color-surface)',
+              borderColor: 'rgba(255,255,255,0.55)',
+              color: 'var(--color-on-surface)',
+            }}
             aria-label="Dismiss"
+            title="Dismiss"
           >
-            ×
+            <span className="material-symbols-outlined text-[16px] leading-none">close</span>
           </button>
         </div>
       )}

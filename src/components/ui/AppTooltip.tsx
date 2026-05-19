@@ -33,9 +33,9 @@ export function AppTooltip({
       <span
         role="tooltip"
         className={[
-          'pointer-events-none absolute z-50 w-max max-w-[220px] rounded-lg px-2.5 py-1.5 text-left text-[11px] font-label font-bold leading-snug opacity-0 shadow-lg transition-opacity duration-150',
+          'pointer-events-none absolute z-50 hidden w-max max-w-[220px] rounded-lg px-2.5 py-1.5 text-left text-[11px] font-label font-bold leading-snug opacity-0 shadow-lg transition-opacity duration-100 delay-0 sm:block',
           'bg-[#1f2b24] text-[#f7efe2] ring-1 ring-white/10',
-          'group-hover/tooltip:opacity-100 group-focus-within/tooltip:opacity-100',
+          'group-hover/tooltip:opacity-100 group-hover/tooltip:delay-300 group-focus-within/tooltip:opacity-100 group-focus-within/tooltip:delay-150',
           SIDE_CLASS[side],
         ].join(' ')}
       >

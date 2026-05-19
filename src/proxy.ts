@@ -42,15 +42,16 @@ const APP_PUBLIC_ROUTES = ['/onboarding', '/welcome', '/role', '/calibration']
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
+  if (pathname === '/marketing' || pathname.startsWith('/marketing/')) {
+    const destination = request.nextUrl.clone()
+    destination.pathname = pathname === '/marketing' ? '/' : pathname.replace(/^\/marketing/, '') || '/'
+    return NextResponse.redirect(destination, 308)
+  }
+
   // ── Post-launch: normal auth flow ──────────────────────
   // Bypass auth in mock/testing mode
   if (IS_MOCK) {
     return NextResponse.next()
-  }
-
-  // Hide unimplemented routes
-  if (pathname.startsWith('/cohort')) {
-    return NextResponse.redirect(new URL('/challenges', request.url))
   }
 
   // ── Pre-launch: only waitlist + its API are accessible ──
@@ -70,10 +71,11 @@ export async function proxy(request: NextRequest) {
   const isWaitlist  = WAITLIST_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isAuthRoute = AUTH_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
   const isApi       = pathname.startsWith('/api/')
+  const isAdminApi  = pathname.startsWith('/api/admin')
 
   // Pure marketing routes that never need auth (not / or waitlist which need redirect logic)
   const isPureMarketing = isMarketing && !isRoot && !isWaitlist
-  if (isPureMarketing || isApi) {
+  if (isPureMarketing || (isApi && !isAdminApi)) {
     return NextResponse.next()
   }
 
@@ -103,6 +105,21 @@ export async function proxy(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+
+  if (isAdminApi) {
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+    if (profile?.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    return supabaseResponse
+  }
 
   // Authenticated users visiting / go straight to dashboard.
   // Unauthenticated visitors see the landing page.

@@ -40,6 +40,29 @@ import type { ChallengeDiscussion } from '@/lib/types'
 const ExcalidrawCanvas = dynamic(() => import('@/components/challenge/ExcalidrawCanvas'), { ssr: false })
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false })
 
+function deriveDiscussionUpvotes(items: ChallengeDiscussion[], userId: string | null) {
+  if (!userId) return new Set<string>()
+  return new Set(
+    items
+      .filter(d => d.viewer_has_upvoted || (Array.isArray(d.upvoted_by) && d.upvoted_by.includes(userId)))
+      .map(d => d.id)
+  )
+}
+
+function applyDiscussionUpvoteState(
+  discussion: ChallengeDiscussion,
+  userId: string | null,
+  upvoted: boolean
+): ChallengeDiscussion {
+  if (!userId) return discussion
+  const previous = Array.isArray(discussion.upvoted_by) ? discussion.upvoted_by : []
+  const next = upvoted
+    ? Array.from(new Set([...previous, userId]))
+    : previous.filter(id => id !== userId)
+
+  return { ...discussion, upvoted_by: next, viewer_has_upvoted: upvoted }
+}
+
 type ContextPackKey = 'assumptions' | 'constraints' | 'interfaces' | 'risks'
 type ContextPackState = Record<ContextPackKey, string>
 
@@ -476,6 +499,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
   const [discussionsLoading, setDiscussionsLoading] = useState(false)
   const [discussionsLoaded, setDiscussionsLoaded] = useState(false)
   const [upvoted, setUpvoted] = useState<Set<string>>(new Set())
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   // Session history for Submissions tab
   const [sessionHistory, setSessionHistory] = useState<SessionRecord[]>([])
@@ -1597,6 +1621,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       if (res.ok) {
         const data: ChallengeDiscussion[] = await res.json()
         setDiscussions(data)
+        setUpvoted(deriveDiscussionUpvotes(data, currentUserId))
         setDiscussionsLoaded(true)
       }
     } finally {
@@ -1611,21 +1636,77 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
     }
   }, [leftTab])
 
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/profile')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!cancelled) setCurrentUserId(data?.id ?? null)
+      })
+      .catch(() => {
+        if (!cancelled) setCurrentUserId(null)
+      })
+    return () => { cancelled = true }
+  }, [])
+
+  useEffect(() => {
+    setUpvoted(deriveDiscussionUpvotes(discussions, currentUserId))
+  }, [currentUserId, discussions])
+
   async function handleDiscussionUpvote(id: string) {
     if (!challengeId) return
-    await fetch(`/api/challenges/${challengeId}/discussions/${id}/upvote`, { method: 'PATCH' })
+    const wasUpvoted = upvoted.has(id)
     setUpvoted(prev => {
       const next = new Set(prev)
       next.has(id) ? next.delete(id) : next.add(id)
       return next
     })
     setDiscussions(prev =>
-      prev.map(d =>
-        d.id === id
-          ? { ...d, upvote_count: d.upvote_count + (upvoted.has(id) ? -1 : 1) }
-          : d
-      )
+      prev.map(d => {
+        if (d.id !== id) return d
+        return applyDiscussionUpvoteState(
+          { ...d, upvote_count: d.upvote_count + (wasUpvoted ? -1 : 1) },
+          currentUserId,
+          !wasUpvoted
+        )
+      })
     )
+    try {
+      const res = await fetch(`/api/challenges/${challengeId}/discussions/${id}/upvote`, { method: 'PATCH' })
+      if (!res.ok) throw new Error('Upvote failed')
+      const data = await res.json().catch(() => null)
+      if (typeof data?.upvote_count === 'number') {
+        setDiscussions(prev =>
+          prev.map(d => d.id === id
+            ? applyDiscussionUpvoteState({ ...d, upvote_count: data.upvote_count }, currentUserId, Boolean(data.upvoted))
+            : d)
+        )
+      }
+      if (typeof data?.upvoted === 'boolean') {
+        setUpvoted(prev => {
+          const next = new Set(prev)
+          if (data.upvoted) next.add(id)
+          else next.delete(id)
+          return next
+        })
+      }
+    } catch {
+      setUpvoted(prev => {
+        const next = new Set(prev)
+        if (wasUpvoted) next.add(id)
+        else next.delete(id)
+        return next
+      })
+      setDiscussions(prev =>
+        prev.map(d => d.id === id
+          ? applyDiscussionUpvoteState(
+            { ...d, upvote_count: Math.max(0, d.upvote_count + (wasUpvoted ? 1 : -1)) },
+            currentUserId,
+            wasUpvoted
+          )
+          : d)
+      )
+    }
   }
 
   // ── Render states ──────────────────────────────────────────────
@@ -2417,7 +2498,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                 challengeId={challengeId}
                 isOP
                 upvoted={upvoted.has(d.id)}
+                currentUserId={currentUserId}
                 onUpvote={handleDiscussionUpvote}
+                onReplyPosted={fetchDiscussions}
+                onDiscussionChanged={fetchDiscussions}
+                replies={d.replies ?? []}
               />
             ))}
           </div>
@@ -2436,7 +2521,11 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
             discussion={d}
             challengeId={challengeId}
             upvoted={upvoted.has(d.id)}
+            currentUserId={currentUserId}
             onUpvote={handleDiscussionUpvote}
+            onReplyPosted={fetchDiscussions}
+            onDiscussionChanged={fetchDiscussions}
+            replies={d.replies ?? []}
           />
         ))}
       </div>
@@ -2981,6 +3070,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   maxScore={historyRecord ? historyRecord.maxScore : (completionData?.max_score ?? 3)}
                   xpAwarded={historyRecord ? historyRecord.xpAwarded : (completionData?.xp_awarded ?? 0)}
                   stepResults={historyRecord ? historyRecord.stepResults : mirrorStepResults}
+                  challengeId={isApiMode ? (props as Extract<FlowWorkspaceProps, { mode: 'api' }>).challengeId : undefined}
                   attemptId={historyRecord ? (historyRecord.attemptId ?? undefined) : (attemptId ?? undefined)}
                   competencyDeltas={historyRecord
                     ? historyRecord.competencyDeltas

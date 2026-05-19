@@ -21,7 +21,7 @@ export default async function ChallengesPage({
 }) {
   return (
     <UsageProvider>
-      <main className="max-w-[1440px] mx-auto px-6 py-7">
+      <main className="mx-auto max-w-[1440px] px-4 py-7 sm:px-6">
         <Suspense fallback={<div className="animate-pulse h-64 bg-surface-container rounded-xl" />}>
           <FreePracticeContent searchParams={searchParams} />
         </Suspense>

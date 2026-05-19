@@ -10,6 +10,7 @@ import {
   getLeaderboardPeek,
   getLatestInterview,
 } from '@/lib/data/dashboard'
+import { getCommunityActivityFeed } from '@/lib/data/community'
 import { getEnrolledPlans } from '@/lib/data/study-plans'
 import { QuickTakeCard } from '@/components/dashboard/cards/QuickTakeCard'
 import { NextChallengeCard } from '@/components/dashboard/cards/NextChallengeCard'
@@ -18,6 +19,7 @@ import { FlowMoveLevelsCard } from '@/components/dashboard/cards/FlowMoveLevelsC
 import { LatestInterviewCard } from '@/components/dashboard/cards/LatestInterviewCard'
 import { HotChallengesCard } from '@/components/dashboard/cards/HotChallengesCard'
 import { LeaderboardPeekCard } from '@/components/dashboard/cards/LeaderboardPeekCard'
+import { CommunityActivityCard } from '@/components/dashboard/cards/CommunityActivityCard'
 import { InterviewCountdownCard } from '@/components/dashboard/cards/InterviewCountdownCard'
 import { EnrolledPlansCard } from '@/components/dashboard/cards/EnrolledPlansCard'
 import { TodaysPathCard } from '@/components/dashboard/cards/TodaysPathCard'
@@ -233,11 +235,12 @@ export default async function DashboardPage() {
   const userId = user?.id ?? ''
   const adminClient = createAdminClient()
 
-  const [hotChallenges, leaderboard, enrolledPlans, latestInterview] = await Promise.all([
+  const [hotChallenges, leaderboard, enrolledPlans, latestInterview, communityActivity] = await Promise.all([
     getHotChallenges(),
     userId ? getLeaderboardPeek(userId) : [],
     userId ? getEnrolledPlans(userId) : [],
     userId ? getLatestInterview(userId) : null,
+    userId ? getCommunityActivityFeed(6) : [],
   ])
 
   // Fetch paused loops for PausedLoopCard
@@ -475,7 +478,7 @@ export default async function DashboardPage() {
 
       {/* State A — Calibrated */}
       {isCalibrated && (
-        <div className="grid gap-7 grid-cols-1 lg:grid-cols-[1fr_340px]">
+        <div className="grid min-w-0 grid-cols-1 gap-7 lg:grid-cols-[minmax(0,1fr)_340px]">
           {/* Main column */}
           <div className="flex flex-col gap-6 min-w-0">
             <HeroGreeterCard
@@ -532,6 +535,8 @@ export default async function DashboardPage() {
               <LeaderboardPeekCard entries={leaderboard} userRank={userRank} />
             </div>
 
+            <CommunityActivityCard events={communityActivity} />
+
             {/* Interview Countdown — conditional */}
             {interviewDate && (
               <InterviewCountdownCard interviews={interviews} />
@@ -539,7 +544,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Right rail */}
-          <aside className="hidden lg:flex flex-col gap-5">
+          <aside className="hidden min-w-0 flex-col gap-5 lg:flex">
             {todaysPathSteps.length > 0 && (
               <TodaysPathCard steps={todaysPathSteps} completedCount={todaysPathCompleted} />
             )}

@@ -68,13 +68,8 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
       {/* Mascot halo — bright green bloom on right where it's lighter */}
       <div
         aria-hidden
-        className="absolute pointer-events-none hidden lg:block"
+        className="absolute pointer-events-none right-[-36px] top-[-18px] h-40 w-40 opacity-70 sm:right-[-18px] sm:top-3 sm:h-48 sm:w-48 md:right-2 md:top-1/2 md:h-56 md:w-56 md:-translate-y-1/2 lg:right-6 lg:h-[260px] lg:w-[260px] lg:opacity-100"
         style={{
-          right: 24,
-          top: '50%',
-          transform: 'translateY(-50%)',
-          width: 260,
-          height: 260,
           background: 'radial-gradient(ellipse at center, rgba(142,207,158,0.32) 0%, rgba(74,124,89,0.15) 45%, transparent 70%)',
           filter: 'blur(24px)',
         }}
@@ -103,12 +98,20 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
         }}
       />
 
-      {/* Mascot — top-anchored, right side */}
-      <div className="absolute top-4 right-8 hidden lg:block" aria-hidden>
-        <MaskoAvatar size={200} style={{ filter: 'drop-shadow(0 8px 32px rgba(126,224,153,0.35)) drop-shadow(0 2px 8px rgba(0,0,0,0.5))' }} />
+      {/* Mascot — responsive right-side anchor */}
+      <div
+        className="absolute right-[-8px] top-3 z-0 pointer-events-none opacity-80 sm:right-2 sm:top-4 sm:opacity-90 md:right-5 md:top-1/2 md:-translate-y-1/2 lg:right-8 lg:opacity-100"
+        aria-hidden
+        data-hatch-target="dashboard-hero-avatar"
+      >
+        <MaskoAvatar
+          size={200}
+          className="h-24 w-24 sm:h-32 sm:w-32 md:h-40 md:w-40 lg:h-[200px] lg:w-[200px]"
+          style={{ filter: 'drop-shadow(0 8px 32px rgba(126,224,153,0.35)) drop-shadow(0 2px 8px rgba(0,0,0,0.5))' }}
+        />
       </div>
 
-      <div className="relative p-7 pb-2" style={{ paddingRight: 'max(1.75rem, 280px)' }}>
+      <div className="relative z-10 p-5 pb-2 pr-24 sm:p-7 sm:pb-2 sm:pr-40 md:pr-52 lg:pr-[280px]">
         {/* Hatch badge */}
         <div
           className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-label font-semibold tracking-wider uppercase mb-3"
@@ -125,7 +128,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
           Hatch · Your coach
         </div>
         <h1
-          className="font-headline text-[34px] leading-tight font-medium tracking-tight mb-2.5"
+          className="font-headline text-[28px] leading-tight font-medium tracking-tight mb-2.5 sm:text-[34px]"
           suppressHydrationWarning
         >
           {timeOfDay()}, {displayName}.
@@ -133,11 +136,11 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
         <p key={idx} className="animate-fade-up text-[15.5px] opacity-80" style={{ lineHeight: '1.5', height: '1.5em' }}>
           {lines[idx]}
         </p>
-        <div className="flex gap-2.5 mt-5">
+        <div className="flex flex-wrap gap-2.5 mt-5">
           <Link
             href={sessionHref}
             data-hatch-target="dashboard-session"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-full font-label font-bold text-sm"
+            className="inline-flex max-w-full items-center justify-center gap-2 rounded-full px-3.5 py-2.5 font-label text-[13px] font-bold sm:px-5 sm:py-3 sm:text-sm"
             style={{ background: '#f3ede0', color: '#1e1b14' }}
           >
             <span className="material-symbols-outlined text-[18px]">play_arrow</span>
@@ -146,7 +149,7 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
           <Link
             href={studyPlanHref}
             data-hatch-target="dashboard-study-plan"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-full font-label font-bold text-sm"
+            className="inline-flex max-w-full items-center justify-center gap-2 rounded-full px-3.5 py-2.5 font-label text-[13px] font-bold sm:px-5 sm:py-3 sm:text-sm"
             style={{
               background: 'rgba(255,255,255,0.06)',
               border: '1px solid rgba(255,255,255,0.14)',
@@ -161,24 +164,25 @@ export function HeroGreeterCard({ displayName, streakDays, xpTotal, nextMileston
 
       {/* Stat strip */}
       <div
-        className="relative mx-7 mt-4 pt-4 mb-5 grid grid-cols-4 gap-4"
+        className="relative mx-5 mt-4 mb-5 grid grid-cols-1 gap-x-3 gap-y-3 border-t border-white/10 pt-4 sm:mx-7 sm:grid-cols-2 md:grid-cols-[1.35fr_0.8fr_1fr_1fr] md:gap-4"
         style={{}}
       >
         {[
-          {
-            k: 'Current streak',
-            v: `${streakDays}`,
-            sub: streakDays === 1 ? 'Day — Keep It Alive' : "Days — You're On Fire",
-            icon: 'local_fire_department',
-          },
-          { k: 'XP today', v: `${xpTotal}`, sub: 'Total XP Earned', icon: 'bolt' },
-          { k: 'Next milestone', v: `Lv ${nextMilestoneLevel}`, sub: `${nextMilestoneMove} · Keep Practicing`, icon: 'flag' },
-          { k: 'Due this week', v: `${dailyDone}/5`, sub: 'Done Today', icon: 'event' },
+          { text: `${streakDays}d - ${streakDays === 1 ? 'keep it alive' : "you're on fire"}`, icon: 'local_fire_department' },
+          { text: `${xpTotal.toLocaleString()} XP`, icon: 'bolt' },
+          { text: `Lv ${nextMilestoneLevel} - ${nextMilestoneMove}`, icon: 'flag' },
+          { text: `${dailyDone}/5 this week`, icon: 'event' },
         ].map((s, i) => (
-          <div key={i} className="flex items-baseline gap-1.5">
-            <span className="material-symbols-outlined text-[16px]" style={{ color: 'rgba(243,237,224,0.6)', alignSelf: 'center' }}>{s.icon}</span>
-            <span className="font-headline text-xl font-medium">{s.v}</span>
-            <span className="text-[11px] font-semibold" style={{ color: 'rgba(243,237,224,0.6)' }}>{s.sub}</span>
+          <div key={i} className="flex min-w-0 items-center gap-2">
+            <span
+              className="material-symbols-outlined shrink-0 text-[17px]"
+              style={{ color: 'rgba(243,237,224,0.6)' }}
+            >
+              {s.icon}
+            </span>
+            <span className="min-w-0 truncate whitespace-nowrap font-headline text-lg font-medium leading-none sm:text-xl">
+              {s.text}
+            </span>
           </div>
         ))}
       </div>

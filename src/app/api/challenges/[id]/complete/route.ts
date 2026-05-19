@@ -9,6 +9,7 @@ import { analyzeTrend } from '@/lib/v2/skills/trend-analyzer'
 import type { FlowStep, LearnerCompetency, RoleLens } from '@/lib/types'
 import { applyMoveLevelXp } from '@/lib/data/move-levels-update'
 import { MOVE_XP_MULTIPLIER } from '@/lib/scoring/flow-scale'
+import { createCommunitySubmissionCandidate, recordCommunityCompletion } from '@/lib/data/community'
 
 export async function POST(
   req: NextRequest,
@@ -322,6 +323,13 @@ export async function POST(
       feedback_json: { step_breakdown, step_signals: stepSignalsFromDB, competency_deltas: deltaEntries, grade_label, total_score, max_score, xp_awarded: xp_earned },
     })
     .eq('id', attempt_id)
+
+  try {
+    await createCommunitySubmissionCandidate({ userId, attemptId: attempt_id, challengeId })
+    await recordCommunityCompletion({ userId, attemptId: attempt_id, challengeId, gradeLabel: grade_label })
+  } catch (communityError) {
+    console.warn('[community] failed to create completion candidate', communityError)
+  }
 
   const topDelta = deltaEntries.length > 0
     ? [...deltaEntries].sort((a, b) => (b.after - b.before) - (a.after - a.before))[0]

@@ -7,10 +7,22 @@ import type { HatchCueInput } from '@/context/HatchContext'
 
 const TOUR_COMPLETED_KEY = 'hatch-tour:v1:completed'
 const TOUR_SKIPPED_KEY = 'hatch-tour:v1:skipped'
+const TOUR_OFFERED_KEY = 'hatch-tour:v1:offered'
+const ROUTE_CUE_AUTO_HIDE_MS = 8500
+const TOUR_INVITE_AUTO_HIDE_MS = 9000
 
 function tourSeen() {
   if (typeof window === 'undefined') return true
-  return Boolean(localStorage.getItem(TOUR_COMPLETED_KEY) || localStorage.getItem(TOUR_SKIPPED_KEY))
+  return Boolean(
+    localStorage.getItem(TOUR_COMPLETED_KEY) ||
+    localStorage.getItem(TOUR_SKIPPED_KEY) ||
+    localStorage.getItem(TOUR_OFFERED_KEY),
+  )
+}
+
+function markTourOffered() {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(TOUR_OFFERED_KEY, new Date().toISOString())
 }
 
 function routeCue(pathname: string): HatchCueInput | null {
@@ -41,6 +53,7 @@ function routeCue(pathname: string): HatchCueInput | null {
       cooldownKey: 'explore',
       source: 'route',
       cta: { label: 'Ask Hatch', action: 'open-chat' },
+      autoHideMs: ROUTE_CUE_AUTO_HIDE_MS,
     }
   }
 
@@ -54,6 +67,7 @@ function routeCue(pathname: string): HatchCueInput | null {
       cooldownKey: 'practice',
       source: 'route',
       cta: { label: 'Help me choose', action: 'open-chat' },
+      autoHideMs: ROUTE_CUE_AUTO_HIDE_MS,
     }
   }
 
@@ -67,6 +81,7 @@ function routeCue(pathname: string): HatchCueInput | null {
       cooldownKey: 'interviews',
       source: 'route',
       cta: { label: 'Ask Hatch', action: 'open-chat' },
+      autoHideMs: ROUTE_CUE_AUTO_HIDE_MS,
     }
   }
 
@@ -80,6 +95,7 @@ function routeCue(pathname: string): HatchCueInput | null {
       cooldownKey: 'progress',
       source: 'route',
       cta: { label: 'Read the pattern', action: 'open-chat' },
+      autoHideMs: ROUTE_CUE_AUTO_HIDE_MS,
     }
   }
 
@@ -99,6 +115,7 @@ function routeCue(pathname: string): HatchCueInput | null {
       cooldownKey: 'study',
       source: 'route',
       cta: { label: 'Find a rep', href: '/challenges' },
+      autoHideMs: ROUTE_CUE_AUTO_HIDE_MS,
     }
   }
 
@@ -111,6 +128,7 @@ function routeCue(pathname: string): HatchCueInput | null {
     cooldownKey: `app:${pathname}`,
     source: 'route',
     cta: { label: 'Ask Hatch', action: 'open-chat' },
+    autoHideMs: ROUTE_CUE_AUTO_HIDE_MS,
   }
 }
 
@@ -126,6 +144,7 @@ export function HatchDirector() {
 
     const timer = window.setTimeout(() => {
       if (pathname.startsWith('/dashboard') && !tourSeen()) {
+        markTourOffered()
         emitCue({
           id: 'tour-invite',
           surface: 'dashboard',
@@ -136,6 +155,7 @@ export function HatchDirector() {
           source: 'tour',
           priority: 8,
           cta: { label: 'Show me around', action: 'start-tour' },
+          autoHideMs: TOUR_INVITE_AUTO_HIDE_MS,
         }, { force: true })
         return
       }
