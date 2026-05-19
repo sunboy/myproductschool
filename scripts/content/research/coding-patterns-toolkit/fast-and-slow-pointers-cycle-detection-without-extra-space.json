@@ -1,0 +1,314 @@
+{
+  "facts": [
+    {
+      "fact": "Floyd's Cycle Detection Algorithm (Tortoise and Hare) uses two pointers moving at different speeds: slow moves 1 step, fast moves 2 steps. Time complexity O(n), space complexity O(1).",
+      "source": "https://cp-algorithms.com/others/tortoise_and_hare.html",
+      "date": "2025-02-01"
+    },
+    {
+      "fact": "Sliding window converts O(n²) or O(n³) nested loop problems into O(n) by maintaining a contiguous window that expands and contracts based on validity conditions.",
+      "source": "https://algomap.io/lessons/sliding-window",
+      "date": "2025-01-15"
+    },
+    {
+      "fact": "Fixed-size sliding window requires O(1) space (only a few variables) and O(n) time—one complete pass through the array regardless of window size.",
+      "source": "https://www.geeksforgeeks.org/dsa/window-sliding-technique/",
+      "date": "2025-01-20"
+    },
+    {
+      "fact": "Variable-size sliding window uses a hash set or hash map to track window contents, expanding the right pointer when the condition is valid and contracting the left pointer when invalid.",
+      "source": "https://www.hellointerview.com/learn/code/sliding-window/variable-length",
+      "date": "2025-01-18"
+    },
+    {
+      "fact": "Monotonic stack solves 'next greater/smaller element' and range query problems in O(n) time: each element is pushed once and popped once, despite nested loop structure.",
+      "source": "https://medium.com/@keshavrathinavel/leetcodes-monotonic-stack-problems-and-how-to-solve-them-made-easy-1c73c2d6d437",
+      "date": "2025-01-10"
+    },
+    {
+      "fact": "Largest Rectangle in Histogram can be solved with a monotonic stack in O(n) time and O(n) space: when a bar is popped, its span (left and right boundaries) is fully determined.",
+      "source": "https://www.geeksforgeeks.org/dsa/largest-rectangular-area-in-a-histogram-using-stack/",
+      "date": "2025-01-12"
+    },
+    {
+      "fact": "Prefix sums enable O(1) range sum queries after O(n) preprocessing: sum(l, r) = prefix[r] - prefix[l-1]. For 2D arrays, use inclusion-exclusion: sum(x1,y1,x2,y2) = prefix[x2][y2] - prefix[x1-1][y2] - prefix[x2][y1-1] + prefix[x1-1][y1-1].",
+      "source": "https://usaco.guide/silver/prefix-sums",
+      "date": "2025-01-22"
+    },
+    {
+      "fact": "For Q range sum queries on an array of size N: prefix sum achieves O(n + q) vs naive O(q*n). For 2D prefix sums, preprocessing is O(N*M) and each query is O(1).",
+      "source": "https://www.geeksforgeeks.org/dsa/prefix-sum-2d-array/",
+      "date": "2025-01-19"
+    },
+    {
+      "fact": "Happy Number problem detects cycles using Floyd's algorithm: repeated squaring of digits forms a sequence; if it reaches 1, the number is happy; if it cycles without reaching 1, it is not happy.",
+      "source": "https://blog.devgenius.io/exploring-the-happy-number-algorithm-using-floyd-cycle-detection-b0d6a0f2ae42",
+      "date": "2025-01-16"
+    },
+    {
+      "fact": "Two-pointer vs sliding window distinction: two pointers move toward each other or independently (pair problems, sorted arrays); sliding window maintains a contiguous region that expands/contracts (subarray problems).",
+      "source": "https://www.techinterview.org/post/3233474160/coding-interview-two-pointers-sliding-window-patterns-array-string-problems-fast-slow-pointer-variable-window/",
+      "date": "2025-01-21"
+    },
+    {
+      "fact": "Linked List Cycle II: after detecting a cycle with fast/slow pointers, reset one pointer to head and advance both by 1 step; the meeting point is the start of the cycle.",
+      "source": "https://dev.to/nithya_dharshiniofficial/detecting-a-cycle-in-a-linked-list-leetcode-141-4bd0",
+      "date": "2025-01-17"
+    },
+    {
+      "fact": "Floyd's cycle finding operates in O(λ + μ) operations where μ is steps to cycle start and λ is cycle length; space complexity is O(1).",
+      "source": "https://cp-algorithms.com/others/tortoise_and_hare.html",
+      "date": "2025-02-01"
+    }
+  ],
+  "examples": [
+    {
+      "example": "Container With Most Water: Two pointers start at opposite ends of array. Move the pointer pointing to the shorter bar inward. Time O(n), space O(1). Real company interview frequency: Facebook, Google, Amazon.",
+      "source": "https://algo.monster/problems/two_pointers_intro",
+      "category": "two_pointer"
+    },
+    {
+      "example": "Longest Substring Without Repeating Characters: Variable sliding window with hash map. Expand right, contract left when duplicate found. LeetCode #3, common in FAANG interviews.",
+      "source": "https://www.hellointerview.com/learn/code/sliding-window/variable-length",
+      "category": "sliding_window"
+    },
+    {
+      "example": "Find All Anagrams in a String: Fixed-size sliding window matching character frequency. O(n) time, O(1) space (26 letters max). LeetCode #438.",
+      "source": "https://www.geeksforgeeks.org/dsa/window-sliding-technique/",
+      "category": "sliding_window"
+    },
+    {
+      "example": "Next Greater Element: Monotonic decreasing stack iterates right-to-left, popping smaller elements and recording the first larger one. O(n) time despite nested structure.",
+      "source": "https://medium.com/@keshavrathinavel/leetcodes-monotonic-stack-problems-and-how-to-solve-them-made-easy-1c73c2d6d437",
+      "category": "monotonic_stack"
+    },
+    {
+      "example": "Largest Rectangle in Histogram: Monotonic increasing stack tracks bar indices. When a smaller bar is found, pop and calculate area. O(n) time, O(n) space. Core problem in interview loops.",
+      "source": "https://algo.monster/liteproblems/84",
+      "category": "monotonic_stack"
+    },
+    {
+      "example": "Range Sum Query (NumArray): 1D prefix sums precompute cumulative sums in O(n). Each query answered in O(1). LeetCode #303, foundational for interview questions.",
+      "source": "https://usaco.guide/silver/prefix-sums",
+      "category": "prefix_sum"
+    },
+    {
+      "example": "Trapping Rain Water: Two-pointer approach with left/right tracking of max heights. O(n) time, O(1) space. LeetCode #42, asked at Google, Microsoft.",
+      "source": "https://www.techinterview.org/post/3233474160/coding-interview-two-pointers-sliding-window-patterns-array-string-problems-fast-slow-pointer-variable-window/",
+      "category": "two_pointer"
+    },
+    {
+      "example": "Find Duplicate in Array: Floyd's cycle detection treats array as linked list (array[i] is next pointer). O(n) time, O(1) space. LeetCode #287, asked at Apple, Bloomberg.",
+      "source": "https://dev.to/rock_win_c053fa5fb2399067/fast-slow-pointers-floyds-cycle-detection-algorithm-h6h",
+      "category": "cycle_detection"
+    },
+    {
+      "example": "Happy Number: Floyd's fast/slow pointers on digit square sum sequence. O(1) space vs O(log n) for hash set. LeetCode #202.",
+      "source": "https://blog.devgenius.io/exploring-the-happy-number-algorithm-using-floyd-cycle-detection-b0d6a0f2ae42",
+      "category": "cycle_detection"
+    },
+    {
+      "example": "2D Range Sum Query: 2D prefix sum preprocessing O(n*m), then O(1) per query using 4-point inclusion-exclusion formula. LeetCode #304.",
+      "source": "https://www.geeksforgeeks.org/dsa/prefix-sum-2d-array/",
+      "category": "prefix_sum"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Sliding window is like a train window moving along a track: the window size is fixed or adjusts based on track conditions (validity). You only see what's in the window, not the entire landscape.",
+      "concept": "sliding_window"
+    },
+    {
+      "analogy": "Monotonic stack is like stacking books by height: when you add a taller book, shorter books on top are displaced. Reading the book that gets displaced tells you the next taller book you encountered.",
+      "concept": "monotonic_stack"
+    },
+    {
+      "analogy": "Fast/slow pointers are like two runners on a circular track: the fast runner will eventually lap the slow runner, revealing the cycle. If there's no cycle, the fast runner exits the track first.",
+      "concept": "cycle_detection"
+    },
+    {
+      "analogy": "Prefix sums are like cumulative wealth: instead of recounting coins from year 0 every time, you store cumulative totals. To find wealth gained from year 5 to 10, subtract year 4's total from year 10's.",
+      "concept": "prefix_sum"
+    },
+    {
+      "analogy": "Two-pointer for sorted arrays is like a seesaw: heavier people (larger values) on one side, lighter on the other. Adjust from the heavier end to balance (find pair, optimize, etc.).",
+      "concept": "two_pointer"
+    }
+  ],
+  "key_numbers": [
+    {
+      "number": "O(1)",
+      "context": "Space complexity of Floyd's cycle detection algorithm using only two pointers, regardless of input size.",
+      "source": "https://cp-algorithms.com/others/tortoise_and_hare.html"
+    },
+    {
+      "number": "O(n)",
+      "context": "Time complexity of Floyd's cycle detection; each element visited at most twice (fast pointer makes 2n moves).",
+      "source": "https://cp-algorithms.com/others/tortoise_and_hare.html"
+    },
+    {
+      "number": "O(n²) → O(n)",
+      "context": "Sliding window optimization: converts nested loop brute force to single pass algorithm.",
+      "source": "https://algomap.io/lessons/sliding-window"
+    },
+    {
+      "number": "2 seconds",
+      "context": "Typical time limit in competitive programming; O(n) passes 10^8 operations; O(n log n) passes 10^7 operations.",
+      "source": "https://codeforces.com/blog/entry/146389"
+    },
+    {
+      "number": "O(λ + μ)",
+      "context": "Floyd's complexity breakdown: λ = cycle length, μ = steps to cycle start. For happy numbers, λ + μ ≈ O(log n).",
+      "source": "https://cp-algorithms.com/others/tortoise_and_hare.html"
+    },
+    {
+      "number": "O(n + q)",
+      "context": "Prefix sum total complexity: O(n) preprocessing + O(1) per q queries vs O(q*n) for naive approach.",
+      "source": "https://usaco.guide/silver/prefix-sums"
+    },
+    {
+      "number": "O(1) per query",
+      "context": "2D prefix sum query time after O(n*m) preprocessing, using 4-cell inclusion-exclusion formula.",
+      "source": "https://www.geeksforgeeks.org/dsa/prefix-sum-2d-array/"
+    },
+    {
+      "number": "2x speed differential",
+      "context": "Standard fast/slow pointer ratio (fast moves 2 steps, slow moves 1) guarantees they meet if cycle exists.",
+      "source": "https://medium.com/@zephyr.ventum/floyds-tortoise-and-hare-cycle-finding-algorithm-my-over-explanation-5631c5ce71d7"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Sliding window and two pointers are the same technique.",
+      "reality": "Sliding window maintains a contiguous valid region that expands/contracts; two pointers move independently or toward each other. Use sliding window for subarrays, two pointers for pair problems in sorted arrays.",
+      "source": "https://leetcopilot.dev/leetcode-pattern/sliding-window/sliding-window-vs-two-pointers"
+    },
+    {
+      "misconception": "Monotonic stack requires nested loops and is therefore O(n²).",
+      "reality": "Despite visual nested loop structure, each element is pushed and popped exactly once, giving O(n) total operations.",
+      "source": "https://medium.com/@hanxuyang0826/mastering-monotonic-stacks-optimizing-algorithmic-efficiency-in-array-and-sequence-problems-28d2a16eeccc"
+    },
+    {
+      "misconception": "Floyd's cycle detection only works for linked lists.",
+      "reality": "Floyd's algorithm applies to any function that generates a sequence: arrays (as linked lists via index), digit transformations (happy number), or any repeating sequence.",
+      "source": "https://en.wikipedia.org/wiki/Cycle_detection"
+    },
+    {
+      "misconception": "Prefix sums require O(n) space for the prefix array.",
+      "reality": "Space is required, but queries become O(1) instead of O(n). Trade-off: O(n) space + O(1) query time vs O(1) space + O(n) query time. For multiple queries, prefix sums are better.",
+      "source": "https://usaco.guide/silver/prefix-sums"
+    },
+    {
+      "misconception": "After detecting a cycle in Floyd's algorithm, you need to search separately to find the cycle start.",
+      "reality": "Once pointers meet inside the cycle, reset one to head and advance both by 1 step at a time. Their meeting point IS the cycle start.",
+      "source": "https://cp-algorithms.com/others/tortoise_and_hare.html"
+    },
+    {
+      "misconception": "Variable sliding window always requires a hash map.",
+      "reality": "Hash map or set is common for character tracking, but variable window can also use counters, arrays (for fixed alphabet), or other tracking structures.",
+      "source": "https://www.hellointerview.com/learn/code/sliding-window/variable-length"
+    },
+    {
+      "misconception": "Pattern recognition happens at problem statement reading; pattern selection is immediate.",
+      "reality": "Recognizing which of 6 patterns applies takes deliberate practice and explicit analysis of constraints: size, sorted, substring vs subarray, pair vs range, uniqueness requirements.",
+      "source": "https://medium.com/@AlexanderObregon/how-to-analyze-patterns-and-choose-the-right-algorithm-for-dsa-problems-ff8d2055146e"
+    },
+    {
+      "misconception": "Prefix sums only work for addition.",
+      "reality": "Prefix sums can be adapted for XOR, GCD, min/max, and other associative operations with proper preprocessing and query formulas.",
+      "source": "https://codeforces.com/blog/entry/146389"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://cp-algorithms.com/others/tortoise_and_hare.html",
+      "title": "Tortoise and Hare Algorithm (Linked List cycle detection) - Algorithms for Competitive Programming",
+      "recency": "2025-02-01"
+    },
+    {
+      "url": "https://usaco.guide/silver/prefix-sums",
+      "title": "Introduction to Prefix Sums · USACO Guide",
+      "recency": "2025-01-22"
+    },
+    {
+      "url": "https://algomap.io/lessons/sliding-window",
+      "title": "Sliding Window: Variable Length + Fixed Length | AlgoMap",
+      "recency": "2025-01-15"
+    },
+    {
+      "url": "https://medium.com/@keshavrathinavel/leetcodes-monotonic-stack-problems-and-how-to-solve-them-made-easy-1c73c2d6d437",
+      "title": "Monotonic Stack Problems and How to Solve Them — Made Easy | Medium",
+      "recency": "2025-01-10"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/largest-rectangular-area-in-a-histogram-using-stack/",
+      "title": "Largest Rectangular Area in a Histogram - GeeksforGeeks",
+      "recency": "2025-01-12"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/prefix-sum-2d-array/",
+      "title": "Prefix Sum of Matrix (Or 2D Array) - GeeksforGeeks",
+      "recency": "2025-01-19"
+    },
+    {
+      "url": "https://blog.devgenius.io/exploring-the-happy-number-algorithm-using-floyd-cycle-detection-b0d6a0f2ae42",
+      "title": "Exploring the Happy Number Algorithm using Floyd Cycle Detection | Dev Genius",
+      "recency": "2025-01-16"
+    },
+    {
+      "url": "https://www.techinterview.org/post/3233474160/coding-interview-two-pointers-sliding-window-patterns-array-string-problems-fast-slow-pointer-variable-window/",
+      "title": "Coding Interview: Two Pointers and Sliding Window Patterns — Tech Interview Dot Org",
+      "recency": "2025-01-21"
+    },
+    {
+      "url": "https://dev.to/rock_win_c053fa5fb2399067/fast-slow-pointers-floyds-cycle-detection-algorithm-h6h",
+      "title": "Fast & Slow Pointers (Floyd's Cycle Detection Algorithm) - DEV Community",
+      "recency": "2025-02-01"
+    },
+    {
+      "url": "https://dev.to/nithya_dharshiniofficial/detecting-a-cycle-in-a-linked-list-leetcode-141-4bd0",
+      "title": "Detecting a Cycle in a Linked List (LeetCode 141) - DEV Community",
+      "recency": "2025-01-17"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Cycle_detection",
+      "title": "Cycle detection - Wikipedia",
+      "recency": "2024-11-01"
+    },
+    {
+      "url": "https://medium.com/@zephyr.ventum/floyds-tortoise-and-hare-cycle-finding-algorithm-my-over-explanation-5631c5ce71d7",
+      "title": "Floyd's tortoise and hare cycle-finding algorithm. My over-explanation. | Medium",
+      "recency": "2024-12-15"
+    },
+    {
+      "url": "https://algo.monster/liteproblems/84",
+      "title": "84. Largest Rectangle in Histogram - In-Depth Explanation | AlgoMonster",
+      "recency": "2025-01-20"
+    },
+    {
+      "url": "https://leetcopilot.dev/leetcode-pattern/sliding-window/sliding-window-vs-two-pointers",
+      "title": "Sliding Window vs Two Pointers: Why They're Not the Same (Quick Decision Guide)",
+      "recency": "2025-01-18"
+    },
+    {
+      "url": "https://medium.com/@hanxuyang0826/mastering-monotonic-stacks-optimizing-algorithmic-efficiency-in-array-and-sequence-problems-28d2a16eeccc",
+      "title": "Mastering Monotonic Stacks: Optimizing Algorithmic Efficiency in Array and Sequence Problems | Medium",
+      "recency": "2025-01-14"
+    },
+    {
+      "url": "https://codeforces.com/blog/entry/146389",
+      "title": "Prefix Sum — A Complete Guide - Codeforces",
+      "recency": "2025-01-25"
+    },
+    {
+      "url": "https://medium.com/@AlexanderObregon/how-to-analyze-patterns-and-choose-the-right-algorithm-for-dsa-problems-ff8d2055146e",
+      "title": "How to Analyze Patterns and Choose the Right Algorithm for DSA Problems | Medium",
+      "recency": "2025-01-09"
+    },
+    {
+      "url": "https://www.hellointerview.com/learn/code/sliding-window/variable-length",
+      "title": "Variable Length Sliding Window | Hello Interview",
+      "recency": "2025-01-18"
+    }
+  ]
+}

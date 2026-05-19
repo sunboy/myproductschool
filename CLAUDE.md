@@ -468,6 +468,8 @@ This is pre-existing design (introduced in commit `47872c1`). Always use `qualit
 
 ## Content Authoring Pipeline
 
+**Skill:** Use `hackproduct-tech-content` (Skill tool) for any Learn module authoring — writing, proofreading, image enrichment, or upsert work. The skill contains the full chapter format, slug rules, style bans, diagram conventions, Codex invocation, and upsert commands.
+
 Full architecture: [`docs/notes/content-authoring-architecture.md`](./docs/notes/content-authoring-architecture.md). Operator runbook: [`docs/notes/content-generation-runbook.md`](./docs/notes/content-generation-runbook.md).
 
 **What it does:** turns a URL, article, or question into a 4-step FLOW challenge (Frame / List / Optimize / Win) with 1-3 MCQ questions per step, 4 options each (one of each quality), taxonomy tags, and deterministic validation. Two pipelines with identical shape: local mode (`scripts/job-server.ts` using the `claude` CLI subprocess) and API mode (`src/lib/content/generator.ts` using Anthropic SDK).

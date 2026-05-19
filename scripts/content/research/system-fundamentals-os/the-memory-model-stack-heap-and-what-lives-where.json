@@ -1,0 +1,539 @@
+{
+  "facts": [
+    {
+      "fact": "Thread creation costs 10-100 microseconds; process creation costs 1-10 milliseconds",
+      "source": "https://medium.com/@eugenio.andrieu_63440/processes-vs-threads-how-to-choose-the-right-concurrency-model-for-your-application-2bffdbade814",
+      "date": "2024"
+    },
+    {
+      "fact": "Context switches between threads in the same process avoid TLB flushes, making thread switches 2-5x faster than process switches",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation",
+      "date": "2024"
+    },
+    {
+      "fact": "Virtual address translation with TLB caching achieves >99% hit rates in practice, converting 5+ memory accesses into 1",
+      "source": "https://www.abhik.ai/concepts/memory/virtual-memory",
+      "date": "2024"
+    },
+    {
+      "fact": "A TLB miss requires a page walk with several memory accesses, costing more than an instruction or data cache miss",
+      "source": "https://pages.cs.wisc.edu/~remzi/OSTEP/vm-tlbs.pdf",
+      "date": "2023"
+    },
+    {
+      "fact": "Linux soft limit for open file descriptors can be checked with 'ulimit -n' and ranges from 1024 (default) to 2048+ for tuned systems",
+      "source": "https://www.cyberciti.biz/faq/linux-increase-the-maximum-number-of-open-files/",
+      "date": "2024"
+    },
+    {
+      "fact": "System-wide file descriptor limit is defined by fs.file-max, checked via 'cat /proc/sys/fs/file-max', typically around 100K-200K on commodity systems",
+      "source": "https://www.baeldung.com/linux/error-too-many-open-files",
+      "date": "2024"
+    },
+    {
+      "fact": "Async I/O with event loops (100 tasks) completes in <0.6 seconds with CPU <15% and flat memory; synchronous 100×200ms = 20 seconds with 100% CPU wait",
+      "source": "https://dev.to/_eb7f2a654e97a60ae9f96e/is-asyncio-really-better-than-multithreading-i-tested-100-concurrent-requests-and-the-difference-4hc5",
+      "date": "2024"
+    },
+    {
+      "fact": "Thread-per-request model wastes CPU idle cycles while threads block on I/O; at 1,000 concurrent requests, response time > 3 minutes",
+      "source": "https://dev.to/koladev/asyncawait-vs-threads-choosing-the-right-approach-2l1d",
+      "date": "2024"
+    },
+    {
+      "fact": "Kubernetes sends SIGTERM with default grace period of 30 seconds before forcing SIGKILL; SIGKILL cannot be caught",
+      "source": "https://oneuptime.com/blog/post/2026-01-07-go-graceful-shutdown-kubernetes/view",
+      "date": "2026-01-07"
+    },
+    {
+      "fact": "SIGTERM is catchable and allows cleanup; SIGINT is sent on Ctrl+C from terminal",
+      "source": "https://komodor.com/learn/sigterm-signal-15-exit-code-143-linux-graceful-termination/",
+      "date": "2024"
+    },
+    {
+      "fact": "Minor (soft) page faults average 1.27 microseconds (2552 CPU cycles) with tail latency of 3.20 microseconds",
+      "source": "https://makedist.com/posts/2016/10/10/measuring-userfaultfd-page-fault-latency/",
+      "date": "2016"
+    },
+    {
+      "fact": "Major (hard) page faults from SSD cost ~30 microseconds (30× slower than memory access); from HDD cost ~8 milliseconds",
+      "source": "https://rigtorp.se/virtual-memory/",
+      "date": "2024"
+    },
+    {
+      "fact": "x86 systems have minimum page fault cost of 1050 CPU cycles",
+      "source": "https://groups.google.com/g/mechanical-sympathy/c/1Fy9iDavk2c",
+      "date": "2012"
+    },
+    {
+      "fact": "Heap allocation adds overhead for segment headers and padding; memory pools (arena allocation) reduce internal fragmentation by amortizing overhead",
+      "source": "https://cpp4arduino.com/2018/11/06/what-is-heap-fragmentation.html",
+      "date": "2018"
+    },
+    {
+      "fact": "io_uring achieves P50: 0.2ms vs epoll's 0.4ms, P99: 0.9ms vs epoll's 1.8ms in ping-pong workloads",
+      "source": "https://github.com/axboe/liburing/issues/536",
+      "date": "2024"
+    },
+    {
+      "fact": "epoll is efficient on Linux 2.6+; kqueue on FreeBSD 4.1+, OpenBSD 2.9+, NetBSD 2.0, macOS",
+      "source": "https://long-zhou.github.io/2012/12/21/epoll-vs-kqueue.html",
+      "date": "2012"
+    },
+    {
+      "fact": "Nginx thread pools improved peak p99 TTFB by 6× when handling disk-bound operations via non-blocking open/read",
+      "source": "https://blog.cloudflare.com/how-we-scaled-nginx-and-saved-the-world-54-years-every-day/",
+      "date": "2017"
+    },
+    {
+      "fact": "Zombie process occurs when child exits but parent hasn't called wait()/waitpid() to reap exit status",
+      "source": "https://en.wikipedia.org/wiki/Zombie_process",
+      "date": "2024"
+    },
+    {
+      "fact": "SIGCHLD handler must loop to reap all exited children; only one SIGCHLD is queued regardless of how many children exit",
+      "source": "http://www.microhowto.info/howto/reap_zombie_processes_using_a_sigchld_handler.html",
+      "date": "2024"
+    },
+    {
+      "fact": "Setting SIG_IGN for SIGCHLD or using SA_NOCLDWAIT flag prevents zombies by discarding child exit status",
+      "source": "https://duyanghao.github.io/ways_avoid_zombie_process/",
+      "date": "2024"
+    },
+    {
+      "fact": "Stack memory is LIFO and freed automatically on function return; heap requires explicit deallocation or GC",
+      "source": "https://www.baeldung.com/cs/memory-stack-vs-heap",
+      "date": "2024"
+    },
+    {
+      "fact": "Stack allocation is faster (single reference adjustment); heap allocation is slower (find free block, manage fragmentation)",
+      "source": "https://www.cs.cornell.edu/courses/cs3410/2025sp/notes/mem.html",
+      "date": "2025"
+    },
+    {
+      "fact": "Each process or thread requires 1-8 MB of stack space; C10K problem (10,000 concurrent connections) exposed this limit",
+      "source": "https://www.kegel.com/c10k.html",
+      "date": "2003"
+    },
+    {
+      "fact": "WhatsApp handled 2 million concurrent connections with 24 cores using Erlang on FreeBSD",
+      "source": "https://www.systemdesignhandbook.com/guides/c10k-problem/",
+      "date": "2024"
+    },
+    {
+      "fact": "MigratoryData served 10-12 million concurrent connections with 12 cores using Java on Linux",
+      "source": "https://www.systemdesignhandbook.com/guides/c10k-problem/",
+      "date": "2024"
+    },
+    {
+      "fact": "Async-signal-safe functions must not call malloc, free, printf, pthread_mutex_lock or perform dynamic symbol resolution",
+      "source": "https://www.man7.org/linux/man-pages/man7/signal-safety.7.html",
+      "date": "2024"
+    },
+    {
+      "fact": "Multi-level page tables reduce memory overhead by not allocating space for unmapped address regions",
+      "source": "https://docs.kernel.org/mm/page_tables.html",
+      "date": "2024"
+    },
+    {
+      "fact": "Processes communicate via Pipes, Sockets, or Message Queues requiring kernel mediation; threads use shared heap directly",
+      "source": "https://toolshelf.tech/blog/process-vs-thread-os-internals-guide/",
+      "date": "2024"
+    },
+    {
+      "fact": "Process isolation prevents single-process crashes from affecting others; thread crashes within a process affect all threads",
+      "source": "https://www.backblaze.com/blog/whats-the-diff-programs-processes-and-threads/",
+      "date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "company": "Cloudflare",
+      "scenario": "Nginx deployment with non-blocking open/read in thread pools",
+      "outcome": "6× improvement in peak p99 TTFB (time to first byte) for disk-bound requests",
+      "source": "https://blog.cloudflare.com/how-we-scaled-nginx-and-saved-the-world-54-years-every-day/"
+    },
+    {
+      "company": "WhatsApp",
+      "scenario": "Real-time messaging platform handling concurrent connections",
+      "outcome": "2 million concurrent connections on 24 cores using Erlang on FreeBSD",
+      "source": "https://www.systemdesignhandbook.com/guides/c10k-problem/"
+    },
+    {
+      "company": "MigratoryData",
+      "scenario": "Real-time pub/sub messaging platform",
+      "outcome": "10-12 million concurrent connections with 12 cores on Java/Linux",
+      "source": "https://www.systemdesignhandbook.com/guides/c10k-problem/"
+    },
+    {
+      "company": "Simtel FTP (1999)",
+      "scenario": "File transfer server handling concurrent clients",
+      "outcome": "10,000 concurrent clients over 1 Gbps Ethernet, defining the C10K problem",
+      "source": "https://www.kegel.com/c10k.html"
+    },
+    {
+      "company": "Django (general deployment)",
+      "scenario": "Web framework handling 10,000 concurrent real-time connections",
+      "outcome": "Possible via epoll + async handlers; impossible with thread-per-request",
+      "source": "https://github.com/linovia/django-c10k-demo"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Processes vs Threads",
+      "analogy": "Processes are like separate houses with independent utilities (memory, file descriptors); threads are like rooms in a house sharing utilities (heap, code). A broken room (thread) can leak into shared spaces.",
+      "source": "System architecture mental model"
+    },
+    {
+      "concept": "Virtual address translation",
+      "analogy": "Virtual addresses are like apartment numbers; physical addresses are like actual building locations. The TLB is a doorman who remembers frequent apartment-to-location mappings, avoiding the need to consult the master directory (page table) each time.",
+      "source": "https://pages.cs.wisc.edu/~remzi/OSTEP/vm-tlbs.pdf"
+    },
+    {
+      "concept": "File descriptor limits",
+      "analogy": "File descriptors are like open doors in a building. Too many open doors = cannot open new ones. ulimit -n is setting the max doors per tenant; fs.file-max is the total building capacity.",
+      "source": "System administration model"
+    },
+    {
+      "concept": "Async I/O vs threads",
+      "analogy": "Thread-per-request is like hiring a worker for each customer; they stand idle if the customer is waiting on something. Async I/O is like one worker juggling multiple customers, moving to the next while waiting.",
+      "source": "https://dev.to/_eb7f2a654e97a60ae9f96e/is-asyncio-really-better-than-multithreading-i-tested-100-concurrent-requests-and-the-difference-4hc5"
+    },
+    {
+      "concept": "Page faults",
+      "analogy": "Minor page faults are like opening a file already in RAM (microseconds); major page faults are like having to fetch from backup storage (milliseconds). A cache miss.",
+      "source": "https://rigtorp.se/virtual-memory/"
+    },
+    {
+      "concept": "SIGTERM graceful shutdown",
+      "analogy": "SIGTERM is asking the restaurant to finish serving current customers and close the doors; SIGKILL is calling the fire marshal to empty the building immediately.",
+      "source": "https://komodor.com/learn/sigterm-signal-15-exit-code-143-linux-graceful-termination/"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Thread creation latency",
+      "value": "10-100 microseconds",
+      "context": "vs process creation at 1-10 milliseconds",
+      "source": "https://medium.com/@eugenio.andrieu_63440/processes-vs-threads-how-to-choose-the-right-concurrency-model-for-your-application-2bffdbade814"
+    },
+    {
+      "metric": "Context switch speedup (threads vs processes)",
+      "value": "2-5x faster",
+      "context": "Same address space avoids TLB flush",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation"
+    },
+    {
+      "metric": "TLB hit rate",
+      "value": ">99%",
+      "context": "In typical workloads",
+      "source": "https://www.abhik.ai/concepts/memory/virtual-memory"
+    },
+    {
+      "metric": "Virtual address translation speedup with TLB",
+      "value": "5+ memory accesses → 1",
+      "context": "Without TLB, each translation requires page table walk",
+      "source": "https://www.abhik.ai/concepts/memory/virtual-memory"
+    },
+    {
+      "metric": "Default soft ulimit for file descriptors",
+      "value": "1024",
+      "context": "Per process on most Linux distributions",
+      "source": "https://www.cyberciti.biz/faq/linux-increase-the-maximum-number-of-open-files/"
+    },
+    {
+      "metric": "Typical system-wide fs.file-max",
+      "value": "100,000 - 200,000",
+      "context": "Depends on available memory",
+      "source": "https://www.baeldung.com/linux/error-too-many-open-files"
+    },
+    {
+      "metric": "Async I/O event loop latency (100 tasks)",
+      "value": "<600 milliseconds",
+      "context": "vs synchronous 20 seconds",
+      "source": "https://dev.to/_eb7f2a654e97a60ae9f96e/is-asyncio-really-better-than-multithreading-i-tested-100-concurrent-requests-and-the-difference-4hc5"
+    },
+    {
+      "metric": "Thread-per-request at 1,000 concurrent requests",
+      "value": ">180 seconds (3+ minutes)",
+      "context": "System becomes frozen",
+      "source": "https://dev.to/koladev/asyncawait-vs-threads-choosing-the-right-approach-2l1d"
+    },
+    {
+      "metric": "Kubernetes SIGTERM grace period (default)",
+      "value": "30 seconds",
+      "context": "Before SIGKILL is sent",
+      "source": "https://oneuptime.com/blog/post/2026-01-07-go-graceful-shutdown-kubernetes/view"
+    },
+    {
+      "metric": "Minor (soft) page fault latency",
+      "value": "1.27 microseconds average, 3.20 microseconds tail (p99)",
+      "context": "2552 CPU cycles average",
+      "source": "https://makedist.com/posts/2016/10/10/measuring-userfaultfd-page-fault-latency/"
+    },
+    {
+      "metric": "Major (hard) page fault from SSD",
+      "value": "~30 microseconds",
+      "context": "~30× slower than memory access at ~1 microsecond",
+      "source": "https://rigtorp.se/virtual-memory/"
+    },
+    {
+      "metric": "Major (hard) page fault from HDD",
+      "value": "~8 milliseconds",
+      "context": "Including seek + rotational + transfer latency",
+      "source": "https://rigtorp.se/virtual-memory/"
+    },
+    {
+      "metric": "Minimum x86 page fault cost",
+      "value": "1050 CPU cycles",
+      "context": "Kernel overhead regardless of page source",
+      "source": "https://groups.google.com/g/mechanical-sympathy/c/1Fy9iDavk2c"
+    },
+    {
+      "metric": "Stack space per thread/process",
+      "value": "1-8 MB",
+      "context": "Limits concurrent connection handling",
+      "source": "https://www.systemdesignhandbook.com/guides/c10k-problem/"
+    },
+    {
+      "metric": "io_uring P50 latency (ping-pong mode)",
+      "value": "0.2 milliseconds",
+      "context": "vs epoll's 0.4ms",
+      "source": "https://github.com/axboe/liburing/issues/536"
+    },
+    {
+      "metric": "io_uring P99 latency (ping-pong mode)",
+      "value": "0.9 milliseconds",
+      "context": "vs epoll's 1.8ms",
+      "source": "https://github.com/axboe/liburing/issues/536"
+    },
+    {
+      "metric": "Nginx thread pool queue depth (default)",
+      "value": "65,536",
+      "context": "Maximum tasks waiting before rejecting new ones",
+      "source": "https://www.f5.com/company/blog/nginx/thread-pools-boost-performance-9x/"
+    },
+    {
+      "metric": "Cloudflare p99 TTFB improvement",
+      "value": "6×",
+      "context": "Using non-blocking open/read in Nginx thread pools",
+      "source": "https://blog.cloudflare.com/how-we-scaled-nginx-and-saved-the-world-54-years-every-day/"
+    },
+    {
+      "metric": "WhatsApp concurrent connections (peak)",
+      "value": "2 million",
+      "context": "On 24 cores with Erlang/FreeBSD",
+      "source": "https://www.systemdesignhandbook.com/guides/c10k-problem/"
+    },
+    {
+      "metric": "MigratoryData concurrent connections (peak)",
+      "value": "10-12 million",
+      "context": "On 12 cores with Java/Linux",
+      "source": "https://www.systemdesignhandbook.com/guides/c10k-problem/"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Threads are always lighter than processes and always faster",
+      "reality": "Threads are lighter to create, but process isolation prevents cascading failures. Choice depends on isolation needs and failure domain.",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation"
+    },
+    {
+      "misconception": "Virtual memory is just about swapping to disk",
+      "reality": "Virtual memory is primarily for isolation, security, and memory management. Swapping to disk is a last-resort mechanism.",
+      "source": "https://docs.kernel.org/mm/page_tables.html"
+    },
+    {
+      "misconception": "TLB misses are rare and negligible",
+      "reality": "TLB misses require expensive page walks (multiple memory accesses) and are critical to performance tuning.",
+      "source": "https://pages.cs.wisc.edu/~remzi/OSTEP/vm-tlbs.pdf"
+    },
+    {
+      "misconception": "Increasing ulimit -n to 65536 is always safe",
+      "reality": "Each connection consumes memory and kernel resources; system-wide fs.file-max and memory must support it.",
+      "source": "https://www.cyberciti.biz/faq/linux-increase-the-maximum-number-of-open-files/"
+    },
+    {
+      "misconception": "Async I/O is always faster than threads",
+      "reality": "Async I/O excels at I/O-bound concurrency. CPU-bound tasks are simpler and often faster with synchronous code.",
+      "source": "https://dev.to/koladev/asyncawait-vs-threads-choosing-the-right-approach-2l1d"
+    },
+    {
+      "misconception": "SIGKILL is the 'normal' way to stop a process",
+      "reality": "SIGKILL forces immediate termination without cleanup. SIGTERM is the polite, graceful alternative.",
+      "source": "https://komodor.com/learn/sigterm-signal-15-exit-code-143-linux-graceful-termination/"
+    },
+    {
+      "misconception": "Page faults always stall the CPU for milliseconds",
+      "reality": "Minor page faults cost microseconds; major page faults (disk I/O) cost milliseconds.",
+      "source": "https://rigtorp.se/virtual-memory/"
+    },
+    {
+      "misconception": "Heap allocation is slow; stack allocation is always fast",
+      "reality": "Stack allocation is faster, but heap allows dynamic sizes and sharing. Stack overflow is also a risk.",
+      "source": "https://www.cs.cornell.edu/courses/cs3410/2025sp/notes/mem.html"
+    },
+    {
+      "misconception": "Free memory = fragmentation solved",
+      "reality": "External fragmentation means available memory is scattered; internal fragmentation means allocated blocks are larger than needed.",
+      "source": "https://cpp4arduino.com/2018/11/06/what-is-heap-fragmentation.html"
+    },
+    {
+      "misconception": "All functions are safe to call from signal handlers",
+      "reality": "Only async-signal-safe functions are safe; printf, malloc, pthread_mutex_lock are NOT safe.",
+      "source": "https://www.man7.org/linux/man-pages/man7/signal-safety.7.html"
+    },
+    {
+      "misconception": "A zombie process eventually disappears",
+      "reality": "Zombies persist until parent calls wait()/waitpid() or parent exits; they occupy PID slots.",
+      "source": "https://en.wikipedia.org/wiki/Zombie_process"
+    },
+    {
+      "misconception": "One SIGCHLD handler call reaps one child",
+      "reality": "Only one SIGCHLD is queued regardless of how many children exit; handler must loop to reap all.",
+      "source": "http://www.microhowto.info/howto/reap_zombie_processes_using_a_sigchld_handler.html"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation",
+      "title": "Process vs Thread: Core Architecture and Isolation",
+      "recency": "2024"
+    },
+    {
+      "url": "https://medium.com/@eugenio.andrieu_63440/processes-vs-threads-how-to-choose-the-right-concurrency-model-for-your-application-2bffdbade814",
+      "title": "Processes vs. Threads: How to Choose the Right Concurrency Model",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.cs.cornell.edu/courses/cs3410/2025sp/notes/mem.html",
+      "title": "The Stack, The Heap, and Dynamic Memory Allocation - CS 3410",
+      "recency": "2025"
+    },
+    {
+      "url": "https://pages.cs.wisc.edu/~remzi/OSTEP/vm-tlbs.pdf",
+      "title": "19 Paging: Faster Translations (TLBs) - OSTEP",
+      "recency": "2023"
+    },
+    {
+      "url": "https://docs.kernel.org/mm/page_tables.html",
+      "title": "Page Tables — The Linux Kernel Documentation",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.cyberciti.biz/faq/linux-increase-the-maximum-number-of-open-files/",
+      "title": "Linux Increase The Maximum Number Of Open Files / File Descriptors",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.baeldung.com/linux/error-too-many-open-files",
+      "title": "Fixing the 'Too many open files' Error in Linux",
+      "recency": "2024"
+    },
+    {
+      "url": "https://dev.to/_eb7f2a654e97a60ae9f96e/is-asyncio-really-better-than-multithreading-i-tested-100-concurrent-requests-and-the-difference-4hc5",
+      "title": "Is asyncio Really Better Than Multithreading? Benchmark",
+      "recency": "2024"
+    },
+    {
+      "url": "https://dev.to/koladev/asyncawait-vs-threads-choosing-the-right-approach-2l1d",
+      "title": "Async/Await vs. Threads: Choosing the Right Approach",
+      "recency": "2024"
+    },
+    {
+      "url": "https://victoriametrics.com/blog/go-graceful-shutdown/",
+      "title": "Graceful Shutdown in Go: Practical Patterns",
+      "recency": "2024"
+    },
+    {
+      "url": "https://oneuptime.com/blog/post/2026-01-07-go-graceful-shutdown-kubernetes/view",
+      "title": "How to Implement Graceful Shutdown in Go for Kubernetes",
+      "recency": "2026-01-07"
+    },
+    {
+      "url": "https://komodor.com/learn/sigterm-signal-15-exit-code-143-linux-graceful-termination/",
+      "title": "SIGTERM: Linux Graceful Termination | Exit code 143, Signal 15",
+      "recency": "2024"
+    },
+    {
+      "url": "https://rigtorp.se/virtual-memory/",
+      "title": "Latency Implications of Virtual Memory - Erik Rigtorp",
+      "recency": "2024"
+    },
+    {
+      "url": "https://makedist.com/posts/2016/10/10/measuring-userfaultfd-page-fault-latency/",
+      "title": "Measuring userfaultfd Page-Fault Latency",
+      "recency": "2016 (6+ years old - flagged as stale)"
+    },
+    {
+      "url": "https://cpp4arduino.com/2018/11/06/what-is-heap-fragmentation.html",
+      "title": "What is Heap Fragmentation?",
+      "recency": "2018 (6+ years old - flagged as stale)"
+    },
+    {
+      "url": "https://github.com/axboe/liburing/issues/536",
+      "title": "Yet another comparison between io_uring and epoll on network performance",
+      "recency": "2024"
+    },
+    {
+      "url": "https://blog.cloudflare.com/how-we-scaled-nginx-and-saved-the-world-54-years-every-day/",
+      "title": "How we scaled nginx and saved the world 54 years every day - Cloudflare",
+      "recency": "2017 (7+ years old - flagged as stale)"
+    },
+    {
+      "url": "https://www.f5.com/company/blog/nginx/thread-pools-boost-performance-9x/",
+      "title": "Thread Pools in NGINX Boost Performance 9x - F5",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.kegel.com/c10k.html",
+      "title": "The C10K Problem - Dan Kegel",
+      "recency": "2003 (21+ years old - historical reference, still canonical)"
+    },
+    {
+      "url": "https://www.systemdesignhandbook.com/guides/c10k-problem/",
+      "title": "C10K Problem Explained: Scalable Network Design for High-Traffic Systems",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.man7.org/linux/man-pages/man7/signal-safety.7.html",
+      "title": "signal-safety(7) - Linux Manual Pages",
+      "recency": "2024"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Zombie_process",
+      "title": "Zombie Process - Wikipedia",
+      "recency": "2024"
+    },
+    {
+      "url": "http://www.microhowto.info/howto/reap_zombie_processes_using_a_sigchld_handler.html",
+      "title": "microHOWTO: Reap Zombie Processes Using a SIGCHLD Handler",
+      "recency": "2024"
+    },
+    {
+      "url": "https://duyanghao.github.io/ways_avoid_zombie_process/",
+      "title": "Methods to Avoid Zombie Process",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.baeldung.com/cs/memory-stack-vs-heap",
+      "title": "What and Where Are the Memory Stack and Heap? - Baeldung",
+      "recency": "2024"
+    },
+    {
+      "url": "https://long-zhou.github.io/2012/12/21/epoll-vs-kqueue.html",
+      "title": "Scalable Event Multiplexing: epoll vs. kqueue",
+      "recency": "2012 (12+ years old - flagged as stale)"
+    },
+    {
+      "url": "https://www.abhik.ai/concepts/memory/virtual-memory",
+      "title": "Virtual Memory & TLB: Complete Guide to Address Translation",
+      "recency": "2024"
+    },
+    {
+      "url": "https://github.com/linovia/django-c10k-demo",
+      "title": "Django C10K Demo - 10,000 Concurrent Real-Time Connections",
+      "recency": "2024"
+    }
+  ]
+}

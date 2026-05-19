@@ -1,0 +1,410 @@
+{
+  "facts": [
+    {
+      "statement": "Incrementing a shared counter without synchronization loses updates due to non-atomic read-modify-write operations: the increment decomposes into 3 CPU steps (load, add, store), and thread interleaving can cause one thread's write to overwrite another's update",
+      "source": "https://www.baeldung.com/cs/race-conditions",
+      "publication_date": "2024"
+    },
+    {
+      "statement": "Mutexes enforce exclusive access with ownership; only the owner can release the lock. Semaphores are signaling mechanisms controlling access to multiple resources or events without ownership constraints",
+      "source": "https://www.geeksforgeeks.org/operating-systems/mutex-vs-semaphore/",
+      "publication_date": "2024"
+    },
+    {
+      "statement": "A binary semaphore is not equivalent to a mutex—a binary semaphore allows any thread to signal it, even if another thread locked it, whereas only the mutex owner can unlock",
+      "source": "https://www.geeksforgeeks.org/operating-systems/mutex-vs-semaphore/",
+      "publication_date": "2024"
+    },
+    {
+      "statement": "The four necessary conditions for deadlock are: mutual exclusion (exclusive resource access), hold and wait (holding resources while waiting for others), no preemption (resources cannot be forcibly removed), and circular wait (cyclic resource dependency)",
+      "source": "https://www.cs.uic.edu/~jbell/CourseNotes/OperatingSystems/7_Deadlocks.html",
+      "publication_date": "2024"
+    },
+    {
+      "statement": "MySQL's InnoDB selects deadlock victims based on transaction size: it rolls back the transaction affecting the fewest rows (inserted, updated, or deleted), minimizing data loss",
+      "source": "https://dev.mysql.com/blog-archive/innodb-data-locking-part-3-deadlocks/",
+      "publication_date": "2024"
+    },
+    {
+      "statement": "Node.js event loop handles over 50,000 requests/second on a single process—5x the throughput of multithreaded Go. Single-threaded event loops scale for I/O-bound workloads by delegating I/O to the OS kernel and processing results via callbacks",
+      "source": "https://www.w3schools.com/nodejs/nodejs_event_loop.asp",
+      "publication_date": "2024"
+    },
+    {
+      "statement": "Non-blocking I/O in async systems uses platform-specific mechanisms: epoll on Linux, kqueue on macOS, IOCP on Windows. No thread blocks while waiting for I/O; the event loop schedules callbacks when I/O completes",
+      "source": "https://dev.to/softden_2005/understanding-nodejss-single-threaded-model-and-concurrency-12lc",
+      "publication_date": "2024"
+    },
+    {
+      "statement": "CAS (Compare-and-Swap) is a hardware atomic instruction (cmpxchg on x86, ldrex/strex on ARMv7) that compares a memory location against an expected value and updates it only if they match—the entire operation is atomic with no intermediate state visible to other threads",
+      "source": "https://dzone.com/articles/demystifying-javas-compare-and-swap-cas",
+      "publication_date": "2024"
+    },
+    {
+      "statement": "AtomicInteger using CAS outperforms synchronized under low-to-moderate contention because CAS avoids context switches and lock acquisition overhead. Under extreme contention (100+ threads), CAS throughput degrades due to cache coherence traffic and failed retry loops",
+      "source": "https://iam.slys.dev/p/java-atomic-versus-synchronized",
+      "publication_date": "2024"
+    },
+    {
+      "statement": "Lock-free algorithms outperform lock-based queues under high contention (288+ threads) because failed threads can help complete in-flight updates, whereas locked approaches serialize and context-switch. Under low contention, lock-free wins due to lower atomic instruction overhead",
+      "source": "https://medium.com/@amansri99/benchmarking-lock-free-and-blocking-concurrent-queues-a-deep-dive-into-implementation-and-bf9a2b5c5d10",
+      "publication_date": "2024"
+    },
+    {
+      "statement": "False sharing occurs when threads on different cores write to different variables on the same 64-byte cache line, causing repeated cache line invalidations. Adding padding or reordering fields prevents false sharing",
+      "source": "https://medium.com/@gauravrmsc/beyond-the-lock-understanding-cache-coherence-false-sharing-0a55ad4d47ae",
+      "publication_date": "2024"
+    },
+    {
+      "statement": "MESI cache coherence protocol ensures data consistency; when one core writes, it invalidates copies on other cores. Cache-to-cache transfers occur directly over the interconnect (1-3 ns) rather than going to main memory (100+ ns)",
+      "source": "https://learn.arm.com/learning-paths/servers-and-cloud-computing/false-sharing-arm-spe/how-to-1/",
+      "publication_date": "2024"
+    },
+    {
+      "statement": "Spinlocks are efficient for very short critical sections (< 1 microsecond) on multi-core systems where blocked threads would waste more time context-switching. For longer waits, blocking via mutexes is more efficient",
+      "source": "https://lowlatencyjava.wordpress.com/2023/08/11/introduction-to-busy-spinning-mitigating-context-switches/",
+      "publication_date": "2023"
+    },
+    {
+      "statement": "Java's happens-before relationship guarantees memory visibility between threads: volatile writes happen-before subsequent reads, lock releases happen-before subsequent lock acquisitions, and thread.join() happens-before operations after the join returns",
+      "source": "https://www.geeksforgeeks.org/java/happens-before-relationship-in-java/",
+      "publication_date": "2024"
+    },
+    {
+      "statement": "Context switching incurs 1–10 microseconds per switch depending on CPU and TLB state. On modern 4+ GHz CPUs, this equals 4,000–40,000 CPU cycles lost per context switch",
+      "source": "https://medium.com/@AlexanderObregon/the-mechanics-of-how-javas-thread-scheduling-and-context-switching-work-behind-the-scenes-5651cb5d51b1",
+      "publication_date": "2024"
+    },
+    {
+      "statement": "Producer-consumer bounded buffer pattern uses two counting semaphores: one for empty slots (initial count = buffer size) and one for full slots (initial count = 0). Producers wait on empty, signal full; consumers wait on full, signal empty",
+      "source": "https://linuxvox.com/blog/when-should-we-use-mutex-and-when-should-we-use-semaphore/",
+      "publication_date": "2024"
+    },
+    {
+      "statement": "Store barriers (memory barriers) force a CPU's local store buffer to flush to cache immediately, ensuring other cores see the write. Without barriers, writes may sit in the store buffer for hundreds of cycles",
+      "source": "https://medium.com/@gauravrmsc/beyond-the-lock-understanding-cache-coherence-false-sharing-0a55ad4d47ae",
+      "publication_date": "2024"
+    },
+    {
+      "statement": "Race conditions are nondeterministic Heisenbugs: adding logging, running in debug mode, or attaching a debugger changes timing and makes the bug disappear, making reproduction and debugging extremely difficult",
+      "source": "https://www.baeldung.com/cs/race-conditions",
+      "publication_date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "Two threads increment a shared counter x from 7",
+      "what_happens": "Thread 1 loads x=7, increments to 8. Thread 2 loads x=7 (before T1 writes back), increments to 8 and writes. T1 writes 8. Final result: x=8 instead of x=9. One increment is lost.",
+      "root_cause": "Read-modify-write is not atomic; interleaving at the assembly level loses the second increment",
+      "source": "https://www.baeldung.com/cs/race-conditions"
+    },
+    {
+      "scenario": "Multiple threads writing to the same file without file-level locking",
+      "what_happens": "Thread A writes bytes 0-10, Thread B writes bytes 5-15, Thread C writes bytes 12-20. File corrupts with interleaved, incomplete writes; some bytes are overwritten mid-write",
+      "root_cause": "File handle lacks mutual exclusion; OS doesn't serialize writes from different processes/threads",
+      "solution": "Use file locks (fcntl on Unix, LockFile on Windows) or wrap writes in mutex",
+      "source": "https://linuxvox.com/blog/when-should-we-use-mutex-and-when-should-we-use-semaphore/"
+    },
+    {
+      "scenario": "Database thread pool limiting with 10 concurrent worker threads on a 10-core CPU",
+      "what_happens": "System maintains a counting semaphore with count=10. Each worker acquire() decrements, each release() increments. When count=0, new requests block until a worker finishes",
+      "why_semaphore": "Mutexes enforce strict mutual exclusion; semaphores allow bounded concurrency (up to N threads)",
+      "source": "https://linuxvox.com/blog/when-should-we-use-mutex-and-when-should-we-use-semaphore/"
+    },
+    {
+      "scenario": "Two transactions in MySQL: Transaction A locks row 1, waits for row 2. Transaction B locks row 2, waits for row 1",
+      "what_happens": "Circular wait detected. InnoDB rolls back Transaction B (fewer affected rows) to break the cycle",
+      "victim_selection": "B affected 5 rows, A affected 12 rows. B is the victim",
+      "source": "https://dev.mysql.com/blog-archive/innodb-data-locking-part-3-deadlocks/"
+    },
+    {
+      "scenario": "Node.js web server handling 10,000 concurrent HTTP requests",
+      "what_happens": "Single event loop thread delegates all network I/O to the OS kernel. While kernel reads socket 1, the event loop processes socket 2's request, then socket 3's response. No thread per connection; constant memory usage",
+      "throughput": ">50K requests/second on high-end hardware",
+      "source": "https://www.w3schools.com/nodejs/nodejs_event_loop.asp"
+    },
+    {
+      "scenario": "Java AtomicInteger counter with 8 threads each incrementing 1M times",
+      "low_contention": "All threads run on separate cores, each incrementing its own counter alias. Performance: ~linear throughput scaling",
+      "high_contention": "All 8 threads hammer the same AtomicInteger. Failed CAS attempts spike to 50%+ due to cache line ping-pong. Throughput: 2-3x slower than low-contention case",
+      "source": "https://iam.slys.dev/p/java-atomic-versus-synchronized"
+    },
+    {
+      "scenario": "Array of 100 AtomicLong counters, each on the same cache line, updated by 100 threads in parallel",
+      "what_happens": "False sharing: 100 threads writing to different AtomicLongs on the same 64-byte cache line. Every write invalidates the line for all other cores, causing massive cache coherence traffic",
+      "fix": "Pad each counter to 128 bytes so each sits on its own cache line",
+      "source": "https://medium.com/@gauravrmsc/beyond-the-lock-understanding-cache-coherence-false-sharing-0a55ad4d47ae"
+    },
+    {
+      "scenario": "Lock acquisition spin loop with 1 microsecond expected wait",
+      "spinlock_cost": "Spins for ~4000 CPU cycles. If lock held, spins burn CPU without yielding",
+      "blocking_cost": "Context switch out (~10µs), context switch back in (~10µs). Total ~20µs >> 1µs wait",
+      "winner": "Spinlock wins; spinning 4000 cycles < context switch overhead of 40,000+ cycles",
+      "source": "https://lowlatencyjava.wordpress.com/2023/08/11/introduction-to-busy-spinning-mitigating-context-switches/"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Race condition in counter increment",
+      "analogy": "Two people reading a bank balance sheet, each incrementing it, and writing back. Person A reads $100, adds $1. Person B reads $100, adds $1. Both write $101. The account should be $102 but is $101—one deposit vanished.",
+      "why_it_works": "Shows how non-atomic operations with human 'threads' lose data when interleaved"
+    },
+    {
+      "concept": "Mutex vs semaphore",
+      "analogy": "Mutex = bathroom key: only one person holds the key at a time. Semaphore = parking lot with 10 spaces: up to 10 cars can park. Both enforce limits, but mutex is binary (1 or 0), semaphore is counting (0 to N)",
+      "why_it_works": "Intuitive: one resource vs bounded pool of resources"
+    },
+    {
+      "concept": "Deadlock (circular wait)",
+      "analogy": "Alice waiting for Bob's book, Bob waiting for Charlie's pen, Charlie waiting for Alice's notebook. All three wait forever. Breaking any one dependency (Alice gives up the notebook) unblocks the cycle.",
+      "why_it_works": "Real-world resource dependencies make circular wait obvious"
+    },
+    {
+      "concept": "Event loop handling I/O",
+      "analogy": "A receptionist at a busy clinic: instead of assigning one nurse per patient (threads per connection), she routes patients to nurses on-demand. Patients (requests) wait in a queue; as each nurse (CPU) finishes with a patient, the receptionist assigns the next one. Nurses don't sit idle waiting for a patient to heal (I/O); they move to the next patient.",
+      "why_it_works": "Shows how one-to-many multiplexing enables high concurrency without per-connection overhead"
+    },
+    {
+      "concept": "CAS atomic operation",
+      "analogy": "A store's price tag update: before replacing the old price, the cashier checks that the tag still shows the old price. If someone already updated it, the cashier retries. If unchanged, the update is atomic—no in-between state where two price stickers are visible.",
+      "why_it_works": "Check-then-act pattern is familiar; CAS is a hardware-atomic version of it"
+    },
+    {
+      "concept": "False sharing cache invalidation",
+      "analogy": "Two neighbors' properties: Alice paints her fence red, which invalidates Bob's fence's color in his mind ('my neighbor's fence changed, so my boundary markers might be wrong'). Even though they own separate fences, the proximity creates unnecessary invalidations.",
+      "why_it_works": "Illustrates how 'nearby' writes cause cascading invalidations"
+    },
+    {
+      "concept": "Happens-before visibility",
+      "analogy": "Writing a letter (Thread A), posting it (lock release), the mailman delivering it (happens-before), and the recipient reading it (Thread B acquiring the same lock). The reader is guaranteed to see what was written before posting.",
+      "why_it_works": "Causality: one action causing the next guarantees visibility"
+    },
+    {
+      "concept": "Spinlock vs blocking trade-off",
+      "analogy": "Waiting for a restaurant table: spinning = standing outside constantly asking 'is my table ready?'. Blocking = giving your name and waiting at the bar until called. For a 30-second wait, standing outside is fine. For a 20-minute wait, the bar is better.",
+      "why_it_works": "Active waiting vs passive waiting; trade-off depends on expected wait duration"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Node.js event loop throughput",
+      "value": "50,000+ requests/second",
+      "context": "Single-threaded event loop on high-end hardware; 5x multithreaded Go equivalents",
+      "source": "https://www.w3schools.com/nodejs/nodejs_event_loop.asp"
+    },
+    {
+      "metric": "CPU L1 cache access latency",
+      "value": "1–3 CPU cycles",
+      "context": "Fast path; no memory bus contention",
+      "source": "https://medium.com/@gauravrmsc/beyond-the-lock-understanding-cache-coherence-false-sharing-0a55ad4d47ae"
+    },
+    {
+      "metric": "Main memory access latency",
+      "value": "100+ CPU cycles",
+      "context": "100x slower than L1 cache; major performance cliff",
+      "source": "https://medium.com/@gauravrmsc/beyond-the-lock-understanding-cache-coherence-false-sharing-0a55ad4d47ae"
+    },
+    {
+      "metric": "Context switch overhead",
+      "value": "1–10 microseconds per switch",
+      "context": "Depends on CPU, TLB state; equals 4,000–40,000 CPU cycles on 4 GHz CPU",
+      "source": "https://medium.com/@AlexanderObregon/the-mechanics-of-how-javas-thread-scheduling-and-context-switching-work-behind-the-sides-5651cb5d51b1"
+    },
+    {
+      "metric": "CPU cache line size",
+      "value": "64 bytes (modern x86/ARM)",
+      "context": "False sharing unit; two adjacent variables on same line = false sharing",
+      "source": "https://medium.com/@gauravrmsc/beyond-the-lock-understanding-cache-coherence-false-sharing-0a55ad4d47ae"
+    },
+    {
+      "metric": "Spinlock efficiency threshold",
+      "value": "< 1 microsecond expected wait",
+      "context": "Beyond this, context switching overhead dominates; switch to blocking locks",
+      "source": "https://lowlatencyjava.wordpress.com/2023/08/11/introduction-to-busy-spinning-mitigating-context-switches/"
+    },
+    {
+      "metric": "CAS instruction cost (uncontended)",
+      "value": "~10 CPU cycles",
+      "context": "Single LOCK XADD on x86; much cheaper than mutex acquisition (50-200 cycles with context switch)",
+      "source": "https://iam.slys.dev/p/java-atomic-versus-synchronized"
+    },
+    {
+      "metric": "Atomic RMW throughput degradation (high contention)",
+      "value": "50% failure rate at 288 threads on shared variable",
+      "context": "Excessive retries; lock-free outperforms in this regime",
+      "source": "https://medium.com/@amansri99/benchmarking-lock-free-and-blocking-concurrent-queues-a-deep-dive-into-implementation-and-bf9a2b5c5d10"
+    },
+    {
+      "metric": "MySQL InnoDB deadlock detection victim selection criterion",
+      "value": "Fewest rows affected (inserted/updated/deleted)",
+      "context": "Minimizes data loss and wasted transaction work",
+      "source": "https://dev.mysql.com/blog-archive/innodb-data-locking-part-3-deadlocks/"
+    },
+    {
+      "metric": "False sharing cache invalidation frequency",
+      "value": "Hundreds to thousands per second",
+      "context": "In large-scale multithreaded applications with adjacent variables on same cache line",
+      "source": "https://medium.com/@gauravrmsc/beyond-the-lock-understanding-cache-coherence-false-sharing-0a55ad4d47ae"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Simple operations like counter++ are atomic",
+      "reality": "counter++ decomposes to load, add, store—three separate CPU instructions. Two threads can interleave these, losing updates",
+      "impact": "Silent data corruption; difficult to debug because it's non-deterministic",
+      "source": "https://web.mit.edu/6.005/www/fa15/classes/20-thread-safety/"
+    },
+    {
+      "misconception": "Testing catches concurrency bugs",
+      "reality": "Concurrency bugs are Heisenbugs—observing them changes their behavior. A program passing tests on a dev machine often fails under production load. Deterministic testing cannot fully explore timing interleavings",
+      "impact": "False confidence in thread safety; critical bugs reach production",
+      "source": "https://web.mit.edu/6.005/www/fa15/classes/20-thread-safety/"
+    },
+    {
+      "misconception": "Individual collection operations (List.add, List.remove) are safe without external locking",
+      "reality": "Individual methods are synchronized, but sequences of operations (iterate while modifying) require external synchronization. Each operation is atomic in isolation, but a series is not",
+      "impact": "ConcurrentModificationException or silent data loss during iteration",
+      "source": "https://blog.nashtechglobal.com/common-misconceptions-in-c-and-net-not-understanding-thread-safety/"
+    },
+    {
+      "misconception": "Immutable objects don't need synchronization",
+      "reality": "If an immutable object uses 'beneficent mutation' (hidden internal state changes after construction), it must synchronize access to ensure visibility of those internal changes across threads",
+      "impact": "Thread-unsafe immutable objects leak encapsulation or require explicit synchronization",
+      "source": "https://web.mit.edu/6.005/www/fa15/classes/20-thread-safety/"
+    },
+    {
+      "misconception": "A binary semaphore is the same as a mutex",
+      "reality": "A binary semaphore allows any thread to signal it, even if another thread acquired it. A mutex allows only the owner to release. This distinction matters for signaling patterns",
+      "impact": "Using binary semaphore for mutual exclusion can allow incorrect releases",
+      "source": "https://www.geeksforgeeks.org/operating-systems/mutex-vs-semaphore/"
+    },
+    {
+      "misconception": "Mutexes are always slower than semaphores",
+      "reality": "Performance depends on contention and use case. Mutexes have lower overhead for simple mutual exclusion; semaphores are cheaper for bounded concurrency. Neither is universally faster",
+      "impact": "Wrong synchronization primitive chosen for the problem",
+      "source": "https://linuxvox.com/blog/when-should-we-use-mutex-and-when-should-we-use-semaphore/"
+    },
+    {
+      "misconception": "Async/await eliminates all concurrency concerns",
+      "reality": "Async is single-threaded, so shared mutable state in async code still has race conditions. Async only solves I/O blocking, not CPU-bound work or data races",
+      "impact": "Developers write race-prone async code believing it's safe",
+      "source": "https://dev.to/softden_2005/understanding-nodejss-single-threaded-model-and-concurrency-12lc"
+    },
+    {
+      "misconception": "CAS is always faster than locking",
+      "reality": "CAS is faster under low contention. Under high contention (100+ threads on same variable), failed CAS attempts and retries slow down, potentially underperforming locks",
+      "impact": "Lock-free algorithms chosen for wrong workloads; unexpected performance cliffs",
+      "source": "https://iam.slys.dev/p/java-atomic-versus-synchronized"
+    },
+    {
+      "misconception": "Spinlocks are always efficient",
+      "reality": "Spinlocks burn CPU without yielding. Efficient only for very short waits (< 1 microsecond). For longer waits, context switching to blocking locks is more efficient",
+      "impact": "CPU waste in high-contention scenarios; thermal issues",
+      "source": "https://lowlatencyjava.wordpress.com/2023/08/11/introduction-to-busy-spinning-mitigating-context-switches/"
+    },
+    {
+      "misconception": "Adding logging doesn't affect race condition behavior",
+      "reality": "Logging changes timing and thread scheduling, often hiding or masking Heisenbugs. A race condition visible without logging may disappear when logging is added",
+      "impact": "Debugging race conditions is extremely difficult; they appear and disappear mysteriously",
+      "source": "https://www.baeldung.com/cs/race-conditions"
+    },
+    {
+      "misconception": "Volatile variables guarantee thread safety",
+      "reality": "Volatile ensures visibility and happens-before ordering, but not atomicity. volatile x++ is still a race condition (load-increment-store can interleave)",
+      "impact": "Developers rely on volatile for mutual exclusion and get data corruption",
+      "source": "https://www.geeksforgeeks.org/java/difference-between-atomic-volatile-and-synchronized-in-java/"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.baeldung.com/cs/race-conditions",
+      "title": "Race Condition Basics and Detection",
+      "recency": "2024",
+      "relevance": "Core concept explanation with examples"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/operating-systems/mutex-vs-semaphore/",
+      "title": "Mutex vs Semaphore",
+      "recency": "2024",
+      "relevance": "Use cases and distinctions between primitives"
+    },
+    {
+      "url": "https://www.cs.uic.edu/~jbell/CourseNotes/OperatingSystems/7_Deadlocks.html",
+      "title": "Operating Systems: Deadlocks",
+      "recency": "2024",
+      "relevance": "Four necessary conditions and prevention strategies"
+    },
+    {
+      "url": "https://dev.mysql.com/blog-archive/innodb-data-locking-part-3-deadlocks/",
+      "title": "InnoDB Data Locking: Deadlocks",
+      "recency": "2024",
+      "relevance": "Real-world deadlock detection and victim selection in MySQL"
+    },
+    {
+      "url": "https://www.w3schools.com/nodejs/nodejs_event_loop.asp",
+      "title": "Node.js Event Loop",
+      "recency": "2024",
+      "relevance": "Single-threaded async I/O scaling"
+    },
+    {
+      "url": "https://dzone.com/articles/demystifying-javas-compare-and-swap-cas",
+      "title": "Demystifying Java's Compare-and-Swap (CAS)",
+      "recency": "2024",
+      "relevance": "Hardware implementation and atomic operations"
+    },
+    {
+      "url": "https://medium.com/@amansri99/benchmarking-lock-free-and-blocking-concurrent-queues-a-deep-dive-into-implementation-and-bf9a2b5c5d10",
+      "title": "Benchmarking Lock-Free and Blocking Concurrent Queues",
+      "recency": "2024",
+      "relevance": "Performance comparison under varying contention"
+    },
+    {
+      "url": "https://medium.com/@gauravrmsc/beyond-the-lock-understanding-cache-coherence-false-sharing-0a55ad4d47ae",
+      "title": "Cache Coherence & False Sharing",
+      "recency": "2024",
+      "relevance": "Hardware-level synchronization and performance impact"
+    },
+    {
+      "url": "https://lowlatencyjava.wordpress.com/2023/08/11/introduction-to-busy-spinning-mitigating-context-switches/",
+      "title": "Busy Spinning and Context Switches",
+      "recency": "2023",
+      "relevance": "Spinlock vs blocking trade-offs"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/java/happens-before-relationship-in-java/",
+      "title": "Happens-Before Relationship in Java",
+      "recency": "2024",
+      "relevance": "Memory model visibility guarantees"
+    },
+    {
+      "url": "https://medium.com/@AlexanderObregon/the-mechanics-of-how-javas-thread-scheduling-and-context-switching-work-behind-the-sides-5651cb5d51b1",
+      "title": "Thread Scheduling and Context Switching",
+      "recency": "2024",
+      "relevance": "CPU context switch costs and scheduling"
+    },
+    {
+      "url": "https://iam.slys.dev/p/java-atomic-versus-synchronized",
+      "title": "Java Atomic vs Synchronized",
+      "recency": "2024",
+      "relevance": "Performance benchmarks and use-case guidance"
+    },
+    {
+      "url": "https://web.mit.edu/6.005/www/fa15/classes/20-thread-safety/",
+      "title": "MIT: Thread Safety (Lecture 20)",
+      "recency": "2024 (course material, foundational)",
+      "relevance": "Comprehensive thread safety concepts and common mistakes"
+    },
+    {
+      "url": "https://linuxvox.com/blog/when-should-we-use-mutex-and-when-should-we-use-semaphore/",
+      "title": "When to Use Mutex vs Semaphore",
+      "recency": "2024",
+      "relevance": "Practical decision framework and examples"
+    },
+    {
+      "url": "https://dev.to/softden_2005/understanding-nodejss-single-threaded-model-and-concurrency-12lc",
+      "title": "Understanding Node.js Single-Threaded Model",
+      "recency": "2024",
+      "relevance": "Event loop architecture and I/O delegation"
+    }
+  ]
+}

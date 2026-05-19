@@ -2,7 +2,7 @@
   {
     "slug": "data-modeling-fundamentals",
     "name": "Data Modeling from Scratch",
-    "tagline": "Why your schema breaks at scale — and how to design one that doesn't.",
+    "tagline": "Why your schema breaks at scale \u2014 and how to design one that doesn't.",
     "track": "foundations",
     "difficulty": "beginner",
     "chapter_titles": [
@@ -14,7 +14,7 @@
       "Schema Evolution Without Breaking Production"
     ],
     "chapter_hooks": [
-      "Most modeling mistakes aren't about normalization — they're about misidentifying what an entity actually is.",
+      "Most modeling mistakes aren't about normalization \u2014 they're about misidentifying what an entity actually is.",
       "A single poorly placed foreign key can turn a 10ms query into a 10-second one at 10x data volume.",
       "Bridge tables feel like overhead until you realize every M:N relationship you skipped becomes a migration at scale.",
       "Auto-increment IDs hide a subtle trap: natural keys carry business logic that changes, and your schema will inherit every change.",
@@ -56,12 +56,12 @@
       "Writing Queries the Planner Can Optimize"
     ],
     "chapter_hooks": [
-      "A B-tree index doesn't eliminate a table scan — it trades random I/O for sequential, and that trade is sometimes wrong.",
-      "EXPLAIN output shows what the planner *planned*, not what it did — EXPLAIN ANALYZE shows the truth, and the gap is revealing.",
-      "The most common slow join isn't missing an index — it's a cardinality estimate that's off by 1000x because statistics are stale.",
-      "Window functions run after WHERE and GROUP BY, which means you can't filter on them in the same query level — this surprises every developer once.",
+      "A B-tree index doesn't eliminate a table scan \u2014 it trades random I/O for sequential, and that trade is sometimes wrong.",
+      "EXPLAIN output shows what the planner *planned*, not what it did \u2014 EXPLAIN ANALYZE shows the truth, and the gap is revealing.",
+      "The most common slow join isn't missing an index \u2014 it's a cardinality estimate that's off by 1000x because statistics are stale.",
+      "Window functions run after WHERE and GROUP BY, which means you can't filter on them in the same query level \u2014 this surprises every developer once.",
       "Covering indexes can make a query return results without touching the heap at all, but only if you add the right columns in the right order.",
-      "Query rewriting isn't style — certain patterns prevent index use entirely, and the planner can't fix them for you."
+      "Query rewriting isn't style \u2014 certain patterns prevent index use entirely, and the planner can't fix them for you."
     ],
     "learning_objectives": [
       "Read EXPLAIN ANALYZE output and identify the costliest node in a query plan",
@@ -86,7 +86,7 @@
   {
     "slug": "algorithms-that-matter",
     "name": "Algorithms Engineers Actually Use",
-    "tagline": "Sorting and searching are just the warm-up — here's what shows up in real systems.",
+    "tagline": "Sorting and searching are just the warm-up \u2014 here's what shows up in real systems.",
     "track": "foundations",
     "difficulty": "intermediate",
     "chapter_titles": [
@@ -98,12 +98,12 @@
       "Complexity That Matters: Amortized Analysis and Why O(1) Isn't Always Fast"
     ],
     "chapter_hooks": [
-      "Hash collision strategies aren't theoretical — open addressing vs. chaining determines cache behavior at high load.",
+      "Hash collision strategies aren't theoretical \u2014 open addressing vs. chaining determines cache behavior at high load.",
       "A heap gives you the minimum in O(1) and insertion in O(log n), which is exactly the shape of the Dijkstra inner loop.",
-      "Topological sort solves dependency resolution, build order, and course prerequisites — and it's just DFS with a stack.",
+      "Topological sort solves dependency resolution, build order, and course prerequisites \u2014 and it's just DFS with a stack.",
       "The recurrence relation is a distraction. If you can define the subproblem and its overlap, you can memoize it.",
-      "Binary search works on any monotonically ordered function, not just sorted arrays — this is the key to solving 'minimize the maximum' problems.",
-      "ArrayList amortized O(1) append is still O(n) in the worst case — knowing when that worst case hits is what separates a guess from an analysis."
+      "Binary search works on any monotonically ordered function, not just sorted arrays \u2014 this is the key to solving 'minimize the maximum' problems.",
+      "ArrayList amortized O(1) append is still O(n) in the worst case \u2014 knowing when that worst case hits is what separates a guess from an analysis."
     ],
     "learning_objectives": [
       "Implement a hash map from scratch and explain why load factor matters",
@@ -140,12 +140,12 @@
       "Prefix Sums: O(n) Preprocessing for O(1) Range Queries"
     ],
     "chapter_hooks": [
-      "Two pointers reduce O(n²) brute force to O(n) by exploiting sorted order — but only when you can articulate why the invariant holds.",
+      "Two pointers reduce O(n\u00b2) brute force to O(n) by exploiting sorted order \u2014 but only when you can articulate why the invariant holds.",
       "The shrinking condition in variable-window problems is the part most candidates get wrong on the first attempt.",
       "A monotonic stack solves 'next greater element' in O(n) because you never need to revisit an element once a larger one arrives.",
       "Floyd's cycle detection uses no extra memory because two pointers running at different speeds must meet inside any cycle.",
-      "Merge intervals appears in calendar booking, meeting scheduler, and memory allocator problems — it's one pattern, not three.",
-      "Prefix sums let you answer 'sum of elements from index i to j' in O(1) after one O(n) pass — the standard tradeoff for range query problems."
+      "Merge intervals appears in calendar booking, meeting scheduler, and memory allocator problems \u2014 it's one pattern, not three.",
+      "Prefix sums let you answer 'sum of elements from index i to j' in O(1) after one O(n) pass \u2014 the standard tradeoff for range query problems."
     ],
     "learning_objectives": [
       "Recognize which of the six patterns applies to a new problem within two minutes",
@@ -170,7 +170,7 @@
   {
     "slug": "system-fundamentals-os",
     "name": "OS Concepts Engineers Forget They're Using",
-    "tagline": "Processes, threads, and memory management aren't OS trivia — they're why your service crashes under load.",
+    "tagline": "Processes, threads, and memory management aren't OS trivia \u2014 they're why your service crashes under load.",
     "track": "foundations",
     "difficulty": "foundation",
     "chapter_titles": [
@@ -182,12 +182,12 @@
       "Virtual Memory and Why a 4GB Process Runs on 2GB of RAM"
     ],
     "chapter_hooks": [
-      "Threads share heap memory but have separate stacks — this single fact explains most race conditions.",
+      "Threads share heap memory but have separate stacks \u2014 this single fact explains most race conditions.",
       "Stack overflow isn't a web forum; it's what happens when your recursion depth exceeds the 1-8MB default stack size your OS allocated.",
-      "File descriptors are integers pointing into a per-process table — knowing this explains why 'too many open files' errors appear in high-concurrency servers.",
-      "Context switches cost 1-10 microseconds and flush L1/L2 cache state — this is why async I/O outperforms thread-per-request at high concurrency.",
-      "SIGKILL cannot be caught or ignored because the kernel executes it directly — SIGTERM can be handled gracefully, which is what proper shutdown hooks intercept.",
-      "Page faults are how the OS implements virtual memory lazily — the first access to a page triggers the fault, and the kernel handles the rest."
+      "File descriptors are integers pointing into a per-process table \u2014 knowing this explains why 'too many open files' errors appear in high-concurrency servers.",
+      "Context switches cost 1-10 microseconds and flush L1/L2 cache state \u2014 this is why async I/O outperforms thread-per-request at high concurrency.",
+      "SIGKILL cannot be caught or ignored because the kernel executes it directly \u2014 SIGTERM can be handled gracefully, which is what proper shutdown hooks intercept.",
+      "Page faults are how the OS implements virtual memory lazily \u2014 the first access to a page triggers the fault, and the kernel handles the rest."
     ],
     "learning_objectives": [
       "Explain the isolation difference between processes and threads and when each is appropriate",
@@ -212,7 +212,7 @@
   {
     "slug": "concurrency-without-pain",
     "name": "Concurrency: Locks, Promises, and Why Mutexes Lie",
-    "tagline": "Deadlocks, race conditions, and the event loop — explained through the bugs they produce.",
+    "tagline": "Deadlocks, race conditions, and the event loop \u2014 explained through the bugs they produce.",
     "track": "foundations",
     "difficulty": "intermediate",
     "chapter_titles": [
@@ -224,12 +224,12 @@
       "Lock-Free Data Structures: Compare-and-Swap and Why It's Not Free"
     ],
     "chapter_hooks": [
-      "A race condition only needs two threads and one shared variable — and it might only trigger in production under load.",
-      "A semaphore counts permits; a mutex is a binary semaphore with ownership — and ownership is what prevents one thread from releasing another's lock.",
+      "A race condition only needs two threads and one shared variable \u2014 and it might only trigger in production under load.",
+      "A semaphore counts permits; a mutex is a binary semaphore with ownership \u2014 and ownership is what prevents one thread from releasing another's lock.",
       "Deadlock requires all four conditions simultaneously: hold-and-wait, no preemption, mutual exclusion, circular wait. Breaking any one prevents it.",
-      "The event loop doesn't make I/O faster — it makes waiting cheaper by handing I/O to the OS and doing other work while it completes.",
-      "Async/await is syntactic sugar over Promises, which are wrappers over callbacks — knowing this makes debugging async stack traces significantly easier.",
-      "CAS (compare-and-swap) is atomic, but spinning on it under contention burns CPU — lock-free doesn't mean overhead-free."
+      "The event loop doesn't make I/O faster \u2014 it makes waiting cheaper by handing I/O to the OS and doing other work while it completes.",
+      "Async/await is syntactic sugar over Promises, which are wrappers over callbacks \u2014 knowing this makes debugging async stack traces significantly easier.",
+      "CAS (compare-and-swap) is atomic, but spinning on it under contention burns CPU \u2014 lock-free doesn't mean overhead-free."
     ],
     "learning_objectives": [
       "Identify race conditions by reasoning about thread interleaving",
@@ -254,7 +254,7 @@
   {
     "slug": "networking-for-engineers",
     "name": "Networking: What Every Backend Engineer Should Have Memorized",
-    "tagline": "TCP handshakes, DNS resolution, and TLS aren't networking trivia — they're the latency budget for every request.",
+    "tagline": "TCP handshakes, DNS resolution, and TLS aren't networking trivia \u2014 they're the latency budget for every request.",
     "track": "foundations",
     "difficulty": "foundation",
     "chapter_titles": [
@@ -266,12 +266,12 @@
       "TLS Internals: Certificates, Handshakes, and What SNI Solves"
     ],
     "chapter_hooks": [
-      "TCP's three-way handshake costs one round-trip before the first byte of data — at 100ms latency, that's already a user-perceptible delay.",
-      "A full HTTP request to a cold domain involves DNS lookup, TCP handshake, TLS handshake, and then the actual request — that's 4 round trips before data flows.",
-      "HTTP/2 multiplexing eliminates head-of-line blocking at the HTTP level but not at the TCP level — HTTP/3 fixes this by running over QUIC.",
-      "Layer 4 load balancers see source/destination IP and port; Layer 7 sees the full HTTP request — and Layer 7 is the only one that can route by URL path.",
-      "Cache-Control headers control CDN caching, but CDNs often have their own override policies — and stale content after a deploy is almost always a cache invalidation miss.",
-      "SNI lets a single IP serve multiple TLS certificates by sending the hostname in the ClientHello — without it, HTTPS wouldn't work on shared hosting."
+      "TCP's three-way handshake costs one round-trip before the first byte of data \u2014 at 100ms latency, that's already a user-perceptible delay.",
+      "A full HTTP request to a cold domain involves DNS lookup, TCP handshake, TLS handshake, and then the actual request \u2014 that's 4 round trips before data flows.",
+      "HTTP/2 multiplexing eliminates head-of-line blocking at the HTTP level but not at the TCP level \u2014 HTTP/3 fixes this by running over QUIC.",
+      "Layer 4 load balancers see source/destination IP and port; Layer 7 sees the full HTTP request \u2014 and Layer 7 is the only one that can route by URL path.",
+      "Cache-Control headers control CDN caching, but CDNs often have their own override policies \u2014 and stale content after a deploy is almost always a cache invalidation miss.",
+      "SNI lets a single IP serve multiple TLS certificates by sending the hostname in the ClientHello \u2014 without it, HTTPS wouldn't work on shared hosting."
     ],
     "learning_objectives": [
       "Estimate the latency cost of a fresh HTTPS connection from scratch",
@@ -296,7 +296,7 @@
   {
     "slug": "rest-api-design",
     "name": "REST API Design: What Makes an API a Pleasure to Use",
-    "tagline": "Resource naming, status codes, and versioning — the decisions that haunt you after v1 ships.",
+    "tagline": "Resource naming, status codes, and versioning \u2014 the decisions that haunt you after v1 ships.",
     "track": "foundations",
     "difficulty": "beginner",
     "chapter_titles": [
@@ -308,12 +308,12 @@
       "OpenAPI Specs as Contracts, Not Documentation"
     ],
     "chapter_hooks": [
-      "The most common REST mistake is using verbs in URLs — /getUser vs /users/{id} signals whether the designer understood resource modeling.",
-      "204 No Content and 200 with an empty body mean different things — and clients that don't distinguish them will have subtle bugs.",
-      "Offset pagination breaks when rows are inserted between page fetches — cursor pagination is harder to implement and nearly always the right call.",
-      "URL versioning (/v1/users) is visible and cacheable; header versioning is cleaner but invisible to CDNs — the tradeoff is real, not aesthetic.",
+      "The most common REST mistake is using verbs in URLs \u2014 /getUser vs /users/{id} signals whether the designer understood resource modeling.",
+      "204 No Content and 200 with an empty body mean different things \u2014 and clients that don't distinguish them will have subtle bugs.",
+      "Offset pagination breaks when rows are inserted between page fetches \u2014 cursor pagination is harder to implement and nearly always the right call.",
+      "URL versioning (/v1/users) is visible and cacheable; header versioning is cleaner but invisible to CDNs \u2014 the tradeoff is real, not aesthetic.",
       "An idempotency key lets a client retry a payment safely: the server returns the original result if the key was already processed.",
-      "An OpenAPI spec is a machine-readable contract — generate clients, validate requests, and mock servers from it, not just HTML docs."
+      "An OpenAPI spec is a machine-readable contract \u2014 generate clients, validate requests, and mock servers from it, not just HTML docs."
     ],
     "learning_objectives": [
       "Design resource hierarchies that scale to nested relationships without path explosion",
@@ -338,7 +338,7 @@
   {
     "slug": "system-design-foundations",
     "name": "System Design: The Framework That Actually Works",
-    "tagline": "Clarify requirements, estimate scale, then design — skipping step one is why most designs miss the point.",
+    "tagline": "Clarify requirements, estimate scale, then design \u2014 skipping step one is why most designs miss the point.",
     "track": "systems",
     "difficulty": "intermediate",
     "chapter_titles": [
@@ -350,12 +350,12 @@
       "The CAP Theorem in Plain English (and Where It's Misapplied)"
     ],
     "chapter_hooks": [
-      "The most common system design failure is designing a write-heavy system when the interviewer meant read-heavy — clarifying questions aren't stalling, they're the job.",
-      "1 million requests per day is 12 QPS — back-of-envelope estimation turns vague scale requirements into concrete infrastructure decisions.",
-      "A system with 100:1 read-to-write ratio needs caching and read replicas; a 1:1 system needs write throughput and durable queues — the architecture is inverted.",
+      "The most common system design failure is designing a write-heavy system when the interviewer meant read-heavy \u2014 clarifying questions aren't stalling, they're the job.",
+      "1 million requests per day is 12 QPS \u2014 back-of-envelope estimation turns vague scale requirements into concrete infrastructure decisions.",
+      "A system with 100:1 read-to-write ratio needs caching and read replicas; a 1:1 system needs write throughput and durable queues \u2014 the architecture is inverted.",
       "Vertical scaling is fast to implement and hits a hard ceiling; horizontal scaling removes the ceiling but adds distributed system complexity.",
       "Stateless services can be load-balanced and scaled instantly; stateful services require session affinity, which turns load balancing into routing.",
-      "CAP says you can't have consistency AND availability during a partition — but most systems aren't partitioned most of the time, so the real question is what you want when they are."
+      "CAP says you can't have consistency AND availability during a partition \u2014 but most systems aren't partitioned most of the time, so the real question is what you want when they are."
     ],
     "learning_objectives": [
       "Ask the five clarifying questions that change a system design in under two minutes",
@@ -380,7 +380,7 @@
   {
     "slug": "distributed-systems-core",
     "name": "Distributed Systems: Clocks, Consensus, and Failures",
-    "tagline": "Distributed systems fail in ways that local systems don't — here's the mental model you need.",
+    "tagline": "Distributed systems fail in ways that local systems don't \u2014 here's the mental model you need.",
     "track": "systems",
     "difficulty": "advanced",
     "chapter_titles": [
@@ -393,12 +393,12 @@
       "Gossip Protocols: Eventual Consistency Without Coordination"
     ],
     "chapter_hooks": [
-      "The eight fallacies include 'the network is reliable' and 'latency is zero' — every distributed system bug traces back to one of them.",
+      "The eight fallacies include 'the network is reliable' and 'latency is zero' \u2014 every distributed system bug traces back to one of them.",
       "Wall-clock time is unreliable across nodes due to drift and NTP corrections; Lamport timestamps give you a consistent 'happened-before' ordering without synchronized clocks.",
-      "Raft was designed to be understandable — its leader election and log replication are simpler to implement correctly than Paxos, which is why etcd and Consul use it.",
-      "Two-phase commit is blocking: if the coordinator fails between Prepare and Commit, participants are locked until it recovers — this is the availability cost of distributed atomicity.",
-      "Split-brain means two nodes both believe they are the primary — and both are accepting writes that will need to be reconciled or discarded.",
-      "At-least-once delivery means your consumer will see duplicates — idempotent handlers are not a nice-to-have, they are the only correct design."
+      "Raft was designed to be understandable \u2014 its leader election and log replication are simpler to implement correctly than Paxos, which is why etcd and Consul use it.",
+      "Two-phase commit is blocking: if the coordinator fails between Prepare and Commit, participants are locked until it recovers \u2014 this is the availability cost of distributed atomicity.",
+      "Split-brain means two nodes both believe they are the primary \u2014 and both are accepting writes that will need to be reconciled or discarded.",
+      "At-least-once delivery means your consumer will see duplicates \u2014 idempotent handlers are not a nice-to-have, they are the only correct design."
     ],
     "learning_objectives": [
       "Identify which fallacy of distributed computing caused a given production incident",
@@ -424,7 +424,7 @@
   {
     "slug": "database-internals",
     "name": "Database Internals: What Happens After You Run INSERT",
-    "tagline": "WAL, MVCC, and buffer pools — the machinery that makes ACID work.",
+    "tagline": "WAL, MVCC, and buffer pools \u2014 the machinery that makes ACID work.",
     "track": "systems",
     "difficulty": "advanced",
     "chapter_titles": [
@@ -436,11 +436,11 @@
       "Index Structures Beyond B-Tree: Hash, GiST, and Bloom Filters"
     ],
     "chapter_hooks": [
-      "The WAL is written before the data pages — crash recovery replays it to rebuild state, which is why databases survive power failures without corruption.",
-      "MVCC lets readers see a consistent snapshot without locking writers by keeping multiple row versions — the cost is dead tuple accumulation.",
-      "The buffer pool is an in-memory LRU cache of disk pages — every slow query that reads 'too much data' is a buffer pool eviction problem.",
+      "The WAL is written before the data pages \u2014 crash recovery replays it to rebuild state, which is why databases survive power failures without corruption.",
+      "MVCC lets readers see a consistent snapshot without locking writers by keeping multiple row versions \u2014 the cost is dead tuple accumulation.",
+      "The buffer pool is an in-memory LRU cache of disk pages \u2014 every slow query that reads 'too much data' is a buffer pool eviction problem.",
       "READ COMMITTED allows non-repeatable reads: the same SELECT returns different results within one transaction if a concurrent commit happened in between.",
-      "A transaction that's been open for 10 hours prevents autovacuum from cleaning dead tuples for any row modified in the last 10 hours — this is table bloat.",
+      "A transaction that's been open for 10 hours prevents autovacuum from cleaning dead tuples for any row modified in the last 10 hours \u2014 this is table bloat.",
       "B-tree is wrong for geospatial data; GiST handles bounding boxes and range containment; Bloom filters answer 'definitely not present' in near-zero space."
     ],
     "learning_objectives": [
@@ -466,7 +466,7 @@
   {
     "slug": "caching-strategies",
     "name": "Caching: Every Strategy, Every Failure Mode",
-    "tagline": "Cache-aside, write-through, and TTL are the easy part — thundering herd and cache poisoning are where systems fail.",
+    "tagline": "Cache-aside, write-through, and TTL are the easy part \u2014 thundering herd and cache poisoning are where systems fail.",
     "track": "systems",
     "difficulty": "intermediate",
     "chapter_titles": [
@@ -478,12 +478,12 @@
       "Distributed Cache Consistency: What You Give Up When You Shard Redis"
     ],
     "chapter_hooks": [
-      "Write-through keeps cache and DB in sync at write time; write-behind buffers writes and risks data loss — the choice depends entirely on your durability requirement.",
+      "Write-through keeps cache and DB in sync at write time; write-behind buffers writes and risks data loss \u2014 the choice depends entirely on your durability requirement.",
       "Stale cache entries after a deploy are the most common form of cache invalidation failure, and event-driven invalidation is almost always preferable to TTL.",
-      "When a hot cache key expires, every concurrent reader hits the database simultaneously — at high QPS, this takes down the primary.",
+      "When a hot cache key expires, every concurrent reader hits the database simultaneously \u2014 at high QPS, this takes down the primary.",
       "Probabilistic early expiry re-computes a cache entry before it expires with probability that increases as expiry approaches, preventing the thundering herd entirely.",
-      "Redis sorted sets give you O(log n) rank operations — they're the right structure for leaderboards, rate limiters, and priority queues, not just sorted lists.",
-      "Sharding Redis across nodes means you can't use MULTI/EXEC transactions across keys on different shards — distributed cache and distributed transactions are incompatible without a proxy."
+      "Redis sorted sets give you O(log n) rank operations \u2014 they're the right structure for leaderboards, rate limiters, and priority queues, not just sorted lists.",
+      "Sharding Redis across nodes means you can't use MULTI/EXEC transactions across keys on different shards \u2014 distributed cache and distributed transactions are incompatible without a proxy."
     ],
     "learning_objectives": [
       "Select the correct cache strategy based on read/write ratio and consistency requirement",
@@ -508,7 +508,7 @@
   {
     "slug": "message-queues-streaming",
     "name": "Message Queues vs. Streaming: Kafka Isn't Just a Queue",
-    "tagline": "Pub/sub, consumer groups, and log compaction — the design decisions that determine whether you can replay the past.",
+    "tagline": "Pub/sub, consumer groups, and log compaction \u2014 the design decisions that determine whether you can replay the past.",
     "track": "systems",
     "difficulty": "intermediate",
     "chapter_titles": [
@@ -520,12 +520,12 @@
       "Event Sourcing with Kafka: Replaying History as Architecture"
     ],
     "chapter_hooks": [
-      "A queue deletes messages after consumption; a log retains them — Kafka's log retention is what makes event replay and audit trails possible.",
+      "A queue deletes messages after consumption; a log retains them \u2014 Kafka's log retention is what makes event replay and audit trails possible.",
       "Without consumer groups, every consumer sees every message; with consumer groups, the log is partitioned across members for parallel processing.",
-      "Exactly-once delivery in Kafka requires transactional producers AND idempotent consumers — either alone is not enough.",
-      "Log compaction retains only the latest value per key — it turns an append-only log into something that behaves like a key-value store you can replay.",
-      "Backpressure propagates slow consumer signals upstream to prevent unbounded queue growth — without it, a slow consumer fills memory until OOM.",
-      "Event sourcing stores every state change as an immutable event; the current state is derived by replaying them — Kafka is the natural infrastructure for this pattern."
+      "Exactly-once delivery in Kafka requires transactional producers AND idempotent consumers \u2014 either alone is not enough.",
+      "Log compaction retains only the latest value per key \u2014 it turns an append-only log into something that behaves like a key-value store you can replay.",
+      "Backpressure propagates slow consumer signals upstream to prevent unbounded queue growth \u2014 without it, a slow consumer fills memory until OOM.",
+      "Event sourcing stores every state change as an immutable event; the current state is derived by replaying them \u2014 Kafka is the natural infrastructure for this pattern."
     ],
     "learning_objectives": [
       "Choose between a queue and a log based on replay and ordering requirements",
@@ -562,12 +562,12 @@
       "Oncall Rotation Design: What Separates Sustainable from Burnout"
     ],
     "chapter_hooks": [
-      "An SLI is a measurement; an SLO is a target; an SLA is a contract with a penalty — most engineers conflate all three.",
-      "An error budget is the allowed unreliability per quarter — when it's exhausted, feature releases stop until reliability is restored, which makes reliability a team concern, not just ops.",
-      "A circuit breaker stops cascading failures by opening the circuit after a threshold of errors — without it, a slow downstream service takes down every upstream that calls it.",
+      "An SLI is a measurement; an SLO is a target; an SLA is a contract with a penalty \u2014 most engineers conflate all three.",
+      "An error budget is the allowed unreliability per quarter \u2014 when it's exhausted, feature releases stop until reliability is restored, which makes reliability a team concern, not just ops.",
+      "A circuit breaker stops cascading failures by opening the circuit after a threshold of errors \u2014 without it, a slow downstream service takes down every upstream that calls it.",
       "Chaos engineering forces engineers to answer 'what happens when X fails' before an incident answers it for them.",
-      "Five Whys traces a failure to its systemic root cause — if you stop at 'human error', you've identified a symptom, not a cause.",
-      "An oncall rotation that pages more than once per shift will produce burnout within three months — alert quality is a product of your SLO design."
+      "Five Whys traces a failure to its systemic root cause \u2014 if you stop at 'human error', you've identified a symptom, not a cause.",
+      "An oncall rotation that pages more than once per shift will produce burnout within three months \u2014 alert quality is a product of your SLO design."
     ],
     "learning_objectives": [
       "Define SLIs for availability, latency, and error rate for a web service",
@@ -592,7 +592,7 @@
   {
     "slug": "storage-systems-tradeoffs",
     "name": "Storage Systems: Picking the Right Database for the Job",
-    "tagline": "Relational, document, columnar, vector — choosing wrong at the start costs a rewrite at scale.",
+    "tagline": "Relational, document, columnar, vector \u2014 choosing wrong at the start costs a rewrite at scale.",
     "track": "systems",
     "difficulty": "intermediate",
     "chapter_titles": [
@@ -604,12 +604,12 @@
       "The Polyglot Persistence Pattern: Multiple Databases, One Consistency Problem"
     ],
     "chapter_hooks": [
-      "Document databases aren't schema-free — they're schema-on-read, which moves the enforcement burden from the database to the application.",
-      "Columnar storage compresses aggressively because each column has a narrow value range — a billion-row analytics query reads only the columns you name.",
-      "Redis is often misused as a primary store — its persistence guarantees (RDB/AOF) are weaker than PostgreSQL's WAL, and engineers don't always know what they're trading.",
-      "Time-series databases use specialized compression (delta-of-delta, XOR encoding) because timestamps and metrics are highly repetitive — this is why InfluxDB beats Postgres at 1M points/second.",
-      "ANN search returns approximate neighbors, not exact ones — the recall-latency tradeoff is tunable, and 95% recall is often good enough for recommendation systems.",
-      "Polyglot persistence means a user record lives in Postgres, their events in Kafka, their preferences in Redis, and their embeddings in Pinecone — and keeping them consistent is your problem."
+      "Document databases aren't schema-free \u2014 they're schema-on-read, which moves the enforcement burden from the database to the application.",
+      "Columnar storage compresses aggressively because each column has a narrow value range \u2014 a billion-row analytics query reads only the columns you name.",
+      "Redis is often misused as a primary store \u2014 its persistence guarantees (RDB/AOF) are weaker than PostgreSQL's WAL, and engineers don't always know what they're trading.",
+      "Time-series databases use specialized compression (delta-of-delta, XOR encoding) because timestamps and metrics are highly repetitive \u2014 this is why InfluxDB beats Postgres at 1M points/second.",
+      "ANN search returns approximate neighbors, not exact ones \u2014 the recall-latency tradeoff is tunable, and 95% recall is often good enough for recommendation systems.",
+      "Polyglot persistence means a user record lives in Postgres, their events in Kafka, their preferences in Redis, and their embeddings in Pinecone \u2014 and keeping them consistent is your problem."
     ],
     "learning_objectives": [
       "Choose the correct storage system for a given access pattern and consistency requirement",
@@ -634,7 +634,7 @@
   {
     "slug": "api-gateway-service-mesh",
     "name": "API Gateways and Service Meshes: The Plumbing of Microservices",
-    "tagline": "Authentication, rate limiting, and observability don't belong in every service — they belong in the mesh.",
+    "tagline": "Authentication, rate limiting, and observability don't belong in every service \u2014 they belong in the mesh.",
     "track": "systems",
     "difficulty": "advanced",
     "chapter_titles": [
@@ -646,12 +646,12 @@
       "Service Discovery: How Services Find Each Other Without Hardcoded IPs"
     ],
     "chapter_hooks": [
-      "An API gateway handles auth, routing, rate limiting, and response transformation — a load balancer handles none of these, which is why they coexist.",
-      "Token bucket allows bursts; leaky bucket smooths them — choosing wrong means your API either denies legitimate traffic or allows burst attacks.",
-      "The sidecar pattern injects a proxy into every pod so cross-cutting concerns (mTLS, tracing, retries) run outside application code — no library required.",
-      "mTLS authenticates both sides of every service-to-service call — a compromised service inside the cluster can't impersonate another service.",
-      "A distributed trace is a tree of spans with a shared trace ID — without it, a 200ms response that crosses 12 services is a black box.",
-      "Service discovery lets services register themselves at startup and deregister on shutdown — clients query the registry, not a static config file, which is what makes rolling deploys safe."
+      "An API gateway handles auth, routing, rate limiting, and response transformation \u2014 a load balancer handles none of these, which is why they coexist.",
+      "Token bucket allows bursts; leaky bucket smooths them \u2014 choosing wrong means your API either denies legitimate traffic or allows burst attacks.",
+      "The sidecar pattern injects a proxy into every pod so cross-cutting concerns (mTLS, tracing, retries) run outside application code \u2014 no library required.",
+      "mTLS authenticates both sides of every service-to-service call \u2014 a compromised service inside the cluster can't impersonate another service.",
+      "A distributed trace is a tree of spans with a shared trace ID \u2014 without it, a 200ms response that crosses 12 services is a black box.",
+      "Service discovery lets services register themselves at startup and deregister on shutdown \u2014 clients query the registry, not a static config file, which is what makes rolling deploys safe."
     ],
     "learning_objectives": [
       "Design an API gateway configuration that handles auth, rate limiting, and routing",
@@ -675,50 +675,50 @@
   },
   {
     "slug": "llm-internals-attention",
-    "name": "LLM Internals: How Transformers Actually Work",
-    "tagline": "Attention is a weighted lookup table — once you see that, the rest of the architecture makes sense.",
+    "name": "LLM Internals: Attention, Transformers, and Why Size Matters",
+    "tagline": "Attention is a weighted lookup table. Once you see that, the rest of the architecture makes sense.",
     "track": "ai-llms",
     "difficulty": "intermediate",
     "chapter_titles": [
-      "Tokenization: Why 'unhappiness' Is Three Tokens and Why It Matters",
-      "Attention as Learned Retrieval: Queries, Keys, and Values Demystified",
-      "Multi-Head Attention: Parallel Relationship Detectors",
-      "Context Windows: Why Length Isn't Free and KV Cache Is the Fix",
-      "RLHF: How Human Preferences Get Baked Into Model Behavior",
-      "Scaling Laws: Why Bigger Models Are Predictably Better"
+      "Attention Is All You Need: What the Paper Actually Says",
+      "Tokenization: Why GPT-4 Cant Count Letters",
+      "Context Windows, KV Cache, and the Cost of Long Prompts",
+      "Scaling Laws: Why Bigger Models Keep Winning",
+      "Quantization: Running 70B Models on a MacBook",
+      "Mixture of Experts: How GPT-4 Is Probably Structured"
     ],
     "chapter_hooks": [
-      "BPE tokenization splits words at frequency boundaries — 'unhappiness' becomes 'un', 'happiness' not 'u', 'n', 'h'... — and token count directly determines inference cost.",
-      "Attention computes a weighted average of value vectors, where weights come from query-key dot products — it is literally 'which other tokens should inform this token?'",
-      "Multi-head attention runs attention multiple times in parallel with different learned weight matrices — each head specializes in a different relationship type.",
-      "KV cache stores key and value projections from previous tokens so autoregressive generation doesn't recompute them — without it, each token would require O(n²) work.",
-      "RLHF trains a reward model on human preference labels, then uses PPO to push the base model toward higher reward — this is what makes Claude helpful rather than merely predictive.",
-      "The Chinchilla scaling laws showed that most large models before 2022 were trained on too little data — compute-optimal training requires more tokens, not just more parameters."
+      "Attention lets every token attend to every other token in a single layer. The quadratic cost of this is why long context is expensive and why sparse attention variants exist.",
+      "GPT-4 can't reliably count the letter r in strawberry because it operates on tokens, not characters. And strawberry may tokenize into subwords that split the letters unpredictably.",
+      "The KV cache stores precomputed key and value tensors for every prior token. It's what makes generation fast, and it's also why a 128k context window costs 30x more RAM than a 4k one.",
+      "Chinchilla showed that most models before 2022 were undertrained relative to their parameter count. Optimal training uses roughly 20 tokens per parameter, which flipped how labs think about compute allocation.",
+      "INT4 quantization reduces a 70B model from 140GB to 35GB with less than 1% accuracy loss on most benchmarks. This is why llama.cpp can run frontier-class models on consumer hardware.",
+      "A MoE model routes each token through only 2 of 64 expert networks. The active parameter count stays small while the total parameter count scales, which is likely how GPT-4 hits its capability level at manageable inference cost."
     ],
     "learning_objectives": [
-      "Explain attention mechanism as a differentiable lookup table",
-      "Calculate the KV cache memory requirement for a given context length and model size",
-      "Trace how RLHF modifies base model behavior toward human preferences",
-      "Understand why tokenization choices affect multilingual model performance",
-      "Apply scaling law predictions to estimate compute-optimal training runs"
+      "Explain how self-attention computes query, key, and value matrices",
+      "Predict tokenization behavior for edge cases like numbers and non-English text",
+      "Calculate KV cache memory requirements for a given context length and model size",
+      "Apply Chinchilla scaling laws to estimate optimal model size for a compute budget",
+      "Compare quantization schemes (INT8, INT4, GGUF) by accuracy-performance tradeoff"
     ],
-    "est_minutes": 55,
-    "cover_color": "#3d2a00",
-    "accent_color": "#f59e0b",
+    "est_minutes": 60,
+    "cover_color": "#0f172a",
+    "accent_color": "#6366f1",
     "sort_order": 1,
     "image_needed": [
+      true,
+      true,
+      true,
       false,
       true,
-      true,
-      true,
-      true,
-      false
+      true
     ]
   },
   {
     "slug": "rag-architecture",
     "name": "RAG: Building Retrieval Systems That Don't Hallucinate",
-    "tagline": "Retrieval-augmented generation is only as good as its retriever — and most retrievers are naive.",
+    "tagline": "Retrieval-augmented generation is only as good as its retriever \u2014 and most retrievers are naive.",
     "track": "ai-llms",
     "difficulty": "intermediate",
     "chapter_titles": [
@@ -730,12 +730,12 @@
       "Advanced RAG Patterns: HyDE, Step-Back Prompting, and Self-RAG"
     ],
     "chapter_hooks": [
-      "LLMs have a training cutoff and a fixed parameter budget — RAG externalizes knowledge into a retrieval system, letting you update facts without retraining.",
-      "Fixed-size chunking is fast and wrong — it splits sentences mid-thought; semantic chunking preserves meaning at the cost of preprocessing complexity.",
-      "Dense embeddings capture semantic similarity; BM25 captures exact keyword matches — a query for 'Python GIL' often needs both, because semantic retrieval misses the acronym.",
-      "Re-ranking runs a cross-encoder (which sees both query and document together) over the top-k results from cheaper retrieval — it's more accurate and 10x slower, so you run it on 20 candidates, not 1000.",
-      "Recall@K tells you how often the correct document is in the top K — but if the correct document is ranked 10th, MRR captures that and Recall@5 doesn't.",
-      "HyDE generates a hypothetical answer to the query, then retrieves documents similar to the hypothetical — it consistently outperforms direct query embedding on sparse topics."
+      "LLMs have a training cutoff and a fixed parameter budget \u2014 RAG externalizes knowledge into a retrieval system, letting you update facts without retraining.",
+      "Fixed-size chunking is fast and wrong \u2014 it splits sentences mid-thought; semantic chunking preserves meaning at the cost of preprocessing complexity.",
+      "Dense embeddings capture semantic similarity; BM25 captures exact keyword matches \u2014 a query for 'Python GIL' often needs both, because semantic retrieval misses the acronym.",
+      "Re-ranking runs a cross-encoder (which sees both query and document together) over the top-k results from cheaper retrieval \u2014 it's more accurate and 10x slower, so you run it on 20 candidates, not 1000.",
+      "Recall@K tells you how often the correct document is in the top K \u2014 but if the correct document is ranked 10th, MRR captures that and Recall@5 doesn't.",
+      "HyDE generates a hypothetical answer to the query, then retrieves documents similar to the hypothetical \u2014 it consistently outperforms direct query embedding on sparse topics."
     ],
     "learning_objectives": [
       "Select a chunking strategy based on document structure and query type",
@@ -760,7 +760,7 @@
   {
     "slug": "embeddings-deep-dive",
     "name": "Embeddings: Geometry of Meaning",
-    "tagline": "Embeddings are coordinates in meaning-space — how you generate and store them determines everything downstream.",
+    "tagline": "Embeddings are coordinates in meaning-space \u2014 how you generate and store them determines everything downstream.",
     "track": "ai-llms",
     "difficulty": "intermediate",
     "chapter_titles": [
@@ -772,12 +772,12 @@
       "Embedding Drift: Why Models Trained Six Months Apart Don't Mix"
     ],
     "chapter_hooks": [
-      "Embeddings encode the distributional context of text — words that appear in similar contexts have similar vectors, which is useful and also a source of subtle bias.",
+      "Embeddings encode the distributional context of text \u2014 words that appear in similar contexts have similar vectors, which is useful and also a source of subtle bias.",
       "MTEB scores compare models across dozens of tasks, but if your task is code search, a model that tops MTEB on English STS might still underperform a smaller code-specific model.",
-      "Cosine similarity normalizes magnitude; dot product doesn't — for normalized vectors they're identical, but for variable-magnitude embeddings the difference is real.",
-      "HNSW builds a hierarchical graph of vectors; search starts at the top layer and greedy-descends — this gives approximate nearest-neighbor search in O(log n) space.",
-      "Matryoshka training creates embeddings where the first d dimensions are independently useful — truncating to 256 dims saves 4x on storage with only modest recall loss.",
-      "Embedding models encode statistical regularities from their training data — two models trained on different corpora will cluster the same document differently, making their vectors incompatible."
+      "Cosine similarity normalizes magnitude; dot product doesn't \u2014 for normalized vectors they're identical, but for variable-magnitude embeddings the difference is real.",
+      "HNSW builds a hierarchical graph of vectors; search starts at the top layer and greedy-descends \u2014 this gives approximate nearest-neighbor search in O(log n) space.",
+      "Matryoshka training creates embeddings where the first d dimensions are independently useful \u2014 truncating to 256 dims saves 4x on storage with only modest recall loss.",
+      "Embedding models encode statistical regularities from their training data \u2014 two models trained on different corpora will cluster the same document differently, making their vectors incompatible."
     ],
     "learning_objectives": [
       "Select the correct embedding model for a domain given benchmark data",
@@ -802,7 +802,7 @@
   {
     "slug": "fine-tuning-in-practice",
     "name": "Fine-Tuning: When to Do It and How Not to Break the Model",
-    "tagline": "Fine-tuning isn't training from scratch — it's steering, and knowing when NOT to fine-tune saves months.",
+    "tagline": "Fine-tuning isn't training from scratch \u2014 it's steering, and knowing when NOT to fine-tune saves months.",
     "track": "ai-llms",
     "difficulty": "advanced",
     "chapter_titles": [
@@ -814,12 +814,12 @@
       "Evaluation: How to Know If Fine-Tuning Actually Helped"
     ],
     "chapter_hooks": [
-      "Fine-tuning changes model weights; RAG changes the context; prompt engineering changes the framing — start with prompts, move to RAG, then fine-tune when data format is the problem, not knowledge.",
-      "The instruction format matters enormously — a model trained on chat format fails on completion format and vice versa, which is a data formatting bug, not a model problem.",
-      "LoRA adds small trainable matrices alongside frozen weights — training 0.1% of parameters while preserving most base model knowledge is usually better than training everything.",
-      "Catastrophic forgetting means fine-tuning on coding can degrade math reasoning — the more different your fine-tuning domain is from the base model's training, the more general capability you lose.",
-      "Noisy training data is worse than less data — a model trained on 1000 high-quality instruction pairs outperforms one trained on 100k scraped, uncurated examples.",
-      "The real test of fine-tuning is performance on held-out examples from your target distribution AND retention on a general benchmark — fine-tuning that gains 10 points but loses 30 is a regression."
+      "Fine-tuning changes model weights; RAG changes the context; prompt engineering changes the framing \u2014 start with prompts, move to RAG, then fine-tune when data format is the problem, not knowledge.",
+      "The instruction format matters enormously \u2014 a model trained on chat format fails on completion format and vice versa, which is a data formatting bug, not a model problem.",
+      "LoRA adds small trainable matrices alongside frozen weights \u2014 training 0.1% of parameters while preserving most base model knowledge is usually better than training everything.",
+      "Catastrophic forgetting means fine-tuning on coding can degrade math reasoning \u2014 the more different your fine-tuning domain is from the base model's training, the more general capability you lose.",
+      "Noisy training data is worse than less data \u2014 a model trained on 1000 high-quality instruction pairs outperforms one trained on 100k scraped, uncurated examples.",
+      "The real test of fine-tuning is performance on held-out examples from your target distribution AND retention on a general benchmark \u2014 fine-tuning that gains 10 points but loses 30 is a regression."
     ],
     "learning_objectives": [
       "Decide between prompt engineering, RAG, and fine-tuning using a clear decision framework",
@@ -844,7 +844,7 @@
   {
     "slug": "llm-evaluation",
     "name": "LLM Evaluation: Measuring What Models Actually Do",
-    "tagline": "Accuracy on benchmarks and quality in production are different things — building evals that bridge them is the real skill.",
+    "tagline": "Accuracy on benchmarks and quality in production are different things \u2014 building evals that bridge them is the real skill.",
     "track": "ai-llms",
     "difficulty": "intermediate",
     "chapter_titles": [
@@ -856,12 +856,12 @@
       "Tracing and Observability: What MLflow Knows About Your LLM Calls"
     ],
     "chapter_hooks": [
-      "MMLU scores are inflated because training data often overlaps with benchmark questions — contamination is common and rarely disclosed.",
-      "A task-specific eval is a small dataset of hard examples from your real distribution — 50 carefully chosen examples outperform a 10k benchmark that doesn't match your use case.",
-      "LLM-as-judge is cheap and scalable but has position bias (favoring first response) and self-enhancement bias — calibration against human labels is required before you trust it.",
-      "Inter-rater reliability below 0.7 kappa means your human eval rubric is ambiguous — and ambiguous rubrics produce noisy training signal.",
-      "A golden dataset is a frozen set of inputs with verified expected outputs — when a new model or prompt changes the outputs, you catch it before deployment.",
-      "MLflow tracing captures every LLM call with inputs, outputs, latency, and token counts — a session trace reveals which chain step has the most variance."
+      "MMLU scores are inflated because training data often overlaps with benchmark questions \u2014 contamination is common and rarely disclosed.",
+      "A task-specific eval is a small dataset of hard examples from your real distribution \u2014 50 carefully chosen examples outperform a 10k benchmark that doesn't match your use case.",
+      "LLM-as-judge is cheap and scalable but has position bias (favoring first response) and self-enhancement bias \u2014 calibration against human labels is required before you trust it.",
+      "Inter-rater reliability below 0.7 kappa means your human eval rubric is ambiguous \u2014 and ambiguous rubrics produce noisy training signal.",
+      "A golden dataset is a frozen set of inputs with verified expected outputs \u2014 when a new model or prompt changes the outputs, you catch it before deployment.",
+      "MLflow tracing captures every LLM call with inputs, outputs, latency, and token counts \u2014 a session trace reveals which chain step has the most variance."
     ],
     "learning_objectives": [
       "Build a task-specific eval dataset from production examples",
@@ -886,7 +886,7 @@
   {
     "slug": "agentic-systems-design",
     "name": "Agentic Systems: Tool Use, Planning, and Failure Modes",
-    "tagline": "Agents are LLMs with tools and loops — the failure modes are different from every system you've built before.",
+    "tagline": "Agents are LLMs with tools and loops \u2014 the failure modes are different from every system you've built before.",
     "track": "ai-llms",
     "difficulty": "advanced",
     "chapter_titles": [
@@ -898,12 +898,12 @@
       "Safety and Controllability: How to Stop an Agent That's Going Wrong"
     ],
     "chapter_hooks": [
-      "An agent is any system where an LLM decides what to do next based on previous results — the loop is what separates agents from pipelines.",
-      "Tool schemas are the API contract between the model and your code — a tool named 'process_data' is ambiguous; 'search_crm_contacts_by_email' is not, and the model calls it correctly far more often.",
-      "ReAct interleaves reasoning and action: Thought, Action, Observation, Thought... — this trace is also a debugging tool, because you can see exactly where the agent went wrong.",
-      "Multi-agent systems need a protocol for who speaks when — without it, agents broadcast simultaneously, duplicate work, and produce conflicting state.",
-      "Infinite loops are the most common agentic failure: the agent takes an action, observes an unchanged result, and tries the same action again — indefinitely.",
-      "A hard stop condition and an action log are the minimum safety mechanisms for any agent that can take irreversible actions — 'undo' doesn't exist in agentic systems."
+      "An agent is any system where an LLM decides what to do next based on previous results \u2014 the loop is what separates agents from pipelines.",
+      "Tool schemas are the API contract between the model and your code \u2014 a tool named 'process_data' is ambiguous; 'search_crm_contacts_by_email' is not, and the model calls it correctly far more often.",
+      "ReAct interleaves reasoning and action: Thought, Action, Observation, Thought... \u2014 this trace is also a debugging tool, because you can see exactly where the agent went wrong.",
+      "Multi-agent systems need a protocol for who speaks when \u2014 without it, agents broadcast simultaneously, duplicate work, and produce conflicting state.",
+      "Infinite loops are the most common agentic failure: the agent takes an action, observes an unchanged result, and tries the same action again \u2014 indefinitely.",
+      "A hard stop condition and an action log are the minimum safety mechanisms for any agent that can take irreversible actions \u2014 'undo' doesn't exist in agentic systems."
     ],
     "learning_objectives": [
       "Design tool schemas that minimize model ambiguity and maximize correct invocation",
@@ -928,11 +928,11 @@
   {
     "slug": "prompt-engineering-advanced",
     "name": "Prompt Engineering: Beyond Templates",
-    "tagline": "Few-shot examples, chain-of-thought, and persona framing are not tricks — they're inputs to a probabilistic function.",
+    "tagline": "Few-shot examples, chain-of-thought, and persona framing are not tricks \u2014 they're inputs to a probabilistic function.",
     "track": "ai-llms",
     "difficulty": "beginner",
     "chapter_titles": [
-      "Why Prompts Are Programs: Input → Distribution → Sample",
+      "Why Prompts Are Programs: Input \u2192 Distribution \u2192 Sample",
       "Few-Shot Prompting: Which Examples to Include and Why Order Matters",
       "Chain-of-Thought: Thinking Aloud Changes the Answer, Not Just the Explanation",
       "System Prompts as Behavioral Contracts",
@@ -940,12 +940,12 @@
       "Prompt Injection: What It Is and Why It's a Security Problem, Not a Prompt Problem"
     ],
     "chapter_hooks": [
-      "A prompt is a prefix that shifts the probability distribution over next tokens — understanding this makes it obvious why small wording changes have large effects.",
-      "Few-shot example order matters because attention gives recent examples more weight — your best example belongs last, not first.",
+      "A prompt is a prefix that shifts the probability distribution over next tokens \u2014 understanding this makes it obvious why small wording changes have large effects.",
+      "Few-shot example order matters because attention gives recent examples more weight \u2014 your best example belongs last, not first.",
       "Chain-of-thought prompting improves accuracy because intermediate reasoning steps constrain the output space, making wrong answers geometrically less likely.",
-      "A system prompt isn't a contract the model is obligated to follow — it's a strong prior that can be overridden by a sufficiently compelling user turn.",
-      "JSON mode forces output to be valid JSON; a grammar constraint forces it to match a specific schema — mode prevents parse errors, grammar prevents wrong keys.",
-      "Prompt injection is when user-supplied content overrides system instructions — it's a boundary violation problem, and the fix is output validation and input sanitization, not better prompts."
+      "A system prompt isn't a contract the model is obligated to follow \u2014 it's a strong prior that can be overridden by a sufficiently compelling user turn.",
+      "JSON mode forces output to be valid JSON; a grammar constraint forces it to match a specific schema \u2014 mode prevents parse errors, grammar prevents wrong keys.",
+      "Prompt injection is when user-supplied content overrides system instructions \u2014 it's a boundary violation problem, and the fix is output validation and input sanitization, not better prompts."
     ],
     "learning_objectives": [
       "Select few-shot examples that maximize coverage of the target distribution",
@@ -970,7 +970,7 @@
   {
     "slug": "context-engineering",
     "name": "Context Engineering: Filling the Window With What Matters",
-    "tagline": "The context window is your model's working memory — what you put in determines everything about what comes out.",
+    "tagline": "The context window is your model's working memory \u2014 what you put in determines everything about what comes out.",
     "track": "new-era",
     "difficulty": "new-era",
     "chapter_titles": [
@@ -983,13 +983,13 @@
       "Truncation Strategies: When the Context Won't Fit"
     ],
     "chapter_hooks": [
-      "At $15/M input tokens, a 100k-token system prompt costs $1.50 per request at scale — context window economics are product economics.",
-      "LLMs attend more strongly to content at the start and end of the context window — burying the most important instruction in the middle is a reliability problem.",
-      "Prompt caching works by hashing a prefix — if you move any token in the cached prefix, the cache misses and you pay full price for every request.",
-      "Fetching too much context adds noise; fetching too little misses the answer — the retrieval precision-recall tradeoff is also a context quality tradeoff.",
-      "A single incorrect fact injected early in context can anchor the model's response and override correct information retrieved later — this is why source ordering matters.",
-      "Dynamic context assembly selects which system-level facts, user history, and retrieved documents belong in this specific request — generic context hurts more than it helps.",
-      "Lost-in-the-middle behavior means documents at the center of a long context are retrieved less reliably — smart truncation keeps the most relevant chunks at the edges."
+      "At $15/M input tokens, a 100k-token system prompt costs $1.50 per request at scale \u2014 context window economics are product economics.",
+      "LLMs attend more strongly to content at the start and end of the context window \u2014 burying the most important instruction in the middle is a reliability problem.",
+      "Prompt caching works by hashing a prefix \u2014 if you move any token in the cached prefix, the cache misses and you pay full price for every request.",
+      "Fetching too much context adds noise; fetching too little misses the answer \u2014 the retrieval precision-recall tradeoff is also a context quality tradeoff.",
+      "A single incorrect fact injected early in context can anchor the model's response and override correct information retrieved later \u2014 this is why source ordering matters.",
+      "Dynamic context assembly selects which system-level facts, user history, and retrieved documents belong in this specific request \u2014 generic context hurts more than it helps.",
+      "Lost-in-the-middle behavior means documents at the center of a long context are retrieved less reliably \u2014 smart truncation keeps the most relevant chunks at the edges."
     ],
     "learning_objectives": [
       "Calculate context cost per request and design cache-aware prompts to reduce it",
@@ -1015,7 +1015,7 @@
   {
     "slug": "agent-memory-systems",
     "name": "Agent Memory: How AI Systems Remember Across Sessions",
-    "tagline": "Short-term, episodic, semantic, and procedural memory aren't psychology — they're architecture decisions.",
+    "tagline": "Short-term, episodic, semantic, and procedural memory aren't psychology \u2014 they're architecture decisions.",
     "track": "new-era",
     "difficulty": "new-era",
     "chapter_titles": [
@@ -1028,13 +1028,13 @@
       "Session-Persistent Memory: CLAUDE.md and File-Based Memory Patterns"
     ],
     "chapter_hooks": [
-      "Working memory is the context window — everything inside it is instantly accessible and completely forgotten when the window closes.",
-      "Episodic memory lets an agent answer 'what did we decide last Tuesday?' — without it, every session starts from zero regardless of history.",
-      "A vector database as semantic memory lets an agent retrieve relevant facts by meaning, not keyword — this is what separates a stateful assistant from a stateless API.",
-      "Procedural memory stores how to do things — a set of reusable prompt templates, tool schemas, and action patterns that don't need to be re-derived each session.",
-      "Memory consolidation converts a 40-message conversation into 10 structured facts — without it, episodic memory grows unbounded and retrieval quality degrades.",
-      "When new evidence contradicts stored memory, the agent must decide which to trust — recency, source authority, and confidence scoring are the inputs to that decision.",
-      "CLAUDE.md is file-based procedural memory that persists across sessions without a database — it's the simplest persistent memory pattern for Claude Code workflows."
+      "Working memory is the context window \u2014 everything inside it is instantly accessible and completely forgotten when the window closes.",
+      "Episodic memory lets an agent answer 'what did we decide last Tuesday?' \u2014 without it, every session starts from zero regardless of history.",
+      "A vector database as semantic memory lets an agent retrieve relevant facts by meaning, not keyword \u2014 this is what separates a stateful assistant from a stateless API.",
+      "Procedural memory stores how to do things \u2014 a set of reusable prompt templates, tool schemas, and action patterns that don't need to be re-derived each session.",
+      "Memory consolidation converts a 40-message conversation into 10 structured facts \u2014 without it, episodic memory grows unbounded and retrieval quality degrades.",
+      "When new evidence contradicts stored memory, the agent must decide which to trust \u2014 recency, source authority, and confidence scoring are the inputs to that decision.",
+      "CLAUDE.md is file-based procedural memory that persists across sessions without a database \u2014 it's the simplest persistent memory pattern for Claude Code workflows."
     ],
     "learning_objectives": [
       "Design a four-tier memory architecture (working, episodic, semantic, procedural) for a production agent",
@@ -1060,7 +1060,7 @@
   {
     "slug": "subagents-orchestration",
     "name": "Sub-Agents and Orchestration: Parallel Thinking at Scale",
-    "tagline": "Spawning sub-agents is easy — synthesizing their results without losing coherence is the hard part.",
+    "tagline": "Spawning sub-agents is easy \u2014 synthesizing their results without losing coherence is the hard part.",
     "track": "new-era",
     "difficulty": "new-era",
     "chapter_titles": [
@@ -1073,13 +1073,13 @@
       "Context Budget Management: Keeping Sub-Agents Focused Without Losing the Thread"
     ],
     "chapter_hooks": [
-      "Spawn a sub-agent when a task is independently completable and its context would pollute the orchestrator's window — not for every subtask.",
-      "Sequential sub-agents cost wall-clock time; parallel sub-agents cost context budget — knowing the dependency graph tells you which to use.",
-      "A sub-agent instruction is a self-contained brief: context, task, output format, constraints — if the sub-agent needs to ask a clarifying question, the instruction failed.",
-      "Parallel sub-agents produce results that may conflict — the orchestrator needs a synthesis step that detects and resolves contradictions before presenting output.",
-      "A sub-agent that fails silently is worse than one that errors loudly — structured error returns with failure reason and partial work let the orchestrator decide whether to retry or abort.",
-      "Map-reduce for agents: spawn N agents each processing one shard, then reduce their outputs — this is the pattern behind parallel code review and parallel document analysis.",
-      "Each sub-agent starts with its own context window — passing the full orchestrator history to every sub-agent is wasteful; distilling the relevant slice is the orchestrator's job."
+      "Spawn a sub-agent when a task is independently completable and its context would pollute the orchestrator's window \u2014 not for every subtask.",
+      "Sequential sub-agents cost wall-clock time; parallel sub-agents cost context budget \u2014 knowing the dependency graph tells you which to use.",
+      "A sub-agent instruction is a self-contained brief: context, task, output format, constraints \u2014 if the sub-agent needs to ask a clarifying question, the instruction failed.",
+      "Parallel sub-agents produce results that may conflict \u2014 the orchestrator needs a synthesis step that detects and resolves contradictions before presenting output.",
+      "A sub-agent that fails silently is worse than one that errors loudly \u2014 structured error returns with failure reason and partial work let the orchestrator decide whether to retry or abort.",
+      "Map-reduce for agents: spawn N agents each processing one shard, then reduce their outputs \u2014 this is the pattern behind parallel code review and parallel document analysis.",
+      "Each sub-agent starts with its own context window \u2014 passing the full orchestrator history to every sub-agent is wasteful; distilling the relevant slice is the orchestrator's job."
     ],
     "learning_objectives": [
       "Decompose a complex task into sub-agent instructions that need no clarification",
@@ -1105,7 +1105,7 @@
   {
     "slug": "claude-code-mastery",
     "name": "Claude Code: From Zero to Autonomous Development Workflows",
-    "tagline": "Slash commands, MCP servers, hooks, and CLAUDE.md — the four primitives that turn Claude Code into a development platform.",
+    "tagline": "Slash commands, MCP servers, hooks, and CLAUDE.md \u2014 the four primitives that turn Claude Code into a development platform.",
     "track": "new-era",
     "difficulty": "new-era",
     "chapter_titles": [
@@ -1118,13 +1118,13 @@
       "Worktrees for Isolation: Why Parallel Agents Need Separate Git Contexts"
     ],
     "chapter_hooks": [
-      "CLAUDE.md is read at session start and shapes every decision — a well-written CLAUDE.md is the difference between an AI pair programmer and a confused tool.",
-      "bypassPermissions skips the confirmation prompt for every tool call — it's not about trust in the model, it's about workflow speed when you've already reviewed the plan.",
-      "A slash command is a skill file that gets injected into context on invocation — you can encode an entire review workflow, debugging protocol, or release process as a single command.",
-      "MCP servers expose tools that Claude Code can call the same way it calls built-in tools — connect to Figma, Linear, Supabase, or your own internal APIs without leaving the conversation.",
-      "Hooks run shell commands on events: pre-task (before any action), post-edit (after a file write), session-end (before Claude exits) — they're how you make Claude Code self-validating.",
-      "A sub-agent spawned from Claude Code runs in a separate conversation with its own context window — the orchestrator sends it a brief and waits for a result, never sharing its own history.",
-      "Git worktrees give each sub-agent a separate working directory on the same repository — parallel agents can modify different files without merge conflicts mid-session."
+      "CLAUDE.md is read at session start and shapes every decision \u2014 a well-written CLAUDE.md is the difference between an AI pair programmer and a confused tool.",
+      "bypassPermissions skips the confirmation prompt for every tool call \u2014 it's not about trust in the model, it's about workflow speed when you've already reviewed the plan.",
+      "A slash command is a skill file that gets injected into context on invocation \u2014 you can encode an entire review workflow, debugging protocol, or release process as a single command.",
+      "MCP servers expose tools that Claude Code can call the same way it calls built-in tools \u2014 connect to Figma, Linear, Supabase, or your own internal APIs without leaving the conversation.",
+      "Hooks run shell commands on events: pre-task (before any action), post-edit (after a file write), session-end (before Claude exits) \u2014 they're how you make Claude Code self-validating.",
+      "A sub-agent spawned from Claude Code runs in a separate conversation with its own context window \u2014 the orchestrator sends it a brief and waits for a result, never sharing its own history.",
+      "Git worktrees give each sub-agent a separate working directory on the same repository \u2014 parallel agents can modify different files without merge conflicts mid-session."
     ],
     "learning_objectives": [
       "Write CLAUDE.md files that produce consistent behavior across sessions",
@@ -1150,7 +1150,7 @@
   {
     "slug": "harness-engineering",
     "name": "Harness Engineering: Testing AI Pipelines Like Software Systems",
-    "tagline": "LLM outputs are probabilistic — treating them as deterministic is the source of most AI quality regressions.",
+    "tagline": "LLM outputs are probabilistic \u2014 treating them as deterministic is the source of most AI quality regressions.",
     "track": "new-era",
     "difficulty": "new-era",
     "chapter_titles": [
@@ -1163,13 +1163,13 @@
       "CI for LLMs: Running Eval Suites on Every Commit Without Bankrupting the Team"
     ],
     "chapter_hooks": [
-      "Unit tests check logic; evals check behavior — an LLM pipeline needs both, and confusing them is how teams ship quality regressions they didn't detect.",
-      "A golden dataset is a frozen set of inputs with verified expected outputs — if the model produces different outputs after a prompt change, you want to know before users do.",
-      "Changing one sentence in a 2000-token prompt can shift model behavior in ways that affect only 2% of cases — and those 2% are often the edge cases users complain about.",
-      "Prompt versioning stores prompts as immutable artifacts with hashes — you can reproduce any past output if you know the prompt version, model version, and seed.",
-      "Stubbing tools in an agentic test harness means the agent takes the same actions as in production but tool responses come from fixtures — fast, deterministic, and safe.",
-      "Behavioral contracts define invariants that must hold regardless of model output: 'response contains no PII', 'tool call count is under 10', 'output is valid JSON' — these are testable without ground truth.",
-      "Running a full eval suite on every PR is too expensive; running none is reckless — a smart CI pipeline runs a fast smoke suite (30 examples, 60 seconds) and a full suite weekly."
+      "Unit tests check logic; evals check behavior \u2014 an LLM pipeline needs both, and confusing them is how teams ship quality regressions they didn't detect.",
+      "A golden dataset is a frozen set of inputs with verified expected outputs \u2014 if the model produces different outputs after a prompt change, you want to know before users do.",
+      "Changing one sentence in a 2000-token prompt can shift model behavior in ways that affect only 2% of cases \u2014 and those 2% are often the edge cases users complain about.",
+      "Prompt versioning stores prompts as immutable artifacts with hashes \u2014 you can reproduce any past output if you know the prompt version, model version, and seed.",
+      "Stubbing tools in an agentic test harness means the agent takes the same actions as in production but tool responses come from fixtures \u2014 fast, deterministic, and safe.",
+      "Behavioral contracts define invariants that must hold regardless of model output: 'response contains no PII', 'tool call count is under 10', 'output is valid JSON' \u2014 these are testable without ground truth.",
+      "Running a full eval suite on every PR is too expensive; running none is reckless \u2014 a smart CI pipeline runs a fast smoke suite (30 examples, 60 seconds) and a full suite weekly."
     ],
     "learning_objectives": [
       "Build a golden dataset with correct coverage of the distribution of real inputs",
@@ -1195,7 +1195,7 @@
   {
     "slug": "ai-coding-assistants",
     "name": "AI Coding Assistants: Getting 10x Leverage Without 10x Risk",
-    "tagline": "Copilot, Codex, and Claude Code are different tools for different jobs — using them interchangeably is the mistake.",
+    "tagline": "Copilot, Codex, and Claude Code are different tools for different jobs \u2014 using them interchangeably is the mistake.",
     "track": "new-era",
     "difficulty": "new-era",
     "chapter_titles": [
@@ -1207,12 +1207,12 @@
       "Autonomous Task Completion: Delegating a Feature End-to-End"
     ],
     "chapter_hooks": [
-      "Autocomplete predicts the next line; chat answers questions about code; agent executes a plan across files — mixing these modes produces inconsistent results.",
-      "An AI coding assistant has no context beyond what's in its window — opening the right files is the skill that determines output quality more than prompt wording.",
-      "AI-generated code passes the eye test 90% of the time and has a subtle security flaw 10% of the time — the review checklist is the mitigation, not the vibe check.",
-      "Specifying behavior (what the function does) rather than implementation (how it does it) produces better code — an AI that writes its own implementation often makes better local decisions.",
-      "AI models hallucinate library APIs that don't exist — especially for libraries with frequent major version changes — always verify unfamiliar method signatures against the actual docs.",
-      "Delegating a feature end-to-end requires a brief that includes the goal, constraints, existing patterns to follow, and what 'done' looks like — without this, the agent guesses."
+      "Autocomplete predicts the next line; chat answers questions about code; agent executes a plan across files \u2014 mixing these modes produces inconsistent results.",
+      "An AI coding assistant has no context beyond what's in its window \u2014 opening the right files is the skill that determines output quality more than prompt wording.",
+      "AI-generated code passes the eye test 90% of the time and has a subtle security flaw 10% of the time \u2014 the review checklist is the mitigation, not the vibe check.",
+      "Specifying behavior (what the function does) rather than implementation (how it does it) produces better code \u2014 an AI that writes its own implementation often makes better local decisions.",
+      "AI models hallucinate library APIs that don't exist \u2014 especially for libraries with frequent major version changes \u2014 always verify unfamiliar method signatures against the actual docs.",
+      "Delegating a feature end-to-end requires a brief that includes the goal, constraints, existing patterns to follow, and what 'done' looks like \u2014 without this, the agent guesses."
     ],
     "learning_objectives": [
       "Choose the correct AI coding mode (autocomplete, chat, agent) for a given task",
@@ -1249,12 +1249,12 @@
       "Failure Recovery: Checkpoint, Resume, and Partial Rollback Patterns"
     ],
     "chapter_hooks": [
-      "A production agentic workflow needs: a trace for every execution, idempotent tool calls, a budget cap, and a hard stop — anything missing is a future incident.",
-      "Every agent decision should emit a structured trace event: what was considered, what was chosen, why — this is the diff between a debuggable system and a black box.",
-      "Idempotent tool calls return the same result on retry without additional side effects — a 'create record' tool that checks for duplicates before inserting is idempotent; one that doesn't is not.",
-      "Human-in-the-loop is an architectural decision, not a safety net — decide in advance which actions require confirmation, not after the agent has done something irreversible.",
-      "A token budget cap is the simplest safety mechanism for an expensive agentic loop — if the agent hasn't finished in N tokens, abort and report partial results.",
-      "Checkpointing at every tool call lets a failed workflow resume from the last successful step — without it, a failure at step 15 means restarting from step 1."
+      "A production agentic workflow needs: a trace for every execution, idempotent tool calls, a budget cap, and a hard stop \u2014 anything missing is a future incident.",
+      "Every agent decision should emit a structured trace event: what was considered, what was chosen, why \u2014 this is the diff between a debuggable system and a black box.",
+      "Idempotent tool calls return the same result on retry without additional side effects \u2014 a 'create record' tool that checks for duplicates before inserting is idempotent; one that doesn't is not.",
+      "Human-in-the-loop is an architectural decision, not a safety net \u2014 decide in advance which actions require confirmation, not after the agent has done something irreversible.",
+      "A token budget cap is the simplest safety mechanism for an expensive agentic loop \u2014 if the agent hasn't finished in N tokens, abort and report partial results.",
+      "Checkpointing at every tool call lets a failed workflow resume from the last successful step \u2014 without it, a failure at step 15 means restarting from step 1."
     ],
     "learning_objectives": [
       "Instrument an agentic workflow with structured trace events",
@@ -1279,7 +1279,7 @@
   {
     "slug": "mcp-server-building",
     "name": "Building MCP Servers: Give Your Agent New Capabilities",
-    "tagline": "An MCP server is a capability adapter — it turns any API or tool into something Claude can call natively.",
+    "tagline": "An MCP server is a capability adapter \u2014 it turns any API or tool into something Claude can call natively.",
     "track": "new-era",
     "difficulty": "new-era",
     "chapter_titles": [
@@ -1291,12 +1291,12 @@
       "Deploying and Registering MCP Servers in Claude Code"
     ],
     "chapter_hooks": [
-      "MCP is a protocol where a server exposes resources (readable data), tools (callable actions), and prompts (reusable message templates) — Claude uses all three at runtime.",
-      "stdio transport is for local tools; HTTP transport is for shared or remote servers — the choice determines whether your MCP server can be used by multiple Claude instances simultaneously.",
-      "A tool schema is a JSON Schema that the model uses to decide which arguments to pass — a schema that's too permissive produces hallucinated arguments; too restrictive produces unnecessary failures.",
-      "MCP servers handle user credentials — an auth pattern that embeds secrets in the server config is a leak waiting to happen; OAuth tokens passed per-session are the correct design.",
-      "A tool that fails should return a structured error with a reason, not throw an exception — the model needs to know what went wrong to decide whether to retry or try a different approach.",
-      "Registering an MCP server in Claude Code adds its tools to every conversation in the project — the tools appear in the model's tool list automatically, without prompting."
+      "MCP is a protocol where a server exposes resources (readable data), tools (callable actions), and prompts (reusable message templates) \u2014 Claude uses all three at runtime.",
+      "stdio transport is for local tools; HTTP transport is for shared or remote servers \u2014 the choice determines whether your MCP server can be used by multiple Claude instances simultaneously.",
+      "A tool schema is a JSON Schema that the model uses to decide which arguments to pass \u2014 a schema that's too permissive produces hallucinated arguments; too restrictive produces unnecessary failures.",
+      "MCP servers handle user credentials \u2014 an auth pattern that embeds secrets in the server config is a leak waiting to happen; OAuth tokens passed per-session are the correct design.",
+      "A tool that fails should return a structured error with a reason, not throw an exception \u2014 the model needs to know what went wrong to decide whether to retry or try a different approach.",
+      "Registering an MCP server in Claude Code adds its tools to every conversation in the project \u2014 the tools appear in the model's tool list automatically, without prompting."
     ],
     "learning_objectives": [
       "Build an MCP server that exposes a REST API as callable tools",
@@ -1321,7 +1321,7 @@
   {
     "slug": "flow-framework",
     "name": "FLOW: The Four-Move Framework for Product Thinking",
-    "tagline": "Frame, List, Optimize, Win — four moves that separate engineers who think in features from engineers who think in problems.",
+    "tagline": "Frame, List, Optimize, Win \u2014 four moves that separate engineers who think in features from engineers who think in problems.",
     "track": "product-thinking",
     "difficulty": "beginner",
     "chapter_titles": [
@@ -1333,11 +1333,11 @@
       "FLOW in Practice: Walking Through a Real Product Scenario"
     ],
     "chapter_hooks": [
-      "A feature request is a proposed solution wearing the costume of a problem — your job is to take the costume off before deciding whether to build it.",
-      "Framing a problem correctly requires stating who, what, and why-this-matters — a problem statement without all three is a symptom description.",
-      "Generating five structurally different options before evaluating any of them is harder than it sounds — most engineers stop at two and pick the one they were already planning.",
-      "The criterion is what you're optimizing for — naming it before comparing options prevents the common failure of changing the criterion to match the preferred option.",
-      "A falsifiable recommendation names a metric, a threshold, and a timeline — 'this should improve retention' is not a recommendation; 'DAU/MAU should reach 0.45 within 60 days' is.",
+      "A feature request is a proposed solution wearing the costume of a problem \u2014 your job is to take the costume off before deciding whether to build it.",
+      "Framing a problem correctly requires stating who, what, and why-this-matters \u2014 a problem statement without all three is a symptom description.",
+      "Generating five structurally different options before evaluating any of them is harder than it sounds \u2014 most engineers stop at two and pick the one they were already planning.",
+      "The criterion is what you're optimizing for \u2014 naming it before comparing options prevents the common failure of changing the criterion to match the preferred option.",
+      "A falsifiable recommendation names a metric, a threshold, and a timeline \u2014 'this should improve retention' is not a recommendation; 'DAU/MAU should reach 0.45 within 60 days' is.",
       "Walking through a real scenario (declining driver availability in a specific market) shows how FLOW produces a sharper answer than a brainstorm in less time."
     ],
     "learning_objectives": [
@@ -1374,11 +1374,11 @@
       "Mental Model Gaps: When the Product's Model and the User's Model Diverge"
     ],
     "chapter_hooks": [
-      "Users don't buy a drill — they hire it to make a hole, and they'd fire it for a faster way to make a hole — JTBD reframes product decisions from feature ships to job performance.",
-      "Friction is the gap between what a user wants to do and what the product makes easy — removing friction is more reliable than adding motivation.",
-      "Cognitive empathy means simulating the user's goal, constraints, and success criteria — not how they feel, but what they're trying to accomplish and what's in the way.",
-      "User interviews that ask 'what would you want?' get preference data; interviews that ask 'walk me through the last time you tried to do X' get behavioral data — the second is almost always more useful.",
-      "A mental model gap is when users approach the product with an incorrect model of how it works — fixing the UI rarely helps; fixing the model is the job."
+      "Users don't buy a drill \u2014 they hire it to make a hole, and they'd fire it for a faster way to make a hole \u2014 JTBD reframes product decisions from feature ships to job performance.",
+      "Friction is the gap between what a user wants to do and what the product makes easy \u2014 removing friction is more reliable than adding motivation.",
+      "Cognitive empathy means simulating the user's goal, constraints, and success criteria \u2014 not how they feel, but what they're trying to accomplish and what's in the way.",
+      "User interviews that ask 'what would you want?' get preference data; interviews that ask 'walk me through the last time you tried to do X' get behavioral data \u2014 the second is almost always more useful.",
+      "A mental model gap is when users approach the product with an incorrect model of how it works \u2014 fixing the UI rarely helps; fixing the model is the job."
     ],
     "learning_objectives": [
       "Apply JTBD framing to restate a feature request as a job the user is trying to accomplish",
@@ -1402,7 +1402,7 @@
   {
     "slug": "root-cause-analysis",
     "name": "Root Cause Analysis for Product Problems",
-    "tagline": "Five Whys gets you from symptom to cause — most product teams stop at why #2.",
+    "tagline": "Five Whys gets you from symptom to cause \u2014 most product teams stop at why #2.",
     "track": "product-thinking",
     "difficulty": "beginner",
     "chapter_titles": [
@@ -1413,11 +1413,11 @@
       "The Hypothesis Framework: Writing a Cause You Can Test"
     ],
     "chapter_hooks": [
-      "Most product decisions treat symptoms as problems — 'improve checkout conversion' is a symptom description; what's causing the abandonment is the actual problem.",
-      "The Five Whys protocol works when each 'why' produces a testable claim — 'users are confused' is not a testable cause; 'users don't know the price until step 4' is.",
-      "A metric going down means something changed — but what changed, for whom, and when are three questions that require cohort analysis, not aggregate trend lines.",
-      "An aggregate conversion rate that's flat can hide a new cohort that's converting at 80% and an older cohort that's collapsed to 20% — aggregate metrics are the average of phenomena that need separate treatment.",
-      "A testable hypothesis has: a cause, a predicted effect, a metric, and a way to be wrong — 'we think reducing form length will improve completion; we expect a 15% lift, we'll know in 2 weeks' is testable."
+      "Most product decisions treat symptoms as problems \u2014 'improve checkout conversion' is a symptom description; what's causing the abandonment is the actual problem.",
+      "The Five Whys protocol works when each 'why' produces a testable claim \u2014 'users are confused' is not a testable cause; 'users don't know the price until step 4' is.",
+      "A metric going down means something changed \u2014 but what changed, for whom, and when are three questions that require cohort analysis, not aggregate trend lines.",
+      "An aggregate conversion rate that's flat can hide a new cohort that's converting at 80% and an older cohort that's collapsed to 20% \u2014 aggregate metrics are the average of phenomena that need separate treatment.",
+      "A testable hypothesis has: a cause, a predicted effect, a metric, and a way to be wrong \u2014 'we think reducing form length will improve completion; we expect a 15% lift, we'll know in 2 weeks' is testable."
     ],
     "learning_objectives": [
       "Apply upstream framing to restate a metric problem as a behavioral cause",
@@ -1453,12 +1453,12 @@
       "Metric Trees: Connecting Team-Level Metrics to Business Outcomes"
     ],
     "chapter_hooks": [
-      "Output metrics (revenue, retention) measure what happened; input metrics (features shipped, calls made) measure what your team did — you have more control over inputs.",
-      "A leading indicator predicts a lagging one — early activation rate predicts 90-day retention, which is why onboarding teams obsess over day-1 actions.",
-      "A guardrail metric is a constraint on optimization — you can maximize activation as long as support ticket volume doesn't increase more than 10% — without guardrails, optimization produces local maxima with unintended costs.",
-      "Goodhart's Law: when a measure becomes a target, it ceases to be a good measure — teams optimizing for DAU by sending daily push notifications are destroying retention to inflate the number.",
-      "Pre-registering an A/B test means committing to the primary metric before looking at results — without it, you will find a significant result somewhere in the data and call it a win.",
-      "A metric tree connects your team's leading indicators to the company's north star metric — without it, a team can ship features that move their metric and hurt the business."
+      "Output metrics (revenue, retention) measure what happened; input metrics (features shipped, calls made) measure what your team did \u2014 you have more control over inputs.",
+      "A leading indicator predicts a lagging one \u2014 early activation rate predicts 90-day retention, which is why onboarding teams obsess over day-1 actions.",
+      "A guardrail metric is a constraint on optimization \u2014 you can maximize activation as long as support ticket volume doesn't increase more than 10% \u2014 without guardrails, optimization produces local maxima with unintended costs.",
+      "Goodhart's Law: when a measure becomes a target, it ceases to be a good measure \u2014 teams optimizing for DAU by sending daily push notifications are destroying retention to inflate the number.",
+      "Pre-registering an A/B test means committing to the primary metric before looking at results \u2014 without it, you will find a significant result somewhere in the data and call it a win.",
+      "A metric tree connects your team's leading indicators to the company's north star metric \u2014 without it, a team can ship features that move their metric and hurt the business."
     ],
     "learning_objectives": [
       "Distinguish input from output metrics and choose the right one for a given team goal",
@@ -1483,7 +1483,7 @@
   {
     "slug": "prioritization-frameworks",
     "name": "Prioritization: How to Say No Without a Framework Fight",
-    "tagline": "RICE, ICE, and MoSCoW are tools — knowing which framework to use, and when none of them help, is the actual skill.",
+    "tagline": "RICE, ICE, and MoSCoW are tools \u2014 knowing which framework to use, and when none of them help, is the actual skill.",
     "track": "product-thinking",
     "difficulty": "intermediate",
     "chapter_titles": [
@@ -1495,12 +1495,12 @@
       "The Prioritization Conversation Engineers Should Be Having"
     ],
     "chapter_hooks": [
-      "RICE scores create the appearance of rigor — but Reach, Impact, and Confidence estimates are almost always informed guesses that confirm the decision already made.",
-      "RICE Confidence is the number that controls the outcome — a 20% confidence estimate changes a high-reach idea from priority 1 to priority 5, and almost nobody has data for confidence.",
-      "Every item you build has an opportunity cost equal to the best thing you didn't build — prioritization frameworks that don't model opportunity cost are optimizing the wrong function.",
-      "A strategic bet accepts lower expected return for higher potential outcome — a portfolio of only incremental improvements is safe and often slowly wrong.",
-      "Getting stakeholders to agree on the selection criterion before seeing the options is the only way to prevent criterion drift — once people see the options, they change the criterion to match their preference.",
-      "The prioritization conversation an engineer should have: 'I can build this in a week or that in two months — which problem are we actually solving?' — this is product thinking, not PM-track thinking."
+      "RICE scores create the appearance of rigor \u2014 but Reach, Impact, and Confidence estimates are almost always informed guesses that confirm the decision already made.",
+      "RICE Confidence is the number that controls the outcome \u2014 a 20% confidence estimate changes a high-reach idea from priority 1 to priority 5, and almost nobody has data for confidence.",
+      "Every item you build has an opportunity cost equal to the best thing you didn't build \u2014 prioritization frameworks that don't model opportunity cost are optimizing the wrong function.",
+      "A strategic bet accepts lower expected return for higher potential outcome \u2014 a portfolio of only incremental improvements is safe and often slowly wrong.",
+      "Getting stakeholders to agree on the selection criterion before seeing the options is the only way to prevent criterion drift \u2014 once people see the options, they change the criterion to match their preference.",
+      "The prioritization conversation an engineer should have: 'I can build this in a week or that in two months \u2014 which problem are we actually solving?' \u2014 this is product thinking, not PM-track thinking."
     ],
     "learning_objectives": [
       "Apply RICE with calibrated Confidence estimates, not best-case assumptions",
@@ -1525,7 +1525,7 @@
   {
     "slug": "product-sense-for-engineers",
     "name": "Product Sense for Engineers: The Judgment That Gets You Promoted",
-    "tagline": "Product sense isn't a personality trait — it's a set of reasoning moves you can learn and practice.",
+    "tagline": "Product sense isn't a personality trait \u2014 it's a set of reasoning moves you can learn and practice.",
     "track": "product-thinking",
     "difficulty": "intermediate",
     "chapter_titles": [
@@ -1537,12 +1537,12 @@
       "Practicing Product Sense Without Becoming a PM"
     ],
     "chapter_hooks": [
-      "Product sense is the ability to make good decisions about what to build with incomplete information — it's practiced, not innate, and the practice looks a lot like deliberate reasoning.",
-      "Taste is knowing whether a design decision is a tradeoff (we gain X, we give up Y) or a preference ('I like the blue version') — confusing them is the most common product reasoning error.",
-      "A strategic answer names the competitive context, the window, and the because-Z — 'we should build this feature because it increases retention' is not strategic; 'we should build it now because three competitors don't have it yet and we have the infrastructure advantage' is.",
-      "Structural distinctiveness means options that solve the problem in genuinely different ways — 'make the button bigger' and 'make the button brighter' are the same option with different parameters.",
-      "Domain expertise means knowing what a good metric looks like: 'improve day-7 retention to 45% within 60 days' vs. 'improve retention' — the specificity comes from knowing the domain baseline.",
-      "Practicing product sense as an engineer means asking 'what problem does this solve?' about every ticket you pick up — not to slow the work down, but to build the reasoning habit."
+      "Product sense is the ability to make good decisions about what to build with incomplete information \u2014 it's practiced, not innate, and the practice looks a lot like deliberate reasoning.",
+      "Taste is knowing whether a design decision is a tradeoff (we gain X, we give up Y) or a preference ('I like the blue version') \u2014 confusing them is the most common product reasoning error.",
+      "A strategic answer names the competitive context, the window, and the because-Z \u2014 'we should build this feature because it increases retention' is not strategic; 'we should build it now because three competitors don't have it yet and we have the infrastructure advantage' is.",
+      "Structural distinctiveness means options that solve the problem in genuinely different ways \u2014 'make the button bigger' and 'make the button brighter' are the same option with different parameters.",
+      "Domain expertise means knowing what a good metric looks like: 'improve day-7 retention to 45% within 60 days' vs. 'improve retention' \u2014 the specificity comes from knowing the domain baseline.",
+      "Practicing product sense as an engineer means asking 'what problem does this solve?' about every ticket you pick up \u2014 not to slow the work down, but to build the reasoning habit."
     ],
     "learning_objectives": [
       "Distinguish a tradeoff from a preference using the taste framework",
@@ -1567,7 +1567,7 @@
   {
     "slug": "technical-strategy",
     "name": "Technical Strategy: When Engineering Decisions Are Product Decisions",
-    "tagline": "Build vs. buy, monolith vs. microservices, and platform investment — these are product decisions wearing architecture clothes.",
+    "tagline": "Build vs. buy, monolith vs. microservices, and platform investment \u2014 these are product decisions wearing architecture clothes.",
     "track": "product-thinking",
     "difficulty": "advanced",
     "chapter_titles": [
@@ -1578,11 +1578,11 @@
       "Communicating Technical Strategy to Non-Technical Stakeholders"
     ],
     "chapter_hooks": [
-      "Build when you need differentiation; buy when the capability is commodity; use open source when you need control without the build cost — the trap is building what should be bought.",
-      "A platform investment creates leverage for every team that uses it — the ROI calculation is (time saved × teams) - (build cost + maintenance), and most teams underestimate maintenance.",
-      "A 500ms p99 latency on a checkout page has a measurable revenue impact — framing tech debt as user experience debt makes it legible to stakeholders who don't care about clean code.",
-      "Microservices solve team coordination problems, not technical ones — if your team is small enough to fit in one room, a monolith is almost always faster to build and operate.",
-      "Translating technical strategy to stakeholders means converting architecture decisions into user outcomes and business risks — 'we're refactoring the payment service' doesn't land; 'we're reducing checkout errors by 30%' does."
+      "Build when you need differentiation; buy when the capability is commodity; use open source when you need control without the build cost \u2014 the trap is building what should be bought.",
+      "A platform investment creates leverage for every team that uses it \u2014 the ROI calculation is (time saved \u00d7 teams) - (build cost + maintenance), and most teams underestimate maintenance.",
+      "A 500ms p99 latency on a checkout page has a measurable revenue impact \u2014 framing tech debt as user experience debt makes it legible to stakeholders who don't care about clean code.",
+      "Microservices solve team coordination problems, not technical ones \u2014 if your team is small enough to fit in one room, a monolith is almost always faster to build and operate.",
+      "Translating technical strategy to stakeholders means converting architecture decisions into user outcomes and business risks \u2014 'we're refactoring the payment service' doesn't land; 'we're reducing checkout errors by 30%' does."
     ],
     "learning_objectives": [
       "Apply build/buy/open-source framework with explicit differentiation and maintenance reasoning",
@@ -1606,7 +1606,7 @@
   {
     "slug": "advanced-sql-patterns",
     "name": "Advanced SQL: CTEs, Recursive Queries, and JSON in the Database",
-    "tagline": "CTEs aren't just readable subqueries — recursive CTEs are Turing-complete, and the database is doing more than you think.",
+    "tagline": "CTEs aren't just readable subqueries \u2014 recursive CTEs are Turing-complete, and the database is doing more than you think.",
     "track": "foundations",
     "difficulty": "advanced",
     "chapter_titles": [
@@ -1617,11 +1617,11 @@
       "Full-Text Search Without Elasticsearch: tsvector, GIN, and Ranking"
     ],
     "chapter_hooks": [
-      "CTEs are not always optimized as subexpressions — in PostgreSQL, a CTE is an optimization fence by default, which means the planner can't push predicates through it.",
-      "A recursive CTE has a base case and a recursive case, exactly like recursion — it's the right tool for org charts, folder hierarchies, bill-of-materials, and graph traversal.",
-      "JSONB is binary JSON with indexes; text JSON is stored as-is — GIN indexes on JSONB let you query arbitrary keys, but the performance tradeoff against normalization depends on your query patterns.",
-      "A materialized view stores the query result at refresh time — it trades query speed for write overhead, which is the right tradeoff for slow aggregations queried by fast dashboards.",
-      "PostgreSQL's tsvector + GIN index gives you full-text search with ranking and stemming without Elasticsearch — the tradeoff is no fuzzy matching and no distributed scale."
+      "CTEs are not always optimized as subexpressions \u2014 in PostgreSQL, a CTE is an optimization fence by default, which means the planner can't push predicates through it.",
+      "A recursive CTE has a base case and a recursive case, exactly like recursion \u2014 it's the right tool for org charts, folder hierarchies, bill-of-materials, and graph traversal.",
+      "JSONB is binary JSON with indexes; text JSON is stored as-is \u2014 GIN indexes on JSONB let you query arbitrary keys, but the performance tradeoff against normalization depends on your query patterns.",
+      "A materialized view stores the query result at refresh time \u2014 it trades query speed for write overhead, which is the right tradeoff for slow aggregations queried by fast dashboards.",
+      "PostgreSQL's tsvector + GIN index gives you full-text search with ranking and stemming without Elasticsearch \u2014 the tradeoff is no fuzzy matching and no distributed scale."
     ],
     "learning_objectives": [
       "Write recursive CTEs for tree traversal and graph reachability queries",
@@ -1645,7 +1645,7 @@
   {
     "slug": "system-design-deep-cuts",
     "name": "System Design Deep Cuts: Consistent Hashing, CRDT, and HyperLogLog",
-    "tagline": "The advanced data structures that appear in real distributed systems — and why each one solves a specific scaling problem.",
+    "tagline": "The advanced data structures that appear in real distributed systems \u2014 and why each one solves a specific scaling problem.",
     "track": "systems",
     "difficulty": "advanced",
     "chapter_titles": [
@@ -1656,11 +1656,11 @@
       "Skip Lists: Why Redis Uses Them for Sorted Sets"
     ],
     "chapter_hooks": [
-      "Consistent hashing maps keys to nodes on a ring — adding or removing a node moves only 1/N of the keys, not all of them, which is what makes horizontal scaling painless.",
-      "A Bloom filter answers 'is this element definitely not in the set?' with zero false negatives and a tunable false positive rate — this is why databases use them to skip disk reads for nonexistent keys.",
-      "HyperLogLog estimates cardinality with 1.5% error using only 12KB of memory — counting unique users in a billion-event log is a single Redis HyperLogLog command.",
-      "A CRDT (Conflict-free Replicated Data Type) is designed so any two replicas can be merged into a consistent state — no coordination required, which is what makes them suitable for eventually-consistent systems.",
-      "Skip lists give O(log n) search, insert, and delete with simpler implementation than balanced BSTs — Redis sorted sets use them because the probabilistic balancing is good enough and the code is maintainable."
+      "Consistent hashing maps keys to nodes on a ring \u2014 adding or removing a node moves only 1/N of the keys, not all of them, which is what makes horizontal scaling painless.",
+      "A Bloom filter answers 'is this element definitely not in the set?' with zero false negatives and a tunable false positive rate \u2014 this is why databases use them to skip disk reads for nonexistent keys.",
+      "HyperLogLog estimates cardinality with 1.5% error using only 12KB of memory \u2014 counting unique users in a billion-event log is a single Redis HyperLogLog command.",
+      "A CRDT (Conflict-free Replicated Data Type) is designed so any two replicas can be merged into a consistent state \u2014 no coordination required, which is what makes them suitable for eventually-consistent systems.",
+      "Skip lists give O(log n) search, insert, and delete with simpler implementation than balanced BSTs \u2014 Redis sorted sets use them because the probabilistic balancing is good enough and the code is maintainable."
     ],
     "learning_objectives": [
       "Implement consistent hashing with virtual nodes for uniform key distribution",
@@ -1684,22 +1684,22 @@
   {
     "slug": "llm-inference-serving",
     "name": "LLM Inference: Serving Models Cheaply at Scale",
-    "tagline": "Throughput, latency, and cost are in tension — inference optimization is choosing which one to sacrifice.",
+    "tagline": "Throughput, latency, and cost are in tension \u2014 inference optimization is choosing which one to sacrifice.",
     "track": "ai-llms",
     "difficulty": "advanced",
     "chapter_titles": [
       "Autoregressive Decoding: Why Token Generation Is Inherently Sequential",
       "Batching Strategies: Continuous Batching vs. Static Batching for Throughput",
-      "Quantization: INT8 and INT4 — What You Lose and What You Keep",
+      "Quantization: INT8 and INT4 \u2014 What You Lose and What You Keep",
       "Speculative Decoding: Drafting Fast and Verifying in Parallel",
       "Prompt Caching in Production: Measuring Cache Hit Rates and Savings"
     ],
     "chapter_hooks": [
-      "Autoregressive generation produces one token at a time, attending to all previous tokens — this is why inference is memory-bandwidth-bound, not compute-bound.",
-      "Continuous batching fills a batch dynamically as requests arrive and complete — it achieves 2-3x higher GPU utilization than static batching by eliminating padding waste.",
-      "INT8 quantization reduces weight memory by 50% with less than 1% accuracy degradation on most tasks — INT4 halves it again but degrades more for reasoning-heavy tasks.",
-      "Speculative decoding uses a small draft model to propose N tokens, then verifies them all in a single forward pass of the large model — when the draft is right, you get N tokens for the price of one.",
-      "A 90% prompt cache hit rate means 90% of requests pay only for output tokens — for long system prompts, this is often the largest single cost reduction available."
+      "Autoregressive generation produces one token at a time, attending to all previous tokens \u2014 this is why inference is memory-bandwidth-bound, not compute-bound.",
+      "Continuous batching fills a batch dynamically as requests arrive and complete \u2014 it achieves 2-3x higher GPU utilization than static batching by eliminating padding waste.",
+      "INT8 quantization reduces weight memory by 50% with less than 1% accuracy degradation on most tasks \u2014 INT4 halves it again but degrades more for reasoning-heavy tasks.",
+      "Speculative decoding uses a small draft model to propose N tokens, then verifies them all in a single forward pass of the large model \u2014 when the draft is right, you get N tokens for the price of one.",
+      "A 90% prompt cache hit rate means 90% of requests pay only for output tokens \u2014 for long system prompts, this is often the largest single cost reduction available."
     ],
     "learning_objectives": [
       "Explain why LLM inference is memory-bandwidth-bound, not compute-bound",
@@ -1723,22 +1723,22 @@
   {
     "slug": "security-for-engineers",
     "name": "Security Fundamentals: What Every Engineer Is Responsible For",
-    "tagline": "OWASP Top 10 isn't a checklist — it's a map of where engineers make the same mistakes every year.",
+    "tagline": "OWASP Top 10 isn't a checklist \u2014 it's a map of where engineers make the same mistakes every year.",
     "track": "foundations",
     "difficulty": "intermediate",
     "chapter_titles": [
       "SQL Injection in 2026: Why It Still Happens and How to Stop It",
       "Authentication vs. Authorization: The Boundary Engineers Blur",
-      "XSS: Stored, Reflected, and DOM-Based — Each Is a Different Bug",
+      "XSS: Stored, Reflected, and DOM-Based \u2014 Each Is a Different Bug",
       "Secrets Management: Why .env Files Are Not a Security Model",
       "Supply Chain Attacks: Your Dependencies Are Your Attack Surface"
     ],
     "chapter_hooks": [
       "SQL injection is still in the OWASP Top 10 in 2026 because ORMs don't prevent raw query interpolation and developers who learned from tutorials often don't know when they're bypassing the ORM.",
-      "Authentication checks identity; authorization checks permission — a system that authenticates correctly but authorizes with 'is the user logged in?' has broken access control on every resource.",
-      "DOM-based XSS doesn't touch the server — it happens entirely in the browser when JavaScript writes user-controlled data to innerHTML — server-side sanitization doesn't fix it.",
-      ".env files are not a security model — they're a convenience for local development that gets committed to version history, shared in Slack, and leaked in error logs with depressing regularity.",
-      "The xz Utils backdoor showed that a supply chain compromise can spend two years building trust before the payload ships — reviewing your direct dependencies is not enough."
+      "Authentication checks identity; authorization checks permission \u2014 a system that authenticates correctly but authorizes with 'is the user logged in?' has broken access control on every resource.",
+      "DOM-based XSS doesn't touch the server \u2014 it happens entirely in the browser when JavaScript writes user-controlled data to innerHTML \u2014 server-side sanitization doesn't fix it.",
+      ".env files are not a security model \u2014 they're a convenience for local development that gets committed to version history, shared in Slack, and leaked in error logs with depressing regularity.",
+      "The xz Utils backdoor showed that a supply chain compromise can spend two years building trust before the payload ships \u2014 reviewing your direct dependencies is not enough."
     ],
     "learning_objectives": [
       "Identify and prevent SQL injection in both raw queries and ORM bypass scenarios",

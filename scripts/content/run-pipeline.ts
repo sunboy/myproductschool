@@ -20,6 +20,21 @@ function spawnClaude(prompt: string, args: string[]): Promise<string> {
   })
 }
 
+async function spawnClaudeWithRetry(prompt: string, args: string[], retries = 5, baseDelayMs = 30000): Promise<string> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await spawnClaude(prompt, args)
+    } catch (err) {
+      if (attempt === retries) throw err
+      // Exponential backoff: 30s, 60s, 120s, 240s
+      const delay = baseDelayMs * Math.pow(2, attempt - 1)
+      console.warn(`  [retry] attempt ${attempt} failed, retrying in ${delay / 1000}s: ${(err as Error).message.slice(0, 80)}`)
+      await new Promise(r => setTimeout(r, delay))
+    }
+  }
+  throw new Error('unreachable')
+}
+
 const CONTENT_DIR = path.join(process.cwd(), 'scripts/content')
 const MANIFEST_PATH = path.join(CONTENT_DIR, 'catalog-manifest.json')
 const STYLE_GUIDE_PATH = path.join(CONTENT_DIR, 'style-guide.md')
@@ -37,7 +52,7 @@ async function callClaude(prompt: string, model?: string, tools?: string[]): Pro
   const args = ['-p', '--output-format', 'json']
   if (model) args.push('--model', model)
   if (tools?.length) args.push('--allowedTools', tools.join(','))
-  const raw = await spawnClaude(prompt, args)
+  const raw = await spawnClaudeWithRetry(prompt, args)
   const parsed = JSON.parse(raw) as { result: string; is_error: boolean; subtype?: string }
   if (parsed.is_error || parsed.subtype === 'error') throw new Error(parsed.result)
   return parsed.result.trim()
@@ -76,10 +91,6 @@ async function pLimit<T>(tasks: (() => Promise<T>)[], concurrency: number): Prom
   return results
 }
 
-function researchPath(moduleSlug: string, chapterSlug: string): string {
-  return path.join(CONTENT_DIR, 'research', moduleSlug, `${chapterSlug}.json`)
-}
-
 function chapterPath(moduleSlug: string, chapterSlug: string): string {
   return path.join(CONTENT_DIR, 'chapters', moduleSlug, `${chapterSlug}.mdx`)
 }
@@ -92,67 +103,16 @@ function slugify(title: string): string {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 }
 
-// ── Haiku Research Agent ──────────────────────────────────────────────────────
-
-async function runHaikuScraper(
-  moduleSlug: string,
-  chapterSlug: string,
-  chapterTitle: string,
-  objectives: string[]
-): Promise<void> {
-  const outPath = researchPath(moduleSlug, chapterSlug)
-  if (fs.existsSync(outPath)) {
-    console.log(`  [skip] research exists: ${moduleSlug}/${chapterSlug}`)
-    return
-  }
-  fs.mkdirSync(path.dirname(outPath), { recursive: true })
-
-  const prompt = `
-You are a research agent. Gather raw material for a tech education chapter.
-
-Chapter: "${chapterTitle}"
-Learning objectives: ${objectives.map(o => `- ${o}`).join('\n')}
-
-Search the web and authoritative sources. Priority sources (in order):
-1. Official docs: Anthropic docs, OpenAI docs, official GitHub repos
-2. Engineering blogs: Netflix Tech Blog, Databricks Blog, Meta Engineering, Google Research, Cloudflare Blog, Stripe Engineering
-3. Academic: Harvard CS, Stanford CS course materials
-4. Recency: prefer content published in the last 18 months. Flag anything older than 2 years as potentially stale.
-
-For data modeling / SQL topics, explicitly cover: cardinality explosion, bridge tables, surrogate vs natural keys, slowly changing dimensions, schema evolution, index internals, query plan reading.
-
-For context engineering topics, cover: context window constraints, cache-aware prompt design, retrieval-augmented patterns, context poisoning risks.
-
-For agent memory topics, cover: working memory patterns, episodic memory in agent systems, vector-based semantic memory, memory consolidation.
-
-For sub-agents / orchestration topics, cover: spawning patterns, task decomposition strategies, parallel vs sequential execution tradeoffs, result synthesis, error propagation.
-
-For harness engineering topics, cover: evaluation frameworks for LLMs, golden dataset construction, regression testing, prompt versioning systems.
-
-Collect and return a JSON object with:
-- facts: array of concrete, specific facts with source URLs and publication dates
-- examples: array of real-world examples (real company names, real metrics, real incidents — no vague "a large tech company")
-- analogies: array of analogies that make abstract concepts concrete
-- key_numbers: array of specific metrics, benchmarks, thresholds that appear in authoritative sources
-- common_misconceptions: array of things engineers commonly get wrong about this topic
-- source_urls: array of URLs used (with recency notes)
-
-Respond with ONLY the JSON object. No prose.
-`
-
-  console.log(`  [haiku] researching: ${moduleSlug}/${chapterSlug}`)
-  const raw = await callClaude(prompt, 'claude-haiku-4-5-20251001', ['WebSearch', 'WebFetch'])
-  const research = extractJson<object>(raw, `${moduleSlug}/${chapterSlug}`)
-  fs.writeFileSync(outPath, JSON.stringify(research, null, 2))
-}
-
-// ── Sonnet Writer Agent ───────────────────────────────────────────────────────
+// ── Combined Sonnet Research+Write Agent ─────────────────────────────────────
+// One Claude call per chapter: research via WebSearch/WebFetch then write.
+// Halves total CLI invocations vs the old Haiku-then-Sonnet two-pass approach.
 
 async function runSonnetWriter(
   moduleSlug: string,
   chapterSlug: string,
   chapterTitle: string,
   chapterHook: string,
+  objectives: string[],
   imageNeeded: boolean,
   styleGuide: string
 ): Promise<{ hook_text: string; body_mdx: string }> {
@@ -163,8 +123,6 @@ async function runSonnetWriter(
     return content
   }
   fs.mkdirSync(path.dirname(mdxOut), { recursive: true })
-
-  const research = JSON.parse(fs.readFileSync(researchPath(moduleSlug, chapterSlug), 'utf-8'))
 
   let imageInstruction = ''
   if (imageNeeded) {
@@ -205,9 +163,11 @@ You are writing a chapter for a tech education platform. Write for engineers who
 
 Chapter title: "${chapterTitle}"
 Suggested hook: "${chapterHook}" (you can improve this, but keep the sharpness)
+Learning objectives: ${objectives.map(o => `- ${o}`).join('\n')}
 
-Research material:
-${JSON.stringify(research, null, 2)}
+STEP 1 — Research: Use WebSearch and WebFetch to gather concrete facts, real-world examples with actual company names and metrics, and authoritative sources. Prioritize: official docs, Netflix/Databricks/Meta/Cloudflare/Stripe engineering blogs, academic CS course materials. Prefer sources from the last 18 months.
+
+STEP 2 — Write: Using what you found, write the chapter below.
 
 ${diagramInstruction}
 
@@ -220,8 +180,8 @@ Output your response in this EXACT format with these two delimiters on their own
 ===END===
 `
 
-  console.log(`  [sonnet] writing: ${moduleSlug}/${chapterSlug}`)
-  const raw = await callClaude(prompt, 'claude-sonnet-4-6')
+  console.log(`  [sonnet] researching+writing: ${moduleSlug}/${chapterSlug}`)
+  const raw = await callClaude(prompt, 'claude-sonnet-4-6', ['WebSearch', 'WebFetch'])
 
   const hookMatch = raw.match(/===HOOK===\n([\s\S]*?)\n===BODY===/)
   const bodyMatch = raw.match(/===BODY===\n([\s\S]*?)\n===END===/)
@@ -307,30 +267,22 @@ async function main() {
     console.log(`\n[module] ${mod.slug}`)
     const chapterSlugs = mod.chapter_titles.map(slugify)
 
-    const CONCURRENCY = parseInt(process.env.CONCURRENCY ?? '3', 10)
+    // One Sonnet call per chapter: research+write combined. Serialized to avoid rate limits.
+    const SONNET_CONCURRENCY = parseInt(process.env.SONNET_CONCURRENCY ?? '1', 10)
 
-    // Wave 1: Haiku scrapers in parallel (capped at CONCURRENCY)
-    console.log(`  Launching ${chapterSlugs.length} Haiku scraper agents (concurrency=${CONCURRENCY})...`)
-    await pLimit(
-      chapterSlugs.map((cs, i) => () =>
-        runHaikuScraper(mod.slug, cs, mod.chapter_titles[i], mod.learning_objectives)
-      ),
-      CONCURRENCY
-    )
-
-    // Wave 2: Sonnet writers in parallel (research packs now exist)
-    console.log(`  Launching ${chapterSlugs.length} Sonnet writer agents (concurrency=${CONCURRENCY})...`)
+    console.log(`  Launching ${chapterSlugs.length} Sonnet research+write agents (concurrency=${SONNET_CONCURRENCY})...`)
     const chapters = await pLimit(
       chapterSlugs.map((cs, i) => () =>
         runSonnetWriter(
           mod.slug, cs,
           mod.chapter_titles[i],
           mod.chapter_hooks[i] ?? '',
+          mod.learning_objectives,
           mod.image_needed[i] ?? false,
           styleGuide
         )
       ),
-      CONCURRENCY
+      SONNET_CONCURRENCY
     )
 
     // DB upsert

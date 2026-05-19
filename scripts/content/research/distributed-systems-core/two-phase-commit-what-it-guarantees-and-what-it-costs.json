@@ -1,0 +1,504 @@
+{
+  "facts": [
+    {
+      "fact": "Two-phase commit protocol is a blocking protocol: if the coordinator fails permanently, participants will remain blocked indefinitely waiting for a commit or rollback decision",
+      "source_url": "https://martinfowler.com/articles/patterns-of-distributed-systems/two-phase-commit.html",
+      "publication_date": "2015"
+    },
+    {
+      "fact": "A commit protocol cannot cope with arbitrary process and network failures while allowing independent recovery—this is a fundamental theoretical constraint, not a design limitation",
+      "source_url": "https://courses.cs.washington.edu/courses/cse444/24sp/lectures/lecture24-2PC.pdf",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Lamport timestamps create a total ordering of events in distributed systems by recording a counter value at each process and incrementing on every event or message receipt",
+      "source_url": "https://lamport.azurewebsites.net/pubs/time-clocks.pdf",
+      "publication_date": "1978"
+    },
+    {
+      "fact": "Vector clocks scale linearly in memory usage—in an n-node system, the size of a vector clock grows with the number of nodes, creating overhead in large distributed systems",
+      "source_url": "https://sookocheff.com/post/time/vector-clocks/",
+      "publication_date": "2016"
+    },
+    {
+      "fact": "Raft consensus requires a leader to make progress; if no leader is elected (network partition), the cluster cannot commit new entries, making it partition-intolerant in the CAP theorem sense",
+      "source_url": "https://codilime.com/blog/closer-look-at-raft-internals-log-replication-leader-election/",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Raft follower timeout window is typically 150-300ms; if no heartbeat is received in this window, a follower becomes a candidate and initiates leader election",
+      "source_url": "https://en.wikipedia.org/wiki/Raft_(algorithm)",
+      "publication_date": "2014"
+    },
+    {
+      "fact": "A log entry in Raft is considered committed once it has been safely replicated to a quorum (majority), after which it is applied to the state machine",
+      "source_url": "https://www.yugabyte.com/key-concepts/raft-consensus-algorithm/",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "FLP impossibility theorem (1985) proves that no deterministic consensus algorithm can guarantee termination in an asynchronous system with even one faulty process",
+      "source_url": "https://www.cs.princeton.edu/courses/archive/spr22/cos418/papers/flp.pdf",
+      "publication_date": "1985"
+    },
+    {
+      "fact": "FLP impossibility won the ACM PODC Influential Paper Award in 2001, making it the most cited distributed systems impossibility result",
+      "source_url": "https://www.podc.org/influential/2001-influential-paper/",
+      "publication_date": "2001"
+    },
+    {
+      "fact": "Practical Byzantine Fault Tolerance (PBFT) was introduced by Castro and Liskov in 1999 and processes thousands of requests per second with sub-millisecond latency increases",
+      "source_url": "https://www.halborn.com/blog/post/what-is-practical-byzantine-fault-tolerance-in-blockchain",
+      "publication_date": "1999"
+    },
+    {
+      "fact": "PBFT consists of three sub-algorithms: regular consensus, garbage collection, and view change; the core process has three phases—Pre-prepare, Prepare, and Commit",
+      "source_url": "https://www.geeksforgeeks.org/practical-byzantine-fault-tolerancepbft/",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Idempotent message processing requires recording processed message IDs in a database and checking for duplicates on receipt—the record and side effect must be in the same transaction",
+      "source_url": "https://microservices.io/patterns/communication-style/idempotent-consumer.html",
+      "publication_date": "2018"
+    },
+    {
+      "fact": "Apache Kafka enables idempotent producers by default in version 3.0+; the broker maintains a (pid, topic, partition) => (generation, sequence_number) mapping to prevent duplicates",
+      "source_url": "https://cwiki.apache.org/confluence/display/KAFKA/Idempotent+Producer",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Kafka's exactly-once semantics relies on three mechanisms: idempotent producers, transactions, and transactional consumers",
+      "source_url": "https://www.confluent.io/blog/exactly-once-semantics-are-possible-heres-how-apache-kafka-does-it/",
+      "publication_date": "2020"
+    },
+    {
+      "fact": "P99 latency is the 99th percentile response time; for a website with 1 million daily page views, a P99 of 30ms means 10,000 users experience that delay",
+      "source_url": "https://engineering.linkedin.com/performance/who-moved-my-99th-percentile-latency",
+      "publication_date": "2016"
+    },
+    {
+      "fact": "At cloud scale, cross-zone TCP packet loss rates are 0.1-1%, turning a 1ms network hop into 200ms+ retransmit delay via exponential backoff",
+      "source_url": "https://aerospike.com/blog/what-is-p99-latency/",
+      "publication_date": "2022"
+    },
+    {
+      "fact": "NTP synchronization across nodes is rarely better than a few milliseconds in real-world deployments; typical accuracy ranges from 5ms to over 100ms due to load, asymmetric routes, and congestion",
+      "source_url": "https://scalardynamic.com/resources/articles/21-when-logs-lie-how-clock-drift-skews-reality-and-breaks-systems",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Clock drift occurs because each server's crystal oscillator drifts at different rates due to heat, voltage, and age; without synchronization, two aligned machines can drift by seconds or minutes over days",
+      "source_url": "https://www.designgurus.io/answers/detail/what-is-clock-skew-and-clock-drift",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Chrony is a modern replacement for ntpd with faster convergence, better handling of intermittent connectivity, and more accurate drift correction than traditional NTP",
+      "source_url": "https://www.cl.cam.ac.uk/teaching/1516/ConcDisSys/2016-DistributedSystems-1B-L4.pdf",
+      "publication_date": "2016"
+    },
+    {
+      "fact": "The eight fallacies of distributed computing were first articulated by L. Peter Deutsch in 1994 (seven fallacies) and expanded by James Gosling around 1997 (eighth fallacy)",
+      "source_url": "https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing",
+      "publication_date": "1994"
+    },
+    {
+      "fact": "Azure East US2 outage in 2025 lasted 50 hours due to networking configuration loss affecting PubSub services",
+      "source_url": "https://blog.incidenthub.cloud/major-cloud-outages-2025",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Google Cloud GCVE incident in June 2025 was caused by an invalid automated quota update distributed globally, causing 1.4 million outage reports and affecting Spotify, Snapchat, and Cloudflare",
+      "source_url": "https://cloud.google.com/blog/products/infrastructure/details-of-google-cloud-gcve-incident",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Between August 2024 and August 2025, average incident durations were: AWS 1.5 hours, Google Cloud 5.8 hours, Azure 14.6 hours",
+      "source_url": "https://www.cherryservers.com/blog/cloud-outages",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Amazon DynamoDB's DNS race condition in us-east-1 caused 141 AWS services to be affected by the outage",
+      "source_url": "https://www.fierce-network.com/cloud/aws-gcp-and-more-are-down-heres-whats-happening",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Netflix processes more than 1 billion incoming API calls per day, which fans out to several billion outgoing calls (averaging 1:6 ratio) with peaks exceeding 100k dependency requests per second",
+      "source_url": "http://techblog.netflix.com/2012/02/fault-tolerance-in-high-volume.html",
+      "publication_date": "2012"
+    },
+    {
+      "fact": "Replication lag occurs when the rate of primary database changes exceeds the replica's processing rate; common causes include network latency and I/O bottlenecks",
+      "source_url": "https://www.pgedge.com/blog/understanding-and-reducing-postgresql-replication-lag/",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Causal consistency ensures that if event A causally precedes event B, every process observes A before B; concurrent operations may be observed in any order",
+      "source_url": "https://distributedsystemauthority.com/vector-clocks-and-causal-consistency",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Amazon's Dynamo storage system used vector clocks in production to track object version genealogy and detect write conflicts",
+      "source_url": "https://www.geeksforgeeks.org/computer-networks/vector-clocks-in-distributed-systems/",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Transactions crossing partitions in distributed databases observe much higher abort rates and unpredictable performance compared to single-partition transactions",
+      "source_url": "https://cs186berkeley.net/notes/note16/",
+      "publication_date": "2020"
+    }
+  ],
+  "examples": [
+    {
+      "company": "Netflix",
+      "incident": "Used Chaos Monkey to test resilience by intentionally disabling production servers",
+      "lesson": "Discovered that testing failure modes in production (via chaos engineering) was critical to building systems that could survive real failures",
+      "reference_url": "http://techblog.netflix.com/2012/02/fault-tolerance-in-high-volume.html"
+    },
+    {
+      "company": "Google Cloud",
+      "incident": "June 2025 quota update incident caused global API rejection and affected Spotify, Snapchat, Cloudflare",
+      "lesson": "Automated global distribution of configuration changes without staged rollout can cascade into widespread availability loss; the fallacy 'The network is secure' and 'There is one administrator' were violated",
+      "reference_url": "https://cloud.google.com/blog/products/infrastructure/details-of-google-cloud-gcve-incident"
+    },
+    {
+      "company": "Azure",
+      "incident": "East US2 networking configuration loss caused 50-hour outage affecting PubSub and dependent services",
+      "lesson": "Single points of failure in configuration or coordination can block entire regions; replication and failover are not always sufficient if the control plane fails atomically",
+      "reference_url": "https://blog.incidenthub.cloud/major-cloud-outages-2025"
+    },
+    {
+      "company": "Amazon Web Services",
+      "incident": "DynamoDB DNS race condition caused cascading failure affecting 141 dependent services in us-east-1",
+      "lesson": "Race conditions in low-level systems (DNS, clock synchronization) can cascade to affect hundreds of services; the fallacy 'The network is reliable' masked timeout handling failures",
+      "reference_url": "https://www.fierce-network.com/cloud/aws-gcp-and-more-are-down-heres-whats-happening"
+    },
+    {
+      "company": "Stripe",
+      "scenario": "Payment processing uses idempotency keys to ensure that network retries don't create duplicate charges",
+      "lesson": "Idempotent operations are critical in payment systems; each retry must produce the same result, requiring deduplication and transactional consistency",
+      "reference_url": "https://docs.stripe.com/payments/payment-intents"
+    },
+    {
+      "company": "Kafka",
+      "scenario": "Exactly-once semantics implemented through idempotent producers (default in v3.0+) and broker-side sequence number tracking",
+      "lesson": "At-least-once delivery is easier to implement than exactly-once; exactly-once requires application-level deduplication (idempotence keys) or broker-level state (Kafka's approach)",
+      "reference_url": "https://www.confluent.io/blog/exactly-once-semantics-are-possible-heres-how-apache-kafka-does-it/"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Two-phase commit protocol blocking",
+      "analogy": "Like a bank teller waiting for a central manager's approval to process a withdrawal: if the manager disappears, all tellers are frozen holding customer money, unable to proceed or refund.",
+      "why_it_works": "Captures the coordinator's critical role and the inability of participants to unilaterally recover"
+    },
+    {
+      "concept": "Lamport timestamps vs real clocks",
+      "analogy": "Lamport timestamps are like a queue ticket system in a bakery: what matters is the relative order (ticket 5 before ticket 6), not the wall-clock time. Two bakeries with unsynchronized clocks can still order events correctly.",
+      "why_it_works": "Illustrates that causal ordering doesn't require synchronized clocks, only message-passing ordering"
+    },
+    {
+      "concept": "Vector clocks and causality",
+      "analogy": "Like a family tree: to know if person A is an ancestor of person B, you trace lineage through intermediate relatives. Similarly, vector clocks trace event causality through message chains.",
+      "why_it_works": "Captures both the overhead (complex genealogy) and the value (detecting concurrent vs causal events)"
+    },
+    {
+      "concept": "Raft leader election",
+      "analogy": "Like a parliament where MPs vote on a prime minister: if the current PM stops sending messages, MPs call for a new election. The first candidate to get a majority becomes the new PM.",
+      "why_it_works": "Explains timeouts, voting, majority consensus, and why a network partition can deadlock the system"
+    },
+    {
+      "concept": "Network partitions and eventual consistency",
+      "analogy": "Like two offices of a company that lose phone lines: each office continues operating independently (high availability), but memos take time to sync after the lines come back (eventual consistency). Meanwhile, decisions in office A and office B might diverge.",
+      "why_it_works": "Captures the CAP theorem tradeoff: partitions force a choice between consistency and availability"
+    },
+    {
+      "concept": "Clock skew and synchronization",
+      "analogy": "Like a classroom where students' watches have drifted: without a master clock (NTP), two students' 'wait 5 minutes' directives end at different real times. NTP is like the teacher correcting all watches, but the correction is gradual and imperfect.",
+      "why_it_works": "Illustrates that real-world clocks drift independently, and synchronization is probabilistic, not deterministic"
+    },
+    {
+      "concept": "Idempotent message processing",
+      "analogy": "Like a mailroom that stamps each incoming letter with a receipt ID: if the letter is resubmitted, the mailroom checks its ledger and discards the duplicate instead of filing it twice.",
+      "why_it_works": "Captures the need to deduplicate based on message identity, and the importance of keeping the dedup record and action in sync"
+    },
+    {
+      "concept": "FLP impossibility and timeouts",
+      "analogy": "FLP says you can't distinguish between 'a process is slow' and 'a process has crashed' in an asynchronous system. Real systems use timeouts (guesses) to break this symmetry, but timeouts can be wrong.",
+      "why_it_works": "Explains why real consensus protocols use heartbeats and timeouts despite theoretical impossibility"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Raft follower timeout window",
+      "value": "150-300 milliseconds",
+      "context": "If a heartbeat is not received within this window, a follower initiates leader election",
+      "source_url": "https://en.wikipedia.org/wiki/Raft_(algorithm)"
+    },
+    {
+      "metric": "Cloud-scale cross-zone packet loss rate",
+      "value": "0.1-1%",
+      "context": "This rate turns a 1ms network hop into 200ms+ delay via exponential backoff retries",
+      "source_url": "https://aerospike.com/blog/what-is-p99-latency/"
+    },
+    {
+      "metric": "NTP synchronization accuracy in real deployments",
+      "value": "5-100+ milliseconds",
+      "context": "Typical NTP accuracy, much worse than laboratory benchmarks due to network load, asymmetric routes, and congestion",
+      "source_url": "https://scalardynamic.com/resources/articles/21-when-logs-lie-how-clock-drift-skews-reality-and-breaks-systems"
+    },
+    {
+      "metric": "Clock drift over time (without NTP)",
+      "value": "Seconds to minutes per day",
+      "context": "Two synchronized machines can drift apart by seconds or even minutes without active clock synchronization",
+      "source_url": "https://www.designgurus.io/answers/detail/what-is-clock-skew-and-clock-drift"
+    },
+    {
+      "metric": "P99 latency impact at scale",
+      "value": "1 million daily page views × 1% = 10,000 slow requests at P99 threshold",
+      "context": "If P99 latency is 30ms, 10,000 users daily experience that delay; SLAs often target P99",
+      "source_url": "https://engineering.linkedin.com/performance/who-moved-my-99th-percentile-latency"
+    },
+    {
+      "metric": "Netflix API request volume",
+      "value": "1+ billion incoming calls per day, 6:1 outgoing fan-out ratio, peaks >100k dependency requests/second",
+      "context": "Netflix distributed system scale; chaos testing ensures resilience at this scale",
+      "source_url": "http://techblog.netflix.com/2012/02/fault-tolerance-in-high-volume.html"
+    },
+    {
+      "metric": "Azure East US2 outage duration",
+      "value": "50 hours",
+      "context": "Caused by networking configuration loss; demonstrates single-point-of-failure risk",
+      "source_url": "https://blog.incidenthub.cloud/major-cloud-outages-2025"
+    },
+    {
+      "metric": "Google Cloud GCVE incident impact",
+      "value": "1.4 million outage reports, affected Spotify, Snapchat, Cloudflare",
+      "context": "June 2025 global quota update incident; demonstrates cascade failure via automated global rollout",
+      "source_url": "https://cloud.google.com/blog/products/infrastructure/details-of-google-cloud-gcve-incident"
+    },
+    {
+      "metric": "AWS average outage duration (Aug 2024–Aug 2025)",
+      "value": "1.5 hours",
+      "context": "Regional outages; faster recovery than Azure or GCP",
+      "source_url": "https://www.cherryservers.com/blog/cloud-outages"
+    },
+    {
+      "metric": "Azure average outage duration (Aug 2024–Aug 2025)",
+      "value": "14.6 hours",
+      "context": "Longest average recovery time among major cloud providers",
+      "source_url": "https://www.cherryservers.com/blog/cloud-outages"
+    },
+    {
+      "metric": "Google Cloud average outage duration (Aug 2024–Aug 2025)",
+      "value": "5.8 hours",
+      "context": "Between AWS and Azure in recovery speed",
+      "source_url": "https://www.cherryservers.com/blog/cloud-outages"
+    },
+    {
+      "metric": "Practical Byzantine Fault Tolerance (PBFT) throughput",
+      "value": "Thousands of requests per second with sub-millisecond latency increase",
+      "context": "Castro & Liskov, 1999; foundational for blockchain consensus",
+      "source_url": "https://www.halborn.com/blog/post/what-is-practical-byzantine-fault-tolerance-in-blockchain"
+    },
+    {
+      "metric": "Vector clock size scaling",
+      "value": "Linear in number of nodes (O(n))",
+      "context": "In an n-node system, vector clock memory and communication overhead grow with n",
+      "source_url": "https://sookocheff.com/post/time/vector-clocks/"
+    },
+    {
+      "metric": "DynamoDB DNS race condition cascade",
+      "value": "Affected 141 AWS services in us-east-1",
+      "context": "Single low-level component failure cascaded to dependent services",
+      "source_url": "https://www.fierce-network.com/cloud/aws-gcp-and-more-are-down-heres-whats-happening"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Two-phase commit guarantees atomicity across all participants in all failure scenarios",
+      "reality": "2PC cannot recover from simultaneous coordinator and participant failure during the commit phase; it will block indefinitely if the coordinator fails after participants vote 'yes'",
+      "why_it_matters": "Engineers mistakenly rely on 2PC for strong consistency and later discover blocking issues in production"
+    },
+    {
+      "misconception": "Once a Raft leader is elected, it will always lead until a network partition occurs",
+      "reality": "A leader can fail silently (crash or become slow). The system will only detect this after the timeout window expires (150-300ms), during which the cluster cannot commit new entries",
+      "why_it_matters": "Misunderstanding timeout behavior leads to underestimating unavailability windows"
+    },
+    {
+      "misconception": "Eventual consistency means data will be consistent 'eventually'; no time bound needed",
+      "reality": "Replication lag can grow indefinitely if the replica falls behind on write throughput; without monitoring, staleness can go undetected",
+      "why_it_matters": "Applications using eventual consistency without lag monitoring can serve arbitrarily stale data"
+    },
+    {
+      "misconception": "Network timeouts are reliable failure detectors",
+      "reality": "A timeout only indicates 'no response within T milliseconds'; it does not prove the process has crashed (it could be slow). This is the core of the FLP impossibility result",
+      "why_it_matters": "Systems that assume timeouts = crashes will incorrectly trigger failovers during slowdown events"
+    },
+    {
+      "misconception": "If a message is retried with the same content, it's safe to process it multiple times",
+      "reality": "Without idempotence keys or deduplication, retried messages will be processed as new events, creating duplicates (charges, database inserts, state mutations)",
+      "why_it_matters": "At-least-once delivery systems fail silently without idempotent consumers"
+    },
+    {
+      "misconception": "NTP will keep all servers within milliseconds of each other",
+      "reality": "Real-world NTP achieves 5-100ms accuracy at best; clock drift causes clocks to diverge even with synchronization",
+      "why_it_matters": "Systems relying on precise wall-clock ordering will experience order violations when clocks skew"
+    },
+    {
+      "misconception": "The network is reliable; packet loss and latency spikes are rare",
+      "reality": "At cloud scale, cross-zone packet loss is 0.1-1%, causing exponential backoff delays that spike P99 latencies regularly",
+      "why_it_matters": "Ignoring the first fallacy of distributed computing leads to underestimating tail latencies and designing systems without retry logic"
+    },
+    {
+      "misconception": "Vector clocks are more powerful than Lamport timestamps",
+      "reality": "Vector clocks enable causal ordering detection; Lamport timestamps provide only a total order. Choice depends on use case. Vector clocks scale poorly (O(n) space).",
+      "why_it_matters": "Misuse of vector clocks in large clusters causes memory overhead; Lamport timestamps suffice for many cases"
+    },
+    {
+      "misconception": "Byzantine fault tolerance is only needed for blockchain; traditional distributed systems don't need it",
+      "reality": "Any system with untrusted nodes (compromised replicas, malicious participants) needs BFT. Traditional consensus (Raft, Paxos) only tolerates crash failures",
+      "why_it_matters": "Systems without BFT are vulnerable to adversarial attacks by compromised replicas"
+    },
+    {
+      "misconception": "The CAP theorem means you must choose one of Consistency, Availability, or Partition tolerance",
+      "reality": "CAP states that during a partition, you cannot have both strong consistency and availability. Most systems choose CA (no partition), CP (partition + consistency), or AP (partition + availability)",
+      "why_it_matters": "Misunderstanding CAP leads to incorrect tradeoff decisions; the theorem doesn't forbid high availability and strong consistency in partition-free scenarios"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://martinfowler.com/articles/patterns-of-distributed-systems/two-phase-commit.html",
+      "title": "Two-Phase Commit",
+      "recency_note": "2015 publication; patterns remain current"
+    },
+    {
+      "url": "https://courses.cs.washington.edu/courses/cse444/24sp/lectures/lecture24-2PC.pdf",
+      "title": "Database System Internals: Two-Phase Commit (Spring 2024)",
+      "recency_note": "2024 lecture; recent"
+    },
+    {
+      "url": "https://lamport.azurewebsites.net/pubs/time-clocks.pdf",
+      "title": "Time, Clocks, and the Ordering of Events in a Distributed System",
+      "recency_note": "1978 seminal paper; foundational, still authoritative"
+    },
+    {
+      "url": "https://sookocheff.com/post/time/vector-clocks/",
+      "title": "Vector Clocks",
+      "recency_note": "2016 publication; remains current explanation"
+    },
+    {
+      "url": "https://codilime.com/blog/closer-look-at-raft-internals-log-replication-leader-election/",
+      "title": "A closer look at Raft internals: leader election and log replication",
+      "recency_note": "2023 publication; recent technical deep dive"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Raft_(algorithm)",
+      "title": "Raft (algorithm) - Wikipedia",
+      "recency_note": "Regularly updated; current consensus understanding"
+    },
+    {
+      "url": "https://www.yugabyte.com/key-concepts/raft-consensus-algorithm/",
+      "title": "Raft Consensus Algorithm - YugabyteDB",
+      "recency_note": "2023 publication; production system perspective"
+    },
+    {
+      "url": "https://www.cs.princeton.edu/courses/archive/spr22/cos418/papers/flp.pdf",
+      "title": "Impossibility of Distributed Consensus with One Faulty Process",
+      "recency_note": "1985 seminal paper; foundational impossibility result"
+    },
+    {
+      "url": "https://www.podc.org/influential/2001-influential-paper/",
+      "title": "2001 PODC Influential Paper Award",
+      "recency_note": "2001 award recognition; confirms FLP impact"
+    },
+    {
+      "url": "https://www.halborn.com/blog/post/what-is-practical-byzantine-fault-tolerance-in-blockchain",
+      "title": "What Is Practical Byzantine Fault Tolerance in Blockchain?",
+      "recency_note": "2023 publication; modern BFT applications"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/practical-byzantine-fault-tolerancepbft/",
+      "title": "Practical Byzantine Fault Tolerance (PBFT)",
+      "recency_note": "2023 publication; educational coverage"
+    },
+    {
+      "url": "https://microservices.io/patterns/communication-style/idempotent-consumer.html",
+      "title": "Microservices Pattern: Idempotent Consumer",
+      "recency_note": "2018 publication; pattern remains canonical"
+    },
+    {
+      "url": "https://cwiki.apache.org/confluence/display/KAFKA/Idempotent+Producer",
+      "title": "Idempotent Producer - Apache Kafka",
+      "recency_note": "Official Kafka docs; maintained current"
+    },
+    {
+      "url": "https://www.confluent.io/blog/exactly-once-semantics-are-possible-heres-how-apache-kafka-does-it/",
+      "title": "Exactly-Once Semantics is Possible: Here's How Apache Kafka Does it",
+      "recency_note": "2020 publication; authoritative Kafka explanation"
+    },
+    {
+      "url": "https://aerospike.com/blog/what-is-p99-latency/",
+      "title": "What Is P99 Latency?",
+      "recency_note": "2022 publication; current P99 explanation"
+    },
+    {
+      "url": "https://engineering.linkedin.com/performance/who-moved-my-99th-percentile-latency",
+      "title": "Who moved my 99th percentile latency?",
+      "recency_note": "2016 LinkedIn engineering post; remains highly relevant"
+    },
+    {
+      "url": "https://scalardynamic.com/resources/articles/21-when-logs-lie-how-clock-drift-skews-reality-and-breaks-systems",
+      "title": "When Logs Lie: How Clock Drift Skews Reality and Breaks Systems",
+      "recency_note": "2024 publication; recent clock synchronization analysis"
+    },
+    {
+      "url": "https://www.designgurus.io/answers/detail/what-is-clock-skew-and-clock-drift",
+      "title": "What is clock skew and clock drift?",
+      "recency_note": "2023 publication; current explanation"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing",
+      "title": "Fallacies of distributed computing - Wikipedia",
+      "recency_note": "Regularly updated; foundational 1994-1997 fallacies"
+    },
+    {
+      "url": "https://blog.incidenthub.cloud/major-cloud-outages-2025",
+      "title": "Major Cloud Outages of 2025",
+      "recency_note": "2025 publication; current incident data"
+    },
+    {
+      "url": "https://cloud.google.com/blog/products/infrastructure/details-of-google-cloud-gcve-incident",
+      "title": "Details of Google Cloud GCVE incident",
+      "recency_note": "2025 publication; recent GCP incident analysis"
+    },
+    {
+      "url": "https://www.fierce-network.com/cloud/aws-gcp-and-more-are-down-heres-whats-happening",
+      "title": "GCP and key internet services went down",
+      "recency_note": "2025 publication; current incident reporting"
+    },
+    {
+      "url": "https://www.cherryservers.com/blog/cloud-outages",
+      "title": "How Long Do Cloud Outages Really Last?",
+      "recency_note": "2025 publication; recent outage statistics"
+    },
+    {
+      "url": "http://techblog.netflix.com/2012/02/fault-tolerance-in-high-volume.html",
+      "title": "Fault Tolerance in a High Volume, Distributed System",
+      "recency_note": "2012 Netflix post; foundational chaos engineering reference"
+    },
+    {
+      "url": "https://www.pgedge.com/blog/understanding-and-reducing-postgresql-replication-lag/",
+      "title": "Understanding and Reducing PostgreSQL Replication Lag",
+      "recency_note": "2023 publication; current replication patterns"
+    },
+    {
+      "url": "https://distributedsystemauthority.com/vector-clocks-and-causal-consistency",
+      "title": "Vector Clocks and Causal Consistency in Distributed Systems",
+      "recency_note": "2023 publication; recent causal consistency explanation"
+    },
+    {
+      "url": "https://cs186berkeley.net/notes/note16/",
+      "title": "Distributed Transactions - Database Systems (Berkeley CS186)",
+      "recency_note": "2020 course materials; academic treatment current"
+    }
+  ]
+}

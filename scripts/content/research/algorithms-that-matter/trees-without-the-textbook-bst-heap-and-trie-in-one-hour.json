@@ -1,0 +1,445 @@
+{
+  "facts": [
+    {
+      "fact": "In a balanced binary search tree, search/insert/delete operations are O(log n). In an unbalanced tree where elements are added in sorted order, the tree degenerates into a linked list with O(n) complexity.",
+      "source": "https://www.cs.cornell.edu/courses/cs2110/2025fa/lectures/lec17/",
+      "publication_date": "2025-01"
+    },
+    {
+      "fact": "AVL trees have maximum height of approximately 1.44*log(n), while Red-Black trees are bounded by 2*log(n). AVL trees are 0.947x the speed of red-black trees on average (median across 79 test runs).",
+      "source": "https://www.baeldung.com/cs/red-black-tree-vs-avl-tree",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "For a binary heap, insertion and removal take O(log n) time. Building a heap from n elements takes O(n) amortized time due to the build_maxheap function running only n/2 times with decreasing costs.",
+      "source": "https://www.hackerearth.com/practice/notes/heaps-and-priority-queues/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Fibonacci heaps achieve O(1) amortized time for insert and find-minimum, with O(log n) amortized for decrease-key and delete operations.",
+      "source": "https://dl.acm.org/doi/10.1145/320211.320214",
+      "publication_date": "1987-originally; validated 2024"
+    },
+    {
+      "fact": "Trie search, insertion, and deletion operations have O(L) time complexity where L is the length of the string, not O(log n) like BSTs.",
+      "source": "https://www.codecademy.com/article/trie-data-structure-complete-guide-to-prefix-trees",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Hash table load factor of 0.75 is the standard Java HashMap threshold. Exceeding this threshold triggers rehashing (doubling capacity). Low load factor wastes memory; high load factor increases collision chains.",
+      "source": "https://www.baeldung.com/java-hashmap-load-factor",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Double hashing and binary probing outperform other collision resolution techniques in high-load environments, delivering more uniform key distribution.",
+      "source": "https://www.codingpancake.com/2026/04/the-deep-dive-understanding-collision.html",
+      "publication_date": "2026-04"
+    },
+    {
+      "fact": "Dynamic array append using doubling strategy has O(1) amortized cost. Total cost for m appends is m (appends) + 2m (doubling) = 3m, which is O(m) amortized.",
+      "source": "https://www.interviewcake.com/concept/java/dynamic-array-amortized-analysis",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Converting recursive memoization to bottom-up DP eliminates O(n) call stack space, keeping only O(k) where k is the number of dependencies. For Fibonacci, this reduces space from O(n) to O(1).",
+      "source": "https://medium.com/@andrewsouthard1/dynamic-programming-recursion-memoization-and-bottom-up-algorithms-61c882d1c7e",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Binary search applies to any monotonic function, not just sorted arrays. The search completes in at most O(log N) evaluations regardless of domain.",
+      "source": "https://cp-algorithms.com/num_methods/binary_search.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Parametric search transforms a decision algorithm (threshold test) into an optimization algorithm. Binary search is simpler in practice, often preferred over parametric search.",
+      "source": "https://en.wikipedia.org/wiki/Parametric_search",
+      "publication_date": "varies"
+    },
+    {
+      "fact": "Heap sort achieves O(n log n) time in all cases (best, average, worst) with O(1) space. It's faster than selection sort's O(n²) by replacing O(n) max-finding with O(log n) heap operations.",
+      "source": "https://www.math.umd.edu/~immortal/CMSC351/notes/heapsort.pdf",
+      "publication_date": "2024-10"
+    },
+    {
+      "fact": "Netflix uses max heaps for ranking top-k recommendations. Over 80% of Netflix viewing originates from recommendations, making heap efficiency critical for latency.",
+      "source": "https://medium.com/@nishant.jaiswal/how-netflix-ranks-your-shows-the-data-structures-behind-seamless-streaming-5aeacb26c291",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Google search autocomplete stores prefixes in a trie with frequency counts at each node. To show top-k results efficiently, nodes store hit counts rather than requiring full trie scans.",
+      "source": "https://dzone.com/articles/how-to-build-a-google-search-autocomplete",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "LRU cache combines a hash table and doubly-linked list for O(1) get/put operations. Nodes are moved to head on access; tail node is evicted when capacity exceeded.",
+      "source": "https://www.interviewcake.com/concept/java/lru-cache",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "B-Tree range queries outperform hash indexes by orders of magnitude. They maintain sorted leaf nodes connected linearly, enabling sequential range scans after the starting point is located.",
+      "source": "https://planetscale.com/blog/btrees-and-database-indexes",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Aho-Corasick algorithm finds all occurrences of a dictionary of strings in text in O(n + m + z) time, where n is text length, m is total dictionary size, z is number of matches. Suffix trees cannot efficiently solve substring dictionary problems.",
+      "source": "https://cp-algorithms.com/string/aho_corasick.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Binary search on answer is effective for optimization problems with constraints too large for brute force. If you can frame a minimization/maximization as a YES/NO feasibility question with monotonic answers, binary search applies.",
+      "source": "https://codeforces.com/blog/entry/143038",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Red-Black trees require fewer rotations during insertion/deletion (amortized constant) compared to AVL trees, making them preferred in C++ STL, Java TreeMap, and Linux kernel scheduler.",
+      "source": "https://www.geeksforgeeks.org/dsa/red-black-tree-vs-avl-tree/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "When building a heap from n unsorted elements, the bottom-up heapify approach is O(n), not O(n log n), because most nodes are leaves with zero heapify cost.",
+      "source": "https://www.hackerearth.com/practice/notes/heaps-and-priority-queues/",
+      "publication_date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "Google Search Autocomplete",
+      "data_structure": "Trie with frequency counts",
+      "scale": "Billions of queries annually",
+      "key_insight": "Stores top-k most-searched prefixes at each node rather than scanning terabytes of data for every autocomplete suggestion."
+    },
+    {
+      "scenario": "Netflix Recommendation Rankings",
+      "data_structure": "Max Heaps",
+      "scale": "80% of viewership driven by recommendations",
+      "key_insight": "Heaps enable O(log n) top-k selection from candidate recommendations, critical for sub-100ms latency in streaming UI."
+    },
+    {
+      "scenario": "Java HashMap / C++ unordered_map",
+      "data_structure": "Hash Table with chaining",
+      "scale": "Trillions of operations daily",
+      "key_insight": "Load factor 0.75 triggers rehashing. Double hashing outperforms alternatives in high-contention scenarios."
+    },
+    {
+      "scenario": "C++ STL map / Java TreeMap",
+      "data_structure": "Red-Black Tree",
+      "scale": "Standard library default for ordered maps",
+      "key_insight": "Red-Black trees used instead of AVL due to fewer rotations on frequent insertions/deletions, despite slightly taller bounds."
+    },
+    {
+      "scenario": "Database range queries (e.g., SELECT * WHERE date BETWEEN)",
+      "data_structure": "B+ Tree indexes",
+      "scale": "Queries under 50ms on petabyte datasets",
+      "key_insight": "Leaf node pointers enable sequential scanning after binary search to starting point; hash indexes unable to support range queries."
+    },
+    {
+      "scenario": "LRU Cache in CPU / Memory hierarchy",
+      "data_structure": "Hash Table + Doubly-Linked List",
+      "scale": "L1-L3 cache eviction, buffer pool management",
+      "key_insight": "O(1) get/put/evict enables cache replacement at CPU clock speeds. Alternative single-structure approaches require O(log n) or worse."
+    },
+    {
+      "scenario": "Spell-checking / Multi-pattern string matching",
+      "data_structure": "Aho-Corasick automaton",
+      "scale": "Dictionary of 100k+ patterns",
+      "key_insight": "O(n + m + z) single-pass scan over text finds all occurrences of all dictionary patterns. Trie variants require per-pattern traversals."
+    },
+    {
+      "scenario": "Allocating tasks to minimize max load",
+      "data_structure": "Binary search on answer space",
+      "scale": "k workers, n tasks with variable duration",
+      "key_insight": "Reframe as monotonic feasibility: 'Can we assign all tasks so max load ≤ X?'. Answer space is 1D; binary search reduces O(n*k) brute force to O(log(max_duration) * n)."
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "BST vs Heap",
+      "analogy": "A BST is a telephone directory (sorted, supports range queries). A heap is a triage queue at a hospital (quick access to highest-priority only, no ordering of rest)."
+    },
+    {
+      "concept": "Hash table load factor",
+      "analogy": "A parking lot: load factor is cars/spaces. At 0.3, plenty of empty spaces (memory wasted). At 0.75, manageable. At 0.95, cars circling for spots (collision chains). At 1.0+, overflow lot required (rehashing)."
+    },
+    {
+      "concept": "Trie vs BST for strings",
+      "analogy": "A BST is alphabetical order (like a dictionary index by word). A trie is a filing cabinet where each drawer level represents a letter position (like autocomplete guides you left-to-right through letters)."
+    },
+    {
+      "concept": "Memoization to DP conversion",
+      "analogy": "Memoization is cooking with a sous vide: you precook components and cache them, but still assemble top-down (high recursion overhead). Bottom-up DP is assembly-line manufacturing: assemble base units first, then combine upward (no recursion cost)."
+    },
+    {
+      "concept": "Amortized O(1) append",
+      "analogy": "Dynamic array doubling is like renting a studio (small lease), then moving to a 2x-size apartment (one big move). The rent grows infrequently, but you amortize the moving cost over all the months you stay, making per-month cost constant."
+    },
+    {
+      "concept": "Binary search on answer",
+      "analogy": "You're searching for the maximum weight a bridge can hold: you don't test every weight incrementally. Instead, test 500kg (no), then 750kg (yes), then 625kg (no)—binary search converges in log steps. The 'search space' is kg, not indices."
+    },
+    {
+      "concept": "Red-Black vs AVL trees",
+      "analogy": "AVL trees are obsessive perfectionists (rebalance constantly, strict height bounds). Red-Black trees are pragmatists (accept slightly imbalance, fewer rebalances overall). AVL reads faster; Red-Black writes faster."
+    },
+    {
+      "concept": "LRU cache internals",
+      "analogy": "Linked list is a waitlist (MRU at front, LRU at back). Hash table is a VIP pass (instant lookup who's in the list). Together, O(1) cut-to-front and O(1) evict-from-back."
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "BST balanced vs unbalanced height ratio",
+      "value": "log₂(n) vs n",
+      "context": "Sorted insertion degenerates from O(log n) search to O(n) linked-list-like search."
+    },
+    {
+      "metric": "AVL tree max height",
+      "value": "~1.44 * log(n)",
+      "context": "Strict balancing constraint. Guarantees fast search."
+    },
+    {
+      "metric": "Red-Black tree max height",
+      "value": "~2 * log(n)",
+      "context": "Looser than AVL but requires fewer rotations on insert/delete."
+    },
+    {
+      "metric": "Hash table load factor threshold (Java)",
+      "value": "0.75",
+      "context": "Rehashing triggered at 75% capacity to keep collision chains manageable."
+    },
+    {
+      "metric": "Heap insert/delete",
+      "value": "O(log n)",
+      "context": "Height of complete binary tree with n nodes is ceil(log₂(n+1))."
+    },
+    {
+      "metric": "Build heap bottom-up",
+      "value": "O(n)",
+      "context": "Heapify costs decrease exponentially from leaves upward; amortized O(1) per node."
+    },
+    {
+      "metric": "Fibonacci heap insert/find-min",
+      "value": "O(1) amortized",
+      "context": "Costly for extract-min (O(log n)), but excellent for decrease-key operations."
+    },
+    {
+      "metric": "Trie search/insert/delete",
+      "value": "O(L) where L = string length",
+      "context": "Independent of number of words stored. No hashing collision overhead."
+    },
+    {
+      "metric": "Aho-Corasick multi-pattern match",
+      "value": "O(n + m + z) where n=text, m=dictionary size, z=matches",
+      "context": "Single pass finds all pattern occurrences simultaneously."
+    },
+    {
+      "metric": "Dynamic array amortized append",
+      "value": "O(1)",
+      "context": "Cost of m appends = m + 2m (total doubling cost) = 3m = O(m)."
+    },
+    {
+      "metric": "Bottom-up DP space reduction (Fibonacci example)",
+      "value": "O(n) → O(1)",
+      "context": "Only last two values needed; eliminates entire DP table."
+    },
+    {
+      "metric": "Binary search iterations for 1 billion items",
+      "value": "≤ 30 iterations",
+      "context": "log₂(10⁹) ≈ 30. Always worst-case bound."
+    },
+    {
+      "metric": "LRU cache get/put/evict",
+      "value": "O(1)",
+      "context": "Hash lookup + linked-list pointer manipulation, both constant."
+    },
+    {
+      "metric": "B-Tree range query benefit",
+      "source": "planetscale.com",
+      "value": "Sub-50ms queries on petabyte datasets",
+      "context": "Leaf node sequential pointers eliminate sorting overhead."
+    },
+    {
+      "metric": "Netflix recommendation coverage",
+      "value": "80%",
+      "context": "Of all viewing comes from recommendations, driving heap/priority-queue optimization ROI."
+    },
+    {
+      "metric": "Red-Black vs AVL empirical performance",
+      "value": "0.947x (geometric mean across 79 test runs)",
+      "context": "Median ratio RB:AVL, showing AVL ~5% faster on average in real workloads."
+    },
+    {
+      "metric": "Heap sort worst-case",
+      "value": "O(n log n)",
+      "context": "Guaranteed, unlike quicksort. Space O(1) in-place."
+    },
+    {
+      "metric": "Selection sort via heap vs naive",
+      "value": "O(n²) → O(n log n)",
+      "context": "Heap enables efficient max-finding per selection iteration."
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "BSTs always have O(log n) search.",
+      "reality": "Unbalanced trees degenerate to O(n). Inserting sorted data into a naive BST creates a linked list. Use self-balancing variants (AVL, Red-Black) or randomized trees (Treaps) for guaranteed log bounds."
+    },
+    {
+      "misconception": "Hash tables have O(1) search guaranteed.",
+      "reality": "O(1) is amortized. Worst case is O(n) if all keys hash to the same bucket. Exceeding load factor (0.75) triggers costly rehashing. Hash function quality matters; poor hash functions ruin performance."
+    },
+    {
+      "misconception": "Tries are always faster than BSTs for strings.",
+      "reality": "Tries are O(L) per operation (L = string length). BSTs are O(log n * L) (log n comparisons, each L-char comparison). For very long strings, BSTs with string interning can win. For prefixes and autocomplete, tries excel."
+    },
+    {
+      "misconception": "Amortized O(1) means worst-case O(1).",
+      "reality": "Amortized means average over sequence of operations. Individual ops can be expensive (dynamic array append worst-case O(n) when doubling). Affects latency-sensitive code—some ops will spike."
+    },
+    {
+      "misconception": "Memoization and bottom-up DP have same space complexity.",
+      "reality": "Memoization requires O(n) cache + O(recursion depth) stack. Bottom-up DP can often reduce to O(k) where k = number of dependencies. For Fibonacci, memoization is O(n); bottom-up is O(1)."
+    },
+    {
+      "misconception": "Binary search only works on sorted arrays.",
+      "reality": "Binary search works on any monotonic function with integer domain. Parametric search, binary search on answer (min allocation, max load), and other non-array searches are equally valid."
+    },
+    {
+      "misconception": "Red-Black trees are slower than AVL trees.",
+      "reality": "Red-Black trees are faster on write-heavy workloads (fewer rotations). AVL is faster on read-heavy. Empirically, Red-Black ≈ AVL on mixed workloads; library default suggests write-heavy dominates."
+    },
+    {
+      "misconception": "Load factor 1.0 is fine for hash tables.",
+      "reality": "At load factor 1.0, collision chains grow unbounded; expected lookup O(n). Standard threshold is 0.75. Beyond that, rehashing is mandatory to maintain O(1) amortized."
+    },
+    {
+      "misconception": "Heaps must maintain full sorted order.",
+      "reality": "Heaps only maintain heap property (parent ≥ children for max-heap), not full sort. This is why heap-sort is O(n log n)—only O(log n) per extraction, not O(n) per full sort."
+    },
+    {
+      "misconception": "Trie space complexity is O(1).",
+      "reality": "Trie space is O(ALPHABET_SIZE * number_of_nodes), which can be O(m) where m is total characters in all strings stored. Dense tries with full alphabet (26-256) per node use more space than BSTs for small dictionaries."
+    },
+    {
+      "misconception": "LRU cache with only HashMap is O(1).",
+      "reality": "HashMap alone cannot achieve O(1) eviction (requires tracking access order). Double-linked list is mandatory for O(1) reordering. Hash only is insufficient."
+    },
+    {
+      "misconception": "B-Trees are just BSTs with more children.",
+      "reality": "B-Trees optimize for disk I/O (cache-line and block-aware). Wide branching reduces tree height; leaf pointers enable range queries. BSTs optimize for RAM. Different constraints, different designs."
+    },
+    {
+      "misconception": "Suffix trees are always better than tries for string problems.",
+      "reality": "Suffix trees are powerful for single-text pattern matching (find all occurrences of pattern in one text). For multi-pattern matching (dictionary in text), Aho-Corasick automaton (trie-based) is faster and simpler."
+    },
+    {
+      "misconception": "Parametric search is always better than binary search on answer.",
+      "reality": "Binary search on answer is empirically faster and simpler. Parametric search finds strongly polynomial algorithms in rare cases, but engineering effort and constant factors make binary search practical choice."
+    },
+    {
+      "misconception": "Dynamic array doubling wastes memory.",
+      "reality": "Doubling uses at most 2x peak memory during single doubling operation. Amortized space is 2x (e.g., vector capacity is ≤ 2 * size). Trade-off is worth O(1) amortized append."
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.cs.cornell.edu/courses/cs2110/2025fa/lectures/lec17/",
+      "title": "Binary Search Trees (CS 2110, Cornell, Jan 2025)",
+      "recency": "current semester"
+    },
+    {
+      "url": "https://www.baeldung.com/cs/red-black-tree-vs-avl-tree",
+      "title": "Red-Black Tree vs AVL Tree comparison",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.hackerearth.com/practice/notes/heaps-and-priority-queues/",
+      "title": "Heaps and Priority Queues (HackerEarth)",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.codecademy.com/article/trie-data-structure-complete-guide-to-prefix-trees",
+      "title": "Trie Data Structure Complete Guide (Codecademy)",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.baeldung.com/java-hashmap-load-factor",
+      "title": "Java HashMap Load Factor (Baeldung)",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.interviewcake.com/concept/java/dynamic-array-amortized-analysis",
+      "title": "Dynamic Array Amortized Analysis (Interview Cake)",
+      "recency": "2024"
+    },
+    {
+      "url": "https://medium.com/@andrewsouthard1/dynamic-programming-recursion-memoization-and-bottom-up-algorithms-61c882d1c7e",
+      "title": "DP: Recursion, Memoization, Bottom-Up (Medium)",
+      "recency": "2024"
+    },
+    {
+      "url": "https://cp-algorithms.com/num_methods/binary_search.html",
+      "title": "Binary Search (Competitive Programming Algorithms)",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.math.umd.edu/~immortal/CMSC351/notes/heapsort.pdf",
+      "title": "HeapSort (University of Maryland, Oct 2024)",
+      "recency": "2024-10"
+    },
+    {
+      "url": "https://medium.com/@nishant.jaiswal/how-netflix-ranks-your-shows-the-data-structures-behind-seamless-streaming-5aeacb26c291",
+      "title": "How Netflix Ranks Your Shows: Data Structures (Medium)",
+      "recency": "2024"
+    },
+    {
+      "url": "https://dzone.com/articles/how-to-build-a-google-search-autocomplete",
+      "title": "How to Build Google Search Autocomplete (DZone)",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.interviewcake.com/concept/java/lru-cache",
+      "title": "LRU Cache Data Structure (Interview Cake)",
+      "recency": "2024"
+    },
+    {
+      "url": "https://planetscale.com/blog/btrees-and-database-indexes",
+      "title": "B-Trees and Database Indexes (PlanetScale)",
+      "recency": "2024"
+    },
+    {
+      "url": "https://cp-algorithms.com/string/aho_corasick.html",
+      "title": "Aho-Corasick Algorithm (Competitive Programming Algorithms)",
+      "recency": "2024"
+    },
+    {
+      "url": "https://codeforces.com/blog/entry/143038",
+      "title": "Binary Search on the Answer (Codeforces, 2024)",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/red-black-tree-vs-avl-tree/",
+      "title": "Red-Black Tree vs AVL Tree (GeeksforGeeks)",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.math.umd.edu/~immortal/CMSC420/notes/bst.pdf",
+      "title": "Binary Search Trees (University of Maryland, Feb 2024)",
+      "recency": "2024-02"
+    },
+    {
+      "url": "https://courses.cis.cornell.edu/courses/cs2110/2025fa/lectures/lec18/",
+      "title": "Heaps and Priority Queues (CS 2110, Cornell, Jan 2025)",
+      "recency": "current semester"
+    },
+    {
+      "url": "https://www.codingpancake.com/2026/04/the-deep-dive-understanding-collision.html",
+      "title": "Collision Resolution Techniques Deep Dive (CodingPancake)",
+      "recency": "2026-04"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Parametric_search",
+      "title": "Parametric Search (Wikipedia)",
+      "recency": "established 2024"
+    }
+  ]
+}

@@ -1,0 +1,406 @@
+{
+  "facts": [
+    {
+      "fact": "REST APIs should use plural nouns for collections (e.g., /users not /user) and avoid verbs in endpoints since HTTP methods already specify the action",
+      "source": "https://restfulapi.net/resource-naming/",
+      "publication_date": "2024",
+      "recency_note": "Current best practice"
+    },
+    {
+      "fact": "202 Accepted status code indicates a request has been accepted for processing but is not yet complete; clients track progress via a Location header pointing to a status endpoint",
+      "source": "https://restfulapi.net/rest-api-design-for-long-running-tasks/",
+      "publication_date": "2024",
+      "recency_note": "Current standard"
+    },
+    {
+      "fact": "422 Unprocessable Entity indicates a request is syntactically valid (parseable) but semantically invalid (failed business logic); 400 Bad Request means malformed syntax",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status",
+      "publication_date": "2024",
+      "recency_note": "RFC-9110 standard"
+    },
+    {
+      "fact": "Cursor-based pagination provides O(1) performance regardless of dataset size; offset pagination degrades O(n) as pages deepen. Real benchmarks show 17x speedup with cursor pagination on million-record datasets",
+      "source": "https://www.stacksync.com/blog/keyset-cursors-postgres-pagination-fast-accurate-scalable",
+      "publication_date": "2024",
+      "recency_note": "Benchmarked 2024"
+    },
+    {
+      "fact": "Using both created_at timestamp and ID (keyset pagination) handles concurrent writes safely; PostgreSQL AS OF SYSTEM TIME reads a consistent snapshot to prevent duplicate or missing rows",
+      "source": "https://www.cockroachlabs.com/docs/stable/pagination",
+      "publication_date": "2024",
+      "recency_note": "Current practice"
+    },
+    {
+      "fact": "Stripe uses prefixed IDs (ch_ for Charge, cus_ for Customer, pi_ for PaymentIntent) enabling polymorphic lookups without extra parameters; every object supports metadata for custom key-value escape hatches",
+      "source": "https://dev.to/yukioikeda/why-stripes-api-is-the-gold-standard-design-patterns-that-every-api-builder-should-steal-3ikk",
+      "publication_date": "2024",
+      "recency_note": "Current Stripe API design"
+    },
+    {
+      "fact": "Stripe pins accounts to API versions by date—breaking changes never affect integrations unless explicitly upgraded, allowing constant API evolution without client breakage",
+      "source": "https://docs.stripe.com/api",
+      "publication_date": "2024",
+      "recency_note": "Active pattern"
+    },
+    {
+      "fact": "Recommended API deprecation timeline: 6 months announcement, 12 months active migration support, 18-24 months total before removal; communicate via multiple channels (newsletters, docs, direct outreach)",
+      "source": "https://zuplo.com/learning-center/deprecating-rest-apis",
+      "publication_date": "2024",
+      "recency_note": "Industry consensus"
+    },
+    {
+      "fact": "OpenAPI Generator has 600k weekly NPM downloads and 30M Docker image downloads; supports 50+ client code generators across multiple languages",
+      "source": "https://openapi-generator.tech/",
+      "publication_date": "2024",
+      "recency_note": "Current adoption metrics"
+    },
+    {
+      "fact": "Nested resources should be used only when data is strictly hierarchical, not too deeply nested, and relationships don't change often; prefer flat URLs for single-resource access (update/delete)",
+      "source": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/",
+      "publication_date": "2024",
+      "recency_note": "Current guidance"
+    },
+    {
+      "fact": "Netflix implements federated GraphQL with GraphQL Gateway orchestrating requests across 1000+ loosely coupled microservices; uses Keystone pipeline processing 2 trillion messages/day with 3PB ingestion and 7PB output daily",
+      "source": "https://medium.com/@biyilawal/how-netflix-scales-its-api-for-millions-of-requests-a-technical-deep-dive-e0c10aa786f3",
+      "publication_date": "2024",
+      "recency_note": "Current Netflix architecture"
+    },
+    {
+      "fact": "Token bucket is the strongest general-purpose rate limiting default; both Amazon and Stripe use it. Leaky bucket is best for shaping downstream traffic. Sliding window offers best balance of accuracy, simplicity, and memory",
+      "source": "https://api7.ai/blog/token-bucket-vs-best-rate-limiting-algorithm",
+      "publication_date": "2024",
+      "recency_note": "Current industry practice"
+    },
+    {
+      "fact": "GraphQL performance degrades when traffic exceeds 3,000 requests/second; REST is well-suited for microservices with stateless design enabling horizontal scaling; 61% of organizations now use GraphQL while REST dominates enterprise",
+      "source": "https://api7.ai/blog/graphql-vs-rest-api-comparison-2025",
+      "publication_date": "2025",
+      "recency_note": "Latest adoption stats"
+    },
+    {
+      "fact": "OAuth 2.1 is the standard for API authentication; use Authorization Code Flow with PKCE for web/mobile, Client Credentials for service-to-service; implement short-lived access tokens with refresh tokens",
+      "source": "https://www.speakeasy.com/openapi/pagination",
+      "publication_date": "2024",
+      "recency_note": "Current standard"
+    },
+    {
+      "fact": "OpenAPI 3.0 supports HTTP authentication, API keys (header/cookie/query), OAuth2 flows (implicit, password, client credentials, authorization code), and OpenID Connect Discovery",
+      "source": "https://spec.openapis.org/oas/v3.0.3.html",
+      "publication_date": "2024",
+      "recency_note": "OpenAPI 3.0.3 specification"
+    },
+    {
+      "fact": "Pagination parameters should reside in query string; most common are 'page' and 'limit' specifying page number and items per page; Links can describe pagination navigation in responses",
+      "source": "https://www.speakeasy.com/api-design/pagination",
+      "publication_date": "2024",
+      "recency_note": "Current best practice"
+    },
+    {
+      "fact": "oapi-codegen moved from deepmap organization to its own organization in May 2024; converts OpenAPI specs to Go code for clients and servers",
+      "source": "https://github.com/oapi-codegen/oapi-codegen",
+      "publication_date": "2024",
+      "recency_note": "Recent organizational change"
+    }
+  ],
+  "examples": [
+    {
+      "company": "Stripe",
+      "pattern": "Prefixed resource IDs",
+      "detail": "Uses ch_xxxx for Charge, cus_xxxx for Customer, pi_xxxx for PaymentIntent, enabling polymorphic type inference from ID alone",
+      "impact": "Eliminates need for ?type= parameters; single ID can be passed to polymorphic endpoints"
+    },
+    {
+      "company": "Stripe",
+      "pattern": "Date-pinned API versioning",
+      "detail": "Account is pinned to API version by date of first request; all breaking changes are additive only after that date",
+      "impact": "Zero breaking changes for existing integrations; continuous API evolution without client coordination"
+    },
+    {
+      "company": "Stripe",
+      "pattern": "Cursor-based pagination",
+      "detail": "Pagination cursors are opaque tokens; clients pass has_more boolean and next/previous pointers in response",
+      "impact": "Stable pagination under concurrent writes; no offset drift as records are added/deleted"
+    },
+    {
+      "company": "Netflix",
+      "pattern": "Federated GraphQL architecture",
+      "detail": "GraphQL Gateway routes requests to 1000+ Domain Graph Services (DGS); each microservice exposes a GraphQL subgraph",
+      "impact": "Single endpoint for clients; seamless composition of domain-specific APIs without client-side stitching"
+    },
+    {
+      "company": "Netflix",
+      "pattern": "Data pipeline at scale",
+      "detail": "Keystone pipeline ingests 3 petabytes of data daily, outputs 7 petabytes, processes 2 trillion messages per day",
+      "impact": "Real-time personalization across 250M+ users; decisions based on up-to-date viewing and engagement signals"
+    },
+    {
+      "company": "Amazon",
+      "pattern": "Token bucket rate limiting",
+      "detail": "All AWS APIs enforce token bucket rate limiting; tokens refill at service-specific rates with burst capacity",
+      "impact": "Predictable throughput; clients can burst for short periods without exceeding sustained rate"
+    },
+    {
+      "company": "CockroachDB",
+      "pattern": "Keyset pagination with AS OF SYSTEM TIME",
+      "detail": "Uses (created_at, id) as cursor; AS OF SYSTEM TIME reads a consistent snapshot to prevent concurrent-write anomalies",
+      "impact": "No duplicate or missing rows under concurrent inserts; O(1) performance regardless of page depth"
+    },
+    {
+      "company": "Google Cloud Platform",
+      "pattern": "Long-running operations with 202 Accepted",
+      "detail": "POST to operation-triggering endpoint returns 202 with Location header; client polls status endpoint; final 303 See Other redirects to result resource",
+      "impact": "Asynchronous workload acceptance without blocking; clients can check progress or be notified via webhook"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Cursor-based pagination vs offset pagination",
+      "analogy": "Offset pagination is like saying 'skip the first 1000 books and give me the next 20' (requires counting), while cursor pagination is like bookmarking your exact location and saying 'give me 20 starting from where I left off' (constant time)",
+      "source": "https://www.stacksync.com/blog/keyset-cursors-postgres-pagination-fast-accurate-scalable"
+    },
+    {
+      "concept": "Token bucket rate limiting",
+      "analogy": "Like a parking garage that refills at a constant rate but allows bursts when it's not at capacity; once full, you must wait for tokens to refill before more cars can enter",
+      "source": "https://api7.ai/blog/token-bucket-vs-best-rate-limiting-algorithm"
+    },
+    {
+      "concept": "Leaky bucket rate limiting",
+      "analogy": "Water entering a bucket through a hole at the bottom at a fixed rate; overflow (excess requests) spills out immediately or gets delayed in a queue depending on implementation",
+      "source": "https://geeksforgeeks.org/system-design/rate-limiting-algorithms-system-design/"
+    },
+    {
+      "concept": "Nested resources vs flat hierarchies",
+      "analogy": "Nested resources are like deep file directories (/users/123/posts/456/comments/789); flat is like a flat database table where relationships are expressed via IDs and links",
+      "source": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/"
+    },
+    {
+      "concept": "GraphQL overfetching vs REST",
+      "analogy": "REST GET /users/123 returns full user object (overfetch); GraphQL query { user(id:123) { name email } } returns only those fields (no waste)",
+      "source": "https://aws.amazon.com/compare/the-difference-between-graphql-and-rest/"
+    },
+    {
+      "concept": "API versioning without breaking clients",
+      "analogy": "Like a library that lets you keep using an old edition of a book even after new editions are published; old readers aren't forced to upgrade unless they explicitly request it",
+      "source": "https://zuplo.com/learning-center/deprecating-rest-apis"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Cursor pagination performance vs offset pagination",
+      "value": "17x speedup",
+      "context": "Real benchmark on million-record dataset; offset O(n) vs keyset O(1)",
+      "source": "https://www.stacksync.com/blog/keyset-cursors-postgres-pagination-fast-accurate-scalable"
+    },
+    {
+      "metric": "Netflix Keystone pipeline daily message volume",
+      "value": "2 trillion messages per day",
+      "context": "Real-time personalization data; 3PB ingestion, 7PB output daily",
+      "source": "https://medium.com/@biyilawal/how-netflix-scales-its-api-for-millions-of-requests-a-technical-deep-dive-e0c10aa786f3"
+    },
+    {
+      "metric": "Netflix microservices count",
+      "value": "1000+",
+      "context": "Loosely coupled services; stateless design for horizontal scaling",
+      "source": "https://www.techaheadcorp.com/blog/design-of-microservices-architecture-at-netflix/"
+    },
+    {
+      "metric": "OpenAPI Generator ecosystem",
+      "value": "600k weekly NPM downloads",
+      "context": "CLI wrapper for openapi-generator; 30M Docker image downloads",
+      "source": "https://openapi-generator.tech/"
+    },
+    {
+      "metric": "GraphQL adoption",
+      "value": "61% of organizations use GraphQL",
+      "context": "As of 2025; REST still dominates enterprise but GraphQL growing",
+      "source": "https://api7.ai/blog/graphql-vs-rest-api-comparison-2025"
+    },
+    {
+      "metric": "GraphQL performance degradation threshold",
+      "value": "3,000 requests per second",
+      "context": "Beyond this point GraphQL underperforms REST; single endpoint becomes bottleneck",
+      "source": "https://api7.ai/blog/graphql-vs-rest-api-comparison-2025"
+    },
+    {
+      "metric": "Recommended API deprecation announcement period",
+      "value": "6 months",
+      "context": "Followed by 12 months active support, 18-24 months total before removal",
+      "source": "https://zuplo.com/learning-center/deprecating-rest-apis"
+    },
+    {
+      "metric": "OpenAPI specification versions supported by generators",
+      "value": "v2, v3.0, v3.1",
+      "context": "openapi-generator supports all current and legacy versions",
+      "source": "https://openapi-generator.tech/"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Using verbs in REST endpoints is acceptable (e.g., /getUsers, /createPost)",
+      "reality": "Verbs should not appear in URIs; HTTP methods (GET, POST, PUT, DELETE) already specify the action. Using verbs creates ambiguity and makes APIs harder to reason about.",
+      "source": "https://cloud.google.com/blog/products/api-management/restful-api-design-nouns-are-good-verbs-are-bad"
+    },
+    {
+      "misconception": "Offset pagination (page/limit) is efficient for large datasets",
+      "reality": "Offset pagination has O(n) performance degradation; the database must count and skip n rows. Cursor pagination is O(1) regardless of dataset size and handles concurrent writes better.",
+      "source": "https://www.stacksync.com/blog/keyset-cursors-postgres-pagination-fast-accurate-scalable"
+    },
+    {
+      "misconception": "401 Unauthorized means the request lacks authorization (permissions)",
+      "reality": "401 Unauthorized semantically means unauthenticated (server doesn't know who you are). 403 Forbidden means authenticated but lacking authorization. Using them backwards confuses API consumers.",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status"
+    },
+    {
+      "misconception": "Deeply nested resource paths (e.g., /users/123/posts/456/comments/789) are always good API design",
+      "reality": "Deep nesting scales poorly and creates brittle paths. Child resources should be accessible via flat paths using parent ID; relationships expressed as links or query filters instead.",
+      "source": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/"
+    },
+    {
+      "misconception": "GraphQL is always faster than REST because it eliminates overfetching",
+      "reality": "GraphQL adds complexity (resolver N+1 queries, depth/cost rules required). Performance degrades beyond 3,000 req/sec. REST with proper caching often outperforms GraphQL at scale.",
+      "source": "https://api7.ai/blog/graphql-vs-rest-api-comparison-2025"
+    },
+    {
+      "misconception": "API versioning means releasing /v1, /v2, /v3 URLs simultaneously",
+      "reality": "Best practice is backward-compatible evolution (add fields, deprecate old ones). Only version when breaking changes are unavoidable. Date-based versioning (Stripe) pins clients to behavior as of a date.",
+      "source": "https://zuplo.com/learning-center/deprecating-rest-apis"
+    },
+    {
+      "misconception": "200 OK is always the correct status code for successful responses",
+      "reality": "202 Accepted for long-running operations, 201 Created for resource creation, 204 No Content when no body is returned. Using correct status codes makes APIs self-documenting.",
+      "source": "https://restfulapi.net/rest-api-design-for-long-running-tasks/"
+    },
+    {
+      "misconception": "OpenAPI specs are only useful for documentation",
+      "reality": "OpenAPI specs enable code generation (client SDKs, server stubs, tests). Tools like openapi-generator produce production-quality code, reducing manual implementation.",
+      "source": "https://openapi-generator.tech/"
+    },
+    {
+      "misconception": "Rate limiting via fixed windows (per-minute quotas) is sufficient",
+      "reality": "Fixed windows have boundary issues (traffic spikes at window edges). Token bucket and sliding window are more robust; token bucket allows bursts while enforcing average rate.",
+      "source": "https://api7.ai/blog/rate-limiting-guide-algorithms-best-practices"
+    },
+    {
+      "misconception": "400 Bad Request and 422 Unprocessable Entity mean the same thing",
+      "reality": "400 Bad Request means malformed syntax (unparseable). 422 Unprocessable Entity means syntactically valid but semantically invalid (business logic fails). Distinction helps clients diagnose.",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://restfulapi.net/resource-naming/",
+      "title": "Resource Naming - REST API Tutorial",
+      "recency": "2024",
+      "authority": "High - canonical REST design reference"
+    },
+    {
+      "url": "https://cloud.google.com/blog/products/api-management/restful-api-design-nouns-are-good-verbs-are-bad",
+      "title": "RESTful API Design: nouns are good, verbs are bad",
+      "recency": "2024",
+      "authority": "High - Google Cloud official blog"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status",
+      "title": "HTTP response status codes - MDN Web Docs",
+      "recency": "2024",
+      "authority": "Critical - RFC-9110 standard reference"
+    },
+    {
+      "url": "https://www.stacksync.com/blog/keyset-cursors-postgres-pagination-fast-accurate-scalable",
+      "title": "PostgreSQL Keyset Pagination vs Offset: Cursor-Based Guide for High-Performance Queries",
+      "recency": "2024",
+      "authority": "High - benchmarked performance data"
+    },
+    {
+      "url": "https://www.cockroachlabs.com/docs/stable/pagination",
+      "title": "Paginate Results - CockroachDB",
+      "recency": "2024",
+      "authority": "High - production database documentation"
+    },
+    {
+      "url": "https://dev.to/yukioikeda/why-stripes-api-is-the-gold-standard-design-patterns-that-every-api-builder-should-steal-3ikk",
+      "title": "Why Stripe's API is the Gold Standard: Design Patterns That Every API Builder Should Steal",
+      "recency": "2024",
+      "authority": "High - Stripe API analysis"
+    },
+    {
+      "url": "https://docs.stripe.com/api",
+      "title": "Stripe API Reference",
+      "recency": "2024",
+      "authority": "Critical - official Stripe API docs"
+    },
+    {
+      "url": "https://zuplo.com/learning-center/deprecating-rest-apis",
+      "title": "How to Deprecate a REST API: The Complete Developer's Guide",
+      "recency": "2024",
+      "authority": "High - API management expertise"
+    },
+    {
+      "url": "https://openapi-generator.tech/",
+      "title": "OpenAPI Generator",
+      "recency": "2024",
+      "authority": "Critical - official OpenAPI code generation tool"
+    },
+    {
+      "url": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/",
+      "title": "REST API Design Best Practices for Sub and Nested Resources",
+      "recency": "2024",
+      "authority": "High - API monitoring platform expertise"
+    },
+    {
+      "url": "https://medium.com/@biyilawal/how-netflix-scales-its-api-for-millions-of-requests-a-technical-deep-dive-e0c10aa786f3",
+      "title": "How Netflix Scales Its API for Millions of Requests: A Technical Deep Dive",
+      "recency": "2024",
+      "authority": "High - Netflix infrastructure analysis"
+    },
+    {
+      "url": "https://api7.ai/blog/token-bucket-vs-best-rate-limiting-algorithm",
+      "title": "Token Bucket vs Leaky Bucket: Rate Limiting Algorithms",
+      "recency": "2024",
+      "authority": "High - API gateway platform expertise"
+    },
+    {
+      "url": "https://api7.ai/blog/graphql-vs-rest-api-comparison-2025",
+      "title": "GraphQL vs REST API: Which is Better for Your Project in 2025?",
+      "recency": "2025",
+      "authority": "High - latest adoption statistics"
+    },
+    {
+      "url": "https://www.speakeasy.com/openapi/pagination",
+      "title": "Pagination in OpenAPI",
+      "recency": "2024",
+      "authority": "High - API code generation platform"
+    },
+    {
+      "url": "https://spec.openapis.org/oas/v3.0.3.html",
+      "title": "OpenAPI Specification v3.0.3",
+      "recency": "2024",
+      "authority": "Critical - official OpenAPI specification"
+    },
+    {
+      "url": "https://restfulapi.net/rest-api-design-for-long-running-tasks/",
+      "title": "REST API Design for Long-Running Tasks",
+      "recency": "2024",
+      "authority": "High - async operation patterns"
+    },
+    {
+      "url": "https://github.com/oapi-codegen/oapi-codegen",
+      "title": "oapi-codegen: OpenAPI Go Code Generation",
+      "recency": "2024",
+      "authority": "High - production Go API generator"
+    },
+    {
+      "url": "https://aws.amazon.com/compare/the-difference-between-graphql-and-rest/",
+      "title": "GraphQL vs REST API - AWS Comparison",
+      "recency": "2024",
+      "authority": "High - AWS official comparison"
+    },
+    {
+      "url": "https://www.techaheadcorp.com/blog/design-of-microservices-architecture-at-netflix/",
+      "title": "Understanding design of microservices architecture at Netflix",
+      "recency": "2024",
+      "authority": "High - Netflix architecture deep dive"
+    }
+  ]
+}

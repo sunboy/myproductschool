@@ -1,0 +1,301 @@
+{
+  "facts": [
+    {
+      "fact": "A bridge table (junction/associative table) converts a many-to-many relationship into two one-to-many relationships, enabling foreign key constraints and query accuracy in relational databases",
+      "source": "https://www.datacamp.com/blog/many-to-many-relationship",
+      "date": "2024"
+    },
+    {
+      "fact": "Index cardinality directly impacts query performance: high-cardinality columns (many unique values) offer high selectivity; low-cardinality columns (many repeated values) often result in ineffective indexes and full table scans",
+      "source": "https://planetscale.com/learn/courses/mysql-for-developers/indexes/index-selectivity",
+      "date": "2024"
+    },
+    {
+      "fact": "Surrogate keys (system-generated) vs natural keys (business-derived): the hybrid approach dominates modern practice—use a surrogate primary key for stability and performance, enforce business uniqueness with UNIQUE constraints on natural keys",
+      "source": "https://agiledata.org/essays/keys.html",
+      "date": "2024"
+    },
+    {
+      "fact": "SCD Type 2 preserves historical data by creating a new record when data changes while keeping the original record unchanged. Each record includes timestamp or version ranges to track validity periods",
+      "source": "https://www.databricks.com/blog/2023/01/25/loading-data-warehouse-slowly-changing-dimension-type-2-using-matillion.html",
+      "date": "2023"
+    },
+    {
+      "fact": "PostgreSQL UNLOGGED tables skip Write-Ahead Logging (WAL), yielding 3x performance improvement (168 vs 485 TPS), but lose crash safety—data is automatically truncated on crash",
+      "source": "https://www.crunchydata.com/blog/postgresl-unlogged-tables",
+      "date": "2024"
+    },
+    {
+      "fact": "The expand-and-contract pattern for zero-downtime schema migrations reduces lock durations from minutes to <50ms (metadata-only operations), eliminating ~99% of migration-related downtime",
+      "source": "https://www.bytebase.com/blog/postgres-schema-migration-without-downtime/",
+      "date": "2024"
+    },
+    {
+      "fact": "Cardinality explosion (Cartesian product) occurs when joining tables without proper conditions: if table A has 1,000 rows and table B has 5,000 rows, an unrestricted join produces 5 million rows instead of expected result size",
+      "source": "https://medium.com/@Rohan_Dutt/how-to-write-sql-queries-that-prevent-cardinality-explosions-in-multi-way-joins-b41ba236acac",
+      "date": "2024"
+    },
+    {
+      "fact": "Composite primary key column ordering is critical: a key defined as (tenant_id, event_time) efficiently supports queries filtered by tenant_id, but provides no benefit to queries filtered only by event_time due to leftmost prefix optimization",
+      "source": "https://shopify.engineering/how-to-introduce-composite-primary-keys-in-rails",
+      "date": "2021"
+    },
+    {
+      "fact": "At Shopify, introducing composite primary keys optimized around query patterns yielded 5-6x improvement in elapsed query time for common high-capacity queries, with gains correlating linearly to reduced MySQL buffer pool page reads",
+      "source": "https://shopify.engineering/how-to-introduce-composite-primary-keys-in-rails",
+      "date": "2021"
+    },
+    {
+      "fact": "Bridge tables in dimensional modeling require careful handling of aggregation: without proper grain definition, a fact table row associated with multiple dimension values creates semi-additive facts where summing all lines produces duplicated totals much higher than reality",
+      "source": "https://www.kimballgroup.com/2012/02/design-tip-142-building-bridges/",
+      "date": "2012"
+    },
+    {
+      "fact": "Fan-out in SQL occurs when a LEFT JOIN on a one-to-many relationship duplicates rows—one row on the left matches multiple rows on the right, causing double-counting in aggregations",
+      "source": "https://www.linkedin.com/posts/trucklos_lets-talk-about-fanout-in-sql-fanout-is-activity-7128007252753448960-D1M7",
+      "date": "2023"
+    },
+    {
+      "fact": "Stripe built DocDB, a petabyte-scale database on MongoDB with a three-tier architecture (Database Proxy, Chunk Metadata Service, Database Shards with replicas) to handle financial transaction durability and zero-downtime resharding",
+      "source": "https://talent500.com/blog/stripe-docdb-advanced-database-architecture/",
+      "date": "2024"
+    },
+    {
+      "fact": "PostgreSQL query optimizer uses cardinality estimations to choose the most efficient execution plan; accurate statistics (updated regularly) are essential for the optimizer to avoid full table scans",
+      "source": "https://www.postgresscripts.com/post/index-cardinality-optimize-your-postgresql-queries/",
+      "date": "2024"
+    },
+    {
+      "fact": "Natural keys face the risk of cascading updates across multiple tables if the business attribute used as the key changes; composite natural keys compound this by adding complexity to joins and increasing index sizes",
+      "source": "https://www.mssqltips.com/sqlservertip/5431/surrogate-key-vs-natural-key-differences-and-when-to-use-in-sql-server/",
+      "date": "2024"
+    },
+    {
+      "fact": "Shopify's primary database grew to terabytes; further table splitting would require cross-database transactions. The company adopted Vitess (YouTube's open-source sharding solution) and reorganized into logical Pods to scale horizontally",
+      "source": "https://blog.quastor.org/p/shopify-scaled-database",
+      "date": "2024"
+    },
+    {
+      "fact": "Temp tables in PostgreSQL are session-scoped and automatically dropped when the session ends; UNLOGGED tables persist across sessions but are truncated on crash, making them suitable for ETL staging and caching",
+      "source": "https://www.percona.com/blog/what-hurts-in-postgresql-part-one-temporary-tables/",
+      "date": "2024"
+    },
+    {
+      "fact": "Domain-driven design entities differ from relational database entities: DDD entities define boundaries by identity and aggregate roots, enforcing consistency, while relational entities represent every relationship via foreign keys",
+      "source": "https://www.cockroachlabs.com/blog/relational-database-entities/",
+      "date": "2024"
+    },
+    {
+      "fact": "MySQL 8.0 supports INSTANT and INPLACE DDL operations; for full-table rebuilds, tools like gh-ost and pt-online-schema-change create shadow tables and apply changes in the background with zero downtime",
+      "source": "https://www.pingcap.com/blog/effective-online-ddl-database-schema-changes-zero-downtime/",
+      "date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "context": "Employee-Job Many-to-Many Relationship",
+      "description": "Employees table (emp_id, name) + Jobs table (job_id, title) resolved via bridge table Employee_Jobs (emp_id, job_id). Without the bridge, you cannot enforce constraints or query accurately",
+      "source": "https://www.datacamp.com/blog/many-to-many-relationship"
+    },
+    {
+      "context": "Shopify's Shop Architecture",
+      "description": "Shopify groups multiple shops into logical Pods, each containing multiple shops sharing the same MySQL database with a shop_id column for sharding. They migrated from monolithic schema to Vitess for horizontal scaling",
+      "source": "https://blog.quastor.org/p/shopify-scaled-database"
+    },
+    {
+      "context": "Stripe Payment Transactions",
+      "description": "Stripe's DocDB stores petabytes of financial transaction data across distributed shards with replicas. Key objects: customers, charges, invoices, subscriptions, balance_transactions, payment_methods. Every shard is replicated for durability",
+      "source": "https://talent500.com/blog/stripe-docdb-advanced-database-architecture/"
+    },
+    {
+      "context": "Netflix Video Streaming Warehouse",
+      "description": "Netflix's data warehouse includes two fact tables (Sessions, Payments) and four dimensions (Date, Users, Shows, Plans) modeled on MySQL. Grain is individual sessions at transaction level",
+      "source": "https://medium.com/geekculture/data-modeling-design-video-streaming-platform-e8aa4f121b1b"
+    },
+    {
+      "context": "Medical Records with Bridge Tables",
+      "description": "Emergency room admittance records have multiple initial diagnoses. Without a bridge table, you cannot store an admittance with multiple diagnoses without duplicating the admittance row or losing data",
+      "source": "https://www.kimballgroup.com/2012/02/design-tip-142-building-bridges/"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Bridge table as a playlist",
+      "explanation": "A many-to-many relationship (Songs ↔ Playlists) is like asking: 'Which songs are on which playlists?' Without a bridge table, you'd have to duplicate either the song or playlist record. The bridge table Playlist_Songs holds references to both—like a menu that lists the songs in each playlist"
+    },
+    {
+      "analogy": "Composite primary key column order as reading order",
+      "explanation": "A composite key (tenant_id, event_time) is like reading left-to-right: you can quickly find 'all events for tenant 1 in any time', but searching 'all events on March 5th across all tenants' requires a full scan, because you're starting from the right-hand column"
+    },
+    {
+      "analogy": "Cardinality explosion as cascade multiplication",
+      "explanation": "Joining without proper conditions is like multiplying: 1000 rows × 5000 rows = 5M results. It's not that the join is wrong—it's that you've asked the wrong question. The database answers correctly, but the scale explodes"
+    },
+    {
+      "analogy": "SCD Type 2 as a versioned record",
+      "explanation": "When a customer address changes, SCD Type 2 is like keeping old business cards: you preserve the old address record (valid_from=2024-01-01, valid_to=2024-05-01) and create a new record for the current address. History stays intact"
+    },
+    {
+      "analogy": "Surrogate keys as universal ID cards",
+      "explanation": "A surrogate key (auto-increment ID) is like a government-issued ID number: immutable, unique, and independent of any attributes that might change (unlike using a Social Security number, which can be spoofed or belong to the wrong person)"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "PostgreSQL UNLOGGED table performance",
+      "value": "3x faster (485 TPS vs 168 TPS for regular tables)",
+      "context": "Write-intensive workloads where durability is not critical (staging, caching, ETL)"
+    },
+    {
+      "metric": "Expand-and-contract migration lock duration",
+      "value": "<50ms (down from minutes)",
+      "context": "Metadata-only operations reduce downtime by ~99% vs full table rewrites"
+    },
+    {
+      "metric": "Shopify composite key optimization",
+      "value": "5-6x improvement in query elapsed time",
+      "context": "Queries that consumed the most database capacity showed linear improvement in buffer pool page reads"
+    },
+    {
+      "metric": "Cardinality explosion row multiplication",
+      "value": "1000 × 5000 = 5 million rows with unrestricted join",
+      "context": "Demonstrates how innocent-looking joins can produce results orders of magnitude larger than expected"
+    },
+    {
+      "metric": "Index selectivity impact",
+      "value": "High cardinality ≥ high selectivity; low cardinality ≤ low selectivity",
+      "context": "Column uniqueness directly predicts index effectiveness"
+    },
+    {
+      "metric": "Composite key prefix matching",
+      "value": "Leftmost prefix optimization (first N columns of composite key)",
+      "context": "A 3-column key optimizes queries using 1 or 2 leading columns, but not trailing columns in isolation"
+    },
+    {
+      "metric": "Stripe DocDB scale",
+      "value": "Petabytes of financial transaction data",
+      "context": "Built on MongoDB with 3-tier architecture (Proxy, Metadata, Shards) for 24/7 uptime"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "A bridge table should have a surrogate primary key instead of a composite key",
+      "reality": "Bridge tables are best designed with a composite primary key of the two foreign keys (e.g., PRIMARY KEY (employee_id, job_id)). This enforces uniqueness at the business level and simplifies queries. A surrogate key adds no value and obscures the intent"
+    },
+    {
+      "misconception": "Natural keys should never be used because they can change",
+      "reality": "Natural keys are valuable for business rule enforcement. Use a hybrid: surrogate PK for joins, UNIQUE constraint on natural keys for business rule validation. This gives you both performance and data integrity"
+    },
+    {
+      "misconception": "Cardinality explosion is a query bug that the database should fix",
+      "reality": "Cardinality explosion is a correct result for an ambiguous query. The database joins correctly; the problem is missing or wrong join conditions. The query must explicitly specify the join grain"
+    },
+    {
+      "misconception": "SCD Type 2 is only for data warehouses, not operational databases",
+      "reality": "SCD Type 2 patterns (versioned records with valid_from/valid_to timestamps) are useful in any system that needs audit trails or historical snapshots—audit logs, compliance systems, time-travel queries"
+    },
+    {
+      "misconception": "A larger composite key hurts performance more than a surrogate key",
+      "reality": "A 3-4 column composite key is typically more efficient than a separate surrogate if queries filter on those columns. The size increase is minimal; the selectivity gain is substantial"
+    },
+    {
+      "misconception": "Temporary tables in PostgreSQL persist across sessions",
+      "reality": "Temporary tables are session-scoped and auto-dropped when the session ends. UNLOGGED tables persist across sessions but are truncated on crash. These are different tools for different jobs"
+    },
+    {
+      "misconception": "Schema migrations always require application downtime",
+      "reality": "Expand-and-contract pattern with metadata-only operations enables zero-downtime migrations. The application can read/write both old and new schemas during the transition"
+    },
+    {
+      "misconception": "Domain-driven design entities map directly to database tables",
+      "reality": "DDD entities define boundaries by identity and aggregate roots (enforcing invariants); relational entities map every relationship via foreign keys. The impedance mismatch means DDD aggregates often span multiple tables"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.datacamp.com/blog/many-to-many-relationship",
+      "title": "Many to Many Relationships: A Guide to Database Design",
+      "recency": "2024"
+    },
+    {
+      "url": "https://planetscale.com/learn/courses/mysql-for-developers/indexes/index-selectivity",
+      "title": "Index selectivity — MySQL for Developers",
+      "recency": "2024"
+    },
+    {
+      "url": "https://agiledata.org/essays/keys.html",
+      "title": "Choosing a Primary Key: Natural or Surrogate?",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.databricks.com/blog/2023/01/25/loading-data-warehouse-slowly-changing-dimension-type-2-using-matillion.html",
+      "title": "Performing Slowly Changing Dimensions (SCD type 2) in Databricks",
+      "recency": "2023"
+    },
+    {
+      "url": "https://www.crunchydata.com/blog/postgresl-unlogged-tables",
+      "title": "PostgreSQL Unlogged Tables - Look Ma, No WAL!",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.bytebase.com/blog/postgres-schema-migration-without-downtime/",
+      "title": "Postgres Schema Migration without Downtime Best Practice",
+      "recency": "2024"
+    },
+    {
+      "url": "https://medium.com/@Rohan_Dutt/how-to-write-sql-queries-that-prevent-cardinality-explosions-in-multi-way-joins-b41ba236acac",
+      "title": "How to Write SQL Queries That Prevent Cardinality Explosions in Multi-Way Joins",
+      "recency": "2024"
+    },
+    {
+      "url": "https://shopify.engineering/how-to-introduce-composite-primary-keys-in-rails",
+      "title": "How to Introduce Composite Primary Keys in Rails — Shopify Engineering",
+      "recency": "2021"
+    },
+    {
+      "url": "https://www.kimballgroup.com/2012/02/design-tip-142-building-bridges/",
+      "title": "Design Tip #142 Building Bridges — Kimball Group",
+      "recency": "2012"
+    },
+    {
+      "url": "https://talent500.com/blog/stripe-docdb-advanced-database-architecture/",
+      "title": "Stripe's DocDB: Revolutionizing Database Architecture for Trillion-Dollar Payments",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.postgresscripts.com/post/index-cardinality-optimize-your-postgresql-queries/",
+      "title": "Optimize Your PostgreSQL Queries, Index Cardinality",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.mssqltips.com/sqlservertip/5431/surrogate-key-vs-natural-key-differences-and-when-to-use-in-sql-server/",
+      "title": "Surrogate Key vs Natural Key Differences and When to Use in SQL Server",
+      "recency": "2024"
+    },
+    {
+      "url": "https://blog.quastor.org/p/shopify-scaled-database",
+      "title": "How Shopify Scaled their Database",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.percona.com/blog/what-hurts-in-postgresql-part-one-temporary-tables/",
+      "title": "What Hurts in PostgreSQL Part One: Temporary Tables — Percona",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.cockroachlabs.com/blog/relational-database-entities/",
+      "title": "Relational database entities vs. domain-driven design entities",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.pingcap.com/blog/effective-online-ddl-database-schema-changes-zero-downtime/",
+      "title": "MySQL Online DDL: Zero-Downtime Schema Changes",
+      "recency": "2024"
+    },
+    {
+      "url": "https://medium.com/geekculture/data-modeling-design-video-streaming-platform-e8aa4f121b1b",
+      "title": "Data Modeling Design for Video Streaming Platform (Netflix)",
+      "recency": "2024"
+    }
+  ]
+}

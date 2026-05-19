@@ -1,0 +1,452 @@
+{
+  "facts": [
+    {
+      "fact": "PostgreSQL cost calculation: seq_page_cost defaults to 1.0, random_page_cost defaults to 4.0, meaning random I/O is assumed 4× slower than sequential. On SSDs, random_page_cost should be reduced to ~1.0 to match actual performance.",
+      "source": "https://www.postgresql.org/docs/current/using-explain.html",
+      "publication_date": "2025-01",
+      "context": "EXPLAIN output interpretation"
+    },
+    {
+      "fact": "PostgreSQL 17 introduces improved statistics model with stats updated every few minutes instead of every few hours, significantly improving cardinality estimation accuracy for query planner.",
+      "source": "https://www.netdata.cloud/academy/cardinality-estimation-in-postgres/",
+      "publication_date": "2025-01",
+      "context": "Cardinality estimation"
+    },
+    {
+      "fact": "Window functions in views cause full table scans even when the underlying query alone uses indexes. The optimizer cannot push predicates through window function operations into table access.",
+      "source": "https://sqlperformance.com/2013/03/t-sql-queries/the-problem-with-window-functions-and-views",
+      "publication_date": "2013-03",
+      "context": "Window function anti-patterns (flagged as older but foundational; issue persists)"
+    },
+    {
+      "fact": "Default window frame is RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW, which causes severe performance degradation if ORDER BY columns are not unique. Explicit frame specification can improve performance 10-100×.",
+      "source": "https://www.vldb.org/pvldb/vol8/p1058-leis.pdf",
+      "publication_date": "2015-08",
+      "context": "Window function frame specification"
+    },
+    {
+      "fact": "PostgreSQL 13+ supports CREATE STATISTICS for extended statistics, allowing storage of correlation between columns to avoid independence assumptions that cause cardinality estimation failures.",
+      "source": "https://www.postgresql.org/docs/17/planner-stats-details.html",
+      "publication_date": "2025-01",
+      "context": "Cardinality estimation"
+    },
+    {
+      "fact": "pg_hint_plan extension allows PostgreSQL users to embed optimizer hints in SQL comments (/*+ SeqScan(a) */) to override planner decisions when cardinality estimation fails. Available in Amazon Aurora and YugabyteDB by default.",
+      "source": "https://github.com/ossc-db/pg_hint_plan",
+      "publication_date": "2024-06",
+      "context": "Query hints"
+    },
+    {
+      "fact": "Cardinality explosion occurs when a missing JOIN condition causes every row in one table to pair with every row in another. With tables of 1,000 and 5,000 rows, result balloons to 5,000,000 rows (simple multiplication).",
+      "source": "https://datageek.blog/2024/07/23/problematic-query-patterns-in-snowflake-join-explosion/",
+      "publication_date": "2024-07",
+      "context": "Join cardinality"
+    },
+    {
+      "fact": "Netflix's logging system processes 10.6 million events per second on average, peaking at 12.5 million/sec. Optimization involved: custom LZ4 encoder, tag storage refactoring from linear-scan Map to indexed lookups with up to 25,000 unique keys/hour.",
+      "source": "https://clickhouse.com/blog/netflix-petabyte-scale-logging",
+      "publication_date": "2024-09",
+      "context": "Real-world optimization at scale"
+    },
+    {
+      "fact": "Netflix consolidated relational infrastructure to Amazon Aurora, achieving 50% reduction in average latency (67.57ms → 41.70ms) and 70% reduction in max latency.",
+      "source": "https://aws.amazon.com/blogs/database/netflix-consolidates-relational-database-infrastructure-on-amazon-aurora-achieving-up-to-75-improved-performance/",
+      "publication_date": "2024-06",
+      "context": "Real-world optimization at scale"
+    },
+    {
+      "fact": "Stripe's document database (DocDB on MongoDB) serves 5+ million queries per second across 5,000+ collections and 2,000 shards. Insertion order optimization via B-tree structure analysis provided significant breakthrough.",
+      "source": "https://blog.bytebytego.com/p/how-stripe-scaled-to-5-million-database",
+      "publication_date": "2024-10",
+      "context": "Real-world optimization at scale"
+    },
+    {
+      "fact": "Composite index column order determines efficiency: columns with = or IN should precede columns with >, <, BETWEEN, LIKE. Database sorts first by leftmost, then within groups by second column.",
+      "source": "https://www.red-gate.com/simple-talk/databases/mysql/mysql-index-overviews-composite-b-tree-indexes/",
+      "publication_date": "2024-09",
+      "context": "Index design"
+    },
+    {
+      "fact": "Covering indexes include all columns needed by a query, allowing database to answer queries using only index without table access. This eliminates table lookups, reducing I/O by orders of magnitude.",
+      "source": "https://digma.ai/how-indexing-enhances-query-performance/",
+      "publication_date": "2024-11",
+      "context": "Index design"
+    },
+    {
+      "fact": "Google Cloud Spanner read/write throughputs scale linearly: 2-node single-region instance provides 45,000 reads/sec; 4-node provides 90,000 reads/sec (2× capacity = 2× throughput).",
+      "source": "https://cloud.google.com/spanner/docs/performance",
+      "publication_date": "2025-01",
+      "context": "Window functions at scale"
+    },
+    {
+      "fact": "Cloudflare Hyperdrive delivers 17-25× performance improvement vs. direct database access for cached queries, and 6-8× improvement for uncached queries and writes through connection pooling and query caching.",
+      "source": "https://blog.cloudflare.com/how-hyperdrive-speeds-up-database-access/",
+      "publication_date": "2024-12",
+      "context": "Real-world optimization at scale"
+    },
+    {
+      "fact": "Inefficient SQL queries account for 63% of performance issues; just 7% of queries drain 70%+ of database resources. Identifying and tuning the costliest 7% has outsized impact.",
+      "source": "https://ai2sql.io/learn/sql-query-optimization-guide",
+      "publication_date": "2025-01",
+      "context": "Query optimization priority"
+    },
+    {
+      "fact": "Window function optimization: ROW_NUMBER() OVER (PARTITION BY) performs sorting overhead even when partition column is clustering key; ORDER BY columns still require sort if not unique/indexed.",
+      "source": "https://blog.quest.com/when-and-how-to-use-the-sql-partition-by-clause/",
+      "publication_date": "2024-09",
+      "context": "Window function performance"
+    },
+    {
+      "fact": "PostgreSQL EXPLAIN ANALYZE shows: estimated startup cost (time before first row), total cost (all rows), estimated row count, estimated row width. Format: cost=131.97..133.41 (first=startup, second=total).",
+      "source": "https://www.postgresql.org/docs/current/using-explain.html",
+      "publication_date": "2025-01",
+      "context": "EXPLAIN output interpretation"
+    },
+    {
+      "fact": "Query hints are best used as short-term workarounds during troubleshooting or production incidents before root cause is fixed. Hints in regression tests help identify regressions after upgrades.",
+      "source": "https://medium.com/@encodedots/postgres-query-optimizer-hints-when-and-how-to-use-them-effectively-f86e36646692",
+      "publication_date": "2024-08",
+      "context": "Query hints best practices"
+    },
+    {
+      "fact": "PostgreSQL's planner assumes column independence; stronger correlation between columns degrades cardinality estimation accuracy. Extended statistics (v13+) capture correlation via CREATE STATISTICS.",
+      "source": "https://www.postgresql.org/docs/17/planner-stats-details.html",
+      "publication_date": "2025-01",
+      "context": "Cardinality estimation limitations"
+    },
+    {
+      "fact": "Three kinds of PostgreSQL costs: startup cost (before first tuple), run cost (fetch all tuples), total cost (startup + run). Cost estimation via cost_seqscan() and cost_index() functions.",
+      "source": "https://www.interdb.jp/pg/pgsql03/02.html",
+      "publication_date": "2024-01",
+      "context": "EXPLAIN cost calculation"
+    },
+    {
+      "fact": "Cloudflare R2 SQL query planner reads through manifest files and prunes them, emitting matching data files as work units immediately, allowing compute nodes to begin I/O almost instantly.",
+      "source": "https://blog.cloudflare.com/r2-sql-deep-dive/",
+      "publication_date": "2024-11",
+      "context": "Real-world optimization at scale"
+    }
+  ],
+  "examples": [
+    {
+      "example": "Netflix logging system: 10.6M events/sec avg, 12.5M peak. Tag storage changed from Map(String, String) (linear scan per lookup) to indexed structure. With 25,000 unique keys/hour and tens of millions values, query performance degraded linearly until refactored.",
+      "company": "Netflix",
+      "metric": "10.6M–12.5M events/second",
+      "context": "Window function / aggregation optimization"
+    },
+    {
+      "example": "Netflix Aurora consolidation: 50% latency reduction (67.57ms avg → 41.70ms), 70% max latency reduction. Involved relational database consolidation across fleet.",
+      "company": "Netflix",
+      "metric": "50% avg latency, 70% max latency reduction",
+      "context": "Query optimization at scale"
+    },
+    {
+      "example": "Stripe's DocDB: 5M+ queries/sec across 5,000+ collections, 2,000 shards. B-tree insertion order optimization was a key breakthrough. Prevents suboptimal queries via minimal database function surface.",
+      "company": "Stripe",
+      "metric": "5+ million queries per second",
+      "context": "Index design / cardinality"
+    },
+    {
+      "example": "Cloudflare Hyperdrive: cached query performance 17-25× faster than direct connection; uncached queries 6-8× faster. Uses connection pooling and query caching across Cloudflare's global network.",
+      "company": "Cloudflare",
+      "metric": "17-25× cached, 6-8× uncached",
+      "context": "Query optimization infrastructure"
+    },
+    {
+      "example": "Google Cloud Spanner: linear scaling. 2-node single-region = 45,000 reads/sec. 4-node = 90,000 reads/sec. Columnar engine enables real-time analytics on globally distributed data.",
+      "company": "Google Cloud",
+      "metric": "45K–90K reads/sec, linear scaling",
+      "context": "Window functions at scale"
+    },
+    {
+      "example": "Industry benchmark (2024–2025): 63% of performance issues caused by inefficient SQL queries. Top 7% of queries consume 70%+ of database resources. Targeting the 7% has outsized ROI.",
+      "company": "Industry aggregate",
+      "metric": "63% inefficient SQL, 7% consume 70%+",
+      "context": "Query optimization priority"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Cardinality explosion is like a combinatorics bomb: if table A and table B have no join condition, every row pairs with every row. 1,000 × 5,000 = 5 million rows instantly. Without a WHERE or proper ON clause, you've created a Cartesian product.",
+      "concept": "Cardinality explosion"
+    },
+    {
+      "analogy": "A covering index is like a library card catalog that includes not just the book title and location, but also a summary, publication date, and all metadata you'd normally need to read from the book itself. The librarian never has to fetch the actual book.",
+      "concept": "Covering indexes"
+    },
+    {
+      "analogy": "Composite index column order is like sorting a filing system: sort first by last name (leftmost), then by first name within each surname group. Queries that filter by last name only are fast; queries that filter by first name without last name must scan the entire index.",
+      "concept": "Composite index design"
+    },
+    {
+      "analogy": "Window function framing (RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) is like calculating a running average where every new row must look back to the beginning. If your ORDER BY column has duplicates, every duplicate row must re-scan the entire partition.",
+      "concept": "Window function frame specification"
+    },
+    {
+      "analogy": "PostgreSQL's cardinality estimation assumes all columns are independent, like assuming coin flips are random even if you're flipping the same coin. If two columns are correlated (e.g., age & retirement_date), the estimate is wildly off until you tell it they're linked.",
+      "concept": "Cardinality estimation / independence assumption"
+    },
+    {
+      "analogy": "Query hints are like a GPS override: normally the navigation system chooses the route, but if it's stuck on a bad route, you can manually override it. But a permanent override (hint) becomes a maintenance burden; the real fix is updating the map data (statistics).",
+      "concept": "Query hints"
+    },
+    {
+      "analogy": "EXPLAIN cost (seq_page_cost=1, random_page_cost=4) models I/O like a disk drive: reading sequentially is cheap (you're already moving); random jumps are expensive (seek time). On SSDs, this ratio should be 1:1, not 1:4.",
+      "concept": "Cost calculation / I/O models"
+    },
+    {
+      "analogy": "A full table scan is like reading every page of a dictionary to find a word starting with 'Z'. An index scan is like using the alphabetical tabs to jump to Z directly. A covering index is like the tabs including the full definition right there, so you never open the book.",
+      "concept": "Scan types"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "PostgreSQL seq_page_cost",
+      "value": "1.0",
+      "unit": "cost units",
+      "context": "Default cost of one sequential page read"
+    },
+    {
+      "metric": "PostgreSQL random_page_cost",
+      "value": "4.0",
+      "unit": "cost units",
+      "context": "Default cost of one random page read (4× sequential); should be 1.0 on SSDs"
+    },
+    {
+      "metric": "PostgreSQL per-row CPU cost",
+      "value": "0.01",
+      "unit": "cost units",
+      "context": "Cost of processing each row"
+    },
+    {
+      "metric": "Netflix logging throughput",
+      "value": "10.6M",
+      "unit": "events/second average",
+      "context": "Baseline processing, peaks at 12.5M/sec"
+    },
+    {
+      "metric": "Netflix latency reduction (Aurora)",
+      "value": "50%",
+      "unit": "average latency reduction",
+      "context": "67.57ms → 41.70ms"
+    },
+    {
+      "metric": "Netflix max latency reduction (Aurora)",
+      "value": "70%",
+      "unit": "maximum latency reduction",
+      "context": "Consolidation impact"
+    },
+    {
+      "metric": "Stripe database throughput",
+      "value": "5,000,000",
+      "unit": "queries per second",
+      "context": "DocDB across 5,000+ collections, 2,000 shards"
+    },
+    {
+      "metric": "Cloudflare Hyperdrive cached query speedup",
+      "value": "17-25x",
+      "unit": "performance multiplier",
+      "context": "vs. direct database connection"
+    },
+    {
+      "metric": "Cloudflare Hyperdrive uncached query speedup",
+      "value": "6-8x",
+      "unit": "performance multiplier",
+      "context": "vs. direct database connection for writes"
+    },
+    {
+      "metric": "Google Cloud Spanner 2-node throughput",
+      "value": "45,000",
+      "unit": "reads per second",
+      "context": "Single-region instance"
+    },
+    {
+      "metric": "Google Cloud Spanner scaling factor",
+      "value": "2x",
+      "unit": "throughput multiplier per 2x nodes",
+      "context": "Linear scaling: 2 nodes = 45K, 4 nodes = 90K"
+    },
+    {
+      "metric": "Industry: queries causing issues",
+      "value": "63%",
+      "unit": "percentage",
+      "context": "2024–2025 performance issue attribution"
+    },
+    {
+      "metric": "Industry: top resource consumer queries",
+      "value": "7%",
+      "unit": "percentage of queries",
+      "context": "Consume 70%+ of database resources"
+    },
+    {
+      "metric": "Netflix unique tag keys per hour",
+      "value": "25,000",
+      "unit": "unique keys",
+      "context": "Logging system tag cardinality (before optimization)"
+    },
+    {
+      "metric": "Window function execution speedup (tuned partition size)",
+      "value": "10-100x",
+      "unit": "performance multiplier",
+      "context": "With proper frame specification and indexing"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Window functions are always slow.",
+      "reality": "Window functions can execute 10-100× faster than subqueries or self-joins when properly indexed. Performance degrades only with improper frame specification, non-unique ORDER BY, or window functions inside views without proper predicate pushdown."
+    },
+    {
+      "misconception": "More indexes always improve query performance.",
+      "reality": "Each index slows INSERT/UPDATE/DELETE and consumes storage. The goal is the minimal set of indexes that cover your actual access patterns. A few covering indexes beat dozens of single-column indexes."
+    },
+    {
+      "misconception": "EXPLAIN output shows actual execution time.",
+      "reality": "EXPLAIN shows estimated costs and row counts (educated guesses based on statistics). EXPLAIN ANALYZE shows actual execution, but with overhead from instrumentation. Always use ANALYZE when diagnosing real performance issues."
+    },
+    {
+      "misconception": "Cardinality estimation is a 'solved problem' in modern databases.",
+      "reality": "PostgreSQL's planner assumes column independence, causing severe underestimation when columns are correlated. PostgreSQL 17+ improves this, but the fundamental challenge persists across all databases. Always verify estimates with ANALYZE."
+    },
+    {
+      "misconception": "Query hints are a permanent solution.",
+      "reality": "Hints are short-term workarounds for troubleshooting. Fixed hints become stale as data volumes change and hide underlying statistics/schema issues. Always investigate root cause (missing statistics, changed data distribution, schema mismatch) before committing hints."
+    },
+    {
+      "misconception": "Full table scans are always bad.",
+      "reality": "Sequential scans are efficient for tables small enough to fit in memory or when reading 50%+ of rows. The problem is accidental full scans due to missing indexes or predicate pushdown failures (e.g., window functions in views)."
+    },
+    {
+      "misconception": "Window function optimization is about algorithm choice.",
+      "reality": "Most window function performance issues come from: (1) non-unique ORDER BY columns, (2) window functions inside views preventing predicate pushdown, (3) missing indexes on PARTITION BY / ORDER BY columns, (4) incorrect default frame specification."
+    },
+    {
+      "misconception": "Joining tables is expensive; CTEs or temp tables are always cheaper.",
+      "reality": "Proper joins with indexes are usually faster than CTEs or temp tables (which materialize intermediate results). Only use temp tables when you need to break a cardinality explosion or when the optimizer fails on complex multi-way joins."
+    },
+    {
+      "misconception": "Cost = execution time.",
+      "reality": "PostgreSQL cost is an arbitrary dimensionless unit proportional to relative performance, not absolute time. A query with cost 100 is not 2× as slow as cost 50; it's just 'relatively more expensive' given the cost model. Always use ANALYZE to measure actual time."
+    },
+    {
+      "misconception": "Reducing random_page_cost on SSDs is a hack.",
+      "reality": "PostgreSQL defaults assume spinning disk I/O (4× penalty for random access). SSDs have O(1) seek time, so random_page_cost should be ~1.0 to match reality. Using the wrong value causes the planner to choose suboptimal plans."
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.postgresql.org/docs/current/using-explain.html",
+      "title": "PostgreSQL EXPLAIN Documentation",
+      "publication_date": "2025-01",
+      "recency_note": "Current, official reference"
+    },
+    {
+      "url": "https://www.netdata.cloud/academy/cardinality-estimation-in-postgres/",
+      "title": "Cardinality Estimation in PostgreSQL 17",
+      "publication_date": "2025-01",
+      "recency_note": "Current, covers PostgreSQL 17 improvements"
+    },
+    {
+      "url": "https://clickhouse.com/blog/netflix-petabyte-scale-logging",
+      "title": "Netflix Petabyte-Scale Logging System with ClickHouse",
+      "publication_date": "2024-09",
+      "recency_note": "Recent, real-world optimization case study"
+    },
+    {
+      "url": "https://aws.amazon.com/blogs/database/netflix-consolidates-relational-database-infrastructure-on-amazon-aurora-achieving-up-to-75-improved-performance/",
+      "title": "Netflix Aurora Consolidation Case Study",
+      "publication_date": "2024-06",
+      "recency_note": "Recent, performance metrics included"
+    },
+    {
+      "url": "https://blog.bytebytego.com/p/how-stripe-scaled-to-5-million-database",
+      "title": "Stripe: 5 Million Database Queries Per Second",
+      "publication_date": "2024-10",
+      "recency_note": "Recent, large-scale optimization insights"
+    },
+    {
+      "url": "https://datageek.blog/2024/07/23/problematic-query-patterns-in-snowflake-join-explosion/",
+      "title": "Problematic Query Patterns: Join Explosion in Snowflake",
+      "publication_date": "2024-07",
+      "recency_note": "Recent, explains cardinality explosion"
+    },
+    {
+      "url": "https://www.vldb.org/pvldb/vol8/p1058-leis.pdf",
+      "title": "Efficient Processing of Window Functions in Analytical SQL Queries (VLDB)",
+      "publication_date": "2015-08",
+      "recency_note": "Foundational academic research; concepts still current"
+    },
+    {
+      "url": "https://sqlperformance.com/2013/03/t-sql-queries/the-problem-with-window-functions-and-views",
+      "title": "The Problem with Window Functions and Views",
+      "publication_date": "2013-03",
+      "recency_note": "Older but describes persistent issue (predicate pushdown failure)"
+    },
+    {
+      "url": "https://github.com/ossc-db/pg_hint_plan",
+      "title": "pg_hint_plan: PostgreSQL Optimizer Hints Extension",
+      "publication_date": "2024-06",
+      "recency_note": "Active project, widely used in Aurora/YugabyteDB"
+    },
+    {
+      "url": "https://www.red-gate.com/simple-talk/databases/mysql/mysql-index-overviews-composite-b-tree-indexes/",
+      "title": "MySQL Composite B-Tree Indexes",
+      "publication_date": "2024-09",
+      "recency_note": "Recent, covers best practices for index column order"
+    },
+    {
+      "url": "https://digma.ai/how-indexing-enhances-query-performance/",
+      "title": "How Indexing Enhances Query Performance",
+      "publication_date": "2024-11",
+      "recency_note": "Recent, covering index explanation"
+    },
+    {
+      "url": "https://cloud.google.com/spanner/docs/performance",
+      "title": "Google Cloud Spanner Performance Documentation",
+      "publication_date": "2025-01",
+      "recency_note": "Current, official scaling metrics"
+    },
+    {
+      "url": "https://blog.cloudflare.com/how-hyperdrive-speeds-up-database-access/",
+      "title": "Cloudflare Hyperdrive: Database Performance Optimization",
+      "publication_date": "2024-12",
+      "recency_note": "Recent, 17-25× speedup metrics"
+    },
+    {
+      "url": "https://blog.cloudflare.com/r2-sql-deep-dive/",
+      "title": "Cloudflare R2 SQL: Deep Dive into Distributed Query Engine",
+      "publication_date": "2024-11",
+      "recency_note": "Recent, query planner optimization details"
+    },
+    {
+      "url": "https://ai2sql.io/learn/sql-query-optimization-guide",
+      "title": "SQL Query Optimization Complete Performance Guide 2025",
+      "publication_date": "2025-01",
+      "recency_note": "Current, 63% inefficient SQL statistic"
+    },
+    {
+      "url": "https://blog.quest.com/when-and-how-to-use-the-sql-partition-by-clause/",
+      "title": "When and How to Use PARTITION BY in SQL",
+      "publication_date": "2024-09",
+      "recency_note": "Recent, PARTITION BY performance considerations"
+    },
+    {
+      "url": "https://www.interdb.jp/pg/pgsql03/02.html",
+      "title": "PostgreSQL Cost Estimation in Single-Table Queries",
+      "publication_date": "2024-01",
+      "recency_note": "Recent, deep dive on cost calculation"
+    },
+    {
+      "url": "https://medium.com/@encodedots/postgres-query-optimizer-hints-when-and-how-to-use-them-effectively-f86e36646692",
+      "title": "PostgreSQL Optimizer Hints: When and How to Use Effectively",
+      "publication_date": "2024-08",
+      "recency_note": "Recent, hints best practices"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/17/planner-stats-details.html",
+      "title": "PostgreSQL: How the Planner Uses Statistics (v17)",
+      "publication_date": "2025-01",
+      "recency_note": "Current, extended statistics (v13+) reference"
+    }
+  ]
+}

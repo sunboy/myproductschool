@@ -1,0 +1,519 @@
+{
+  "facts": [
+    {
+      "fact": "A surrogate key change in a telephone company dataset with 100+ million subscribers improved search query performance by over 80% and drops by 95%, while saving substantial storage.",
+      "source": "https://medium.com/data-science/data-model-design-101-composite-vs-surrogate-keys-032d8e1defe1",
+      "date": "2024"
+    },
+    {
+      "fact": "In a social media application with 2 million posts, loading a user feed initially took 8 seconds with no index on created_at. Proper B-tree indexing reduced this dramatically.",
+      "source": "https://www.qwertee.io/blog/postgresql-b-tree-index-explained-part-1/",
+      "date": "2024"
+    },
+    {
+      "fact": "B+Trees guarantee O(log n) lookup time and ensure every search takes exactly the same number of steps regardless of what you're searching for.",
+      "source": "https://planetscale.com/blog/btrees-and-database-indexes",
+      "date": "2024"
+    },
+    {
+      "fact": "MySQL 8.0+ supports ALGORITHM=INSTANT for schema changes that only update metadata without data backfill or table rebuild, completing almost immediately.",
+      "source": "https://www.pingcap.com/blog/effective-online-ddl-database-schema-changes-zero-downtime/",
+      "date": "2024"
+    },
+    {
+      "fact": "The expand/contract pattern (parallel change) enables zero-downtime schema migrations by adding new schema, having applications work with both schemas simultaneously, then deleting the old schema after backfill.",
+      "source": "https://xata.io/blog/zero-downtime-schema-migrations-postgresql",
+      "date": "2024"
+    },
+    {
+      "fact": "Gartner reports that 83% of data migration projects fail outright or exceed budgets and timelines.",
+      "source": "https://www.blog.brightcoding.dev/2025/11/16/the-$4-5-million-database-migration-mistake-and-how-declarative-schema-management-prevents-it",
+      "date": "2025"
+    },
+    {
+      "fact": "A single NOT NULL column addition with default cascaded failures across 47 of 52 services, causing 23 minutes of downtime and $127,000 in lost revenue.",
+      "source": "https://medium.com/@reliabledataengineering/schema-evolution-how-adding-one-column-broke-47-services-a2b062a42c70",
+      "date": "2026"
+    },
+    {
+      "fact": "Stripe's 2023 migration of petabytes of data between shards achieved much better infrastructure utilization, with zero downtime maintained for payment processing.",
+      "source": "https://blog.quastor.org/p/architecture-stripes-document-database",
+      "date": "2023"
+    },
+    {
+      "fact": "Junction tables without indexes on foreign key columns cause slow queries; proper indexing significantly improves join performance.",
+      "source": "https://oneuptime.com/blog/post/2026-01-30-data-warehouse-bridge-tables/view",
+      "date": "2026"
+    },
+    {
+      "fact": "Composite primary keys require all constituent columns to be referenced in foreign key definitions, making them cumbersome and error-prone compared to single surrogate keys.",
+      "source": "https://www.ben-morris.com/identity-surrogate-vs-composite-keys-in-sql-server/",
+      "date": "2024"
+    },
+    {
+      "fact": "SCD Type 2 implementation adds surrogate key, start_date, end_date, and is_current flag columns to preserve complete audit trails without full table rewrites.",
+      "source": "https://learn.microsoft.com/en-us/fabric/data-factory/slowly-changing-dimension-type-two",
+      "date": "2024"
+    },
+    {
+      "fact": "Backward Transitive schema compatibility ensures that new versions can read data from ALL historical versions, not just the immediate prior version.",
+      "source": "https://docs.confluent.io/platform/current/schema-registry/fundamentals/schema-evolution.html",
+      "date": "2024"
+    },
+    {
+      "fact": "CockroachDB's REGIONAL BY ROW locality automatically assigns rows to regions based on insertion locality, with a hidden crdb_region ENUM column managing placement.",
+      "source": "https://www.cockroachlabs.com/docs/stable/movr-flask-database.html",
+      "date": "2024"
+    },
+    {
+      "fact": "CockroachDB divides keyspace into 64MB ranges by default, facilitating quick repair and rebalancing to address node failures and read/write load.",
+      "source": "https://www.cockroachlabs.com/docs/stable/architecture/overview",
+      "date": "2024"
+    },
+    {
+      "fact": "In microservices architecture, one-to-one mapping between bounded contexts and microservices maintains clear boundaries and enables independent deployment and scaling.",
+      "source": "https://www.cockroachlabs.com/blog/relational-database-entities/",
+      "date": "2024"
+    },
+    {
+      "fact": "The 'God Table' anti-pattern stores hundreds of columns covering unrelated concepts in a single table, wasting space and complicating cache efficiency.",
+      "source": "https://medium.com/@sachin.backend.dev/the-7-deadly-database-anti-patterns-every-engineer-should-know-00749feb5d61",
+      "date": "2024"
+    },
+    {
+      "fact": "Bridge tables improve many-to-many query performance by reducing the number of joins required while preserving star schema query patterns.",
+      "source": "https://bigbear.ai/blog/bridge-tables-deep-dive/",
+      "date": "2024"
+    },
+    {
+      "fact": "Join cardinality explosion occurs when output rows exceed input rows, typically in LEFT JOINs with one-to-many relationships, requiring careful aggregate function placement.",
+      "source": "https://datageek.blog/2024/07/23/problematic-query-patterns-in-snowflake-join-explosion/",
+      "date": "2024"
+    },
+    {
+      "fact": "Over-normalization (splitting data into too many tiny tables) creates webs of joins that kill performance, representing the opposite extreme from God Tables.",
+      "source": "https://tapoueh.org/blog/2018/03/database-modelization-anti-patterns/",
+      "date": "2018"
+    },
+    {
+      "fact": "The Entity-Attribute-Value (EAV) pattern fails at scale, attempting to accommodate unknown parameters at each release without proper schema design.",
+      "source": "https://www.mongodb.com/docs/manual/data-modeling/design-antipatterns/",
+      "date": "2024"
+    },
+    {
+      "fact": "Resend's February 2024 production outage involved a database migration command run locally somehow pointing to production, dropping all tables and losing 5 minutes of data permanently.",
+      "source": "https://www.blog.brightcoding.dev/2025/11/16/the-$4-5-million-database-migration-mistake-and-how-declarative-schema-management-prevents-it",
+      "date": "2024"
+    },
+    {
+      "fact": "Schema changes that require ACCESS EXCLUSIVE locks completely block applications—no reads, no writes until the operation completes.",
+      "source": "https://dev.to/ari-ghosh/zero-downtime-database-migration-the-definitive-guide-5672",
+      "date": "2024"
+    },
+    {
+      "fact": "pgroll (PostgreSQL zero-downtime migrations) uses expand/contract workflow, enabling multiple schema versions to coexist during updates.",
+      "source": "https://neon.com/guides/pgroll",
+      "date": "2024"
+    },
+    {
+      "fact": "B-Trees are the most widely deployed index structure in production databases; OLTP systems use B-trees, write-heavy systems use LSM trees, analytical systems minimize index overhead.",
+      "source": "https://datalakehousehub.com/blog/2026-04-29-query-engine-optimization-04-indexing-strategies/",
+      "date": "2026"
+    },
+    {
+      "fact": "In composite indexes, column order matters significantly: equality columns should come first, range columns last, for optimal query performance.",
+      "source": "https://oneuptime.com/blog/post/2026-01-30-btree-index-design/view",
+      "date": "2026"
+    }
+  ],
+  "examples": [
+    {
+      "company": "Stripe",
+      "scenario": "Building DocDB on top of MongoDB to handle hundreds of terabytes of data, providing API-driven database access without exposing scaling complexity to engineers.",
+      "metric": "Migrated petabytes of data between shards in 2023 with zero downtime for payment processing",
+      "source": "https://blog.quastor.org/p/architecture-stripes-document-database"
+    },
+    {
+      "company": "Resend",
+      "scenario": "A schema migration command run locally pointed to production, dropping all tables.",
+      "metric": "12-hour outage, 5 minutes of data permanently lost, production incident in February 2024",
+      "source": "https://www.blog.brightcoding.dev/2025/11/16/the-$4-5-million-database-migration-mistake-and-how-declarative-schema-management-prevents-it"
+    },
+    {
+      "company": "Unnamed fintech platform",
+      "scenario": "Adding a single NOT NULL column with default cascaded through 47 of 52 downstream services due to compatibility mismatches.",
+      "metric": "23 minutes of downtime, $127,000 in lost revenue, 2021-2025 incident",
+      "source": "https://medium.com/@reliabledataengineering/schema-evolution-how-adding-one-column-broke-47-services-a2b062a42c70"
+    },
+    {
+      "company": "Telephone company with 100M+ subscribers",
+      "scenario": "Migrating from 8-column composite primary key to single surrogate key after recognizing query performance ceiling.",
+      "metric": "Search query speed improved 80%, drop operations improved 95%, substantial storage saved",
+      "source": "https://medium.com/data-science/data-model-design-101-composite-vs-surrogate-keys-032d8e1defe1"
+    },
+    {
+      "company": "Social media platform",
+      "scenario": "User feed loaded from 2 million post table without index on created_at column.",
+      "metric": "Initial load time: 8 seconds; proper B-tree indexing reduced dramatically",
+      "source": "https://www.qwertee.io/blog/postgresql-b-tree-index-explained-part-1/"
+    },
+    {
+      "company": "Data analytics team",
+      "scenario": "LEFT JOIN on two tables with one-to-many relationship caused join explosion, inflating aggregation results.",
+      "metric": "Cardinality output exceeded input cardinality, requiring careful aggregate placement and join reordering",
+      "source": "https://datageek.blog/2024/07/23/problematic-query-patterns-in-snowflake-join-explosion/"
+    },
+    {
+      "company": "Netflix (implied)",
+      "scenario": "Operating production systems where schema changes must preserve performance and availability.",
+      "metric": "Zero-downtime migrations are operational requirement, not optional best practice",
+      "source": "https://xata.io/blog/zero-downtime-schema-migrations-postgresql"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Entity boundaries in bounded contexts",
+      "analogy": "Like apartment buildings in a city: each bounded context is a building with its own management, utilities, and residents. You don't run water pipes between buildings—instead, they connect at a single junction point. If you share internal pipes between buildings, any change in one building impacts all others.",
+      "source": "https://www.cockroachlabs.com/blog/relational-database-entities/"
+    },
+    {
+      "concept": "Surrogate vs natural keys",
+      "analogy": "Like Social Security Numbers vs. your name and birthdate. Your name can change (marriage, preference), but an SSN is immutable. Using name+birthdate as identity means cascading updates everywhere if someone marries. Using SSN means stable identity but losing the human-readable meaning.",
+      "source": "https://kindatechnical.com/sql/surrogate-vs-natural-keys.html"
+    },
+    {
+      "concept": "Bridge tables in many-to-many relationships",
+      "analogy": "Like a hotel's reservation system: guests (one table) and rooms (another table) relate many-to-many. A reservation bridge table sits between them, letting you ask 'Which rooms are booked for Guest #5?' without duplicating guest data or room data.",
+      "source": "https://oneuptime.com/blog/post/2026-01-30-data-warehouse-bridge-tables/view"
+    },
+    {
+      "concept": "SCD Type 2 for historical data",
+      "analogy": "Like keeping paper records with effective dates on insurance policies: when a policy holder's address changes, you don't erase the old address. Instead, you mark the old record 'valid until date X' and create a new one 'valid from date X'. Auditors can see the complete history.",
+      "source": "https://learn.microsoft.com/en-us/fabric/data-factory/slowly-changing-dimension-type-two"
+    },
+    {
+      "concept": "B-tree index structure",
+      "analogy": "Like a library's card catalog organized alphabetically with sections and subsections: every page is exactly the same distance from the front desk. Looking up a book always requires the same number of steps, whether it starts with 'A' or 'Z'.",
+      "source": "https://planetscale.com/blog/btrees-and-database-indexes"
+    },
+    {
+      "concept": "Expand/contract schema migration pattern",
+      "analogy": "Like renovating a house with people living in it: add the new room first (expand), let occupants move back and forth between old and new, then demolish the old room (contract) after everyone has settled in the new space.",
+      "source": "https://xata.io/blog/zero-downtime-schema-migrations-postgresql"
+    },
+    {
+      "concept": "Join explosion / cardinality explosion",
+      "analogy": "Joining two tables with one-to-many is like multiplying 10 × 1000: the output is larger than either input. If you join employee table (10 rows) with order table (1000 rows where each employee has many orders), you get 10,000 result rows, not 10.",
+      "source": "https://datageek.blog/2024/07/23/problematic-query-patterns-in-snowflake-join-explosion/"
+    },
+    {
+      "concept": "God Table anti-pattern",
+      "analogy": "Like storing a doctor's medical records, tax returns, and grocery shopping lists in one massive binder: you have to photocopy the entire binder every time you need one piece of information, wasting paper and time.",
+      "source": "https://medium.com/@sachin.backend.dev/the-7-deadly-database-anti-patterns-every-engineer-should-know-00749feb5d61"
+    },
+    {
+      "concept": "Over-normalization anti-pattern",
+      "analogy": "Like a restaurant splitting every ingredient into separate suppliers and creating dozens of purchase orders for a single meal: you've added so many steps (joins) that the process becomes slower, not faster.",
+      "source": "https://tapoueh.org/blog/2018/03/database-modelization-anti-patterns/"
+    },
+    {
+      "concept": "Schema mutation risk",
+      "analogy": "Like changing the rules of a game mid-match: if you add a new rule, all players must understand it instantly or chaos ensues. Every downstream service is a player; every schema change is a new rule.",
+      "source": "https://medium.com/@reliabledataengineering/schema-evolution-how-adding-one-column-broke-47-services-a2b062a42c70"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Performance improvement from composite→surrogate key migration",
+      "value": "80% faster search queries, 95% faster drops",
+      "context": "Telephone company with 100+ million subscribers",
+      "source": "https://medium.com/data-science/data-model-design-101-composite-vs-surrogate-keys-032d8e1defe1"
+    },
+    {
+      "metric": "Default B-tree range size in CockroachDB",
+      "value": "64MB per range",
+      "context": "Facilitates quick repair and rebalancing",
+      "source": "https://www.cockroachlabs.com/docs/stable/architecture/overview"
+    },
+    {
+      "metric": "Initial page load time without index on created_at",
+      "value": "8 seconds",
+      "context": "Social media feed from 2 million posts",
+      "source": "https://www.qwertee.io/blog/postgresql-b-tree-index-explained-part-1/"
+    },
+    {
+      "metric": "Data migration project failure rate",
+      "value": "83% fail outright or exceed budgets/timelines",
+      "context": "Gartner research on enterprise migrations",
+      "source": "https://www.blog.brightcoding.dev/2025/11/16/the-$4-5-million-database-migration-mistake-and-how-declarative-schema-management-prevents-it"
+    },
+    {
+      "metric": "Revenue loss from cascading schema failure",
+      "value": "$127,000 in 23 minutes",
+      "context": "NOT NULL column addition broke 47 of 52 services",
+      "source": "https://medium.com/@reliabledataengineering/schema-evolution-how-adding-one-column-broke-47-services-a2b062a42c70"
+    },
+    {
+      "metric": "Downtime duration in Resend production incident",
+      "value": "12 hours",
+      "context": "Schema migration command pointed to production, all tables dropped",
+      "source": "https://www.blog.brightcoding.dev/2025/11/16/the-$4-5-million-database-migration-mistake-and-how-declarative-schema-management-prevents-it"
+    },
+    {
+      "metric": "Data loss in Resend incident",
+      "value": "5 minutes worth of data permanently lost",
+      "context": "February 2024 production outage",
+      "source": "https://www.blog.brightcoding.dev/2025/11/16/the-$4-5-million-database-migration-mistake-and-how-declarative-schema-management-prevents-it"
+    },
+    {
+      "metric": "B-tree lookup time complexity",
+      "value": "O(log n)",
+      "context": "n = number of indexed rows",
+      "source": "https://planetscale.com/blog/btrees-and-database-indexes"
+    },
+    {
+      "metric": "Cascading service failures from single schema change",
+      "value": "47 of 52 services",
+      "context": "Adding one NOT NULL column",
+      "source": "https://medium.com/@reliabledataengineering/schema-evolution-how-adding-one-column-broke-47-services-a2b062a42c70"
+    },
+    {
+      "metric": "Striped petabytes migrated with zero downtime",
+      "value": "Petabytes of data",
+      "context": "Stripe 2023 shard rebalancing for payment processing",
+      "source": "https://blog.quastor.org/p/architecture-stripes-document-database"
+    },
+    {
+      "metric": "Storage savings from key migration",
+      "value": "Substantial (not quantified)",
+      "context": "Telephone company composite→surrogate key conversion",
+      "source": "https://medium.com/data-science/data-model-design-101-composite-vs-surrogate-keys-032d8e1defe1"
+    },
+    {
+      "metric": "B-tree search consistency",
+      "value": "All searches take exactly the same number of steps",
+      "context": "Distance from root to any leaf is identical in B+ trees",
+      "source": "https://planetscale.com/blog/btrees-and-database-indexes"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Surrogate keys always improve performance.",
+      "reality": "Surrogate keys only improve performance when queries select records by the surrogate key alone. Poorly chosen surrogate keys can be no better than natural keys.",
+      "source": "https://medium.com/data-science/data-model-design-101-composite-vs-surrogate-keys-032d8e1defe1"
+    },
+    {
+      "misconception": "Adding an index always makes queries faster.",
+      "reality": "Indexes speed up reads but slow down writes (inserts, updates, deletes). Every index added to a table increases write latency. Composite index column order must match query patterns or the index won't be used.",
+      "source": "https://oneuptime.com/blog/post/2026-01-30-btree-index-design/view"
+    },
+    {
+      "misconception": "Natural keys are inherently unstable and should never be used.",
+      "reality": "Natural keys can be stable if the attribute genuinely never changes. Using a hybrid approach (surrogate key + UNIQUE constraint on natural key) gives the best of both worlds.",
+      "source": "https://kindatechnical.com/sql/surrogate-vs-natural-keys.html"
+    },
+    {
+      "misconception": "Bridge tables are only needed for visualization tools.",
+      "reality": "Bridge tables solve cardinality and query performance problems in relational schemas. They're fundamental to proper many-to-many relationship design in OLTP and data warehouses.",
+      "source": "https://bigbear.ai/blog/bridge-tables-deep-dive/"
+    },
+    {
+      "misconception": "Schema migrations can be tested in staging and will work identically in production.",
+      "reality": "Scaling factors differ dramatically: data volume, concurrent write load, index statistics, and hardware differences mean a fast migration in staging can lock tables in production. Many production incidents occur despite flawless staging runs.",
+      "source": "https://dev.to/ari-ghosh/zero-downtime-database-migration-the-definitive-guide-5672"
+    },
+    {
+      "misconception": "Normalizing all data into separate tables improves query performance.",
+      "reality": "Over-normalization creates so many joins that query performance degrades. The sweet spot is between denormalization (God Tables) and over-normalization.",
+      "source": "https://tapoueh.org/blog/2018/03/database-modelization-anti-patterns/"
+    },
+    {
+      "misconception": "Backward compatibility is just about old code reading new data.",
+      "reality": "True backward compatibility (Backward Transitive) requires that new code can read data from ALL historical schema versions, not just the immediate prior version.",
+      "source": "https://docs.confluent.io/platform/current/schema-registry/fundamentals/schema-evolution.html"
+    },
+    {
+      "misconception": "Primary key should always be an auto-incrementing integer.",
+      "reality": "In some systems (data warehouses, distributed databases), UUIDs, composite natural keys, or other structures are appropriate. The choice depends on domain, scale, and query patterns.",
+      "source": "https://agiledata.org/essays/keys.html"
+    },
+    {
+      "misconception": "SCD Type 2 requires full table rewrites.",
+      "reality": "SCD Type 2 is implemented as INSERT-only (no UPDATE to existing rows), making it efficient and audit-friendly. New versions are added as new rows with effective dates.",
+      "source": "https://learn.microsoft.com/en-us/fabric/data-factory/slowly-changing-dimension-type-two"
+    },
+    {
+      "misconception": "Entity boundaries in domain-driven design map 1:1 to database tables.",
+      "reality": "Domain entities are business concepts; database tables are storage implementations. Multiple domain entities can map to a single table, or one entity can span multiple tables.",
+      "source": "https://www.cockroachlabs.com/blog/relational-database-entities/"
+    },
+    {
+      "misconception": "Joins are inherently slow; you should denormalize to avoid them.",
+      "reality": "Well-indexed joins on primary/foreign keys are fast. The problem is join explosion (one-to-many producing many-to-many results) and missing indexes, not joins themselves.",
+      "source": "https://datageek.blog/2024/07/23/problematic-query-patterns-in-snowflake-join-explosion/"
+    },
+    {
+      "misconception": "READ UNCOMMITTED isolation level is faster and always acceptable.",
+      "reality": "READ UNCOMMITTED allows dirty reads (reading uncommitted changes), violating data integrity. The performance gain rarely justifies the risk.",
+      "source": "https://www.mssqltips.com/sqlservertip/5431/surrogate-key-vs-natural-key-differences-and-when-to-use-in-sql-server/"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.cockroachlabs.com/blog/relational-database-entities/",
+      "title": "Relational database entities vs. domain-driven design entities",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/fabric/data-factory/slowly-changing-dimension-type-two",
+      "title": "Slowly changing dimension type 2 - Microsoft Fabric",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://xata.io/blog/zero-downtime-schema-migrations-postgresql",
+      "title": "How to perform Postgres schema changes in production with zero downtime",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://www.pingcap.com/blog/effective-online-ddl-database-schema-changes-zero-downtime/",
+      "title": "MySQL Online DDL: Zero-Downtime Schema Changes with TiDB",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://planetscale.com/blog/btrees-and-database-indexes",
+      "title": "B-trees and database indexes — PlanetScale",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://oneuptime.com/blog/post/2026-01-30-data-warehouse-bridge-tables/view",
+      "title": "How to Implement Bridge Tables",
+      "date": "2026",
+      "recency": "recent"
+    },
+    {
+      "url": "https://www.mssqltips.com/sqlservertip/5431/surrogate-key-vs-natural-key-differences-and-when-to-use-in-sql-server/",
+      "title": "Surrogate Key vs Natural Key Differences and When to Use in SQL Server",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://bigbear.ai/blog/bridge-tables-deep-dive/",
+      "title": "Bridge Tables – Deep Dive - BigBear.ai",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://medium.com/@reliabledataengineering/schema-evolution-how-adding-one-column-broke-47-services-a2b062a42c70",
+      "title": "Schema Evolution: How Adding One Column Broke 47 Services",
+      "date": "2026",
+      "recency": "recent"
+    },
+    {
+      "url": "https://www.blog.brightcoding.dev/2025/11/16/the-$4-5-million-database-migration-mistake-and-how-declarative-schema-management-prevents-it",
+      "title": "The $4.5 Million Database Migration Mistake",
+      "date": "2025",
+      "recency": "recent"
+    },
+    {
+      "url": "https://blog.quastor.org/p/architecture-stripes-document-database",
+      "title": "The Architecture of Stripe's Document Database",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://www.cockroachlabs.com/docs/stable/architecture/overview",
+      "title": "CockroachDB Architecture Overview",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://docs.confluent.io/platform/current/schema-registry/fundamentals/schema-evolution.html",
+      "title": "Schema Evolution and Compatibility for Schema Registry",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://kindatechnical.com/sql/surrogate-vs-natural-keys.html",
+      "title": "A Guide to Learning and Mastering SQL - Surrogate vs Natural Keys",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://agiledata.org/essays/keys.html",
+      "title": "Choosing a Primary Key: Natural or Surrogate? - Agile Data",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://dev.to/ari-ghosh/zero-downtime-database-migration-the-definitive-guide-5672",
+      "title": "Zero-Downtime Database Migration: The Complete Engineering Guide",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://medium.com/data-science/data-model-design-101-composite-vs-surrogate-keys-032d8e1defe1",
+      "title": "Data Model Design 101: Composite vs Surrogate Keys",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://datageek.blog/2024/07/23/problematic-query-patterns-in-snowflake-join-explosion/",
+      "title": "Problematic Query Patterns in Snowflake: Join Explosion",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://www.qwertee.io/blog/postgresql-b-tree-index-explained-part-1/",
+      "title": "PostgreSQL B-Tree Index Explained - PART 1",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://medium.com/@sachin.backend.dev/the-7-deadly-database-anti-patterns-every-engineer-should-know-00749feb5d61",
+      "title": "The 7 Deadly Database Anti-Patterns Every Engineer Should Know",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://tapoueh.org/blog/2018/03/database-modelization-anti-patterns/",
+      "title": "Database Modelization Anti-Patterns - The Art of PostgreSQL",
+      "date": "2018",
+      "recency": "older (6 years old, but still relevant for foundational concepts)"
+    },
+    {
+      "url": "https://oneuptime.com/blog/post/2026-01-30-btree-index-design/view",
+      "title": "How to Create B-Tree Index Design",
+      "date": "2026",
+      "recency": "recent"
+    },
+    {
+      "url": "https://datalakehousehub.com/blog/2026-04-29-query-engine-optimization-04-indexing-strategies/",
+      "title": "B-Trees, LSM Trees, and the Indexing Tradeoff Spectrum",
+      "date": "2026",
+      "recency": "recent"
+    },
+    {
+      "url": "https://www.cockroachlabs.com/docs/stable/movr-flask-database.html",
+      "title": "Create a Multi-region Database Schema - CockroachDB",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://neon.com/guides/pgroll",
+      "title": "Zero downtime schema migrations with pgroll - Neon Guides",
+      "date": "2024",
+      "recency": "recent"
+    },
+    {
+      "url": "https://github.com/xataio/pgroll",
+      "title": "pgroll: PostgreSQL zero-downtime migrations made easy",
+      "date": "2024",
+      "recency": "recent"
+    }
+  ]
+}

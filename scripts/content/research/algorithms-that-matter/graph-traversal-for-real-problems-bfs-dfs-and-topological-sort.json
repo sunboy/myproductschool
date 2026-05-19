@@ -1,0 +1,471 @@
+{
+  "facts": [
+    {
+      "fact": "Load factor in hash maps is the ratio n/b (number of entries / array size). Default load factor in Java HashMap is 0.75. When load factor exceeds threshold, hash table rehashes and doubles capacity.",
+      "source": "https://www.baeldung.com/java-hashmap-load-factor",
+      "date": "2024"
+    },
+    {
+      "fact": "With exponential growth (doubling), the total time to insert n elements is O(n). This is because rehashing happens at operations 1, 2, 4, ..., 2^k, with cumulative copy cost of at most 2n element operations.",
+      "source": "https://www.cs.cornell.edu/courses/cs312/2008sp/lectures/lec20.html",
+      "date": "2023"
+    },
+    {
+      "fact": "Java 8+ uses Red-Black trees instead of LinkedList for collision chains in hash maps, improving worst-case collision handling from O(n) to O(log n) lookup time.",
+      "source": "https://www.baeldung.com/java-hashmap-load-factor",
+      "date": "2024"
+    },
+    {
+      "fact": "Binary search bug in calculating mid=(left+right)/2 caused integer overflow and remained undetected for 20 years. Correct formula: mid = left + (right - left) / 2 prevents overflow.",
+      "source": "https://medium.com/explain-it-to-grandma/this-is-why-your-binary-search-code-is-broken-6aeb14958ed6",
+      "date": "2023"
+    },
+    {
+      "fact": "DFS and BFS both have time complexity O(V+E) when using adjacency list representation. BFS uses a queue; DFS uses a stack or recursion.",
+      "source": "https://www.baeldung.com/cs/adjacency-matrix-list-complexity",
+      "date": "2024"
+    },
+    {
+      "fact": "Adjacency matrix representation has O(V²) time complexity for DFS/BFS and O(V²) space complexity because finding neighbors requires scanning entire row.",
+      "source": "https://dev.to/akashdeep/big-o-complexity-for-graphs-adjacency-matrix-vs-adjacency-list-3akf",
+      "date": "2023"
+    },
+    {
+      "fact": "Kahn's algorithm for topological sort detects cycles: if any vertex's in-degree never becomes 0, the graph contains a cycle (not a DAG).",
+      "source": "https://www.geeksforgeeks.org/dsa/kahns-algorithm-vs-dfs-approach-a-comparative-analysis/",
+      "date": "2024"
+    },
+    {
+      "fact": "Topological sort has O(V+E) time complexity for both DFS and Kahn's algorithm approaches.",
+      "source": "https://medium.com/tech-and-ai-guild/day-6-topological-sort-dfs-vs-kahns-algo-3f21e622b6a2",
+      "date": "2023"
+    },
+    {
+      "fact": "Tree structures have distinct characteristics: BSTs support ordered range queries at O(log n) on balanced trees; heaps provide O(log n) insertion/removal but O(n) lookup; tries provide O(k) string operations where k=length of key.",
+      "source": "https://dev.to/imsushant12/tree-vs-trie-understanding-the-differences-and-use-cases-1430",
+      "date": "2023"
+    },
+    {
+      "fact": "Trie prefix search time complexity is O(p+n) where p=length of prefix and n=number of words sharing that prefix. Insertion is O(k) where k=word length.",
+      "source": "https://www.geeksforgeeks.org/dsa/auto-complete-feature-using-trie/",
+      "date": "2024"
+    },
+    {
+      "fact": "BFS is optimal for finding shortest paths in unweighted graphs. Path can be reconstructed by tracking parent nodes during traversal.",
+      "source": "https://www.c-sharpcorner.com/article/what-is-graph-algorithms-bfs-dfs-and-shortest-path-with-examples",
+      "date": "2023"
+    },
+    {
+      "fact": "BFS cycle detection in undirected graphs: visit all components and check if a visited node's parent is different from current parent. If found, cycle exists.",
+      "source": "https://www.geeksforgeeks.org/dsa/detect-cycle-in-an-undirected-graph-using-bfs/",
+      "date": "2024"
+    },
+    {
+      "fact": "For append-heavy data structures (vectors/ArrayLists), amortized O(1) insertion is achieved with exponential growth factor. Java ArrayList uses 1.5x growth (fewer allocations, less wasted space). C++ std::vector uses 2x growth.",
+      "source": "https://www.educative.io/blog/why-vector-in-cpp-is-so-fast",
+      "date": "2024"
+    },
+    {
+      "fact": "Vector growth with factor a has average insertion cost of a/(a-1) time and (a-1)n wasted cells. Golden ratio (1.618) and 1.5 have been proposed; 2x is standard for simplicity.",
+      "source": "https://mortoray.com/the-amortized-cost-of-vector-insert-is-3/",
+      "date": "2022"
+    },
+    {
+      "fact": "Bottom-up DP for Fibonacci achieves O(1) space by tracking only two prior values instead of full table. Converts O(n) space memoization to rolling window.",
+      "source": "https://www.baeldung.com/cs/fibonacci-top-down-vs-bottom-up-dynamic-programming",
+      "date": "2024"
+    },
+    {
+      "fact": "Recursive to iterative DP conversion: identify state dependencies, build solution from base cases upward in tabulation table, apply rolling-window optimization if state only depends on previous k values.",
+      "source": "https://www.interviewcake.com/concept/java/bottom-up",
+      "date": "2024"
+    },
+    {
+      "fact": "Netflix graph system (NetflixGraph) handles 650TB of graph data with millisecond latency. Processes service topology graphs for dependency analysis during incident investigation.",
+      "source": "https://www.infoq.com/news/2026/03/netflix-graph-abstraction/",
+      "date": "2026"
+    },
+    {
+      "fact": "Airbnb uses Apache Airflow with DAG (Directed Acyclic Graph) structure for task orchestration. Dependencies between tasks define graph structure.",
+      "source": "https://medium.com/airbnb-engineering/scaling-a-mature-data-pipeline-managing-overhead-f34835cbc866",
+      "date": "2022"
+    },
+    {
+      "fact": "Package managers (apt, yum) and build systems (Make, Maven) use topological sort to resolve dependencies and determine safe compilation order.",
+      "source": "https://www.linkedin.com/advice/0/what-some-real-world-applications-topological-sort",
+      "date": "2024"
+    },
+    {
+      "fact": "Separate chaining collision handling: allows load factor >1, inserts remain O(1), but longer chains degrade search to O(n). Java 8+ uses balanced trees instead of linked lists.",
+      "source": "https://www.geeksforgeeks.org/dsa/separate-chaining-collision-handling-technique-in-hashing/",
+      "date": "2024"
+    },
+    {
+      "fact": "Open addressing collision handling: maintains cache locality, but suffers from clustering. Typical load factors capped at 50% (vs 100% for chaining). Used in Python dicts and JavaScript objects.",
+      "source": "https://programming.guide/hash-tables-open-vs-closed-addressing.html",
+      "date": "2023"
+    }
+  ],
+  "examples": [
+    {
+      "example": "Google Search and VS Code use tries for autocomplete. When user types 'pro', system instantly suggests 'programming', 'project', 'process' via prefix traversal.",
+      "source": "https://medium.com/@hanxuyang0826/tries-demystified-how-this-simple-data-structure-powers-autocomplete-and-more-95e608bcab7d",
+      "date": "2024"
+    },
+    {
+      "example": "Netflix incident response: engineers use NetflixGraph to analyze service dependencies and trace root cause. Handles 650TB data globally at millisecond latency.",
+      "source": "https://www.infoq.com/news/2026/03/netflix-graph-abstraction/",
+      "date": "2026"
+    },
+    {
+      "example": "During 2024-2025 placement season, 68% of top companies (Google, Amazon, Microsoft) asked at least one DFS/BFS difference question.",
+      "source": "https://www.ai-futureschool.com/en/programming/graph-algorithms-explained-bfs-dfs-and-dijkstra-techniques-2024.php",
+      "date": "2024"
+    },
+    {
+      "example": "Airbnb data pipeline uses topological sort in Airflow DAGs to schedule 1000+ dependencies. Critical path analysis determines minimum project duration.",
+      "source": "https://medium.com/airbnb-engineering/scaling-a-mature-data-pipeline-managing-overhead-f34835cbc866",
+      "date": "2022"
+    },
+    {
+      "example": "Java HashMap default load factor 0.75 triggers resize when 75% full. Initial capacity 16 doubles to 32 when 12 elements added (0.75 * 16 = 12).",
+      "source": "https://www.baeldung.com/java-hashmap-load-factor",
+      "date": "2024"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Load factor in hash maps is like classroom occupancy: at 75% capacity, add more desks (rehash). Too high = hard to find seats (collisions); too low = wasted space.",
+      "source": "https://www.baeldung.com/java-hashmap-load-factor",
+      "date": "2024"
+    },
+    {
+      "analogy": "BFS is like ripples spreading outward in water—explores all neighbors at distance 1 before moving to distance 2. DFS is like threading a maze—follow one path to the end, backtrack if stuck.",
+      "source": "https://opendsa-server.cs.vt.edu/ODSA/Books/Everything/html/GraphTraversal.html",
+      "date": "2023"
+    },
+    {
+      "analogy": "Tries are like directory structures in file systems: 'pro' is the directory, and 'programming', 'project', 'process' are files within. Prefix becomes a natural hierarchy.",
+      "source": "https://dev.to/devkumarweb/unlocking-efficient-search-a-web-developers-guide-to-tries-prefix-trees-19i3",
+      "date": "2024"
+    },
+    {
+      "analogy": "Topological sort is like ordering tasks by dependencies: before baking a cake, buy ingredients first. Sort resolves 'who depends on whom' into a linear order.",
+      "source": "https://medium.com/@amit.anjani89/topological-sorting-explained-a-step-by-step-guide-for-dependency-resolution-1a6af382b065",
+      "date": "2023"
+    },
+    {
+      "analogy": "Vector exponential growth is like restaurant seating: start with 4 tables. When full, rent space for 8 (not 5). Doubling spreads rehashing cost over many cheap insertions.",
+      "source": "https://yourbasic.org/algorithms/amortized-time-complexity-analysis/",
+      "date": "2024"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Java HashMap default load factor",
+      "value": "0.75",
+      "context": "When size exceeds 0.75 * capacity, HashMap rehashes to double capacity.",
+      "source": "https://www.baeldung.com/java-hashmap-load-factor",
+      "date": "2024"
+    },
+    {
+      "metric": "BFS/DFS time complexity",
+      "value": "O(V+E)",
+      "context": "Both achieve linear time visiting V vertices and E edges exactly once with adjacency list.",
+      "source": "https://www.baeldung.com/cs/adjacency-matrix-list-complexity",
+      "date": "2024"
+    },
+    {
+      "metric": "DFS/BFS space complexity (adjacency list)",
+      "value": "O(V)",
+      "context": "For recursion stack (DFS) or queue (BFS), at most O(V) nodes stored.",
+      "source": "https://dev.to/akashdeep/big-o-complexity-for-graphs-adjacency-matrix-vs-adjacency-list-3akf",
+      "date": "2023"
+    },
+    {
+      "metric": "Adjacency matrix time complexity for DFS",
+      "value": "O(V^2)",
+      "context": "Must scan entire row for each vertex to find neighbors, even in sparse graphs.",
+      "source": "https://www.baeldung.com/cs/adjacency-matrix-list-complexity",
+      "date": "2024"
+    },
+    {
+      "metric": "Trie insertion/search time",
+      "value": "O(k)",
+      "context": "k = length of key being inserted or searched; no hash collisions.",
+      "source": "https://www.geeksforgeeks.org/dsa/auto-complete-feature-using-trie/",
+      "date": "2024"
+    },
+    {
+      "metric": "Trie prefix search time",
+      "value": "O(p+n)",
+      "context": "p = prefix length, n = number of words with that prefix.",
+      "source": "https://www.baeldung.com/cs/tries-prefix-trees",
+      "date": "2024"
+    },
+    {
+      "metric": "Binary search time complexity",
+      "value": "O(log n)",
+      "context": "Each iteration halves search space; applicable to non-array sorted spaces (answer spaces).",
+      "source": "https://www.techiedelight.com/binary-search/",
+      "date": "2024"
+    },
+    {
+      "metric": "Recursive binary search space complexity",
+      "value": "O(log n)",
+      "context": "Due to call stack depth; iterative version is O(1).",
+      "source": "https://iq.opengenus.org/binary-search-iterative-recursive/",
+      "date": "2023"
+    },
+    {
+      "metric": "Balanced BST lookup time",
+      "value": "O(log n)",
+      "context": "Unbalanced BST degrades to O(n) in worst case (e.g., sorted input).",
+      "source": "https://www.baeldung.com/cs/heap-vs-binary-search-tree",
+      "date": "2024"
+    },
+    {
+      "metric": "Heap insertion/deletion time",
+      "value": "O(log n)",
+      "context": "Min/max extraction is O(1); general search is O(n).",
+      "source": "https://www.baeldung.com/cs/heap-vs-binary-search-tree",
+      "date": "2024"
+    },
+    {
+      "metric": "Vector amortized insertion cost",
+      "value": "3x element copies",
+      "context": "With doubling growth factor: n copies for inserts + n+n/2+n/4+... = 2n rehashing copies = 3n total.",
+      "source": "https://mortoray.com/the-amortized-cost-of-vector-insert-is-3/",
+      "date": "2022"
+    },
+    {
+      "metric": "ArrayList growth factor (Java)",
+      "value": "1.5x",
+      "context": "Fewer allocations than 1.25x, less waste than 2x; balances time and space.",
+      "source": "https://www.educative.io/blog/why-vector-in-cpp-is-so-fast",
+      "date": "2024"
+    },
+    {
+      "metric": "Separate chaining max load factor",
+      "value": "1.0 (or higher)",
+      "context": "Can accept more elements than array size; longer chains degrade to O(n) search.",
+      "source": "https://programming.guide/hash-tables-open-vs-closed-addressing.html",
+      "date": "2023"
+    },
+    {
+      "metric": "Open addressing max load factor",
+      "value": "0.5",
+      "context": "Clustering and probe distance grow rapidly above 50%.",
+      "source": "https://programming.guide/hash-tables-open-vs-closed-addressing.html",
+      "date": "2023"
+    },
+    {
+      "metric": "Netflix graph data volume",
+      "value": "650TB",
+      "context": "Stored and queried at millisecond latency using NetflixGraph abstraction.",
+      "source": "https://www.infoq.com/news/2026/03/netflix-graph-abstraction/",
+      "date": "2026"
+    },
+    {
+      "metric": "Company interview prevalence for DFS/BFS",
+      "value": "68%",
+      "context": "Percentage of top 100 companies (Google, Amazon, Microsoft, etc.) that asked DFS/BFS questions in 2024-2025 placement season.",
+      "source": "https://www.ai-futureschool.com/en/programming/graph-algorithms-explained-bfs-dfs-and-dijkstra-techniques-2024.php",
+      "date": "2024"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Hash table load factor >1 always causes poor performance.",
+      "truth": "Separate chaining allows load factor >1 with acceptable performance until chains become very long. Open addressing (used in Python/JS) caps at ~0.5 for clustering reasons.",
+      "source": "https://programming.guide/hash-tables-open-vs-closed-addressing.html",
+      "date": "2023"
+    },
+    {
+      "misconception": "DFS and BFS have different time complexities.",
+      "truth": "Both are O(V+E) with adjacency lists, O(V^2) with adjacency matrices. The difference is traversal order (depth-first vs breadth-first), not runtime.",
+      "source": "https://www.baeldung.com/cs/adjacency-matrix-list-complexity",
+      "date": "2024"
+    },
+    {
+      "misconception": "Binary search only works on arrays.",
+      "truth": "Binary search applies to any sorted space with O(1) random access. Examples: answer spaces in optimization, rotated arrays, ranges in search.",
+      "source": "https://www.techiedelight.com/binary-search/",
+      "date": "2024"
+    },
+    {
+      "misconception": "Binary search mid calculation (left+right)/2 is safe.",
+      "truth": "Causes integer overflow in fixed-size integers. Correct formula: mid = left + (right - left) / 2. Bug remained undetected for 20 years.",
+      "source": "https://medium.com/explain-it-to-grandma/this-is-why-your-binary-search-code-is-broken-6aeb14958ed6",
+      "date": "2023"
+    },
+    {
+      "misconception": "Tries use more memory than hash tables for string storage.",
+      "truth": "Tries compress common prefixes (e.g., 'pro' shared by 'programming', 'project'). Trade-off: per-node overhead vs prefix reuse. Both have valid use cases.",
+      "source": "https://www.geeksforgeeks.org/dsa/trie-insert-and-search/",
+      "date": "2024"
+    },
+    {
+      "misconception": "Topological sort only applies to project management.",
+      "truth": "Used in package managers (apt, yum), build systems (Make, Maven), blockchain transaction ordering, autonomous vehicles, and IoT scheduling.",
+      "source": "https://medium.com/@amit.anjani89/topological-sorting-explained-a-step-by-step-guide-for-dependency-resolution-1a6af382b065",
+      "date": "2023"
+    },
+    {
+      "misconception": "Doubling vector capacity is wasteful.",
+      "truth": "Doubling spreads rehashing amortized cost over many insertions (O(1) amortized), making it efficient. Sub-geometric growth (e.g., +1) results in O(n) amortized cost.",
+      "source": "https://yourbasic.org/algorithms/amortized-time-complexity-analysis/",
+      "date": "2024"
+    },
+    {
+      "misconception": "Recursive DP is always better because it's intuitive.",
+      "truth": "Recursive DP (memoization) uses O(log n) stack space. Bottom-up DP can be O(1) space with rolling window optimization, even for Fibonacci.",
+      "source": "https://www.baeldung.com/cs/fibonacci-top-down-vs-bottom-up-dynamic-programming",
+      "date": "2024"
+    },
+    {
+      "misconception": "Kahn's algorithm and DFS topological sort have different time complexities.",
+      "truth": "Both are O(V+E). Kahn's is preferred for cycle detection; DFS is preferred for recursive clarity.",
+      "source": "https://medium.com/tech-and-ai-guild/day-6-topological-sort-dfs-vs-kahns-algo-3f21e622b6a2",
+      "date": "2023"
+    },
+    {
+      "misconception": "BFS shortest path only works if all edges have weight 1.",
+      "truth": "BFS shortest path assumes unweighted graphs (all edges cost 1). Weighted graphs require Dijkstra's algorithm.",
+      "source": "https://www.c-sharpcorner.com/article/what-is-graph-algorithms-bfs-dfs-and-shortest-path-with-examples",
+      "date": "2023"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.baeldung.com/java-hashmap-load-factor",
+      "title": "Java HashMap Load Factor",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://www.cs.cornell.edu/courses/cs312/2008sp/lectures/lec20.html",
+      "title": "CS 312 Lecture 20: Hash tables and amortized analysis",
+      "recency": "2008 — foundational, still accurate"
+    },
+    {
+      "url": "https://medium.com/explain-it-to-grandma/this-is-why-your-binary-search-code-is-broken-6aeb14958ed6",
+      "title": "Fix the Binary Search Overflow Bug",
+      "recency": "2023 — current"
+    },
+    {
+      "url": "https://www.baeldung.com/cs/adjacency-matrix-list-complexity",
+      "title": "Time and Space Complexity of Adjacency Matrix and List",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://dev.to/akashdeep/big-o-complexity-for-graphs-adjacency-matrix-vs-adjacency-list-3akf",
+      "title": "Big O Complexity for Graphs: Adjacency Matrix vs Adjacency List",
+      "recency": "2023 — current"
+    },
+    {
+      "url": "https://dev.to/imsushant12/tree-vs-trie-understanding-the-differences-and-use-cases-1430",
+      "title": "Tree vs Trie: Understanding the Differences and Use Cases",
+      "recency": "2023 — current"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/auto-complete-feature-using-trie/",
+      "title": "Auto-complete feature using Trie",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://opendsa-server.cs.vt.edu/ODSA/Books/Everything/html/GraphTraversal.html",
+      "title": "19.3. Graph Traversals — OpenDSA",
+      "recency": "2023 — academic reference"
+    },
+    {
+      "url": "https://yourbasic.org/algorithms/amortized-time-complexity-analysis/",
+      "title": "Amortized time complexity analysis",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://mortoray.com/the-amortized-cost-of-vector-insert-is-3/",
+      "title": "The amortized cost of vector insert is 3",
+      "recency": "2022 — recent"
+    },
+    {
+      "url": "https://www.educative.io/blog/why-vector-in-cpp-is-so-fast",
+      "title": "Why Vector (In C++) And Arraylist (In Java) Are So Fast",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://medium.com/@hanxuyang0826/tries-demystified-how-this-simple-data-structure-powers-autocomplete-and-more-95e608bcab7d",
+      "title": "Tries Demystified: How This Simple Data Structure Powers Autocomplete",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/load-factor-in-hashmap-in-java-with-examples/",
+      "title": "Load Factor in HashMap in Java with Examples",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://programming.guide/hash-tables-open-vs-closed-addressing.html",
+      "title": "Hash Tables: Open vs Closed Addressing",
+      "recency": "2023 — current"
+    },
+    {
+      "url": "https://www.infoq.com/news/2026/03/netflix-graph-abstraction/",
+      "title": "Inside Netflix's Graph Abstraction: Handling 650TB of Graph Data",
+      "recency": "2026 — very recent"
+    },
+    {
+      "url": "https://medium.com/airbnb-engineering/scaling-a-mature-data-pipeline-managing-overhead-f34835cbc866",
+      "title": "Scaling a Mature Data Pipeline — Managing Overhead (Airbnb)",
+      "recency": "2022 — recent"
+    },
+    {
+      "url": "https://www.c-sharpcorner.com/article/what-is-graph-algorithms-bfs-dfs-and-shortest-path-with-examples",
+      "title": "What is Graph Algorithms: BFS, DFS, and Shortest Path with Examples",
+      "recency": "2023 — current"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/detect-cycle-in-an-undirected-graph-using-bfs/",
+      "title": "Detect cycle in an undirected graph using BFS",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/kahns-algorithm-vs-dfs-approach-a-comparative-analysis/",
+      "title": "Kahn's Algorithm vs DFS Approach: A Comparative Analysis",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://medium.com/tech-and-ai-guild/day-6-topological-sort-dfs-vs-kahns-algo-3f21e622b6a2",
+      "title": "Topological Sort: DFS vs Kahn's Algorithm",
+      "recency": "2023 — current"
+    },
+    {
+      "url": "https://www.baeldung.com/cs/fibonacci-top-down-vs-bottom-up-dynamic-programming",
+      "title": "Fibonacci: Top-Down vs Bottom-Up Dynamic Programming",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://www.interviewcake.com/concept/java/bottom-up",
+      "title": "Bottom-Up Algorithms and Dynamic Programming",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://www.techiedelight.com/binary-search/",
+      "title": "Binary Search Algorithm – Iterative and Recursive Implementation",
+      "recency": "2024 — current"
+    },
+    {
+      "url": "https://iq.opengenus.org/binary-search-iterative-recursive/",
+      "title": "Iterative and Recursive Binary Search Algorithm",
+      "recency": "2023 — current"
+    },
+    {
+      "url": "https://medium.com/@amit.anjani89/topological-sorting-explained-a-step-by-step-guide-for-dependency-resolution-1a6af382b065",
+      "title": "Topological Sorting Explained: A Step-by-Step Guide",
+      "recency": "2023 — current"
+    },
+    {
+      "url": "https://www.ai-futureschool.com/en/programming/graph-algorithms-explained-bfs-dfs-and-dijkstra-techniques-2024.php",
+      "title": "Graph Algorithms Explained BFS DFS and Dijkstra Techniques 2024",
+      "recency": "2024 — current"
+    }
+  ]
+}

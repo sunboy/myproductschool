@@ -1,0 +1,395 @@
+{
+  "facts": [
+    {
+      "fact": "Merge intervals algorithm uses a sort-then-sweep strategy where intervals are sorted by start time (O(n log n)), then merged in a single O(n) pass by comparing each interval with only the most recently merged interval",
+      "source": "https://algo.monster/liteproblems/56",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Sliding window technique reduces time complexity from O(n²) for nested-loop substring problems to O(n) by maintaining a dynamic window with two pointers that expand and contract based on conditions",
+      "source": "https://www.geeksforgeeks.org/dsa/window-sliding-technique/",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Monotonic stack achieves O(n) time complexity for range queries despite nested loops because each element is pushed and popped from the stack exactly once, not multiple times",
+      "source": "https://www.baeldung.com/cs/monotonic-stack",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Prefix sum preprocessing enables O(n) precomputation followed by O(1) per-query answering for range sum problems, making total complexity O(n + q) for n elements and q queries",
+      "source": "https://usaco.guide/silver/prefix-sums",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Two sum problem demonstrates space-time tradeoff: brute force is O(n²) time and O(1) space, while hash map approach is O(n) time and O(n) space",
+      "source": "https://www.freecodecamp.org/news/what-is-a-hash-map/",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Overlap detection for sorted intervals uses condition: start₂ ≤ end₁ (if intervals A and B are sorted by start time, they overlap if B's start is less than or equal to A's end)",
+      "source": "https://algomaster.io/learn/dsa/intervals-introduction",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Interval tree achieves O(log n + k) lookup time for finding all k intervals that overlap with a query interval, compared to O(n log n) storage for segment trees and O(n) storage for interval trees",
+      "source": "https://www.baeldung.com/cs/tree-segment-interval-range-binary-indexed",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Longest substring without repeating characters problem uses sliding window with hash map to track last-seen index of each character, enabling O(n) time and O(min(n, m)) space where m is unique character count",
+      "source": "https://medium.com/@houssemeddinefadhli81/mastering-the-sliding-window-technique-longest-substring-without-repeating-characters-7ab4340d304d",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Next greater element problem uses monotonic decreasing stack with O(n) time complexity by traversing array right-to-left and popping elements smaller than current before checking stack top",
+      "source": "https://leetcode.com/discuss/post/2347639/a-comprehensive-guide-and-template-for-m-irii/",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Google Calendar room booking treats each room as a 'Resource' with its own email address; when a room 'accepts' a calendar invitation, it is booked, enabling conflict detection at reservation time",
+      "source": "https://www.educative.io/blog/google-calendar-system-design",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Earliest deadline first scheduling greedy algorithm solves interval scheduling in O(n log n) time by selecting intervals with earliest finishing times first and removing all intersecting intervals",
+      "source": "https://courses.cs.duke.edu/fall17/compsci330/lecture7note.pdf",
+      "publication_date": "2017"
+    },
+    {
+      "fact": "LeetCode 56 (Merge Intervals) is Medium difficulty and has been asked by Meta, Google, and Amazon in coding interviews; it is a canonical greedy algorithm pattern",
+      "source": "https://leetcode.com/problems/merge-intervals/",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Fixed-length sliding window calculates initial window metric once, then slides by adding entering element and subtracting exiting element, maintaining O(n) total time",
+      "source": "https://techwithkp.com/sliding-window-algorithm-fixed-and-variable-length-solutions/",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Variable-length sliding window uses two pointers (left/right) that expand and contract based on condition validity; when condition becomes invalid, left pointer increments until condition is valid again",
+      "source": "https://algomap.io/lessons/sliding-window",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Segment tree optimized for point queries on arrays with O(log n) range query time; interval tree optimized for overlap queries with O(log n + k) lookup for k results",
+      "source": "https://www.baeldung.com/cs/tree-segment-interval-range-binary-indexed",
+      "publication_date": "2025"
+    }
+  ],
+  "examples": [
+    {
+      "example": "Google Calendar meeting room scheduling uses merge intervals to consolidate user busy times and find free slots; a user's calendar with meetings [9-10], [10-11], [11-12] merges to a single 3-hour busy block [9-12]",
+      "source": "https://www.educative.io/blog/google-calendar-system-design",
+      "company": "Google"
+    },
+    {
+      "example": "LeetCode 1229 (Meeting Scheduler) asks for common time slots between two people's calendars by merging their busy intervals and finding gaps; typical company interviews: Meta, Google, Amazon",
+      "source": "https://algo.monster/liteproblems/1229",
+      "company": "Meta/Google/Amazon"
+    },
+    {
+      "example": "Genomic data analysis uses interval trees to find all genetic markers that overlap a query region, essential for DNA sequence alignment and variant calling in bioinformatics pipelines",
+      "source": "https://www.cs.cmu.edu/~ckingsf/bioinfo-lectures/intervaltrees.pdf",
+      "company": "Broad Institute/NIH"
+    },
+    {
+      "example": "Stripe payment processing uses sliding window rate limiting to track API calls: a window of 'last 60 seconds' slides as time passes, rejecting calls that exceed threshold",
+      "source": "https://builtin.com/data-science/sliding-window-algorithm",
+      "company": "Stripe"
+    },
+    {
+      "example": "Database query optimization uses prefix sums to compute range aggregates: PostgreSQL range query on sales table [Jan-Dec] with Q4 subquery uses prefix sum on monthly chunks for O(1) Q4 result",
+      "source": "https://medium.com/@chetanshingare2991/mastering-the-prefix-sum-design-pattern-a-step-by-step-guide-a7e369e68ea7",
+      "company": "PostgreSQL"
+    },
+    {
+      "example": "Longest substring without repeating characters problem: for string 'abcabcbb', sliding window+hash map finds 'abc' in O(n) time by tracking character indices and moving left pointer when duplicate found",
+      "source": "https://neetcode.io/problems/longest-substring-without-duplicates/question",
+      "company": "LeetCode"
+    },
+    {
+      "example": "Next greater element in array [2,1,2,4,3]: using monotonic decreasing stack, result is [4,2,4,-1,-1] in O(n) time (not O(n²) nested loop approach)",
+      "source": "https://www.geeksforgeeks.org/dsa/next-greater-element/",
+      "company": "GeeksforGeeks"
+    },
+    {
+      "example": "Netflix content scheduling uses interval merging to identify contiguous broadcast time slots where multiple shows can run without conflict",
+      "source": "https://medium.com/@piyushkashyap045/master-the-merge-intervals-pattern-your-secret-weapon-for-coding-interviews-aec54eb9023b",
+      "company": "Netflix"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Sliding window is like a train car moving along a track—the window (car) has fixed capacity, and as it moves forward, passengers board at the front and exit at the back, with the total load always computed incrementally",
+      "applies_to": "sliding window pattern"
+    },
+    {
+      "analogy": "Monotonic stack resembles a stack of plates where you can only add/remove from the top; if a new plate is larger than the top plate, the top plate is meaningless for future 'next greater' queries and is removed",
+      "applies_to": "monotonic stack"
+    },
+    {
+      "analogy": "Prefix sum is like a cumulative receipt—instead of summing every purchase from scratch, you carry a running total; range sum is just 'total at position B' minus 'total at position A'",
+      "applies_to": "prefix sum pattern"
+    },
+    {
+      "analogy": "Merge intervals is like consolidating adjacent conference rooms into a single large meeting space; if two rooms' booking times overlap, they become one larger room reservation",
+      "applies_to": "merge intervals"
+    },
+    {
+      "analogy": "Two-pointer technique is like two detectives searching a sorted street from opposite ends—if they don't meet in the middle, they have converged on the solution without checking every building",
+      "applies_to": "two pointer technique"
+    },
+    {
+      "analogy": "Hash map in sliding window is like a rolling clipboard tracking which employees are in the 'current office zone'—when you move the window, you update the clipboard instantly instead of recounting everyone",
+      "applies_to": "sliding window + hash map combination"
+    },
+    {
+      "analogy": "Interval tree is like a library catalog indexed by time ranges—asking 'which books were published between 2020-2023?' is O(log n + k) not O(n) because the index skips irrelevant branches",
+      "applies_to": "interval tree"
+    },
+    {
+      "analogy": "Sorting for merge intervals is like alphabetizing a messy filing cabinet first—once sorted, overlapping files naturally sit next to each other, so you can merge in one pass instead of comparing everything",
+      "applies_to": "merge intervals sorting importance"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Merge intervals time complexity after sorting",
+      "value": "O(n log n)",
+      "context": "Sorting dominates the linear O(n) merge pass; optimal for general case with no pre-sorted constraint",
+      "source": "https://algo.monster/liteproblems/56"
+    },
+    {
+      "metric": "Sliding window time complexity",
+      "value": "O(n)",
+      "context": "Single pass through array with two pointers; dramatic improvement from O(n²) nested loops",
+      "source": "https://www.geeksforgeeks.org/dsa/window-sliding-technique/"
+    },
+    {
+      "metric": "Monotonic stack per-element operations",
+      "value": "2 (push once, pop once)",
+      "context": "Each element touches the stack exactly twice, yielding O(n) total operations despite nested loop appearance",
+      "source": "https://www.baeldung.com/cs/monotonic-stack"
+    },
+    {
+      "metric": "Prefix sum preprocessing time",
+      "value": "O(n)",
+      "context": "One-time cost to build prefix array; amortized across q queries yields O(n + q) total",
+      "source": "https://usaco.guide/silver/prefix-sums"
+    },
+    {
+      "metric": "Prefix sum query time after preprocessing",
+      "value": "O(1)",
+      "context": "Range sum via prefix[r] - prefix[l-1] requires constant time lookup regardless of range size",
+      "source": "https://usaco.guide/silver/prefix-sums"
+    },
+    {
+      "metric": "Hash map two sum space complexity",
+      "value": "O(n)",
+      "context": "Stores entire input array as hash table; trades O(n) space for O(n) time vs O(n²) brute force",
+      "source": "https://www.freecodecamp.org/news/what-is-a-hash-map/"
+    },
+    {
+      "metric": "Interval tree overlap query time",
+      "value": "O(log n + k)",
+      "context": "log n to find first overlap, plus k results returned; more efficient than O(n) scan for small k",
+      "source": "https://www.baeldung.com/cs/tree-segment-interval-range-binary-indexed"
+    },
+    {
+      "metric": "Interval tree insertion/deletion time",
+      "value": "O(log n) average, O(n) worst case",
+      "context": "Self-balancing tree operations; worst case when tree becomes skewed",
+      "source": "https://www.baeldung.com/cs/tree-segment-interval-range-binary-indexed"
+    },
+    {
+      "metric": "Interval tree storage complexity",
+      "value": "O(n)",
+      "context": "Stores n intervals in balanced tree; more efficient than segment tree O(n log n)",
+      "source": "https://www.baeldung.com/cs/tree-segment-interval-range-binary-indexed"
+    },
+    {
+      "metric": "LeetCode 56 difficulty rating",
+      "value": "Medium",
+      "context": "Canonical interview problem asked by Meta, Google, Amazon; requires pattern recognition in ~2 minutes",
+      "source": "https://leetcode.com/problems/merge-intervals/"
+    },
+    {
+      "metric": "Earliest deadline first scheduling complexity",
+      "value": "O(n log n)",
+      "context": "Greedy algorithm with preprocessing step of sorting by finishing times",
+      "source": "https://courses.cs.duke.edu/fall17/compsci330/lecture7note.pdf"
+    },
+    {
+      "metric": "Two sum brute force time complexity",
+      "value": "O(n²)",
+      "context": "Checks every pair; improved to O(n) with hash map at cost of O(n) space",
+      "source": "https://www.freecodecamp.org/news/what-is-a-hash-map/"
+    },
+    {
+      "metric": "Longest substring without repeating space complexity",
+      "value": "O(min(n, m))",
+      "context": "Hash map stores only unique characters seen so far; m = alphabet size, n = string length",
+      "source": "https://medium.com/@houssemeddinefadhli81/mastering-the-sliding-window-technique-longest-substring-without-repeating-characters-7ab4340d304d"
+    },
+    {
+      "metric": "Next greater element time complexity improvement",
+      "value": "O(n²) → O(n)",
+      "context": "Brute force compares each element with all right-side elements; monotonic stack achieves linear by eliminating redundant comparisons",
+      "source": "https://www.geeksforgeeks.org/dsa/next-greater-element/"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "All nested loops are O(n²) time complexity",
+      "reality": "Nested loops with monotonic stacks, sliding windows, or two pointers are O(n) because each element is processed a constant number of times, not n times",
+      "source": "https://medium.com/@samyuktha1262/think-nested-loops-are-always-o-n%C2%B2-think-again-7f1a41640e74"
+    },
+    {
+      "misconception": "Sorting is unnecessary overhead for merge intervals; just compare all pairs",
+      "reality": "Sorting is critical: O(n log n) sorting guarantees overlapping intervals sit adjacent, enabling one O(n) pass instead of O(n²) pairwise comparisons",
+      "source": "https://www.linkedin.com/pulse/mastering-merge-intervals-problem-approach-complexity-adjanohoun-vbhdc"
+    },
+    {
+      "misconception": "Sliding window requires knowing exact window size in advance",
+      "reality": "Variable-length sliding window dynamically adjusts window size based on validity conditions; size is not predetermined",
+      "source": "https://algomap.io/lessons/sliding-window"
+    },
+    {
+      "misconception": "Hash map always has O(1) lookup; time complexity is always O(1)",
+      "reality": "Hash map has O(1) average case but O(n) worst case on collision; in sliding window, the amortized cost is O(1) per operation across the entire pass",
+      "source": "https://www.freecodecamp.org/news/what-is-a-hash-map/"
+    },
+    {
+      "misconception": "Interval tree and segment tree are the same data structure",
+      "reality": "Interval tree optimizes overlap queries O(log n + k); segment tree optimizes point queries and range sum O(log n). Interval tree uses O(n) space; segment tree uses O(n log n)",
+      "source": "https://www.baeldung.com/cs/tree-segment-interval-range-binary-indexed"
+    },
+    {
+      "misconception": "Prefix sum only works for addition; not applicable to other operations",
+      "reality": "Prefix sum technique applies to any associative operation: product, XOR, bitwise OR, etc.",
+      "source": "https://medium.com/@chetanshingare2991/mastering-the-prefix-sum-design-pattern-a-step-by-step-guide-a7e369e68ea7"
+    },
+    {
+      "misconception": "Monotonic stack is only for 'next greater element' problems",
+      "reality": "Monotonic stack applies to: next greater/smaller, previous greater/smaller, largest rectangle in histogram, trapping rain water, and other range query problems",
+      "source": "https://leetcode.com/discuss/post/2347639/a-comprehensive-guide-and-template-for-m-irii/"
+    },
+    {
+      "misconception": "Two pointer technique is the same as sliding window",
+      "reality": "Two pointers compare values at pointers and move independently (pair problems, sorted arrays); sliding window maintains validity between pointers (subarray/substring problems)",
+      "source": "https://medium.com/geekculture/two-pointer-vs-sliding-window-460133eb9228"
+    },
+    {
+      "misconception": "Adjacent intervals like [1,2] and [2,3] should not merge",
+      "reality": "Adjacent intervals with touching boundaries (end of first = start of second) must merge to [1,3] in calendar/booking systems to accurately consolidate time",
+      "source": "https://algo.monster/liteproblems/56"
+    },
+    {
+      "misconception": "Pattern recognition for merge intervals is hard; no universal signal",
+      "reality": "Keywords 'overlapping intervals', 'merging', 'consolidate', 'busy time', 'conflicts' are universal signals to apply merge intervals pattern",
+      "source": "https://emre.me/coding-patterns/merge-intervals/"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://algo.monster/liteproblems/56",
+      "title": "56. Merge Intervals - In-Depth Explanation",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/window-sliding-technique/",
+      "title": "Sliding Window Technique - GeeksforGeeks",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://www.baeldung.com/cs/monotonic-stack",
+      "title": "What Is a Monotonic Stack? | Baeldung on Computer Science",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://usaco.guide/silver/prefix-sums",
+      "title": "Introduction to Prefix Sums · USACO Guide",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://www.freecodecamp.org/news/what-is-a-hash-map/",
+      "title": "What is a Hash Map? Time Complexity and Two Sum Example",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://algomaster.io/learn/dsa/intervals-introduction",
+      "title": "Intervals Introduction | DSA | AlgoMaster.io",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://www.educative.io/blog/google-calendar-system-design",
+      "title": "Google Calendar System Design",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://leetcode.com/problems/merge-intervals/",
+      "title": "Merge Intervals - LeetCode",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://algomap.io/lessons/sliding-window",
+      "title": "Sliding Window: Variable Length + Fixed Length | AlgoMap",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://leetcode.com/discuss/post/2347639/a-comprehensive-guide-and-template-for-m-irii/",
+      "title": "A comprehensive guide and template for monotonic stack based problems - LeetCode Discuss",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://courses.cs.duke.edu/fall17/compsci330/lecture7note.pdf",
+      "title": "Greedy Algorithms II: Overview & Interval Scheduling | Duke CS",
+      "recency": "2017 (7+ years old, flag as potentially stale)"
+    },
+    {
+      "url": "https://medium.com/@houssemeddinefadhli81/mastering-the-sliding-window-technique-longest-substring-without-repeating-characters-7ab4340d304d",
+      "title": "Mastering the Sliding Window Technique: Longest Substring Without Repeating Characters | Medium",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://www.baeldung.com/cs/tree-segment-interval-range-binary-indexed",
+      "title": "Difference Between Segment Trees, Interval Trees, Range Trees, and Binary Indexed Trees | Baeldung",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://medium.com/@samyuktha1262/think-nested-loops-are-always-o-n%C2%B2-think-again-7f1a41640e74",
+      "title": "Think Nested Loops Are Always O(n²)? Think Again! | Medium",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://www.linkedin.com/pulse/mastering-merge-intervals-problem-approach-complexity-adjanohoun-vbhdc",
+      "title": "Mastering the 'Merge Intervals' Problem: Approach and Complexity Analysis | LinkedIn",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://emre.me/coding-patterns/merge-intervals/",
+      "title": "Coding Patterns: Merge Intervals | emre.me",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://neetcode.io/problems/longest-substring-without-duplicates/question",
+      "title": "Longest Substring Without Repeating Characters | NeetCode",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/next-greater-element/",
+      "title": "Next Greater Element in Array - GeeksforGeeks",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://medium.com/@piyushkashyap045/master-the-merge-intervals-pattern-your-secret-weapon-for-coding-interviews-aec54eb9023b",
+      "title": "Master the Merge Intervals Pattern: Your Secret Weapon for Coding Interviews | Medium",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://medium.com/geekculture/two-pointer-vs-sliding-window-460133eb9228",
+      "title": "Two-Pointer vs Sliding window | Medium",
+      "recency": "Current (2025)"
+    }
+  ]
+}

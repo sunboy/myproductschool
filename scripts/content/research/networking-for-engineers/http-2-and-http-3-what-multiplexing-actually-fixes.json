@@ -1,0 +1,644 @@
+{
+  "facts": [
+    {
+      "claim": "HTTP/2 multiplexes multiple requests over a single TCP connection, fixing HTTP-transaction-level head-of-line blocking from HTTP/1.x but introducing TCP-level head-of-line blocking",
+      "source_url": "https://engineering.salesforce.com/the-full-picture-on-http-2-and-hol-blocking-7f964b34d205/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "HTTP/3 with QUIC achieves 12.4% better TTFB than HTTP/2: 176ms vs 201ms average at Cloudflare",
+      "source_url": "https://blog.cloudflare.com/http-3-vs-http-2/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "QUIC combines transport and cryptographic handshakes, reducing connection setup from 2-3 RTTs to 0-1 RTTs for repeat connections",
+      "source_url": "https://developers.cloudflare.com/speed/optimization/protocol/http3/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Traditional TCP with TLS 1.2 requires 3 RTT of handshake overhead (~240ms on 80ms RTT mobile networks); TLS 1.3 reduces to 2 RTT (1 TCP + 1 TLS), saving 80ms",
+      "source_url": "https://www.systemoverflow.com/learn/networking-protocols/http-protocols/tls-handshake-latency-the-critical-path-tax-across-protocol-versions",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Session resumption costs 50% less than full TLS handshake because it requires only 1 RTT vs 2, and avoids expensive asymmetric cryptography",
+      "source_url": "https://www.ioriver.io/terms/tls-session-resumption",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Full TLS handshakes consume 5 to 10x more CPU than resumed sessions due to expensive asymmetric cryptography (ECDHE key generation, signature verification)",
+      "source_url": "https://www.systemoverflow.com/learn/networking-protocols/tls-ssl/tls-handshake-performance-rtt-impact-and-termination-strategies",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Session resumption rates above 80% mean only 20% pay full handshake cost, saving hundreds of CPU cores at millions of requests per second",
+      "source_url": "https://systemdr.substack.com/p/tls-handshake-latency-when-your-load",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "TLS 1.3 0-RTT session resumption enables instant reconnection for repeat visitors by reusing pre-shared keys without additional handshake",
+      "source_url": "https://blog.cloudflare.com/introducing-0-rtt/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Layer 4 load balancing makes routing decisions based on IPs and TCP/UDP ports only; Layer 7 makes decisions based on HTTP headers, URL, cookies, message content",
+      "source_url": "https://www.a10networks.com/glossary/how-do-layer-4-and-layer-7-load-balancing-differ/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Layer 7 load balancers maintain two TCP connections (client + server) and reassemble packets; Layer 4 processes packet-by-packet without application visibility",
+      "source_url": "https://kemptechnologies.com/blog/layer-4-vs.-layer-7-load-balancing-what's-the-difference-and-which-one-do-i-need",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Cache-Control 'immutable' directive avoids unnecessary conditional requests for static resources when combined with cache-busting patterns and long max-age",
+      "source_url": "https://alokai.com/blog/cache-control-http-header",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "For static content, Google recommends cache duration longer than 6 months or even 1 year for immutable resources with version hashes in URLs",
+      "source_url": "https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "For HTML and API responses, no-cache ensures revalidation on every request; private cache flag prevents CDN caching of personalized content",
+      "source_url": "https://dohost.us/index.php/2025/10/29/advanced-caching-rules-tailoring-caching-for-different-content-types-static-dynamic-apis/",
+      "publication_date": "2025"
+    },
+    {
+      "claim": "ETag and Last-Modified headers enable efficient cache revalidation without re-downloading full content if unchanged",
+      "source_url": "https://blog.jonathanlau.io/posts/how-to-use-cache-control-headers/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Time-to-First-Byte (TTFB) good threshold is under 800ms; 800-1800ms needs improvement; over 1800ms is poor per Google 2025 guidance",
+      "source_url": "https://www.corewebvitals.io/core-web-vitals/time-to-first-byte",
+      "publication_date": "2025"
+    },
+    {
+      "claim": "Sites with poor LCP spend average of 2.27 seconds on TTFB alone, nearly exhausting entire 2.5s LCP threshold before rendering begins",
+      "source_url": "https://web.dev/articles/ttfb",
+      "publication_date": "2025"
+    },
+    {
+      "claim": "Enabling server-level caching with Varnish or Nginx FastCGI can drop TTFB from 400ms to under 20ms for cached pages",
+      "source_url": "https://www.debugbear.com/docs/metrics/time-to-first-byte",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Dynamic content generation is the most common culprit for high TTFB; slow database queries and PHP execution dominate",
+      "source_url": "https://wpengine.com/support/troubleshooting-high-time-first-byte-ttfb/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "HTTP/2 reduces active connections carrying single transactions from 74% (HTTP/1) to 25% via persistent connection multiplexing",
+      "source_url": "https://www.haproxy.com/blog/http-keep-alive-pipelining-multiplexing-and-connection-pooling",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "HTTP/2 connection reuse eliminates expensive TCP handshake and TLS negotiation costs, reducing total protocol overhead",
+      "source_url": "https://blog.codavel.com/http2-multiplexing",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "HTTP/3 on 4G networks with 15% packet loss improves page load times by 55% compared to HTTP/2",
+      "source_url": "https://www.cloudpanel.io/blog/http3-vs-http2/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "HTTP/3 shows 52% faster download times on unstable mobile networks with high latency and packet loss vs HTTP/2",
+      "source_url": "https://www.debugbear.com/blog/http3-vs-http2-performance",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "With HTTP/2, lost packet blocks all files until retransmission (head-of-line blocking); HTTP/3 streams independently so other resources continue",
+      "source_url": "https://www.cloudpanel.io/blog/http3-vs-http2/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Google's QUIC deployment reduced search result load time by 8% on desktop, 3.6% on mobile; up to 16% faster for slowest 1% of users",
+      "source_url": "https://blog.apnic.net/2021/08/02/dissecting-the-performance-of-production-quic/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "YouTube video on QUIC shows up to 20% less stalling in countries like India due to improved loss recovery",
+      "source_url": "https://blog.apnic.net/2021/08/02/dissecting-the-performance-of-production-quic/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "69% of HTTP/3 connections reached 5 Mbps+ throughput vs 56% for HTTP/2 (Netflix minimum threshold for Full HD streaming)",
+      "source_url": "https://www.cs.unh.edu/~ag1226/UserExperienceEvaluationofHTTP3.pdf",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "TLS session IDs stored on server-side; TLS session tickets stored on client-side, removing server cache burden entirely",
+      "source_url": "https://www.wolfssl.com/tls-session-id-vs-tickets/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Session resumption key derivation costs 1/10 of full key exchange computation due to avoiding asymmetric cryptography",
+      "source_url": "https://keymaterial.net/2023/04/23/stupid-tls-facts-tls-resumption/",
+      "publication_date": "2023"
+    },
+    {
+      "claim": "TLS session IDs limited by server memory for concurrent connections; TLS 1.3 uses session tickets exclusively, allowing multiple tickets per connection",
+      "source_url": "https://www.wolfssl.com/tls-session-id-vs-tickets/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Waterfall chart phases: DNS Lookup, TCP Connect (1 RTT), TLS Handshake, Waiting/TTFB, Content Download; typical total 100-500ms",
+      "source_url": "https://www.keycdn.com/blog/waterfall-analysis",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Real-world waterfall example: DNS 0.755ms, TCP 35.484ms, TLS Handshake 36.363ms for single request",
+      "source_url": "https://www.monitor.us/waterfall-chart/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "HTTPS connection requires 1 RTT for TCP + 1-2 RTTs for TLS before first request sends; 100ms RTT = 200-300ms pure handshake latency",
+      "source_url": "https://hpbn.co/transport-layer-security-tls/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "HTTP/2 server push can harm performance if used on resources that vary by request; clogging the network when combined with multiplexing",
+      "source_url": "https://designsystem.digital.gov/performance/http2/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "HTTP/2 connection coalescing allows reusing one connection for multiple domains if IP addresses match and TLS cert includes all SANs/wildcard",
+      "source_url": "https://daniel.haxx.se/blog/2016/08/18/http2-connection-coalescing/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "HTTP/2 ORIGIN Frame extension enables connection coalescing without managing identical IP addresses across domains",
+      "source_url": "https://blog.cloudflare.com/connection-coalescing-with-origin-frames-fewer-dns-queries-fewer-connections/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "BBR is latency-based congestion control using packet-pacing, insensitive to random loss; CUBIC uses packet loss as congestion indicator",
+      "source_url": "https://blog.litespeedtech.com/2019/10/28/bbr-congestion-control-quic-http-3/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "CUBIC is default QUIC congestion control; BBR variants being advanced in quiche; Google, Amazon, Akamai, Meta, Cloudflare use BBRv1",
+      "source_url": "https://blog.cloudflare.com/cubic-and-hystart-support-in-quiche/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "BBRv2 offers robust throughput in shallow buffers with HyStart++ alleviating startup losses; more sensitive to loss than BBRv1",
+      "source_url": "https://arxiv.org/html/2510.22461v1",
+      "publication_date": "2025"
+    },
+    {
+      "claim": "Head-of-line blocking at TCP level remains a design flaw in HTTP/2; packet-level blocking of TCP stream blocks all multiplexed transactions",
+      "source_url": "https://hpbn.co/http2/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Mobile and wireless networks particularly suffer from HTTP/2 head-of-line blocking due to higher packet loss rates",
+      "source_url": "https://dev.to/devcorner/how-http2-addresses-head-of-line-hol-blocking-3om2",
+      "publication_date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "context": "Real-world TTFB optimization",
+      "company": "Cloudflare",
+      "metric": "Enabling HTTP/3 reduced first byte from 201ms (HTTP/2) to 176ms average",
+      "source_url": "https://blog.cloudflare.com/http-3-vs-http-2/"
+    },
+    {
+      "context": "Video streaming throughput",
+      "company": "Netflix threshold",
+      "metric": "5 Mbps minimum for Full HD; 69% HTTP/3 connections vs 56% HTTP/2 reached this threshold",
+      "source_url": "https://www.cs.unh.edu/~ag1226/UserExperienceEvaluationofHTTP3.pdf"
+    },
+    {
+      "context": "Search performance",
+      "company": "Google",
+      "metric": "QUIC reduced search load time 8% desktop, 3.6% mobile; 16% for slowest 1% of users",
+      "source_url": "https://blog.apnic.net/2021/08/02/dissecting-the-performance-of-production-quic/"
+    },
+    {
+      "context": "Video stalling reduction",
+      "company": "Google YouTube",
+      "metric": "Up to 20% less video stalling on QUIC in high-loss markets like India",
+      "source_url": "https://blog.apnic.net/2021/08/02/dissecting-the-performance-of-production-quic/"
+    },
+    {
+      "context": "Mobile network packet loss impact",
+      "measurement": "4G network with 15% packet loss",
+      "metric": "HTTP/3 improved page load 55% vs HTTP/2; 52% faster downloads on unstable networks",
+      "source_url": "https://www.cloudpanel.io/blog/http3-vs-http2/"
+    },
+    {
+      "context": "Session resumption CPU savings",
+      "scenario": "Server at millions of requests/second",
+      "metric": "80%+ resumption rate saves hundreds of CPU cores by avoiding asymmetric crypto",
+      "source_url": "https://systemdr.substack.com/p/tls-handshake-latency-when-your-load"
+    },
+    {
+      "context": "Cache optimization",
+      "company": "Nginx FastCGI caching",
+      "metric": "Cached page TTFB dropped from 400ms to under 20ms",
+      "source_url": "https://www.debugbear.com/docs/metrics/time-to-first-byte"
+    },
+    {
+      "context": "LCP performance correlation",
+      "measurement": "Sites with poor LCP",
+      "metric": "Average 2.27 seconds spent on TTFB alone (Google 2025 Web Almanac)",
+      "source_url": "https://web.dev/articles/ttfb"
+    },
+    {
+      "context": "HTTP/2 adoption efficiency",
+      "company": "Generic HTTP/1.1 deployment",
+      "metric": "74% of active HTTP/1 connections carry single transaction; HTTP/2 drops to 25%",
+      "source_url": "https://www.haproxy.com/blog/http-keep-alive-pipelining-multiplexing-and-connection-pooling"
+    },
+    {
+      "context": "CDN deployment of HTTP/3",
+      "companies": "Cloudflare, Akamai, Fastly",
+      "metric": "All major CDNs deployed HTTP/3 across global networks by 2024",
+      "source_url": "https://developers.cloudflare.com/speed/optimization/protocol/http3/"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Head-of-line blocking in HTTP/2",
+      "analogy": "Like a single-lane highway: even though cars can coordinate internally (multiplexing), if one car hits a pothole and stops, all cars behind it must wait (TCP-level blocking).",
+      "source_url": "https://engineering.salesforce.com/the-full-picture-on-http-2-and-hol-blocking-7f964b34d205/"
+    },
+    {
+      "concept": "HTTP/3 stream independence",
+      "analogy": "Unlike HTTP/2's single highway, HTTP/3 is like multiple parallel lanes: if one image loses a packet, CSS and JavaScript files continue on their lanes unblocked.",
+      "source_url": "https://www.cloudpanel.io/blog/http3-vs-http2/"
+    },
+    {
+      "concept": "TLS handshake latency cost",
+      "analogy": "Building a house (full handshake) takes months; furnishing it takes days. Session resumption is like keeping furniture in storage—retrieve what you need, skip construction.",
+      "source_url": "https://istlsfastyet.com/"
+    },
+    {
+      "concept": "Session tickets vs Session IDs",
+      "analogy": "Session ID = server memorizing every customer's preferences (memory burden); Session Ticket = customer carries their preferences in wallet (zero server burden).",
+      "source_url": "https://www.wolfssl.com/tls-session-id-vs-tickets/"
+    },
+    {
+      "concept": "Layer 4 vs Layer 7 load balancing",
+      "analogy": "Layer 4 = postal service routing by zip code only; Layer 7 = mail sorter reading envelope contents and address to determine best recipient department.",
+      "source_url": "https://kemptechnologies.com/blog/layer-4-vs.-layer-7-load-balancing-what's-the-difference-and-which-one-do-i-need"
+    },
+    {
+      "concept": "Cache-Control immutable directive",
+      "analogy": "Like a time capsule: once sealed with a version number, it never changes, so you can keep it forever without checking inside.",
+      "source_url": "https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/"
+    },
+    {
+      "concept": "QUIC 0-RTT connection resumption",
+      "analogy": "Like a VIP entering a club: they skip the line (0-RTT data) using a membership card (pre-shared key) instead of going through ID check (full handshake).",
+      "source_url": "https://blog.cloudflare.com/even-faster-connection-establishment-with-quic-0-rtt-resumption/"
+    },
+    {
+      "concept": "BBR vs CUBIC congestion control",
+      "analogy": "CUBIC = driver watching brake lights ahead and hitting brakes when traffic stops (loss-based); BBR = driver constantly checking road conditions and adjusting speed smoothly (latency-based).",
+      "source_url": "https://blog.litespeedtech.com/2019/10/28/bbr-congestion-control-quic-http-3/"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "HTTP/3 TTFB improvement over HTTP/2",
+      "value": "12.4%",
+      "details": "176ms (HTTP/3) vs 201ms (HTTP/2) at Cloudflare",
+      "source_url": "https://blog.cloudflare.com/http-3-vs-http-2/"
+    },
+    {
+      "metric": "TLS 1.2 handshake RTT requirement",
+      "value": "3 RTT",
+      "details": "~240ms overhead on 80ms RTT mobile networks",
+      "source_url": "https://www.systemoverflow.com/learn/networking-protocols/http-protocols/tls-handshake-latency-the-critical-path-tax-across-protocol-versions"
+    },
+    {
+      "metric": "TLS 1.3 handshake RTT reduction",
+      "value": "2 RTT (1 TCP + 1 TLS)",
+      "details": "Saves 80ms per connection vs TLS 1.2 on 80ms RTT",
+      "source_url": "https://www.systemoverflow.com/learn/networking-protocols/http-protocols/tls-handshake-latency-the-critical-path-tax-across-protocol-versions"
+    },
+    {
+      "metric": "Session resumption CPU cost reduction",
+      "value": "50%",
+      "details": "Costs half of full TLS handshake due to avoiding asymmetric crypto and single RTT",
+      "source_url": "https://www.ioriver.io/terms/tls-session-resumption"
+    },
+    {
+      "metric": "Full handshake vs resumed session CPU cost",
+      "value": "5-10x",
+      "details": "Full handshakes consume 5-10x more CPU than resumed sessions",
+      "source_url": "https://www.systemoverflow.com/learn/networking-protocols/tls-ssl/tls-handshake-performance-rtt-impact-and-termination-strategies"
+    },
+    {
+      "metric": "Resumption key derivation cost",
+      "value": "1/10",
+      "details": "1/10th the cost of full key exchange computation",
+      "source_url": "https://keymaterial.net/2023/04/23/stupid-tls-facts-tls-resumption/"
+    },
+    {
+      "metric": "Google QUIC search performance improvement",
+      "value": "8%",
+      "details": "Desktop load time reduction; 3.6% mobile, up to 16% for slowest 1%",
+      "source_url": "https://blog.apnic.net/2021/08/02/dissecting-the-performance-of-production-quic/"
+    },
+    {
+      "metric": "YouTube QUIC video stalling reduction",
+      "value": "20%",
+      "details": "Less video stalling in high-packet-loss markets like India",
+      "source_url": "https://blog.apnic.net/2021/08/02/dissecting-the-performance-of-production-quic/"
+    },
+    {
+      "metric": "HTTP/3 throughput on mobile (packet loss test)",
+      "value": "55%",
+      "details": "Page load improvement on 4G with 15% packet loss vs HTTP/2",
+      "source_url": "https://www.cloudpanel.io/blog/http3-vs-http2/"
+    },
+    {
+      "metric": "HTTP/3 vs HTTP/2 download speed (lossy networks)",
+      "value": "52%",
+      "details": "Faster on unstable mobile networks with high latency/loss",
+      "source_url": "https://www.debugbear.com/blog/http3-vs-http2-performance"
+    },
+    {
+      "metric": "Netflix Full HD streaming minimum throughput",
+      "value": "5 Mbps",
+      "details": "69% HTTP/3 connections achieve this vs 56% HTTP/2",
+      "source_url": "https://www.cs.unh.edu/~ag1226/UserExperienceEvaluationofHTTP3.pdf"
+    },
+    {
+      "metric": "TTFB good threshold",
+      "value": "< 800ms",
+      "details": "Google 2025 guidance; 800-1800ms needs improvement, >1800ms poor",
+      "source_url": "https://www.corewebvitals.io/core-web-vitals/time-to-first-byte"
+    },
+    {
+      "metric": "Poor LCP TTFB component",
+      "value": "2.27 seconds",
+      "details": "Average time sites with poor LCP spend on TTFB alone (2025 Web Almanac)",
+      "source_url": "https://web.dev/articles/ttfb"
+    },
+    {
+      "metric": "Varnish/Nginx caching impact",
+      "value": "400ms → <20ms",
+      "details": "TTFB drop for cached pages with FastCGI caching",
+      "source_url": "https://www.debugbear.com/docs/metrics/time-to-first-byte"
+    },
+    {
+      "metric": "HTTP/1 single-transaction connection rate",
+      "value": "74%",
+      "details": "Percentage of HTTP/1 active connections carrying one transaction",
+      "source_url": "https://www.haproxy.com/blog/http-keep-alive-pipelining-multiplexing-and-connection-pooling"
+    },
+    {
+      "metric": "HTTP/2 single-transaction connection rate",
+      "value": "25%",
+      "details": "Reduction via multiplexing vs HTTP/1's 74%",
+      "source_url": "https://www.haproxy.com/blog/http-keep-alive-pipelining-multiplexing-and-connection-pooling"
+    },
+    {
+      "metric": "Static content cache duration recommendation",
+      "value": ">6 months, ideally 1 year",
+      "details": "Google recommendation for immutable resources with cache-busting",
+      "source_url": "https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/"
+    },
+    {
+      "metric": "HTTPS connection latency at 100ms RTT",
+      "value": "200-300ms",
+      "details": "Pure handshake overhead before first request (1 RTT TCP + 1-2 RTT TLS)",
+      "source_url": "https://hpbn.co/transport-layer-security-tls/"
+    },
+    {
+      "metric": "QUIC connection setup RTT reduction",
+      "value": "1 RTT",
+      "details": "Reduces from 2-3 RTTs (TCP+TLS 1.2) to 1 RTT by combining handshakes",
+      "source_url": "https://developers.cloudflare.com/speed/optimization/protocol/http3/"
+    },
+    {
+      "metric": "Session resumption breakeven point",
+      "value": ">80%",
+      "details": "Resumption rate where only 20% of connections pay full handshake cost",
+      "source_url": "https://systemdr.substack.com/p/tls-handshake-latency-when-your-load"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "HTTP/2 fixes all head-of-line blocking problems",
+      "reality": "HTTP/2 fixes application-layer HOL blocking but introduces TCP-level HOL: any lost/delayed TCP packet blocks all multiplexed streams simultaneously",
+      "source_url": "https://engineering.salesforce.com/the-full-picture-on-http-2-and-hol-blocking-7f964b34d205/"
+    },
+    {
+      "misconception": "HTTP/2 is always faster than HTTP/1.1",
+      "reality": "HTTP/2 provides benefits for most workloads, but performance depends on network conditions; some high-latency scenarios or specific implementations may show minimal gains",
+      "source_url": "https://medium.com/codex/benchmarking-http-2-against-http-1-1-using-javascript-modules-a5bfb316cc47"
+    },
+    {
+      "misconception": "More TCP connections always means better HTTP/2 performance",
+      "reality": "HTTP/2 is designed around single persistent connection per origin; multiple connections defeat multiplexing benefits and waste resources",
+      "source_url": "https://www.haproxy.com/blog/http2-multiplexing"
+    },
+    {
+      "misconception": "Server push solves all HTTP/2 performance problems",
+      "reality": "Server push can harm performance if resources vary by request, create network congestion, or push resources browsers already cached",
+      "source_url": "https://designsystem.digital.gov/performance/http2/"
+    },
+    {
+      "misconception": "TLS 1.3 eliminates all handshake latency",
+      "reality": "TLS 1.3 reduces handshake to 1 RTT (vs 2 in TLS 1.2), but TCP connection still requires 1 RTT; QUIC combines both for 1-RTT total",
+      "source_url": "https://www.systemoverflow.com/learn/networking-protocols/http-protocols/tls-handshake-latency-the-critical-path-tax-across-protocol-versions"
+    },
+    {
+      "misconception": "Session IDs are always better for session resumption",
+      "reality": "Session IDs require server-side storage (memory scalability issue); session tickets store state on client side, eliminating server burden at scale",
+      "source_url": "https://www.wolfssl.com/tls-session-id-vs-tickets/"
+    },
+    {
+      "misconception": "0-RTT is always safe for any request type",
+      "reality": "0-RTT lacks forward secrecy and allows replay attacks; must only be used for idempotent operations (GET, not POST/mutations)",
+      "source_url": "https://blog.cloudflare.com/even-faster-connection-establishment-with-quic-0-rtt-resumption/"
+    },
+    {
+      "misconception": "Layer 4 load balancing is always faster than Layer 7",
+      "reality": "Layer 4 is faster for simple routing, but Layer 7 enables smarter decisions (session affinity, content-based routing) with acceptable latency for most workloads",
+      "source_url": "https://www.a10networks.com/glossary/how-do-layer-4-and-layer-7-load-balancing-differ/"
+    },
+    {
+      "misconception": "Cache-Control max-age alone ensures freshness",
+      "reality": "ETag and Last-Modified headers required for revalidation; max-age alone doesn't prevent stale cache serving if network communication fails",
+      "source_url": "https://alokai.com/blog/cache-control-http-header"
+    },
+    {
+      "misconception": "HTTP/2 connection coalescing works automatically across all domains",
+      "reality": "Requires explicit IP overlap + TLS cert with SANs/wildcard for both domains; different browsers implement differently; ORIGIN frames offer better alternative",
+      "source_url": "https://daniel.haxx.se/blog/2016/08/18/http2-connection-coalescing/"
+    },
+    {
+      "misconception": "BBR is universally better than CUBIC",
+      "reality": "BBR is latency-optimized but less tested in production; CUBIC is default for QUIC; trade-offs vary by network (shallow buffers, congestion patterns)",
+      "source_url": "https://blog.litespeedtech.com/2019/10/28/bbr-congestion-control-quic-http-3/"
+    },
+    {
+      "misconception": "HTTP/3 benefits only matter for mobile users",
+      "reality": "HTTP/3 advantages scale across all networks, especially repeat visitors (0-RTT) and high-loss scenarios; benefits vary but apply to desktop and datacenter scenarios too",
+      "source_url": "https://www.debugbear.com/blog/http3-vs-http2-performance"
+    },
+    {
+      "misconception": "TTFB is a Core Web Vital that directly impacts ranking",
+      "reality": "TTFB is diagnostic metric, not CWV, but it directly impacts LCP/FCP which are CWVs; sites with poor TTFB usually have poor LCP",
+      "source_url": "https://web.dev/articles/ttfb"
+    },
+    {
+      "misconception": "DNS lookup is always the bottleneck in HTTPS connections",
+      "reality": "DNS is often negligible (cached); TCP handshake (1 RTT) + TLS handshake (1-2 RTT) dominate; 200-300ms at 100ms RTT is typical",
+      "source_url": "https://hpbn.co/transport-layer-security-tls/"
+    },
+    {
+      "misconception": "Packet loss has the same impact on HTTP/2 and HTTP/3",
+      "reality": "HTTP/2 shows 55% slower page loads on 4G with 15% packet loss; HTTP/3 independent streams avoid TCP-level HOL blocking",
+      "source_url": "https://www.cloudpanel.io/blog/http3-vs-http2/"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://engineering.salesforce.com/the-full-picture-on-http-2-and-hol-blocking-7f964b34d205/",
+      "title": "The Full Picture on HTTP/2 and HOL Blocking - Salesforce Engineering Blog",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://blog.cloudflare.com/http-3-vs-http-2/",
+      "title": "Comparing HTTP/3 vs. HTTP/2 Performance - Cloudflare Blog",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://developers.cloudflare.com/speed/optimization/protocol/http3/",
+      "title": "HTTP/3 (with QUIC) · Cloudflare Speed docs",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://www.systemoverflow.com/learn/networking-protocols/http-protocols/tls-handshake-latency-the-critical-path-tax-across-protocol-versions",
+      "title": "TLS Handshake Latency - System Overflow",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://hpbn.co/transport-layer-security-tls/",
+      "title": "Networking 101: Transport Layer Security (TLS) - High Performance Browser Networking (O'Reilly)",
+      "recency_note": "Evergreen, updated 2024"
+    },
+    {
+      "url": "https://blog.cloudflare.com/introducing-0-rtt/",
+      "title": "Introducing Zero Round Trip Time Resumption (0-RTT) - Cloudflare Blog",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://www.a10networks.com/glossary/how-do-layer-4-and-layer-7-load-balancing-differ/",
+      "title": "Layer 4 vs Layer 7 Load Balancing - A10 Networks",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/",
+      "title": "Guide for Caching and HTTP Cache Headers for Static Content - ImageKit",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://www.corewebvitals.io/core-web-vitals/time-to-first-byte",
+      "title": "Time To First Byte (TTFB) - CoreWebVitals.io",
+      "recency_note": "2025"
+    },
+    {
+      "url": "https://web.dev/articles/ttfb",
+      "title": "Time to First Byte (TTFB) - web.dev",
+      "recency_note": "2025"
+    },
+    {
+      "url": "https://www.haproxy.com/blog/http-keep-alive-pipelining-multiplexing-and-connection-pooling",
+      "title": "HTTP keep-alive, pipelining, multiplexing & connection pooling - HAProxy Blog",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://www.cloudpanel.io/blog/http3-vs-http2/",
+      "title": "Exploring the Performance Differences Between HTTP/2 vs. HTTP/3 - CloudPanel",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://blog.apnic.net/2021/08/02/dissecting-the-performance-of-production-quic/",
+      "title": "Dissecting the performance of production QUIC - APNIC Blog",
+      "recency_note": "2024 updates"
+    },
+    {
+      "url": "https://www.wolfssl.com/tls-session-id-vs-tickets/",
+      "title": "TLS Session ID vs Tickets - wolfSSL",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://keymaterial.net/2023/04/23/stupid-tls-facts-tls-resumption/",
+      "title": "Stupid TLS Facts: TLS Resumption - Key Material",
+      "recency_note": "2023, still relevant"
+    },
+    {
+      "url": "https://www.keycdn.com/blog/waterfall-analysis",
+      "title": "Waterfall Analysis - Diving into Your Website's Requests - KeyCDN",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://designsystem.digital.gov/performance/http2/",
+      "title": "HTTP/2 Performance Guide - U.S. Web Design System",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://daniel.haxx.se/blog/2016/08/18/http2-connection-coalescing/",
+      "title": "HTTP/2 connection coalescing - Daniel.haxx.se",
+      "recency_note": "2024 context"
+    },
+    {
+      "url": "https://blog.cloudflare.com/connection-coalescing-with-origin-frames-fewer-dns-queries-fewer-connections/",
+      "title": "Connection coalescing with ORIGIN Frames - Cloudflare Blog",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://blog.litespeedtech.com/2019/10/28/bbr-congestion-control-quic-http-3/",
+      "title": "BBR Congestion Control in QUIC and HTTP/3 - LiteSpeed Blog",
+      "recency_note": "2024 updates"
+    },
+    {
+      "url": "https://blog.cloudflare.com/cubic-and-hystart-support-in-quiche/",
+      "title": "CUBIC and HyStart++ Support in quiche - Cloudflare Blog",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://arxiv.org/html/2510.22461v1",
+      "title": "Should BBR be the default TCP Congestion Control Protocol? - arXiv",
+      "recency_note": "2025"
+    },
+    {
+      "url": "https://www.debugbear.com/blog/http3-vs-http2-performance",
+      "title": "HTTP/3 vs HTTP/2 Performance: Is the Upgrade Worth It? - DebugBear",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://www.cs.unh.edu/~ag1226/UserExperienceEvaluationofHTTP3.pdf",
+      "title": "User Experience Evaluation of HTTP/3 in Real-World Deployment Scenarios - UNH",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://www.ioriver.io/terms/tls-session-resumption",
+      "title": "What is TLS Session Resumption? Benefits & Best Practices - IOriver",
+      "recency_note": "2024"
+    },
+    {
+      "url": "https://istlsfastyet.com/",
+      "title": "Is TLS Fast Yet? - istlsfastyet.com",
+      "recency_note": "Evergreen reference"
+    },
+    {
+      "url": "https://medium.com/codex/benchmarking-http-2-against-http-1-1-using-javascript-modules-a5bfb316cc47",
+      "title": "HTTP/2 is not much faster than HTTP/1.1 - Medium",
+      "recency_note": "2021, shows debate"
+    }
+  ]
+}

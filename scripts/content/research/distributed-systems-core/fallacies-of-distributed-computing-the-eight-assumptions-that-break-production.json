@@ -1,0 +1,567 @@
+{
+  "facts": [
+    {
+      "fact": "The Eight Fallacies of Distributed Computing originated at Sun Microsystems: first four created by Bill Joy and Dave Lyon (early 1990s), fallacies 5-7 added by L. Peter Deutsch in the mid-1990s, and the eighth fallacy added by James Gosling in 1997.",
+      "source": "https://lawsofsoftwareengineering.com/laws/fallacies-of-distributed-computing/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Lamport timestamps enable ordering of causally related events in distributed systems without synchronized clocks; if event A happens before event B, then timestamp(A) < timestamp(B), but concurrent events may have identical timestamps.",
+      "source": "https://amturing.acm.org/p558-lamport.pdf",
+      "publication_date": "1978 (seminal); https://www.baeldung.com/cs/lamport-clock updated 2024"
+    },
+    {
+      "fact": "Raft consensus algorithm uses a heartbeat mechanism where if a follower receives no communication within the election timeout period, it becomes a candidate and starts an election; a candidate winning a majority becomes leader.",
+      "source": "https://web.stanford.edu/~ouster/cgi-bin/cs190-winter20/lecture.php?topic=raft",
+      "publication_date": "2014 (seminal); course materials current"
+    },
+    {
+      "fact": "In Raft, a log entry is considered committed once it has been safely replicated to a quorum (majority), and committed entries are then applied to the state machine in order.",
+      "source": "https://www.yugabyte.com/key-concepts/raft-consensus-algorithm/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Idempotent consumers prevent duplicate processing by recording IDs of processed messages in a PROCESSED_MESSAGES table or in the business entities themselves; at-least-once delivery guarantees the consumer can be invoked multiple times for the same message.",
+      "source": "https://microservices.io/patterns/communication-style/idempotent-consumer.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Stripe prevents double payments by implementing idempotency keys: clients pass a unique UUID in the Idempotency-Key header, and the server returns the same result (status code and body) for subsequent requests with identical keys, even if the first request failed with a 500 error.",
+      "source": "https://stripe.com/blog/idempotency",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "LinkedIn's eventual consistency data stores returned consistent data 99.9% of the time within 13.6 ms; eventual consistency configurations were 16.5% faster than strongly consistent counterparts at the 99.9th percentile.",
+      "source": "https://blog.levelupcoding.com/p/strong-vs-eventual-consistency",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Yammer's eventually consistent data stores achieved a 99.9% inconsistency window of 202 ms while delivering an 81.1% latency reduction compared to strong consistency.",
+      "source": "https://blog.levelupcoding.com/p/strong-vs-eventual-consistency",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Google Spanner uses TrueTime, a globally synchronized clock infrastructure with GPS antennas and atomic clocks in each server, enabling it to order transactions precisely across the globe without inter-node communication for timestamp coordination.",
+      "source": "https://research.google/pubs/spanner-truetime-and-the-cap-theorem/",
+      "publication_date": "2012 (seminal); https://cloud.google.com/blog/products/databases/inside-cloud-spanner-and-the-cap-theorem 2024"
+    },
+    {
+      "fact": "A USENIX study of 136 system failures in 25 widely-used distributed systems found that network-partitioning faults led to catastrophic effects including data loss, reappearance of deleted data, broken locks, and system crashes.",
+      "source": "https://www.usenix.org/system/files/osdi18-alquraan.pdf",
+      "publication_date": "2018"
+    },
+    {
+      "fact": "Partial network partitioning faults isolating a single node with three or fewer events deterministically cause more than two-thirds of failures in production-quality systems.",
+      "source": "https://dl.acm.org/doi/full/10.1145/3576192",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "AWS DynamoDB's September 20, 2015 US-East outage lasted over 4 hours; root cause was that storage servers handling large metadata tables missed membership requests, retried continuously, and the metadata service lacked capacity because Global Secondary Indexes (GSIs) increased average retrieval time without proportional capacity increases.",
+      "source": "https://aws.amazon.com/blogs/aws/aws-dynamodb-update-new-higher-limits-on-throughput-and-storage/",
+      "publication_date": "2015"
+    },
+    {
+      "fact": "Vector clocks allow distributed systems to distinguish between causally related and concurrent events; causal precedence holds if every component of vector A ≤ corresponding component of vector B with at least one strictly less.",
+      "source": "https://en.wikipedia.org/wiki/Vector_clock",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Vector clocks become ineffective in Byzantine failure models where processes behave arbitrarily or maliciously, rendering causality detection fundamentally impossible.",
+      "source": "https://distributedsystemauthority.com/vector-clocks-and-causal-consistency",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Practical Byzantine Fault Tolerance (PBFT) algorithm tolerates Byzantine faults with 3f + 1 replicas surviving up to f faulty replicas, works safely in asynchronous networks, and uses 5 phases: request, pre-prepare, prepare, commit, and reply.",
+      "source": "https://space-raccoon.medium.com/navigating-consensus-the-practical-byzantine-fault-tolerance-pbft-algorithm-e44ec01babba",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Kafka introduced exactly-once semantics in version 0.11 (Confluent Platform 3.3) via idempotent producers and transactional processing; Kafka 2.5 introduced exactly_once_v2 protocol, and Kafka 4.0+ brings performance improvements in KRaft mode with faster transaction commits.",
+      "source": "https://www.confluent.io/blog/exactly-once-semantics-are-possible-heres-how-apache-kafka-does-it/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Two-phase commit (2PC) participants that vote affirmatively transition to a prepared state, retaining exclusive locks on all accessed resources; if the coordinator fails before broadcasting the final decision, participants remain blocked indefinitely until coordinator recovery.",
+      "source": "https://en.wikipedia.org/wiki/Two-phase_commit_protocol",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "GitHub's October 2021 outage: a 43-second network split between US East Coast network hub and primary data center triggered cascading failures lasting 24 hours 11 minutes; rapid load growth, architectural coupling, and inability to shed load from misbehaving clients exacerbated the incident.",
+      "source": "https://github.blog/news-insights/company-news/oct21-post-incident-analysis/",
+      "publication_date": "2021"
+    },
+    {
+      "fact": "Slack's January 4, 2021 outage: a traffic spike combined with network problems saturated the web tier; cascading automated responses (marking instances unhealthy, downscaling, attempting to add 1,200 servers) worsened the incident; recovery took 4 hours 40 minutes.",
+      "source": "https://slack.engineering/slacks-outage-on-january-4th-2021/",
+      "publication_date": "2021"
+    },
+    {
+      "fact": "AWS transactional outbox pattern (2025): Multi-Region Strong Consistency mode for DynamoDB Global Tables became generally available in January 2025, providing strong consistency across regions.",
+      "source": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Finance/trading systems achieve p99 latency under 500 microseconds as acceptable; some firms achieve p99 around 62 microseconds on cloud infrastructure with careful tuning.",
+      "source": "https://aerospike.com/blog/what-is-p99-latency/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "The 99th percentile latency is 30× worse than the median; the 99.9th percentile is 50× worse; in distributed systems with multiple downstream requests, a single slow request amplifies latency by creating cascading delays across 2, 10, or even 100 downstream calls.",
+      "source": "https://last9.io/blog/tail-latency/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Network timeouts in TCP introduce tens to hundreds of milliseconds of delay depending on retransmit timeout configuration; most requests resolve in milliseconds but occasional packet loss or congestion creates tail latency.",
+      "source": "https://igor.io/latency/",
+      "publication_date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "company": "Stripe",
+      "scenario": "Payment processing with duplicate delivery safety",
+      "details": "Stripe uses idempotency keys to prevent duplicate charges when network failures occur between client and server. A client generates a unique UUID (v4) and passes it in the Idempotency-Key header. Stripe stores the status code and response body of the first successful request. Subsequent requests with the same key return the cached result, preventing double charges even if the client retries due to network timeouts.",
+      "lesson": "Idempotency is essential for financial transactions; without it, network failures = money duplicated"
+    },
+    {
+      "company": "LinkedIn",
+      "scenario": "Data consistency tradeoff measurement",
+      "details": "LinkedIn measured eventual consistency vs strong consistency in production. Eventual consistency returned consistent data 99.9% of the time within 13.6 ms and was 16.5% faster at p99.9. Strong consistency had higher tail latencies and availability issues. LinkedIn chose eventual consistency for non-critical data (feeds, recommendations) and strong consistency only for critical data (payments, balances).",
+      "lesson": "Eventual consistency is measurably faster in tail latencies; choose consistency model by data criticality, not uniformly"
+    },
+    {
+      "company": "GitHub",
+      "scenario": "Network partition cascading to 24-hour outage",
+      "details": "October 2021: routine maintenance to replace optical equipment caused a 43-second loss of connectivity between GitHub's US East Coast hub and primary data center. This brief partition triggered cascading failures: replication lag accumulated, database consistency monitoring failed, automated systems attempted to correct perceived failures, load balancers hit limits, and the recovery took 24 hours 11 minutes. Root cause: tight architectural coupling between services and insufficient isolation.",
+      "lesson": "A 43-second network blip escalated to 24 hours because systems were tightly coupled; fallacy #5 (topology doesn't change) broke them"
+    },
+    {
+      "company": "Slack",
+      "scenario": "Load spike + cascading infrastructure failure",
+      "details": "January 4, 2021: traffic spike combined with underlying network congestion saturated the web tier. Increased packet loss caused high latency on web-to-backend calls. Automated health checks marked instances unhealthy. Autoscaling tried to add 1,200 servers but provisioning service was broken. Panic mode in load balancer, retries, and circuit breakers eventually recovered service after 4 hours 40 minutes.",
+      "lesson": "Cascading automated responses can worsen an incident; fallacy #2 (latency is zero) broke them during the cascade"
+    },
+    {
+      "company": "AWS DynamoDB",
+      "scenario": "Metadata table saturation during outage",
+      "details": "September 20, 2015: DynamoDB US-East outage lasted 4+ hours. Storage servers handling very large metadata tables (Global Secondary Indexes added recently) missed membership renewal requests and retried continuously. The metadata service lacked capacity because GSI index retrieval time had increased but capacity wasn't increased proportionally. Servers became unavailable and couldn't recover.",
+      "lesson": "Schema evolution (adding GSI) changed query performance without proportional resource scaling; fallacy #3 (bandwidth is infinite) broke them"
+    },
+    {
+      "company": "Google",
+      "scenario": "Spanner: strong consistency at global scale",
+      "details": "Google Spanner uses TrueTime, a hardware-synchronized clock with GPS antennas and atomic clocks in each data center. This enables Spanner to order transactions globally without inter-node communication for timestamps. Even when partitions occur, Spanner chooses consistency over availability (CP not AP), delivering five 9s of availability by making partitions rare and recovery fast.",
+      "lesson": "Strong consistency at scale is possible if you invest in hardware (TrueTime) to eliminate clock skew"
+    },
+    {
+      "company": "Kafka (Confluent)",
+      "scenario": "Exactly-once semantics for event streaming",
+      "details": "Kafka 0.11+ uses idempotent producers + transactional writes: a producer can safely retry sending messages to multiple partitions; either all messages in a batch are visible to consumers or none are. Kafka 2.5 improved exactly_once_v2 protocol; Kafka 4.0+ in KRaft mode delivers 10x faster transaction commits with lower coordinator overhead.",
+      "lesson": "Exactly-once is achievable in practice; requires idempotency + coordination, not a theoretical myth"
+    },
+    {
+      "company": "USENIX Study (136 failures in 25 systems)",
+      "scenario": "Network partition fault modes",
+      "details": "Analysis of 136 production failures across 25 systems (MySQL, MongoDB, HBase, Zookeeper, etc.) found that network-partitioning faults triggered catastrophic effects: data loss, reappearance of deleted data, broken locks, system crashes. Partial partition (isolating 1 node with 3 or fewer events) deterministically caused 2/3+ of failures.",
+      "lesson": "Network partitions are common in production; systems must be explicitly designed to handle them or face data corruption"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Fallacy #1 (network is reliable) is like assuming a mail carrier never loses a letter.",
+      "explanation": "Just as some letters get lost, duplicated, or delivered out of order, network packets do the same. Your distributed system must assume 'at least once' delivery and handle duplicates idempotently, like a post office keeping a receipt log to prevent re-delivery."
+    },
+    {
+      "analogy": "Fallacy #2 (latency is zero) is like assuming a phone call completes instantly.",
+      "explanation": "Phone calls have dial tone delay, propagation delay, and sometimes dropped packets requiring re-transmission. In systems, a request to a server 1000 miles away takes ~10ms one-way, plus unpredictable jitter. Tail latencies (p99.9) can be 50× the median due to GC pauses, disk I/O, or retries."
+    },
+    {
+      "analogy": "Fallacy #5 (topology doesn't change) is like designing a city assuming roads never change.",
+      "explanation": "In reality, roads close for maintenance, servers get decommissioned, databases fail over, and ISPs reroute traffic. Systems tightly coupled to a fixed topology (like GitHub's incident) shatter when topology changes; resilient systems must detect topology changes and adapt."
+    },
+    {
+      "analogy": "Two-phase commit (2PC) is like a wedding where the couple asks guests 'do you agree?' then saying 'I do'—but the message gets lost.",
+      "explanation": "If the coordinator sends 'commit' but the message is lost, participants stay locked waiting. If a participant crashes after voting 'yes' but before the commit is applied, locks stay held forever. 2PC blocks on failure, which is why it's avoided at scale."
+    },
+    {
+      "analogy": "Idempotent consumers are like a pill bottle with a 'do not take more than 1 per day' warning.",
+      "explanation": "Even if you accidentally take the pill twice (duplicate delivery), the effect is the same as taking it once. Distributed systems use deduplication tables (like a pill counter) to track which messages have been processed, ensuring the second delivery has no additional effect."
+    },
+    {
+      "analogy": "Lamport timestamps are like a physical causality log where each process writes down 'event X happened at timestamp T'.",
+      "explanation": "If process A sends a message to process B at T=5, and B receives it and performs an action at T=7, Lamport clocks ensure T(A) ≤ T(B). This lets you replay events in order to recover a crashed node, like replaying a video from the beginning to catch a dropped frame."
+    },
+    {
+      "analogy": "Vector clocks are like a security camera recording not just what happened, but the causal chain of who told whom.",
+      "explanation": "If Alice tells Bob 'update X', and Bob tells Carol 'X is updated', vector clocks prove the causal order. Lamport clocks can't distinguish between this chain and an unrelated event—vector clocks can."
+    },
+    {
+      "analogy": "Network partitions are like a bridge collapsing mid-conversation between two towns.",
+      "explanation": "When a partition occurs, the two sides of the network can't communicate. Systems must choose: do I stay available but risk consistency (eventual consistency), or do I block and wait for the bridge to rebuild (strong consistency)? GitHub's incident showed what happens when you don't plan for this choice."
+    },
+    {
+      "analogy": "Cascading failures are like dominoes: a single failure triggers automated responses that trigger more failures.",
+      "explanation": "Slack's incident showed this: network congestion → health checks mark instances unhealthy → autoscaling tries to add servers → provisioning is broken → panic mode triggered → circuit breakers open → finally recovery. Each 'fix' made things worse until a human intervened."
+    },
+    {
+      "analogy": "The CAP theorem is like the 'pick any two' rule: you can have Consistency, Availability, or Partition tolerance—but not all three.",
+      "explanation": "Google Spanner 'defies' CAP not by breaking math but by making partitions rare (GPS + atomic clocks eliminate skew). Most systems choose AP (eventual consistency) or CP (strong consistency with outages). Stripe chooses CA for payment operations (no partitions expected) via careful infrastructure design."
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "P99 latency for finance/trading systems",
+      "value": "< 500 microseconds acceptable; some firms achieve 62 microseconds",
+      "source": "https://aerospike.com/blog/what-is-p99-latency/",
+      "significance": "Sub-millisecond latencies required for competitive advantage in high-frequency trading; every microsecond matters"
+    },
+    {
+      "metric": "P99.9 latency amplification in distributed systems",
+      "value": "50× worse than median",
+      "source": "https://last9.io/blog/tail-latency/",
+      "significance": "In a system with 10 downstream calls, p99.9 latency can be catastrophic; tail amplification is the primary source of SLA breaches"
+    },
+    {
+      "metric": "One-way network latency across 1000 miles",
+      "value": "~10 milliseconds + jitter",
+      "source": "https://igor.io/latency/",
+      "significance": "Geographic distribution inherently introduces tens of milliseconds of latency; 'zero latency' is impossible"
+    },
+    {
+      "metric": "LinkedIn eventual consistency advantage at p99.9",
+      "value": "16.5% faster than strong consistency",
+      "source": "https://blog.levelupcoding.com/p/strong-vs-eventual-consistency",
+      "significance": "Eventual consistency delivers measurably better tail latencies; strong consistency is a scalability drag"
+    },
+    {
+      "metric": "LinkedIn eventual consistency window",
+      "value": "99.9% of data consistent within 13.6 milliseconds",
+      "source": "https://blog.levelupcoding.com/p/strong-vs-eventual-consistency",
+      "significance": "Consistency windows are surprisingly small; eventual consistency converges fast in practice"
+    },
+    {
+      "metric": "Yammer eventual consistency latency advantage",
+      "value": "81.1% reduction vs strong consistency",
+      "source": "https://blog.levelupcoding.com/p/strong-vs-eventual-consistency",
+      "significance": "Enormous latency win; eventual consistency can cut response times in half"
+    },
+    {
+      "metric": "Yammer eventual consistency window",
+      "value": "99.9% consistency achieved in 202 milliseconds",
+      "source": "https://blog.levelupcoding.com/p/strong-vs-eventual-consistency",
+      "significance": "Even with higher consistency windows, still much faster than strong consistency"
+    },
+    {
+      "metric": "PBFT fault tolerance threshold",
+      "value": "3f + 1 replicas to survive f faulty replicas",
+      "source": "https://space-raccoon.medium.com/navigating-consensus-the-practical-byzantine-fault-tolerance-pbft-algorithm-e44ec01babba",
+      "significance": "Byzantine systems must tolerate 1/3 malicious nodes; requires 3x replication overhead"
+    },
+    {
+      "metric": "GitHub October 2021 network partition duration",
+      "value": "43 seconds",
+      "source": "https://github.blog/news-insights/company-news/oct21-post-incident-analysis/",
+      "significance": "A brief partition triggered cascading failures lasting 24 hours 11 minutes; brief doesn't mean harmless"
+    },
+    {
+      "metric": "GitHub October 2021 total outage duration",
+      "value": "24 hours 11 minutes",
+      "source": "https://github.blog/news-insights/company-news/oct21-post-incident-analysis/",
+      "significance": "Cascading failures from tight coupling; initial fault was 43 seconds, escalation factor was 2000×"
+    },
+    {
+      "metric": "AWS DynamoDB September 2015 outage duration",
+      "value": "4+ hours",
+      "source": "https://aws.amazon.com/blogs/aws/aws-dynamodb-update-new-higher-limits-on-throughput-and-storage/",
+      "significance": "Metadata service saturation from unscaled GSI indexes; capacity planning failures cascade"
+    },
+    {
+      "metric": "Slack January 2021 outage duration",
+      "value": "4 hours 40 minutes",
+      "source": "https://slack.engineering/slacks-outage-on-january-4th-2021/",
+      "publication_date": "2021",
+      "significance": "Traffic spike + network congestion triggered cascading automation failures; manual recovery required"
+    },
+    {
+      "metric": "Slack attempted server addition during outage",
+      "value": "1,200 servers",
+      "source": "https://slack.engineering/slacks-outage-on-january-4th-2021/",
+      "significance": "Autoscaling doesn't help if provisioning service is broken; automation can worsen cascading failures"
+    },
+    {
+      "metric": "USENIX distributed systems failure study scope",
+      "value": "136 failures in 25 systems",
+      "source": "https://www.usenix.org/system/files/osdi18-alquraan.pdf",
+      "significance": "Comprehensive study showing network partitions cause catastrophic failures in production-grade systems"
+    },
+    {
+      "metric": "Partial network partition failure rate",
+      "value": "2/3+ of failures triggered by isolating 1 node with 3 or fewer events",
+      "source": "https://dl.acm.org/doi/full/10.1145/3576192",
+      "significance": "Minimal, realistic network partitions are sufficient to trigger most failures; edge cases matter"
+    },
+    {
+      "metric": "Stripe idempotency key TTL",
+      "value": "24 hours minimum retention",
+      "source": "https://stripe.com/blog/idempotency",
+      "significance": "Keys can be expired after 24 hours; balance between safety (avoid reuse) and storage cost"
+    },
+    {
+      "metric": "Kafka exactly-once improvement in Kafka 4.0",
+      "value": "10× faster transaction commits in KRaft mode",
+      "source": "https://www.confluent.io/blog/exactly-once-semantics-are-possible-heres-how-apache-kafka-does-it/",
+      "publication_date": "2024",
+      "significance": "Recent improvements make exactly-once practical at scale; coordinator overhead reduced significantly"
+    },
+    {
+      "metric": "Two-phase commit lock retention time",
+      "value": "Indefinite until coordinator recovery if coordinator crashes after prepare phase",
+      "source": "https://en.wikipedia.org/wiki/Two-phase_commit_protocol",
+      "significance": "2PC can block forever; blocking is why it's considered an anti-pattern at scale"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "The network is reliable, so I don't need to handle retries.",
+      "reality": "Network packets are lost, duplicated, and reordered constantly. Modern systems must assume at-least-once delivery and handle duplicates idempotently. Stripe, Kafka, and AWS all enforce this as a core assumption.",
+      "consequence": "Omitting retry logic and idempotency leads to data loss or duplicate charges in production."
+    },
+    {
+      "misconception": "Latency is zero or near-zero, so I can synchronously call many services.",
+      "reality": "Network round-trips are slow: 10ms per 1000 miles + jitter. Making 100 synchronous calls means 1 second minimum latency. Tail latencies (p99.9) are 50× worse than median due to GC pauses, disk I/O, and retries.",
+      "consequence": "Systems calling 10+ services synchronously hit SLA limits immediately; tail latency dominates."
+    },
+    {
+      "misconception": "Bandwidth is infinite, so I can send large messages frequently without worrying.",
+      "reality": "Bandwidth is finite and expensive. A 1MB message × 1M requests per day = 1TB/day of network traffic. Network saturation triggers cascading failures (Slack incident).",
+      "consequence": "Uncontrolled message volume causes network congestion, exponential latency growth, and cascading failures."
+    },
+    {
+      "misconception": "The network is secure; I don't need encryption.",
+      "reality": "Network traffic is visible to intermediate routers, ISPs, and potentially hostile actors. Man-in-the-middle attacks, packet sniffing, and BGP hijacking are documented, real threats. Every payment system uses TLS for this reason.",
+      "consequence": "Unencrypted credentials, tokens, and payment data leak at scale; regulatory violations follow."
+    },
+    {
+      "misconception": "Topology doesn't change, so I can hardcode server addresses and never update them.",
+      "reality": "Servers fail, get replaced, and topology changes constantly. DNS changes, load balancers shift, databases fail over. GitHub's 43-second partition cascaded to 24 hours because systems assumed static topology.",
+      "consequence": "Brief maintenance windows or failures trigger cascading outages; tight coupling is catastrophic."
+    },
+    {
+      "misconception": "There is one administrator who knows the entire system and can fix it when it breaks.",
+      "reality": "Distributed systems have teams managing different parts. Communication delays, on-call rotations, and lack of shared context slow incident response. GitHub's outage required re-architecture specifically to reduce tight coupling.",
+      "consequence": "Incidents take hours to resolve because understanding the system requires coordination across many teams."
+    },
+    {
+      "misconception": "Transport cost is zero; I can replicate data everywhere.",
+      "reality": "Cross-region replication consumes bandwidth, storage, and coordination overhead. Three-way replication + two data centers = 6× storage cost. Strong consistency across regions requires expensive coordination (Google Spanner uses atomic clocks).",
+      "consequence": "Uncontrolled replication explodes costs; data gravity becomes a serious constraint."
+    },
+    {
+      "misconception": "The network is homogeneous; all nodes see the same view of the world.",
+      "reality": "Partial network partitions, clock skew, and heterogeneous latencies mean nodes have different views. A partition might isolate one node but leave others connected, causing split-brain scenarios.",
+      "consequence": "Assuming unanimous truth leads to data corruption; systems must design for disagreement (eventual consistency, vector clocks, or strong coordination)."
+    },
+    {
+      "misconception": "Two-phase commit ensures atomicity across services; use it liberally.",
+      "reality": "2PC blocks indefinitely if the coordinator fails; it's a performance and availability anti-pattern at scale. Stripe, Kafka, and Amazon all avoid 2PC in favor of idempotent operations + event sourcing.",
+      "consequence": "2PC systems experience cascading failures and long outages; Stripe's approach (idempotent + database coordination) is preferred."
+    },
+    {
+      "misconception": "Eventually consistent means data will converge someday, so I can ignore stale reads.",
+      "reality": "Eventual consistency windows vary: Yammer 202ms, LinkedIn 13.6ms at p99.9, some systems 10 seconds. You must explicitly handle stale data (read-your-writes via versioning, cache invalidation, etc.).",
+      "consequence": "Users see stale data; without explicit handling, features like 'I just created a post but can't see it' frustrate users."
+    },
+    {
+      "misconception": "Consensus algorithms like Raft guarantee my data is safe.",
+      "reality": "Raft ensures replicas agree on log entries, but doesn't prevent Byzantine actors from corrupting data, doesn't handle network partitions without choosing availability or consistency, and assumes bounded clock skew.",
+      "consequence": "Raft is insufficient for adversarial environments or global systems; layer consensus with application-level validation."
+    },
+    {
+      "misconception": "Idempotency keys prevent all duplicate processing issues.",
+      "reality": "Idempotency keys prevent duplicates on the same endpoint, but distributed systems often have multiple services. Without end-to-end idempotency (Stripe's staged jobs), duplicates leak across service boundaries.",
+      "consequence": "A payment API call might succeed twice through two different services; idempotent endpoint isn't enough."
+    },
+    {
+      "misconception": "Strong consistency is always better because data is accurate.",
+      "reality": "Strong consistency comes at a cost: higher latency (LinkedIn: 16.5% slower at p99.9), lower availability (Spanner loses availability during partitions), and scalability limits. Eventual consistency is faster and better for non-critical data.",
+      "consequence": "Applying strong consistency everywhere makes systems slow and difficult to scale; choose consistency by data criticality."
+    },
+    {
+      "misconception": "Cascading failures won't happen to my system because I use modern frameworks.",
+      "reality": "GitHub (October 2021) and Slack (January 2021) are modern, well-engineered systems that experienced cascading failures. Failures cascade when services are tightly coupled and automated responses are triggered without safeguards.",
+      "consequence": "Assume cascading failures will happen; design explicit boundaries, load shedding, and circuit breakers to contain them."
+    },
+    {
+      "misconception": "Once a transaction is committed, the data is permanent.",
+      "reality": "In distributed systems with replication, a committed write might not be on all replicas (e.g., DynamoDB eventual consistency). If the primary fails before replication completes, the write is lost—even though it was 'committed' to the client.",
+      "consequence": "True durability requires replication to a quorum; local commits aren't durable in distributed systems."
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing",
+      "title": "Fallacies of Distributed Computing - Wikipedia",
+      "recency": "2024 (current)"
+    },
+    {
+      "url": "https://lawsofsoftwareengineering.com/laws/fallacies-of-distributed-computing/",
+      "title": "Fallacies of Distributed Computing | Laws of Software Engineering",
+      "recency": "2024"
+    },
+    {
+      "url": "https://ably.com/blog/8-fallacies-of-distributed-computing",
+      "title": "Navigating the 8 fallacies of distributed computing",
+      "recency": "2024"
+    },
+    {
+      "url": "https://amturing.acm.org/p558-lamport.pdf",
+      "title": "Time, clocks, and the ordering of events in a distributed system",
+      "recency": "1978 (seminal); widely referenced 2024"
+    },
+    {
+      "url": "https://www.baeldung.com/cs/lamport-clock",
+      "title": "Lamport Clock | Baeldung on Computer Science",
+      "recency": "2024"
+    },
+    {
+      "url": "https://web.stanford.edu/~ouster/cgi-bin/cs190-winter20/lecture.php?topic=raft",
+      "title": "The Raft Consensus Algorithm - Stanford CS 190",
+      "recency": "2024 (course materials)"
+    },
+    {
+      "url": "https://www.yugabyte.com/key-concepts/raft-consensus-algorithm/",
+      "title": "Raft Consensus Algorithm",
+      "recency": "2024"
+    },
+    {
+      "url": "https://codilime.com/blog/closer-look-at-raft-internals-log-replication-leader-election/",
+      "title": "A closer look at Raft internals – leader election and log replication",
+      "recency": "2024"
+    },
+    {
+      "url": "https://microservices.io/patterns/communication-style/idempotent-consumer.html",
+      "title": "Pattern: Idempotent Consumer",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.milanjovanovic.tech/blog/idempotent-consumer-handling-duplicate-messages",
+      "title": "Idempotent Consumer - Handling Duplicate Messages",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.confluent.io/blog/exactly-once-semantics-are-possible-heres-how-apache-kafka-does-it/",
+      "title": "Exactly-once Semantics is Possible: Here's How Apache Kafka Does it",
+      "recency": "2024"
+    },
+    {
+      "url": "https://stripe.com/blog/idempotency",
+      "title": "Designing robust and predictable APIs with idempotency",
+      "recency": "2024"
+    },
+    {
+      "url": "https://docs.stripe.com/api/idempotent_requests",
+      "title": "Idempotent requests | Stripe API Reference",
+      "recency": "2024"
+    },
+    {
+      "url": "https://singhajit.com/how-stripe-prevents-double-payment/",
+      "title": "How Stripe Prevents Double Payments With Idempotency Keys",
+      "recency": "2024"
+    },
+    {
+      "url": "https://blog.levelupcoding.com/p/strong-vs-eventual-consistency",
+      "title": "Strong vs Eventual Consistency in Distributed Systems",
+      "recency": "2024"
+    },
+    {
+      "url": "https://arpitbhayani.me/blogs/eventual-consistency/",
+      "title": "Why Eventual Consistency is Preferred in Distributed Systems",
+      "recency": "2024"
+    },
+    {
+      "url": "https://research.google/pubs/spanner-truetime-and-the-cap-theorem/",
+      "title": "Spanner, TrueTime and the CAP Theorem",
+      "recency": "2012 (seminal); https://cloud.google.com/blog/products/databases/inside-cloud-spanner-and-the-cap-theorem (2024)"
+    },
+    {
+      "url": "https://cloud.google.com/blog/products/databases/inside-cloud-spanner-and-the-cap-theorem",
+      "title": "Inside Cloud Spanner and the CAP Theorem",
+      "recency": "2024"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html",
+      "title": "Transactional outbox pattern - AWS Prescriptive Guidance",
+      "recency": "2025"
+    },
+    {
+      "url": "https://www.usenix.org/system/files/osdi18-alquraan.pdf",
+      "title": "An Analysis of Network-Partitioning Failures in Cloud Systems",
+      "recency": "2018 (OSDI; widely cited 2024)"
+    },
+    {
+      "url": "https://dl.acm.org/doi/full/10.1145/3576192",
+      "title": "Partial Network Partitioning",
+      "recency": "2023"
+    },
+    {
+      "url": "https://github.blog/news-insights/company-news/oct21-post-incident-analysis/",
+      "title": "October 21 post-incident analysis - The GitHub Blog",
+      "recency": "2021"
+    },
+    {
+      "url": "https://slack.engineering/slacks-outage-on-january-4th-2021/",
+      "title": "Slack's Outage on January 4th 2021",
+      "recency": "2021"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Vector_clock",
+      "title": "Vector clock - Wikipedia",
+      "recency": "2024"
+    },
+    {
+      "url": "https://sookocheff.com/post/time/vector-clocks/",
+      "title": "Vector Clocks | Kevin Sookocheff",
+      "recency": "2024"
+    },
+    {
+      "url": "https://distributedsystemauthority.com/vector-clocks-and-causal-consistency",
+      "title": "Vector Clocks and Causal Consistency in Distributed Systems",
+      "recency": "2024"
+    },
+    {
+      "url": "https://space-raccoon.medium.com/navigating-consensus-the-practical-byzantine-fault-tolerance-pbft-algorithm-e44ec01babba",
+      "title": "Navigating Consensus: The Practical Byzantine Fault Tolerance (PBFT) Algorithm",
+      "recency": "2024"
+    },
+    {
+      "url": "https://chain.link/article/byzantine-fault-tolerant-consensus",
+      "title": "Byzantine Fault Tolerant Consensus | Chainlink",
+      "recency": "2024"
+    },
+    {
+      "url": "https://aerospike.com/blog/what-is-p99-latency/",
+      "title": "What Is P99 Latency? Understanding the 99th Percentile of Performance",
+      "recency": "2024"
+    },
+    {
+      "url": "https://last9.io/blog/tail-latency/",
+      "title": "Tail Latency: Key in Large-Scale Distributed Systems",
+      "recency": "2024"
+    },
+    {
+      "url": "https://igor.io/latency/",
+      "title": "latency: a primer",
+      "recency": "2024"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Two-phase_commit_protocol",
+      "title": "Two-phase commit protocol - Wikipedia",
+      "recency": "2024"
+    },
+    {
+      "url": "https://developer.confluent.io/courses/architecture/transactions/",
+      "title": "Kafka Transactional Support: How It Enables Exactly-Once Semantics",
+      "recency": "2024"
+    }
+  ]
+}

@@ -1,0 +1,482 @@
+{
+  "facts": [
+    {
+      "fact": "PostgreSQL MVCC creates a new version of a row instead of overwriting it during updates, allowing each transaction to see a snapshot of the database as it was at transaction start",
+      "source": "https://www.postgresql.org/docs/current/mvcc-intro.html",
+      "date": "2025-02-01"
+    },
+    {
+      "fact": "Reading never blocks writing and writing never blocks reading in PostgreSQL because read locks don't conflict with write locks",
+      "source": "https://devcenter.heroku.com/articles/postgresql-concurrency",
+      "date": "2024-06-01"
+    },
+    {
+      "fact": "PostgreSQL uses 32-bit transaction IDs (XIDs), supporting up to 4 billion transactions before wraparound occurs",
+      "source": "https://www.bytebase.com/blog/postgres-transaction-id-wraparound/",
+      "date": "2025-01-15"
+    },
+    {
+      "fact": "WAL (Write-Ahead Logging) requires that changes to data files must be written only after WAL records describing those changes have been flushed to permanent storage",
+      "source": "https://www.postgresql.org/docs/current/wal-intro.html",
+      "date": "2025-02-01"
+    },
+    {
+      "fact": "During crash recovery, PostgreSQL replays WAL from the Redo Point (the LSN where the last checkpoint started) to restore the database to a consistent state",
+      "source": "https://learnomate.org/write-ahead-logging-in-postgresql/",
+      "date": "2024-11-20"
+    },
+    {
+      "fact": "A single long-running transaction can prevent VACUUM from cleaning dead tuples, causing the entire database to bloat because autovacuum cannot remove row versions that transaction might need to see",
+      "source": "https://www.tembo.io/blog/optimizing-postgres-auto-vacuum",
+      "date": "2025-02-15"
+    },
+    {
+      "fact": "The default autovacuum_vacuum_scale_factor is 0.2 (20%), meaning autovacuum waits for 20% of a table to become dead before running, causing massive bloat for large tables",
+      "source": "https://www.tembo.io/blog/optimizing-postgres-auto-vacuum",
+      "date": "2025-02-15"
+    },
+    {
+      "fact": "For a 100 million row table with default scale factor of 0.2, autovacuum won't run until 20 million rows are dead",
+      "source": "https://medium.com/@jramcloud1/08-postgresql-17-complete-tuning-guide-for-vacuum-autovacuum-aa36b945a7cf",
+      "date": "2025-01-20"
+    },
+    {
+      "fact": "PostgreSQL freezes old tuples by marking them with FrozenTransactionId, which always compares as older than any normal XID, solving the wraparound problem",
+      "source": "https://www.postgresql.org/docs/current/routine-vacuuming.html",
+      "date": "2025-02-01"
+    },
+    {
+      "fact": "autovacuum_freeze_max_age defaults to 200 million transactions; if a table goes unvacuumed longer than that, wraparound prevention becomes urgent",
+      "source": "https://www.postgresql.org/docs/current/routine-vacuuming.html",
+      "date": "2025-02-01"
+    },
+    {
+      "fact": "PostgreSQL switches to READ-ONLY mode when it gets within 2 million transactions of the 2 billion XID limit to prevent data corruption",
+      "source": "https://www.postgresql.fastware.com/blog/how-to-fix-transaction-wraparound-in-postgresql",
+      "date": "2024-10-15"
+    },
+    {
+      "fact": "READ COMMITTED is the default isolation level in PostgreSQL; it allows phantom reads because successive SELECT statements see different committed data",
+      "source": "https://www.postgresql.org/docs/current/transaction-iso.html",
+      "date": "2025-02-01"
+    },
+    {
+      "fact": "REPEATABLE READ prevents all SQL phenomena except serialization anomalies; both REPEATABLE READ and SERIALIZABLE can produce serialization failures requiring application-level retry",
+      "source": "https://www.postgresql.org/docs/current/transaction-iso.html",
+      "date": "2025-02-01"
+    },
+    {
+      "fact": "B-tree indexes handle equality, range queries, and data sorting; they can be used with =, <, <=, >, >=, BETWEEN, IN operators",
+      "source": "https://www.postgresql.org/docs/current/indexes-types.html",
+      "date": "2025-02-01"
+    },
+    {
+      "fact": "Hash indexes can only handle simple equality comparisons and are faster than B-tree for equality-only lookups on values longer than 25 characters",
+      "source": "https://www.postgresql.org/docs/current/indexes-types.html",
+      "date": "2025-02-01"
+    },
+    {
+      "fact": "GiST indexes are infrastructure for many indexing strategies and are particularly useful for spatial data, geometric types, and full-text search",
+      "source": "https://www.postgresql.org/docs/current/indexes-types.html",
+      "date": "2025-02-01"
+    },
+    {
+      "fact": "A B-tree traversal typically requires only 3–4 steps even for tables with millions of rows",
+      "source": "https://www.freecodecamp.org/news/how-database-indexes-work-a-practical-guide-with-postgresql-examples/",
+      "date": "2024-08-20"
+    },
+    {
+      "fact": "pg_blocking_pids() function returns the PIDs of sessions blocking a given PID, making it easy to identify the source of lock contention",
+      "source": "https://wiki.postgresql.org/wiki/Lock_Monitoring",
+      "date": "2024-12-01"
+    },
+    {
+      "fact": "Joining pg_stat_activity with pg_locks reveals which transactions are waiting and which are holding locks",
+      "source": "https://medium.com/@jramcloud1/monitoring-active-queries-in-postgresql-real-time-performance-diagnostics-using-pg_stat_activity-cd707a42aee7",
+      "date": "2025-01-10"
+    },
+    {
+      "fact": "A deadlock occurs when two or more transactions each wait for a lock held by another transaction in a circular dependency; PostgreSQL detects and rolls back one of the transactions",
+      "source": "https://www.techbuddies.io/2026/02/20/postgresql-deadlock-debugging-a-practical-guide-with-pg_locks/",
+      "date": "2026-02-20"
+    },
+    {
+      "fact": "log_lock_waits setting logs locks held for longer than 1 second with no performance cost, because it piggybacks on PostgreSQL's deadlock detection logic",
+      "source": "https://pganalyze.com/blog/5mins-postgres-lock-monitoring-lwlock-and-log_lock_waits-setting",
+      "date": "2024-09-15"
+    },
+    {
+      "fact": "Netflix achieved 75% improved performance and 28% cost savings on critical applications by migrating from self-managed PostgreSQL to Amazon Aurora",
+      "source": "https://aws.amazon.com/blogs/database/netflix-consolidates-relational-database-infrastructure-on-amazon-aurora-achieving-up-to-75-improved-performance/",
+      "date": "2024-03-20"
+    },
+    {
+      "fact": "Netflix's Spinnaker achieved 50% average latency reduction and Policy Engine reduced average latency by 75% (from 26.72ms to 6.51ms) after Aurora migration",
+      "source": "https://aws.amazon.com/blogs/database/netflix-consolidates-relational-database-infrastructure-on-amazon-aurora-achieving-up-to-75-improved-performance/",
+      "date": "2024-03-20"
+    },
+    {
+      "fact": "pgstattuple module provides accurate bloat measurements by reading actual data pages, whereas SQL queries rely on cumulative statistics which may be less precise",
+      "source": "https://docs.cloud.google.com/alloydb/docs/measure-address-table-index-bloat",
+      "date": "2025-01-15"
+    },
+    {
+      "fact": "A bytes-per-row metric (dividing index size by row count) can indicate index bloat; higher values suggest more bloated indexes",
+      "source": "https://medium.com/@jramcloud1/understanding-and-managing-bloating-in-postgresql-a-complete-guide-for-dbas-95f50670b488",
+      "date": "2025-01-20"
+    },
+    {
+      "fact": "A phantom read occurs when a transaction re-executes a query and sees a different set of rows due to concurrent transactions inserting rows matching the query predicate",
+      "source": "https://vladmihalcea.com/phantom-read/",
+      "date": "2024-06-10"
+    },
+    {
+      "fact": "A serialization anomaly means the result of successfully committing a group of transactions is inconsistent with all possible orderings of running those transactions serially",
+      "source": "https://pgdash.io/blog/isolation-anomalies-in-postgresql.html",
+      "date": "2025-01-05"
+    },
+    {
+      "fact": "For high-churn tables, reduce autovacuum_vacuum_scale_factor to the 0.02–0.05 range (2–5% dead rows) to trigger more frequent vacuuming and prevent excessive bloat",
+      "source": "https://www.tembo.io/blog/optimizing-postgres-auto-vacuum",
+      "date": "2025-02-15"
+    },
+    {
+      "fact": "EXPLAIN ANALYZE actually executes the query and adds real runtime statistics like actual rows, loops, and timing",
+      "source": "https://www.postgresql.org/docs/current/using-explain.html",
+      "date": "2025-02-01"
+    },
+    {
+      "fact": "Index-Only Scan walks through B-tree leaf nodes without accessing the table, because the index contains all columns needed to satisfy the query",
+      "source": "https://thoughtbot.com/blog/reading-an-explain-analyze-query-plan",
+      "date": "2024-07-01"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "Long-running transaction causing bloat",
+      "description": "A data analyst runs a SELECT statement that takes 6 hours. During that time, another process updates 50 million rows and deletes 40 million rows. VACUUM cannot remove any dead tuples because the long-running transaction might need to see them, causing the table to grow by tens of GB despite autovacuum running every 10 minutes.",
+      "source": "https://www.tembo.io/blog/optimizing-postgres-auto-vacuum"
+    },
+    {
+      "scenario": "Transaction wraparound incident",
+      "description": "A production database with a hot table (250 updates per second) runs for 3 years without proper autovacuum tuning. When the system reaches 1.8 billion XIDs without a freeze, PostgreSQL shifts to READ-ONLY mode and all writes fail until a manual VACUUM FREEZE completes.",
+      "source": "https://www.postgresql.fastware.com/blog/how-to-fix-transaction-wraparound-in-postgresql"
+    },
+    {
+      "scenario": "Phantom read in READ COMMITTED",
+      "description": "Transaction A counts sales with amount > 150 at 14:00:00 and sees 2 rows. At 14:00:05, Transaction B inserts a new sale with amount 250 and commits. When Transaction A re-executes the same query at 14:00:10, it now sees 3 rows. The inserted row is 'phantom' because Transaction A didn't see it at its start snapshot.",
+      "source": "https://pgdash.io/blog/isolation-anomalies-in-postgresql.html"
+    },
+    {
+      "scenario": "Serialization anomaly example",
+      "description": "Transaction A reads sum of orders with status='NEW' (total=$500) and inserts new order with status='FAILED' for $500. Transaction B reads sum of orders with status='FAILED' (total=$300) and inserts new order with status='NEW' for $300. Both commit. No possible serial ordering of these transactions produces this outcome, violating SERIALIZABLE guarantees.",
+      "source": "https://medium.com/@dowaj/postgresql-isolation-and-serialization-anomalies-172ff9eed19b"
+    },
+    {
+      "scenario": "Default scale factor bloat in practice",
+      "description": "A table with 10 million rows and 1000 updates/second uses default autovacuum_vacuum_scale_factor of 0.2. After 20 minutes, 12 million updates occur but autovacuum doesn't run until 2 million dead tuples exist. By then, the table has swollen to 3x its logical size, and query scans read millions of dead rows.",
+      "source": "https://medium.com/@jramcloud1/08-postgresql-17-complete-tuning-guide-for-vacuum-autovacuum-aa36b945a7cf"
+    },
+    {
+      "scenario": "Netflix Aurora migration performance gain",
+      "description": "Netflix migrated their Spinnaker service from self-managed PostgreSQL to Amazon Aurora (PostgreSQL compatible) and achieved 50% average latency reduction across all queries, from ~40ms to ~20ms, while also reducing infrastructure costs by 28%.",
+      "source": "https://aws.amazon.com/blogs/database/netflix-consolidates-relational-database-infrastructure-on-amazon-aurora-achieving-up-to-75-improved-performance/"
+    },
+    {
+      "scenario": "Deadlock in multi-table transaction",
+      "description": "Transaction A locks table orders then tries to lock table payments. Transaction B locks table payments then tries to lock table orders. Both transactions detect a deadlock after a few seconds. PostgreSQL rolls back one transaction, and the application retries.",
+      "source": "https://www.techbuddies.io/2026/02/20/postgresql-deadlock-debugging-a-practical-guide-with-pg_locks/"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "MVCC snapshot isolation",
+      "analogy": "MVCC is like every transaction getting a frozen photo of the database at transaction start. Even if others modify the actual database, your transaction reads from your frozen photo, so you see consistent data. If another transaction is still looking at the original photo while the photo is being replaced, the database must keep the old photo around until that transaction finishes.",
+      "source": "https://devcenter.heroku.com/articles/postgresql-concurrency"
+    },
+    {
+      "concept": "WAL write-ahead logging",
+      "analogy": "WAL is like logging every change to a journal before writing it to the ledger. If the server crashes before updating the ledger, you replay the journal entries to reconstruct the state. The journal is the source of truth during recovery.",
+      "source": "https://www.architecture-weekly.com/p/the-write-ahead-log-a-foundation"
+    },
+    {
+      "concept": "Transaction ID freezing",
+      "analogy": "Transaction IDs are like page numbers in a book that wrap around after 4 billion pages. To prevent old pages from appearing 'newer' after wraparound, you mark them as 'FrozenPage' — a special designation that always sorts as the oldest, regardless of wraparound.",
+      "source": "https://www.postgresql.fastware.com/blog/how-to-fix-transaction-wraparound-in-postgresql"
+    },
+    {
+      "concept": "Autovacuum scale factor",
+      "analogy": "Scale factor is like a garbage can that only empties when it reaches a certain fullness level. The default 20% threshold is like a can that doesn't empty until it's 80% full. For heavy waste producers (hot tables), you lower it to 5% so it empties more often before overflowing.",
+      "source": "https://www.tembo.io/blog/optimizing-postgres-auto-vacuum"
+    },
+    {
+      "concept": "B-tree index traversal",
+      "analogy": "A B-tree is like a library card catalog. To find a book, you start at the root guide, which points to broader category sections, then narrower subsections, then the exact shelf. Even with millions of books, you reach the shelf in 3–4 steps.",
+      "source": "https://www.freecodecamp.org/news/how-database-indexes-work-a-practical-guide-with-postgresql-examples/"
+    },
+    {
+      "concept": "Deadlock detection",
+      "analogy": "A deadlock is like two people reaching for the same two documents: Person A grabs document 1 and waits for document 2. Person B grabs document 2 and waits for document 1. Neither can proceed. PostgreSQL's deadlock detector is a 'manager' who detects this circular wait and tells one person to let go and try again.",
+      "source": "https://www.techbuddies.io/2026/02/20/postgresql-deadlock-debugging-a-practical-guide-with-pg_locks/"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "PostgreSQL maximum XIDs before wraparound",
+      "value": "4 billion",
+      "context": "32-bit transaction ID limit; beyond this, XIDs wrap and data becomes invisible",
+      "source": "https://www.bytebase.com/blog/postgres-transaction-id-wraparound/"
+    },
+    {
+      "metric": "autovacuum_freeze_max_age default",
+      "value": "200 million transactions",
+      "context": "After this many transactions without freeze, PostgreSQL forces an aggressive vacuum",
+      "source": "https://www.postgresql.org/docs/current/routine-vacuuming.html"
+    },
+    {
+      "metric": "PostgreSQL READ-ONLY threshold",
+      "value": "2 million transactions from limit",
+      "context": "When within 2M transactions of 4B, PostgreSQL stops accepting writes to prevent data corruption",
+      "source": "https://www.postgresql.fastware.com/blog/how-to-fix-transaction-wraparound-in-postgresql"
+    },
+    {
+      "metric": "Default autovacuum_vacuum_scale_factor",
+      "value": "0.2 (20%)",
+      "context": "Autovacuum waits for 20% of table to become dead before running",
+      "source": "https://www.tembo.io/blog/optimizing-postgres-auto-vacuum"
+    },
+    {
+      "metric": "Recommended scale factor for high-churn tables",
+      "value": "0.02–0.05 (2–5%)",
+      "context": "Triggers vacuum much sooner to prevent bloat in hot tables",
+      "source": "https://www.tembo.io/blog/optimizing-postgres-auto-vacuum"
+    },
+    {
+      "metric": "B-tree traversal depth for millions of rows",
+      "value": "3–4 levels",
+      "context": "Even with millions of rows, a B-tree search requires only 3–4 pointer hops",
+      "source": "https://www.freecodecamp.org/news/how-database-indexes-work-a-practical-guide-with-postgresql-examples/"
+    },
+    {
+      "metric": "Minimum character length for hash index advantage",
+      "value": "25+ characters",
+      "context": "Hash indexes are smaller and faster than B-tree only for values longer than 25 characters",
+      "source": "https://www.postgresql.org/docs/current/indexes-types.html"
+    },
+    {
+      "metric": "Netflix Policy Engine latency reduction",
+      "value": "75% (26.72ms → 6.51ms)",
+      "context": "Average latency after Aurora migration from self-managed PostgreSQL",
+      "source": "https://aws.amazon.com/blogs/database/netflix-consolidates-relational-database-infrastructure-on-amazon-aurora-achieving-up-to-75-improved-performance/"
+    },
+    {
+      "metric": "Netflix Spinnaker latency reduction",
+      "value": "50%",
+      "context": "Average latency improvement after Aurora migration",
+      "source": "https://aws.amazon.com/blogs/database/netflix-consolidates-relational-database-infrastructure-on-amazon-aurora-achieving-up-to-75-improved-performance/"
+    },
+    {
+      "metric": "Netflix cost savings",
+      "value": "28%",
+      "context": "Infrastructure cost reduction across critical services after Aurora migration",
+      "source": "https://aws.amazon.com/blogs/database/netflix-consolidates-relational-database-infrastructure-on-amazon-aurora-achieving-up-to-75-improved-improved/"
+    },
+    {
+      "metric": "Dead rows before autovacuum on 10M row table",
+      "value": "2 million",
+      "context": "With default 20% scale factor, autovacuum waits for 2M dead tuples (20% of 10M)",
+      "source": "https://medium.com/@jramcloud1/08-postgresql-17-complete-tuning-guide-for-vacuum-autovacuum-aa36b945a7cf"
+    },
+    {
+      "metric": "Dead rows before autovacuum on 100M row table",
+      "value": "20 million",
+      "context": "With default 20% scale factor, autovacuum waits for 20M dead tuples (20% of 100M)",
+      "source": "https://medium.com/@jramcloud1/08-postgresql-17-complete-tuning-guide-for-vacuum-autovacuum-aa36b945a7cf"
+    },
+    {
+      "metric": "Lock wait logging threshold",
+      "value": "1 second",
+      "context": "log_lock_waits logs locks held longer than 1 second; this setting has no performance cost",
+      "source": "https://pganalyze.com/blog/5mins-postgres-lock-monitoring-lwlock-and-log_lock_waits-setting"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "MVCC means all reads are always faster because there's no locking",
+      "reality": "MVCC eliminates read-write contention, but reads must still traverse indexes, scan data pages, and pay I/O cost. If the working set is large or bloat is severe, reads can be very slow.",
+      "source": "https://devcenter.heroku.com/articles/postgresql-concurrency"
+    },
+    {
+      "misconception": "WAL is only needed during crash recovery",
+      "reality": "WAL is the source of truth for all changes. During normal operation, WAL enables point-in-time recovery, replication to replicas, and consistency across the cluster.",
+      "source": "https://www.postgresql.org/docs/current/wal-intro.html"
+    },
+    {
+      "misconception": "Autovacuum will always keep your database in good shape if left alone",
+      "reality": "Autovacuum with default settings often lags on high-churn tables. The default 20% scale factor means tables bloat significantly before cleanup runs.",
+      "source": "https://www.tembo.io/blog/optimizing-postgres-auto-vacuum"
+    },
+    {
+      "misconception": "Long-running transactions are fine as long as they're not updating data",
+      "reality": "Even read-only long-running transactions block VACUUM from cleaning dead tuples, causing database-wide bloat because VACUUM must keep old row versions around in case the transaction needs them.",
+      "source": "https://www.tembo.io/blog/optimizing-postgres-auto-vacuum"
+    },
+    {
+      "misconception": "READ COMMITTED isolation means your transaction won't see other people's changes",
+      "reality": "READ COMMITTED allows you to see changes committed by other transactions mid-statement. The snapshot is per-statement, not per-transaction.",
+      "source": "https://www.postgresql.org/docs/current/transaction-iso.html"
+    },
+    {
+      "misconception": "REPEATABLE READ prevents all anomalies and is safe to use everywhere",
+      "reality": "REPEATABLE READ still allows serialization anomalies (phantom writes). Applications must handle serialization failures with retry logic.",
+      "source": "https://www.postgresql.org/docs/current/transaction-iso.html"
+    },
+    {
+      "misconception": "Hash indexes are always faster than B-tree for equality lookups",
+      "reality": "Hash indexes are only faster for values longer than ~25 characters. For shorter values, B-tree is faster and uses less disk space.",
+      "source": "https://www.postgresql.org/docs/current/indexes-types.html"
+    },
+    {
+      "misconception": "GiST indexes are only for geometric/spatial data",
+      "reality": "GiST is infrastructure for multiple index strategies. It supports ranges, full-text search, and custom operators beyond spatial queries.",
+      "source": "https://www.postgresql.org/docs/current/indexes-types.html"
+    },
+    {
+      "misconception": "Locking problems are always caused by concurrent transactions fighting over the same rows",
+      "reality": "Locking can also arise from index scalability issues, non-indexed predicates forcing full table scans, or long transactions holding implicit locks. Use pg_stat_activity and pg_locks to diagnose the actual cause.",
+      "source": "https://pganalyze.com/blog/5mins-postgres-find-cause-locking-problems"
+    },
+    {
+      "misconception": "If I set autovacuum_vacuum_scale_factor to 0.01, my bloat problems are solved",
+      "reality": "Too-low scale factor can cause autovacuum to run excessively, consuming CPU and I/O. The real fix is often autovacuum_vacuum_cost_limit (speed) not the threshold (frequency).",
+      "source": "https://medium.com/@jramcloud1/08-postgresql-17-complete-tuning-guide-for-vacuum-autovacuum-aa36b945a7cf"
+    },
+    {
+      "misconception": "Index bloat is harmless as long as queries are fast",
+      "reality": "Index bloat wastes disk space, increases cache pressure, and eventually forces more disk I/O during scans. It's worth monitoring even if queries feel fast now.",
+      "source": "https://medium.com/@jramcloud1/understanding-and-managing-bloating-in-postgresql-a-complete-guide-for-dbas-95f50670b488"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.postgresql.org/docs/current/mvcc-intro.html",
+      "title": "PostgreSQL Official Docs: MVCC Introduction",
+      "recency": "Current (2025-02-01)"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/wal-intro.html",
+      "title": "PostgreSQL Official Docs: Write-Ahead Logging",
+      "recency": "Current (2025-02-01)"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/transaction-iso.html",
+      "title": "PostgreSQL Official Docs: Transaction Isolation",
+      "recency": "Current (2025-02-01)"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/indexes-types.html",
+      "title": "PostgreSQL Official Docs: Index Types",
+      "recency": "Current (2025-02-01)"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/routine-vacuuming.html",
+      "title": "PostgreSQL Official Docs: Routine Vacuuming",
+      "recency": "Current (2025-02-01)"
+    },
+    {
+      "url": "https://devcenter.heroku.com/articles/postgresql-concurrency",
+      "title": "Heroku Dev Center: PostgreSQL Concurrency with MVCC",
+      "recency": "Recent (2024-06-01)"
+    },
+    {
+      "url": "https://www.bytebase.com/blog/postgres-transaction-id-wraparound/",
+      "title": "Bytebase: PostgreSQL Transaction ID Wraparound",
+      "recency": "Recent (2025-01-15)"
+    },
+    {
+      "url": "https://learnomate.org/write-ahead-logging-in-postgresql/",
+      "title": "LearnOmate: Understanding WAL in PostgreSQL",
+      "recency": "Recent (2024-11-20)"
+    },
+    {
+      "url": "https://www.tembo.io/blog/optimizing-postgres-auto-vacuum",
+      "title": "Tembo: Optimizing PostgreSQL's Autovacuum for High-Churn Tables",
+      "recency": "Recent (2025-02-15)"
+    },
+    {
+      "url": "https://medium.com/@jramcloud1/08-postgresql-17-complete-tuning-guide-for-vacuum-autovacuum-aa36b945a7cf",
+      "title": "Medium: PostgreSQL 17 Complete Tuning Guide for VACUUM & AUTOVACUUM",
+      "recency": "Recent (2025-01-20)"
+    },
+    {
+      "url": "https://www.postgresql.fastware.com/blog/how-to-fix-transaction-wraparound-in-postgresql",
+      "title": "PostgreSQL Fastware: How to Fix Transaction Wraparound",
+      "recency": "Recent (2024-10-15)"
+    },
+    {
+      "url": "https://aws.amazon.com/blogs/database/netflix-consolidates-relational-database-infrastructure-on-amazon-aurora-achieving-up-to-75-improved-performance/",
+      "title": "AWS Blog: Netflix Consolidates on Aurora, 75% Performance Improvement",
+      "recency": "Recent (2024-03-20)"
+    },
+    {
+      "url": "https://wiki.postgresql.org/wiki/Lock_Monitoring",
+      "title": "PostgreSQL Wiki: Lock Monitoring",
+      "recency": "Maintained (2024-12-01)"
+    },
+    {
+      "url": "https://www.techbuddies.io/2026/02/20/postgresql-deadlock-debugging-a-practical-guide-with-pg_locks/",
+      "title": "TechBuddies: PostgreSQL Deadlock Debugging with pg_locks",
+      "recency": "Current (2026-02-20)"
+    },
+    {
+      "url": "https://pganalyze.com/blog/5mins-postgres-lock-monitoring-lwlock-and-log_lock_waits-setting",
+      "title": "pgAnalyze: 5mins of Postgres on Lock Monitoring",
+      "recency": "Recent (2024-09-15)"
+    },
+    {
+      "url": "https://pganalyze.com/blog/5mins-postgres-find-cause-locking-problems",
+      "title": "pgAnalyze: Finding Root Cause of Locking Problems",
+      "recency": "Recent (2024-11-01)"
+    },
+    {
+      "url": "https://vladmihalcea.com/phantom-read/",
+      "title": "Vlad Mihalcea: A Beginner's Guide to Phantom Read Anomaly",
+      "recency": "Recent (2024-06-10)"
+    },
+    {
+      "url": "https://pgdash.io/blog/isolation-anomalies-in-postgresql.html",
+      "title": "pgDash: Isolation Anomalies in PostgreSQL",
+      "recency": "Recent (2025-01-05)"
+    },
+    {
+      "url": "https://docs.cloud.google.com/alloydb/docs/measure-address-table-index-bloat",
+      "title": "Google Cloud: Measure and Address Table and Index Bloat",
+      "recency": "Recent (2025-01-15)"
+    },
+    {
+      "url": "https://medium.com/@jramcloud1/understanding-and-managing-bloating-in-postgresql-a-complete-guide-for-dbas-95f50670b488",
+      "title": "Medium: Understanding and Managing Bloating in PostgreSQL",
+      "recency": "Recent (2025-01-20)"
+    },
+    {
+      "url": "https://thoughtbot.com/blog/reading-an-explain-analyze-query-plan",
+      "title": "ThoughtBot: Reading a Postgres EXPLAIN ANALYZE Query Plan",
+      "recency": "Established (2024-07-01)"
+    },
+    {
+      "url": "https://www.freecodecamp.org/news/how-database-indexes-work-a-practical-guide-with-postgresql-examples/",
+      "title": "FreeCodeCamp: How Database Indexes Work – PostgreSQL Guide",
+      "recency": "Recent (2024-08-20)"
+    },
+    {
+      "url": "https://www.architecture-weekly.com/p/the-write-ahead-log-a-foundation",
+      "title": "Architecture Weekly: The Write-Ahead Log Foundation",
+      "recency": "Recent (2024-10-15)"
+    },
+    {
+      "url": "https://medium.com/@dowaj/postgresql-isolation-and-serialization-anomalies-172ff9eed19b",
+      "title": "Medium: PostgreSQL Isolation and Serialization Anomalies",
+      "recency": "Recent (2025-01-05)"
+    }
+  ]
+}

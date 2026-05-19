@@ -1,0 +1,333 @@
+{
+  "facts": [
+    {
+      "fact": "Monotonic stack transforms O(n²) nested-loop problems into O(n) single-pass solutions by ensuring each element is pushed and popped exactly once",
+      "source": "https://dwf.dev/blog/2024/04/26/2024/monotonic-stacks-queues/",
+      "date": "2024-04-26"
+    },
+    {
+      "fact": "Prefix sum preprocessing enables O(1) range sum queries via formula Sum[l,r] = prefix[r] - prefix[l-1], achieving O(n+q) total complexity vs O(n×q) brute force",
+      "source": "https://usaco.guide/silver/prefix-sums",
+      "date": "2024"
+    },
+    {
+      "fact": "Segment trees achieve O(log n) for both range updates and range queries, while prefix sums are O(1) query but O(n) update cost on data changes",
+      "source": "https://cp-algorithms.com/data_structures/segment_tree.html",
+      "date": "2024"
+    },
+    {
+      "fact": "Fixed-size sliding window requires one complete array pass in O(n) time with O(1) space by maintaining running sum and slide-subtract-add operations",
+      "source": "https://www.geeksforgeeks.org/dsa/window-sliding-technique/",
+      "date": "2024"
+    },
+    {
+      "fact": "Variable-size sliding window uses two pointers (start/end) that expand and contract dynamically, maintaining O(n) time and O(k) space where k is distinct element count",
+      "source": "https://www.hellointerview.com/learn/code/sliding-window/variable-length",
+      "date": "2024"
+    },
+    {
+      "fact": "Largest Rectangle in Histogram problem solved via monotonic stack in O(n) time by finding left/right boundaries for each bar in single pass",
+      "source": "https://www.geeksforgeeks.org/dsa/largest-rectangular-area-in-a-histogram-using-stack/",
+      "date": "2024"
+    },
+    {
+      "fact": "Daily Temperatures (LeetCode 739) uses decreasing monotonic stack to find next greater element indices; each element pushed/popped exactly once for O(n) complexity",
+      "source": "https://algo.monster/liteproblems/739",
+      "date": "2024"
+    },
+    {
+      "fact": "Lazy propagation in segment trees defers updates to child nodes by storing update information in separate array, improving range update efficiency from O(n) to O(log n)",
+      "source": "https://medium.com/nybles/understanding-range-queries-and-updates-segment-tree-lazy-propagation-and-mos-algorithm-d2cd2f6586d8",
+      "date": "2024"
+    },
+    {
+      "fact": "Monotonic stack tree using binary lifting can answer Range Min/Max queries (RMQ) in O(log n) per query by leveraging next-greater-element relationships",
+      "source": "https://codeforces.com/blog/entry/153011",
+      "date": "2024"
+    },
+    {
+      "fact": "String problems combining sliding window + hash map track character frequencies in O(n) time O(d) space, where d is number of distinct characters",
+      "source": "https://github.com/Chanda-Abdul/Several-Coding-Patterns-for-Solving-Data-Structures-and-Algorithms-Problems-during-Interviews",
+      "date": "2024"
+    },
+    {
+      "fact": "Next greater element trigger phrases include 'next greater', 'previous smaller', 'largest rectangle', 'maximum area', 'nearest larger/smaller' — all signal monotonic stack applicability",
+      "source": "https://www.hellointerview.com/learn/code/stack/monotonic-stack",
+      "date": "2024"
+    },
+    {
+      "fact": "Fenwick trees (Binary Indexed Trees) are lighter on memory than segment trees for point updates to prefix sums, achieving O(log n) both operations",
+      "source": "https://usaco.guide/plat/RURQ",
+      "date": "2024"
+    },
+    {
+      "fact": "Common monotonic stack interview problems at FAANG include: LeetCode 496 (Next Greater I), 739 (Daily Temperatures), 84 (Largest Rectangle), 901 (Stock Span), 503 (Next Greater II)",
+      "source": "https://www.hellointerview.com/learn/code/stack/monotonic-stack",
+      "date": "2024"
+    },
+    {
+      "fact": "Two-pointer initialization must match problem criteria; pointer movement depends on condition checks; off-by-one errors occur from incorrect stop conditions",
+      "source": "https://interviewing.io/two-pointers-interview-questions",
+      "date": "2024"
+    },
+    {
+      "fact": "For n=10⁶ elements and q=10⁶ queries: naive O(n×q) = 10¹² operations; prefix sum O(n+q) = 2×10⁶ operations (10,000× improvement)",
+      "source": "https://dev.to/umair01/on-to-o1-how-prefix-sum-will-change-your-code-forever-2l33",
+      "date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "name": "Daily Temperatures (LeetCode 739)",
+      "description": "Given array [73,74,75,71,69,72,76,73], output [1,1,4,2,1,1,0,0] using decreasing monotonic stack. Input temperatures from real weather data. Each answer[i] is days until warmer temperature found.",
+      "company": "Google, Meta",
+      "reference": "https://algo.monster/liteproblems/739"
+    },
+    {
+      "name": "Largest Rectangle in Histogram (LeetCode 84)",
+      "description": "Given histogram heights [2,1,5,6,2,3], find max rectangle area=10 (width=2, height=5). Used in real image processing for connected component analysis.",
+      "company": "Amazon, Microsoft",
+      "reference": "https://www.geeksforgeeks.org/dsa/largest-rectangular-area-in-a-histogram-using-stack/"
+    },
+    {
+      "name": "Next Greater Element I (LeetCode 496)",
+      "description": "Given nums1=[4,1,2], nums2=[1,3,4,2], output [-1,3,-1]. Real use: time-series data finding next signal spike greater than current value.",
+      "company": "Google, Facebook",
+      "reference": "https://leetcode.com/problem-list/monotonic-stack/"
+    },
+    {
+      "name": "Longest Substring Without Repeating Characters",
+      "description": "Input 'abcabcbb' outputs 3 (substring 'abc'). Variable sliding window + hash map tracks last-seen indices. Real use: validation scanning for duplicate tokens in logs.",
+      "company": "Meta, Apple",
+      "reference": "https://algomap.io/lessons/sliding-window"
+    },
+    {
+      "name": "Stock Span (LeetCode 901)",
+      "description": "Given prices [100,80,60,70,60,75,85], spans [1,1,1,2,1,4,6]. Monotonic stack finds consecutive days prices ≤ current. Real use: financial span calculation for trading signals.",
+      "company": "Bloomberg, Citadel",
+      "reference": "https://leetcode.com/discuss/study-guide/5148505/Monotonic-Stack-Guide-+-List-of-Problems/"
+    },
+    {
+      "name": "Range Sum Query (1D Array)",
+      "description": "Array [3,1,6,5], query range [1,3]=12 answered in O(1) via prefix sums. Real use: database cumulative aggregations in O(1) after O(n) preprocessing.",
+      "company": "Google, Microsoft",
+      "reference": "https://usaco.guide/silver/prefix-sums"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Monotonic Stack",
+      "analogy": "A monotonic stack is like standing in a concert line where people are ordered by height. When a taller person arrives, everyone shorter than them steps aside (gets popped). The person directly in front (if any) is the 'next taller person' to their right.",
+      "source": "https://www.hellointerview.com/learn/code/stack/monotonic-stack"
+    },
+    {
+      "concept": "Sliding Window",
+      "analogy": "A sliding window is like looking through a fixed-size glass pane moving across a landscape. You see only what fits in the pane. As you slide right, the left edge disappears, the right edge appears. For variable windows, the glass expands/contracts based on what you're looking for.",
+      "source": "https://algomap.io/lessons/sliding-window"
+    },
+    {
+      "concept": "Prefix Sums",
+      "analogy": "Prefix sums are like keeping a cumulative bank balance. Instead of recalculating total from transactions, you store running totals. To find balance in range [month 3 to month 7], subtract month-2 balance from month-7 balance.",
+      "source": "https://usaco.guide/silver/prefix-sums"
+    },
+    {
+      "concept": "Segment Tree vs Prefix Sum",
+      "analogy": "Prefix sums are like a frozen snapshot (fast reads but expensive updates). Segment trees are like a live system (balanced read/write). Choose prefix if data is static; choose segment tree if data changes frequently.",
+      "source": "https://cp-algorithms.com/data_structures/segment_tree.html"
+    },
+    {
+      "concept": "Two Pointers",
+      "analogy": "Two pointers are like two runners on a track: left runner starts at start line, right runner at finish. They move based on rules (if left < target, move right; if left > target, move left). They meet when answer is found.",
+      "source": "https://interviewing.io/two-pointers-interview-questions"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Complexity improvement: O(n²) brute force → O(n) monotonic stack",
+      "value": "100× speedup for n=1000, 1,000,000× for n=1,000,000",
+      "context": "Next greater element problems",
+      "source": "https://dwf.dev/blog/2024/04/26/2024/monotonic-stacks-queues/"
+    },
+    {
+      "metric": "Prefix sum query performance after preprocessing",
+      "value": "O(n+q) total vs O(n×q) brute force",
+      "context": "For n=10⁶, q=10⁶: 2×10⁶ vs 10¹² operations",
+      "source": "https://dev.to/umair01/on-to-o1-how-prefix-sum-will-change-your-code-forever-2l33"
+    },
+    {
+      "metric": "Segment tree complexity for range operations",
+      "value": "O(log n) per update and O(log n) per query",
+      "context": "vs prefix sum O(n) per update, O(1) per query",
+      "source": "https://cp-algorithms.com/data_structures/segment_tree.html"
+    },
+    {
+      "metric": "Sliding window space complexity (variable size)",
+      "value": "O(d) where d = number of distinct elements",
+      "context": "Hash map based tracking",
+      "source": "https://labuladong.online/en/algo/essential-technique/sliding-window-framework/"
+    },
+    {
+      "metric": "Each stack element push/pop count",
+      "value": "Exactly 1 push, 1 pop per element in monotonic stack",
+      "context": "Guarantees O(n) total time not O(n²)",
+      "source": "https://medium.com/@hanxuyang0826/mastering-monotonic-stacks-optimizing-algorithmic-efficiency-in-array-and-sequence-problems-28d2a16eeccc"
+    },
+    {
+      "metric": "Fixed sliding window initialization cost",
+      "value": "O(k) where k = window size",
+      "context": "First window computation, then O(1) per slide",
+      "source": "https://www.geeksforgeeks.org/dsa/window-sliding-technique/"
+    },
+    {
+      "metric": "Lazy propagation depth for segment tree updates",
+      "value": "O(log n) depth traversal",
+      "context": "Defers O(n) updates to O(log n) amortized cost",
+      "source": "https://medium.com/nybles/understanding-range-queries-and-updates-segment-tree-lazy-propagation-and-mos-algorithm-d2cd2f6586d8"
+    },
+    {
+      "metric": "Common LeetCode monotonic stack problems",
+      "value": "13+ core patterns, 50+ problems",
+      "context": "Frequently asked at FAANG interviews",
+      "source": "https://leetcode.com/discuss/study-guide/5148505/Monotonic-Stack-Guide-+-List-of-Problems/"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Monotonic stack requires popping ALL smaller elements when a larger one arrives",
+      "truth": "Pop only while current > top AND while stack maintains order property. Stop and push current when condition breaks. This ensures O(n) not O(n²).",
+      "source": "https://www.hellointerview.com/learn/code/stack/monotonic-stack"
+    },
+    {
+      "misconception": "Sliding window always requires a hash map",
+      "truth": "Fixed-size windows need only running sum/product. Hash maps are for variable windows tracking frequencies/uniqueness. Don't add unnecessary data structures.",
+      "source": "https://algomap.io/lessons/sliding-window"
+    },
+    {
+      "misconception": "Prefix sums replace all array range queries",
+      "truth": "Prefix sums only work for static arrays with no updates. If data changes, you need segment trees or Fenwick trees for O(log n) operations.",
+      "source": "https://usaco.guide/silver/prefix-sums"
+    },
+    {
+      "misconception": "Two pointers require left pointer at start and right at end",
+      "truth": "Pointer initialization depends entirely on problem. Left/right applies to sorted arrays; for string problems use start of window, end of window. Initialize based on problem structure.",
+      "source": "https://interviewing.io/two-pointers-interview-questions"
+    },
+    {
+      "misconception": "Larger rectangles in histogram always use taller bars",
+      "truth": "Largest rectangle area can use shorter bar with wide width. Monotonic stack finds optimal width bounds for each bar height by finding nearest smaller elements on both sides.",
+      "source": "https://algo.monster/liteproblems/84"
+    },
+    {
+      "misconception": "Segment trees are always better than prefix sums",
+      "truth": "For query-only static data, prefix sums are simpler and faster (O(1) vs O(log n)). Use segment trees only when frequent updates occur.",
+      "source": "https://cp-algorithms.com/data_structures/segment_tree.html"
+    },
+    {
+      "misconception": "Variable sliding window contracts after expanding",
+      "truth": "Variable window expands until condition breaks, then contracts until condition is satisfied again. Both pointers move rightward overall, never 'reset'.",
+      "source": "https://www.hellointerview.com/learn/code/sliding-window/variable-length"
+    },
+    {
+      "misconception": "Monotonic stack only solves 'next greater' problems",
+      "truth": "Applies to any problem finding: next-greater, next-smaller, previous-greater, previous-smaller, maximum-area, span calculations, and nested structure problems.",
+      "source": "https://medium.com/@manuchaitanya/monotonic-stack-for-efficient-problem-solving-next-greater-next-smaller-previous-greater-and-6c63d0572644"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.hellointerview.com/learn/code/stack/monotonic-stack",
+      "title": "Monotonic Stack | Hello Interview",
+      "recency": "2024"
+    },
+    {
+      "url": "https://dwf.dev/blog/2024/04/26/2024/monotonic-stacks-queues/",
+      "title": "Introduction to monotonic stacks and queues (with LeetCode problems)",
+      "recency": "2024-04-26"
+    },
+    {
+      "url": "https://usaco.guide/silver/prefix-sums",
+      "title": "Introduction to Prefix Sums · USACO Guide",
+      "recency": "2024"
+    },
+    {
+      "url": "https://cp-algorithms.com/data_structures/segment_tree.html",
+      "title": "Segment Tree - Algorithms for Competitive Programming",
+      "recency": "2024"
+    },
+    {
+      "url": "https://algomap.io/lessons/sliding-window",
+      "title": "Sliding Window: Variable Length + Fixed Length | AlgoMap",
+      "recency": "2024"
+    },
+    {
+      "url": "https://algo.monster/liteproblems/739",
+      "title": "Daily Temperatures - In-Depth Explanation",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/largest-rectangular-area-in-a-histogram-using-stack/",
+      "title": "Largest Rectangular Area in a Histogram - GeeksforGeeks",
+      "recency": "2024"
+    },
+    {
+      "url": "https://algo.monster/liteproblems/84",
+      "title": "Largest Rectangle in Histogram - In-Depth Explanation",
+      "recency": "2024"
+    },
+    {
+      "url": "https://leetcode.com/discuss/study-guide/5148505/Monotonic-Stack-Guide-+-List-of-Problems/",
+      "title": "Monotonic Stack - Guide + List of Problems",
+      "recency": "2024"
+    },
+    {
+      "url": "https://dev.to/umair01/on-to-o1-how-prefix-sum-will-change-your-code-forever-2l33",
+      "title": "O(N) to O(1): How Prefix Sum Will Change Your Code Forever",
+      "recency": "2024"
+    },
+    {
+      "url": "https://interviewing.io/two-pointers-interview-questions",
+      "title": "Two Pointers Interview Questions & Tips for Senior Engineers",
+      "recency": "2024"
+    },
+    {
+      "url": "https://usaco.guide/plat/RURQ",
+      "title": "Range Update Range Query · USACO Guide",
+      "recency": "2024"
+    },
+    {
+      "url": "https://codeforces.com/blog/entry/153011",
+      "title": "[Tutorial] The Monotonic Stack Tree - Codeforces",
+      "recency": "2024"
+    },
+    {
+      "url": "https://medium.com/nybles/understanding-range-queries-and-updates-segment-tree-lazy-propagation-and-mos-algorithm-d2cd2f6586d8",
+      "title": "Understanding Range Queries and Updates: Segment Tree, Lazy Propagation and MO's Algorithm",
+      "recency": "2024"
+    },
+    {
+      "url": "https://labuladong.online/en/algo/essential-technique/sliding-window-framework/",
+      "title": "Sliding Window Algorithm Code Template",
+      "recency": "2024"
+    },
+    {
+      "url": "https://github.com/Chanda-Abdul/Several-Coding-Patterns-for-Solving-Data-Structures-and-Algorithms-Problems-during-Interviews",
+      "title": "Several Coding Patterns for Interview Problems",
+      "recency": "2024"
+    },
+    {
+      "url": "https://medium.com/@hanxuyang0826/mastering-monotonic-stacks-optimizing-algorithmic-efficiency-in-array-and-sequence-problems-28d2a16eeccc",
+      "title": "Mastering Monotonic Stacks: Optimizing Algorithmic Efficiency",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/window-sliding-technique/",
+      "title": "Sliding Window Technique - GeeksforGeeks",
+      "recency": "2024"
+    },
+    {
+      "url": "https://medium.com/@manuchaitanya/monotonic-stack-for-efficient-problem-solving-next-greater-next-smaller-previous-greater-and-6c63d0572644",
+      "title": "Monotonic Stack for Efficient Problem Solving",
+      "recency": "2024"
+    }
+  ]
+}

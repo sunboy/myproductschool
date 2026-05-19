@@ -1,0 +1,360 @@
+{
+  "facts": [
+    {
+      "fact": "Stripe uses date-based versioning (e.g., 2026-04-22) in HTTP headers while maintaining v1 URL paths. Clients can override the version of a request by setting the Stripe-Version header, and integration versions are pinned via account dashboard.",
+      "source": "https://docs.stripe.com/api/versioning",
+      "publication_date": "2026-04-22"
+    },
+    {
+      "fact": "GitHub REST API uses date-based API version names (e.g., 2026-03-10) and guarantees support for each version for at least 24 months after a new version is released. Clients specify the version via the X-GitHub-Api-Version header.",
+      "source": "https://docs.github.com/en/rest/about-the-rest-api/api-versions",
+      "publication_date": "2026-03-10"
+    },
+    {
+      "fact": "RFC 8594 defines the Sunset HTTP response header field to indicate when a URI will become unresponsive. The Deprecation header signals that an endpoint is deprecated, and Sunset specifies the planned removal date. Both headers are commonly paired in deprecation workflows.",
+      "source": "https://datatracker.ietf.org/doc/html/rfc8594",
+      "publication_date": "2019-05"
+    },
+    {
+      "fact": "HTTP 410 Gone should be used for deprecated endpoints that are intentionally and permanently removed, signaling to well-behaved clients not to retry and to search engines to remove the URL from indexes. 404 Not Found indicates temporary unavailability.",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/410",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Keyset (cursor-based) pagination using indexed column values provides O(1) constant-time performance regardless of offset depth, while offset pagination degrades to O(n) linear performance. Real-world benchmarks show 17x speedup on million-record datasets and 177x improvement on deep pages.",
+      "source": "https://www.stacksync.com/blog/keyset-cursors-postgres-pagination-fast-accurate-scalable",
+      "publication_date": "2026-02-02"
+    },
+    {
+      "fact": "Offset pagination with concurrent writes causes missing records when rows are deleted between page requests (records shift forward, skipping the next item) and duplicate records when new rows are inserted (records move backward, appearing on multiple pages).",
+      "source": "https://developer.zendesk.com/documentation/api-basics/pagination/understanding-the-limitations-of-offset-pagination/",
+      "publication_date": "2026"
+    },
+    {
+      "fact": "Cursor pagination remains stable under concurrent writes because cursors track specific record markers, not positions. New entries appear only on future pages; deleted entries don't cause duplicates or missing records on already-fetched pages.",
+      "source": "https://www.juststeveking.com/api-guides/cursor-based-pagination-for-stable-lists/",
+      "publication_date": "2026"
+    },
+    {
+      "fact": "Maximum nesting depth for REST API resources is recommended as 2 levels, occasionally 3. Deeply nested endpoints create URL explosion and make versioning exponentially complex because changing a nested model affects all parent resources.",
+      "source": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/",
+      "publication_date": "2026"
+    },
+    {
+      "fact": "URL-based versioning (/v1, /v2) is preferred for public APIs because it is cache-friendly, discoverable in URLs, and easy to route. Header-based versioning keeps URLs clean but sacrifices debuggability and is better suited for enterprise APIs.",
+      "source": "https://www.askantech.com/api-versioning-strategies-rest-header-url-deprecation-guide/",
+      "publication_date": "2026-04-17"
+    },
+    {
+      "fact": "OpenAPI 3.1 is now a full superset of JSON Schema (Draft 2020-12), whereas OpenAPI 3.0 created its own schema flavor that broke compatibility. This compatibility enables better client code generation and tool ecosystem support.",
+      "source": "https://www.stainless.com/sdk-api-best-practices/json-schema-vs-openapi-schema-key-differences-in-2025",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "API deprecation should communicate timelines via direct emails to active users, not just documentation updates. A clear versioning policy in terms of service should define what constitutes a breaking change and required migration periods.",
+      "source": "https://zuplo.com/learning-center/deprecating-rest-apis",
+      "publication_date": "2026"
+    },
+    {
+      "fact": "Content negotiation versioning uses custom Accept headers like Accept: application/vnd.myapi.v2+json or Accept: application/vnd.api.article+xml; version=1.0 to request API versions, preserving clean URLs but sacrificing discoverability.",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Content_negotiation",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "API expansion patterns (e.g., /orders?expand=customer,items) allow clients to request related resources without path explosion, solving the nested resource design problem by embedding links to related data.",
+      "source": "https://oneuptime.com/blog/post/2026-01-30-how-to-create-api-expansion-patterns-view",
+      "publication_date": "2026-01-30"
+    },
+    {
+      "fact": "Swagger Codegen and OpenAPI Generator are the two primary tools for auto-generating API client libraries from OpenAPI specs. They support 30+ languages including TypeScript, Python, Go, Java, Rust, and Swift.",
+      "source": "https://swagger.io/tools/swagger-codegen/",
+      "publication_date": "2026"
+    }
+  ],
+  "examples": [
+    {
+      "title": "Stripe URL versioning with header overrides",
+      "description": "Stripe maintains all endpoints under /api/v1/ but uses HTTP headers for actual versioning. The Stripe-Version header (e.g., 2024-10-01) controls which API behavior the account receives. Example: curl https://api.stripe.com/v1/charges -H 'Stripe-Version: 2024-10-01'",
+      "company": "Stripe",
+      "url": "https://docs.stripe.com/api/versioning"
+    },
+    {
+      "title": "GitHub date-based API versioning",
+      "description": "GitHub released API version 2026-03-10 and guarantees 24-month support for the previous version (2022-11-28). Clients specify version via X-GitHub-Api-Version header: curl --header 'X-GitHub-Api-Version:2026-03-10' https://api.github.com/zen",
+      "company": "GitHub",
+      "url": "https://docs.github.com/en/rest/about-the-rest-api/api-versions"
+    },
+    {
+      "title": "Offset pagination performance regression at scale",
+      "description": "A real API switching from offset to keyset pagination reduced page 1000 load time from 8 seconds to 45ms—a 177x improvement. This is typical when paginating through million-row tables with deep offsets.",
+      "company": "Generic scale-out SaaS",
+      "url": "https://medium.com/codetodeploy/extremely-fast-paging-with-cursor-pagination-and-database-index-seek-a07b259bc45e"
+    },
+    {
+      "title": "Django REST Framework offset pagination bug",
+      "description": "Issue #6886 on encode/django-rest-framework documents missing/duplicate records when using LimitOffsetPagination with ordering on a dataset with concurrent writes. Rows shift between requests causing data loss.",
+      "company": "Django REST Framework (open source)",
+      "url": "https://github.com/encode/django-rest-framework/issues/6886"
+    },
+    {
+      "title": "ServiceNow Table REST API duplicate records",
+      "description": "ServiceNow's Table REST API returned duplicates and inconsistent data sets when using offset pagination. This is a documented issue where concurrent modifications caused records to appear multiple times across pages.",
+      "company": "ServiceNow",
+      "url": "https://www.servicenow.com/community/developer-forum/table-rest-api-returns-duplicates-inconsistent-data-sets/"
+    },
+    {
+      "title": "Contentful migration to cursor-based pagination",
+      "description": "Contentful migrated all content APIs to cursor-based pagination to provide stable iteration under concurrent content edits. This eliminated duplicate and missing record issues reported by customers.",
+      "company": "Contentful",
+      "url": "https://www.contentful.com/blog/cursor-based-pagination/"
+    },
+    {
+      "title": "Microsoft Azure API design best practices",
+      "description": "Azure recommends limiting resource nesting to 2 levels maximum and using API expansion patterns instead of deeply nested endpoints to avoid path explosion and versioning complexity.",
+      "company": "Microsoft",
+      "url": "https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Offset pagination is like reading a numbered list and saying 'skip the first 100 items, give me the next 20.' If someone inserts items at position 50 while you're reading, the list shifts and you either see duplicates or skip items. Keyset pagination is like saying 'give me 20 items starting after this exact item you gave me last time,' which is stable even if the list changes.",
+      "applies_to": "Understanding why offset fails with concurrent writes"
+    },
+    {
+      "analogy": "API versioning strategies are like publishing a newspaper: URL versioning is like printing the version number on the front page (v1 edition, v2 edition); header versioning is like printing it on an insert card (clean exterior, but you have to look inside). Content negotiation versioning is like having one masthead but different story layouts based on reader preference.",
+      "applies_to": "Choosing between URL, header, and content negotiation versioning"
+    },
+    {
+      "analogy": "HTTP 410 Gone is a 'this building was demolished' notice; HTTP 404 is 'this address doesn't exist.' The difference matters for search engines and well-behaved clients: 410 says 'don't bother retrying ever,' while 404 says 'maybe try again later.'",
+      "applies_to": "Using correct status codes for deprecation"
+    },
+    {
+      "analogy": "Nesting API resources is like folder hierarchies in a file system. You can nest folders, but after 3 levels deep, the paths become unwieldy and every change to a parent folder affects all children. API expansion patterns are like symlinks or shortcuts—you fetch the parent and let it link to children rather than embedding them in the path.",
+      "applies_to": "Designing resource hierarchies without path explosion"
+    },
+    {
+      "analogy": "OpenAPI 3.1 becoming a superset of JSON Schema is like a toolkit finally conforming to the official standard after creating its own variant. Now tools designed for JSON Schema work out of the box instead of requiring custom adapters.",
+      "applies_to": "Why OpenAPI 3.1 is a critical upgrade for client generation"
+    },
+    {
+      "analogy": "A cursor in pagination is like a bookmark in a physical book. You can hand the bookmark to someone else and they can pick up from exactly where you left off, even if pages were added or removed. An offset is like saying 'start at page 50,' which breaks if the book is reorganized.",
+      "applies_to": "Understanding cursor pagination stability"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Performance multiplier: keyset vs offset pagination",
+      "value": "17x faster overall, 1,400x faster on deep pages",
+      "context": "On million-record datasets when paginating through many pages",
+      "source": "https://0x.run/pagination-offset-vs-cursor"
+    },
+    {
+      "metric": "Improvement: offset pagination at page 1000",
+      "value": "177x improvement (8 seconds → 45ms) after switching to keyset",
+      "context": "Real production API switching from offset to cursor-based pagination",
+      "source": "https://medium.com/codetodeploy/extremely-fast-paging-with-cursor-pagination-and-database-index-seek-a07b259bc45e"
+    },
+    {
+      "metric": "API version support duration (GitHub)",
+      "value": "24 months minimum support after new version release",
+      "context": "GitHub guarantees this deprecation timeline for breaking changes",
+      "source": "https://docs.github.com/en/rest/about-the-rest-api/breaking-changes"
+    },
+    {
+      "metric": "Recommended maximum resource nesting depth",
+      "value": "2 levels, occasionally 3",
+      "context": "Beyond this, path explosion and versioning complexity become unmanageable",
+      "source": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/"
+    },
+    {
+      "metric": "Offset pagination performance degradation",
+      "value": "O(n) linear time complexity as offset increases",
+      "context": "Keyset pagination maintains O(1) constant time regardless of position",
+      "source": "https://www.stacksync.com/blog/keyset-cursors-postgres-pagination-fast-accurate-scalable"
+    },
+    {
+      "metric": "Cache invalidation cost of nested resources",
+      "value": "Cascading invalidation affects all parent resources",
+      "context": "A simple update to a nested model requires invalidating all parents, causing performance meldowns",
+      "source": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/"
+    },
+    {
+      "metric": "OpenAPI 3.1 JSON Schema compatibility",
+      "value": "100% superset of JSON Schema Draft 2020-12",
+      "context": "Enables standard tooling without custom adapters",
+      "source": "https://www.stainless.com/sdk-api-best-practices/json-schema-vs-openapi-schema-key-differences-in-2025"
+    },
+    {
+      "metric": "Stripe date-based versioning format",
+      "value": "YYYY-MM-DD (e.g., 2026-04-22.dahlia)",
+      "context": "Current Stripe API version uses date-based scheme with optional suffixes",
+      "source": "https://docs.stripe.com/api/versioning"
+    },
+    {
+      "metric": "GitHub API version specification header",
+      "value": "X-GitHub-Api-Version: YYYY-MM-DD format",
+      "context": "Required header for specifying which API version to use",
+      "source": "https://docs.github.com/en/rest/about-the-rest-api/api-versions"
+    },
+    {
+      "metric": "Recommended OpenAPI Generator language support",
+      "value": "30+ languages including TypeScript, Python, Go, Java, Rust, Swift",
+      "context": "Swagger Codegen and OpenAPI Generator both support these",
+      "source": "https://swagger.io/tools/swagger-codegen/"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Offset pagination is fine for small datasets.",
+      "reality": "The performance degradation is algorithmic (O(n)), not dataset-size-dependent. Even on 100k-row tables, deep offsets become slow. Concurrent writes cause missing/duplicate records at any size. Keyset pagination is better starting at 100k rows and critical above 1M.",
+      "source": "https://www.stacksync.com/blog/keyset-cursors-postgres-pagination-fast-accurate-scalable"
+    },
+    {
+      "misconception": "URL versioning is always better than header versioning.",
+      "reality": "URL versioning (/v1, /v2) wins for public APIs (cache-friendly, discoverable), but header versioning wins for enterprise APIs where URL cleanliness and centralized version management matter more. There is no universal 'better' strategy.",
+      "source": "https://www.askantech.com/api-versioning-strategies-rest-header-url-deprecation-guide/"
+    },
+    {
+      "misconception": "Deep nesting (e.g., /users/:id/posts/:id/comments/:id) is just an organizational choice.",
+      "reality": "Deep nesting causes exponential versioning complexity—every change to a nested model requires coordinated versioning of all parents. Keyset/query parameter alternatives become necessary above 3 levels.",
+      "source": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/"
+    },
+    {
+      "misconception": "404 is the correct status code when an API endpoint is deprecated.",
+      "reality": "410 Gone is correct for deprecated endpoints. 410 signals permanent removal, preventing retries and indexing. 404 implies temporary unavailability or never existing.",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/410"
+    },
+    {
+      "misconception": "Deprecation headers (Deprecation, Sunset) are optional nice-to-have additions.",
+      "reality": "Well-behaved client SDKs and API monitoring tools actively parse and warn on these headers. Omitting them means customers don't migrate until the endpoint breaks.",
+      "source": "https://datatracker.ietf.org/doc/html/rfc8594"
+    },
+    {
+      "misconception": "OpenAPI 3.0 and 3.1 client generation produce equivalent code.",
+      "reality": "OpenAPI 3.0 created its own schema flavor that breaks JSON Schema tooling. 3.1 is a full superset, enabling better codegen and ecosystem compatibility. Generators can now use standard JSON Schema validation libraries.",
+      "source": "https://www.stainless.com/sdk-api-best-practices/json-schema-vs-openapi-schema-key-differences-in-2025"
+    },
+    {
+      "misconception": "Cursor pagination is slower than offset because cursors are larger.",
+      "reality": "Cursor size is irrelevant; database index seeks on the cursor columns are O(1), while offset scans are O(n). Cursor pagination is always faster at scale.",
+      "source": "https://0x.run/pagination-offset-vs-cursor"
+    },
+    {
+      "misconception": "Header versioning avoids the path explosion problem.",
+      "reality": "Headers don't address the root cause: nested resources create exponential versioning complexity. API expansion patterns or flattened endpoints solve it; headers are orthogonal to the design problem.",
+      "source": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/"
+    },
+    {
+      "misconception": "If an offset pagination endpoint shows duplicates, it's a caching bug.",
+      "reality": "Duplicates under offset pagination with concurrent writes are a logic bug, not a cache bug. Rows shift between requests, causing overlaps. This requires cursor pagination or deduplication on the client to fix.",
+      "source": "https://developer.zendesk.com/documentation/api-basics/pagination/understanding-the-limitations-of-offset-pagination/"
+    },
+    {
+      "misconception": "Deprecating via documentation updates is sufficient notice.",
+      "reality": "Direct emails to active API users are critical—most integrators never check documentation. Best practice: email + documentation + headers (Deprecation, Sunset) + 6-12 month lead time.",
+      "source": "https://zuplo.com/learning-center/deprecating-rest-apis"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://docs.stripe.com/api/versioning",
+      "title": "Stripe API Versioning",
+      "recency": "Current (2026-04-22)"
+    },
+    {
+      "url": "https://stripe.com/blog/api-versioning",
+      "title": "APIs as infrastructure: future-proofing Stripe with versioning",
+      "recency": "Current, Stripe engineering blog"
+    },
+    {
+      "url": "https://docs.github.com/en/rest/about-the-rest-api/api-versions",
+      "title": "GitHub API Versions",
+      "recency": "Current (2026-03-10 version published)"
+    },
+    {
+      "url": "https://datatracker.ietf.org/doc/html/rfc8594",
+      "title": "RFC 8594 - The Sunset HTTP Header Field",
+      "recency": "Published May 2019, still authoritative"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/410",
+      "title": "HTTP 410 Gone - MDN Web Docs",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://www.stacksync.com/blog/keyset-cursors-postgres-pagination-fast-accurate-scalable",
+      "title": "PostgreSQL Keyset Pagination vs Offset: High-Performance Queries",
+      "recency": "2026-02-02"
+    },
+    {
+      "url": "https://developer.zendesk.com/documentation/api-basics/pagination/understanding-the-limitations-of-offset-pagination/",
+      "title": "Understanding the limitations of offset pagination",
+      "recency": "Current"
+    },
+    {
+      "url": "https://www.juststeveking.com/api-guides/cursor-based-pagination-for-stable-lists/",
+      "title": "Cursor-based pagination for stable lists",
+      "recency": "Current (2026)"
+    },
+    {
+      "url": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/",
+      "title": "REST API Design Best Practices for Sub and Nested Resources",
+      "recency": "Current"
+    },
+    {
+      "url": "https://www.askantech.com/api-versioning-strategies-rest-header-url-deprecation-guide/",
+      "title": "API Versioning Strategies 2026: URL, Header, and Date-Based Approaches",
+      "recency": "2026-04-17"
+    },
+    {
+      "url": "https://www.stainless.com/sdk-api-best-practices/json-schema-vs-openapi-schema-key-differences-in-2025",
+      "title": "JSON Schema vs OpenAPI Schema: Key Differences in 2025",
+      "recency": "2025"
+    },
+    {
+      "url": "https://zuplo.com/learning-center/deprecating-rest-apis",
+      "title": "How to Deprecate a REST API: The Complete Developer's Guide",
+      "recency": "2026"
+    },
+    {
+      "url": "https://swagger.io/tools/swagger-codegen/",
+      "title": "Swagger Codegen - API Code & Client Generator",
+      "recency": "Current"
+    },
+    {
+      "url": "https://oneuptime.com/blog/post/2026-01-30-how-to-create-api-expansion-patterns-view",
+      "title": "How to Create API Expansion Patterns",
+      "recency": "2026-01-30"
+    },
+    {
+      "url": "https://0x.run/pagination-offset-vs-cursor",
+      "title": "Pagination: Offset vs Cursor Explained with Benchmarks",
+      "recency": "Current"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design",
+      "title": "Web API Design Best Practices - Azure Architecture Center",
+      "recency": "Current"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-us/docs/web/http/guides/content_negotiation",
+      "title": "Content negotiation - HTTP - MDN Web Docs",
+      "recency": "Current (2025)"
+    },
+    {
+      "url": "https://medium.com/codetodeploy/extremely-fast-paging-with-cursor-pagination-and-database-index-seek-a07b259bc45e",
+      "title": "Extremely FAST Paging With Cursor Pagination And Database Index Seek",
+      "recency": "Current"
+    },
+    {
+      "url": "https://github.com/encode/django-rest-framework/issues/6886",
+      "title": "Missing/duplicate records when using LimitOffsetPagination",
+      "recency": "Ongoing issue thread"
+    },
+    {
+      "url": "https://www.contentful.com/blog/cursor-based-pagination/",
+      "title": "Why Contentful is moving to cursor-based pagination across all content APIs",
+      "recency": "Current"
+    }
+  ]
+}

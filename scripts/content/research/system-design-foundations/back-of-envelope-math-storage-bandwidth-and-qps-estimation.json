@@ -1,0 +1,399 @@
+{
+  "facts": [
+    {
+      "fact": "A write capacity unit (WCU) in DynamoDB represents one write per second for an item up to 1 KB; item sizes are rounded up to the next 1 KB multiple.",
+      "source": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/capacity-mode.html",
+      "published": "2025"
+    },
+    {
+      "fact": "DynamoDB on-demand mode automatically accommodates up to double your previous peak traffic within a 30-minute window; larger scaling events require 30+ minutes planning to avoid throttling.",
+      "source": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/on-demand-capacity-mode.html",
+      "published": "2025"
+    },
+    {
+      "fact": "For each 1K tokens in an LLM context, ~2.6GB of additional memory is required; at 16K context, KV cache for a single request consumes ~40GB.",
+      "source": "https://introl.com/blog/long-context-llm-infrastructure-million-token-windows-guide",
+      "published": "2025"
+    },
+    {
+      "fact": "Prefill latency for million-token contexts using Cascading KV Cache is 6.8× faster than Flash Attention 2, taking only 14.8% of quadratic method time.",
+      "source": "https://introl.com/blog/long-context-llm-infrastructure-million-token-windows-guide",
+      "published": "2025"
+    },
+    {
+      "fact": "KV cache for 1M tokens requires ~15GB per user, making million-token context windows production-ready with modern infrastructure (Gemini 2.5 Pro, Claude Sonnet 4, Qwen2.5-1M).",
+      "source": "https://introl.com/blog/long-context-llm-infrastructure-million-token-windows-guide",
+      "published": "2025"
+    },
+    {
+      "fact": "In most real-world systems, the read-to-write ratio is heavily skewed towards reads, starting at 10:1 but often reaching 100:1 or higher for content-heavy applications.",
+      "source": "https://pradyumnachippigiri.substack.com/p/scaling-the-databases-choosing-the",
+      "published": "2024"
+    },
+    {
+      "fact": "Stripe handles 500+ million API requests daily with 5 million database queries per second across 2,000+ shards at 99.999% availability.",
+      "source": "https://blog.bytebytego.com/p/how-stripe-scaled-to-5-million-database",
+      "published": "2024"
+    },
+    {
+      "fact": "Netflix processes approximately 5.8k QPS average from 250 million daily active users with 2 sessions per user per day (~500 million play starts), with bursts reaching 4–5× average.",
+      "source": "https://www.geeksforgeeks.org/system-design/system-design-netflix-a-complete-architecture/",
+      "published": "2024"
+    },
+    {
+      "fact": "Netflix's Open Connect CDN achieves approximately 98% cache hit rate, reducing origin traffic to just 2% of edge traffic.",
+      "source": "https://blog.bytebytego.com/p/a-brief-history-of-scaling-netflix",
+      "published": "2023"
+    },
+    {
+      "fact": "Twitter (with 300M monthly active users, 50% daily active) generates ~3,500 QPS for tweets with peak load of ~7,000 QPS; favorites run ~30k QPS and reads ~75k QPS.",
+      "source": "https://techyprakash.com/2025/09/14/qps-and-storage-calculation-of-a-twitter/",
+      "published": "2025"
+    },
+    {
+      "fact": "Twitter 500M tweets daily at 300 bytes per tweet = 140GB daily or 50TB annually; media at 100× tweet size = 10TB daily or 4PB annually.",
+      "source": "https://techyprakash.com/2025/09/14/qps-and-storage-calculation-of-a-twitter/",
+      "published": "2025"
+    },
+    {
+      "fact": "Uber expects 200k location update/writes per second and 200k queries per second, doubling during peak hours; 20M ride requests daily (~5,000 events/sec).",
+      "source": "https://medium.com/@kanishks772/the-secret-sauce-behind-ubers-surge-pricing-5-architecture-lessons-you-can-steal-194d795eae83",
+      "published": "2024"
+    },
+    {
+      "fact": "Peak QPS multiplier varies by application: 2× for predictable SaaS, 5–10× for bursty apps (ride-sharing during rush hour), 100× for e-commerce flash sales.",
+      "source": "https://designgurus.substack.com/p/the-5-step-capacity-estimation-worksheet",
+      "published": "2024"
+    },
+    {
+      "fact": "Bandwidth calculation formula: Mbps = (data per operation in megabits) × (operations per second); convert bytes to bits using ×8 multiplier.",
+      "source": "https://medium.com/@robhernandez5/a-5-step-guide-to-estimating-network-bandwidth-requirements-75219367642a",
+      "published": "2024"
+    },
+    {
+      "fact": "Real-world network throughput is 70–90% of theoretical maximum due to protocol overhead, congestion, and latency; apply 1.3–2× safety margin to base estimates.",
+      "source": "https://www.techtarget.com/searchnetworking/tip/How-to-calculate-network-bandwidth-requirements",
+      "published": "2024"
+    },
+    {
+      "fact": "LSM-trees handle 5–10× more writes per second than B-trees on same hardware, converting random writes to sequential writes; B-trees minimize read latency.",
+      "source": "https://tikv.org/deep-dive/key-value-engine/b-tree-vs-lsm/",
+      "published": "2025"
+    },
+    {
+      "fact": "B-tree point lookups are faster; LSM-tree point lookups may check memtable plus multiple levels of SSTables, with keys from long ago requiring deep file traversal.",
+      "source": "https://blog.bytebytego.com/p/b-trees-vs-lsm-trees-comparison-and",
+      "published": "2025"
+    },
+    {
+      "fact": "Surrogate keys reduce foreign key complexity and perform better on multi-column joins, but lose business semantics; natural keys avoid extra storage but require immutability.",
+      "source": "https://www.getdbt.com/blog/guide-to-surrogate-key",
+      "published": "2024"
+    },
+    {
+      "fact": "Composite primary keys are ideal for junction tables in many-to-many relationships; surrogate keys for composite natural keys often violate 3NF but improve performance.",
+      "source": "https://agiledata.org/essays/keys.html",
+      "published": "2024"
+    },
+    {
+      "fact": "High cardinality in junction tables without proper design causes data duplication, incorrect analytics, and long-term maintenance pain in production systems.",
+      "source": "https://www.datacamp.com/blog/many-to-many-relationship",
+      "published": "2024"
+    },
+    {
+      "fact": "Stateless services enable true horizontal scaling; stateful services require session affinity (sticky sessions) or external state management (Redis) for horizontal scale.",
+      "source": "https://amplication.com/blog/differences-in-scaling-stateless-vs-stateful-microservices",
+      "published": "2024"
+    },
+    {
+      "fact": "CAP theorem states at most two of {Consistency, Availability, Partition Tolerance} can be guaranteed; partition tolerance is mandatory, forcing choice between consistency or availability.",
+      "source": "https://www.bmc.com/blogs/cap-theorem/",
+      "published": "2024"
+    },
+    {
+      "fact": "CP systems prioritize consistency, rejecting requests during partitions; AP systems prioritize availability but serve stale data until eventual sync.",
+      "source": "https://www.splunk.com/en_us/blog/learn/cap-theorem.html",
+      "published": "2024"
+    },
+    {
+      "fact": "Average QPS = (DAU × actions per user per day) ÷ 86,400 seconds; peak QPS = average QPS × peak multiplier (typically 2–10× based on application type).",
+      "source": "https://bytebytego.com/courses/system-design-interview/back-of-the-envelope-estimation",
+      "published": "2025"
+    },
+    {
+      "fact": "Storage estimation: multiply data per operation × operations per day × retention period × replication factor (typically 3×); long-term retention can multiply estimates by 100+.",
+      "source": "https://systemdesign.one/back-of-the-envelope/",
+      "published": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "example": "Stripe scales to 5 million QPS across 2,000 MongoDB shards, processing 500+ million API requests daily, handling ~$1 trillion in annual payment volume at 99.999% uptime.",
+      "company": "Stripe",
+      "metric": "5M QPS, 500M requests/day"
+    },
+    {
+      "example": "Netflix handles 250 million daily active users, 500 million play starts daily (~5.8k QPS average), with Open Connect CDN achieving 98% cache hit rate.",
+      "company": "Netflix",
+      "metric": "250M DAU, 5.8k QPS average, 98% cache hit rate"
+    },
+    {
+      "example": "Twitter (X) with 300M monthly active users, 50% daily active, generates 500M tweets daily (140GB), creating ~3.5k QPS average with peak 7k QPS.",
+      "company": "Twitter/X",
+      "metric": "500M tweets/day, 140GB/day, 3.5k QPS average"
+    },
+    {
+      "example": "Uber processes 200k location updates/sec, 200k queries/sec, doubling during peak hours, with surge pricing driven by real-time supply-demand geospatial partitioning.",
+      "company": "Uber",
+      "metric": "200k QPS reads, 200k QPS writes, 5x peak multiplier"
+    },
+    {
+      "example": "DynamoDB on-demand mode automatically handles 2× previous peak traffic within 30 minutes; beyond that requires advance planning to avoid throttling.",
+      "company": "AWS",
+      "metric": "2x peak capacity auto-scaling, 30-minute planning window"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Stateless services are like checkout counters in a grocery store—any clerk can help any customer. Stateful services are like reserved tables at a restaurant—customers return to the same place. Stateless scales horizontally; stateful requires session affinity glue.",
+      "concept": "Stateless vs Stateful Scaling"
+    },
+    {
+      "analogy": "A B-tree is like a phone book—you flip to a page, scan a few entries, find the number. An LSM tree is like a mail sorter—unsorted mail goes into a pile (memtable), gets sorted in batches, and merged into folders (levels). B-trees are fast for lookups; LSM trees are fast for bulk writes.",
+      "concept": "B-Tree vs LSM-Tree Read-Write Tradeoff"
+    },
+    {
+      "analogy": "CAP theorem is like a supply chain: Consistency = all stores have the same price, Availability = every store is open, Partition Tolerance = stores can operate offline. During a network outage, you can't have all three—choose price uniformity or stay open with stale prices.",
+      "concept": "CAP Tradeoff Decision"
+    },
+    {
+      "analogy": "A junction table in many-to-many relationships is like a theater ticket log—it records which student attended which concert, with each ticket a separate row. Without it, you'd try to store a list of concerts in each student row (cardinality explosion) and a list of students in each concert row (duplication).",
+      "concept": "Cardinality Explosion in Many-to-Many"
+    },
+    {
+      "analogy": "Peak QPS to average QPS is like highway traffic: your freeway is designed for rush hour (5–10× normal volume), not the quiet midnight drive. Designing for average load means your system fails exactly when users need it most.",
+      "concept": "Peak vs Average QPS Multiplier"
+    }
+  ],
+  "key_numbers": [
+    {
+      "number": "86,400",
+      "unit": "seconds",
+      "context": "Seconds per day; dividing daily requests by 86,400 gives average QPS (the baseline before peak multiplier)"
+    },
+    {
+      "number": "1 KB",
+      "unit": "bytes",
+      "context": "DynamoDB write capacity unit threshold; items > 1 KB are rounded up to next 1 KB multiple"
+    },
+    {
+      "number": "2.6 GB",
+      "unit": "memory",
+      "context": "KV cache memory per 1K tokens in LLM inference; 16K tokens = ~40GB"
+    },
+    {
+      "number": "15 GB",
+      "unit": "memory",
+      "context": "KV cache size for 1M token context window per user; production-ready threshold"
+    },
+    {
+      "number": "10:1 to 100:1",
+      "unit": "ratio",
+      "context": "Read-to-write ratio; typical range from 10:1 (balanced) to 100:1+ (content-heavy)"
+    },
+    {
+      "number": "5,000,000",
+      "unit": "QPS",
+      "context": "Stripe's production database query capacity across MongoDB shards"
+    },
+    {
+      "number": "250 million",
+      "unit": "daily active users",
+      "context": "Netflix daily active users from 2+ billion subscriber base"
+    },
+    {
+      "number": "98%",
+      "unit": "cache hit rate",
+      "context": "Netflix Open Connect CDN cache hit rate, reducing origin traffic to 2%"
+    },
+    {
+      "number": "500 million",
+      "unit": "tweets/day",
+      "context": "Twitter daily tweet volume; 140GB/day storage or ~50TB annually"
+    },
+    {
+      "number": "2x to 5x",
+      "unit": "multiplier",
+      "context": "Peak QPS multiplier for predictable apps (SaaS); bursty apps use 5–10×, e-commerce flash sales use 100×"
+    },
+    {
+      "number": "70% to 90%",
+      "unit": "percent",
+      "context": "Realistic network throughput as percentage of theoretical maximum; apply 1.3–2× safety margin"
+    },
+    {
+      "number": "5x to 10x",
+      "unit": "multiplier",
+      "context": "LSM-tree write throughput advantage over B-trees on same hardware"
+    },
+    {
+      "number": "3",
+      "unit": "replication factor",
+      "context": "Standard data replication for durability; multiplies storage by 3×"
+    },
+    {
+      "number": "2,000",
+      "unit": "shards",
+      "context": "Stripe MongoDB shard count to support 5M QPS"
+    },
+    {
+      "number": "30 minutes",
+      "unit": "time window",
+      "context": "DynamoDB on-demand mode auto-scaling window; beyond 2× previous peak requires advance planning"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Designing for average QPS is sufficient; peak load is predictable",
+      "reality": "Average QPS × peak multiplier is critical. Designing for average load causes failures exactly when users notice most. Peak multiplier ranges from 2× (SaaS) to 100× (flash sales) based on application type.",
+      "source": "https://designgurus.substack.com/p/the-5-step-capacity-estimation-worksheet"
+    },
+    {
+      "misconception": "Read-to-write ratio is roughly balanced (1:1) for most systems",
+      "reality": "Most systems are read-heavy, starting at 10:1 and reaching 100:1+ for content-heavy apps. This fundamentally changes scaling strategy (read replicas vs. sharding).",
+      "source": "https://pradyumnachippigiri.substack.com/p/scaling-the-databases-choosing-the"
+    },
+    {
+      "misconception": "Stateful services (with session affinity) scale horizontally as easily as stateless",
+      "reality": "Stateful services require sticky sessions or external state management (Redis), adding latency and complexity. Stateless services enable true horizontal scaling without load balancer affinity.",
+      "source": "https://amplication.com/blog/differences-in-scaling-stateless-vs-stateful-microservices"
+    },
+    {
+      "misconception": "You can always choose Consistency, Availability, AND Partition Tolerance (all three CAP guarantees)",
+      "reality": "CAP theorem requires choosing at most two. Partition tolerance is mandatory (networks fail), forcing a choice between consistency (stale reads during outage) or availability (unavailable during partition).",
+      "source": "https://www.bmc.com/blogs/cap-theorem/"
+    },
+    {
+      "misconception": "Natural keys are always better because they have business meaning",
+      "reality": "Surrogate keys are often better in high-scale systems. Natural keys can change (email addresses, SSNs), are larger in indexes, and complicate joins when composite. Surrogate keys trade business semantics for flexibility and performance.",
+      "source": "https://www.getdbt.com/blog/guide-to-surrogate-key"
+    },
+    {
+      "misconception": "Using a list of related IDs in a single column (non-normalized) saves space compared to a junction table",
+      "reality": "Non-normalized many-to-many designs cause cardinality explosion, data duplication, and query complexity. Junction tables are properly normalized and prevent anomalies.",
+      "source": "https://www.datacamp.com/blog/many-to-many-relationship"
+    },
+    {
+      "misconception": "B-trees are always better for databases because lookups are fast",
+      "reality": "LSM-trees outperform B-trees on write-heavy workloads (5–10× throughput), making them ideal for time-series and event logs. Databases choose B-trees (MySQL, Postgres) for read-heavy, LSM-trees (RocksDB, Cassandra) for write-heavy.",
+      "source": "https://blog.bytebytego.com/p/b-trees-vs-lsm-trees-comparison-and"
+    },
+    {
+      "misconception": "Bandwidth = data size / time; 1 Mbps means 1 MB per second",
+      "reality": "Bandwidth is in megabits per second (Mbps); you must divide by 8 to get megabytes per second (MB/s). A 100 Mbps connection = 12.5 MB/s.",
+      "source": "https://www.techtarget.com/searchnetworking/tip/How-to-calculate-network-bandwidth-requirements"
+    },
+    {
+      "misconception": "Network throughput is the same as advertised bandwidth",
+      "reality": "Real-world throughput is 70–90% of theoretical maximum due to protocol overhead, congestion, and duplex losses. Always apply a 1.3–2× safety margin to base estimates.",
+      "source": "https://medium.com/@robhernandez5/a-5-step-guide-to-estimating-network-bandwidth-requirements-75219367642a"
+    },
+    {
+      "misconception": "LLM context window size scales linearly with memory",
+      "reality": "KV cache memory grows at ~2.6 GB per 1K tokens; 1M-token context requires ~15 GB per user. Prefill latency scales quadratically without optimization (6.8× speedup with Cascading KV Cache).",
+      "source": "https://introl.com/blog/long-context-llm-infrastructure-million-token-windows-guide"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://bytebytego.com/courses/system-design-interview/back-of-the-envelope-estimation",
+      "title": "Back-of-the-Envelope Estimation - ByteByteGo",
+      "recency": "2025 (maintained, current)"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/capacity-mode.html",
+      "title": "DynamoDB Throughput Capacity Modes - AWS Official Docs",
+      "recency": "2025 (current)"
+    },
+    {
+      "url": "https://blog.bytebytego.com/p/how-stripe-scaled-to-5-million-database",
+      "title": "How Stripe Scaled to 5M Database Queries Per Second",
+      "recency": "2024"
+    },
+    {
+      "url": "https://introl.com/blog/long-context-llm-infrastructure-million-token-windows-guide",
+      "title": "Long-Context LLM Infrastructure: Building Systems for Million-Token Windows",
+      "recency": "2025"
+    },
+    {
+      "url": "https://tikv.org/deep-dive/key-value-engine/b-tree-vs-lsm/",
+      "title": "B-Tree vs LSM-Tree - TiKV Deep Dive",
+      "recency": "2025"
+    },
+    {
+      "url": "https://pradyumnachippigiri.substack.com/p/scaling-the-databases-choosing-the",
+      "title": "Scaling the Databases: Choosing the Right Strategy",
+      "recency": "2024"
+    },
+    {
+      "url": "https://techyprakash.com/2025/09/14/qps-and-storage-calculation-of-a-twitter/",
+      "title": "QPS and Storage Calculation of Twitter - TechyPrakash",
+      "recency": "2025"
+    },
+    {
+      "url": "https://blog.bytebytego.com/p/a-brief-history-of-scaling-netflix",
+      "title": "A Brief History of Scaling Netflix - ByteByteGo",
+      "recency": "2023"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/system-design/system-design-netflix-a-complete-architecture/",
+      "title": "System Design Netflix - GeeksforGeeks",
+      "recency": "2024"
+    },
+    {
+      "url": "https://designgurus.substack.com/p/the-5-step-capacity-estimation-worksheet",
+      "title": "How to Do Capacity Estimation in System Design Interviews",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.bmc.com/blogs/cap-theorem/",
+      "title": "CAP Theorem Explained: Consistency, Availability & Partition Tolerance",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.getdbt.com/blog/guide-to-surrogate-key",
+      "title": "A Complete Guide to Surrogate Keys - dbt Labs",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.datacamp.com/blog/many-to-many-relationship",
+      "title": "Many to Many Relationships: A Guide to Database Design - DataCamp",
+      "recency": "2024"
+    },
+    {
+      "url": "https://amplication.com/blog/differences-in-scaling-stateless-vs-stateful-microservices",
+      "title": "Differences in Scaling Stateless vs. Stateful Microservices - Amplication",
+      "recency": "2024"
+    },
+    {
+      "url": "https://blog.bytebytego.com/p/b-trees-vs-lsm-trees-comparison-and",
+      "title": "B-Trees vs LSM-Trees: Comparison and Trade-Offs - ByteByteGo",
+      "recency": "2025"
+    },
+    {
+      "url": "https://medium.com/@kanishks772/the-secret-sauce-behind-ubers-surge-pricing-5-architecture-lessons-you-can-steal-194d795eae83",
+      "title": "The Secret Sauce Behind Uber's Surge Pricing: 5 Architecture Lessons",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.techtarget.com/searchnetworking/tip/How-to-calculate-network-bandwidth-requirements",
+      "title": "How to Calculate Network Bandwidth Requirements - TechTarget",
+      "recency": "2024"
+    },
+    {
+      "url": "https://systemdesign.one/back-of-the-envelope/",
+      "title": "Back of the Envelope - System Design One",
+      "recency": "2024"
+    }
+  ]
+}
