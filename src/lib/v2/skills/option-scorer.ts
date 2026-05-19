@@ -21,7 +21,7 @@ export function scoreMultiSelect(selectedOptionIds: string[], options: FlowOptio
 
   if (selected.length === 0 || selected.some(o => o.quality === 'plausible_wrong')) {
     return {
-      score: TIER_CAPS[0],
+      score: TIER_CAPS_FIVE[0],
       quality_label: 'plausible_wrong' as OptionQuality,
       competencies_demonstrated: [] as string[],
       grading_explanation: selected.length === 0
@@ -32,7 +32,7 @@ export function scoreMultiSelect(selectedOptionIds: string[], options: FlowOptio
   }
 
   const avgPoints = selected.reduce((sum, o) => sum + QUALITY_POINTS[o.quality], 0) / selected.length
-  const score = TIER_CAPS[Math.round(avgPoints)]
+  const score = TIER_CAPS_FIVE[Math.round(avgPoints)]
   const quality_label: OptionQuality = selected.every(o => o.quality === 'best')
     ? 'best'
     : selected.some(o => o.quality === 'best')

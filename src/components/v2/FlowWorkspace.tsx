@@ -2180,7 +2180,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
       })()}
 
       {/* Context disclosure (situation + trigger) - FLOW challenges */}
-      {!isCodingChallenge && (ch?.scenario_context || ch?.scenario_trigger) && (
+      {!isCodingChallenge && (scenarioContext || scenarioTrigger) && (
         <div className="space-y-3">
           <button
             onClick={() => setShowContext(v => !v)}
@@ -2197,16 +2197,16 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
 
           {showContext && (
             <div className="space-y-3 pl-4 border-l-2 border-outline-variant">
-              {ch?.scenario_context && (
+              {scenarioContext && (
                 <div className="space-y-1">
                   <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-wide">The situation</p>
-                  <p className="font-body text-sm text-on-surface leading-relaxed">{ch.scenario_context}</p>
+                  <p className="font-body text-sm text-on-surface leading-relaxed">{scenarioContext}</p>
                 </div>
               )}
-              {ch?.scenario_trigger && (
+              {scenarioTrigger && (
                 <div className="space-y-1">
                   <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-wide">What just happened</p>
-                  <p className="font-body text-sm text-on-surface leading-relaxed">{ch.scenario_trigger}</p>
+                  <p className="font-body text-sm text-on-surface leading-relaxed">{scenarioTrigger}</p>
                 </div>
               )}
             </div>
@@ -3690,7 +3690,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                   selectedOptionIds={selectedOptionIds}
                   allowMultiple={currentQuestion.allow_multiple}
                   elaboration={reasoning || elaboration}
-                  revealed={revealed}
+                  revealed={revealedOptions.length > 0}
                   revealedOptions={revealedOptions}
                   onOptionSelect={(id) => {
                     if (currentQuestion.allow_multiple) {
@@ -3703,7 +3703,7 @@ export function FlowWorkspace(props: FlowWorkspaceProps) {
                     }
                   }}
                   onElaborationChange={(text) => { setReasoning(text); setElaboration(text) }}
-                  disabled={activeSubmitting || (revealed && !currentQuestion.allow_multiple)}
+                  disabled={activeSubmitting || (revealedOptions.length > 0 && !currentQuestion.allow_multiple)}
                   elaborationRef={reasoningCardRef}
                 />
               </div>

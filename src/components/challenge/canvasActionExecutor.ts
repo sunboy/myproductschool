@@ -119,6 +119,56 @@ function makeTableBoundLabel(
 }
 
 // ---------------------------------------------------------------------------
+// Layout helpers — grid-based placement to prevent element overlap
+// ---------------------------------------------------------------------------
+
+const GRID_GAP = 32
+const GRID_START = { x: 60, y: 60 }
+const GRID_COLS = 3
+
+type BBox = { x: number; y: number; w: number; h: number }
+
+function getOccupied(elements: readonly unknown[]): BBox[] {
+  return (elements as SceneElement[])
+    .filter((el) => !el.isDeleted && el.x !== undefined && el.y !== undefined && el.width !== undefined && el.height !== undefined)
+    .map((el) => ({ x: el.x!, y: el.y!, w: el.width!, h: el.height! }))
+}
+
+function hasOverlap(a: BBox, occupied: BBox[]): boolean {
+  const buf = 8
+  return occupied.some(
+    (b) =>
+      a.x < b.x + b.w + buf &&
+      a.x + a.w + buf > b.x &&
+      a.y < b.y + b.h + buf &&
+      a.y + a.h + buf > b.y
+  )
+}
+
+function findFreeSlot(
+  occupied: BBox[],
+  w: number,
+  h: number,
+  preferX?: number,
+  preferY?: number
+): { x: number; y: number } {
+  if (preferX !== undefined && preferY !== undefined) {
+    if (!hasOverlap({ x: preferX, y: preferY, w, h }, occupied)) {
+      return { x: preferX, y: preferY }
+    }
+  }
+  for (let row = 0; row < 50; row++) {
+    for (let col = 0; col < GRID_COLS; col++) {
+      const x = GRID_START.x + col * (w + GRID_GAP)
+      const y = GRID_START.y + row * (h + GRID_GAP)
+      if (!hasOverlap({ x, y, w, h }, occupied)) return { x, y }
+    }
+  }
+  const maxY = occupied.reduce((m, b) => Math.max(m, b.y + b.h), 0)
+  return { x: GRID_START.x, y: maxY + GRID_GAP }
+}
+
+// ---------------------------------------------------------------------------
 // Tween helper - animates newly placed shapes with a fade-in + slide-down
 // ---------------------------------------------------------------------------
 
@@ -203,8 +253,13 @@ async function applyAction(
         (li) => li.name?.toLowerCase() === action.library_item?.toLowerCase()
       )
       if (item) {
-        const offsetX = action.x ?? Math.random() * 400
-        const offsetY = action.y ?? Math.random() * 300
+        const itemEls = item.elements as Array<{ x?: number; y?: number; width?: number; height?: number }>
+        const libW = Math.max(...itemEls.map((e) => (e.x ?? 0) + (e.width ?? 140)), 140)
+        const libH = Math.max(...itemEls.map((e) => (e.y ?? 0) + (e.height ?? 70)), 70)
+        const occupied = getOccupied(api.getSceneElements() as readonly unknown[])
+        const slot = findFreeSlot(occupied, libW, libH, action.x, action.y)
+        const offsetX = slot.x
+        const offsetY = slot.y
         const cloned = (item.elements as Array<{ id?: string; x?: number; y?: number; text?: string }>).map((el, i) => ({
           ...el,
           id: uniqueId() + i,
@@ -221,10 +276,12 @@ async function applyAction(
       } else {
         // Fallback: labeled rectangle (shape + bound text element)
         const shapeId = uniqueId()
-        const x = action.x ?? 100
-        const y = action.y ?? 100
         const width = 140
         const height = 70
+        const occupied = getOccupied(api.getSceneElements() as readonly unknown[])
+        const slot = findFreeSlot(occupied, width, height, action.x, action.y)
+        const x = slot.x
+        const y = slot.y
         const labelText = action.label_override ?? action.library_item ?? ''
         const textEl = makeBoundLabel(shapeId, labelText, x, y, width, height)
         const textId = (textEl as { id: string }).id
@@ -258,14 +315,13 @@ async function applyAction(
       if (!action.elements) break
       const newEls: unknown[] = []
       const tweenTargets: Array<{ id: string; targetY: number }> = []
+      const occupied = getOccupied(api.getSceneElements() as readonly unknown[])
 
       for (const el of action.elements) {
         const label = el.label?.text
         const isShape = el.type === 'rectangle' || el.type === 'ellipse' || el.type === 'diamond'
         const columns = el.columns && el.columns.length > 0 ? el.columns : null
         const shapeId = uniqueId()
-        const x = el.x ?? 0
-        const y = el.y ?? 0
 
         if (label && isShape && columns) {
           // Multi-line table body: entity name + separator + columns
@@ -277,6 +333,11 @@ async function applyAction(
 
           // Compute height: 32 header + 22 per column row + 16 padding
           const height = 32 + columns.length * 22 + 16
+
+          const slot = findFreeSlot(occupied, width, height, el.x, el.y)
+          const x = slot.x
+          const y = slot.y
+          occupied.push({ x, y, w: width, h: height })
 
           const textEl = makeTableBoundLabel(shapeId, bodyText, x, y, width, height)
           const textId = (textEl as { id: string }).id
@@ -306,6 +367,10 @@ async function applyAction(
           // Single-label shape (existing behavior)
           const width = el.width ?? 140
           const height = el.height ?? 60
+          const slot = findFreeSlot(occupied, width, height, el.x, el.y)
+          const x = slot.x
+          const y = slot.y
+          occupied.push({ x, y, w: width, h: height })
           const textEl = makeBoundLabel(shapeId, label, x, y, width, height)
           const textId = (textEl as { id: string }).id
           newEls.push({
@@ -330,6 +395,10 @@ async function applyAction(
         } else {
           const width = el.width ?? (isShape ? 140 : 80)
           const height = el.height ?? (isShape ? 60 : 40)
+          const slot = findFreeSlot(occupied, width, height, el.x, el.y)
+          const x = slot.x
+          const y = slot.y
+          occupied.push({ x, y, w: width, h: height })
           newEls.push({
             ...el,
             id: shapeId,
