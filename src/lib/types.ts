@@ -508,7 +508,7 @@ export interface SessionEvent {
 export type DifficultyV2 = 'warmup' | 'standard' | 'advanced' | 'staff_plus'
 export type FlowStep = 'frame' | 'list' | 'optimize' | 'win'
 export type OptionQuality = 'best' | 'good_but_incomplete' | 'surface' | 'plausible_wrong'
-export type ResponseType = 'pure_mcq' | 'mcq_plus_elaboration' | 'modified_option' | 'freeform'
+export type ResponseType = 'pure_mcq' | 'mcq_plus_elaboration' | 'modified_option' | 'freeform' | 'multi_select_mcq'
 export type Competency = 'motivation_theory' | 'cognitive_empathy' | 'taste' | 'strategic_thinking' | 'creative_execution' | 'domain_expertise'
 export type UserRoleV2 = 'swe' | 'data_eng' | 'ml_eng' | 'devops' | 'founding_eng' | 'em' | 'tech_lead' | 'pm' | 'designer' | 'data_scientist'
 
@@ -531,6 +531,7 @@ export interface FlowStepRecord {
 export interface StepQuestion {
   id: string; flow_step_id: string; question_text: string; question_nudge: string | null
   sequence: number; grading_weight_within_step: number; target_competencies: string[]
+  allow_multiple?: boolean
 }
 
 export interface FlowOption {

@@ -46,6 +46,7 @@ export function FlowWorkspace({ challengeId, initialRoleId, adapter, onExit }: F
   // Per-question state
   const [questionIdx, setQuestionIdx] = useState(0)
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null)
+  const [selectedOptionIds, setSelectedOptionIds] = useState<string[]>([])
   const [elaboration, setElaboration] = useState('')
   const [revealedOptions, setRevealedOptions] = useState<RevealedOption[]>([])
   const [revealed, setRevealed] = useState(false)
@@ -59,10 +60,13 @@ export function FlowWorkspace({ challengeId, initialRoleId, adapter, onExit }: F
   const [discussions, setDiscussions] = useState<ChallengeDiscussion[]>([])
   const [discussLoading, setDiscussLoading] = useState(false)
 
+  // Context panel (situation + trigger) collapsed by default
+  const [showContext, setShowContext] = useState(false)
+
   const startTimeRef = useRef<number>(Date.now())
 
   // Adapter step data (used when adapter prop is present)
-  const [adapterStepData, setAdapterStepData] = useState<{ step: FlowStep; nudge: string | null; questions: Array<{ id: string; question_text: string; question_nudge: string | null; sequence: number; grading_weight_within_step: number; response_type: ResponseType; options: Array<{ id: string; option_label: string; option_text: string }> }> } | null>(null)
+  const [adapterStepData, setAdapterStepData] = useState<{ step: FlowStep; nudge: string | null; questions: Array<{ id: string; question_text: string; question_nudge: string | null; sequence: number; grading_weight_within_step: number; response_type: ResponseType; allow_multiple: boolean; options: Array<{ id: string; option_label: string; option_text: string }> }> } | null>(null)
   const [adapterStepLoading, setAdapterStepLoading] = useState(false)
   const [adapterSubmitting, setAdapterSubmitting] = useState(false)
 
@@ -104,6 +108,7 @@ export function FlowWorkspace({ challengeId, initialRoleId, adapter, onExit }: F
 
     setQuestionIdx(0)
     setSelectedOptionId(null)
+    setSelectedOptionIds([])
     setElaboration('')
     setRevealedOptions([])
     setShowDiscuss(false)
@@ -203,10 +208,12 @@ export function FlowWorkspace({ challengeId, initialRoleId, adapter, onExit }: F
 
     if (!attemptId) return
     const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000)
+    const isMulti = currentQuestion.allow_multiple
     const result = await submitAnswer({
       attemptId,
       questionId: currentQuestion.id,
-      selectedOptionId,
+      selectedOptionId: isMulti ? null : selectedOptionId,
+      selectedOptionIds: isMulti ? selectedOptionIds : undefined,
       userText: elaboration || null,
       responseType: currentQuestion.response_type,
       timespentSeconds: elapsed,
@@ -230,11 +237,12 @@ export function FlowWorkspace({ challengeId, initialRoleId, adapter, onExit }: F
       setRoleContext(coaching.role_context)
       setCareerSignal(coaching.career_signal)
     }
-  }, [adapter, currentStep, currentQuestion, selectedOptionId, elaboration, attemptId, submitAnswer, fetchCoaching, initialRoleId])
+  }, [adapter, currentStep, currentQuestion, selectedOptionId, selectedOptionIds, elaboration, attemptId, submitAnswer, fetchCoaching, initialRoleId])
 
   const handleNext = useCallback(() => {
     setRevealed(false)
     setSelectedOptionId(null)
+    setSelectedOptionIds([])
     setElaboration('')
     setRevealedOptions([])
     setRoleContext('')
@@ -261,6 +269,7 @@ export function FlowWorkspace({ challengeId, initialRoleId, adapter, onExit }: F
     setCurrentStep(step)
     setQuestionIdx(0)
     setSelectedOptionId(null)
+    setSelectedOptionIds([])
     setElaboration('')
     setRevealedOptions([])
     setRevealed(false)
@@ -395,19 +404,38 @@ export function FlowWorkspace({ challengeId, initialRoleId, adapter, onExit }: F
               </div>
             </div>
 
-            {/* The situation */}
-            {ch.scenario_context && (
-              <div className="space-y-1.5">
-                <p className="font-label text-xs text-on-surface-variant uppercase tracking-wide">The situation</p>
-                <p className="font-body text-sm text-on-surface leading-relaxed">{ch.scenario_context}</p>
-              </div>
-            )}
+            {/* Context disclosure (situation + trigger) */}
+            {(ch.scenario_context || ch.scenario_trigger) && (
+              <div className="space-y-3">
+                <button
+                  onClick={() => setShowContext(v => !v)}
+                  className="flex items-center gap-1.5 font-label text-xs text-on-surface-variant hover:text-primary transition-colors"
+                >
+                  <span
+                    className="material-symbols-outlined text-[14px] transition-transform"
+                    style={{ fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", transform: showContext ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                  >
+                    chevron_right
+                  </span>
+                  Background context
+                </button>
 
-            {/* What just happened */}
-            {ch.scenario_trigger && (
-              <div className="space-y-1.5">
-                <p className="font-label text-xs text-on-surface-variant uppercase tracking-wide">What just happened</p>
-                <p className="font-body text-sm text-on-surface leading-relaxed">{ch.scenario_trigger}</p>
+                {showContext && (
+                  <div className="space-y-3 pl-4 border-l-2 border-outline-variant">
+                    {ch.scenario_context && (
+                      <div className="space-y-1">
+                        <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-wide">The situation</p>
+                        <p className="font-body text-sm text-on-surface leading-relaxed">{ch.scenario_context}</p>
+                      </div>
+                    )}
+                    {ch.scenario_trigger && (
+                      <div className="space-y-1">
+                        <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-wide">What just happened</p>
+                        <p className="font-body text-sm text-on-surface leading-relaxed">{ch.scenario_trigger}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -614,10 +642,20 @@ export function FlowWorkspace({ challengeId, initialRoleId, adapter, onExit }: F
                   question={currentQuestion}
                   responseType={currentQuestion.response_type}
                   selectedOptionId={selectedOptionId}
+                  selectedOptionIds={selectedOptionIds}
+                  allowMultiple={currentQuestion.allow_multiple}
                   elaboration={elaboration}
                   revealed={revealed}
                   revealedOptions={revealedOptions}
-                  onOptionSelect={setSelectedOptionId}
+                  onOptionSelect={(id) => {
+                    if (currentQuestion.allow_multiple) {
+                      setSelectedOptionIds((prev) =>
+                        prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+                      )
+                    } else {
+                      setSelectedOptionId(id)
+                    }
+                  }}
                   onElaborationChange={setElaboration}
                   disabled={submitting || revealed}
                 />
@@ -668,6 +706,7 @@ export function FlowWorkspace({ challengeId, initialRoleId, adapter, onExit }: F
                         const rt = currentQuestion.response_type
                         if (rt === 'freeform') return elaboration.trim().length > 0
                         if (rt === 'modified_option') return selectedOptionId !== null && elaboration.trim().length > 0
+                        if (rt === 'multi_select_mcq') return selectedOptionIds.length > 0
                         return selectedOptionId !== null // pure_mcq, mcq_plus_elaboration
                       })() || submitting}
                       className="bg-primary text-on-primary rounded-full px-6 py-2.5 font-label font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"

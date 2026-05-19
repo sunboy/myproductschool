@@ -194,7 +194,7 @@ export async function GET(
   // Fetch step questions ordered by sequence — include response_type
   const { data: questions, error: questionsError } = await adminClient
     .from('step_questions')
-    .select('id, question_text, question_nudge, sequence, grading_weight_within_step, target_competencies, response_type')
+    .select('id, question_text, question_nudge, sequence, grading_weight_within_step, target_competencies, response_type, allow_multiple')
     .eq('flow_step_id', flow_step_id)
     .order('sequence', { ascending: true })
 
@@ -250,6 +250,7 @@ export async function GET(
     grading_weight_within_step: number
     target_competencies: string[]
     response_type: string
+    allow_multiple: boolean
   }) => {
     const rawOptions = optionsByQuestion.get(q.id) ?? []
     const shuffledOptions = seededShuffle(rawOptions, seed)
@@ -260,6 +261,7 @@ export async function GET(
       response_type: q.response_type,
       sequence: q.sequence,
       grading_weight_within_step: q.grading_weight_within_step,
+      allow_multiple: q.allow_multiple ?? false,
       options: shuffledOptions.map((opt) => ({
         id: opt.id,
         option_label: opt.option_label,

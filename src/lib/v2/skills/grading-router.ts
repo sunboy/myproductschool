@@ -1,5 +1,5 @@
 import type { ResponseType, FlowOption } from '@/lib/types'
-import { scoreOption } from './option-scorer'
+import { scoreOption, scoreMultiSelect } from './option-scorer'
 
 export type GradingResult = {
   score: number; quality_label: string; competencies_demonstrated: string[]
@@ -7,9 +7,10 @@ export type GradingResult = {
   confidence: number
 }
 
-export function routeResponse(responseType: ResponseType): 'deterministic' | 'hybrid' | 'ai' {
+export function routeResponse(responseType: ResponseType): 'deterministic' | 'multi_deterministic' | 'hybrid' | 'ai' {
   switch (responseType) {
     case 'pure_mcq': return 'deterministic'
+    case 'multi_select_mcq': return 'multi_deterministic'
     case 'mcq_plus_elaboration': return 'hybrid'
     case 'modified_option': return 'ai'
     case 'freeform': return 'ai'
@@ -22,6 +23,15 @@ export function gradePureMCQ(selectedOptionId: string, options: FlowOption[]): G
     ...result,
     score: result.score,
     rubric_alignment: { closest_option: selectedOptionId, alignment_score: 1.0, exceeds_option: false },
+    confidence: 1.0,
+  }
+}
+
+export function gradeMultiSelectMCQ(selectedOptionIds: string[], options: FlowOption[]): GradingResult {
+  const result = scoreMultiSelect(selectedOptionIds, options)
+  return {
+    ...result,
+    rubric_alignment: { closest_option: selectedOptionIds[0] ?? '', alignment_score: result.is_correct ? 1.0 : 0.5, exceeds_option: false },
     confidence: 1.0,
   }
 }

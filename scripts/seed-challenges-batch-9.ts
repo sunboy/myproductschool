@@ -1,263 +1,111 @@
 export const CHALLENGES = [
   {
-    id: 'hp-coinbase-crypto-10x-growth',
-    title: 'Growing a Crypto Product 10x: Coinbase',
-    scenario_role: 'staff engineer',
-    scenario_context:
-      'Coinbase Wallet has grown steadily but plateaued at roughly 8 million monthly active users. DeFi activity on the platform accounts for less than 12% of transactions, and retention past the first swap drops sharply. The growth team is debating whether the next 10x comes from acquiring new users or deepening value for existing ones.',
-    scenario_trigger:
-      'The VP of Product asks you to walk through your growth thesis for Coinbase Wallet before the Q3 planning meeting.',
-    scenario_question:
-      'Which lever would you bet on to grow Coinbase Wallet 10x over the next two years?',
-    engineer_standout:
-      'Name the compounding mechanism — whether it is network effects, switching costs, or data loops — that makes the lever durable beyond the first acquisition spike.',
+    id: 'pm-coinbase-003',
+    title: 'Crypto Product Growth: 10x a Wallet Feature',
+    scenario_role: 'Growth PM, Crypto',
+    scenario_context: 'Coinbase Wallet has a "dapp browser" tab that lets users interact with decentralized apps directly from the app. Monthly active users on the tab have plateaued at 8% of wallet holders for three consecutive quarters. The growth team is exploring whether it can become a 10x growth lever.',
+    scenario_trigger: 'The VP of Product asks for a structured growth plan after seeing that Phantom Wallet grew dapp engagement 4x by redesigning discovery — a pattern the team wants to understand and potentially replicate.',
+    scenario_question: 'What growth strategy would 10x dapp browser engagement without burning existing wallet trust?',
+    engineer_standout: 'Strong answers will distinguish between supply-side constraints (too few high-quality dapps) and demand-side constraints (discoverability, cold-start friction), and propose infrastructure-level solutions rather than surface UI tweaks.',
     paradigm: 'traditional',
-    industry: 'fintech',
-    sub_vertical: 'crypto',
+    industry: 'Crypto / Web3',
+    sub_vertical: 'Consumer Wallet',
     difficulty: 'advanced',
     estimated_minutes: 20,
-    primary_competencies: ['strategic_thinking', 'growth_loops'],
-    secondary_competencies: ['user_empathy', 'prioritization'],
-    frameworks: ['AARRR', 'Jobs to be Done'],
-    relevant_roles: ['tech_lead', 'staff_engineer', 'founding_engineer'],
-    company_tags: ['Coinbase'],
-    tags: ['crypto', 'growth', 'wallets', 'DeFi'],
-    is_published: true as const,
-    is_calibration: false as const,
-    is_premium: false as const,
+    primary_competencies: ['strategic_thinking', 'domain_expertise'],
+    secondary_competencies: ['creative_execution'],
+    frameworks: ['Supply vs. Demand Analysis', 'Growth Loops'],
+    relevant_roles: ['pm', 'swe', 'tech_lead'],
+    company_tags: ['Coinbase', 'Phantom', 'MetaMask'],
+    tags: ['crypto', 'growth', 'web3', 'wallets', 'dapps'],
+    is_published: true,
+    is_calibration: false,
+    is_premium: false,
     steps: [
       {
-        step: 'frame' as const,
-        step_nudge: 'What is the real constraint on 10x growth here — supply, demand, or trust?',
-        grading_weight: 25,
+        step: 'frame',
+        step_nudge: 'Is 8% engagement a supply problem, a discovery problem, or a motivation problem?',
+        grading_weight: 0.25,
         step_order: 1,
         questions: [
           {
-            question_text:
-              'Coinbase Wallet is stuck at ~8M MAU. What is the upstream blocker on 10x growth?',
+            question_text: 'What is the most accurate framing of the dapp browser engagement plateau?',
             question_nudge: null,
             sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['strategic_thinking', 'root_cause_analysis'],
-            response_type: 'mcq_plus_elaboration' as const,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
             options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'The majority of potential crypto users lack a mental model for self-custody, making Wallet feel risky rather than empowering. Until that trust gap closes, acquisition spend and feature breadth both hit the same ceiling.',
-                quality: 'best',
-                points: 3,
-                competencies: ['strategic_thinking', 'user_empathy'],
-                explanation:
-                  'Trust deficit is the upstream root cause. Every downstream metric, activation, DeFi usage, retention, reflects it. Fixing UX or adding features leaves the ceiling intact if the user never crosses the custody threshold.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Coinbase Wallet lacks integrations with major DeFi protocols, so power users move to MetaMask instead.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['product_knowledge'],
-                explanation:
-                  'Protocol coverage is a real gap, but it is a mid-funnel retention issue for already-converted users, not the upstream barrier preventing the next 90M people from ever opening a self-custody wallet.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'The wallet UI is not polished enough compared to centralized exchange apps, causing drop-off at first launch.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['user_empathy'],
-                explanation:
-                  'UI friction is real but symptomatic. The deeper problem is that users who do not understand self-custody will abandon regardless of how slick the onboarding looks.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Coinbase has not invested enough in paid acquisition channels to reach the next cohort of crypto newcomers.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['growth_loops'],
-                explanation:
-                  'Acquisition spend can widen the top of the funnel, but without addressing trust, the cohorts churn at the same rate. Growth needs a conversion mechanism, not just more top-of-funnel volume.',
-              },
+              { option_label: 'A', option_text: 'Users do not know the dapp browser tab exists — a navigation and onboarding problem', quality: 'surface', points: 1, competencies: ['strategic_thinking'], explanation: 'Discovery is a plausible contributor, but 8% non-zero engagement suggests many users have found the tab. The plateau signals a retention or value problem, not pure discovery.' },
+              { option_label: 'B', option_text: 'The dapp ecosystem on-chain is too fragmented and high-risk for casual wallet holders, creating a demand gap the browser cannot solve alone', quality: 'best', points: 3, competencies: ['strategic_thinking', 'domain_expertise'], explanation: 'Phantom\'s growth was partly supply-side curation: they surfaced fewer, higher-quality dapps and reduced cold-start friction. The constraint is dapp quality and trust, not the browser UI.' },
+              { option_label: 'C', option_text: 'The UX is too complex compared to centralized exchanges, causing drop-off before first interaction', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'UX friction is real, but fixing UX alone does not solve the underlying issue that most dapps are risky, low-quality, or hard to understand for non-crypto-native users.' },
+              { option_label: 'D', option_text: 'Coinbase Wallet lacks brand recognition as a dapp platform versus MetaMask', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Brand awareness may play a role for crypto developers, but it does not explain why existing wallet holders fail to engage with a tab they already have.' },
             ],
           },
         ],
       },
       {
-        step: 'list' as const,
-        step_nudge: 'What are the structurally distinct paths to 10x? Think in paradigms, not tactics.',
-        grading_weight: 25,
+        step: 'list',
+        step_nudge: 'What are the structurally distinct growth levers available to a wallet team?',
+        grading_weight: 0.25,
         step_order: 2,
         questions: [
           {
-            question_text:
-              'Three growth paradigms are on the table. Which one creates durable compounding rather than a one-time spike?',
+            question_text: 'Which set of growth levers is most structurally distinct and actionable for dapp browser growth?',
             question_nudge: null,
             sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['strategic_thinking', 'growth_loops'],
-            response_type: 'mcq_plus_elaboration' as const,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
             options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Social portfolio sharing: let users publish on-chain proof of yield without revealing holdings. Every share is a trust signal and an acquisition event, building a data loop where visibility drives adoption and adoption drives more on-chain activity to share.',
-                quality: 'best',
-                points: 3,
-                competencies: ['growth_loops', 'strategic_thinking'],
-                explanation:
-                  'This lever is compounding because each new user generates content that acquires the next user. The data loop tightens over time, unlike performance marketing or one-off integrations.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Add fiat on-ramps for fifteen new countries to expand the addressable market in under-served regions.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['market_sizing'],
-                explanation:
-                  'Geographic expansion grows the pool, but it does not create compounding. Each new country requires fresh CAC without a mechanism that makes growth self-reinforcing.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Launch a referral program that pays existing users USDC for every friend who completes their first swap.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['growth_loops'],
-                explanation:
-                  'Referral programs generate a spike and then decay once the most social users have exhausted their networks. The incentive is cash, not a product value loop, so retention after the referral bonus expires is weak.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Partner with Coinbase exchange to auto-migrate users from custodial accounts to Wallet when they hit a threshold balance.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['strategic_thinking'],
-                explanation:
-                  'Forced migration at a balance threshold pushes users before they have built the mental model for self-custody, likely increasing churn and support costs rather than creating durable retention.',
-              },
+              { option_label: 'A', option_text: 'Dapp curation + one-tap onboarding for top dapps + social proof (show how many wallet holders use a given dapp)', quality: 'best', points: 3, competencies: ['strategic_thinking', 'creative_execution'], explanation: 'Three structurally distinct levers: supply quality (curation), cold-start friction (one-tap), and social validation. Each addresses a different failure mode in the funnel.' },
+              { option_label: 'B', option_text: 'Redesign the dapp tab UI and add a search bar with category filters', quality: 'surface', points: 1, competencies: [], explanation: 'UI improvements are incremental, not transformative. They help discovery marginally but do not address trust, supply quality, or first-dapp completion rates.' },
+              { option_label: 'C', option_text: 'Partner with 5 top dapps for in-app promotions and co-marketing', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Partnerships are a legitimate lever but address only one dimension — initial traffic. They do not address retention or the broader fragmented dapp ecosystem problem.' },
+              { option_label: 'D', option_text: 'Add a DeFi yield aggregator natively inside the wallet to replace the need for external dapps', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Building a native DeFi product competes with the dapp ecosystem the wallet is meant to serve. It narrows the product into a specific vertical rather than growing the platform.' },
             ],
           },
         ],
       },
       {
-        step: 'optimize' as const,
-        step_nudge: 'Every growth bet has a cost. What are you explicitly trading away?',
-        grading_weight: 25,
+        step: 'optimize',
+        step_nudge: 'Which lever has the highest expected impact relative to the team\'s effort, and what do you sacrifice by choosing it?',
+        grading_weight: 0.30,
         step_order: 3,
         questions: [
           {
-            question_text:
-              'If you prioritize social portfolio sharing as the primary growth lever, what are you optimizing for and what are you giving up?',
+            question_text: 'Given limited team resources, which single growth bet should come first and why?',
             question_nudge: null,
             sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['prioritization', 'strategic_thinking'],
-            response_type: 'mcq_plus_elaboration' as const,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
             options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Optimizing for top-of-funnel virality and organic trust signals. The explicit trade-off is power-user depth: engineering cycles that could go toward advanced DeFi tooling or hardware wallet support go to the sharing surface and privacy tech instead.',
-                quality: 'best',
-                points: 3,
-                competencies: ['prioritization', 'strategic_thinking'],
-                explanation:
-                  'This names both the criterion (virality via trust signals) and the concrete sacrifice (DeFi depth). That specificity lets the team stress-test the bet rather than treat it as obviously correct.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Optimizing for user growth while keeping all existing roadmap items on track through parallel workstreams.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['prioritization'],
-                explanation:
-                  'Parallel workstreams rarely hold under resource constraint. Refusing to name a sacrifice signals that the bet has not been pressure-tested, which makes the trade-off invisible until it hits in execution.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Optimizing for growth metrics in the short term, accepting some risk to longer-term retention quality.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['prioritization'],
-                explanation:
-                  'Too vague to be actionable. Every growth bet involves a retention risk. This framing does not identify what specifically is being traded away or how the team would know if the trade-off was worth it.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Optimizing for new user acquisition. The trade-off is that the feature requires significant privacy engineering, which delays the roadmap by about a quarter.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['prioritization'],
-                explanation:
-                  'Correct that privacy engineering is a real cost, but framing the trade-off purely as a timeline delay undersells the opportunity cost. What specific product bets are delayed, and for whom?',
-              },
+              { option_label: 'A', option_text: 'Curated dapp collections ("Top 10 DeFi dapps this week") with safety scores sourced from on-chain analytics, shipped first because it raises perceived quality and trust before investing in broader onboarding', quality: 'best', points: 3, competencies: ['strategic_thinking', 'domain_expertise'], explanation: 'Quality signal raises trust for the entire tab; it is prerequisite for any other lever to work. Phantom\'s curation was the unlock that made everything downstream effective. The sacrifice is speed of surface area expansion.' },
+              { option_label: 'B', option_text: 'One-tap wallet connect for top dapps, reducing friction from the current 4-step approval flow', quality: 'good_but_incomplete', points: 2, competencies: ['creative_execution'], explanation: 'Friction reduction matters but assumes users are already motivated to connect. Without quality signal, reducing friction only accelerates users to bad experiences.' },
+              { option_label: 'C', option_text: 'Paid growth: promote the dapp browser in Coinbase app onboarding screens to all new users', quality: 'surface', points: 1, competencies: [], explanation: 'Paid promotion drives awareness but does not solve the underlying engagement problem. New users will encounter the same low-quality, fragmented ecosystem.' },
+              { option_label: 'D', option_text: 'Build a social feed showing what dapps friends are using, to create FOMO-driven adoption', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Social features require a critical mass of active users to produce meaningful signal. With 8% engagement, the social graph is too sparse to generate useful social proof.' },
             ],
           },
         ],
       },
       {
-        step: 'win' as const,
-        step_nudge: 'Make the call. One lever, one success condition.',
-        grading_weight: 25,
+        step: 'win',
+        step_nudge: 'What is the specific 10x metric target, how do you measure it, and what is your 90-day plan?',
+        grading_weight: 0.20,
         step_order: 4,
         questions: [
           {
-            question_text:
-              'How would you know in 90 days whether the social portfolio sharing bet is working?',
+            question_text: 'What does a credible 90-day plan look like, and which metric defines success?',
             question_nudge: null,
             sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['metrics', 'decision_making'],
-            response_type: 'mcq_plus_elaboration' as const,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
             options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Share-to-signup conversion rate for new users who arrive via a portfolio share link exceeds 15%, and 30-day retention for that cohort matches or beats organic signup retention. Both thresholds must hold together.',
-                quality: 'best',
-                points: 3,
-                competencies: ['metrics', 'decision_making'],
-                explanation:
-                  'Two linked conditions prevent false positives: high conversion without retention means the share is clickbait; high retention without conversion means the growth loop is not closing. Requiring both makes the signal crisp.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Total share events per week increases by 3x over the first month after launch.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['metrics'],
-                explanation:
-                  'Share events measure usage of the feature, not whether the growth loop closes. A 3x spike in shares with no downstream signups proves engagement, not growth.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'New wallet activations increase month-over-month and app store reviews improve in sentiment.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['metrics'],
-                explanation:
-                  'Both signals are too noisy to attribute to the social sharing feature specifically. Overall activations and sentiment are influenced by dozens of other variables across the same 90-day window.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'At least 20% of new signups in the period can be attributed to a shared link, confirmed via UTM tracking.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['metrics'],
-                explanation:
-                  'Attribution is a necessary condition but not sufficient. 20% of new signups via shared links still counts as success even if every one of those users churns in week two. Retention must be part of the gate.',
-              },
+              { option_label: 'A', option_text: 'Ship curated dapp collections in month 1, one-tap connect in month 2, A/B test social proof in month 3; measure weekly dapp interactions per active wallet holder as north star', quality: 'best', points: 3, competencies: ['strategic_thinking', 'creative_execution'], explanation: 'Sequenced correctly: quality-first, then friction reduction, then social. North star metric (interactions per wallet holder) captures both reach and depth rather than raw user count.' },
+              { option_label: 'B', option_text: 'Target 80% of wallet holders visiting the dapp tab at least once in 90 days', quality: 'surface', points: 1, competencies: [], explanation: 'A single visit is vanity — it does not indicate engagement or value. Measuring unique visitors inflates success without confirming behavior change.' },
+              { option_label: 'C', option_text: 'Ship all three levers simultaneously in a big-bang launch with a coordinated PR campaign', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Parallel launch makes it impossible to isolate which lever drove results. You lose the ability to learn and double down on what works.' },
+              { option_label: 'D', option_text: 'Set a target of 25% dapp tab MAU in 90 days, regardless of which lever ships first', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'The target is reasonable, but without a sequenced plan and a per-user engagement metric, it is unclear how to hit it or whether hitting it would be durable.' },
             ],
           },
         ],
@@ -266,264 +114,340 @@ export const CHALLENGES = [
   },
 
   {
-    id: 'hp-robinhood-fintech-trends',
-    title: 'Acting on Fintech Trends: Robinhood',
-    scenario_role: 'tech lead',
-    scenario_context:
-      'Robinhood has expanded from commission-free equities into crypto, options, and retirement accounts. Three structural shifts are reshaping fintech: AI-driven personalization at the portfolio level, embedded finance inside non-financial apps, and the rise of fractional ownership beyond stocks. The product strategy team is deciding which trend to lean into for the next 18-month roadmap.',
-    scenario_trigger:
-      'A VP asks you to present a trend and a concrete product move before the strategy offsite.',
-    scenario_question:
-      'Which fintech trend should Robinhood act on first, and what is the first product move?',
-    engineer_standout:
-      'Identify which of Robinhood\'s existing assets (distribution, data, brand) the chosen trend makes more valuable rather than obsolete.',
+    id: 'pm-robinhood-001',
+    title: 'Fintech Trends: Picking the Right Bet for Your Roadmap',
+    scenario_role: 'Senior PM, Fintech Platform',
+    scenario_context: 'Robinhood is expanding beyond commission-free trading into broader financial services. The product strategy team is mapping macro fintech trends to identify which should directly shape the next three-year product roadmap, and which should be monitored rather than acted on now.',
+    scenario_trigger: 'The CPO asks each PM to present one trend bet at the quarterly roadmap planning session, with a clear rationale for why it is the right timing and how it connects to Robinhood\'s existing user base.',
+    scenario_question: 'Which emerging fintech trend should Robinhood prioritize building toward, and what is the first product bet that moves toward it?',
+    engineer_standout: 'Strong answers will distinguish between trends that are genuine market shifts versus technology novelties, and connect the chosen trend to Robinhood\'s specific distribution advantage with retail investors.',
+    paradigm: 'traditional',
+    industry: 'Fintech',
+    sub_vertical: 'Retail Investing',
+    difficulty: 'standard',
+    estimated_minutes: 18,
+    primary_competencies: ['strategic_thinking', 'domain_expertise'],
+    secondary_competencies: ['motivation_theory'],
+    frameworks: ['Market Timing Analysis', 'Jobs To Be Done'],
+    relevant_roles: ['pm', 'swe', 'em'],
+    company_tags: ['Robinhood', 'Betterment', 'SoFi'],
+    tags: ['fintech', 'strategy', 'trends', 'roadmap', 'retail-investing'],
+    is_published: true,
+    is_calibration: false,
+    is_premium: false,
+    steps: [
+      {
+        step: 'frame',
+        step_nudge: 'What makes a trend worth acting on now versus monitoring for another year?',
+        grading_weight: 0.25,
+        step_order: 1,
+        questions: [
+          {
+            question_text: 'What is the most useful framework for deciding whether to build toward a fintech trend now?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'Trend size: pick the largest addressable market shift and build toward it', quality: 'surface', points: 1, competencies: ['strategic_thinking'], explanation: 'Market size alone is insufficient — a large trend at the wrong time, or one where Robinhood has no distribution advantage, is still a bad bet.' },
+              { option_label: 'B', option_text: 'Timing plus distribution fit: is the trend past proof-of-concept but before mainstream saturation, and can Robinhood\'s retail base give it a head start?', quality: 'best', points: 3, competencies: ['strategic_thinking', 'domain_expertise'], explanation: 'Timing and distribution fit together determine when and whether to move. Robinhood\'s 20M+ retail users are a distribution advantage for trends aimed at individual investors, not enterprises.' },
+              { option_label: 'C', option_text: 'Competitive landscape: pick the trend where the fewest incumbents are already established', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Low competition is necessary but not sufficient. A trend with low competition may have low competition because it is not yet viable, not because it is an opportunity.' },
+              { option_label: 'D', option_text: 'Customer demand signal: pick the trend that gets the most questions in Robinhood\'s support queue', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Support questions reflect current products, not future opportunities. They systematically underweight emerging needs that customers do not yet know to ask for.' },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'list',
+        step_nudge: 'What are the major fintech trends of the next three years, and how do they differ in timing and fit?',
+        grading_weight: 0.25,
+        step_order: 2,
+        questions: [
+          {
+            question_text: 'Which set of trends is most relevant for Robinhood to evaluate, and why?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['domain_expertise', 'strategic_thinking'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'AI-personalized financial coaching, fractional ownership of real assets, and embedded finance (banking inside non-finance apps)', quality: 'best', points: 3, competencies: ['domain_expertise', 'strategic_thinking'], explanation: 'Three structurally distinct trends at different timing stages: AI coaching is early-mainstream, fractional ownership has proven demand (Robinhood already does fractional equities), and embedded finance is a platform play Robinhood could enter from the supply side.' },
+              { option_label: 'B', option_text: 'Cryptocurrency, NFTs, and DeFi yield farming', quality: 'surface', points: 1, competencies: [], explanation: 'These are 2021-era crypto trends. NFTs and DeFi yield farming have collapsed as consumer products. Grouping them together treats a sector as a trend.' },
+              { option_label: 'C', option_text: 'BNPL (buy now pay later), digital banking accounts, and stock screeners for retail traders', quality: 'good_but_incomplete', points: 2, competencies: ['domain_expertise'], explanation: 'BNPL and digital banking are real, but BNPL is already crowded and declining in unit economics. Stock screeners are features, not trends. The list lacks forward-looking variety.' },
+              { option_label: 'D', option_text: 'Blockchain-based settlement infrastructure and tokenization of securities', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Blockchain settlement is a backend infrastructure bet with a 5-10 year regulatory and adoption horizon. It is not a consumer product trend Robinhood can build toward in three years.' },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'optimize',
+        step_nudge: 'Pick one trend and name the specific sacrifice you are making by choosing it over the others.',
+        grading_weight: 0.30,
+        step_order: 3,
+        questions: [
+          {
+            question_text: 'Which single trend should Robinhood prioritize, and what is the first product bet?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'AI-personalized financial coaching: launch a coaching feature that uses Robinhood\'s existing portfolio data to generate personalized weekly insights, starting with a test for Gold subscribers', quality: 'best', points: 3, competencies: ['strategic_thinking', 'creative_execution'], explanation: 'Robinhood already has the data asset (transaction history, portfolio mix, income signals) and the subscriber base to test it. The first bet is low-risk and directly monetizable through Gold tier expansion. The sacrifice is not moving on fractional real assets, which requires more regulatory work.' },
+              { option_label: 'B', option_text: 'Embedded finance: become the infrastructure layer for other apps to offer investing inside their products', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Embedded finance is a credible bet, but it requires a platform pivot that takes 18-24 months and pulls focus from the core consumer product. Better as a phase 2 bet.' },
+              { option_label: 'C', option_text: 'Fractional real assets: expand fractional ownership from equities to real estate REITs and commodities', quality: 'good_but_incomplete', points: 2, competencies: ['domain_expertise'], explanation: 'Credible extension of existing fractional equity capability, but regulatory friction on real estate REITs is high and customer demand signal is weak compared to AI coaching.' },
+              { option_label: 'D', option_text: 'Social investing: let users follow and copy the portfolios of top-performing retail traders', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Social copying has structural regulatory risk (investment advice without a license) and has burned eToro in multiple markets. The trend has failed repeatedly in the US consumer market.' },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'win',
+        step_nudge: 'How do you present this bet to the CPO in 60 seconds without losing the nuance?',
+        grading_weight: 0.20,
+        step_order: 4,
+        questions: [
+          {
+            question_text: 'Which pitch best makes the case for the AI coaching bet at the roadmap session?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['creative_execution', 'motivation_theory'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'AI personalized coaching is the one trend where Robinhood\'s data moat gives it a structural advantage over fintech peers. Wealthfront and Betterment have wealth management data; Robinhood has real-time retail trading behavior. The first bet is a coaching digest for Gold that converts that data into retention, starting in Q2.', quality: 'best', points: 3, competencies: ['creative_execution', 'motivation_theory'], explanation: 'Names the specific data advantage, names the competitor gap, and ends with a concrete product action and timeline. The CPO can say yes or no immediately.' },
+              { option_label: 'B', option_text: 'AI coaching is the fastest-growing fintech category and will be worth $5B by 2027. We should move now before the window closes.', quality: 'surface', points: 1, competencies: [], explanation: 'Market size and urgency framing without naming what Robinhood\'s advantage is. This is a generic pitch that could apply to any competitor.' },
+              { option_label: 'C', option_text: 'Customers are asking for more personalized guidance in our support channels. AI coaching addresses this gap and could improve NPS significantly.', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Support channel signals are backward-looking. NPS is a lagging indicator and too soft a metric for a roadmap bet.' },
+              { option_label: 'D', option_text: 'We can build a coaching MVP in 6 weeks using an off-the-shelf LLM and launch to Gold users. Low-risk, high-upside.', quality: 'good_but_incomplete', points: 2, competencies: ['creative_execution'], explanation: 'Speed framing is helpful, but "off-the-shelf LLM" understates the data integration work and compliance review required for financial advice, which will concern the CPO.' },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'pm-robinhood-002',
+    title: 'CPO Org Design: Three Teams That Define a Fintech Roadmap',
+    scenario_role: 'Head of Product, Fintech',
+    scenario_context: 'Robinhood is three years post-IPO and has stabilized its core trading product. The company is now deciding whether to deepen its financial services platform or expand into adjacent markets. The leadership team is rethinking the product org structure to reflect the next phase of the business.',
+    scenario_trigger: 'The CEO asks the head of product to propose an org design: three teams, each owning a distinct product surface, structured to maximize strategic leverage in the next 18 months.',
+    scenario_question: 'Which three product teams would you build, what does each own, and how do they reinforce each other?',
+    engineer_standout: 'Strong answers will identify the systems-level interdependencies between teams, name what they share versus what must stay separate, and articulate the moat each team is building.',
+    paradigm: 'traditional',
+    industry: 'Fintech',
+    sub_vertical: 'Retail Investing',
+    difficulty: 'advanced',
+    estimated_minutes: 22,
+    primary_competencies: ['strategic_thinking', 'domain_expertise'],
+    secondary_competencies: ['cognitive_empathy'],
+    frameworks: ['Platform Thinking', 'Jobs To Be Done'],
+    relevant_roles: ['pm', 'em', 'tech_lead'],
+    company_tags: ['Robinhood', 'SoFi', 'Chime'],
+    tags: ['org-design', 'strategy', 'fintech', 'product-leadership', 'platform'],
+    is_published: true,
+    is_calibration: false,
+    is_premium: false,
+    steps: [
+      {
+        step: 'frame',
+        step_nudge: 'What is the right mental model for splitting a fintech product into distinct teams?',
+        grading_weight: 0.25,
+        step_order: 1,
+        questions: [
+          {
+            question_text: 'What principle should drive how Robinhood\'s product org is divided into teams?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'Teams should map to user segments: retail traders, active investors, and passive savers', quality: 'good_but_incomplete', points: 2, competencies: ['cognitive_empathy'], explanation: 'User segment teams work well for discovery and prioritization but create duplication — all three segments use the same trading infrastructure, account layer, and notification systems.' },
+              { option_label: 'B', option_text: 'Teams should map to distinct moats they are building: distribution (growth + monetization), platform (shared infrastructure + data), and product depth (new financial products)', quality: 'best', points: 3, competencies: ['strategic_thinking', 'domain_expertise'], explanation: 'Moat-based team design aligns team incentives with long-term defensibility. Each team owns a separate compounding asset, reducing coordination overhead while enabling the right dependencies.' },
+              { option_label: 'C', option_text: 'Teams should map to revenue streams: subscription (Gold), transactions (trading), and new revenue (future products)', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Revenue-aligned teams optimize for current monetization but can underinvest in the infrastructure and platform capabilities that make future revenue possible.' },
+              { option_label: 'D', option_text: 'Teams should map to functional areas: mobile app, backend services, and data analytics', quality: 'surface', points: 1, competencies: [], explanation: 'Functional org design creates silos between engineering and product ownership, leading to features that are technically complete but lack a clear owner for customer outcomes.' },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'list',
+        step_nudge: 'Name the three teams and define what each one owns, measures, and builds toward.',
+        grading_weight: 0.25,
+        step_order: 2,
+        questions: [
+          {
+            question_text: 'Which three-team structure best positions Robinhood for the next 18 months?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'Team 1: Core Trading (deepen trading UX, order types, and options); Team 2: Financial Services (retirement accounts, credit cards, banking); Team 3: Growth Platform (referrals, onboarding, Gold conversion)', quality: 'best', points: 3, competencies: ['strategic_thinking', 'creative_execution'], explanation: 'Three structurally distinct scopes: Core Trading owns the revenue-generating product, Financial Services builds adjacent moat, and Growth Platform compounds distribution. They share the account and data layer without competing for roadmap space.' },
+              { option_label: 'B', option_text: 'Team 1: Consumer App; Team 2: Institutional Products; Team 3: International Expansion', quality: 'surface', points: 1, competencies: [], explanation: 'Institutional and international are both long-horizon bets that compete with core consumer investment. Three high-risk bets in parallel is likely to underdeliver on all three.' },
+              { option_label: 'C', option_text: 'Team 1: AI Coach; Team 2: Social Investing; Team 3: Crypto', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'This groups three experimental features, not strategic product surfaces. None of them owns the core trading product or the account infrastructure that everything else depends on.' },
+              { option_label: 'D', option_text: 'Team 1: Monetization (Gold, commissions); Team 2: Engagement (notifications, streaks, challenges); Team 3: Expansion (new asset classes)', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Reasonable split but "Engagement" as a standalone team without a financial product surface is structurally weak — engagement is a function, not a product.' },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'optimize',
+        step_nudge: 'Which team is the most critical to staff first, and what is the explicit trade-off?',
+        grading_weight: 0.30,
+        step_order: 3,
+        questions: [
+          {
+            question_text: 'Which team should get the first wave of senior talent, and what are you trading away?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'cognitive_empathy'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'Financial Services Team first: retirement accounts and credit card are regulatory-gated, so the long lead time makes this the constraint that determines the 18-month roadmap; trading and growth can execute with current talent', quality: 'best', points: 3, competencies: ['strategic_thinking', 'domain_expertise'], explanation: 'Regulatory products have a fixed time budget that starts running when you staff the team. Hiring for trading or growth first delays the constraint that cannot be accelerated later.' },
+              { option_label: 'B', option_text: 'Growth Platform Team first: without a strong top-of-funnel, the other teams have no users to serve', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Growth matters, but Robinhood already has 20M+ accounts. The constraint is not top-of-funnel; it is product depth and regulatory surface area.' },
+              { option_label: 'C', option_text: 'Core Trading Team first: it is the only revenue-generating surface and must not regress', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Protecting core revenue is a valid instinct, but Core Trading is the most mature team with the clearest roadmap. It is the least likely to fail without a surge in senior talent.' },
+              { option_label: 'D', option_text: 'Staff all three teams equally in the first wave to avoid creating internal perception of favored teams', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Equal distribution optimizes for internal politics, not strategic priority. Diluting senior talent across all teams early ensures none of them can move fast.' },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'win',
+        step_nudge: 'How do the three teams stay aligned without creating coordination overhead that slows them all down?',
+        grading_weight: 0.20,
+        step_order: 4,
+        questions: [
+          {
+            question_text: 'What is the lightest-weight coordination mechanism that keeps three autonomous product teams aligned?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['creative_execution', 'motivation_theory'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'A shared north star metric (active funded accounts using 2+ products) plus a monthly cross-team review of shared infrastructure dependencies — no other standing meetings', quality: 'best', points: 3, competencies: ['creative_execution', 'motivation_theory'], explanation: 'The north star creates alignment on outcome without mandating process. Infrastructure reviews are the only hard dependency worth a standing meeting. Everything else is async.' },
+              { option_label: 'B', option_text: 'Weekly all-hands roadmap review where each team presents progress to the CPO', quality: 'surface', points: 1, competencies: [], explanation: 'Weekly CPO reviews create upward dependency and reporting theater. They slow teams down without adding alignment value that a shared metric cannot provide.' },
+              { option_label: 'C', option_text: 'Separate OKRs per team with a quarterly roll-up to ensure strategic coherence', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'OKR roll-ups help but are too infrequent to catch infrastructure conflicts or shared platform decisions that need resolution in-quarter.' },
+              { option_label: 'D', option_text: 'Rotate PMs across teams every 6 months to build institutional knowledge and prevent silos', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'PM rotation is a knowledge-sharing tool, not a coordination mechanism. It reduces domain depth and creates ownership gaps at exactly the 6-month mark when teams are most productive.' },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'pm-reddit-001',
+    title: 'Reddit Search: Surfacing the Right Community at the Right Time',
+    scenario_role: 'PM, Discovery and Search',
+    scenario_context: 'Reddit has over 100,000 active communities, but search is widely cited as its weakest product surface. Users who land on Reddit from Google and then search within the product report frustration: results mix low-quality posts, stale threads, and irrelevant subreddits. The discovery team is tasked with improving search so users can find relevant communities and posts without relying on Google as an intermediary.',
+    scenario_trigger: 'A user research study surfaces a clear pattern: 62% of users who visit Reddit via Google do not use Reddit search at all, and 41% of users who do use Reddit search abandon the results page without clicking anything.',
+    scenario_question: 'How would you improve Reddit Search to help users find relevant communities and posts more effectively?',
+    engineer_standout: 'Strong answers will distinguish between indexing quality (what is searchable), ranking quality (what surfaces first), and intent understanding (what the user actually wants), treating them as separate engineering and product problems.',
     paradigm: 'ai_assisted',
-    industry: 'fintech',
-    sub_vertical: 'retail_investing',
-    difficulty: 'advanced',
+    industry: 'Social Media',
+    sub_vertical: 'Community Platforms',
+    difficulty: 'standard',
     estimated_minutes: 20,
-    primary_competencies: ['strategic_thinking', 'market_awareness'],
-    secondary_competencies: ['product_vision', 'prioritization'],
-    frameworks: ['Porter\'s Five Forces', 'Jobs to be Done'],
-    relevant_roles: ['tech_lead', 'staff_engineer', 'founding_engineer'],
-    company_tags: ['Robinhood'],
-    tags: ['fintech', 'trends', 'strategy', 'AI', 'embedded_finance'],
-    is_published: true as const,
-    is_calibration: false as const,
-    is_premium: false as const,
+    primary_competencies: ['strategic_thinking', 'cognitive_empathy'],
+    secondary_competencies: ['domain_expertise'],
+    frameworks: ['Information Architecture', 'Search Quality Framework'],
+    relevant_roles: ['swe', 'pm', 'ml_eng'],
+    company_tags: ['Reddit', 'Quora', 'Stack Overflow'],
+    tags: ['search', 'discovery', 'communities', 'UX', 'reddit'],
+    is_published: true,
+    is_calibration: false,
+    is_premium: false,
     steps: [
       {
-        step: 'frame' as const,
-        step_nudge: 'Which trend reshapes the core job Robinhood is hired for, rather than adding a side feature?',
-        grading_weight: 25,
+        step: 'frame',
+        step_nudge: 'Is this a ranking problem, an intent problem, or an indexing problem?',
+        grading_weight: 0.25,
         step_order: 1,
         questions: [
           {
-            question_text:
-              'Why is acting on a fintech trend hard for an incumbent like Robinhood specifically?',
+            question_text: 'What is the most accurate root cause of the high search abandonment rate?',
             question_nudge: null,
             sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['strategic_thinking', 'market_awareness'],
-            response_type: 'mcq_plus_elaboration' as const,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'cognitive_empathy'],
+            response_type: 'mcq_plus_elaboration',
             options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Robinhood\'s growth was built on frictionless access, not advisory depth. Trends like AI personalization require trust and data that incumbents like Schwab or Fidelity have been accumulating for decades, so the gap is asset-level, not feature-level.',
-                quality: 'best',
-                points: 3,
-                competencies: ['strategic_thinking', 'market_awareness'],
-                explanation:
-                  'Framing the problem as an asset gap rather than a feature gap is the correct level of analysis. It explains why copying a feature from a competitor would not close the distance and shapes what kind of first move is defensible.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Robinhood has had regulatory trouble in the past, which slows down new product launches compared to pure fintech startups.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['market_awareness'],
-                explanation:
-                  'Regulatory friction is a real constraint, but it does not explain why a specific trend is harder for Robinhood than for other incumbents who also face heavy regulation. It is an execution headwind, not the strategic framing.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'The app is associated with meme stocks and high-risk trading, which may turn off the wealth-building users that trends like retirement personalization target.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['brand_strategy'],
-                explanation:
-                  'Brand perception is a real constraint but downstream of a deeper asset problem. The question is whether Robinhood has the data and trust architecture to deliver on the trend, not just whether the brand fits.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Robinhood lacks the engineering resources to build AI models in-house and would have to rely on third-party vendors.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['technical_strategy'],
-                explanation:
-                  'Build vs. buy is a solvable implementation question, not the upstream strategic constraint. Most fintech incumbents use third-party AI. The real problem is whether the underlying data and user trust exist to make the AI useful.',
-              },
+              { option_label: 'A', option_text: 'Reddit Search indexes poorly — too many low-quality posts make it into the results', quality: 'good_but_incomplete', points: 2, competencies: ['domain_expertise'], explanation: 'Indexing quality matters, but a 41% abandonment rate without a click suggests users see results but find them mismatched to intent, not that results are absent.' },
+              { option_label: 'B', option_text: 'Reddit Search does not distinguish between post search and community search intent, so results mix the wrong type of content for what users want', quality: 'best', points: 3, competencies: ['strategic_thinking', 'cognitive_empathy'], explanation: 'Intent mismatch is the upstream problem. Users searching "anxiety" may want the r/anxiety community (for ongoing membership) or a specific post (for immediate advice) — current search returns both in an undifferentiated list.' },
+              { option_label: 'C', option_text: 'Reddit Search lacks personalization — results are the same for every user regardless of community membership', quality: 'good_but_incomplete', points: 2, competencies: ['cognitive_empathy'], explanation: 'Personalization is a valid improvement area, but it does not explain abandonment among users with no Reddit account, which is a significant portion of the search audience.' },
+              { option_label: 'D', option_text: 'Reddit\'s search UI is outdated compared to competitors — the results page design causes abandonment', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Design is rarely the primary driver of search abandonment. Users abandon because results do not match intent, not because the font size is wrong.' },
             ],
           },
         ],
       },
       {
-        step: 'list' as const,
-        step_nudge: 'Map the three trends to Robinhood\'s actual assets. Which one builds on what they have?',
-        grading_weight: 25,
+        step: 'list',
+        step_nudge: 'What are the distinct types of search users, and what does each need from a results page?',
+        grading_weight: 0.25,
         step_order: 2,
         questions: [
           {
-            question_text:
-              'Which trend is the strongest fit with Robinhood\'s current distribution and behavioral data?',
+            question_text: 'Which user need segmentation best guides search improvements?',
             question_nudge: null,
             sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['strategic_thinking', 'product_vision'],
-            response_type: 'mcq_plus_elaboration' as const,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['cognitive_empathy', 'strategic_thinking'],
+            response_type: 'mcq_plus_elaboration',
             options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'AI-driven personalization. Robinhood has granular behavioral data on trade timing, instrument choice, and risk tolerance across 20M+ accounts. That data is the raw material for personalized nudges and portfolio coaching that Schwab cannot replicate at the same granularity.',
-                quality: 'best',
-                points: 3,
-                competencies: ['strategic_thinking', 'product_vision'],
-                explanation:
-                  'AI personalization is the trend most amplified by assets Robinhood already holds. The behavioral data moat is real and not easily replicated by incumbents whose users interact through advisors rather than apps.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Embedded finance. Robinhood could white-label its brokerage rails into third-party apps, expanding distribution without needing to win new direct users.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['market_awareness'],
-                explanation:
-                  'Embedded finance is a real trend, but Robinhood\'s advantage is its direct consumer relationship, not its B2B infrastructure. Moving to white-label competes against Apex, DriveWealth, and others who have deeper B2B experience.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Fractional ownership of alternative assets like real estate or private equity, which opens up a segment Robinhood does not currently serve.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['market_sizing'],
-                explanation:
-                  'Alternatives are an interesting adjacent market, but they require different regulatory infrastructure, asset custody, and user education. Starting here means building new assets rather than leveraging existing ones.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Social investing, where users follow and copy portfolios of high-performing peers, generating network effects inside the app.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['growth_loops'],
-                explanation:
-                  'Social investing was tried (Public, eToro) and showed that copying without understanding generates regret and churn. Robinhood\'s data advantage is behavioral, not social graph, making this trend a poor fit.',
-              },
+              { option_label: 'A', option_text: 'Logged-in vs. logged-out users, since personalization changes what is possible', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Authentication state matters for implementation, but it is not a user need segmentation. A logged-in user searching for a community has the same intent problem as a logged-out one.' },
+              { option_label: 'B', option_text: 'Community finders (want to join a subreddit), thread readers (want a specific answer or discussion), and information validators (checking if Reddit has covered a topic before Googling)', quality: 'best', points: 3, competencies: ['cognitive_empathy', 'strategic_thinking'], explanation: 'Three intent-based segments with structurally different success states. Community finders need a subscribe CTA; thread readers need a direct answer; validators need date and post quality signals.' },
+              { option_label: 'C', option_text: 'New users vs. power users — power users know how to find content, new users do not', quality: 'surface', points: 1, competencies: [], explanation: 'Experience level is a useful lens for onboarding, not for search results design. The same experienced user can have community-finding or post-reading intent depending on the query.' },
+              { option_label: 'D', option_text: 'Mobile users vs. desktop users, since search behavior differs across devices', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Device type affects UI treatment, not the fundamental intent mismatch problem. Fixing intent classification on desktop will transfer to mobile.' },
             ],
           },
         ],
       },
       {
-        step: 'optimize' as const,
-        step_nudge: 'Betting on AI personalization has a specific trade-off. Name the criterion and the sacrifice.',
-        grading_weight: 25,
+        step: 'optimize',
+        step_nudge: 'Which single change to search results would have the highest impact on abandonment rate?',
+        grading_weight: 0.30,
         step_order: 3,
         questions: [
           {
-            question_text:
-              'If Robinhood commits to AI-driven personalization as the primary trend bet, what is the right first product move and what does it sacrifice?',
+            question_text: 'What is the most impactful change to the Reddit Search results experience?',
             question_nudge: null,
             sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['prioritization', 'product_vision'],
-            response_type: 'mcq_plus_elaboration' as const,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
             options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Build a behavioral nudge engine that surfaces personalized risk alerts and rebalancing prompts in the home feed. Optimizing for engagement depth over breadth means deferring crypto expansion and international markets for at least two quarters.',
-                quality: 'best',
-                points: 3,
-                competencies: ['prioritization', 'product_vision'],
-                explanation:
-                  'The nudge engine is the narrowest viable first move that closes the loop between behavioral data and user action. Naming the deferred bets (crypto expansion, international) makes the trade-off concrete enough to pressure-test.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Launch a personalized financial health score that synthesizes spending, portfolio, and savings data, giving users a single number to optimize.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['product_vision'],
-                explanation:
-                  'A financial health score is a compelling consumer product, but it requires spending data Robinhood does not have without a banking layer. This move implicitly assumes a larger build than the question acknowledges.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Partner with an AI company to co-develop a robo-advisor product, keeping Robinhood\'s engineering focused on core trading infrastructure.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['prioritization'],
-                explanation:
-                  'Partnership avoids the hard decision about where to invest. A robo-advisor built on a partner\'s model does not deepen Robinhood\'s data moat; it creates a dependency that the partner could replicate or walk away from.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Roll out AI features incrementally across every product surface simultaneously to avoid under-investing in any one area.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['prioritization'],
-                explanation:
-                  'Spreading AI investment uniformly across surfaces produces shallow features on every surface and a breakthrough on none. It is the opposite of making a trend bet and will not create a defensible advantage.',
-              },
+              { option_label: 'A', option_text: 'Add tabbed results: "Communities" tab and "Posts" tab as default filters, with the system auto-detecting query intent to pre-select the right tab', quality: 'best', points: 3, competencies: ['strategic_thinking', 'creative_execution'], explanation: 'Tabs address intent disambiguation directly. The auto-detect on intent means community-finding queries pre-select Communities; question queries pre-select Posts. Abandonment drops when the first result matches what the user needed.' },
+              { option_label: 'B', option_text: 'Add a "Best communities for this topic" row at the top of every search results page', quality: 'good_but_incomplete', points: 2, competencies: ['creative_execution'], explanation: 'Community promotion helps community finders but may be noise for users searching for a specific post or fact. It adds a row without solving the underlying intent mismatch.' },
+              { option_label: 'C', option_text: 'Improve post ranking to surface higher-upvote, more recent posts by default', quality: 'surface', points: 1, competencies: ['domain_expertise'], explanation: 'Better ranking helps post quality but does not help users who wanted a community rather than a post. The mismatch problem persists even with excellent ranking.' },
+              { option_label: 'D', option_text: 'Integrate Reddit Search with Google\'s index to pull in externally-found Reddit content', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'This deepens Reddit\'s dependency on Google rather than fixing its own search infrastructure. It also surfaces content that users can already find via Google, not the hard-to-find in-community content.' },
             ],
           },
         ],
       },
       {
-        step: 'win' as const,
-        step_nudge: 'Make a crisp call on the single most important success metric for this trend bet.',
-        grading_weight: 25,
+        step: 'win',
+        step_nudge: 'How do you measure success for search improvements, and what is your 90-day ship plan?',
+        grading_weight: 0.20,
         step_order: 4,
         questions: [
           {
-            question_text:
-              'What is the one metric that would confirm the AI personalization bet is generating durable value rather than engagement theater?',
+            question_text: 'What metric and timeline would you commit to for the search improvement project?',
             question_nudge: null,
             sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['metrics', 'decision_making'],
-            response_type: 'mcq_plus_elaboration' as const,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
             options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Assets under management per active user grows at least 15% year-over-year in cohorts that receive personalized nudges, compared to a control group that does not.',
-                quality: 'best',
-                points: 3,
-                competencies: ['metrics', 'decision_making'],
-                explanation:
-                  'AUM per user is the behavioral outcome that proves personalization is changing financial decisions, not just session time. The control group comparison isolates the effect of the nudge engine from macro market moves.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Daily active users increase by 20% within 6 months of launching personalized features.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['metrics'],
-                explanation:
-                  'DAU growth measures engagement, not financial health improvement. A notification that pulls users into the app daily could increase DAU while making their portfolio decisions worse.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Net Promoter Score improves by 10 points in the segment that uses personalized features most heavily.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['metrics'],
-                explanation:
-                  'NPS measures sentiment, not behavior change. Users who like the feature may still not change their portfolio behavior. NPS is a leading indicator at best and does not confirm the trend bet is working.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Personalized nudge click-through rate exceeds 30% within the first quarter of launch.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['metrics'],
-                explanation:
-                  'Click-through confirms the nudge is relevant enough to tap, but not that the tap leads to a better financial decision. A high CTR on alerts that users then dismiss without acting is not the success state the trend bet aims for.',
-              },
+              { option_label: 'A', option_text: 'North star: search session click-through rate (CTR) from results to any content. Target: reduce 41% abandonment to 25% in 90 days via tabbed UI + intent classification, starting with A/B on 10% of traffic', quality: 'best', points: 3, competencies: ['strategic_thinking', 'creative_execution'], explanation: 'CTR directly measures abandonment (the problem). The target is specific and falsifiable. Staged rollout on 10% lets you measure without full exposure risk. 90-day horizon is aggressive but achievable for a UI plus ML intent model.' },
+              { option_label: 'B', option_text: 'Track NPS for users who interact with search; target 5-point improvement over the quarter', quality: 'surface', points: 1, competencies: [], explanation: 'NPS for a sub-feature is very noisy and too slow to give actionable signal within 90 days. Search quality needs behavioral metrics, not satisfaction proxies.' },
+              { option_label: 'C', option_text: 'Measure search volume growth; if more users use search, the product is improving', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Search volume is a reach metric, not a quality metric. You can grow search volume through more search entry points while making each search session worse.' },
+              { option_label: 'D', option_text: 'Ship the tabbed UI in month 1 and measure impact on 30-day retention for users who searched at least once', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Retention is a meaningful downstream metric, but 30-day retention is too long to measure as a primary success indicator for a single search session improvement.' },
             ],
           },
         ],
@@ -532,1598 +456,458 @@ export const CHALLENGES = [
   },
 
   {
-    id: 'hp-robinhood-cpo-three-teams',
-    title: 'Three Teams as CPO: Robinhood',
-    scenario_role: 'founding engineer',
-    scenario_context:
-      'Robinhood is profitable but facing a strategic crossroads. Commission-free trading is now table stakes. The next phase of the business depends on building durable recurring revenue and a product moat that goes beyond price. As a thought exercise in product leadership, the question is which three teams you would invest in if you had CPO authority and a fixed headcount budget.',
-    scenario_trigger:
-      'A board member asks you to walk through your three-team org design for Robinhood\'s next chapter.',
-    scenario_question:
-      'If you were CPO of Robinhood, which three product teams would you build and why?',
-    engineer_standout:
-      'Explain how the three teams interact and what would break if one were cut. Org design only counts when it reveals dependencies.',
+    id: 'pm-reddit-002',
+    title: 'Reddit Videos: Improving Algorithmic Ranking for Video Content',
+    scenario_role: 'PM, Content Discovery',
+    scenario_context: 'Reddit hosts significant video content, but videos consistently underperform relative to text and image posts in the feed algorithm. The content team believes videos are structurally disadvantaged in Reddit\'s ranking model, which was designed primarily around upvote velocity, not watch time or completion rate.',
+    scenario_trigger: 'Data shows that video posts receive 30% fewer upvotes per view than image posts at the same engagement time, causing the feed algorithm to suppress videos despite users spending 2x longer on them. The product team is asked to fix the ranking disparity.',
+    scenario_question: 'How would you make videos rank higher on Reddit without breaking the trust users have in the core feed algorithm?',
+    engineer_standout: 'Strong answers will identify that the problem is a signal design issue (upvotes as proxy for engagement quality), not a display or promotion problem, and will propose alternative engagement signals that better capture video consumption behavior.',
+    paradigm: 'ai_assisted',
+    industry: 'Social Media',
+    sub_vertical: 'Community Platforms',
+    difficulty: 'standard',
+    estimated_minutes: 20,
+    primary_competencies: ['strategic_thinking', 'domain_expertise'],
+    secondary_competencies: ['creative_execution'],
+    frameworks: ['Algorithm Design', 'Engagement Signal Framework'],
+    relevant_roles: ['swe', 'ml_eng', 'pm'],
+    company_tags: ['Reddit', 'YouTube', 'TikTok'],
+    tags: ['video', 'ranking', 'algorithm', 'engagement', 'reddit'],
+    is_published: true,
+    is_calibration: false,
+    is_premium: false,
+    steps: [
+      {
+        step: 'frame',
+        step_nudge: 'Is this a ranking problem, a signal problem, or a content quality problem?',
+        grading_weight: 0.25,
+        step_order: 1,
+        questions: [
+          {
+            question_text: 'What is the most accurate root cause of video underperformance in Reddit\'s feed?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'Reddit videos have lower production quality than image memes, causing users to upvote less', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Content quality may vary, but the data shows users spend 2x longer on videos, indicating quality is not the issue. The problem is a signal mismatch, not a content quality gap.' },
+              { option_label: 'B', option_text: 'The feed algorithm uses upvote velocity as its primary signal, which systematically underweights video because upvoting requires interrupting watch time in a way that clicking an image does not', quality: 'best', points: 3, competencies: ['strategic_thinking', 'domain_expertise'], explanation: 'This is the correct upstream diagnosis: upvoting a video requires stopping playback, which reduces upvote rate independent of quality. The algorithm uses a proxy signal that is structurally biased against videos.' },
+              { option_label: 'C', option_text: 'Reddit does not auto-play videos in the feed, so users scroll past before engaging', quality: 'good_but_incomplete', points: 2, competencies: ['cognitive_empathy'], explanation: 'Auto-play is a real product gap but it is downstream of the ranking problem. Even with auto-play, the algorithm would still underrank videos if it only uses upvote velocity.' },
+              { option_label: 'D', option_text: 'Reddit lacks a dedicated video tab, so video content is buried in the main feed competing with all content types', quality: 'surface', points: 1, competencies: [], explanation: 'A dedicated video tab is a product intervention, not a root cause. The ranking problem would persist in the dedicated tab if the same algorithm signals are used.' },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'list',
+        step_nudge: 'What alternative engagement signals exist that would better represent video quality in the ranking model?',
+        grading_weight: 0.25,
+        step_order: 2,
+        questions: [
+          {
+            question_text: 'Which set of alternative engagement signals best captures video consumption quality?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['domain_expertise', 'strategic_thinking'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'Watch time, completion rate, and share rate', quality: 'best', points: 3, competencies: ['domain_expertise', 'strategic_thinking'], explanation: 'Three distinct signals at different funnel stages: watch time captures initial engagement, completion rate captures quality (users do not finish bad videos), and share rate captures content value that users are willing to put their name on.' },
+              { option_label: 'B', option_text: 'Comment count and share count', quality: 'good_but_incomplete', points: 2, competencies: ['domain_expertise'], explanation: 'Comments and shares are valid signals but capture only post-consumption behavior. They miss the majority of video consumption that happens without any downstream action.' },
+              { option_label: 'C', option_text: 'Click-to-play rate from the feed', quality: 'surface', points: 1, competencies: [], explanation: 'Click-to-play measures whether the thumbnail and title are compelling, not whether the video itself is good. It is a top-of-funnel signal, not a quality signal.' },
+              { option_label: 'D', option_text: 'Number of times a video is saved to a user\'s profile', quality: 'good_but_incomplete', points: 2, competencies: ['cognitive_empathy'], explanation: 'Save rate is a high-intent signal but too infrequent to generate enough data to rank most videos reliably. It should supplement, not replace, watch-time signals.' },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'optimize',
+        step_nudge: 'How do you weight new signals against upvotes without breaking the feed algorithm for non-video content?',
+        grading_weight: 0.30,
+        step_order: 3,
+        questions: [
+          {
+            question_text: 'What is the safest way to introduce video-specific signals into Reddit\'s ranking model?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'Replace upvote weight with watch-time weight for all video posts globally', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Global replacement is a high-risk change that removes the signal users most understand and trust. Sudden ranking changes on video will produce complaints and gaming behavior as creators learn to optimize for watch time.' },
+              { option_label: 'B', option_text: 'Add a content-type-specific ranking branch: video posts are ranked by a blended score of upvotes (40%) + completion rate (40%) + share rate (20%), while all other content uses the existing algorithm unchanged', quality: 'best', points: 3, competencies: ['strategic_thinking', 'creative_execution'], explanation: 'Content-type branching protects non-video content from unintended effects, is testable in isolation, and allows the video signal weights to be tuned independently. This is how YouTube and TikTok handle multi-format feeds.' },
+              { option_label: 'C', option_text: 'Apply a blanket 1.5x boost to all video posts to compensate for the upvote rate disadvantage', quality: 'surface', points: 1, competencies: [], explanation: 'A static boost is crude and will over-rank bad videos that happen to be videos. It addresses the symptom without fixing the signal design.' },
+              { option_label: 'D', option_text: 'Add watch-time as an additional ranking signal alongside upvotes for all content types, not just video', quality: 'good_but_incomplete', points: 2, competencies: ['domain_expertise'], explanation: 'Adding watch-time to text and image posts does not make sense semantically and would be undefined for non-video content. The intervention needs to be video-specific.' },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'win',
+        step_nudge: 'How do you validate the new ranking model and communicate the change to Reddit\'s creator community?',
+        grading_weight: 0.20,
+        step_order: 4,
+        questions: [
+          {
+            question_text: 'What is the right validation and communication plan for the new video ranking model?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['creative_execution', 'strategic_thinking'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'A/B test the new blended signal on 20% of users for 30 days; success criteria are video CTR up 15% and overall feed satisfaction score maintained; publish the signal change in the Reddit developer blog before full rollout', quality: 'best', points: 3, competencies: ['creative_execution', 'strategic_thinking'], explanation: 'A/B test on a subset limits exposure risk. Two success criteria (video CTR and feed satisfaction) catch both the improvement and the potential regression. Developer blog communication prevents creator community backlash by being transparent before rollout.' },
+              { option_label: 'B', option_text: 'Roll out to all users at once and monitor for a 2-week impact assessment window', quality: 'surface', points: 1, competencies: [], explanation: 'Full rollout without a holdout group means you cannot measure the counterfactual. If the change has an unexpected effect, you have no clean A/B data to diagnose it.' },
+              { option_label: 'C', option_text: 'Run the new model in parallel with the old one and manually compare results for a week before shipping', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Manual comparison is useful for sanity checking but cannot replace a controlled A/B test on real user behavior at scale.' },
+              { option_label: 'D', option_text: 'Announce the change in subreddits for video creators and gather feedback before shipping the algorithm update', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Community feedback on an algorithm change will surface creator self-interest, not user interest. Algorithm changes should be validated with behavioral data, not creator sentiment.' },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'pm-tiktok-001',
+    title: 'TikTok DAU Growth: Ranking Three Levers with Experiments',
+    scenario_role: 'PM, Growth Analytics',
+    scenario_context: 'TikTok\'s growth team is evaluating three potential levers for increasing daily active users: improving the recommendation algorithm, investing in user acquisition campaigns, and building new creator tools. Each lever has a clear cost structure and a set of proposed experiments, but the team needs to decide which one to prioritize for the next quarter.',
+    scenario_trigger: 'The VP of Growth asks for a data-driven recommendation: which lever will most effectively boost DAU, and what experiments would give the highest-confidence answer before committing full resources?',
+    scenario_question: 'Which data and experiments would you run to decide whether recommendations, user acquisition, or creator tools will boost TikTok\'s DAU most effectively?',
+    engineer_standout: 'Strong answers will separate experiment design from intuition, identify the right proxy metrics for each lever, and be explicit about which lever has the highest variance and requires the most conservative experiment budget.',
+    paradigm: 'ai_assisted',
+    industry: 'Social Media',
+    sub_vertical: 'Short-Form Video',
+    difficulty: 'advanced',
+    estimated_minutes: 22,
+    primary_competencies: ['strategic_thinking', 'domain_expertise'],
+    secondary_competencies: ['creative_execution'],
+    frameworks: ['Experiment Design', 'Growth Accounting'],
+    relevant_roles: ['pm', 'data_eng', 'ml_eng'],
+    company_tags: ['TikTok', 'Instagram', 'YouTube'],
+    tags: ['growth', 'experimentation', 'DAU', 'recommendations', 'creator-tools'],
+    is_published: true,
+    is_calibration: false,
+    is_premium: false,
+    steps: [
+      {
+        step: 'frame',
+        step_nudge: 'What is TikTok\'s current DAU growth constraint: acquisition, activation, or retention?',
+        grading_weight: 0.25,
+        step_order: 1,
+        questions: [
+          {
+            question_text: 'What diagnostic question should you answer before choosing which lever to test first?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'Which lever is cheapest to experiment on — start with the lowest-cost test first', quality: 'surface', points: 1, competencies: [], explanation: 'Cost of experimentation is a valid tiebreaker but not the primary criterion. A cheap test on the wrong lever generates cheap but useless data.' },
+              { option_label: 'B', option_text: 'Where is DAU growth currently constrained: is it new users coming in (acquisition), new users staying (activation), or existing users churning (retention)?', quality: 'best', points: 3, competencies: ['strategic_thinking', 'domain_expertise'], explanation: 'Growth accounting first: if churn is high, user acquisition spending will not move DAU sustainably. If activation is low, creator tools will not help. The constraint determines which lever is load-bearing.' },
+              { option_label: 'C', option_text: 'Which lever has the most cross-functional dependencies — pick the one with fewest blockers', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Execution feasibility matters, but choosing the easiest lever rather than the right lever optimizes for speed over impact. The constraint analysis comes first.' },
+              { option_label: 'D', option_text: 'Which lever is most commonly cited in growth literature for social apps', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Benchmarks from other apps ignore TikTok-specific constraints. What worked for Instagram at a different growth stage may be exactly wrong for TikTok today.' },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'list',
+        step_nudge: 'Design one experiment for each lever that gives a high-confidence answer in under 30 days.',
+        grading_weight: 0.25,
+        step_order: 2,
+        questions: [
+          {
+            question_text: 'Which experiment set best measures each lever\'s impact on DAU?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['domain_expertise', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'Recommendations: holdback test where 10% of users get the current algorithm vs. a retrained model; User acquisition: geo-isolated paid campaign at 2x budget; Creator tools: invite 500 creators to a new tool beta and measure their follower growth and posting frequency', quality: 'best', points: 3, competencies: ['domain_expertise', 'creative_execution'], explanation: 'Three structurally different experiment designs matching each lever\'s nature: holdback for algorithm (needs a true counterfactual), geo-isolated for acquisition (isolates paid signal from organic), and beta cohort for creator tools (measures the creator supply effect on downstream DAU).' },
+              { option_label: 'B', option_text: 'Survey 1,000 users on which lever they prefer, then build what they vote for', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Stated preference surveys systematically overestimate acquisition and creator interest. Users do not understand algorithm changes and cannot reliably predict what would improve their own retention.' },
+              { option_label: 'C', option_text: 'Run all three as simultaneous A/B tests on overlapping user populations', quality: 'surface', points: 1, competencies: ['strategic_thinking'], explanation: 'Simultaneous overlapping tests create interference between treatments. If a user is in both the recommendation experiment and receives a creator tool, you cannot isolate which lever caused the DAU change.' },
+              { option_label: 'D', option_text: 'Measure the correlation between recommendation quality scores and DAU over the past 12 months to infer lever impact', quality: 'good_but_incomplete', points: 2, competencies: ['domain_expertise'], explanation: 'Historical correlation is useful context but cannot establish causality. Algorithm changes often coincide with seasonal effects or competitor events that make correlation misleading.' },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'optimize',
+        step_nudge: 'Based on the experiments, how do you decide which lever gets the Q4 budget, and what is the risk you are accepting?',
+        grading_weight: 0.30,
+        step_order: 3,
+        questions: [
+          {
+            question_text: 'Experiments show: recommendations +4% DAU, user acquisition +9% DAU (in test geo), creator tools +1.5% DAU. How do you allocate Q4 resources?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'Put full Q4 budget into user acquisition since it showed the highest DAU lift in the test geo', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Geo-isolated acquisition tests systematically overstate global impact due to network effects and saturation in new geos. A +9% result in a test market may produce +2-3% globally when the campaign scales and bids against itself.' },
+              { option_label: 'B', option_text: 'Primary bet on recommendations at 50% of budget (durable, compound over time), secondary bet on acquisition at 35% (with expectation that global lift is closer to 4-5%), and creator tools at 15% as a longer-horizon bet', quality: 'best', points: 3, competencies: ['strategic_thinking', 'creative_execution'], explanation: 'Recommendations produce compounding returns since each improvement makes future improvements more valuable. Acquisition is capped by budget and decays immediately when spending stops. Creator tools build supply-side moat that acquisition cannot replicate. The split reflects durability, not just point-in-time lift.' },
+              { option_label: 'C', option_text: 'Split equally: 33% to each lever since the experiment results are all within the margin of error', quality: 'surface', points: 1, competencies: [], explanation: 'Equal split is a political decision, not a data-driven one. If the experiments were powered correctly, the 4% vs. 1.5% difference is meaningful and should drive resource concentration.' },
+              { option_label: 'D', option_text: 'Drop creator tools entirely since +1.5% DAU is below the cost of the team, and split remaining budget between recommendations and acquisition at 60/40', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Reasonable allocation, but dropping creator tools based on a 30-day experiment misses the 6-12 month compounding effect on content supply and organic growth that creator investment produces.' },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'win',
+        step_nudge: 'How do you present this recommendation to the VP of Growth and get a fast decision?',
+        grading_weight: 0.20,
+        step_order: 4,
+        questions: [
+          {
+            question_text: 'Which presentation structure would most effectively get the VP of Growth to a decision in one meeting?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['creative_execution', 'motivation_theory'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'One slide per lever: experiment result, extrapolated global impact, 90-day cost, and key risk. Final slide: recommended allocation with confidence level for each lever. End with a single decision: approve the allocation or shift recommendation budget to acquisition.', quality: 'best', points: 3, competencies: ['creative_execution', 'motivation_theory'], explanation: 'Forces a binary decision on the one real variable (recommendations vs. acquisition split) after giving the VP all the data. Executives can approve or redirect in one move without reopening the entire analysis.' },
+              { option_label: 'B', option_text: 'Present all three experiment findings in detail, then open the floor to the leadership team to discuss allocations', quality: 'surface', points: 1, competencies: [], explanation: 'Open discussion after detailed findings produces inconclusive committee decisions. The team will argue about experiment validity rather than making a resource call.' },
+              { option_label: 'C', option_text: 'Send a written doc 48 hours before the meeting with the data, and use the meeting only for Q&A', quality: 'good_but_incomplete', points: 2, competencies: ['creative_execution'], explanation: 'Pre-read docs are good practice but do not guarantee a decision — the VP may read the doc, have concerns, and use the meeting to reopen questions rather than decide.' },
+              { option_label: 'D', option_text: 'Present only the winning lever recommendation without showing the other experiment results, to avoid scope creep', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Omitting the other results removes context the VP needs to sanity-check the recommendation. Executives who feel data was hidden lose trust in the analysis even if the conclusion is correct.' },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'pm-tiktok-002',
+    title: 'TikTok Shop Creator Ads: Designing Cross-Sell for Creators',
+    scenario_role: 'PM, Commerce and Creator Monetization',
+    scenario_context: 'TikTok Shop has built a growing e-commerce layer directly inside the TikTok app, where creators can tag products in videos and earn commissions. The ads business and the creator monetization team have identified an untapped opportunity: creators who already run TikTok Shop storefronts are not buying TikTok ads to promote their Shop listings, and TikTok is not proactively surfacing ads as a tool for creators who are already selling.',
+    scenario_trigger: 'The Head of Commerce asks for a product plan to cross-sell TikTok ads to TikTok Shop creators, increasing the share of creators who run at least one paid ad campaign within 90 days of opening a Shop storefront.',
+    scenario_question: 'How would you design the cross-sell of TikTok ads to TikTok Shop creators, and what would make a creator choose to spend on ads?',
+    engineer_standout: 'Strong answers will address the creator\'s mental model about organic reach versus paid reach, the friction in TikTok\'s existing ads product (Ads Manager), and the cold-start problem for creators with no previous ads experience.',
+    paradigm: 'ai_native',
+    industry: 'Social Commerce',
+    sub_vertical: 'Creator Monetization',
+    difficulty: 'advanced',
+    estimated_minutes: 22,
+    primary_competencies: ['strategic_thinking', 'motivation_theory'],
+    secondary_competencies: ['creative_execution'],
+    frameworks: ['Jobs To Be Done', 'Funnel Analysis'],
+    relevant_roles: ['pm', 'swe', 'tech_lead'],
+    company_tags: ['TikTok', 'Meta', 'Shopify'],
+    tags: ['creator-economy', 'ads', 'ecommerce', 'cross-sell', 'tiktok-shop'],
+    is_published: true,
+    is_calibration: false,
+    is_premium: false,
+    steps: [
+      {
+        step: 'frame',
+        step_nudge: 'Why isn\'t a creator who is already selling on TikTok Shop buying ads to sell more?',
+        grading_weight: 0.25,
+        step_order: 1,
+        questions: [
+          {
+            question_text: 'What is the most accurate reason TikTok Shop creators are not buying ads?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['motivation_theory', 'cognitive_empathy'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'Creators do not know TikTok has an ads product for Shop listings', quality: 'surface', points: 1, competencies: [], explanation: 'Awareness may be low, but creators who are actively running storefronts have seen ad prompts in the Creator Center. The gap is motivation and ease, not pure awareness.' },
+              { option_label: 'B', option_text: 'Creators believe organic video content is cheaper and builds a more authentic audience than paid ads, so ads feel like admitting the content is not good enough', quality: 'best', points: 3, competencies: ['motivation_theory', 'cognitive_empathy'], explanation: 'Creator identity is tied to organic reach. Paying for ads conflicts with the creator\'s self-image as someone who grows through content quality, not budget. This is a motivational barrier, not an awareness or pricing barrier.' },
+              { option_label: 'C', option_text: 'TikTok Ads Manager is too complex for creators who are not professional marketers', quality: 'good_but_incomplete', points: 2, competencies: ['cognitive_empathy'], explanation: 'Friction in Ads Manager is a real barrier, but it is a downstream friction point. If creators believed ads would clearly pay off, they would navigate the complexity. The motivation gap comes first.' },
+              { option_label: 'D', option_text: 'Creators cannot afford ads because their Shop margins are too thin to invest in paid promotion', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Budget is a constraint for some creators but not the primary driver. Many creators with healthy Shop revenue still do not buy ads. The issue is perceived ROI, not ability to pay.' },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'list',
+        step_nudge: 'What product surfaces and triggers could bridge creators from running a Shop to running an ad?',
+        grading_weight: 0.25,
+        step_order: 2,
+        questions: [
+          {
+            question_text: 'Which cross-sell surfaces would most effectively move creators from Shop to Ads?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'A TikTok Shop dashboard widget showing "boost this video for $X, estimated reach Y" when a Shop video goes above average watch time, plus a post-campaign ROI summary that shows earnings attributable to the ad', quality: 'best', points: 3, competencies: ['strategic_thinking', 'creative_execution'], explanation: 'Three cross-sell triggers at the right moments: when a video is already performing well (motivation to push further), with a concrete projected reach (addresses the ROI uncertainty), and with an ROI summary that closes the loop and builds future willingness to spend.' },
+              { option_label: 'B', option_text: 'A banner ad on the TikTok Creator Center homepage promoting TikTok Ads Manager', quality: 'surface', points: 1, competencies: [], explanation: 'Passive banners on the Creator Center are treated as background noise. They reach creators at the wrong moment (browsing, not selling) and do not address the motivation barrier.' },
+              { option_label: 'C', option_text: 'Email campaign to all Shop creators with a $50 ad credit and a link to Ads Manager', quality: 'good_but_incomplete', points: 2, competencies: ['motivation_theory'], explanation: 'Ad credits reduce the financial risk of trying ads, which is a real activation lever. But the Ads Manager link sends creators into a complex product without the contextual framing of which video to promote or why.' },
+              { option_label: 'D', option_text: 'Add an "advertise this product" button directly on each Shop listing page in the app', quality: 'good_but_incomplete', points: 2, competencies: ['creative_execution'], explanation: 'Good placement (contextual) but product-level ads are a different mental model from video-level ads. Creators think in videos, not product listings, for organic content.' },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'optimize',
+        step_nudge: 'Which surface should you build first, and what does the simplified ad-creation flow look like for a creator with no ads experience?',
+        grading_weight: 0.30,
+        step_order: 3,
+        questions: [
+          {
+            question_text: 'What does the minimum viable creator ads flow look like inside TikTok Shop?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'A three-step flow inside the Creator Center: (1) select a Shop video, (2) set a budget ($10/$20/$50 presets), (3) tap "Boost" — TikTok automatically targets the video to users similar to those who already bought from the creator\'s Shop', quality: 'best', points: 3, competencies: ['strategic_thinking', 'creative_execution'], explanation: 'Three-step flow removes every Ads Manager complexity. Budget presets eliminate the blank-box anxiety. Auto-targeting based on existing Shop buyer lookalikes reduces the creator\'s need to understand audience configuration.' },
+              { option_label: 'B', option_text: 'Redirect creators to TikTok Ads Manager with a pre-filled template based on their most recent Shop video', quality: 'good_but_incomplete', points: 2, competencies: ['creative_execution'], explanation: 'Pre-filling helps, but Ads Manager itself is still a context switch that exposes creators to dozens of settings they do not understand. The first-time conversion rate will remain low.' },
+              { option_label: 'C', option_text: 'Build an AI-powered ads advisor inside Creator Center that recommends ad settings based on creator performance history', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'AI advisor addresses the knowledge gap but requires the creator to trust a recommendation and still navigate a purchase flow. It is a good phase 2 feature, not the MVP.' },
+              { option_label: 'D', option_text: 'Auto-boost creators\' top-performing Shop videos automatically and charge them afterward, with the option to turn off', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Automatic charges without explicit creator consent will create immediate trust damage and platform backlash. Opt-out billing models in creator tools have historically caused brand crises.' },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'win',
+        step_nudge: 'What is the activation metric and 90-day target for the cross-sell program?',
+        grading_weight: 0.20,
+        step_order: 4,
+        questions: [
+          {
+            question_text: 'Which metric and target best captures success for the creator ads cross-sell program?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'motivation_theory'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              { option_label: 'A', option_text: 'Shop-to-Ads conversion rate: percentage of new Shop storefronts that run at least one paid campaign within 90 days. Target: 15% within 90 days of the simplified boost flow launch.', quality: 'best', points: 3, competencies: ['strategic_thinking', 'motivation_theory'], explanation: 'Directly measures the cross-sell goal as stated. 15% is ambitious but achievable given the simplified flow. It is falsifiable and points to a specific product change as the lever.' },
+              { option_label: 'B', option_text: 'Total ad spend from Shop creators in Q3 versus Q2', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Total spend growth is an important business metric but it is influenced by existing heavy spenders who were already running ads. Conversion rate of new creators is a cleaner signal of cross-sell effectiveness.' },
+              { option_label: 'C', option_text: 'Number of creators who visit the Boost feature landing page within 30 days of opening a Shop', quality: 'surface', points: 1, competencies: [], explanation: 'Page visits measure awareness, not conversion. A creator who visits and leaves without spending is not a win for the program.' },
+              { option_label: 'D', option_text: 'Creator satisfaction score for the ads experience, measured via post-campaign survey', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Satisfaction surveys are too slow and too soft to measure a cross-sell program. The program\'s success is measured by creators spending, not by how they felt about it.' },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'pm-netflix-001',
+    title: 'Netflix Podcast: Designing an Audio Product for a Video Platform',
+    scenario_role: 'Senior PM, New Products',
+    scenario_context: 'Netflix has built its brand entirely around premium video content. As the podcast market has grown to 500M listeners globally, Netflix\'s original content library (documentaries, true crime series, scripted dramas) represents an untapped audio adjacency. Several Netflix originals have already generated significant podcast spin-off interest from external producers.',
+    scenario_trigger: 'The VP of Product asks the new products team to evaluate building a podcast product natively inside Netflix, starting with the existing original content library as the content seed.',
+    scenario_question: 'Build a podcast product for Netflix: what is the core concept, who is the primary user, what is on the roadmap, and what are the risks?',
+    engineer_standout: 'Strong answers will distinguish between audio-native podcasts and video-derived audio, address the discovery and recommendation system required, and be explicit about the risk of cannibalizing Netflix\'s watch time with listen time.',
     paradigm: 'traditional',
-    industry: 'fintech',
-    sub_vertical: 'retail_investing',
-    difficulty: 'staff_plus',
+    industry: 'Entertainment',
+    sub_vertical: 'Streaming and Podcasting',
+    difficulty: 'advanced',
     estimated_minutes: 25,
-    primary_competencies: ['strategic_thinking', 'org_design'],
-    secondary_competencies: ['prioritization', 'product_vision'],
-    frameworks: ['Value Chain Analysis', 'Jobs to be Done'],
-    relevant_roles: ['tech_lead', 'staff_engineer', 'em'],
-    company_tags: ['Robinhood'],
-    tags: ['fintech', 'org_design', 'strategy', 'product_leadership'],
-    is_published: true as const,
-    is_calibration: false as const,
-    is_premium: false as const,
+    primary_competencies: ['strategic_thinking', 'creative_execution'],
+    secondary_competencies: ['domain_expertise', 'taste'],
+    frameworks: ['Jobs To Be Done', 'Platform Thinking'],
+    relevant_roles: ['pm', 'swe', 'em'],
+    company_tags: ['Netflix', 'Spotify', 'Apple Podcasts'],
+    tags: ['netflix', 'podcasts', 'audio', 'product-design', 'new-product'],
+    is_published: true,
+    is_calibration: false,
+    is_premium: false,
     steps: [
       {
-        step: 'frame' as const,
-        step_nudge: 'What is the core strategic tension that the three-team structure must resolve?',
-        grading_weight: 25,
+        step: 'frame',
+        step_nudge: 'What is the core user problem that a Netflix podcast product would solve, and for whom?',
+        grading_weight: 0.25,
         step_order: 1,
         questions: [
           {
-            question_text:
-              'What is the upstream problem that should constrain which three teams Robinhood builds next?',
+            question_text: 'What is the most accurate framing of the opportunity for a Netflix podcast product?',
             question_nudge: null,
             sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['strategic_thinking', 'org_design'],
-            response_type: 'mcq_plus_elaboration' as const,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'cognitive_empathy'],
+            response_type: 'mcq_plus_elaboration',
             options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Robinhood\'s revenue is heavily transaction-dependent, which ties the business to market volatility. The structural problem is building recurring revenue streams that hold in flat or bear markets without alienating the price-sensitive user base that made the brand.',
-                quality: 'best',
-                points: 3,
-                competencies: ['strategic_thinking', 'market_awareness'],
-                explanation:
-                  'Revenue concentration in transaction fees is the upstream constraint. Every org design choice that does not address this leaves Robinhood exposed to the same macro cycle risk. Teams should exist to diversify that dependency.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Robinhood needs to serve older, wealthier investors who have more assets to invest, not just the millennial retail segment.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['market_sizing'],
-                explanation:
-                  'Upmarket expansion is a real strategic option, but framing the problem as audience age misses why it matters. The goal is higher AUM and recurring revenue, not demographic diversity for its own sake.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'The app has too many features and user research shows younger users are overwhelmed. Simplification should come before expansion.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['user_empathy'],
-                explanation:
-                  'Feature complexity is a UX problem, not a strategic problem. Simplification alone does not address the transaction-revenue concentration that puts the business at risk in bear markets.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Competitors like Schwab and Fidelity are adding commission-free trading, so differentiation is eroding and Robinhood needs to find new vectors.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['market_awareness'],
-                explanation:
-                  'Correct observation but one level too shallow. Naming that differentiation is eroding does not identify what kind of new vector would build a moat, which is what the org design question demands.',
-              },
+              { option_label: 'A', option_text: 'Netflix wants to capture podcast market share from Spotify and Apple Podcasts by launching a competing platform', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Market share competition with Spotify would require an open podcast catalog, which Netflix cannot fill and which would commoditize the product. Netflix\'s advantage is exclusive content, not catalog breadth.' },
+              { option_label: 'B', option_text: 'Netflix subscribers who love a specific show want to go deeper after watching — a podcast product serves the continuation of engagement for super-fans of existing Netflix originals', quality: 'best', points: 3, competencies: ['strategic_thinking', 'cognitive_empathy'], explanation: 'The job is "extend the story" for existing fans, not "find new content." This framing anchors the product in Netflix\'s existing content moat and targets a user who is already proven (paid subscriber, engaged viewer).' },
+              { option_label: 'C', option_text: 'Netflix needs an audio product to compete with Spotify\'s push into video podcasts and audiobooks', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Competitive framing is real context, but it does not identify what user problem Netflix would uniquely solve. Entering a competition without a user need anchor leads to undifferentiated products.' },
+              { option_label: 'D', option_text: 'Netflix can increase subscriber value by bundling podcasts with the existing subscription to reduce churn', quality: 'good_but_incomplete', points: 2, competencies: ['motivation_theory'], explanation: 'Churn reduction through bundle value is a valid business rationale, but it does not define what the podcast product should actually be or who should use it.' },
             ],
           },
         ],
       },
       {
-        step: 'list' as const,
-        step_nudge: 'Name three structurally distinct teams with different jobs, not variations of the same theme.',
-        grading_weight: 25,
+        step: 'list',
+        step_nudge: 'What are the structurally distinct types of podcast content Netflix could launch, and how do they differ?',
+        grading_weight: 0.25,
         step_order: 2,
         questions: [
           {
-            question_text:
-              'Which set of three teams addresses the revenue concentration problem while building compounding value?',
+            question_text: 'Which content strategy gives Netflix the strongest foundation for a podcast product?',
             question_nudge: null,
             sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['org_design', 'strategic_thinking'],
-            response_type: 'mcq_plus_elaboration' as const,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
             options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Wealth Layer (recurring subscription for portfolio coaching and tax tools), Ecosystem (API for third-party developers to build on Robinhood accounts), and Trust (regulatory, KYC, and privacy infrastructure that enables both). Each team unlocks the next one.',
-                quality: 'best',
-                points: 3,
-                competencies: ['org_design', 'strategic_thinking'],
-                explanation:
-                  'The three teams are structurally distinct and sequentially dependent. Wealth Layer needs subscription revenue infrastructure. Ecosystem needs the Wealth Layer data to make the API valuable. Trust enables both without Robinhood taking on unlimited liability.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Growth, Retention, and Monetization teams, each owning a distinct funnel stage and reporting to a unified growth function.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['org_design'],
-                explanation:
-                  'Funnel-stage teams are an org pattern for scaling a known product, not for building new revenue streams. None of these teams are tasked with creating the recurring revenue structures that would reduce transaction dependency.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Crypto, Options, and Retirement teams, each focused on a distinct asset class where Robinhood can capture a larger share of the market.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['market_sizing'],
-                explanation:
-                  'Asset-class teams diversify product surface but not revenue model. Transaction fees on crypto and options still correlate with market volatility. The core strategic problem remains unsolved.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Banking (checking, savings, debit), Investing (core brokerage evolution), and Analytics (data products for power users). These three cover the full financial life of a user.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['product_vision'],
-                explanation:
-                  'Full financial lifecycle coverage is a real vision, but the three teams do not have clear dependencies or a sequenced logic for why this combination builds a moat rather than spreading investment thin.',
-              },
+              { option_label: 'A', option_text: 'Open catalog: license existing podcasts from independent creators to populate the platform at launch', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Open catalog requires content licensing infrastructure Netflix does not have and creates direct competition with Spotify and Apple, where Netflix has no distribution advantage and weaker brand association with audio.' },
+              { option_label: 'B', option_text: 'Three tiers: show-companion podcasts (behind-the-scenes, creator interviews for existing originals), deep-dive audio originals (audio-first content in genres where Netflix is strong: true crime, documentary), and serialized fiction audio (audio dramas tied to Netflix IP)', quality: 'best', points: 3, competencies: ['strategic_thinking', 'domain_expertise'], explanation: 'Three structurally distinct content types, ordered by production complexity. Companion podcasts ship fastest using existing IP and interviews. Deep-dive audio originals expand the addressable audience. Serialized fiction builds new IP moat. Each serves the core user (Netflix super-fan) at different depth.' },
+              { option_label: 'C', option_text: 'Start with a single format: one companion podcast per Netflix original show, tied to new season releases', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Single-format focus is operationally achievable and tied to proven content interest. The limitation is that companion podcasts alone do not attract users who are not already fans of a specific show.' },
+              { option_label: 'D', option_text: 'Launch a creator marketplace where external podcasters can produce Netflix-licensed content', quality: 'surface', points: 1, competencies: [], explanation: 'Marketplace models require platform mass before creators have incentive to participate. Netflix has no podcast audience to attract creators at launch.' },
             ],
           },
         ],
       },
       {
-        step: 'optimize' as const,
-        step_nudge: 'Which of the three teams is the constraint? What breaks if it is underfunded?',
-        grading_weight: 25,
+        step: 'optimize',
+        step_nudge: 'What is the biggest risk in building this product, and how do you design around it?',
+        grading_weight: 0.30,
         step_order: 3,
         questions: [
           {
-            question_text:
-              'In the Wealth Layer / Ecosystem / Trust structure, which team is the bottleneck and why?',
+            question_text: 'What is the biggest structural risk in a Netflix podcast product, and what design choice mitigates it?',
             question_nudge: null,
             sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['org_design', 'prioritization'],
-            response_type: 'mcq_plus_elaboration' as const,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
             options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Trust is the bottleneck. Without compliant KYC, data governance, and consent infrastructure, Wealth Layer cannot share portfolio data with users for coaching, and Ecosystem cannot expose account data to third parties. Underfunding Trust freezes the other two teams at the boundary of what existing infrastructure already supports.',
-                quality: 'best',
-                points: 3,
-                competencies: ['org_design', 'prioritization'],
-                explanation:
-                  'Trust is the shared dependency. Identifying it as the bottleneck demonstrates systems thinking about org design: the constraint is not the most visible team but the infrastructure team that unlocks the others.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Ecosystem is the bottleneck because third-party developers drive the network effects that make the platform defensible.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['org_design'],
-                explanation:
-                  'Ecosystem is the growth engine, but it depends on Trust being in place first. Calling Ecosystem the bottleneck conflates the team that generates the most value with the team that is the prerequisite for value generation.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Wealth Layer is the bottleneck because it is the most visible to users and drives the subscription revenue the other teams depend on.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['org_design'],
-                explanation:
-                  'Wealth Layer is the revenue engine, but revenue is a lagging indicator. If Trust is underfunded, Wealth Layer cannot legally build the data features that make the subscription valuable.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'None of the three teams is a bottleneck if each has an independent roadmap with clear ownership boundaries.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['org_design'],
-                explanation:
-                  'Independent roadmaps eliminate the dependencies that make the three-team structure valuable. If the teams do not share a constraint, they are three separate products, not a coherent strategy.',
-              },
+              { option_label: 'A', option_text: 'The biggest risk is low podcast production quality compared to established podcast studios; mitigate by hiring experienced audio producers from Spotify and NPR', quality: 'surface', points: 1, competencies: [], explanation: 'Production quality is an execution risk but not the structural risk. Netflix already produces high-quality audio through documentaries. Hiring audio producers does not address the fundamental question of whether subscribers will listen.' },
+              { option_label: 'B', option_text: 'The biggest risk is listen-time cannibalizing watch-time, reducing the core viewing engagement that justifies the subscription price; mitigate by making podcasts available only during times Netflix cannot capture watch-time (commute, exercise, sleep)', quality: 'best', points: 3, competencies: ['strategic_thinking', 'creative_execution'], explanation: 'Cannibalization is the structural risk unique to Netflix (not a risk for Spotify or Apple). The mitigation is use-case scoping: position podcasts explicitly as "for moments when video is not possible," not as a replacement for watching. This design choice preserves the watch-time north star.' },
+              { option_label: 'C', option_text: 'The biggest risk is that Netflix cannot compete with Spotify\'s recommendation algorithm for audio content; mitigate by building a dedicated podcast recommendation system', quality: 'good_but_incomplete', points: 2, competencies: ['domain_expertise'], explanation: 'Algorithm quality is a real challenge, but Netflix starts with a significant advantage: it already knows what shows each subscriber watches and can recommend companion content with high relevance. The algorithm risk is overstated.' },
+              { option_label: 'D', option_text: 'The biggest risk is regulatory: podcast advertising revenue may require different licensing agreements than streaming video', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Regulatory risk is manageable and not structural. Netflix can launch ad-free podcasts included in the subscription without advertising, completely avoiding this risk in the initial product.' },
             ],
           },
         ],
       },
       {
-        step: 'win' as const,
-        step_nudge: 'Make the call. Which team do you staff first and with what success condition?',
-        grading_weight: 25,
+        step: 'win',
+        step_nudge: 'How do you pitch this to the VP of Product as a two-year roadmap with a clear Phase 1 that can ship in 6 months?',
+        grading_weight: 0.20,
         step_order: 4,
         questions: [
           {
-            question_text:
-              'If you can only fully staff one team in Q1, which is it and what does success look like at the end of the quarter?',
+            question_text: 'What does the Phase 1 pitch look like, and what proof point would make the VP say yes?',
             question_nudge: null,
             sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['decision_making', 'metrics'],
-            response_type: 'mcq_plus_elaboration' as const,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['creative_execution', 'motivation_theory'],
+            response_type: 'mcq_plus_elaboration',
             options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Staff Trust first. Q1 success is a published data governance policy, a completed audit of what account data can be shared and under what consent conditions, and a green light from legal for the Wealth Layer data sharing architecture.',
-                quality: 'best',
-                points: 3,
-                competencies: ['decision_making', 'metrics'],
-                explanation:
-                  'Trust unblocks the other two teams. Q1 outputs are concrete and testable: the governance policy exists, the data audit is complete, legal has approved the architecture. These are not vague milestones.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Staff Wealth Layer first because users and investors can see subscription revenue growth immediately, which creates organizational momentum for the longer-term Trust and Ecosystem builds.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['decision_making'],
-                explanation:
-                  'Organizational momentum is a real consideration, but building Wealth Layer without Trust in place means the team will hit legal and compliance walls that delay the subscription product anyway.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Staff all three at 60% capacity to maintain progress on each front and avoid letting any one area fall too far behind.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['prioritization'],
-                explanation:
-                  'Three teams at 60% produce three teams moving slowly. In Q1, Trust at 60% means the governance work that unblocks Wealth Layer and Ecosystem is incomplete, delaying both. Spreading is the opposite of sequencing.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Staff Ecosystem first because developer adoption compounds over time and early API partners create a moat before competitors build their own.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['decision_making'],
-                explanation:
-                  'Ecosystem cannot expose account data to third parties without Trust\'s governance infrastructure. Staffing Ecosystem first means the team will spend Q1 waiting for data access decisions rather than shipping.',
-              },
+              { option_label: 'A', option_text: 'Phase 1 in 6 months: companion podcasts for the top 10 Netflix originals by watch-time, surfaced inside the Netflix app on the show detail page. Success metric: 5% of viewers who finish a show start a companion podcast episode. Proof point at the VP meeting: cite Stranger Things and Wednesday fan communities that have already created unofficial companion content, proving latent demand.', quality: 'best', points: 3, competencies: ['creative_execution', 'motivation_theory'], explanation: 'Phase 1 is scoped to the minimum: no new content infrastructure, no new app surfaces. The success metric is behavioral and measurable in 90 days. The proof point references observable existing demand (unofficial fan podcasts), not a hypothetical market analysis.' },
+              { option_label: 'B', option_text: 'Phase 1 in 6 months: launch a standalone Netflix Podcast app with 50 companion episodes across 20 shows. Success metric: 1M app downloads in the first month.', quality: 'surface', points: 1, competencies: [], explanation: 'A standalone app is a major distribution bet that isolates podcast listeners from Netflix\'s existing app user base. 1M downloads is a reach metric that does not confirm listener engagement or subscription impact.' },
+              { option_label: 'C', option_text: 'Phase 1 in 6 months: pilot three companion podcasts for upcoming originals and measure whether podcast listeners have higher 90-day retention than non-listeners.', quality: 'good_but_incomplete', points: 2, competencies: ['strategic_thinking'], explanation: 'Retention correlation is the right long-term metric, but 90 days is too slow to use as a VP proof point for a 6-month Phase 1. Retention studies require 12+ months to produce reliable signal.' },
+              { option_label: 'D', option_text: 'Phase 1: license 500 existing podcast episodes from Spotify and Apple to populate the Netflix audio library, then measure subscriber engagement.', quality: 'plausible_wrong', points: 0, competencies: [], explanation: 'Licensing from Spotify and Apple creates a competitor dependency and does not use Netflix\'s content moat. It is the slowest, most expensive, and strategically weakest Phase 1 option.' },
             ],
           },
         ],
       },
     ],
   },
-
-  {
-    id: 'hp-reddit-search-improvement',
-    title: 'Improving Reddit Search',
-    scenario_role: 'staff engineer',
-    scenario_context:
-      'Reddit has over 100,000 active communities and 16 billion posts indexed, yet users consistently rate search as the worst part of the product. Third-party sites like Google still outperform Reddit\'s own search for finding relevant posts and communities. Most users who fail to find what they need via search leave the session rather than browse alternatives, representing both a discovery failure and a retention risk.',
-    scenario_trigger:
-      'The search infrastructure team is asking for a product-level framing before committing engineering resources to a redesign.',
-    scenario_question:
-      'How would you improve Reddit Search to help users find relevant communities and posts more effectively?',
-    engineer_standout:
-      'Distinguish between the search infrastructure problem and the search product problem. They require different solutions and different success metrics.',
-    paradigm: 'ai_assisted',
-    industry: 'social_media',
-    sub_vertical: 'community_platforms',
-    difficulty: 'standard',
-    estimated_minutes: 18,
-    primary_competencies: ['product_improvement', 'user_empathy'],
-    secondary_competencies: ['technical_strategy', 'metrics'],
-    frameworks: ['Jobs to be Done', 'North Star Metric'],
-    relevant_roles: ['tech_lead', 'staff_engineer', 'swe'],
-    company_tags: ['Reddit'],
-    tags: ['search', 'discovery', 'communities', 'UX'],
-    is_published: true as const,
-    is_calibration: false as const,
-    is_premium: false as const,
-    steps: [
-      {
-        step: 'frame' as const,
-        step_nudge: 'What job is a Reddit user trying to do when they search? It is not always "find a post."',
-        grading_weight: 25,
-        step_order: 1,
-        questions: [
-          {
-            question_text:
-              'What is the primary reason Reddit Search fails users, beyond returning low-quality results?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['user_empathy', 'root_cause_analysis'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Reddit Search treats every query as a document retrieval problem, but most users searching on Reddit are trying to find a community or a conversation to join, not a single answer. The intent mismatch means the ranking model optimizes for the wrong outcome.',
-                quality: 'best',
-                points: 3,
-                competencies: ['user_empathy', 'product_thinking'],
-                explanation:
-                  'Intent mismatch is the upstream failure. Reddit\'s unit of value is community membership and ongoing conversation, not individual posts. A search that returns top posts when the user wants a subreddit to follow has failed even if the documents are high quality.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Reddit\'s Elasticsearch index is not updated frequently enough, so new posts and comments often do not appear in results for hours after publishing.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['technical_strategy'],
-                explanation:
-                  'Index freshness is a real engineering problem, but it affects recency-sensitive queries rather than the majority of searches. Most failed searches on Reddit are not freshness failures; they are intent failures.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Reddit Search lacks advanced filters like date range, community, and media type, so power users cannot narrow results effectively.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['product_improvement'],
-                explanation:
-                  'Advanced filters help power users but do not address why most users fail at search. Casual users do not use filter UIs; they need the default result set to understand their intent without explicit refinement.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Google has indexed Reddit more deeply than Reddit\'s own search engine, so the external product will always outperform the internal one.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['technical_strategy'],
-                explanation:
-                  'Google\'s superior indexing is a symptom, not a cause. It reflects years of infrastructure underinvestment, but it does not explain the product-level intent problem that would persist even with perfect indexing.',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        step: 'list' as const,
-        step_nudge: 'Identify the top three distinct user jobs that Reddit Search should address.',
-        grading_weight: 25,
-        step_order: 2,
-        questions: [
-          {
-            question_text:
-              'Which set of three distinct search intents covers the majority of Reddit Search jobs to be done?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['user_empathy', 'product_improvement'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Find my community (which subreddit should I join for X), find the conversation (has anyone discussed this specific situation), and find the answer (what did Reddit say about this product or decision). Each needs a different result surface and ranking signal.',
-                quality: 'best',
-                points: 3,
-                competencies: ['user_empathy', 'product_improvement'],
-                explanation:
-                  'These three intents are structurally distinct: community discovery needs subreddit cards with subscriber count and activity, conversation finding needs thread surfaces with vote context, and answer finding needs top-comment extraction. One ranking model cannot serve all three well.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Browse (casual discovery), research (deep reading on a topic), and verify (checking whether a claim has been made on Reddit before).',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['user_empathy'],
-                explanation:
-                  'A reasonable segmentation but framed around user mode rather than the outcome the user needs from the search result page. Modes are harder to detect and design for than outcome-based intents.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Text search, image search, and video search, each requiring a separate index and ranking model.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['technical_strategy'],
-                explanation:
-                  'Media type is an infrastructure dimension, not a user intent. A user searching for "best mechanical keyboards" may want text posts, images, and videos, but the intent is the same: finding community knowledge on a topic.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'New users (onboarding to Reddit communities), returning users (catching up on known communities), and power users (researching topics across subreddits).',
-                quality: 'surface',
-                points: 1,
-                competencies: ['user_empathy'],
-                explanation:
-                  'User maturity is a useful segmentation for onboarding design but not for search. A new user and a power user can have identical search intents on the same day depending on the query.',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        step: 'optimize' as const,
-        step_nudge: 'Pick the one intent to fix first. Name what you optimize for and what you explicitly defer.',
-        grading_weight: 25,
-        step_order: 3,
-        questions: [
-          {
-            question_text:
-              'If you can only fix one search intent this quarter, which do you pick and what do you give up?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['prioritization', 'product_improvement'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Fix community discovery first. Optimizing for new users finding and joining the right subreddit has the highest compounding return because each successful join increases DAU and content generation across the platform. Deferring conversation-finding and answer-finding means power users still rely on Google.',
-                quality: 'best',
-                points: 3,
-                competencies: ['prioritization', 'product_improvement'],
-                explanation:
-                  'Community discovery is the highest-leverage fix because subreddit membership is the core retention mechanism on Reddit. Every user who finds their community stays; every one who does not becomes a one-time visitor.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Fix answer-finding first because it is the most common search job and the one where Google\'s advantage is most visible to users, so improving it has the highest brand impact.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['prioritization'],
-                explanation:
-                  'Answer-finding frequency is real, but the downstream impact of a successful answer-finding search is a read-and-leave session. Community discovery leads to membership, which leads to sessions that generate new content and comments.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Fix all three intents simultaneously with a unified semantic search model that reranks results based on inferred intent classification.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['technical_strategy'],
-                explanation:
-                  'Unified semantic search that handles three intents simultaneously is a multi-quarter infrastructure project. It is not a quarterly choice between intents; it is a reframing that avoids making the choice at all.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Fix conversation-finding because Reddit\'s unique value is in threaded discussions, and making threads discoverable differentiates from Google\'s flat document results.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['product_thinking'],
-                explanation:
-                  'Conversation-finding is a real job, but it serves users who already know Reddit has the content they want. Community discovery serves users who do not yet know which subreddit is relevant, which is the earlier and more impactful problem.',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        step: 'win' as const,
-        step_nudge: 'Define the success state for fixing community discovery search.',
-        grading_weight: 25,
-        step_order: 4,
-        questions: [
-          {
-            question_text:
-              'How would you measure whether the community discovery search fix is working after one month?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['metrics', 'decision_making'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Subreddit subscription rate for sessions that include a search query increases by at least 10% versus the pre-launch baseline. Secondary check: sessions that search and subscribe have 30-day retention above the platform average.',
-                quality: 'best',
-                points: 3,
-                competencies: ['metrics', 'decision_making'],
-                explanation:
-                  'Subscription rate from search sessions directly measures whether community discovery improved. The retention check ensures the subscriptions are genuine community fits rather than accidental clicks on newly prominent results.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Search session bounce rate decreases by 15% in the month after launch.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['metrics'],
-                explanation:
-                  'Bounce rate reduction confirms users are engaging with results rather than leaving, but it does not confirm they are joining communities. A user who clicks three posts and leaves has lower bounce rate without becoming a retained member.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Overall Reddit DAU increases by 5% in the month following the search improvement launch.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['metrics'],
-                explanation:
-                  'DAU is too noisy to attribute to a single search improvement within one month. Dozens of other factors affect DAU over a 30-day window, making this metric unable to confirm causation.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'The number of search queries that return at least one subreddit result in the top three positions increases by 25%.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['metrics'],
-                explanation:
-                  'This measures a ranking change, not a user outcome. Showing subreddits more prominently does not mean users are subscribing to them. It measures what the algorithm did, not whether users got what they needed.',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-
-  {
-    id: 'hp-reddit-video-ranking',
-    title: 'Making Videos Rank Higher on Reddit',
-    scenario_role: 'tech lead',
-    scenario_context:
-      'Reddit launched its native video player in 2017, but video posts consistently underperform image and text posts in both organic ranking and discovery. Short-form video platforms like TikTok and Instagram Reels have trained users to expect video-first feeds, yet Reddit\'s algorithm still surfaces video content at rates well below its engagement-per-minute relative to static posts. The content team wants to change this.',
-    scenario_trigger:
-      'The feed ranking team asks you to scope a video ranking initiative before the next sprint planning.',
-    scenario_question:
-      'How would you make videos rank higher on Reddit?',
-    engineer_standout:
-      'Identify the difference between boosting video impressions (an algorithmic dial) and making video natively valuable for the communities where it belongs (a product bet). The second is harder and more durable.',
-    paradigm: 'ai_assisted',
-    industry: 'social_media',
-    sub_vertical: 'community_platforms',
-    difficulty: 'standard',
-    estimated_minutes: 18,
-    primary_competencies: ['product_improvement', 'technical_strategy'],
-    secondary_competencies: ['metrics', 'user_empathy'],
-    frameworks: ['Jobs to be Done', 'North Star Metric'],
-    relevant_roles: ['tech_lead', 'swe', 'staff_engineer'],
-    company_tags: ['Reddit'],
-    tags: ['video', 'ranking', 'feed_algorithm', 'content_strategy'],
-    is_published: true as const,
-    is_calibration: false as const,
-    is_premium: false as const,
-    steps: [
-      {
-        step: 'frame' as const,
-        step_nudge: 'Is the problem that video is ranked too low, or that video is not yet worth ranking higher?',
-        grading_weight: 25,
-        step_order: 1,
-        questions: [
-          {
-            question_text:
-              'Why does Reddit\'s current ranking system undervalue video content relative to text and images?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['technical_strategy', 'product_thinking'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Reddit\'s ranking algorithm was built around upvotes and comment velocity, both of which are generated faster on text posts. Video engagement signals, watch time and completion rate, are not in the ranking model at all, so video never gets credit for the attention it holds.',
-                quality: 'best',
-                points: 3,
-                competencies: ['technical_strategy', 'product_thinking'],
-                explanation:
-                  'The ranking model only sees signals it was designed to collect. Since watch time was never instrumented as a first-class ranking signal, video is perpetually undervalued relative to its actual engagement value. This is a data model gap, not a content quality problem.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Reddit users prefer text-based discussions and upvote text posts more frequently, reflecting a genuine community preference rather than an algorithmic bias.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['user_empathy'],
-                explanation:
-                  'This explanation conflates correlation with causation. Text posts get more upvotes partly because they have been ranked higher for longer, which drives more impressions and therefore more upvotes. The preference may be algorithmic artifact, not authentic preference.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Reddit\'s mobile app video player is worse than native iOS and Android video, causing users to abandon video posts faster and depress engagement metrics.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['technical_strategy'],
-                explanation:
-                  'Player quality is a real contribution to underperformance, but it is a downstream factor. Even a perfect player would not help if watch time is not a ranking signal and video posts still receive fewer upvotes per impression than text.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Video creation on Reddit requires more effort than posting text or images, so the volume of video content is simply too low to rank competitively.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['product_thinking'],
-                explanation:
-                  'Volume is a consequence of ranking, not an independent cause. Creators make less video content partly because video posts perform worse, which is itself a product of the ranking model not crediting video engagement signals.',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        step: 'list' as const,
-        step_nudge: 'List the three interventions and distinguish between algorithmic dials and product bets.',
-        grading_weight: 25,
-        step_order: 2,
-        questions: [
-          {
-            question_text:
-              'Which three interventions would you prioritize to sustainably improve video ranking on Reddit?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['technical_strategy', 'product_improvement'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Add watch-time and completion-rate as first-class ranking signals, build creator analytics that show video-specific metrics so creators can improve, and identify the 20 subreddits where video naturally outperforms so the algorithm learns community context rather than treating all video the same.',
-                quality: 'best',
-                points: 3,
-                competencies: ['technical_strategy', 'product_improvement'],
-                explanation:
-                  'These three interventions are structurally distinct: the first fixes the ranking model, the second improves supply quality over time, and the third teaches the algorithm community context. Together they create a compounding feedback loop.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Add a dedicated video tab in the nav, push-notify users when a subreddit they follow posts a viral video, and display video completion percentages on the post card.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['product_improvement'],
-                explanation:
-                  'These are surface-level UX changes. A video tab moves where videos live but does not make them rank higher in the main feed. Notifications are a blunt instrument that can increase opens while hurting long-term engagement.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Apply a global 20% boost multiplier to all video posts in the ranking algorithm to immediately increase video impressions across the platform.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['technical_strategy'],
-                explanation:
-                  'A global boost overrides community context. Communities that have organically low video engagement will be flooded with video posts their members did not upvote, damaging feed quality and user trust in the algorithm.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Improve the native video player to match Instagram quality, add auto-captions, and enable looping, making video more competitive on the consumption side.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['product_improvement'],
-                explanation:
-                  'Player quality improvements help retention per video session, but without watch time as a ranking signal, better watch completion does not flow back into improved ranking. The consumption experience improves but the supply flywheel does not close.',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        step: 'optimize' as const,
-        step_nudge: 'Adding watch-time to the ranking model has a cost. What are you optimizing for and what breaks?',
-        grading_weight: 25,
-        step_order: 3,
-        questions: [
-          {
-            question_text:
-              'If watch-time becomes a first-class ranking signal, what does that optimize for and what does it risk?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['technical_strategy', 'prioritization'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Optimizing for total attention captured per session. The explicit risk is that long videos with low upvotes but high completion rise above short, highly-upvoted posts, shifting Reddit\'s identity from community-curation to algorithmic recommendation, which may alienate the core power-user base that generates comments.',
-                quality: 'best',
-                points: 3,
-                competencies: ['technical_strategy', 'prioritization'],
-                explanation:
-                  'Naming the identity risk is critical. Reddit\'s core product promise is community curation via upvotes, not algorithmic recommendation. Watch time as a dominant signal moves Reddit closer to TikTok\'s model, which may erode the community behaviors that make Reddit unique.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Optimizing for video creator satisfaction. The risk is that shorter text posts will be deprioritized, reducing the comment-heavy discussions that drive most of Reddit\'s content generation.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['product_thinking'],
-                explanation:
-                  'Creator satisfaction is a reasonable framing, but it is a secondary effect. The primary optimization target is session engagement, and the primary risk is the shift in Reddit\'s curation identity, not just changes in content mix.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Optimizing for ad revenue by increasing video impressions, since video ads command higher CPMs than display ads.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['business_model'],
-                explanation:
-                  'Ad revenue is a real business motivation, but it is not the product optimization target. Ranking decisions should be grounded in user value first; ad revenue follows from engagement quality, not the reverse.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'There is no meaningful risk. Watch time is a better signal than upvotes because it represents genuine engagement rather than a one-tap vote.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['technical_strategy'],
-                explanation:
-                  'Dismissing the trade-off misses the core tension. Watch time measures individual attention but not community endorsement. Reddit\'s comment culture depends on posts that generate discussion, which correlates more with upvotes than with video completion rates.',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        step: 'win' as const,
-        step_nudge: 'Make a crisp call on which signal to add first and how you would know it is working.',
-        grading_weight: 25,
-        step_order: 4,
-        questions: [
-          {
-            question_text:
-              'Which signal do you add to the ranking model first, and what is the success condition after 30 days?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['decision_making', 'metrics'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Add video completion rate as the first signal, weighted at 10% of the ranking score. Success at 30 days: video post click-through rate increases by at least 8% in the treated feed, and upvote rate on video posts in the top 10 positions does not decrease, confirming the community is not rejecting algorithmically promoted video.',
-                quality: 'best',
-                points: 3,
-                competencies: ['decision_making', 'metrics'],
-                explanation:
-                  'Starting at 10% weight is conservative enough to test the signal without overriding community curation. The dual success condition, CTR up and upvote rate stable, prevents a false positive where video ranks higher but the community rejects the promoted content.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Add watch time as the primary signal at 30% weight to create a meaningful shift in the ranking distribution and generate a detectable result within the test window.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['decision_making'],
-                explanation:
-                  'A 30% weight change is too aggressive for a first test. It risks collateral damage to community-curated feeds before there is evidence that watch time is a positive quality signal rather than a neutral attention signal.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Add completion rate and watch time simultaneously at 5% each to maintain balance between the two signals.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['decision_making'],
-                explanation:
-                  'Running both signals simultaneously makes it impossible to isolate which signal is driving the observed effect. A clean first test requires one variable change.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Run a 60-day experiment before committing to any ranking change, to ensure enough data is collected for statistical significance.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['metrics'],
-                explanation:
-                  'Statistical rigor is important, but 60 days for a 10% weight test is longer than necessary. Reddit has enough daily traffic volume to reach significance on feed-level ranking experiments within 2-3 weeks.',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-
-  {
-    id: 'hp-tiktok-dau-growth-experiments',
-    title: 'TikTok DAU Growth: Which Lever to Pull',
-    scenario_role: 'staff engineer',
-    scenario_context:
-      'TikTok\'s growth team is evaluating three investment areas for the next half: recommendation algorithm improvements, user acquisition campaigns targeting new demographics, and creator tool upgrades for production quality. All three have shown positive signals in small pilots, but the team needs to decide where to go deep. The constraint is that going deep on one area means explicitly deferring the others.',
-    scenario_trigger:
-      'The data science lead asks you to design the experiment portfolio that would answer the prioritization question before the half-year planning lock.',
-    scenario_question:
-      'Which data and experiments would you run to decide whether recommendations, user acquisition, or creator tools will boost TikTok\'s DAU most effectively?',
-    engineer_standout:
-      'Name the causal mechanism each lever uses to grow DAU, not just the correlation it creates, so the experiments test causation rather than confirmation.',
-    paradigm: 'ai_native',
-    industry: 'social_media',
-    sub_vertical: 'short_form_video',
-    difficulty: 'advanced',
-    estimated_minutes: 22,
-    primary_competencies: ['metrics', 'experimental_design'],
-    secondary_competencies: ['strategic_thinking', 'prioritization'],
-    frameworks: ['AARRR', 'A/B Testing', 'North Star Metric'],
-    relevant_roles: ['staff_engineer', 'tech_lead', 'em'],
-    company_tags: ['TikTok'],
-    tags: ['DAU', 'growth', 'experimentation', 'recommendations', 'creators'],
-    is_published: true as const,
-    is_calibration: false as const,
-    is_premium: false as const,
-    steps: [
-      {
-        step: 'frame' as const,
-        step_nudge: 'What is the right framing before designing any experiment? Correlation is not the answer.',
-        grading_weight: 25,
-        step_order: 1,
-        questions: [
-          {
-            question_text:
-              'What is the upstream problem with running three parallel pilots and choosing the winner based on DAU lift?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['experimental_design', 'strategic_thinking'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'DAU lift in a pilot does not reveal the causal mechanism. Recommendations improve retention for existing users, acquisition brings new users, and creator tools grow content supply. These affect DAU through different pathways, and a pilot showing equal lift from each does not tell you which pathway is more scalable or durable at 10x investment.',
-                quality: 'best',
-                points: 3,
-                competencies: ['experimental_design', 'strategic_thinking'],
-                explanation:
-                  'The core problem is measuring the outcome (DAU) without measuring the mechanism. If recommendations improve DAU by 2% by increasing session frequency, that compounds differently than acquisition improving DAU by 2% through new registrations. The experiments must test the mechanism, not just the output.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Running three pilots simultaneously risks interference effects, where users in one pilot are also exposed to changes from another, corrupting the results of all three.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['experimental_design'],
-                explanation:
-                  'Interference is a real experimental design problem, but it is a methodological concern, not the upstream framing problem. The deeper issue is that measuring DAU lift alone, even with clean experiment isolation, does not tell you which lever to scale.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Pilots are too short to measure DAU impact because new users need several weeks to develop the habit that drives daily return.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['metrics'],
-                explanation:
-                  'Duration is a design parameter that can be adjusted. The framing problem is not how long the pilots run but what they measure. Even a long pilot measuring only DAU lift would not answer which mechanism to invest in at scale.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'The three levers are not mutually exclusive, so running them as competing experiments creates a false trade-off. All three should be invested in simultaneously.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['prioritization'],
-                explanation:
-                  'The constraint was stated: going deep on one means explicitly deferring others. Arguing that all three should be funded simultaneously avoids the prioritization question rather than answering it.',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        step: 'list' as const,
-        step_nudge: 'Design one experiment per lever. Each experiment should test the causal mechanism, not the outcome.',
-        grading_weight: 25,
-        step_order: 2,
-        questions: [
-          {
-            question_text:
-              'Which experiment design correctly tests the causal mechanism for the recommendations lever?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['experimental_design', 'metrics'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Hold user acquisition constant. Randomly assign existing 30-60 day users to improved vs. baseline recommendations. Measure 14-day retention delta and session frequency change, not DAU. If improved recommendations increase session frequency without increasing acquisition, the mechanism is engagement depth, which scales differently than top-of-funnel growth.',
-                quality: 'best',
-                points: 3,
-                competencies: ['experimental_design', 'metrics'],
-                explanation:
-                  'Holding acquisition constant and measuring session frequency tests whether recommendations improve the depth of existing-user engagement. This isolates the mechanism rather than mixing it with new-user effects that would appear in raw DAU.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Run an A/B test where 50% of users get improved recommendations and measure which group has higher DAU after 4 weeks.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['experimental_design'],
-                explanation:
-                  'This measures the output (DAU) without illuminating the mechanism. An equal DAU lift could come from more sessions per existing user, from reduced churn, or from better reactivation of dormant users, all of which have different implications for scaling the investment.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Test improved recommendations specifically on new users in their first 7 days, since recommendation quality most affects early habit formation.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['experimental_design'],
-                explanation:
-                  'Targeting new users is a reasonable hypothesis about where recommendations matter most, but it introduces confounding from the new user experience. Testing on 30-60 day users isolates the recommendation effect from onboarding effects.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Measure which content categories users in the improved recommendations group watch most, and use that to infer whether recommendation quality has improved.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['metrics'],
-                explanation:
-                  'Content category distribution is a behavioral descriptor, not a causal test. Knowing that users in the improved recommendations group watch more cooking videos does not confirm that recommendation quality improved or that it causes DAU growth.',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        step: 'optimize' as const,
-        step_nudge: 'Now compare the three experiments. Which lever\'s mechanism compounds most at scale?',
-        grading_weight: 25,
-        step_order: 3,
-        questions: [
-          {
-            question_text:
-              'After running clean mechanism tests for all three levers, which result would most justify going deep with 10x investment?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['prioritization', 'strategic_thinking'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Recommendations showing a 15% session-frequency increase in 30-60 day users with no acquisition boost. This mechanism is compounding: better recommendations increase sessions, sessions increase the behavioral data that trains the model, and the model improves recommendations further, creating a self-reinforcing loop that acquisition spend cannot replicate.',
-                quality: 'best',
-                points: 3,
-                competencies: ['prioritization', 'strategic_thinking'],
-                explanation:
-                  'The recommendations mechanism creates a data flywheel. Each additional session generates signal that improves the next recommendation, which generates more sessions. Acquisition and creator tools do not have this self-reinforcing property at the model level.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Creator tools showing a 30% increase in weekly video uploads from existing creators in the treated group. More content means more recommendation surface area, which indirectly improves both DAU and acquisition.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['prioritization'],
-                explanation:
-                  'Creator tool impact on supply is real, but it is an indirect DAU lever. More content does not help DAU if the recommendation model cannot surface the right content to the right user. The mechanism depends on recommendations being effective first.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'User acquisition showing a 25% lower CAC in new demographic segments with equal 30-day retention to existing cohorts.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['metrics'],
-                explanation:
-                  'Lower CAC is a good result, but acquisition is a linear lever. Each new user costs money to acquire and the mechanism does not improve with scale. Recommendations and creator tools both have flywheel properties that acquisition does not.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Any lever that shows statistically significant DAU lift at p < 0.05 in a 30-day window should be prioritized regardless of mechanism.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['experimental_design'],
-                explanation:
-                  'Statistical significance confirms the signal is real, not that the mechanism scales. A statistically significant 1% DAU lift from acquisition might cost 10x more to sustain than a 1% lift from recommendations, which improves for free as the model learns.',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        step: 'win' as const,
-        step_nudge: 'Make the call. Which lever, what is the success threshold, and when do you stop the experiment?',
-        grading_weight: 25,
-        step_order: 4,
-        questions: [
-          {
-            question_text:
-              'Based on the experiment results, what is the decision rule for committing to the recommendations lever at full investment?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['decision_making', 'metrics'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Commit if: 14-day session frequency in the treatment group is at least 10% above baseline, the effect is consistent across the 25th-75th percentile of users (not just power users), and the model\'s training data quality metric improves by at least 5%, confirming the flywheel is closing.',
-                quality: 'best',
-                points: 3,
-                competencies: ['decision_making', 'metrics'],
-                explanation:
-                  'Three conditions prevent false positives: the frequency threshold confirms engagement depth, the percentile consistency check ensures it is not driven by power users who would engage regardless, and the model quality metric confirms the flywheel is actually closing, not just producing more of the same recommendations.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Commit if the recommendations experiment shows a statistically significant DAU lift above 5% in the treatment group at the end of the 30-day window.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['metrics'],
-                explanation:
-                  'A single DAU threshold commits the team based on an output metric without confirming the mechanism is working. A 5% DAU lift that came from power users and did not improve model quality would not sustain at 10x investment.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Commit if the recommendations experiment beats both the creator tools and acquisition experiments on DAU lift in the same 30-day window.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['decision_making'],
-                explanation:
-                  'Comparing DAU lift across three different mechanisms is the mistake the framing step identified. A smaller DAU lift from a compounding mechanism is more valuable than a larger lift from a linear one. Winning the comparison does not confirm the investment is correct.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Commit if the product and data science teams both agree the experiment results are promising and the mechanism is theoretically sound.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['decision_making'],
-                explanation:
-                  'Team agreement is a governance step, not a decision rule. Without a quantitative threshold, "promising" is ambiguous enough to justify committing to any experiment with positive directional results, which is not a crisp call.',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-
-  {
-    id: 'hp-tiktok-shop-creator-ads',
-    title: 'TikTok Shop Creator Ad Cross-Sell',
-    scenario_role: 'tech lead',
-    scenario_context:
-      'TikTok Shop has grown rapidly through creator-led product videos, but most creators earning through affiliate commissions have never used TikTok\'s paid advertising tools. The ads team sees an opportunity to convert Shop creators into ad buyers by showing them how paid promotion amplifies their affiliate revenue. The challenge is that creators think of themselves as content people, not advertisers, and the ad platform feels foreign to their mental model.',
-    scenario_trigger:
-      'The Shop monetization team asks you to design the cross-sell motion before the Q2 creator summit.',
-    scenario_question:
-      'How would you cross-sell ads on TikTok Shop for creators?',
-    engineer_standout:
-      'Identify the moment in the creator workflow where the ROI case for ads is most obvious and the friction to purchase is lowest. That is where the cross-sell belongs, not in a separate ad portal.',
-    paradigm: 'ai_native',
-    industry: 'social_media',
-    sub_vertical: 'creator_economy',
-    difficulty: 'standard',
-    estimated_minutes: 18,
-    primary_competencies: ['go_to_market', 'product_design'],
-    secondary_competencies: ['user_empathy', 'business_model'],
-    frameworks: ['Jobs to be Done', 'Customer Journey Mapping'],
-    relevant_roles: ['tech_lead', 'founding_engineer', 'staff_engineer'],
-    company_tags: ['TikTok'],
-    tags: ['ads', 'creators', 'TikTok_Shop', 'monetization', 'cross_sell'],
-    is_published: true as const,
-    is_calibration: false as const,
-    is_premium: false as const,
-    steps: [
-      {
-        step: 'frame' as const,
-        step_nudge: 'Why do creators with strong affiliate earnings not already use paid ads?',
-        grading_weight: 25,
-        step_order: 1,
-        questions: [
-          {
-            question_text:
-              'What is the real reason high-earning TikTok Shop creators do not use paid ads despite the obvious ROI potential?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['user_empathy', 'go_to_market'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'The ad platform requires creators to think in CPM, targeting parameters, and budget optimization, which maps to an advertiser mental model rather than a creator mental model. Creators think in views and commission, so the translation cost is too high to start even when the ROI is clear in retrospect.',
-                quality: 'best',
-                points: 3,
-                competencies: ['user_empathy', 'go_to_market'],
-                explanation:
-                  'Mental model mismatch is the upstream barrier. The ad platform speaks a different language than the creator workflow, and the cross-sell will fail if it drops creators into the same interface that confused them before. The fix is meeting them in their language.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Creators are risk-averse about spending money on ads because they have seen peers waste budgets on campaigns that did not convert.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['user_empathy'],
-                explanation:
-                  'Risk aversion is real, but it is downstream of the mental model problem. Creators who understood how ad spend maps to affiliate commission would take on calculated risk. The uncertainty about ROI is itself caused by the language barrier between ad and creator platforms.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'The minimum ad spend threshold on TikTok is too high for smaller creators who are just starting to earn affiliate commissions.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['business_model'],
-                explanation:
-                  'Minimum spend is a feature parameter that can be adjusted, not the upstream blocker. Even at zero minimum, creators who do not understand what they are buying will not spend. The problem is comprehension, not threshold.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'TikTok has not invested in creator education programs that explain how ads work, so most creators simply do not know the option exists.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['go_to_market'],
-                explanation:
-                  'Awareness is not the gap for creators earning meaningful affiliate income. They know ads exist. The problem is that the ad platform does not connect to how they think about their business, making the purchase decision feel opaque rather than obvious.',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        step: 'list' as const,
-        step_nudge: 'Map the creator journey and find the three moments where ad ROI is visible and friction is lowest.',
-        grading_weight: 25,
-        step_order: 2,
-        questions: [
-          {
-            question_text:
-              'Where in the creator workflow does the ROI case for ads become undeniable?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['go_to_market', 'product_design'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'The post-viral moment: when a video crosses 500K views organically and the Shop analytics tab shows a spike in affiliate click-through. The creator can see which video is converting. Showing "boost this video to 2M views for an estimated $X commission increase" in that specific context makes the ROI immediate and legible without requiring the creator to learn ad terminology.',
-                quality: 'best',
-                points: 3,
-                competencies: ['go_to_market', 'product_design'],
-                explanation:
-                  'The post-viral moment is the highest-intent state in the creator workflow. The creator already knows the video converts. The ad decision reduces to a single question: spend X to see if the commission scales proportionally. That is a creator-language ROI case.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'During account setup, when creators add their first affiliate link, surface a prompt explaining that paid promotion can accelerate earnings.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['go_to_market'],
-                explanation:
-                  'New creators with no commission history have no evidence that their content converts, so the ad ROI case is entirely hypothetical. Cross-selling at setup is premature and will be ignored or create skepticism.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'In the weekly earnings summary email, when creators see their top-earning products, surface a "promote your best sellers" link to the ad platform.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['go_to_market'],
-                explanation:
-                  'Earnings summary is a moment of financial awareness, which is better than cold outreach. The gap is that an email link to the ad platform still drops the creator into advertiser language rather than creator language, maintaining the mental model friction.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'On a dedicated "Grow Your Shop" page in the creator portal that explains ad products in simple terms alongside case studies from similar creators.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['go_to_market'],
-                explanation:
-                  'Educational content is useful but passive. A creator who is not in a high-intent state will not navigate to a "Grow Your Shop" page. The cross-sell needs to be embedded in the workflow where the intent already exists.',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        step: 'optimize' as const,
-        step_nudge: 'The post-viral boost prompt requires a product decision. What are you optimizing for and what breaks?',
-        grading_weight: 25,
-        step_order: 3,
-        questions: [
-          {
-            question_text:
-              'If the cross-sell is a contextual boost prompt at the post-viral moment, what is the critical design decision and what does it trade off?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['product_design', 'user_empathy'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'The critical decision is whether to show the estimated commission increase rather than standard ad metrics like CPM or reach. Optimizing for creator comprehension means hiding ad terminology entirely. The trade-off is that creators will not learn the ad platform, making re-purchase dependent on TikTok always abstracting the mechanics.',
-                quality: 'best',
-                points: 3,
-                competencies: ['product_design', 'user_empathy'],
-                explanation:
-                  'The commission-first abstraction is the right call for first purchase, but it creates a dependency: creators who never see CPM or reach cannot make independent ad decisions later. The trade-off is first-purchase conversion versus long-term creator sophistication.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'The critical decision is setting the minimum boost budget. Too high and creators will not try it; too low and the conversion impact is too small to prove the ROI.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['business_model'],
-                explanation:
-                  'Budget threshold is a real parameter, but it is secondary to the design question of what the creator sees and understands when they make the first purchase. Getting the comprehension layer right matters more than finding the right minimum.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'The critical decision is which creators qualify for the boost prompt, so it only appears for creators with proven conversion history rather than all creators.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['go_to_market'],
-                explanation:
-                  'Eligibility filtering is a segmentation decision, not the core design decision. Showing the right creators the prompt matters less than what the prompt says and how it frames the ROI case.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'There is no real trade-off. Showing estimated commission increases is strictly better than showing CPM, and TikTok can always educate creators on ad metrics after they have started spending.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['product_design'],
-                explanation:
-                  'The trade-off is real. Abstracting ad mechanics produces compliant first purchases but not informed repeat buyers. Creators who cannot interpret ad performance will blame TikTok when campaigns underperform, increasing churn and support costs.',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        step: 'win' as const,
-        step_nudge: 'Make the final call on the cross-sell design and define what success looks like at 90 days.',
-        grading_weight: 25,
-        step_order: 4,
-        questions: [
-          {
-            question_text:
-              'What is the 90-day success condition for the cross-sell program, and what would trigger a redesign?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['metrics', 'decision_making'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Success: at least 20% of eligible creators (those shown the boost prompt) make a first purchase, and at least 40% of first purchasers run a second campaign within 60 days without a prompt. Redesign trigger: first purchase rate is above 20% but repeat rate is below 20%, which indicates the first purchase delivered a poor experience rather than a genuine ROI win.',
-                quality: 'best',
-                points: 3,
-                competencies: ['metrics', 'decision_making'],
-                explanation:
-                  'Two conditions prevent gaming: the first purchase rate measures whether the cross-sell is compelling, and the unprompted repeat rate measures whether it delivered real value. A high first rate with low repeat rate is a red flag that the prompt was persuasive but the experience was not.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Success: total Shop ad revenue increases by 30% within 90 days of launching the cross-sell program.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['metrics'],
-                explanation:
-                  'Total ad revenue is influenced by too many variables over 90 days to attribute to the cross-sell specifically. Seasonal sales cycles, algorithm changes, and other campaigns all affect the metric. Attribution is impossible at this level of aggregation.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Success: prompt click-through rate exceeds 15% and average first-campaign spend is above $50.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['metrics'],
-                explanation:
-                  'Click-through and spend measure top-of-funnel engagement, not whether the cross-sell created durable advertiser behavior. A creator who clicks and spends $50 once has contributed revenue but has not been converted into an ongoing ad buyer.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Success: creator NPS among first-time ad buyers is above 50 at the 30-day mark after their first campaign.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['metrics'],
-                explanation:
-                  'NPS measures sentiment, which correlates with repeat purchase but does not guarantee it. A creator who rates the experience highly but does not run a second campaign has not been converted. Behavioral repeat purchase is a harder and more meaningful bar.',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-
-  {
-    id: 'hp-netflix-podcast-product',
-    title: 'Building a Podcast Product for Netflix',
-    scenario_role: 'founding engineer',
-    scenario_context:
-      'Netflix is exploring adjacent audio content after observing that 40% of podcast listeners also subscribe to streaming video services and that several top-tier podcasters have adapted their content into documentary series. The business case for podcasts as a content format is unproven inside Netflix, but the opportunity to extend existing IP, deepen creator relationships, and capture listening hours that currently go to Spotify and Apple Podcasts is real.',
-    scenario_trigger:
-      'The emerging formats team asks you to scope a podcast product before a board presentation on adjacent content strategy.',
-    scenario_question:
-      'Build a podcast product for Netflix.',
-    engineer_standout:
-      'Identify which Netflix asset, whether IP, creator relationships, recommendation engine, or subscriber base, is the actual unfair advantage in the podcast market and design around that rather than building a generic audio app.',
-    paradigm: 'traditional',
-    industry: 'media',
-    sub_vertical: 'streaming_entertainment',
-    difficulty: 'advanced',
-    estimated_minutes: 22,
-    primary_competencies: ['product_design', 'strategic_thinking'],
-    secondary_competencies: ['user_empathy', 'go_to_market'],
-    frameworks: ['Jobs to be Done', 'Value Chain Analysis'],
-    relevant_roles: ['founding_engineer', 'tech_lead', 'staff_engineer'],
-    company_tags: ['Netflix'],
-    tags: ['podcasts', 'audio', 'product_design', 'adjacent_markets', 'streaming'],
-    is_published: true as const,
-    is_calibration: false as const,
-    is_premium: false as const,
-    steps: [
-      {
-        step: 'frame' as const,
-        step_nudge: 'Why would someone listen to a Netflix podcast instead of Spotify or Apple Podcasts?',
-        grading_weight: 25,
-        step_order: 1,
-        questions: [
-          {
-            question_text:
-              'What is the real question Netflix must answer before building any podcast product?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['strategic_thinking', 'product_design'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'What job does a Netflix podcast do that Spotify and Apple Podcasts cannot, given that both platforms are free, have broader catalogs, and have years of audience behavior data? Without a defensible answer, Netflix is building a worse version of an existing product.',
-                quality: 'best',
-                points: 3,
-                competencies: ['strategic_thinking', 'product_design'],
-                explanation:
-                  'Competitive positioning is the upstream question. Netflix enters a mature market with entrenched free alternatives. The only defensible positions are differentiated content (Netflix IP), differentiated discovery (recommendation engine), or a differentiated business model (bundled with subscription).',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Whether Netflix has the technical infrastructure to transcode and serve audio files at scale without degrading video streaming performance.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['technical_strategy'],
-                explanation:
-                  'Infrastructure is a solvable engineering problem, not the strategic constraint. Netflix already serves 250M+ subscribers globally; adding audio files is not the bottleneck. The strategic question is why users would come to Netflix for audio at all.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'How many podcasts Netflix would need to license in year one to create a catalog that attracts listeners away from Spotify.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['go_to_market'],
-                explanation:
-                  'Catalog size is a downstream decision that follows from the strategic positioning. If Netflix\'s advantage is IP-based rather than catalog breadth, a small catalog of Netflix-exclusive podcasts may be the right call rather than competing on scale.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Whether podcast listeners overlap sufficiently with Netflix subscribers to justify the investment without needing to acquire new users.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['market_sizing'],
-                explanation:
-                  'Overlap analysis is useful for validating the opportunity size but does not answer what the product should do or why it is better than alternatives. The strategic question precedes the market sizing.',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        step: 'list' as const,
-        step_nudge: 'Name three structurally distinct approaches. Each should use a different Netflix asset as the foundation.',
-        grading_weight: 25,
-        step_order: 2,
-        questions: [
-          {
-            question_text:
-              'Which three distinct podcast product strategies map to Netflix\'s actual assets?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['product_design', 'strategic_thinking'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'IP Extension (podcast episodes set in the worlds of existing Netflix shows, using original voice actors), Creator Bridge (podcast-to-series pipeline where successful podcasters get Netflix development deals), and Recommendation-Led Discovery (a podcast tab that surfaces audio using Netflix\'s watch-history model to recommend content users will actually finish).',
-                quality: 'best',
-                points: 3,
-                competencies: ['product_design', 'strategic_thinking'],
-                explanation:
-                  'Each strategy uses a distinct Netflix asset: existing IP, creator relationships, and the recommendation engine. None of these strategies is available to Spotify or Apple Podcasts, which makes them genuinely differentiated rather than catalog competition.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Launch a free ad-supported podcast tier, a premium podcast tier bundled with the existing subscription, and an original podcast studio that produces exclusive content.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['business_model'],
-                explanation:
-                  'This is a monetization and content strategy, not a product strategy grounded in Netflix\'s specific assets. Spotify already offers all three of these structures. The differentiation question remains unanswered.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Acquire a mid-tier podcast platform to get existing catalog and audience, build Netflix Original podcasts with A-list talent, and add a social layer where subscribers can comment and react to episodes.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['strategic_thinking'],
-                explanation:
-                  'Acquisition provides catalog speed, original content is a real Netflix strength, but the social layer is unproven on Netflix and does not connect to any existing Netflix asset. The strategy is partially grounded but partially generic.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Build a general-purpose podcast app with a curated editorial team, competitive licensing deals, and offline listening features to compete directly with Spotify on product quality.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['product_design'],
-                explanation:
-                  'Head-to-head competition with Spotify on general catalog and product features requires years of catch-up investment and offers no advantage rooted in what Netflix already has. This strategy has a high probability of producing an underused feature rather than a differentiated product.',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        step: 'optimize' as const,
-        step_nudge: 'Pick the strongest strategy and name what it optimizes for and what it gives up explicitly.',
-        grading_weight: 25,
-        step_order: 3,
-        questions: [
-          {
-            question_text:
-              'If Netflix bets on IP Extension as the primary strategy, what does it optimize for and what does it explicitly give up?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['product_design', 'prioritization'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Optimizing for subscriber retention and IP lifetime value: existing fans get more world-building from shows they already love, which deepens engagement with the Netflix catalog. The explicit sacrifice is new user acquisition through podcasts, since IP Extension only attracts people who already know the shows. Non-subscribers will not download the app for podcast content they have not seen the source material for.',
-                quality: 'best',
-                points: 3,
-                competencies: ['product_design', 'prioritization'],
-                explanation:
-                  'IP Extension is a depth strategy, not a breadth strategy. Naming the acquisition sacrifice makes the bet crisp: it works for subscriber retention but does not bring new audiences to Netflix. Teams planning around it need to know it is not a growth lever.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Optimizing for content quality and premium positioning, since IP extensions using original voice actors will be more polished than typical podcasts. The sacrifice is speed, since licensing voice actor contracts for podcast use will take longer than launching a general platform.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['prioritization'],
-                explanation:
-                  'Quality and speed are real considerations, but the more fundamental trade-off is the strategic one: this strategy does not expand the subscriber base and locks the product\'s success to the health of Netflix\'s existing IP portfolio.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Optimizing for content catalog volume so that listeners have enough variety to make it worth opening the Netflix audio app instead of Spotify.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['product_design'],
-                explanation:
-                  'IP Extension is the opposite of a catalog volume strategy. It is a focused, high-quality bet on existing worlds, not a catalog breadth play. Confusing the two misidentifies what the strategy is.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Optimizing for podcast listening hours as a new engagement metric, with no meaningful sacrifice since audio does not compete with video for the same device time.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['metrics'],
-                explanation:
-                  'Claiming there is no meaningful sacrifice is the same as not making a choice. Every strategy has opportunity costs. If IP Extension is the primary bet, resources going there are not going to Creator Bridge or Recommendation-Led Discovery, both of which have different strategic returns.',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        step: 'win' as const,
-        step_nudge: 'Make a crisp launch decision: what ships first and how do you know the bet is working?',
-        grading_weight: 25,
-        step_order: 4,
-        questions: [
-          {
-            question_text:
-              'What is the first IP Extension product that ships and what is the 90-day success condition?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['decision_making', 'metrics'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text:
-                  'Ship a 6-episode companion podcast for one returning Netflix series using original cast. Success at 90 days: at least 15% of users who watched the source series listen to at least two episodes, and 30-day retention for that listener cohort exceeds the platform average for the same show\'s viewership. If retention holds, the IP loop is working.',
-                quality: 'best',
-                points: 3,
-                competencies: ['decision_making', 'metrics'],
-                explanation:
-                  'Starting with one series limits scope and creates a clean test. The 15% penetration rate measures whether existing fans find the companion content compelling, and the retention comparison confirms whether audio deepens engagement rather than just adding a one-time listen.',
-              },
-              {
-                option_label: 'B',
-                option_text:
-                  'Launch companion podcasts for the top 10 Netflix originals simultaneously to maximize initial catalog and give the product team enough data to identify which IP categories work best.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['decision_making'],
-                explanation:
-                  'Ten simultaneous launches multiplies production complexity and makes it impossible to isolate what works. A clean first test requires one controlled launch that generates interpretable signal before scaling.',
-              },
-              {
-                option_label: 'C',
-                option_text:
-                  'Launch a podcast discovery tab in the Netflix app first, without IP content, to measure baseline audio engagement before investing in original companion podcasts.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['decision_making'],
-                explanation:
-                  'A discovery tab with no differentiated content does not test the IP Extension strategy; it tests whether users will use a generic podcast tab. Measuring engagement on a tab filled with third-party podcasts does not predict whether IP companion content would work.',
-              },
-              {
-                option_label: 'D',
-                option_text:
-                  'Ship the podcast feature in beta for 60 days and collect qualitative feedback before setting quantitative success thresholds.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['decision_making'],
-                explanation:
-                  'Qualitative feedback is valuable, but entering a 60-day beta without success thresholds makes the decision to continue or stop ambiguous. The team needs a quantitative gate, not just sentiment, to make a credible case at the 90-day board review.',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-]
+] as const

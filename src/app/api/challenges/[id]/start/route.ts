@@ -78,6 +78,7 @@ export async function POST(
   ])
 
   const isFreeTier = !subscription || subscription.plan === 'free'
+  console.log('[start] userId:', userId, 'subscription:', subscription, 'todayCount:', todayCount, 'isFreeTier:', isFreeTier)
   if (isFreeTier && (todayCount ?? 0) >= 3) {
     return NextResponse.json(
       { error: 'Daily limit reached', limit: 3 },

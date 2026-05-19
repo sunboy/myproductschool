@@ -17,6 +17,7 @@ interface OptionCardProps {
   revealed: boolean
   revealData?: RevealData
   disabled: boolean
+  multiSelect?: boolean
   onSelect: (id: string) => void
 }
 
@@ -27,7 +28,7 @@ const TIER_STYLES: Record<number, { badge: string; label: string }> = {
   0: { badge: 'bg-error/10 text-error', label: 'Plausible but wrong' },
 }
 
-export function OptionCard({ option, selected, revealed, revealData, disabled, onSelect }: OptionCardProps) {
+export function OptionCard({ option, selected, revealed, revealData, disabled, multiSelect, onSelect }: OptionCardProps) {
   const tier = revealData ? TIER_STYLES[revealData.points] ?? TIER_STYLES[0] : null
 
   return (
@@ -62,12 +63,12 @@ export function OptionCard({ option, selected, revealed, revealData, disabled, o
             </div>
           )}
         </div>
-        {selected && !revealed && (
+        {!revealed && (
           <span
-            className="material-symbols-outlined text-primary text-[20px] shrink-0"
-            style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}
+            className={`material-symbols-outlined text-[20px] shrink-0 ${selected ? 'text-primary' : 'text-outline-variant'}`}
+            style={{ fontVariationSettings: `'FILL' ${selected ? 1 : 0}, 'wght' 400, 'GRAD' 0, 'opsz' 20` }}
           >
-            radio_button_checked
+            {multiSelect ? (selected ? 'check_box' : 'check_box_outline_blank') : (selected ? 'radio_button_checked' : 'radio_button_unchecked')}
           </span>
         )}
       </div>

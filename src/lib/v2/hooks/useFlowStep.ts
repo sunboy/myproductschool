@@ -16,6 +16,7 @@ interface StepQuestionData {
   sequence: number
   grading_weight_within_step: number
   response_type: ResponseType
+  allow_multiple: boolean
   options: StepOption[]
 }
 
@@ -51,6 +52,7 @@ interface UseFlowStepReturn {
     attemptId: string
     questionId: string
     selectedOptionId: string | null
+    selectedOptionIds?: string[]
     userText: string | null
     responseType: ResponseType
     timespentSeconds: number
@@ -90,6 +92,7 @@ export function useFlowStep(challengeId: string, step: FlowStep): UseFlowStepRet
     attemptId: string
     questionId: string
     selectedOptionId: string | null
+    selectedOptionIds?: string[]
     userText: string | null
     responseType: ResponseType
     timespentSeconds: number
@@ -104,6 +107,7 @@ export function useFlowStep(challengeId: string, step: FlowStep): UseFlowStepRet
           attempt_id: params.attemptId,
           question_id: params.questionId,
           selected_option_id: params.selectedOptionId,
+          selected_option_ids: params.selectedOptionIds,
           user_text: params.userText,
           response_type: params.responseType,
           time_spent_seconds: params.timespentSeconds,

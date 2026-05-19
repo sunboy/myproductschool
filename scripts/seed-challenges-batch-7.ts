@@ -1,2035 +1,2219 @@
 export const CHALLENGES = [
+  // ── Shopify Challenges ─────────────────────────────────────────
+
   {
-    id: 'hp-shopify-cross-border-prioritization',
-    title: 'Cross-Border Commerce: What Ships First?',
-    scenario_role: 'staff engineer',
-    scenario_context: 'Shopify is expanding cross-border commerce for SMB merchants. The internationalization team has capacity to ship one major capability per quarter. Engineering leads are debating whether to start with local currency and duties, translations, or new payment methods.',
-    scenario_trigger: 'The Q3 roadmap vote is tomorrow. Each workstream lead has 5 minutes to make the case. You have to go first.',
-    scenario_question: 'Which capability do you prioritize first for cross-border SMB commerce, and what is your core argument?',
-    engineer_standout: 'Recognize that currency and duties unblock the transaction itself — without them, the other investments have no surface area to land on.',
+    id: 'pm-shopify-001',
+    title: 'Cross-Border Commerce: Where to Start for SMB Merchants',
+    scenario_role: 'Product Manager, International Commerce',
+    scenario_context:
+      'Shopify is expanding international selling capabilities for SMB merchants. Internal data shows merchants who sell cross-border generate 2.4x higher GMV than domestic-only merchants, but adoption of existing internationalization tools is below 8%.',
+    scenario_trigger:
+      'A merchant cohort analysis flags that the top drop-off point in cross-border setup is the currency and duties configuration screen, before merchants ever reach translations or payment method setup.',
+    scenario_question:
+      'Among local currency and duties, translations, and new payment methods, which capability should the team ship first to unblock the most cross-border GMV?',
+    engineer_standout:
+      'A strong engineer would recognize that duties and currency are prerequisites for a legally compliant and financially trustworthy checkout, while translations and payment methods are optimization layers that only matter after the baseline works.',
     paradigm: 'traditional',
-    industry: 'e_commerce',
-    sub_vertical: 'merchant_tools',
+    industry: 'E-commerce',
+    sub_vertical: 'SMB Platform',
     difficulty: 'standard',
-    estimated_minutes: 12,
-    primary_competencies: ['prioritization', 'product_strategy'],
-    secondary_competencies: ['market_analysis', 'technical_tradeoffs'],
-    frameworks: ['job_to_be_done', 'opportunity_sizing'],
-    relevant_roles: ['tech_lead', 'staff_engineer', 'founding_engineer'],
-    company_tags: ['shopify'],
-    tags: ['internationalization', 'cross-border', 'smb', 'payments', 'prioritization'],
-    is_published: true as const,
-    is_calibration: false as const,
-    is_premium: false as const,
+    estimated_minutes: 20,
+    primary_competencies: ['strategic_thinking', 'domain_expertise'],
+    secondary_competencies: ['cognitive_empathy'],
+    frameworks: ['Jobs To Be Done', 'MoSCoW Prioritization'],
+    relevant_roles: ['pm', 'swe', 'tech_lead'],
+    company_tags: ['Shopify', 'Stripe', 'BigCommerce'],
+    tags: ['internationalization', 'commerce', 'prioritization', 'smb', 'cross-border'],
+    is_published: true,
+    is_calibration: false,
+    is_premium: false,
     steps: [
       {
-        step: 'frame' as const,
-        step_nudge: 'What is the actual blocker stopping an SMB merchant from making a cross-border sale today?',
-        grading_weight: 20,
+        step: 'frame',
+        step_nudge: 'What does a merchant need to make their first successful cross-border sale, rather than their 10th?',
+        grading_weight: 0.25,
         step_order: 1,
         questions: [
           {
-            question_text: 'What is the core constraint that prevents an SMB merchant from completing a cross-border sale?',
+            question_text: 'What is the most accurate framing of the cross-border adoption problem for SMBs?',
             question_nudge: null,
             sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['problem_framing', 'root_cause_analysis'],
-            response_type: 'mcq_plus_elaboration' as const,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
             options: [
               {
                 option_label: 'A',
-                option_text: 'Merchants cannot present prices in local currency or collect duties at checkout, so buyers abandon when they see surprise import fees at delivery.',
+                option_text: 'Merchants cannot present prices in local currency, so buyers abandon at checkout because they distrust foreign charges',
                 quality: 'best',
                 points: 3,
-                competencies: ['root_cause_analysis', 'customer_empathy'],
-                explanation: 'Currency mismatch and duty surprises are the two highest-abandonment triggers in cross-border checkout research. Every other capability sits downstream of a completed transaction.'
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'Local currency is both the legal compliance layer (duties) and the buyer trust layer. Without it, the purchase cannot complete for many international buyers. Cohort data confirms this is the drop-off point.',
               },
               {
                 option_label: 'B',
-                option_text: 'Merchants lack translated storefronts, so international buyers cannot understand the product listings.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['customer_empathy'],
-                explanation: 'Translation reduces friction but many cross-border buyers already use English-language stores successfully. The purchase still fails at checkout even with a translated storefront if currency and duties are wrong.'
+                option_text: 'Merchants lack translated storefronts, so international buyers cannot understand the product catalog',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['cognitive_empathy'],
+                explanation:
+                  'Translation matters for discovery, but buyers who find the product still cannot complete a compliant purchase without currency and duties. Translation is upstream in the funnel but not the conversion blocker.',
               },
               {
                 option_label: 'C',
-                option_text: 'Merchants do not support regional payment methods like iDEAL or Alipay, which some buyers prefer.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['market_analysis'],
-                explanation: 'Payment method gaps block some segments, but only after the buyer has already decided to purchase. Currency and duties cause abandonment earlier in the funnel.'
+                option_text: 'Merchants lack access to local payment methods like iDEAL, Boleto, or Alipay, so international buyers have no way to pay',
+                quality: 'surface',
+                points: 1,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Payment method gaps matter in specific markets, but most international buyers can pay via card at checkout. Payment method expansion is an optimization, not the baseline unlock.',
               },
               {
                 option_label: 'D',
-                option_text: 'Merchant onboarding for international shipping carriers is too manual, creating operational friction.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['operational_thinking'],
-                explanation: 'Carrier onboarding is a real pain but it sits on the fulfillment side, not the purchase decision. Fixing it does not move the conversion needle for a buyer who abandoned at checkout.'
-              }
-            ]
-          }
-        ]
+                option_text: 'The cross-border setup flow is too complex, so merchants abandon configuration before reaching the storefront',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Setup complexity is a UX problem, not a capability problem. Simplifying the flow without building the capability does not unblock GMV.',
+              },
+            ],
+          },
+        ],
       },
       {
-        step: 'list' as const,
-        step_nudge: 'Map out the distinct jobs-to-be-done a merchant is trying to accomplish with cross-border commerce.',
-        grading_weight: 25,
+        step: 'list',
+        step_nudge: 'Which signals would tell you whether currency and duties is truly the blocker versus the other two options?',
+        grading_weight: 0.25,
         step_order: 2,
         questions: [
           {
-            question_text: 'Which set of merchant jobs-to-be-done most completely covers the cross-border commerce problem space?',
+            question_text: 'Which analysis best validates that currency and duties should come before translations and payment methods?',
             question_nudge: null,
             sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['problem_decomposition', 'user_research'],
-            response_type: 'mcq_plus_elaboration' as const,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
             options: [
               {
                 option_label: 'A',
-                option_text: 'Complete the transaction (currency, duties), build buyer trust (translation, returns policy), and get paid reliably (local payment methods, payout currency).',
+                option_text: 'Compare checkout conversion rates for merchants with multi-currency enabled versus those without, segmented by buyer country',
                 quality: 'best',
                 points: 3,
-                competencies: ['problem_decomposition', 'systems_thinking'],
-                explanation: 'These three jobs map to the full purchase lifecycle: discovery, decision, and settlement. A prioritization framework built on this decomposition will surface currency and duties as the sequencing winner.'
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'Conversion rate by currency enablement is direct outcome evidence. If multi-currency merchants convert 2x better on international traffic, the case is made without relying on proxies.',
               },
               {
                 option_label: 'B',
-                option_text: 'Attract international traffic, convert visitors, and fulfill orders internationally.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['funnel_thinking'],
-                explanation: 'Correct framing but too funnel-centric. It misses the settlement layer where merchants care deeply about payout currency and fraud risk, which drives product decisions around Shopify Payments expansion.'
+                option_text: 'Survey SMB merchants asking which capability they want most: currency, translations, or payment methods',
+                quality: 'surface',
+                points: 1,
+                competencies: ['cognitive_empathy'],
+                explanation:
+                  'Merchant preference surveys reflect what merchants think they want, not what actually drives buyer conversion. Merchants may request translations because it feels more tangible.',
               },
               {
                 option_label: 'C',
-                option_text: 'Translate product listings, support international shipping rates, and display local pricing.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['feature_thinking'],
-                explanation: 'These are features, not jobs. Listing features rather than underlying jobs prevents the team from discovering that merchants actually care about landed cost predictability, not just price display.'
+                option_text: 'Audit which international markets generate the highest GMV potential and match payment method coverage to those markets',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Market-level payment coverage is useful for payment method prioritization but does not address the currency and duties drop-off that the cohort data already surfaces.',
               },
               {
                 option_label: 'D',
-                option_text: 'Compete with Etsy and Amazon on international reach by matching their seller tools.',
+                option_text: 'Run a usability test on the cross-border setup flow to find which step causes the most confusion',
                 quality: 'plausible_wrong',
                 points: 0,
-                competencies: ['competitive_analysis'],
-                explanation: "Competitor-feature parity is not a job-to-be-done framework. Shopify's merchant base has different economics than Etsy or Amazon sellers, and matching their surface area ignores the SMB-specific constraints."
-              }
-            ]
-          }
-        ]
+                competencies: [],
+                explanation:
+                  'Usability testing addresses setup friction, not capability gaps. The merchants who drop off at the currency screen may do so because the capability does not work correctly, not because the UI is confusing.',
+              },
+            ],
+          },
+        ],
       },
       {
-        step: 'optimize' as const,
-        step_nudge: 'Name the criterion that decides the winner and what you sacrifice by choosing it.',
-        grading_weight: 35,
+        step: 'optimize',
+        step_nudge: 'What do you sacrifice by shipping currency and duties first, and how do you defend that tradeoff?',
+        grading_weight: 0.30,
         step_order: 3,
         questions: [
           {
-            question_text: 'What is your prioritization argument for local currency and duties, and what does that choice explicitly trade away?',
+            question_text: 'You commit to shipping local currency and duties first. What is the strongest argument against this choice, and how do you address it?',
             question_nudge: null,
             sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['prioritization', 'tradeoff_reasoning'],
-            response_type: 'mcq_plus_elaboration' as const,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
             options: [
               {
                 option_label: 'A',
-                option_text: 'Currency and duties unblock revenue — a buyer who hits a surprise import fee at delivery churns permanently. The sacrifice is that merchants targeting non-English markets will see lower conversion gains until translation ships in a later quarter.',
+                option_text: 'Counter-argument: markets like Brazil and Germany require local payment methods for any meaningful conversion, so currency without payment methods is insufficient. Response: Prioritize Brazil and Germany as Phase 2 immediately after currency ships, with payment method work running in parallel.',
                 quality: 'best',
                 points: 3,
-                competencies: ['prioritization', 'tradeoff_reasoning'],
-                explanation: "This names both the criterion (revenue unblocking) and the explicit sacrifice (delayed translation benefit). Shopify's Markets product launched in 2021 with exactly this sequencing, validating the logic."
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'Acknowledges a real market-specific limitation rather than dismissing the tradeoff, and provides a sequenced response. Brazil (Boleto) and Germany (Klarna and SEPA) are the clearest examples where payment method coverage is a harder blocker.',
               },
               {
                 option_label: 'B',
-                option_text: 'All three capabilities are important and the decision should depend on which market Shopify is targeting first.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['prioritization'],
-                explanation: 'This punts the decision to market selection without providing a framework. At a roadmap vote, this answer produces no actionable outcome and signals inability to commit to a position under uncertainty.'
+                option_text: 'Counter-argument: without translations, buyers cannot read product descriptions. Response: English is widely understood and most high-intent buyers will transact even without native-language copy.',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['cognitive_empathy'],
+                explanation:
+                  'The rebuttal is partially valid but overstated. Translation quality affects conversion on discovery and trust signals, and dismissing it entirely ignores real regional variation.',
               },
               {
                 option_label: 'C',
-                option_text: 'Local payment methods should go first because they vary most by country and represent the highest engineering complexity.',
+                option_text: 'Counter-argument: currency implementation is technically complex and will delay the entire roadmap. Response: Use Shopify Payments currency conversion as a bridge while full duties calculation ships.',
                 quality: 'surface',
                 points: 1,
-                competencies: ['technical_thinking'],
-                explanation: 'Engineering complexity is not a prioritization criterion for a roadmap vote. Payment methods matter but do not block the transaction as directly as currency display and duty collection.'
+                competencies: ['domain_expertise'],
+                explanation:
+                  'This is an implementation mitigation, not a strategic argument. It does not address the tradeoff between the three capabilities.',
               },
               {
                 option_label: 'D',
-                option_text: 'Currency and duties give the most immediate GMV lift, though you sacrifice translation coverage in the short term.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['prioritization'],
-                explanation: 'Correct direction but "GMV lift" is vague. The best answer explains why the lift is causal — duty surprises at delivery cause permanent churn — not just correlated.'
-              }
-            ]
-          }
-        ]
+                option_text: 'Counter-argument: there is no strong argument. Currency and duties are clearly the right first step. Response: Proceed with full confidence.',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Ignoring real tradeoffs is not strategic thinking. Every prioritization choice has a cost, and articulating it builds more stakeholder confidence than claiming the decision is obvious.',
+              },
+            ],
+          },
+        ],
       },
       {
-        step: 'win' as const,
-        step_nudge: 'Make the call. One sequencing decision with a testable success signal.',
-        grading_weight: 20,
+        step: 'win',
+        step_nudge: 'How do you measure success for currency and duties, and what triggers the decision to move to the next capability?',
+        grading_weight: 0.20,
         step_order: 4,
         questions: [
           {
-            question_text: 'What is your recommendation and what metric tells you in 90 days that you were right?',
+            question_text: 'What success metric and threshold would you use to declare currency and duties a win before moving to translations?',
             question_nudge: null,
             sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['decision_making', 'metrics_definition'],
-            response_type: 'mcq_plus_elaboration' as const,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
             options: [
               {
                 option_label: 'A',
-                option_text: 'Ship local currency and duties in Q3. Success signal: cross-border checkout conversion rate for merchants on Markets improves by 8-12 points within 90 days, with repeat purchase rate as a secondary signal.',
+                option_text: 'International checkout conversion rate for multi-currency merchants reaches parity with domestic conversion rate within 60 days of launch',
                 quality: 'best',
                 points: 3,
-                competencies: ['decision_making', 'metrics_definition'],
-                explanation: 'Crisp commit plus a testable, bounded metric tied directly to the problem framing. Naming a secondary metric shows awareness that conversion is a leading indicator, not the full picture.'
+                competencies: ['strategic_thinking', 'creative_execution'],
+                explanation:
+                  'Conversion rate parity is the correct outcome metric: it confirms the currency capability removed the blocker without relying on volume metrics that grow simply by having more merchants.',
               },
               {
                 option_label: 'B',
-                option_text: 'Prioritize local currency and duties, but run a user study first to validate that duty surprises are the primary abandonment driver before committing engineering resources.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['research_bias'],
-                explanation: "The duty-surprise problem is well-documented in Shopify's own checkout data. Calling for a user study before committing delays the roadmap vote outcome and signals low confidence in existing signal."
-              },
-              {
-                option_label: 'C',
-                option_text: 'Ship currency and duties in Q3, and track international GMV growth as the success metric.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['metrics_definition'],
-                explanation: 'International GMV is too broad — it includes factors outside this workstream like marketing spend and merchant acquisition. Conversion rate is more causally tied to the checkout changes.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'A phased approach: currency in Q3, duties in Q4, translations in Q5, payments in Q6, with quarterly reviews to adjust.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['planning'],
-                explanation: 'Sequencing duties separately from currency misses that they are inseparable at checkout — merchants need both to show a true landed cost. Splitting them extends the time-to-value for merchants.'
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-
-  {
-    id: 'hp-shopify-shop-pay-reacceleration',
-    title: 'Shop Pay Is Flattening: 2-Quarter Sprint',
-    scenario_role: 'tech lead',
-    scenario_context: 'Shop Pay adoption among repeat buyers has plateaued. The last two quarters showed single-digit growth in repeat purchase rate, down from 20%+ the prior year. Leadership wants a 2-quarter plan to re-accelerate without touching checkout latency.',
-    scenario_trigger: 'The VP of Product asks for a proposal by end of week. The constraint is explicit: no checkout speed regression, no re-architecture.',
-    scenario_question: 'What is your strategy to re-accelerate Shop Pay repeat purchases in 2 quarters without degrading checkout performance?',
-    engineer_standout: 'Distinguish between acquisition of new Shop Pay users and re-engagement of existing ones — the flat trend could reflect either, and the strategy differs completely.',
-    paradigm: 'ai_assisted',
-    industry: 'e_commerce',
-    sub_vertical: 'payments',
-    difficulty: 'standard',
-    estimated_minutes: 14,
-    primary_competencies: ['product_strategy', 'growth_thinking'],
-    secondary_competencies: ['metrics_definition', 'technical_tradeoffs'],
-    frameworks: ['growth_loops', 'constraint_based_design'],
-    relevant_roles: ['tech_lead', 'staff_engineer', 'founding_engineer', 'em'],
-    company_tags: ['shopify'],
-    tags: ['shop-pay', 'repeat-purchase', 'checkout', 'growth', 'payments'],
-    is_published: true as const,
-    is_calibration: false as const,
-    is_premium: false as const,
-    steps: [
-      {
-        step: 'frame' as const,
-        step_nudge: 'What does "flattening adoption" actually mean — and which problem are you solving?',
-        grading_weight: 20,
-        step_order: 1,
-        questions: [
-          {
-            question_text: 'Before proposing solutions, what diagnostic question cuts most directly to the root of the Shop Pay plateau?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['diagnostic_thinking', 'metrics_definition'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Is the plateau driven by fewer new users activating Shop Pay, or by existing users not returning to merchants that accept it?',
-                quality: 'best',
-                points: 3,
-                competencies: ['diagnostic_thinking', 'segmentation'],
-                explanation: 'This question cleanly separates two different problems with different levers. Activation problems require merchant coverage or awareness fixes; retention problems require re-engagement or catalog expansion. Conflating them produces unfocused strategy.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Which merchants have the lowest Shop Pay attachment rate, so we can focus our enablement effort there?',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['segmentation'],
-                explanation: 'Merchant segmentation is useful but secondary. If existing Shop Pay users are simply not revisiting merchants, fixing merchant attachment rate does not address the retention gap.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'What features do competitors like Apple Pay and PayPal offer that Shop Pay lacks?',
-                quality: 'surface',
-                points: 1,
-                competencies: ['competitive_analysis'],
-                explanation: 'Competitor benchmarking answers a different question. If Shop Pay users are not returning, the cause is unlikely to be a missing feature — it is more likely a frequency or awareness problem.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'How has the checkout latency changed in the past two quarters, and could that be causing abandonment?',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['technical_thinking'],
-                explanation: 'The problem statement rules out a latency cause — the constraint is specifically to not harm speed, implying latency is healthy. Investigating it wastes the diagnostic window.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'list' as const,
-        step_nudge: 'Generate distinct levers that could increase Shop Pay repeat purchases within the constraint.',
-        grading_weight: 25,
-        step_order: 2,
-        questions: [
-          {
-            question_text: 'Which set of levers for re-accelerating Shop Pay repeat purchases is most structurally distinct and constraint-compliant?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['problem_decomposition', 'growth_thinking'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Cross-merchant re-engagement (Shop app surface), merchant-side incentives (loyalty points for Shop Pay usage), and discovery (personalized recommendations inside Shop app).',
-                quality: 'best',
-                points: 3,
-                competencies: ['growth_thinking', 'problem_decomposition'],
-                explanation: 'These three levers address different points in the repeat-purchase loop: pulling users back to the network, incentivizing the checkout action, and creating new purchase intent. None touch checkout latency.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Faster checkout, biometric authentication, and installment pay options.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['feature_thinking'],
-                explanation: 'Faster checkout is explicitly off the table. Biometrics and installments are table-stakes features, not repeat-purchase drivers — they solve for first conversion, not return frequency.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Push notification campaigns, email re-engagement, and abandoned cart retargeting.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['growth_thinking'],
-                explanation: 'Re-engagement tactics are relevant but they are channels, not levers. They do not address why users stopped returning — without a reason to come back, more notifications produce diminishing returns.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Expand Shop Pay to more merchant categories and geographies to increase the addressable network.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['market_expansion'],
-                explanation: 'Network expansion grows the ceiling but does not re-engage existing users who have already activated Shop Pay. The plateau is a utilization problem, not a coverage problem — at least until the diagnostic confirms otherwise.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'optimize' as const,
-        step_nudge: 'Pick the highest-leverage move for Q1 and name what you defer.',
-        grading_weight: 35,
-        step_order: 3,
-        questions: [
-          {
-            question_text: 'What is the Q1 priority move and what does that choice explicitly defer?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['prioritization', 'tradeoff_reasoning'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Prioritize cross-merchant re-engagement via Shop app surfaces in Q1 — it activates the existing user base without touching checkout code. Defer merchant loyalty incentives to Q2 because they require merchant-side buy-in and longer rollout cycles.',
-                quality: 'best',
-                points: 3,
-                competencies: ['prioritization', 'tradeoff_reasoning'],
-                explanation: "Shop app re-engagement is self-contained on Shopify's own surface, requires no merchant coordination, and can show results within a quarter. Deferring loyalty incentives acknowledges the real coordination cost, and merchant programs take 6-8 weeks to negotiate and deploy."
-              },
-              {
-                option_label: 'B',
-                option_text: 'Launch a consumer-facing Shop Pay rewards program in Q1 to drive habit formation across the network.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['growth_thinking'],
-                explanation: 'A new rewards program is a multi-quarter infrastructure investment. It cannot move the needle in a single quarter and involves significant legal, finance, and merchant coordination that conflicts with the 2-quarter constraint.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Invest in both Shop app re-engagement and merchant incentives simultaneously in Q1, then measure and double down in Q2.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['growth_thinking'],
-                explanation: 'Running both in parallel sounds thorough but diffuses engineering bandwidth. The answer does not acknowledge the merchant coordination cost, which would make "simultaneously in Q1" unrealistic.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Focus on reducing checkout steps from three to two in Q1, which would remove friction without adding new code paths.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['technical_thinking'],
-                explanation: 'Checkout re-architecture violates the constraint even if it reduces steps. And checkout friction is not the diagnosed root cause of a repeat-purchase plateau — it is a first-conversion problem.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'win' as const,
-        step_nudge: 'What does success look like at the end of Q2?',
-        grading_weight: 20,
-        step_order: 4,
-        questions: [
-          {
-            question_text: 'What is the Q2 outcome target and which metric serves as the leading indicator?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['metrics_definition', 'decision_making'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Target: 15-20% lift in 90-day repeat purchase rate for Shop Pay users by end of Q2. Leading indicator: Shop app weekly active users who complete a cross-merchant purchase within 30 days of re-engagement campaign.',
-                quality: 'best',
-                points: 3,
-                competencies: ['metrics_definition', 'decision_making'],
-                explanation: 'The target is bounded and anchored to the original problem statement. The leading indicator measures behavior change within the re-engagement window, giving the team a 30-day signal rather than waiting for 90-day repeat purchase data.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Target: increase Shop Pay GMV by 20% by end of Q2, tracked weekly.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['metrics_definition'],
-                explanation: 'GMV growth is a lagging output metric influenced by merchant catalog size, seasonality, and marketing spend. It does not isolate whether the repeat-purchase strategy specifically worked.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Success is when repeat purchase rate returns to prior-year levels of 20%+ growth quarter-over-quarter.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['metrics_definition'],
-                explanation: 'Restoring prior growth rates is an outcome goal, not a measurement framework. It does not identify a leading indicator and sets a benchmark that may not account for market saturation at scale.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Monitor checkout conversion rate weekly — if it stays flat or improves, the strategy is working.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['metrics_definition'],
-                explanation: 'Checkout conversion measures first-visit performance, not repeat purchase behavior. A flat conversion rate during a re-engagement campaign does not indicate whether existing users are coming back more frequently.'
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-
-  {
-    id: 'hp-shopify-reviews-build-vs-ecosystem',
-    title: 'Shopify Reviews: Build Native or Deepen the Ecosystem?',
-    scenario_role: 'founding engineer',
-    scenario_context: "Shopify's app store has dozens of reviews products, from Yotpo to Loox to Judge.me. Merchants frequently request a native reviews feature. The platform team is weighing whether to build it into Shopify core or invest in deeper APIs that make third-party apps better.",
-    scenario_trigger: 'The quarterly platform strategy review is this week. The reviews question is on the agenda because two enterprise merchants have threatened to churn if Shopify does not solve review portability between apps.',
-    scenario_question: 'Should Shopify build a native Reviews product or double down on the ecosystem with deeper APIs?',
-    engineer_standout: "Recognize that Shopify's platform identity is at stake: building natively risks breaking trust with app partners who built businesses on reviews, while not building natively may cede the category to Yotpo.",
-    paradigm: 'traditional',
-    industry: 'e_commerce',
-    sub_vertical: 'merchant_tools',
-    difficulty: 'advanced',
-    estimated_minutes: 16,
-    primary_competencies: ['platform_strategy', 'build_vs_buy'],
-    secondary_competencies: ['ecosystem_thinking', 'stakeholder_management'],
-    frameworks: ['platform_theory', 'make_vs_buy'],
-    relevant_roles: ['staff_engineer', 'founding_engineer', 'tech_lead'],
-    company_tags: ['shopify'],
-    tags: ['platform-strategy', 'reviews', 'ecosystem', 'build-vs-buy', 'apis'],
-    is_published: true as const,
-    is_calibration: false as const,
-    is_premium: false as const,
-    steps: [
-      {
-        step: 'frame' as const,
-        step_nudge: 'What is the actual merchant job behind the reviews request — and is "build native" the right response to it?',
-        grading_weight: 20,
-        step_order: 1,
-        questions: [
-          {
-            question_text: 'What is the real problem the enterprise merchant churn threat reveals?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['problem_framing', 'root_cause_analysis'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Review data is siloed inside individual apps with no portability standard, so merchants who switch apps lose their social proof — the real problem is data lock-in, not feature absence.',
-                quality: 'best',
-                points: 3,
-                competencies: ['root_cause_analysis', 'platform_thinking'],
-                explanation: 'Portability is the stated reason for the churn threat. Building a native product solves portability only if merchants migrate to it; a standard API solves portability while preserving ecosystem choice. The frame changes the build decision completely.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Third-party review apps are too expensive, and merchants want a lower-cost native option bundled with their Shopify subscription.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['customer_empathy'],
-                explanation: 'Price is not the stated concern — review portability is. Framing this as a cost problem leads to a freemium native product strategy that still does not address the data lock-in issue.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Shopify lacks reviews as a core feature, putting it behind platforms like WooCommerce and BigCommerce that have built-in review systems.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['competitive_analysis'],
-                explanation: "Competitor parity is a surface-level frame. WooCommerce's native reviews do not port between plugins either, suggesting the real problem is not 'native vs. third-party' but 'portable vs. siloed.'"
-              },
-              {
-                option_label: 'D',
-                option_text: 'Review apps have poor UX consistency, making it hard for merchants to manage reviews across their store without switching between multiple dashboards.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['user_experience'],
-                explanation: 'UX fragmentation is a real pain but secondary to data portability. Solving UX without portability still leaves merchants unable to switch apps — which is the churn-driver in the specific case.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'list' as const,
-        step_nudge: 'What are the genuinely distinct strategic options Shopify has — not just "build" vs "don\'t build"?',
-        grading_weight: 25,
-        step_order: 2,
-        questions: [
-          {
-            question_text: "Which option set most accurately maps Shopify's strategic choices on reviews?",
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['strategic_options', 'platform_strategy'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Build a thin native reviews layer that owns the data schema and portability standard, let ecosystem apps render and differentiate on top. Alternatively, build a full first-party product and compete directly. Alternatively, publish an open review data standard via APIs and let the ecosystem self-coordinate.',
-                quality: 'best',
-                points: 3,
-                competencies: ['strategic_options', 'platform_strategy'],
-                explanation: 'This decomposition separates data ownership from feature ownership — a distinction Shopify made with Online Store 2.0 themes. The thin layer option is how successful platforms resolve ecosystem tension without becoming a competitor.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Build native or do not build native. If native, launch a full reviews product. If not, invest in the API.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['strategic_options'],
-                explanation: 'Binary framing misses the hybrid middle path, which is the most common resolution of build-vs-ecosystem tension on mature platforms. It forces a false choice between full competition with partners and full abstention.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Acquire the leading reviews app (Yotpo or Loox) to bring the capability in-house quickly.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['strategic_options'],
-                explanation: 'Acquisition is a real option but acqui-hiring a review app would immediately alienate all other review app partners. It also misses that data portability — the stated problem — is not solved by owning one app in a multi-app ecosystem.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Launch a reviews API standard, mandate that all app-store review apps comply within 12 months, and provide a migration tool for merchants.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['platform_strategy'],
-                explanation: 'Mandating a standard is the right direction but the 12-month timeline and compliance mandate are political and legal non-starters without an adoption incentive. The answer is directionally correct but execution-naive.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'optimize' as const,
-        step_nudge: 'Name the criterion that decides the recommendation and the cost of that choice.',
-        grading_weight: 35,
-        step_order: 3,
-        questions: [
-          {
-            question_text: 'What is the deciding criterion for choosing between native build and ecosystem deepening, and what does each path sacrifice?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['tradeoff_reasoning', 'platform_strategy'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'The deciding criterion is partner trust. Building a full native product would replicate Shopify\'s historical pattern with Shopify Shipping — where competing with apps damaged the ecosystem. A thin data-ownership layer preserves partner economics while solving portability. The sacrifice is differentiated feature innovation, which stays with ecosystem apps.',
-                quality: 'best',
-                points: 3,
-                competencies: ['tradeoff_reasoning', 'platform_strategy'],
-                explanation: 'Naming "partner trust" as the criterion and referencing the Shopify Shipping precedent shows platform-specific reasoning. The sacrifice is concrete: differentiation stays in the ecosystem, which means Shopify\'s native layer will always be less feature-rich than Yotpo.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Build natively because reviews are a core merchant need and Shopify should own core needs, sacrificing third-party differentiation.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['platform_strategy'],
-                explanation: 'Correct about the ownership claim but vague on what "own" means. It does not distinguish between owning the data schema and owning the full feature set — a critical distinction for a platform company.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'The deciding criterion is engineering cost. Reviews are complex (fraud, spam, syndication) so ecosystem apps are better positioned to build them, and Shopify should invest in APIs instead.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['technical_thinking'],
-                explanation: 'Engineering cost is a real input but not the deciding criterion for a platform strategy question. Shopify has the resources to build reviews; the constraint is strategic, not technical.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Shopify should survey merchants and let the data decide whether to build natively or invest in APIs.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['research_bias'],
-                explanation: 'Merchants will universally say "build it natively" when asked — they always prefer free bundled features. Survey data cannot resolve the platform strategy tension between merchant demand and partner trust.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'win' as const,
-        step_nudge: 'Make the call. One recommendation that survives the partner trust constraint.',
-        grading_weight: 20,
-        step_order: 4,
-        questions: [
-          {
-            question_text: 'What is your recommendation to the platform strategy review?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['decision_making', 'communication'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Build a Reviews Data Layer: Shopify owns the review schema and portability standard, but ships no consumer-facing UI. Ecosystem apps build on top. Metric: review portability adoption by top 50 app-store partners within 6 months.',
-                quality: 'best',
-                points: 3,
-                competencies: ['decision_making', 'platform_strategy'],
-                explanation: 'This is the "thin native layer" option — it resolves the churn threat without competing with app partners. The metric tests whether the standard achieves adoption, which is the actual risk in this approach.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Do not build natively. Publish a reviews API and wait for the ecosystem to self-coordinate on portability.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['platform_strategy'],
-                explanation: 'Waiting for ecosystem self-coordination on a standard never works without a mandate or incentive structure. The churn threat requires a Shopify-owned resolution within a defined timeline.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Build a full native Reviews product with a 12-month roadmap, and offer migration support for merchants currently using third-party apps.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['decision_making'],
-                explanation: 'Full native product is a defensible call but does not adequately address partner trust fallout. Shopify\'s Shipping and Payments precedents show that full competition with app partners produces sustained ecosystem tension.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Defer the decision until next quarter pending a deeper merchant study and partner consultation.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['decision_making'],
-                explanation: 'Deferral when enterprise merchants are threatening churn is not a recommendation — it is avoidance. The strategy review requires a decision, not a process.'
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-
-  {
-    id: 'hp-shopify-search-add-to-cart-drop',
-    title: '48 Hours: Add-to-Cart Drop After Search Changes',
-    scenario_role: 'tech lead',
-    scenario_context: 'Data Science flagged a 12% drop in add-to-cart rate across storefront search starting 48 hours after a recent ranking algorithm update shipped. The update was designed to surface trending products over high-inventory items. Rollback is possible but would revert 3 weeks of ranking improvements.',
-    scenario_trigger: 'The on-call PM escalates at 9am. You have 48 hours to assess, decide, and act before the weekend traffic peak.',
-    scenario_question: 'What do you do in the next 48 hours to investigate the add-to-cart drop and decide on a response?',
-    engineer_standout: 'Distinguish between correlation and causation — the search change is the obvious suspect but ruling out confounders (traffic mix, seasonal shift, downstream A/B tests) before rollback is the difference between a good on-call response and a reactive one.',
-    paradigm: 'traditional',
-    industry: 'e_commerce',
-    sub_vertical: 'search_and_discovery',
-    difficulty: 'advanced',
-    estimated_minutes: 14,
-    primary_competencies: ['incident_response', 'diagnostic_thinking'],
-    secondary_competencies: ['metrics_definition', 'technical_tradeoffs'],
-    frameworks: ['scientific_method', 'five_whys'],
-    relevant_roles: ['tech_lead', 'staff_engineer', 'em'],
-    company_tags: ['shopify'],
-    tags: ['incident', 'search', 'add-to-cart', 'metrics', 'root-cause'],
-    is_published: true as const,
-    is_calibration: false as const,
-    is_premium: false as const,
-    steps: [
-      {
-        step: 'frame' as const,
-        step_nudge: 'Before acting, what do you need to know to determine whether the search change actually caused the drop?',
-        grading_weight: 25,
-        step_order: 1,
-        questions: [
-          {
-            question_text: 'What is the most important diagnostic question to answer before deciding whether to rollback the search change?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['diagnostic_thinking', 'incident_response'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Is the add-to-cart drop concentrated in queries where the ranking change affected result order, or is it uniform across all search queries including those unchanged by the algorithm?',
-                quality: 'best',
-                points: 3,
-                competencies: ['diagnostic_thinking', 'segmentation'],
-                explanation: 'If the drop is uniform across all search — including queries the algorithm did not change — then the ranking update is not the cause and rollback would be wrong. If it is concentrated in affected queries, causation is likely. This segmentation is the single most valuable data cut.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Has any other team shipped changes to the storefront, cart, or checkout in the same 48-hour window?',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['diagnostic_thinking'],
-                explanation: 'Checking for confounding deploys is good practice, but it is a background check — not the primary diagnostic. Even if another team shipped, segmenting the drop by affected queries tells you more directly whether the search change is implicated.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'What is the p-value on the add-to-cart drop — is it statistically significant given normal day-to-day variance?',
-                quality: 'surface',
-                points: 1,
-                competencies: ['statistical_thinking'],
-                explanation: 'Statistical significance matters but 12% at scale is almost certainly significant. With Shopify\'s traffic volume, a 12% drop in 48 hours is a real signal, not noise. Waiting for statistical validation before starting investigation costs time.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Should we immediately rollback the search change to stop the bleeding and investigate afterward?',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['incident_response'],
-                explanation: 'Rollback-first is the wrong default when the causal link is unconfirmed. If the search change is not the cause, rollback costs 3 weeks of ranking improvements and does not fix the actual problem. Diagnosis before action is the right protocol for non-critical SEV.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'list' as const,
-        step_nudge: 'Map the investigation steps across the 48-hour window.',
-        grading_weight: 25,
-        step_order: 2,
-        questions: [
-          {
-            question_text: 'Which 48-hour investigation plan is most likely to produce a confident, action-ready diagnosis?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['investigation_planning', 'incident_response'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Hour 0-4: segment the drop by affected vs. unaffected queries. Hour 4-12: check for confounding deploys and traffic mix changes. Hour 12-24: analyze which product categories and query types show the largest drops. Hour 24-48: make rollback or hotfix decision with a clear causal hypothesis.',
-                quality: 'best',
-                points: 3,
-                competencies: ['investigation_planning', 'incident_response'],
-                explanation: 'This plan starts with the highest-value diagnostic cut, then layers confounders, then deepens into category analysis before deciding. The decision is at the end of the window — not at the start — ensuring it is evidence-based.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Rollback at hour 4 to protect the weekend traffic peak, then run a proper controlled experiment next week to validate the ranking change.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['incident_response'],
-                explanation: 'Preemptive rollback without confirming causation wastes the ranking investment and sets a bad precedent: future teams will hesitate to ship ranking changes knowing any correlated metric movement triggers a rollback.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Run a full attribution analysis across search, cart, and checkout metrics to build a comprehensive picture before making any decision.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['investigation_planning'],
-                explanation: 'A comprehensive attribution analysis takes longer than 48 hours for a system as complex as Shopify\'s storefront. This plan does not produce an actionable answer before the weekend peak.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Check if the add-to-cart drop also appears in non-search surfaces (direct product pages, collections) to isolate whether search is truly the vector.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['diagnostic_thinking'],
-                explanation: 'Checking non-search surfaces is a valid confounder test, but it is one step, not a 48-hour plan. On its own it does not identify the specific mechanism within search that is causing the drop.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'optimize' as const,
-        step_nudge: 'At hour 24, the data shows the drop is concentrated in trending-product queries. What is the call?',
-        grading_weight: 30,
-        step_order: 3,
-        questions: [
-          {
-            question_text: 'Hour 24 finding: add-to-cart is down 18% specifically on queries returning trending products. What is the highest-leverage response for the remaining 24 hours?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['tradeoff_reasoning', 'technical_decision_making'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Reduce the trending signal weight in the ranking formula rather than full rollback — this preserves the ranking improvements for non-trending queries while fixing the specific mechanism causing the drop. Metric to watch: add-to-cart rate on trending-product queries recovering toward baseline within 6 hours of the config change.',
-                quality: 'best',
-                points: 3,
-                competencies: ['technical_decision_making', 'tradeoff_reasoning'],
-                explanation: 'Targeted config change beats full rollback because it preserves 3 weeks of ranking work for the majority of queries. This is the response a strong on-call engineer gives when they have done the diagnostic work to understand the specific mechanism.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Full rollback now. Trending queries drive weekend traffic and the 18% drop is too large to accept heading into the peak.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['incident_response'],
-                explanation: 'Rollback is defensible given the scale and timing, but full rollback sacrifices all ranking improvements when a targeted config change is available. The best answer finds a scalpel when the situation does not require a sledgehammer.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Let it ride through the weekend to collect more data, then address in the post-mortem next week.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['incident_response'],
-                explanation: 'Accepting an 18% add-to-cart drop through a weekend peak is not a defensible call. The data is sufficient at hour 24 to act — waiting produces unnecessary GMV loss and escalation risk.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Re-rank trending queries to show only trending products with stock levels above 100 units to reduce the OOS-driven abandonment that trending ranking may be causing.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['technical_thinking'],
-                explanation: 'This is a hypothesis, not a diagnosis. The investigation has identified trending queries as the vector but has not confirmed out-of-stock as the mechanism. Acting on an unconfirmed hypothesis adds noise to the signal.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'win' as const,
-        step_nudge: 'Close out the incident. What goes in the post-mortem?',
-        grading_weight: 20,
-        step_order: 4,
-        questions: [
-          {
-            question_text: 'What is the most important process change to document in the post-mortem to prevent this class of incident?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['learning_culture', 'systems_thinking'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Add a pre-ship gate for search ranking changes: any update affecting more than 20% of query traffic requires a 24-hour canary on 5% of merchants with add-to-cart as an explicit guardrail metric before full rollout.',
-                quality: 'best',
-                points: 3,
-                competencies: ['systems_thinking', 'process_design'],
-                explanation: 'This process change directly addresses the failure mode: a ranking change shipped to 100% of traffic without a conversion guardrail. The canary gate with an explicit metric would have caught the 18% drop within hours, not days.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Document the diagnostic playbook for search-related add-to-cart drops so the next on-call engineer can move faster.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['knowledge_management'],
-                explanation: 'A diagnostic playbook is valuable but reactive — it helps the next engineer investigate faster without preventing the incident class. The system change (canary gate) is more impactful.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Invest in a real-time anomaly detection system that automatically triggers a PagerDuty alert when any metric drops more than 10% in a 2-hour window.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['observability'],
-                explanation: 'Better alerting would have caught this faster, but it addresses detection speed, not prevention. The root cause was shipping an undertested ranking change, not slow alerting.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Require all ranking algorithm changes to go through a 30-day holdout experiment before production, with statistical significance on key funnel metrics.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['process_design'],
-                explanation: 'A 30-day holdout for all ranking changes would halt Shopify\'s ability to iterate on search. It overcorrects and conflates "careful" with "slow." A canary gate achieves safety without paralysis.'
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-
-  {
-    id: 'hp-shopify-checkout-extensibility-perf',
-    title: 'Checkout Extensibility: 60ms Latency vs. Merchant Customizations',
-    scenario_role: 'staff engineer',
-    scenario_context: 'Shopify\'s Checkout Extensibility platform lets merchants inject custom UI blocks via extensions. Performance monitoring shows p95 page load has grown by ~60ms since extension adoption crossed 40% of Plus merchants. Each extension adds 8-15ms independently, but they stack.',
-    scenario_trigger: 'The VP of Engineering asks for a performance recovery plan that does not require merchants to remove or simplify their extensions. The constraint is explicit: merchant customizations are protected.',
-    scenario_question: 'What is your execution plan to restore checkout performance without breaking merchant extensions?',
-    engineer_standout: 'Recognize that this is a platform architecture problem, not a merchant-by-merchant tuning problem — the solution must be systematic, not advisory.',
-    paradigm: 'traditional',
-    industry: 'e_commerce',
-    sub_vertical: 'checkout',
-    difficulty: 'staff_plus',
-    estimated_minutes: 18,
-    primary_competencies: ['technical_strategy', 'platform_architecture'],
-    secondary_competencies: ['performance_engineering', 'tradeoff_reasoning'],
-    frameworks: ['systems_design', 'constraint_based_design'],
-    relevant_roles: ['staff_engineer', 'founding_engineer', 'em'],
-    company_tags: ['shopify'],
-    tags: ['checkout', 'performance', 'extensibility', 'platform', 'latency'],
-    is_published: true as const,
-    is_calibration: false as const,
-    is_premium: false as const,
-    steps: [
-      {
-        step: 'frame' as const,
-        step_nudge: 'Where is the 60ms going, and which part of that is the platform\'s problem versus the extension author\'s problem?',
-        grading_weight: 20,
-        step_order: 1,
-        questions: [
-          {
-            question_text: 'What is the most accurate framing of the root cause of the p95 checkout latency regression?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['root_cause_analysis', 'systems_thinking'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Extensions execute independently with no coordination, so their load phases overlap in the worst possible way — the platform loads them sequentially or without shared resource budgets, causing latency to stack additively rather than being absorbed in parallel.',
-                quality: 'best',
-                points: 3,
-                competencies: ['root_cause_analysis', 'platform_architecture'],
-                explanation: 'If extensions ran in parallel with shared resource budgets, 5 extensions at 12ms each would not produce 60ms — they would approach the max of any single extension. Sequential or uncoordinated loading is the architectural cause; individual extension performance is a secondary lever.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Extension authors are not following performance guidelines, so each extension is individually too slow.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['root_cause_analysis'],
-                explanation: 'Even if every extension ran at exactly 12ms — which is within Shopify\'s documented extension budget — five of them stacking would still produce 60ms. The problem is architectural, not per-extension compliance.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'The checkout page has accumulated too much JavaScript bundle weight, and extensions are contributing to a growing main-thread blocking problem.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['performance_engineering'],
-                explanation: 'Bundle weight and main-thread blocking are plausible contributors but the scenario describes a clear correlation with extension count (8-15ms per extension). The stacking mechanism is more specific than generic bundle bloat.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Plus merchants have more complex stores overall, so the p95 latency regression reflects their store complexity, not the extensions specifically.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['analytical_thinking'],
-                explanation: 'The scenario specifies that extension adoption is the correlated variable. Attributing this to general Plus merchant complexity without evidence is a retreat from the available data.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'list' as const,
-        step_nudge: 'What are the platform-level mechanisms that could reduce the 60ms without touching merchant extension code?',
-        grading_weight: 25,
-        step_order: 2,
-        questions: [
-          {
-            question_text: 'Which set of platform-level performance recovery mechanisms is most architecturally sound?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['technical_architecture', 'performance_engineering'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Parallel extension loading with a shared render budget, server-side pre-rendering of extension output with hydration on the client, and a priority queue so above-the-fold extensions load before below-the-fold ones.',
-                quality: 'best',
-                points: 3,
-                competencies: ['platform_architecture', 'performance_engineering'],
-                explanation: 'These three mechanisms address the stacking problem at the platform layer. Parallel loading reduces wall time; SSR pre-rendering moves work off the critical path; priority queuing ensures visible content loads first. Together they can recover most of the 60ms without touching extension code.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Introduce a performance score for each extension and surface it in the merchant dashboard so merchants can make informed decisions about which to keep.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['transparency'],
-                explanation: 'Performance scoring is a good transparency measure but it is advisory. The VP constraint is explicit: merchant customizations are protected. This approach still relies on merchants removing extensions, which violates the constraint.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Enforce a hard cap of 3 extensions per checkout page, with Shopify selecting the 3 highest-priority extensions based on merchant configuration.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['platform_governance'],
-                explanation: 'Capping extensions at 3 breaks merchant customizations, which is explicitly off the table. This directly violates the constraint stated in the problem.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Optimize the Checkout Extensibility runtime itself — reduce the framework overhead each extension pays on initialization.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['performance_engineering'],
-                explanation: 'Runtime optimization is useful but it reduces per-extension cost, not the stacking problem. Even a 50% reduction in per-extension cost still leaves 30ms of additive latency from 5 extensions. The architectural problem requires an architectural fix.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'optimize' as const,
-        step_nudge: 'Pick the first platform change to ship and name the engineering tradeoff.',
-        grading_weight: 35,
-        step_order: 3,
-        questions: [
-          {
-            question_text: 'What is the highest-leverage first platform change and what does it cost to ship it?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['prioritization', 'technical_tradeoffs'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Ship parallel extension loading first. It requires no changes to extension APIs or merchant configurations, addresses the stacking mechanism directly, and is self-contained within the platform runtime. The cost: concurrent extension initialization increases peak memory usage at load time, requiring a memory budget per checkout session.',
-                quality: 'best',
-                points: 3,
-                competencies: ['prioritization', 'technical_tradeoffs'],
-                explanation: 'Parallel loading is the highest-ROI change because it is platform-contained, backward-compatible with existing extensions, and addresses the root stacking mechanism. Naming the memory cost shows engineering depth — concurrency trades serial memory efficiency for parallel time efficiency.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Ship server-side pre-rendering first because it moves the most work off the client critical path and directly attacks p95 latency.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['technical_thinking'],
-                explanation: 'SSR is high impact but higher complexity — it requires extension authors to ensure their extensions support server rendering, which is a breaking change for extensions that depend on client-only browser APIs. Parallel loading has no such dependency.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Ship all three mechanisms simultaneously in a single platform release to maximize the recovery in one shot.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['planning'],
-                explanation: 'Shipping three architectural changes simultaneously makes debugging regressions nearly impossible. If latency gets worse or extension breakage appears, the team cannot isolate the cause. Staged rollout with measurable targets per stage is the right protocol.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Build a performance testing sandbox first so extension authors can test their extensions against the new platform before rollout.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['process_thinking'],
-                explanation: 'A sandbox is useful for SSR migration (where extension authors need to verify compatibility) but irrelevant for parallel loading, which requires no extension changes. This delays the highest-ROI fix to solve a problem that does not yet exist.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'win' as const,
-        step_nudge: 'How do you know when you are done?',
-        grading_weight: 20,
-        step_order: 4,
-        questions: [
-          {
-            question_text: 'What is the success definition for the performance recovery plan?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['metrics_definition', 'decision_making'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'p95 checkout page load returns to within 10ms of pre-extensibility baseline for merchants with 3+ active extensions, with zero reported extension functionality regressions in the 2 weeks post-rollout.',
-                quality: 'best',
-                points: 3,
-                competencies: ['metrics_definition', 'decision_making'],
-                explanation: 'This success definition is bounded (10ms tolerance acknowledges that some overhead is acceptable), scoped to the affected segment (3+ extensions), and includes a stability guard (no functionality regressions). It is actionable and falsifiable.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'p95 checkout load time drops below 2 seconds for all Plus merchants globally.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['metrics_definition'],
-                explanation: 'An absolute threshold ignores that the starting latency varies by merchant. The goal is to recover the regression caused by extensions, not to hit a universal absolute target that was not the starting state.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'The 60ms regression is fully eliminated with no latency increase from extensions regardless of how many are active.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['metrics_definition'],
-                explanation: 'Zero latency from extensions is physically impossible — parallel loading reduces stacking but does not eliminate execution time. Setting an impossible target produces a failure outcome by definition.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Checkout latency stabilizes without further growth as extension adoption continues to increase.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['metrics_definition'],
-                explanation: 'Stability is a reasonable long-term goal but does not define recovery of the existing 60ms regression. The VP asked for performance restoration, not just prevention of further degradation.'
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-
-  {
-    id: 'hp-facebook-p2p-payments-messenger',
-    title: 'Peer-to-Peer Payments Inside Messenger: Build It?',
-    scenario_role: 'tech lead',
-    scenario_context: 'Messenger has 1B+ monthly active users and a payment infrastructure layer through Meta Pay. Venmo and Cash App have normalized P2P payments in mobile apps. The growth team is exploring whether a native P2P payments feature inside Messenger could drive engagement and expand Meta Pay adoption.',
-    scenario_trigger: 'The payments team lead presents the opportunity at a product strategy offsite. The question lands on the table: should this ship, and if so, what does the MVP look like?',
-    scenario_question: 'Should Facebook add peer-to-peer payments inside Messenger, and what would a winning MVP look like?',
-    engineer_standout: 'Recognize that the value of P2P payments in Messenger is not the payment itself but the social proof and request loops it creates — payments are a reason to message, not a feature bolted onto messaging.',
-    paradigm: 'traditional',
-    industry: 'fintech',
-    sub_vertical: 'social_payments',
-    difficulty: 'standard',
-    estimated_minutes: 14,
-    primary_competencies: ['product_strategy', 'feature_design'],
-    secondary_competencies: ['growth_thinking', 'fintech_fluency'],
-    frameworks: ['jobs_to_be_done', 'mvp_scoping'],
-    relevant_roles: ['tech_lead', 'founding_engineer', 'staff_engineer'],
-    company_tags: ['stripe', 'facebook'],
-    tags: ['payments', 'p2p', 'messenger', 'fintech', 'mvp', 'social'],
-    is_published: true as const,
-    is_calibration: false as const,
-    is_premium: false as const,
-    steps: [
-      {
-        step: 'frame' as const,
-        step_nudge: 'What job does a Messenger user have that P2P payments could serve — and is payments actually the job, or is something else?',
-        grading_weight: 20,
-        step_order: 1,
-        questions: [
-          {
-            question_text: 'What is the core user job that P2P payments in Messenger would serve?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['problem_framing', 'customer_empathy'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Settling shared costs without leaving the conversation — the job is "close the loop on a social obligation without context-switching to Venmo." The payment is a punctuation mark on a social interaction, not a standalone financial transaction.',
-                quality: 'best',
-                points: 3,
-                competencies: ['problem_framing', 'customer_empathy'],
-                explanation: 'This frames the job correctly: Messenger is where the coordination already happens, and friction comes from leaving it to settle. The Venmo feed as a social layer reinforces that payments-as-social-signal is the actual product, not the money movement.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Access a fast and free money transfer service, since many users pay fees on competing apps.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['market_analysis'],
-                explanation: 'Fee reduction is a weak differentiator — Cash App and Zelle are already free. Framing the job as cost avoidance positions Messenger as an inferior Venmo rather than a contextually superior product.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Replace their primary banking app with a social-first financial tool, building toward a super-app model.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['product_strategy'],
-                explanation: 'Super-app ambition is a strategy framing, not a user job. Most users will not replace their banking relationship with Messenger payments — the job is narrow and social, not broad and financial.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Send money to family and friends internationally, where Messenger already has strong cross-border communication usage.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['market_analysis'],
-                explanation: 'Remittance is a real and high-value use case — especially in markets where Messenger dominates communication. But it is a specific segment, not the core job for a US-first MVP.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'list' as const,
-        step_nudge: 'What are the distinct MVP scope options, and what does each one optimize for?',
-        grading_weight: 25,
-        step_order: 2,
-        questions: [
-          {
-            question_text: 'Which MVP scope for Messenger P2P payments is best positioned to test the core hypothesis?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['mvp_design', 'hypothesis_testing'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Inline payment requests inside a conversation thread — "Request $20" as a message type — with one-tap send via Meta Pay. No feed, no social sharing, no receipts. The hypothesis: payment requests inside conversations complete at higher rates than switching to Venmo.',
-                quality: 'best',
-                points: 3,
-                competencies: ['mvp_design', 'hypothesis_testing'],
-                explanation: 'This MVP scopes to the unique Messenger value proposition — contextual payment in an active conversation — and states a falsifiable hypothesis. It is minimal: no social feed, no new financial surface, just the one-tap settlement inside an existing message thread.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Full P2P with a Venmo-style social feed where users can see friends\' transactions, emoji reactions, and a running balance.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['product_design'],
-                explanation: 'The social feed is Venmo\'s core engagement loop and is worth building eventually, but as an MVP it adds regulatory complexity (financial data in a social feed has CFPB implications) and delays testing the core payment hypothesis.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Launch P2P payments in 5 international markets where Messenger is the dominant communication app and remittance use cases are strong.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['go_to_market'],
-                explanation: 'International-first adds currency, compliance, and banking partner complexity that is not required to test whether P2P in conversation drives settlement. The MVP should test the core mechanic in the simplest possible market first.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Build a P2P payments bot within Messenger that users can invoke with natural language: "@pay Sarah $15 for dinner."',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['product_design'],
-                explanation: 'A bot-based flow adds NLU failure modes and requires users to learn a new interaction pattern. The job-to-be-done is low-friction settlement, not conversational AI for payments — the bot adds complexity without serving the core job better.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'optimize' as const,
-        step_nudge: 'What is the single biggest risk in the MVP and how do you mitigate it without descoping?',
-        grading_weight: 35,
-        step_order: 3,
-        questions: [
-          {
-            question_text: 'What is the highest-risk element of the Messenger P2P MVP and what is the specific mitigation?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['risk_analysis', 'tradeoff_reasoning'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Fraud and social engineering risk — Messenger\'s billion-user social graph means bad actors can request payments at scale from weak-tie contacts. Mitigation: limit MVP to payments between mutual friends (strong-tie graph only) and introduce a 24-hour hold for first-time sender-receiver pairs.',
-                quality: 'best',
-                points: 3,
-                competencies: ['risk_analysis', 'fintech_fluency'],
-                explanation: 'Fraud in social payment networks is not theoretical — Zelle lost $440M to social engineering in 2022. Restricting MVP to the strong-tie graph (mutual friends) reduces attack surface without descoping the core use case, since the job-to-be-done is splitting costs with close contacts, not strangers.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Regulatory risk — money transmission licenses vary by state and country and could block launch. Mitigation: use a licensed third-party processor to absorb regulatory compliance.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['regulatory_thinking'],
-                explanation: 'Regulatory compliance is a real constraint but Meta already has money transmission licenses through Meta Pay. The third-party processor suggestion solves a problem that likely already exists in Meta\'s infrastructure.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'User trust risk — users may not trust Facebook with financial data after Cambridge Analytica. Mitigation: run a PR campaign emphasizing security and data separation.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['brand_risk'],
-                explanation: 'Trust is a headwind but not the highest-risk element for an MVP. Meta Pay already processes transactions — the trust question is not new to this feature. A PR campaign is not a risk mitigation strategy; it is a communications tactic.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Adoption risk — users may prefer to stay on Venmo because of established habit. Mitigation: offer a fee-free incentive for the first 6 months to drive trial.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['growth_thinking'],
-                explanation: 'Incentive-based trial tests price sensitivity, not product-market fit. If the contextual settlement value proposition is right, users will adopt without a discount. If they do not adopt without a discount, free trials mask the actual PMF signal.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'win' as const,
-        step_nudge: 'Should this ship? Give a clean yes or no with the metric that proves you right.',
-        grading_weight: 20,
-        step_order: 4,
-        questions: [
-          {
-            question_text: 'What is the recommendation and the 90-day metric that validates or invalidates it?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['decision_making', 'metrics_definition'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Ship it. Success metric: payment request completion rate (requests sent that result in a completed payment) above 60% within the strong-tie graph, measured at day 30. Secondary: week-2 retention of Messenger among users who complete a payment vs. control.',
-                quality: 'best',
-                points: 3,
-                competencies: ['decision_making', 'metrics_definition'],
-                explanation: 'Completion rate tests the core hypothesis — that contextual payment in conversation reduces the friction that causes Venmo drop-off. The retention secondary tests whether payments drive engagement, which is the strategic reason to build it.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Ship it and track total payment volume processed through Meta Pay as the north star.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['metrics_definition'],
-                explanation: 'Total payment volume is a lagging output metric driven by user count, not product quality. It cannot tell you whether the contextual settlement hypothesis is correct — large volume could come from low-value, high-frequency novelty usage.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Do not ship until the fraud mitigation infrastructure is fully built and tested in a 6-month pilot.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['decision_making'],
-                explanation: 'Six months of pre-launch fraud infrastructure before any user signal is a waterfall approach to a product hypothesis test. The strong-tie graph restriction and 24-hour hold are sufficient fraud controls for an MVP at controlled scale.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Ship it and measure DAU impact on Messenger — if payments drive 5% DAU increase, the feature is validated.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['metrics_definition'],
-                explanation: 'DAU is too coarse a signal — payments would need to reach significant penetration before a DAU effect is measurable. Completion rate isolates the product hypothesis before the scale needed to move aggregate DAU.'
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-
-  {
-    id: 'hp-stripe-developer-activation-decline',
-    title: 'Stripe Developer Activation Is Slipping: Find the Root Cause',
-    scenario_role: 'founding engineer',
-    scenario_context: 'Stripe defines activation as a developer making their first successful live payment within 14 days of creating an account. Activation rate has declined 8 points over two quarters. The developer experience team suspects documentation gaps; the growth team suspects friction in API key setup.',
-    scenario_trigger: 'The Head of Developer Experience escalates to the product review. The request: identify the most likely root cause and design an experiment to confirm it before the next planning cycle.',
-    scenario_question: 'What metrics do you look at first, and how do you design an experiment to identify the root cause of the developer activation decline?',
-    engineer_standout: 'Recognize that "activation" is a funnel with distinct stages, and the 8-point drop could be concentrated at any one stage — measuring at the wrong stage produces the wrong intervention.',
-    paradigm: 'traditional',
-    industry: 'fintech',
-    sub_vertical: 'developer_tools',
-    difficulty: 'advanced',
-    estimated_minutes: 15,
-    primary_competencies: ['metrics_definition', 'diagnostic_thinking'],
-    secondary_competencies: ['experiment_design', 'developer_empathy'],
-    frameworks: ['funnel_analysis', 'hypothesis_testing'],
-    relevant_roles: ['staff_engineer', 'founding_engineer', 'tech_lead'],
-    company_tags: ['stripe'],
-    tags: ['developer-experience', 'activation', 'metrics', 'experiment-design', 'stripe'],
-    is_published: true as const,
-    is_calibration: false as const,
-    is_premium: false as const,
-    steps: [
-      {
-        step: 'frame' as const,
-        step_nudge: 'Where in the 14-day activation funnel is the 8-point drop concentrated?',
-        grading_weight: 25,
-        step_order: 1,
-        questions: [
-          {
-            question_text: 'What is the highest-value metric to examine first when investigating the developer activation decline?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['diagnostic_thinking', 'funnel_analysis'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Stage-by-stage conversion within the 14-day activation funnel: account creation to API key retrieval, API key retrieval to first test payment, first test payment to first live payment. The goal is to isolate which transition drives the decline before investigating why.',
-                quality: 'best',
-                points: 3,
-                competencies: ['funnel_analysis', 'diagnostic_thinking'],
-                explanation: 'An 8-point aggregate drop could be entirely concentrated at one funnel stage. If 90% of the decline is between API key retrieval and first test payment, the documentation-gap hypothesis is more likely; if it is between test and live, the live key setup friction hypothesis is more likely.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Time-to-first-API-call — how long from account creation to the first authenticated request in the test environment.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['diagnostic_thinking'],
-                explanation: 'Time-to-first-API-call is a useful proxy for setup friction, but it only covers the early funnel. If developers are making test calls quickly but failing to go live, this metric will not detect the actual drop point.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Developer NPS and qualitative session replay data to understand where developers feel confused.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['user_research'],
-                explanation: 'Qualitative data is valuable as a follow-on, but NPS is too lagging and unfocused to identify a specific funnel drop. Session replay is expensive to analyze at scale and is better applied once the problem stage is quantitatively confirmed.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Cohort analysis by developer segment: solo developers vs. startup teams vs. enterprise developers, to see which segment is driving the decline.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['segmentation'],
-                explanation: 'Cohort segmentation is a valid second cut but it is not the first question. Without knowing which funnel stage is dropping, segmenting by developer type does not tell you what to fix.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'list' as const,
-        step_nudge: 'Generate the plausible hypotheses that could explain an 8-point activation decline at Stripe.',
-        grading_weight: 25,
-        step_order: 2,
-        questions: [
-          {
-            question_text: 'Which set of hypotheses most completely covers the plausible root causes of a developer activation decline at Stripe?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['hypothesis_generation', 'developer_empathy'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Documentation-to-code gap (developers cannot translate docs to working integration), live key setup friction (compliance steps for live mode deter first payment), cohort mix shift (more inexperienced developers signing up who need more hand-holding), and competing library changes (SDK upgrade broke existing integration patterns).',
-                quality: 'best',
-                points: 3,
-                competencies: ['hypothesis_generation', 'developer_empathy'],
-                explanation: 'This set covers both supply-side causes (Stripe changed something) and demand-side causes (the incoming developer population changed). A cohort mix shift is a common invisible cause of activation rate changes that teams overlook because it requires no product failure.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Poor documentation, confusing dashboard UX, and too many required fields in the account setup flow.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['ux_thinking'],
-                explanation: 'These are three variations of the same documentation/UX hypothesis, not three distinct hypotheses. The list does not include supply-side changes (SDK, API versioning) or demand-side shifts (cohort mix) as alternative explanations.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Developer satisfaction has dropped because Stripe pricing increased, pushing cost-sensitive developers to alternatives like LemonSqueezy.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['market_analysis'],
-                explanation: 'Activation rate measures whether developers complete their first live payment, not whether they stay with Stripe long-term. If developers are leaving for competitors before activating, that would show in signup volume, not activation rate.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Documentation-to-code gap, live key compliance friction, and a recent Stripe SDK version change that broke common integration patterns.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['hypothesis_generation'],
-                explanation: 'Three strong hypotheses covering different causal mechanisms. Missing the cohort mix shift, which is an important non-product explanation that would change the response: if the developer population changed, product fixes may not recover activation.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'optimize' as const,
-        step_nudge: 'Design one experiment that can confirm or reject the highest-priority hypothesis.',
-        grading_weight: 30,
-        step_order: 3,
-        questions: [
-          {
-            question_text: 'Assuming funnel analysis shows the biggest drop is between test payment and first live payment, what is the highest-signal experiment?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['experiment_design', 'hypothesis_testing'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'A/B test: treatment group gets a concierge activation email at day 3 with a personalized checklist of remaining live-mode setup steps and a direct link to the specific compliance requirement they have not completed. Control: existing flow. Primary metric: live payment completion rate by day 14.',
-                quality: 'best',
-                points: 3,
-                competencies: ['experiment_design', 'hypothesis_testing'],
-                explanation: 'This experiment tests whether friction-reduction in the live-mode setup process drives activation. The personalized checklist removes the discovery cost for the specific missing steps without changing the underlying requirements. It is low-engineering-cost and produces a clean signal within 14 days.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Remove all compliance requirements for the first live payment to measure how many developers would activate without friction.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['experiment_design'],
-                explanation: 'Removing compliance requirements for live payments is not a testable intervention — it is a regulatory violation. KYC/AML requirements for live payment processing are legal obligations, not product choices.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Conduct 10 user interviews with developers who reached test payment but did not activate to understand their blockers qualitatively.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['user_research'],
-                explanation: 'User interviews are a good pre-experiment diagnostic, but the question asks for an experiment to identify the root cause — interviews generate hypotheses, they do not confirm them. This is step 0, not the experiment itself.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Redesign the Stripe dashboard live-mode activation flow based on developer feedback collected through in-product surveys, then measure activation rate pre and post launch.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['experiment_design'],
-                explanation: 'Pre/post measurement without a control group cannot isolate whether any activation rate change is caused by the redesign or by seasonal variation, cohort mix shifts, or other concurrent changes.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'win' as const,
-        step_nudge: 'What is the recommendation to the Head of Developer Experience before the planning cycle closes?',
-        grading_weight: 20,
-        step_order: 4,
-        questions: [
-          {
-            question_text: 'What do you recommend and what is the earliest point at which you will know if you were right?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['decision_making', 'communication'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Run the concierge activation experiment for 3 weeks, reading interim results at day 7 for early signal. If the treatment shows 15%+ lift in live payment completion, prioritize live-mode friction reduction in the next planning cycle. If flat, pivot to investigating the cohort mix shift hypothesis.',
-                quality: 'best',
-                points: 3,
-                competencies: ['decision_making', 'communication'],
-                explanation: 'This recommendation names a decision criteria, an interim checkpoint, and a fallback pivot — all within the planning cycle window. The 15% threshold is directional without being falsely precise, and naming the cohort hypothesis as the fallback shows depth of diagnostic thinking.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Recommend a 6-week experiment program covering all four hypotheses before making a planning cycle commitment.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['planning'],
-                explanation: 'Six weeks exceeds the planning cycle and does not produce a timely recommendation. Running four experiments in parallel has high engineering cost; the diagnostic funnel analysis should have already narrowed the hypothesis set.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Invest in documentation improvements as the first move, since documentation gaps are the most common cause of developer activation problems across the industry.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['decision_making'],
-                explanation: 'Acting on the industry-average hypothesis before confirming it is the Stripe-specific cause wastes engineering capacity if the funnel analysis shows documentation is not the drop point. The funnel data should guide the investment, not a prior.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Present the funnel analysis findings and recommend a dedicated developer activation sprint in the next planning cycle with a target of recovering 5 of the 8 lost points.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['communication'],
-                explanation: 'Presenting findings is good but stopping at "run a sprint" without a hypothesis-driven experiment plan does not fulfill the request for root cause identification. The sprint needs to be scoped to the confirmed hypothesis.'
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-
-  {
-    id: 'hp-stripe-api-simple-vs-powerful',
-    title: 'Stripe API: Simple Enough for Solo Devs, Powerful Enough for Enterprise',
-    scenario_role: 'staff engineer',
-    scenario_context: 'Stripe serves developers ranging from solo founders integrating their first payment to engineering teams at Fortune 500 companies processing billions in volume. The API surface has grown significantly — Stripe now has 700+ documented API objects. New developers report the surface as overwhelming; enterprise teams report missing knobs for advanced routing and compliance requirements.',
-    scenario_trigger: 'The developer platform leadership is reviewing whether the API design philosophy needs to change. The question on the table: how do you balance simplicity and power without forking the product?',
-    scenario_question: 'How do you balance making Stripe\'s APIs simple enough for solo developers while powerful enough for enterprise companies?',
-    engineer_standout: 'Recognize that simplicity and power are not a slider — they require separate surfaces with shared foundations: a high-floor default path and a low-ceiling escape hatch architecture.',
-    paradigm: 'traditional',
-    industry: 'fintech',
-    sub_vertical: 'developer_tools',
-    difficulty: 'staff_plus',
-    estimated_minutes: 18,
-    primary_competencies: ['platform_design', 'developer_experience'],
-    secondary_competencies: ['api_design', 'product_strategy'],
-    frameworks: ['progressive_disclosure', 'platform_theory'],
-    relevant_roles: ['staff_engineer', 'founding_engineer', 'tech_lead'],
-    company_tags: ['stripe'],
-    tags: ['api-design', 'developer-experience', 'stripe', 'platform', 'enterprise'],
-    is_published: true as const,
-    is_calibration: false as const,
-    is_premium: false as const,
-    steps: [
-      {
-        step: 'frame' as const,
-        step_nudge: 'Is this a single product-design problem or two separate problems that happen to share infrastructure?',
-        grading_weight: 20,
-        step_order: 1,
-        questions: [
-          {
-            question_text: 'What is the most accurate framing of the simplicity-vs-power tension in Stripe\'s API?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['problem_framing', 'api_design'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'The tension is not a design failure — it is an architecture problem. Solo developers and enterprise teams are accessing the same API surface, but they need different default configurations and different depths of access. The solution is progressive disclosure: a simple default path that gets out of the way, with escape hatches to full power when needed.',
-                quality: 'best',
-                points: 3,
-                competencies: ['problem_framing', 'api_design'],
-                explanation: 'Progressive disclosure is the canonical resolution of this tension in developer platform design. Stripe\'s own SDKs already reflect this — PaymentIntent\'s `automatic_payment_methods: true` default abstracts significant complexity behind one parameter. The frame identifies the design pattern rather than declaring an irreconcilable tradeoff.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Stripe should build two separate API products: a simple consumer-facing API for small developers and a full-featured enterprise API for large customers.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['product_strategy'],
-                explanation: 'Two separate APIs require double the maintenance overhead and create an awkward migration path when a solo developer\'s startup scales to enterprise. Stripe\'s compounding value is that code written in year one still works at billion-dollar scale — forking the API destroys that.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'This is primarily a documentation problem. The API is powerful enough for enterprise and could be simple enough for solo developers if the documentation better highlighted the recommended path.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['developer_experience'],
-                explanation: 'Documentation improvements are necessary but not sufficient when the API surface has 700+ objects. A developer starting a new integration encounters the full surface before documentation can guide them through it — the API design itself must carry the simplicity.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Stripe needs to prune deprecated and low-usage API endpoints to reduce surface area and simplify the developer experience.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['api_design'],
-                explanation: 'Pruning dead surface is good hygiene but it does not resolve the core tension. Enterprise features that solo developers find overwhelming are not deprecated — they are actively used. Removing them trades power for simplicity rather than achieving both.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'list' as const,
-        step_nudge: 'What are the concrete design mechanisms that enable progressive disclosure in a payments API?',
-        grading_weight: 25,
-        step_order: 2,
-        questions: [
-          {
-            question_text: 'Which set of API design mechanisms best implements progressive disclosure for Stripe\'s use case?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['api_design', 'platform_architecture'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Opinionated defaults that are correct for 90% of cases, explicit opt-in flags for advanced behavior, and versioned complexity tiers (e.g., `payment_intent_simple` vs. `payment_intent` for full control). Each tier is fully documented but the simple tier is the entry path.',
-                quality: 'best',
-                points: 3,
-                competencies: ['api_design', 'progressive_disclosure'],
-                explanation: 'Opinionated defaults mirror how Stripe already designs its best APIs — `automatic_payment_methods: {enabled: true}` vs. manual payment method specification is this pattern in practice. Explicit opt-in flags avoid surprising advanced users while keeping the default path uncluttered.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Offer both REST and GraphQL interfaces: REST for simplicity, GraphQL for enterprise teams who need precise field selection and batching.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['api_design'],
-                explanation: 'REST vs. GraphQL does not resolve the simplicity-power tension — it adds a protocol maintenance burden. Enterprise teams at Stripe do not need GraphQL; they need routing control, idempotency guarantees, and compliance hooks, all of which are orthogonal to query language.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'A developer-tier system in the dashboard: "Standard" mode shows simplified API docs and SDKs, "Advanced" mode unlocks the full reference.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['developer_experience'],
-                explanation: 'Dashboard tiering is a UX mechanism that helps with documentation discoverability, but it does not change the API surface itself. A developer copying a code snippet from "Standard" docs into a codebase will encounter the full API when they need to extend it.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Pre-built integrations (Stripe Checkout, Payment Links) for the simple use case, raw API access for enterprise — two separate surfaces that serve different audiences.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['product_design'],
-                explanation: 'Checkout and Payment Links are real products that Stripe already ships, but this answer describes existing product lines rather than an API design philosophy. It also creates a migration cliff: developers outgrow Checkout but lose continuity when they move to raw API.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'optimize' as const,
-        step_nudge: 'Name the hard constraint that limits how far progressive disclosure can go without fragmenting the platform.',
-        grading_weight: 35,
-        step_order: 3,
-        questions: [
-          {
-            question_text: 'What is the hardest constraint in implementing progressive disclosure for a payments API at Stripe\'s scale?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['tradeoff_reasoning', 'platform_thinking'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Backward compatibility: every default you set today is a contract. If `automatic_payment_methods: true` becomes the simple default, enterprise customers who needed the old explicit behavior must not be broken when they upgrade SDK versions. The constraint is that progressive disclosure requires stable defaults that cannot change without a major version bump.',
-                quality: 'best',
-                points: 3,
-                competencies: ['tradeoff_reasoning', 'api_design'],
-                explanation: 'Stripe\'s most famous engineering principle is API backward compatibility — the original 2011 Charge object still works. Defaults are the hardest part of this: a default that changes behavior for existing integrations when a developer upgrades their SDK version is a breaking change in practice even if it is not technically a breaking API change.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Engineering cost: maintaining two documentation sets and two onboarding paths doubles the developer relations workload.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['operational_thinking'],
-                explanation: 'Documentation cost is a real operational constraint but not the hardest technical constraint. Stripe already maintains multiple documentation tiers (Quickstart vs. API Reference). The backward compatibility problem is architecturally harder.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Enterprise customers will resist "simple" defaults that may hide behavior they depend on, making adoption of progressive disclosure politically difficult.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['stakeholder_thinking'],
-                explanation: 'Enterprise resistance is real and worth addressing, but it is a go-to-market constraint, not a platform architecture constraint. Opt-in flags resolve the resistance: enterprise teams stay on explicit configuration; defaults only apply to new integrations that did not previously specify the parameter.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Regulatory requirements force explicit parameter specification for many payment types, making it impossible to hide complexity behind defaults in regulated markets.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['regulatory_thinking'],
-                explanation: 'Regulatory requirements do constrain which defaults are permissible, but Stripe\'s existing defaults already handle regulatory requirements correctly — `automatic_payment_methods` selects compliant payment methods for the customer\'s region. Regulation is an input to default design, not a prohibition on defaults.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'win' as const,
-        step_nudge: 'What is the concrete recommendation to the developer platform leadership?',
-        grading_weight: 20,
-        step_order: 4,
-        questions: [
-          {
-            question_text: 'What do you recommend, and what is the one metric that tells you the design philosophy is working?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['decision_making', 'metrics_definition'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Adopt progressive disclosure as the platform design principle: audit every new API object for a "simple default" path, require explicit opt-in for advanced behavior, and freeze default changes in SemVer. Success metric: median lines-of-code to first working PaymentIntent integration drops 40% over 12 months without regression in enterprise NPS.',
-                quality: 'best',
-                points: 3,
-                competencies: ['decision_making', 'metrics_definition'],
-                explanation: 'Lines-of-code to first working integration is the most direct proxy for API simplicity — it is what "simple" actually means to a developer starting from scratch. The enterprise NPS guard ensures simplicity improvements do not come at the cost of power. SemVer freezing addresses the backward compatibility constraint.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Launch a "Stripe Essentials" tier with a simplified API surface aimed at solo developers, measured by Essentials-tier adoption rate among new signups.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['decision_making'],
-                explanation: 'A named tier is a legitimate go-to-market approach but it risks recreating the migration cliff problem — developers who start on Essentials still need to understand the full API when they scale. Adoption rate does not measure whether the design is actually simpler.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Commission a 6-month developer experience study comparing Stripe, Braintree, and Adyen to establish baseline metrics before making design changes.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['decision_making'],
-                explanation: 'Competitive benchmarking over 6 months delays addressing a known problem. Stripe\'s own developer activation data has already identified the issue — more study produces more data, not a better design principle.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Do nothing structurally. Invest in better documentation, quickstarts, and sample code to guide developers through the existing API surface.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['decision_making'],
-                explanation: 'Documentation investment is necessary but has already been Stripe\'s primary response. An 8-point activation decline while documentation is strong signals that the API surface itself — not its explanation — requires a design response.'
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-
-  {
-    id: 'hp-stripe-new-financial-vertical',
-    title: 'Stripe\'s Next Vertical: Where Does It Expand?',
-    scenario_role: 'staff engineer',
-    scenario_context: 'Stripe has built dominant positions in payment processing, billing, fraud detection (Radar), corporate cards (Issuing), and banking infrastructure (Treasury). The company is exploring which financial services vertical to enter next. The core constraint is that any new vertical must leverage Stripe\'s existing network of 1M+ businesses and its infrastructure advantage.',
-    scenario_trigger: 'The product strategy team is building the 3-year roadmap. Three expansion directions are on the table: business lending, payroll infrastructure, or tax compliance automation. The ask is a structured analysis before the leadership review.',
-    scenario_question: 'What would you build next for Stripe to expand into a new financial services vertical?',
-    engineer_standout: 'Recognize that Stripe\'s durable advantage is data access across both sides of transactions — a lending or tax product built on that data is structurally differentiated, while a generic payroll product is a crowded market without a moat.',
-    paradigm: 'ai_assisted',
-    industry: 'fintech',
-    sub_vertical: 'financial_infrastructure',
-    difficulty: 'staff_plus',
-    estimated_minutes: 18,
-    primary_competencies: ['product_strategy', 'market_analysis'],
-    secondary_competencies: ['platform_thinking', 'build_vs_buy'],
-    frameworks: ['porter_five_forces', 'opportunity_sizing'],
-    relevant_roles: ['staff_engineer', 'founding_engineer', 'tech_lead', 'em'],
-    company_tags: ['stripe'],
-    tags: ['stripe', 'expansion', 'fintech', 'strategy', 'lending', 'vertical'],
-    is_published: true as const,
-    is_calibration: false as const,
-    is_premium: false as const,
-    steps: [
-      {
-        step: 'frame' as const,
-        step_nudge: 'What is the core question to answer before picking a vertical: which expansion would give Stripe a moat that no incumbent can match?',
-        grading_weight: 20,
-        step_order: 1,
-        questions: [
-          {
-            question_text: 'What is the most useful framing criterion for evaluating Stripe\'s expansion into a new financial services vertical?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['strategic_thinking', 'competitive_analysis'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Which vertical benefits most from Stripe\'s transaction-level data on 1M+ businesses — where that data creates underwriting, pricing, or compliance accuracy that incumbents cannot replicate without Stripe\'s network position?',
-                quality: 'best',
-                points: 3,
-                competencies: ['strategic_thinking', 'competitive_analysis'],
-                explanation: 'Stripe\'s moat is observability: it sees revenue, customer counts, refund rates, churn signals, and seasonality across its entire business network before any bank or lender does. Any vertical where that data advantage compounds — lending risk models, tax accuracy, fraud detection — is defensible. A vertical where data is irrelevant (generic payroll) has no structural Stripe advantage.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Which vertical has the largest total addressable market globally, giving Stripe the most revenue upside?',
-                quality: 'surface',
-                points: 1,
-                competencies: ['market_analysis'],
-                explanation: 'TAM is a necessary input but not the deciding criterion for a platform company choosing vertical expansion. A large TAM with no structural differentiation means Stripe would compete on price and features against entrenched players with lower CAC. The moat question must come before the market size question.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'Which vertical has the least competition from established financial institutions, giving Stripe the clearest path to market leadership?',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['competitive_analysis'],
-                explanation: 'Competition intensity matters but competition is not uniformly a blocker — Stripe entered payment processing against PayPal and Braintree. The relevant question is not "least competition" but "where is Stripe\'s structural advantage largest," which determines whether the competitive fight is winnable.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Which vertical is requested most often by Stripe\'s top 100 enterprise customers, since enterprise expansion drives the highest incremental revenue.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['market_analysis'],
-                explanation: 'Enterprise customer requests reflect their current pain points, not Stripe\'s structural opportunity. Enterprise companies will request any capability that would reduce their vendor count — that signal does not identify where Stripe can build a defensible position.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'list' as const,
-        step_nudge: 'Evaluate the three candidate verticals against the moat criterion.',
-        grading_weight: 25,
-        step_order: 2,
-        questions: [
-          {
-            question_text: 'Which analysis of the three candidate verticals most accurately maps Stripe\'s structural advantage to the expansion opportunity?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['opportunity_analysis', 'strategic_thinking'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Business lending has the highest data moat — Stripe can underwrite based on real-time revenue and cash flow, which is more predictive than bank lending\'s lagging credit bureau data. Tax compliance benefits from transaction-level accuracy. Payroll has the weakest data moat since Stripe lacks payroll input data (headcount, compensation structures) and incumbents like Gusto have entrenched integrations.',
-                quality: 'best',
-                points: 3,
-                competencies: ['opportunity_analysis', 'strategic_thinking'],
-                explanation: 'This analysis correctly identifies that lending and tax use Stripe\'s existing transaction data as a direct input to product quality, while payroll requires entirely new data types Stripe does not have. Stripe Capital, Stripe\'s existing SMB lending product, validates the lending data advantage empirically.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Payroll is the highest-value expansion because it is the largest spend category for SMBs and would create switching costs through payroll data lock-in.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['market_analysis'],
-                explanation: 'Payroll spend volume is large but Stripe does not have a structural data advantage in payroll underwriting. Switching costs from payroll data do not compound Stripe\'s existing transaction network — they create an independent lock-in mechanism that would require a new market position to establish.'
-              },
-              {
-                option_label: 'C',
-                option_text: 'All three are viable. The decision should depend on which one has the fastest path to $1B in revenue given Stripe\'s current enterprise sales motion.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['strategic_thinking'],
-                explanation: 'Revenue speed is a financial metric, not a strategic one. A fast path to $1B through generic payroll does not build a defensible position; a slower path to $500M in lending with a data moat compounds through the network in a way that payroll revenue does not.'
-              },
-              {
-                option_label: 'D',
-                option_text: 'Tax compliance automation has the highest regulatory moat — tax rules change constantly, requiring ongoing compliance investment that only a scaled platform can sustain.',
-                quality: 'good_but_incomplete',
-                points: 2,
-                competencies: ['regulatory_thinking'],
-                explanation: 'Regulatory complexity is a moat, but it is also a burden. Tax automation is a real opportunity (Stripe Tax already exists in early form) but the question is expansion into a new vertical, not deepening an existing one. The analysis also does not compare the data advantage across all three candidates.'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        step: 'optimize' as const,
-        step_nudge: 'Pick the vertical and name the product-level bet within it.',
-        grading_weight: 35,
-        step_order: 3,
-        questions: [
-          {
-            question_text: 'Which vertical should Stripe enter and what is the specific product bet that leverages the data advantage?',
-            question_nudge: null,
-            sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['product_strategy', 'prioritization'],
-            response_type: 'mcq_plus_elaboration' as const,
-            options: [
-              {
-                option_label: 'A',
-                option_text: 'Expand business lending beyond Stripe Capital\'s current merchant cash advance model into a working capital line with real-time credit limits that adjust based on Stripe revenue signals — no application, no credit check, limit scales with business growth. This makes the data advantage visible to merchants and creates a flywheel: more Stripe volume enables higher credit limits, incentivizing merchants to route more through Stripe.',
-                quality: 'best',
-                points: 3,
-                competencies: ['product_strategy', 'flywheel_thinking'],
-                explanation: 'This product bet directly uses the transaction data moat — dynamic credit limits based on real-time revenue are not possible for any bank lender, only for a payment processor with full visibility. The flywheel (more volume = higher limits = incentive to route more) is the same compounding mechanism that makes Stripe\'s payment volume defensible.'
-              },
-              {
-                option_label: 'B',
-                option_text: 'Enter business lending by acquiring a licensed bank to get deposit insurance and a lending charter, then integrate Stripe data for underwriting.',
+                option_text: 'Number of merchants who complete the currency and duties setup flow reaches 1,000 within 30 days',
                 quality: 'good_but_incomplete',
                 points: 2,
                 competencies: ['strategic_thinking'],
-                explanation: 'Acquiring a bank is a viable path to the vertical but it is a means, not the product bet itself. The answer does not specify which lending product Stripe would build or how the data advantage would manifest in the product experience.'
+                explanation:
+                  'Activation count is a leading indicator but not a success metric. Merchants completing setup does not confirm that international buyers are converting successfully.',
               },
               {
                 option_label: 'C',
-                option_text: 'Enter payroll because Stripe\'s global infrastructure already handles currency, compliance, and transfers — extending this to payroll is an infrastructure reuse story.',
-                quality: 'plausible_wrong',
-                points: 0,
-                competencies: ['product_strategy'],
-                explanation: 'Infrastructure reuse is an engineering argument, not a product strategy argument. The fact that the payments rails could support payroll transfers does not create a differentiated payroll product — Gusto, ADP, and Rippling also run on the same ACH and wire rails.'
+                option_text: 'Zero critical bugs filed against the duties calculation engine within the first sprint',
+                quality: 'surface',
+                points: 1,
+                competencies: [],
+                explanation:
+                  'Bug count is a quality metric, not a success metric. A bug-free implementation that does not improve GMV has not succeeded.',
               },
               {
                 option_label: 'D',
-                option_text: 'Launch Stripe Tax as a full global tax compliance platform, competing directly with Vertex and Avalara for enterprise tax determination and remittance.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['product_strategy'],
-                explanation: 'Stripe Tax already exists and this answer describes deepening an existing product, not entering a new vertical. Competing with Vertex and Avalara at enterprise scale is also a long-term infrastructure fight that diverges from Stripe\'s developer-first motion.'
-              }
-            ]
-          }
-        ]
+                option_text: 'Net Promoter Score from SMB merchants increases by 10 points after currency launch',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'NPS is too slow, noisy, and diffuse to attribute to a single capability release. It cannot serve as a launch gate for the next phase.',
+              },
+            ],
+          },
+        ],
       },
+    ],
+  },
+
+  {
+    id: 'pm-shopify-002',
+    title: 'Shop Pay Re-Acceleration: Increasing Repeat Purchases Without Slowing Checkout',
+    scenario_role: 'Product Manager, Checkout',
+    scenario_context:
+      'Shop Pay has a 90%+ completion rate among buyers who have saved credentials, but the cohort of buyers returning to use Shop Pay on a second or third purchase has plateaued. The growth rate on repeat GMV through Shop Pay is down to 2% quarter-over-quarter, from a prior 18%.',
+    scenario_trigger:
+      'Engineering flags that any new engagement layer on the checkout surface risks adding latency. The current p95 checkout load time is 1.1 seconds, and the SLA for page speed scores is strict.',
+    scenario_question:
+      'Without harming checkout speed, what is the highest-leverage strategy to re-accelerate repeat purchase rates through Shop Pay over the next two quarters?',
+    engineer_standout:
+      'A strong engineer would distinguish between checkout-time interventions (risky for latency) and pre-checkout interventions (email, push, Shop app surface) and argue for demand-side re-engagement rather than checkout-side changes.',
+    paradigm: 'traditional',
+    industry: 'E-commerce',
+    sub_vertical: 'Payments',
+    difficulty: 'standard',
+    estimated_minutes: 20,
+    primary_competencies: ['strategic_thinking', 'creative_execution'],
+    secondary_competencies: ['domain_expertise'],
+    frameworks: ['Growth Loops', 'North Star Framework'],
+    relevant_roles: ['pm', 'swe', 'em'],
+    company_tags: ['Shopify', 'Apple Pay', 'PayPal'],
+    tags: ['payments', 'checkout', 'retention', 'growth', 'shop-pay'],
+    is_published: true,
+    is_calibration: false,
+    is_premium: false,
+    steps: [
       {
-        step: 'win' as const,
-        step_nudge: 'What does the 3-year roadmap recommendation look like and what is the bet you are making?',
-        grading_weight: 20,
-        step_order: 4,
+        step: 'frame',
+        step_nudge: 'Is the repeat purchase problem a checkout problem, a discovery problem, or a demand problem?',
+        grading_weight: 0.25,
+        step_order: 1,
         questions: [
           {
-            question_text: 'What is the 3-year expansion recommendation for leadership and what is the falsifiable bet embedded in it?',
+            question_text: 'What is the most accurate framing of the Shop Pay repeat purchase plateau?',
             question_nudge: null,
             sequence: 1,
-            grading_weight_within_step: 100,
-            target_competencies: ['decision_making', 'communication'],
-            response_type: 'mcq_plus_elaboration' as const,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
             options: [
               {
                 option_label: 'A',
-                option_text: 'Recommendation: expand Stripe Capital into a real-time working capital product over 3 years. Year 1: dynamic credit limits for top-decile Stripe merchants. Year 2: expand eligibility to median merchant based on 12-month payment history. Year 3: extend credit to marketplace sellers using platform data. The falsifiable bet: Stripe\'s payment data produces lower default rates than traditional bank lending at equivalent credit tiers.',
+                option_text: 'Buyers who saved Shop Pay credentials are not returning to buy again because the Shop app and email surfaces are not surfacing relevant merchants at the right moment',
                 quality: 'best',
                 points: 3,
-                competencies: ['decision_making', 'communication'],
-                explanation: 'This recommendation is phased (start with the highest-signal data segment, expand as models improve), compounding (each year builds the data flywheel), and ends in a testable prediction that the data advantage actually materializes in underwriting accuracy. If default rates are not lower than bank benchmarks, the data moat hypothesis is wrong — and leadership should know that going in.'
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'The plateau is a demand problem, not a checkout problem. Shop Pay works when buyers arrive. The issue is that buyers are not being brought back to merchants where they already have saved credentials.',
               },
               {
                 option_label: 'B',
-                option_text: 'Build all three verticals over 3 years: lending in year 1, tax in year 2, payroll in year 3. This maximizes coverage of the SMB financial stack.',
+                option_text: 'The checkout flow has too many steps after credential entry, causing drop-off before completion',
                 quality: 'plausible_wrong',
                 points: 0,
-                competencies: ['decision_making'],
-                explanation: 'Building three regulated financial products in three years is a resource allocation decision that ignores the moat analysis. Spreading across three verticals prevents deep investment in the one where Stripe\'s advantage is largest, and payroll\'s inclusion contradicts the analysis that showed no data moat there.'
+                competencies: [],
+                explanation:
+                  'Completion rate is already 90%+, which rules out checkout friction as the cause of the plateau. This is the wrong problem statement.',
               },
               {
                 option_label: 'C',
-                option_text: 'Expand Stripe Capital to all markets where Stripe Payments is live, using the existing credit model. No new product bet required.',
-                quality: 'surface',
-                points: 1,
-                competencies: ['decision_making'],
-                explanation: 'Geographic expansion of an existing product is not a new vertical expansion — it is growth within the current vertical. Leadership asked for a new financial services vertical, not a distribution play for an existing one.'
+                option_text: 'Competing wallets like Apple Pay and PayPal are winning repeat purchase sessions on the same merchants where Shop Pay credentials are saved',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Wallet competition is real but explaining the plateau requires understanding the demand signal. If buyers are not visiting the merchant, no wallet wins.',
               },
               {
                 option_label: 'D',
-                option_text: 'Recommend business lending, but only after a 2-year feasibility study that validates Stripe\'s data advantage with a small beta cohort before committing to the 3-year roadmap.',
+                option_text: 'Shop Pay credentials are expiring or failing at a higher rate, reducing the pool of eligible repeat buyers',
+                quality: 'surface',
+                points: 1,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Credential health is a valid metric to check but would show up as a completion rate drop, not a flat repeat purchase rate. Data contradicts this framing.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'list',
+        step_nudge: 'What surfaces outside the checkout can drive repeat buyer intent without adding checkout latency?',
+        grading_weight: 0.25,
+        step_order: 2,
+        questions: [
+          {
+            question_text: 'Which set of interventions best re-engages buyers with saved Shop Pay credentials without adding checkout latency?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Shop app personalized feed surfacing reorder suggestions from past merchants, plus transactional email with one-tap reorder links that pre-fill Shop Pay',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'creative_execution'],
+                explanation:
+                  'Both interventions act before the buyer reaches checkout, eliminating latency risk entirely. Personalized reorder surfaces existing purchase intent rather than creating new demand.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Add a post-purchase loyalty points balance that displays at next checkout to incentivize return visits',
                 quality: 'good_but_incomplete',
                 points: 2,
-                competencies: ['decision_making'],
-                explanation: 'Stripe Capital already exists and has underwriting data to validate the moat hypothesis now. A 2-year feasibility study before roadmap commitment delays investment when the evidence base is already available. The beta cohort idea is directionally right but the timeline is wrong.'
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  }
-]
+                competencies: ['creative_execution'],
+                explanation:
+                  'Loyalty mechanics can drive repeat behavior but add UI to the checkout surface, creating latency risk. The constraint requires solutions that avoid checkout-time additions.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Speed up Shop Pay credential lookup to reduce checkout time from 1.1s to 0.8s, making the checkout faster than any competitor',
+                quality: 'surface',
+                points: 1,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Checkout speed improvement does not address the demand problem. Buyers who are not returning to merchants will not benefit from a faster checkout they never initiate.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Partner with merchants to offer Shop Pay exclusive discounts at checkout to incentivize choosing Shop Pay over Apple Pay',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Checkout-level discounts conflict with merchant margin and are not within Shopify\'s control to deploy at scale. This also addresses wallet selection, not repeat visit frequency.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'optimize',
+        step_nudge: 'How do you sequence the two-quarter plan to show progress without waiting for full feature builds?',
+        grading_weight: 0.30,
+        step_order: 3,
+        questions: [
+          {
+            question_text: 'How should the two-quarter plan be sequenced to demonstrate measurable progress within Q1?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Q1: launch transactional email reorder links (low eng lift, immediate test of re-engagement thesis). Q2: ship Shop app personalized reorder feed using signal from Q1 email click data.',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'creative_execution'],
+                explanation:
+                  'Email is low-lift and generates behavioral data that informs the higher-investment app feed. This sequence validates the hypothesis cheaply before full product investment.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Q1: build the full personalized Shop app feed. Q2: use feed engagement data to optimize email campaigns.',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['strategic_thinking'],
+                explanation:
+                  'App feed is higher leverage long-term but requires more engineering time and delays measurable results. Reversing the sequence misses the faster-feedback opportunity.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Build both in parallel across Q1 and Q2 to maximize output.',
+                quality: 'surface',
+                points: 1,
+                competencies: [],
+                explanation:
+                  'Parallel builds strain team capacity and do not produce learnings that inform each other. Sequencing is the discipline here.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Spend Q1 on research and design validation before committing to any engineering work.',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Two full quarters is the constraint. Spending half on research with no shipped product produces no measurable impact within the window.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'win',
+        step_nudge: 'What is the one metric that tells you the strategy worked, and why is it more meaningful than alternatives?',
+        grading_weight: 0.20,
+        step_order: 4,
+        questions: [
+          {
+            question_text: 'Which metric is the best north star for the two-quarter re-acceleration plan?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Repeat Shop Pay GMV growth rate returning to 10%+ QoQ by end of Q2',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'GMV growth rate directly measures the objective. It captures both buyer re-engagement and checkout completion, and is the metric that declined. Returning to a defined rate is testable and time-bound.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Email open rate for reorder campaigns above 35%',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['creative_execution'],
+                explanation:
+                  'Email open rate measures the channel, not the outcome. High open rates with low click-to-purchase conversion do not advance the GMV objective.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Shop Pay credential save rate increasing from current baseline by 20%',
+                quality: 'surface',
+                points: 1,
+                competencies: [],
+                explanation:
+                  'New credential saves grow the top of the funnel but do not measure repeat purchase behavior, which is the specific problem.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Shop app monthly active buyer count growing 15% QoQ',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'App MAU growth does not confirm that buyers are completing repeat purchases through Shop Pay. A buyer could browse the app without transacting.',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'pm-shopify-003',
+    title: 'Build vs. Ecosystem: Should Shopify Own Reviews?',
+    scenario_role: 'Product Manager, Merchant Trust',
+    scenario_context:
+      'Shopify\'s app ecosystem includes dozens of reviews apps, with Judge.me and Yotpo collectively serving over 400,000 merchants. Internal research shows that merchants cite "no native reviews" as a top-3 conversion friction point, but the partner apps generate significant app store revenue for Shopify.',
+    scenario_trigger:
+      'Amazon announces deep native review integrations with new seller tooling, and a cohort of Shopify Plus merchants starts migrating review management to a competing platform that bundles reviews natively.',
+    scenario_question:
+      'Should Shopify build a native Reviews product or invest in deeper APIs that make partner review apps more capable?',
+    engineer_standout:
+      'A strong engineer would analyze where native ownership creates a technical moat versus where it would replicate functionality partners already provide well, and would identify which platform primitives enable the most leverage.',
+    paradigm: 'traditional',
+    industry: 'E-commerce',
+    sub_vertical: 'Platform Strategy',
+    difficulty: 'advanced',
+    estimated_minutes: 22,
+    primary_competencies: ['strategic_thinking', 'domain_expertise'],
+    secondary_competencies: ['creative_execution'],
+    frameworks: ['Platform Ecosystem Design', 'Build vs Buy vs Partner'],
+    relevant_roles: ['pm', 'tech_lead', 'em'],
+    company_tags: ['Shopify', 'Amazon', 'WooCommerce'],
+    tags: ['platform', 'ecosystem', 'build-vs-buy', 'reviews', 'strategy'],
+    is_published: true,
+    is_calibration: false,
+    is_premium: false,
+    steps: [
+      {
+        step: 'frame',
+        step_nudge: 'What is the actual risk to Shopify: merchant conversion, merchant retention, or partner ecosystem health?',
+        grading_weight: 0.25,
+        step_order: 1,
+        questions: [
+          {
+            question_text: 'What is the correct strategic framing of the native reviews decision for Shopify?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'The risk is merchant churn to platforms that bundle reviews natively, which means Shopify must match feature parity to stay competitive',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['strategic_thinking'],
+                explanation:
+                  'Merchant churn is a real risk but matching feature parity through native build is one of several responses. The framing skips the question of whether the ecosystem can deliver the same outcome.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'The risk is that Shopify\'s checkout conversion data, which already flows natively, is not connected to review signals, creating a structural gap that partner apps cannot bridge through APIs alone',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'The real gap is data integration: native review data connected to storefront, checkout, and search creates a flywheel that partner apps cannot replicate because they sit outside Shopify\'s core data graph.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Building native reviews would damage the Shopify app ecosystem by destroying the market for Judge.me and Yotpo',
+                quality: 'surface',
+                points: 1,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Ecosystem impact is a real tradeoff to quantify, but it cannot be the primary frame for the decision. Many platforms have native and partner offerings in the same category.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Merchants are not actually churning, so the Amazon move is noise and no action is needed',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'The prompt specifies a cohort of Plus merchants already migrating. Dismissing early retention signals as noise is a pattern that historically precedes larger churn.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'list',
+        step_nudge: 'Map out what Shopify owns natively that partner review apps cannot access even with better APIs.',
+        grading_weight: 0.25,
+        step_order: 2,
+        questions: [
+          {
+            question_text: 'Which Shopify-native data or capabilities give a first-party Reviews product a structural advantage over partner apps?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Verified purchase status from order data, checkout-embedded review prompts with zero redirect, and native storefront search indexing of review content',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'All three are real technical moats: verified purchase requires order data only Shopify holds; checkout embedding eliminates the redirect that kills partner app conversion rates; native search indexing is unavailable to app partners.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Shopify could offer review collection at no cost, undercutting Judge.me and Yotpo on price',
+                quality: 'surface',
+                points: 1,
+                competencies: [],
+                explanation:
+                  'Price competition is a race to the bottom and is not a structural advantage. It also immediately damages the partner ecosystem without creating lasting differentiation.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Shopify brand credibility means merchants would trust a native review product more than a third-party app',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['cognitive_empathy'],
+                explanation:
+                  'Brand trust is a real adoption lever but is not a technical moat. It does not sustain competitive advantage once partners match on features.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Shopify can force review data portability through API requirements, making partner app data accessible to native tools',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Forcing data portability from partners would damage partner relationships without creating the native capability itself. It is a policy lever, not a product advantage.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'optimize',
+        step_nudge: 'What do you build natively, and what do you leave to partners with better APIs? Name the criterion and the sacrifice.',
+        grading_weight: 0.30,
+        step_order: 3,
+        questions: [
+          {
+            question_text: 'What is the right scope for a Shopify native Reviews investment, given the ecosystem tradeoffs?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Build verified purchase review collection and storefront display natively; leave review marketing, syndication, and UGC management to partners with richer APIs that expose the native review data',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'This scoping captures the structural moat (verified data, native rendering) while preserving ecosystem value on the differentiated layer (marketing, syndication) where partners already excel. The sacrifice is control over the full review experience.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Build a full-featured native Reviews product covering collection, display, marketing, and syndication to close the feature gap with Amazon',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['strategic_thinking'],
+                explanation:
+                  'Full build closes the gap but likely destroys the partner market for review apps, which generates meaningful app store revenue and covers features Shopify would have to maintain indefinitely.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Invest only in API improvements to let partners build better-integrated review apps without building anything native',
+                quality: 'surface',
+                points: 1,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'API improvements cannot bridge the verified purchase gap or the checkout-embedded collection problem. This addresses partner capability but not the structural data advantage.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Acquire Judge.me or Yotpo to bring their review capabilities in-house quickly',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Acquisition would consolidate market position but creates a winner-takes-all dynamic that damages the remaining ecosystem. It is also the highest-cost and highest-integration-risk option.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'win',
+        step_nudge: 'How do you announce the native Reviews scope to the partner ecosystem without triggering partner churn?',
+        grading_weight: 0.20,
+        step_order: 4,
+        questions: [
+          {
+            question_text: 'How do you communicate the native Reviews decision to the Shopify partner ecosystem?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['creative_execution', 'strategic_thinking'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Announce native Reviews as a foundational layer, simultaneously release the new Partner API that exposes native review data, and provide a migration guide for partners to build on top of the native data rather than competing with it',
+                quality: 'best',
+                points: 3,
+                competencies: ['creative_execution', 'strategic_thinking'],
+                explanation:
+                  'Pairing the native announcement with new partner APIs reframes the narrative from "Shopify is eating the ecosystem" to "Shopify is creating a better foundation for partners." Migration guides reduce partner churn by showing a clear path forward.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Announce quietly through the developer changelog to avoid triggering partner concern',
+                quality: 'surface',
+                points: 1,
+                competencies: [],
+                explanation:
+                  'Quiet announcements about competitive moves create more distrust when partners discover them independently, which they will.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Host a Partner Summit session to explain the decision and gather feedback before finalizing scope',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['cognitive_empathy'],
+                explanation:
+                  'Stakeholder engagement is good but if scope is not finalized, partners cannot make investment decisions about their own roadmaps. Feedback loops are more valuable before the decision, not after.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Delay the native Reviews announcement until the product ships to avoid speculation',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Delaying until ship leaves partners no time to adapt their positioning and creates a betrayal dynamic. Partners who find out at launch have already invested in the wrong direction.',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'pm-shopify-004',
+    title: 'Add-to-Cart Drop: 48-Hour Incident Response',
+    scenario_role: 'Product Manager, Search and Discovery',
+    scenario_context:
+      'Shopify\'s Search and Discovery team shipped a ranking model update last Tuesday that changed how products surface in merchant storefront search results. The change was designed to improve relevance by weighting recency more heavily.',
+    scenario_trigger:
+      'Data Science flags that add-to-cart rate has dropped 11% in the 72 hours since the search ranking change shipped, across a sample of 2,000 storefronts that opted into the new ranking model.',
+    scenario_question:
+      'What do you do in the next 48 hours to diagnose the cause, determine whether to roll back, and protect merchant GMV?',
+    engineer_standout:
+      'A strong engineer would distinguish between a ranking correctness problem (the model is wrong) and a product quality problem (the right products are being buried), and would instrument for both before deciding on a rollback.',
+    paradigm: 'traditional',
+    industry: 'E-commerce',
+    sub_vertical: 'Search and Discovery',
+    difficulty: 'standard',
+    estimated_minutes: 18,
+    primary_competencies: ['strategic_thinking', 'domain_expertise'],
+    secondary_competencies: ['creative_execution'],
+    frameworks: ['Root Cause Analysis', 'Incident Response'],
+    relevant_roles: ['pm', 'swe', 'data_eng', 'tech_lead'],
+    company_tags: ['Shopify', 'Algolia', 'Elastic'],
+    tags: ['search', 'incident', 'metrics', 'ranking', 'add-to-cart'],
+    is_published: true,
+    is_calibration: false,
+    is_premium: false,
+    steps: [
+      {
+        step: 'frame',
+        step_nudge: 'What are the two most different explanations for why add-to-cart dropped after a search ranking change?',
+        grading_weight: 0.25,
+        step_order: 1,
+        questions: [
+          {
+            question_text: 'What is the most important distinction to make before deciding whether to roll back the ranking change?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Whether the drop is uniform across all storefronts or concentrated in specific merchant categories or product types',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'Segmentation is the key diagnostic. A uniform drop suggests a model-wide problem; a concentrated drop in specific categories suggests the recency weighting is hurting seasonal or slow-moving products, which is a scoped fix rather than a full rollback.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Whether the 11% drop is statistically significant given the sample size of 2,000 storefronts',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['strategic_thinking'],
+                explanation:
+                  'Statistical significance matters for long-run decisions but not for 48-hour incident response. An 11% drop in 72 hours is large enough to act on regardless of exact significance.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Whether the ranking change was the only deployment in the last 72 hours or if another system change coincided',
+                quality: 'surface',
+                points: 1,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Confirming the change is a valid first step, but the framing asks for the most important distinction, which is segmentation of the impact rather than confirmation of the cause.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Whether merchant NPS scores have dropped, confirming that merchants are aware of the conversion problem',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'NPS is too slow for a 48-hour window. Merchants may not have seen the drop yet; waiting for NPS data means losing another 72 hours of merchant GMV.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'list',
+        step_nudge: 'What data do you pull in the first 4 hours, and from which systems?',
+        grading_weight: 0.25,
+        step_order: 2,
+        questions: [
+          {
+            question_text: 'Which diagnostic data pulls give you the fastest, most actionable picture of what caused the add-to-cart drop?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Search click-through rate by result position before and after the change; add-to-cart rate by product recency band (new vs. catalog items); and search query reformulation rate as a proxy for result quality',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'These three pulls directly test the hypothesis: if recency weighting is burying catalog products, you will see CTR drop on positions 3-10 and add-to-cart drops concentrated in non-recent products. Query reformulation confirms buyers are not finding what they want.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Merchant support ticket volume and categories from the last 72 hours',
+                quality: 'surface',
+                points: 1,
+                competencies: ['cognitive_empathy'],
+                explanation:
+                  'Support tickets are a lagging signal. Most merchants will not file a ticket within 72 hours of an 11% add-to-cart drop, especially if they do not know the cause.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'A/B test results comparing the new ranking model to the old one on a held-out storefront cohort',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['strategic_thinking'],
+                explanation:
+                  'If a held-out cohort exists, this is valuable, but the incident already has 72 hours of production data. Waiting for a new A/B test is slower than analyzing existing data.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Run the new ranking model against a labeled relevance dataset to score ranking quality offline',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Offline evals test ranking correctness on a static dataset, not buyer behavior on live traffic. The incident is a buyer behavior problem, so production signals are more diagnostic than offline benchmarks.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'optimize',
+        step_nudge: 'The data shows add-to-cart dropped 23% for non-recent products but held flat for new products. What do you do?',
+        grading_weight: 0.30,
+        step_order: 3,
+        questions: [
+          {
+            question_text: 'Data confirms: recency weighting is burying established catalog products for merchants with mostly older inventory. What is the right decision?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Full rollback to the previous ranking model while the team patches the recency weight to be conditional on catalog recency distribution per merchant',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'creative_execution'],
+                explanation:
+                  'Scoped rollback is the right call: the model works for new-product merchants but harms catalog merchants. Rolling back fully while shipping a conditional fix is faster and safer than a partial rollback with unclear scope.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Keep the ranking change live but notify affected merchants that their search results may be different and offer manual pinning controls',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Keeping a confirmed harmful change live and offloading the fix to merchants is not acceptable. Merchants cannot easily correct for a ranking model change through manual pinning.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Reduce the recency weight from its current value to 50% of the original, as a compromise between old and new behavior',
+                quality: 'surface',
+                points: 1,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Halving the weight is an untested change made without data on what the correct weight should be. It may fix nothing or introduce a new bias.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Let the change run for one more week to collect more data before making a rollback decision',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['strategic_thinking'],
+                explanation:
+                  'More data is always better in principle, but seven more days of confirmed merchant GMV loss is a high price for incremental certainty when the cause is already clear.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'win',
+        step_nudge: 'How do you communicate the incident and the fix to merchants and to the internal team within 48 hours?',
+        grading_weight: 0.20,
+        step_order: 4,
+        questions: [
+          {
+            question_text: 'What is the right communication plan for affected merchants and the internal engineering team?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['creative_execution', 'cognitive_empathy'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Proactive merchant email within 24 hours acknowledging the search change, confirming the rollback, and providing an ETA for the improved model. Internal post-mortem doc within 48 hours covering root cause, detection gap, and prevention plan.',
+                quality: 'best',
+                points: 3,
+                competencies: ['creative_execution', 'cognitive_empathy'],
+                explanation:
+                  'Proactive communication before merchants escalate builds more trust than reactive disclosure. The internal post-mortem closes the loop and prevents a repeat without assigning blame.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Wait for merchants to contact support before communicating, to avoid alarming merchants who have not noticed the drop',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Reactive disclosure damages trust more than proactive communication. Merchants who noticed the drop and hear nothing assume Shopify is unaware or indifferent.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Post a status page update visible only to developers, and route merchant questions to the support team',
+                quality: 'surface',
+                points: 1,
+                competencies: [],
+                explanation:
+                  'A developer-only status update does not reach merchant operators who are watching GMV, not technical dashboards.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Send a broad merchant email explaining the ranking change without mentioning the add-to-cart drop or the rollback',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['creative_execution'],
+                explanation:
+                  'Communication is the right instinct, but omitting the impact and the fix is incomplete. Merchants need to know what happened and what was done about it.',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'pm-shopify-005',
+    title: 'Checkout Extensibility: Restoring Performance Without Breaking Merchants',
+    scenario_role: 'Product Manager, Checkout Platform',
+    scenario_context:
+      'Shopify\'s checkout extensibility program lets merchants install third-party UI extensions directly in the checkout flow: loyalty widgets, upsell cards, address validators. Merchant adoption is strong, with 18% of Plus merchants using at least one extension.',
+    scenario_trigger:
+      'Observability data shows that p95 checkout page load time has increased to 2.3 seconds, up from 1.7 seconds six months ago. Engineering traces the regression to checkout extensibility scripts, which contribute roughly 60ms of blocking script load at p95.',
+    scenario_question:
+      'How do you restore checkout performance to the 1.7-second p95 target without breaking the merchant customizations that drive loyalty and conversion?',
+    engineer_standout:
+      'A strong engineer would distinguish between synchronous and asynchronous extension loading, propose sandboxing or deferred rendering as a performance primitive, and avoid solutions that require merchants to audit and rewrite their extensions.',
+    paradigm: 'traditional',
+    industry: 'E-commerce',
+    sub_vertical: 'Checkout Platform',
+    difficulty: 'advanced',
+    estimated_minutes: 22,
+    primary_competencies: ['strategic_thinking', 'domain_expertise'],
+    secondary_competencies: ['creative_execution'],
+    frameworks: ['Performance Budget', 'Platform Design'],
+    relevant_roles: ['swe', 'tech_lead', 'pm', 'em'],
+    company_tags: ['Shopify', 'Stripe', 'Bolt'],
+    tags: ['performance', 'checkout', 'extensibility', 'platform', 'latency'],
+    is_published: true,
+    is_calibration: false,
+    is_premium: false,
+    steps: [
+      {
+        step: 'frame',
+        step_nudge: 'Is this a platform architecture problem or a merchant behavior problem?',
+        grading_weight: 0.25,
+        step_order: 1,
+        questions: [
+          {
+            question_text: 'What is the correct root cause framing of the checkout performance regression?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Merchants are installing too many extensions without understanding the performance impact, so the solution is education and per-merchant extension limits',
+                quality: 'surface',
+                points: 1,
+                competencies: ['cognitive_empathy'],
+                explanation:
+                  'Merchant behavior is a symptom. The platform allowed synchronous, blocking extension loading without guardrails. Blaming merchants for using a feature as designed is not an accurate root cause.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'The checkout extensibility architecture loads third-party extension scripts synchronously in the critical render path, meaning each extension adds blocking latency regardless of its visual importance',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'This is the structural root cause. Synchronous script loading in the critical render path means cumulative latency compounds with each extension. The architecture, not merchant choices, created the regression.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Shopify\'s CDN is not caching extension scripts effectively, causing repeated round-trips for each checkout session',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'CDN caching is a valid optimization but the engineering trace attributes the regression to blocking script load, not to cache misses. CDN improvements would help at the margin, not fix the architectural cause.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Third-party extension vendors are shipping poorly optimized JavaScript that inflates bundle sizes',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Bundle size optimization by vendors would help incrementally, but the problem is the loading model (synchronous, blocking), not the code quality of the scripts themselves.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'list',
+        step_nudge: 'What loading strategies exist that could isolate extension scripts from the critical render path?',
+        grading_weight: 0.25,
+        step_order: 2,
+        questions: [
+          {
+            question_text: 'Which set of platform-level loading strategies best reduces extension latency without requiring merchants to change their extensions?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['domain_expertise', 'strategic_thinking'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Deferred loading for extensions below the fold, Web Worker sandboxing to prevent extension scripts from blocking the main thread, and a platform-enforced performance budget per extension slot',
+                quality: 'best',
+                points: 3,
+                competencies: ['domain_expertise', 'strategic_thinking'],
+                explanation:
+                  'Deferred loading removes below-fold extensions from the critical path; Web Workers prevent main-thread blocking; a per-slot budget prevents accumulation. All three are platform-side changes requiring no merchant action.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Require all extension vendors to pass a Lighthouse performance audit before their extension is listed in the Shopify app store',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'App store gating improves new extension quality but does not fix the 18% of Plus merchants already running existing extensions. Retroactive enforcement would break merchant setups.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Set a global maximum of three extensions per checkout page to cap total extension latency',
+                quality: 'surface',
+                points: 1,
+                competencies: [],
+                explanation:
+                  'A hard cap is a blunt instrument. Three lightweight extensions may add less latency than one heavy extension, and merchants near the limit would face forced removal of business-critical customizations.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Roll back checkout extensibility entirely and rebuild it with a performance-first architecture before re-releasing',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'A full rollback immediately breaks the 18% of Plus merchants using extensions today. It is the highest-disruption option and is not necessary to achieve the performance target.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'optimize',
+        step_nudge: 'What do you ship first, and what do you accept as a necessary sacrifice to hit the 1.7-second target?',
+        grading_weight: 0.30,
+        step_order: 3,
+        questions: [
+          {
+            question_text: 'To restore p95 checkout time to 1.7 seconds without breaking existing merchant extensions, what is the right phased approach?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Phase 1: deploy deferred loading for all below-fold extension slots (platform-side, no merchant action required). Phase 2: introduce Web Worker sandboxing as the new default for new extensions. Phase 3: migrate existing extensions to the Worker model with a 90-day notice period and automated migration tooling.',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'creative_execution'],
+                explanation:
+                  'Phase 1 delivers immediate performance gains without breaking anything. Phase 2 sets the new standard. Phase 3 completes the migration with enough lead time for merchants and vendors to adapt. Each phase is independently shippable.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Implement a real-time extension performance monitor that automatically disables extensions when they exceed a 20ms budget during a live checkout session',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Disabling extensions mid-checkout is a merchant trust catastrophe. A loyalty widget that disappears during a live purchase creates customer-facing errors and merchant churn.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Negotiate with the top 10 extension vendors to voluntarily optimize their scripts within 30 days, with Shopify providing engineering support',
+                quality: 'surface',
+                points: 1,
+                competencies: ['cognitive_empathy'],
+                explanation:
+                  'Vendor negotiation addresses script quality, not the synchronous loading architecture. Optimized scripts still block the main thread if the loading model is unchanged.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Ship deferred loading for all extensions immediately, including above-fold critical elements like address validators',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['strategic_thinking'],
+                explanation:
+                  'Blanket deferred loading would break above-fold extensions that need to render before buyer interaction. Distinguishing above-fold from below-fold is the key design decision.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'win',
+        step_nudge: 'How do you establish a performance contract with extension vendors so this class of regression cannot recur?',
+        grading_weight: 0.20,
+        step_order: 4,
+        questions: [
+          {
+            question_text: 'What governance mechanism best prevents checkout extensibility performance regressions in the future?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['creative_execution', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Require all new extensions to pass automated performance benchmarks before app store approval; monitor p95 checkout load time by extension slot in production with automatic alerts when any slot exceeds its budget; publish real-time extension performance data to merchants',
+                quality: 'best',
+                points: 3,
+                competencies: ['creative_execution', 'domain_expertise'],
+                explanation:
+                  'Three-layer governance: pre-approval gate, production monitoring with alerts, and merchant visibility. Each layer catches a different failure mode and together prevent the gradual accumulation that caused the current regression.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Publish a performance best practices guide for extension developers and require vendors to sign a performance SLA at app store onboarding',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['creative_execution'],
+                explanation:
+                  'Agreements and guides help but are not enforceable at deploy time. SLAs without automated enforcement rely on post-hoc detection, which the current incident shows is too slow.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Review the performance of the top 20 extensions quarterly and send remediation requests to non-compliant vendors',
+                quality: 'surface',
+                points: 1,
+                competencies: [],
+                explanation:
+                  'Quarterly reviews are too infrequent for a checkout performance SLA. An extension that ships a regression ships it to millions of buyers before the next review cycle.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Cap the checkout extensibility program at 100 approved extensions to limit the total surface area of potential regressions',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'An arbitrary cap constrains the ecosystem without addressing the loading architecture. Ninety-nine compliant extensions can still accumulate to a regression if the loading model is synchronous.',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  // ── Stripe Challenges ──────────────────────────────────────────
+
+  {
+    id: 'pm-stripe-001',
+    title: 'Facebook Messenger Payments: Designing the Winning MVP',
+    scenario_role: 'Product Manager, Payments',
+    scenario_context:
+      'Meta has accumulated 1.3 billion monthly active Messenger users and a significant base of Facebook Marketplace transactions. Peer-to-peer payment features are already present in WhatsApp Pay in India and Brazil, demonstrating that Meta can execute on fintech at scale.',
+    scenario_trigger:
+      'A product review surfaces internal data showing that 22% of Marketplace transactions start as Messenger conversations but exit to PayPal or Venmo to complete payment. The revenue leakage is material.',
+    scenario_question:
+      'Should Facebook add peer-to-peer payments inside Messenger, and if so, what would a winning MVP look like?',
+    engineer_standout:
+      'A strong engineer would identify the trust and compliance infrastructure required before launch, distinguish between social payments and commerce payments as different product surfaces, and propose an incremental rollout that gates on fraud metrics.',
+    paradigm: 'traditional',
+    industry: 'FinTech',
+    sub_vertical: 'Social Payments',
+    difficulty: 'advanced',
+    estimated_minutes: 22,
+    primary_competencies: ['strategic_thinking', 'creative_execution'],
+    secondary_competencies: ['domain_expertise'],
+    frameworks: ['Jobs To Be Done', 'Platform Strategy'],
+    relevant_roles: ['pm', 'swe', 'ml_eng'],
+    company_tags: ['Meta', 'Stripe', 'PayPal', 'Venmo'],
+    tags: ['payments', 'social', 'fintech', 'mvp', 'messenger'],
+    is_published: true,
+    is_calibration: false,
+    is_premium: false,
+    steps: [
+      {
+        step: 'frame',
+        step_nudge: 'What is the core job a Messenger payment is doing that PayPal or Venmo is not doing right now?',
+        grading_weight: 0.25,
+        step_order: 1,
+        questions: [
+          {
+            question_text: 'What is the most accurate framing of the Messenger payments opportunity?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'The opportunity is to capture Marketplace transaction value that currently leaks to PayPal and Venmo by keeping payment within the conversation where intent already exists',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'Payment within the conversation context where intent already exists is the job PayPal cannot do. The 22% leakage rate is the quantified opportunity. This framing correctly identifies where Meta has a structural advantage.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'The opportunity is to compete with Venmo on social feed payments, where users split bills and send money with social context',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['strategic_thinking'],
+                explanation:
+                  'Social feed payments are a different product from commerce payments. The data point in the prompt is about Marketplace exit, not social bill-splitting, so the primary opportunity is different.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'The opportunity is regulatory arbitrage: Meta can operate payments in markets where PayPal has weaker coverage',
+                quality: 'surface',
+                points: 1,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Regulatory arbitrage is not a product opportunity for a consumer-facing payment MVP. It may be a distribution advantage for specific markets but is not the lead framing.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'The opportunity is to reduce Marketplace fraud by replacing cash transactions with traceable digital payments',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Fraud reduction is a benefit of digital payments, not the primary user job that drives adoption. Users do not switch payment methods to reduce abstract fraud risk.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'list',
+        step_nudge: 'What are the distinct product bets you could make for the MVP, and how do they differ in risk and reach?',
+        grading_weight: 0.25,
+        step_order: 2,
+        questions: [
+          {
+            question_text: 'Which MVP scope best balances adoption speed, trust infrastructure requirements, and regulatory risk?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Link to PayPal or Venmo within Messenger to complete payments externally, with Messenger tracking the payment status and closing the conversation loop',
+                quality: 'surface',
+                points: 1,
+                competencies: ['creative_execution'],
+                explanation:
+                  'Linking out to PayPal does not capture the transaction or generate revenue. It reduces friction slightly but does not make the case for native payments.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Native Messenger Marketplace payments using debit card or bank account, limited to US Marketplace sellers with existing Facebook accounts, with transaction limits and fraud gates',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'creative_execution'],
+                explanation:
+                  'Scoping to Marketplace (where the data problem is), US only (manageable regulatory footprint), and existing accounts (identity verification already done) is the right MVP tradeoff. Transaction limits and fraud gates address the trust infrastructure requirement.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Full social P2P payments with a Messenger wallet, card on file, and bank transfer, available globally',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Global launch of a full payments wallet is the maximum-risk MVP scope. It requires MSB licensing in every market, significantly more compliance infrastructure, and a longer build. Not an MVP.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Facebook Pay integration with no new product surface: buyers see a pay button in Marketplace listings and are redirected to a Facebook Pay web flow',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['creative_execution'],
+                explanation:
+                  'Using existing Facebook Pay infrastructure reduces build time, but a redirect out of the conversation loses the contextual advantage that differentiates Messenger payments from alternatives.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'optimize',
+        step_nudge: 'What technical and regulatory infrastructure do you need before any payment transaction can complete inside Messenger?',
+        grading_weight: 0.30,
+        step_order: 3,
+        questions: [
+          {
+            question_text: 'Which pre-launch requirement is most likely to be underestimated and cause the MVP to miss its launch date?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['domain_expertise', 'strategic_thinking'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'KYC verification for sellers above transaction thresholds and FinCEN money transmitter licensing in each US state',
+                quality: 'best',
+                points: 3,
+                competencies: ['domain_expertise', 'strategic_thinking'],
+                explanation:
+                  'State-by-state money transmitter licensing is the most commonly underestimated fintech launch blocker. It requires regulatory approval that cannot be accelerated by engineering, and missing it blocks launch in that state entirely.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'UI design and payment confirmation flows within the Messenger interface',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'UI design is important but is rarely the blocker for fintech launches. Regulatory and trust infrastructure fail timelines far more often than design.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'A/B testing framework to measure payment adoption within Messenger',
+                quality: 'surface',
+                points: 1,
+                competencies: [],
+                explanation:
+                  'A/B testing infrastructure is needed post-launch, not pre-launch. Prioritizing it over compliance work reflects incorrect sequencing.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Integration with Messenger\'s end-to-end encryption to ensure payment data is not visible in transit',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Encryption for payment data is necessary and often creates a genuine tension with E2E-encrypted messaging, but it is an engineering problem with known solutions rather than an external dependency with uncertain timelines.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'win',
+        step_nudge: 'What does success look like at 90 days, and what metric tells you whether to expand or pause?',
+        grading_weight: 0.20,
+        step_order: 4,
+        questions: [
+          {
+            question_text: 'What is the correct north star metric for the Messenger Payments MVP, and what threshold triggers expansion to additional markets?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Marketplace conversation-to-payment completion rate: if 15%+ of conversations that reach the payment step complete via Messenger Pay (versus exiting to PayPal), expand to additional US states',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'creative_execution'],
+                explanation:
+                  'This metric directly measures whether Messenger Pay is solving the original problem (payment leakage from Marketplace conversations). 15% is a reasonable threshold that confirms PMF without requiring majority capture.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Total payment volume processed through Messenger Pay within 90 days',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['strategic_thinking'],
+                explanation:
+                  'Payment volume is a revenue metric but not a PMF signal. High volume from a narrow power user segment does not confirm broad adoption.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Number of users who add a payment method to Messenger in the first 90 days',
+                quality: 'surface',
+                points: 1,
+                competencies: [],
+                explanation:
+                  'Activation (adding a card) is a leading indicator but does not confirm that payments are completing successfully or that users are returning.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Fraud rate staying below 0.1% in the first 90 days',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Fraud rate is a health metric, not a north star. A product with 0% fraud and 1% adoption has not achieved PMF. Fraud rate should gate expansion as a safety check alongside the PMF metric, not replace it.',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'pm-stripe-002',
+    title: "Developer Activation Decline: Diagnosing Stripe's Funnel",
+    scenario_role: 'Product Manager, Developer Platform',
+    scenario_context:
+      "Stripe's developer activation rate, defined as the percentage of new API key holders who successfully process a live payment within 14 days of signup, has declined from 34% to 26% over the past two quarters. The trend is consistent across regions and account types.",
+    scenario_trigger:
+      'A weekly metrics review surfaces the activation rate chart with a clear downward slope. The data does not yet indicate whether the drop is from new developer cohorts struggling with integration or from returning developers who previously activated but are now counted differently.',
+    scenario_question:
+      'What metrics do you look at first, and how do you design an experiment to identify the root cause of the activation rate decline?',
+    engineer_standout:
+      'A strong engineer would distinguish between the documentation quality problem, the testing environment friction problem, and the competitive switching problem, and would instrument the full developer funnel before committing to an experiment.',
+    paradigm: 'traditional',
+    industry: 'FinTech',
+    sub_vertical: 'Developer Platform',
+    difficulty: 'standard',
+    estimated_minutes: 20,
+    primary_competencies: ['strategic_thinking', 'domain_expertise'],
+    secondary_competencies: ['creative_execution'],
+    frameworks: ['Funnel Analysis', 'Root Cause Analysis'],
+    relevant_roles: ['pm', 'swe', 'data_eng', 'tech_lead'],
+    company_tags: ['Stripe', 'Braintree', 'Square'],
+    tags: ['developer-experience', 'activation', 'funnel', 'metrics', 'stripe'],
+    is_published: true,
+    is_calibration: false,
+    is_premium: false,
+    steps: [
+      {
+        step: 'frame',
+        step_nudge: 'Where in the developer journey does the failure most likely occur, and why does that matter for diagnosis?',
+        grading_weight: 0.25,
+        step_order: 1,
+        questions: [
+          {
+            question_text: 'What is the most important clarification to make before deciding which funnel metrics to pull?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Whether the decline is concentrated in first-time developers (integration friction) or returning developers starting new projects (API surface changes or documentation regressions)',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'The fix is completely different depending on which cohort is failing. First-time developer failure points to onboarding and documentation; returning developer failure points to API changes, pricing changes, or competitive switching.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Whether the definition of "activated" has changed in the last two quarters, making the comparison invalid',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['strategic_thinking'],
+                explanation:
+                  'Metric definition check is a valid first step but is already partially addressed in the prompt (consistent trend across regions and account types). Cohort decomposition is the more impactful clarification.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Whether the decline correlates with a Stripe pricing change or a major API version release',
+                quality: 'surface',
+                points: 1,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Correlation with external events is a useful hypothesis but requires the cohort breakdown first to know which developer segment to look at. Surface-level correlation without segmentation can mislead.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Whether competitors like Braintree or Square have improved their developer onboarding in the same period',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Competitive analysis is relevant context but cannot explain the specific funnel drop without internal funnel data. It is a hypothesis, not a diagnostic.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'list',
+        step_nudge: 'Map the Stripe developer funnel from API key creation to first live payment. Where are the measurable handoffs?',
+        grading_weight: 0.25,
+        step_order: 2,
+        questions: [
+          {
+            question_text: 'Which funnel metrics best localize the activation failure to a specific stage in the developer journey?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'API key creation to first test-mode API call, time to first successful charge in test mode, test-to-live promotion rate, and time from live key creation to first live payment',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'These four handoffs cover the complete funnel from signup to activation. Each step\'s drop-off rate localizes the problem: if test-mode is fine but test-to-live is low, the friction is in the account verification or live-mode configuration, not integration.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Dashboard login rate after API key creation and support ticket volume per developer cohort',
+                quality: 'surface',
+                points: 1,
+                competencies: [],
+                explanation:
+                  'Dashboard login is a weak proxy for integration progress, and support ticket volume is a lagging signal that does not localize the funnel stage.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Documentation page views for the quickstart guide and time spent on the API reference per developer session',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Documentation engagement is a useful leading indicator but does not directly map to where in the technical funnel developers are dropping off. High doc views with low activation could mean docs are confusing, not that they are unread.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Net Promoter Score from developers who activated versus those who did not activate',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Surveying developers who did not activate is methodologically problematic: they have low response rates and high selection bias. NPS also cannot localize the funnel drop.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'optimize',
+        step_nudge: 'Funnel data shows test-to-live promotion rate dropped from 60% to 44%. How do you design an experiment to find why?',
+        grading_weight: 0.30,
+        step_order: 3,
+        questions: [
+          {
+            question_text: 'Test-to-live promotion is the primary drop-off stage. What experiment design best identifies the root cause?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Instrument the live-mode activation flow with step-level completion events; identify the single step with the highest abandonment rate; interview 10 developers who abandoned at that step within the last 30 days',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'creative_execution'],
+                explanation:
+                  'This sequence is correct: instrument first to localize the failure, then interview to understand the why. Qualitative research on a specific abandonment point produces actionable insight rather than general developer sentiment.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'A/B test a simplified live-mode activation flow with fewer required fields against the current flow',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['creative_execution'],
+                explanation:
+                  'Running an experiment before diagnosing the specific friction risks optimizing the wrong step. A simplified flow that does not address the actual blocker will show no lift.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Survey all developers who created an API key in the last quarter and ask what stopped them from going live',
+                quality: 'surface',
+                points: 1,
+                competencies: ['cognitive_empathy'],
+                explanation:
+                  'Broad surveys produce general feedback that is hard to act on. Developers who went live are mixed in with those who did not, and the responses average out to vague friction themes.',
+              },
+              {
+                option_label: 'D',
+                option_text: "Compare the live-mode checklist requirements to Braintree and Square and identify any steps Stripe has that competitors do not",
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: ['domain_expertise'],
+                explanation:
+                  "Competitive benchmarking is useful context but cannot tell you which specific step in Stripe's flow is causing the decline unless you first know where developers are abandoning.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'win',
+        step_nudge: 'Interviews reveal that business verification documents required for live mode are confusing for solo developers and early-stage startups. What do you ship?',
+        grading_weight: 0.20,
+        step_order: 4,
+        questions: [
+          {
+            question_text: 'What product change best addresses the business verification friction for solo developers and early-stage startups going live?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Add a developer-type selector at signup (solo, startup, company) and show a simplified verification flow for solo and startup accounts with an inline explanation of why each field is required by regulation',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'creative_execution'],
+                explanation:
+                  'Segmenting the verification flow by developer type reduces friction for the most affected cohort while keeping compliance intact. Inline regulatory explanations address the confusion root cause, not just the UI friction.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Remove the business verification requirement for the first $10k in live transaction volume',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Removing identity verification requirements for live payments creates KYC and AML compliance risk. This is not a viable option for a regulated financial product regardless of the UX benefit.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Add a tooltip explaining each required field in the business verification flow',
+                quality: 'surface',
+                points: 1,
+                competencies: ['creative_execution'],
+                explanation:
+                  'Tooltips reduce confusion slightly but do not reduce the number of steps or the burden of gathering business documents. The fix is too shallow for the friction identified.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Allow developers to go live immediately and complete business verification asynchronously within 30 days, with payment processing limited to $1,000 until verification is complete',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['strategic_thinking'],
+                explanation:
+                  'Deferred verification with limits is a real pattern used by some payment processors and meaningfully reduces activation friction. The risk is that developers who hit the $1k cap before completing verification have a poor experience.',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'pm-stripe-003',
+    title: "Stripe API Design: Balancing Simplicity and Enterprise Power",
+    scenario_role: 'Product Manager, API Platform',
+    scenario_context:
+      "Stripe serves two audiences with the same API surface: solo developers building their first SaaS product and enterprise companies processing billions in annual volume. A developer survey shows solo developers cite 'too many configuration options' as the top friction point, while enterprise architects cite 'insufficient customization hooks' as their top complaint.",
+    scenario_trigger:
+      'An API design review flags that the Charges API and the Payment Intents API both exist for similar use cases, creating confusion about which to use. New developers frequently start with Charges and hit limitations; enterprise customers want Payment Intents to support 3DS2 and regional compliance requirements.',
+    scenario_question:
+      'How do you design an API strategy that is simple enough for solo developers to integrate in an afternoon while remaining powerful enough for enterprise payment orchestration?',
+    engineer_standout:
+      'A strong engineer would recognize that API simplicity and API power are not mutually exclusive if the surface is layered correctly, and would propose an opinionated default layer over a flexible primitive layer rather than a single-surface compromise.',
+    paradigm: 'traditional',
+    industry: 'FinTech',
+    sub_vertical: 'Developer Platform',
+    difficulty: 'advanced',
+    estimated_minutes: 25,
+    primary_competencies: ['strategic_thinking', 'domain_expertise'],
+    secondary_competencies: ['taste'],
+    frameworks: ['Progressive Disclosure', 'Platform Design'],
+    relevant_roles: ['swe', 'tech_lead', 'pm', 'em'],
+    company_tags: ['Stripe', 'Twilio', 'Plaid'],
+    tags: ['api-design', 'developer-experience', 'platform', 'enterprise', 'stripe'],
+    is_published: true,
+    is_calibration: false,
+    is_premium: false,
+    steps: [
+      {
+        step: 'frame',
+        step_nudge: 'Are API simplicity and API power actually in conflict, or does the current design just expose the wrong primitives by default?',
+        grading_weight: 0.25,
+        step_order: 1,
+        questions: [
+          {
+            question_text: 'What is the correct framing of the tension between developer simplicity and enterprise power in API design?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'The tension is real and unavoidable: any parameter added for enterprise customization adds cognitive load for solo developers',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['strategic_thinking'],
+                explanation:
+                  'This is true for a flat API surface but misses the insight that layered design can separate the surfaces entirely. The tension is an architecture problem, not a product problem.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'The tension is a design smell: Stripe currently exposes two competing APIs for overlapping jobs, when the correct design is an opinionated default layer over a flexible primitive layer',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'Layered API design is the canonical resolution to this tension in developer tools. Twilio, Stripe itself, and AWS all use this pattern. The Charges and Payment Intents confusion is evidence that the layer boundary is not clear enough.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'The tension is a support cost problem: enterprise needs create documentation complexity that confuses solo developers who encounter enterprise concepts they do not need',
+                quality: 'surface',
+                points: 1,
+                competencies: ['cognitive_empathy'],
+                explanation:
+                  'Documentation complexity is a symptom of the underlying API design problem. Better docs on a poorly layered API reduce confusion at the margin but do not resolve the root tension.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'The tension does not exist: Payment Intents is the correct API for all developers, and the fix is deprecating Charges and migrating everyone to Payment Intents',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Payment Intents exposes compliance and 3DS2 configuration that solo developers do not need or understand. Migrating all developers to a more complex API increases friction for the simpler use case.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'list',
+        step_nudge: "What design patterns from other developer platforms handle simple-vs-powerful API surfaces well?",
+        grading_weight: 0.25,
+        step_order: 2,
+        questions: [
+          {
+            question_text: "Which API design pattern best resolves the simplicity-power tension for Stripe's use case?",
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['domain_expertise', 'taste'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Progressive disclosure: a single PaymentIntent surface with smart defaults that handle 90% of cases automatically, and explicit override parameters that unlock compliance, routing, and orchestration capabilities for enterprise',
+                quality: 'best',
+                points: 3,
+                competencies: ['domain_expertise', 'taste'],
+                explanation:
+                  'Progressive disclosure on a single surface resolves the two-API confusion. Smart defaults make the simple case require minimal configuration; explicit overrides give enterprise full control without polluting the default path.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Two separate SDKs: a simple SDK with higher-level abstractions for developers and a low-level SDK for enterprise engineers',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Separate SDKs are one valid pattern but create maintenance overhead and a migration path problem when simple-SDK developers outgrow the abstraction. A single surface with progressive disclosure is more elegant.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'A visual no-code payment builder for solo developers and raw API access for enterprise engineers',
+                quality: 'surface',
+                points: 1,
+                competencies: ['creative_execution'],
+                explanation:
+                  'No-code builders serve a different audience (non-technical founders, not developers). Solo developers who write code still need the API, just with fewer required decisions.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Rate-limit access to advanced Payment Intents parameters until merchants reach a minimum payment volume threshold',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Volume-gating advanced parameters would prevent small enterprise users from accessing compliance features they need from day one. It conflates company size with technical sophistication.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'optimize',
+        step_nudge: 'What specifically do you set as defaults, and what do you require explicit opt-in for? Name both.',
+        grading_weight: 0.30,
+        step_order: 3,
+        questions: [
+          {
+            question_text: 'In a progressively disclosed PaymentIntent API, what should be a smart default versus an explicit parameter?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Default: automatic payment method selection, best-available 3DS handling, and single currency. Explicit opt-in: multi-currency settlement, specific payment method routing, SCA exemption strategies, and network tokenization.',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'This boundary is correct: the default path handles the compliant, single-merchant, single-currency use case with no required decisions. Enterprise parameters are all things that solo developers either do not need or would misconfigure if exposed by default.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Default: all parameters set to the most restrictive values. Explicit opt-in: enabling any feature requires a configuration key in the dashboard.',
+                quality: 'surface',
+                points: 1,
+                competencies: [],
+                explanation:
+                  'Most restrictive defaults would block legitimate use cases that solo developers encounter immediately, like basic card payments without SCA configuration.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Default: nothing. Require all developers to explicitly configure every parameter so there are no hidden behaviors.',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Zero defaults maximizes transparency but maximizes integration friction for solo developers, directly contradicting the design objective.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Default: all features enabled with the most permissive configuration. Enterprise customers configure stricter controls.',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Permissive defaults reduce solo developer friction but expose compliance features that enterprise customers need to control carefully. An enterprise architect who relies on defaults for 3DS or network tokenization may ship a non-compliant integration.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'win',
+        step_nudge: 'How do you manage the existing Charges API migration without breaking the developers who depend on it today?',
+        grading_weight: 0.20,
+        step_order: 4,
+        questions: [
+          {
+            question_text: 'What is the right deprecation strategy for the Charges API, given that many live integrations depend on it?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Maintain Charges API indefinitely but stop new feature development on it; all new documentation defaults to PaymentIntents; automated migration tooling converts existing Charges integrations to Payment Intents with a one-command CLI tool.',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'creative_execution'],
+                explanation:
+                  'No forced migration preserves existing integrations; documentation bias drives new developers to the correct path; automated tooling lowers the migration cost for developers who want to upgrade. This is the standard playbook for Stripe-level API migrations.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'Deprecate Charges API with 6 months notice and require all developers to migrate to PaymentIntents by the deadline.',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Forced migration with a hard deadline creates a large-scale engineering obligation for customers who may have thousands of Charges API calls. Stripe has historically avoided forced migrations for this reason.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Redirect all Charges API calls internally to Payment Intents without developer awareness.',
+                quality: 'surface',
+                points: 1,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Silent redirects create unpredictable behavior differences and make debugging harder. Developers who rely on Charges API response shapes may encounter silent breaking changes.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Publish a migration guide and let the ecosystem migrate at its own pace with no tooling support.',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['creative_execution'],
+                explanation:
+                  "Documentation-only migration reduces Stripe's support burden but makes migration high-effort for developers. Without tooling, migration rates will be slow and the two-API confusion persists longer.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'pm-stripe-004',
+    title: "Stripe's Next Vertical: Expanding into Financial Services",
+    scenario_role: 'Product Manager, Platform Strategy',
+    scenario_context:
+      "Stripe has expanded from payment processing to Stripe Billing, Stripe Treasury, Stripe Capital, and Stripe Issuing, each extending the platform deeper into financial services for businesses. The total addressable market for business financial services is orders of magnitude larger than payment processing alone.",
+    scenario_trigger:
+      'A strategy offsite asks the product org to identify the single highest-leverage financial services vertical Stripe should enter next, given the company\'s existing infrastructure, distribution, and competitive position.',
+    scenario_question:
+      'What would you build next for Stripe to expand into a new financial services vertical?',
+    engineer_standout:
+      "A strong engineer would evaluate the candidates by infrastructure reuse rate, not just market size, and would identify which new vertical reuses the most of Stripe's existing data graph, compliance stack, and distribution without requiring a new regulatory moat.",
+    paradigm: 'traditional',
+    industry: 'FinTech',
+    sub_vertical: 'Financial Infrastructure',
+    difficulty: 'advanced',
+    estimated_minutes: 25,
+    primary_competencies: ['strategic_thinking', 'domain_expertise'],
+    secondary_competencies: ['creative_execution'],
+    frameworks: ['Platform Strategy', 'Opportunity Sizing'],
+    relevant_roles: ['pm', 'tech_lead', 'em'],
+    company_tags: ['Stripe', 'Plaid', 'Brex', 'Mercury'],
+    tags: ['strategy', 'expansion', 'fintech', 'platform', 'stripe'],
+    is_published: true,
+    is_calibration: false,
+    is_premium: false,
+    steps: [
+      {
+        step: 'frame',
+        step_nudge: "What criteria separate a strong Stripe vertical expansion from one that is just a large adjacent market?",
+        grading_weight: 0.25,
+        step_order: 1,
+        questions: [
+          {
+            question_text: "Which evaluation framework most accurately identifies Stripe's highest-leverage vertical expansion?",
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Market size: identify the largest financial services market adjacent to payments and expand there',
+                quality: 'surface',
+                points: 1,
+                competencies: ['strategic_thinking'],
+                explanation:
+                  "Market size alone identifies where money is, not where Stripe has a structural advantage. Competing on market size without a moat produces a commoditized product.",
+              },
+              {
+                option_label: 'B',
+                option_text: "Infrastructure reuse and distribution leverage: which vertical reuses the most of Stripe's existing payment data, compliance stack, and merchant relationships without requiring a new regulatory regime",
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'Infrastructure reuse is the correct primary criterion for Stripe because it determines competitive speed and margin. A vertical that reuses payment data (for underwriting) and existing compliance (for B2B FX) arrives faster and cheaper than a greenfield build.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Competitive gap: identify where PayPal, Square, or Brex have weak products and build there',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['strategic_thinking'],
+                explanation:
+                  'Competitive gap analysis is valuable but secondary. A gap in a market where Stripe lacks distribution or infrastructure advantage is still a weak opportunity.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Developer demand: survey Stripe API users about which financial services they wished Stripe offered and build the most requested feature',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Developer demand surveys capture existing pain in the current product, not strategic white space. Developers who want Stripe to build a bank account are asking for Treasury, which already exists.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'list',
+        step_nudge: 'What are the four or five most plausible financial services verticals Stripe could enter, and what does each require from Stripe that it does not already have?',
+        grading_weight: 0.25,
+        step_order: 2,
+        questions: [
+          {
+            question_text: 'Which candidate vertical has the highest infrastructure reuse rate and the lowest new regulatory requirement?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Business foreign exchange and multi-currency treasury management for Stripe merchants operating across multiple countries',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  "Business FX reuses Stripe's existing multi-currency payment processing, bank partnerships, and merchant relationships directly. The regulatory requirement is an FX dealing license, which is lighter than a full banking license, and Stripe already operates in the relevant jurisdictions for Treasury.",
+              },
+              {
+                option_label: 'B',
+                option_text: 'Consumer banking: checking accounts, debit cards, and savings products for individual Stripe users',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: ['domain_expertise'],
+                explanation:
+                  "Consumer banking requires a bank charter or a bank sponsor, consumer-grade UX investment, FDIC positioning, and marketing to individuals, none of which Stripe currently has. Infrastructure reuse is minimal.",
+              },
+              {
+                option_label: 'C',
+                option_text: 'Business insurance: commercial liability, cyber, and D&O coverage bundled with Stripe accounts',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['strategic_thinking'],
+                explanation:
+                  "Business insurance leverages Stripe's merchant risk data for underwriting and existing distribution, but requires an insurance carrier partner or license, which is a materially different regulatory category than payments.",
+              },
+              {
+                option_label: 'D',
+                option_text: 'Embedded accounting: a Stripe-native bookkeeping and tax filing product using transaction data',
+                quality: 'surface',
+                points: 1,
+                competencies: ['creative_execution'],
+                explanation:
+                  "Accounting has high infrastructure reuse (transaction data) but competes with QuickBooks, Xero, and hundreds of other tools. Stripe's data advantage is real but does not create a defensible moat in software-first accounting.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'optimize',
+        step_nudge: 'What do you name as the moat for the chosen vertical, and what do you sacrifice by choosing it over alternatives?',
+        grading_weight: 0.30,
+        step_order: 3,
+        questions: [
+          {
+            question_text: 'For business FX and multi-currency treasury, what is Stripe\'s structural moat and what is the main sacrifice?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'domain_expertise'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Moat: Stripe holds settlement funds for merchants across 135 currencies, making FX a near-zero marginal cost addition to existing flow. Sacrifice: competing with bank FX desks that have 20 years of relationship and pricing infrastructure with enterprise treasurers.',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'domain_expertise'],
+                explanation:
+                  'The moat is real and specific: Stripe touches the money already and adding FX at settlement is structurally cheaper than any standalone FX provider. The sacrifice is accurately named: enterprise treasury relationships take years to displace.',
+              },
+              {
+                option_label: 'B',
+                option_text: "Moat: Stripe's brand trust with developers. Sacrifice: FX margins are thin, reducing overall gross margin.",
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['strategic_thinking'],
+                explanation:
+                  'Brand trust is real but vague. Margin compression is a valid concern but secondary to the infrastructure moat argument. This framing is directionally correct but not specific enough to drive a decision.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Moat: Stripe can offer better FX rates than banks because it has lower overhead. Sacrifice: banks will respond by cutting their rates.',
+                quality: 'surface',
+                points: 1,
+                competencies: ['domain_expertise'],
+                explanation:
+                  'Competing on rates is not a structural moat. Banks can match rates immediately. The infrastructure advantage is about cost structure and integration, not pricing alone.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'There is no moat. FX is a commodity product and Stripe should avoid it.',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: [],
+                explanation:
+                  'Dismissing the opportunity without engaging with the infrastructure argument skips the analysis. FX embedded in payment settlement is a different product from standalone FX brokerage.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        step: 'win',
+        step_nudge: 'What is the minimum viable version of this product that Stripe should ship in the first six months?',
+        grading_weight: 0.20,
+        step_order: 4,
+        questions: [
+          {
+            question_text: 'What is the right MVP scope for Stripe FX in the first six months?',
+            question_nudge: null,
+            sequence: 1,
+            grading_weight_within_step: 1.0,
+            target_competencies: ['strategic_thinking', 'creative_execution'],
+            response_type: 'mcq_plus_elaboration',
+            options: [
+              {
+                option_label: 'A',
+                option_text: 'Auto-convert settlement funds from 10 top currency pairs to USD or local bank currency at time of payout, with transparent real-time exchange rates displayed in the Dashboard. No manual FX trading, no treasury management UI in V1.',
+                quality: 'best',
+                points: 3,
+                competencies: ['strategic_thinking', 'creative_execution'],
+                explanation:
+                  'Auto-convert at payout is the single highest-value touchpoint (Stripe already holds the funds) and requires no new merchant workflow. Limiting V1 to 10 top pairs and no trading UI keeps the build scoped. Transparent rates are the differentiation.',
+              },
+              {
+                option_label: 'B',
+                option_text: 'A full FX dashboard with real-time rate quotes, manual conversion requests, and forward contracts for merchants who want to hedge currency exposure.',
+                quality: 'plausible_wrong',
+                points: 0,
+                competencies: ['creative_execution'],
+                explanation:
+                  'Forward contracts and manual trading require a full treasury UI and hedging infrastructure. This is a 12-18 month build, not an MVP.',
+              },
+              {
+                option_label: 'C',
+                option_text: 'Display multi-currency balances in the Stripe Dashboard without any conversion capability in V1.',
+                quality: 'surface',
+                points: 1,
+                competencies: [],
+                explanation:
+                  'Balance display is already partially available in Stripe Dashboard. Adding display without conversion creates no revenue and solves no merchant problem.',
+              },
+              {
+                option_label: 'D',
+                option_text: 'Launch a full treasury product supporting all 135 currencies with enterprise SLAs and a dedicated FX support desk.',
+                quality: 'good_but_incomplete',
+                points: 2,
+                competencies: ['strategic_thinking'],
+                explanation:
+                  'Full multi-currency treasury is the right long-term product but not an MVP. 135 currencies require exchange relationships, rate management, and compliance coverage that cannot be built in six months.',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+] as const
