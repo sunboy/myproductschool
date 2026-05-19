@@ -1,0 +1,463 @@
+{
+  "facts": [
+    {
+      "text": "PostgreSQL enforces max_recursive_depth (default 1000) as a hard safety limit to prevent infinite recursion in recursive CTEs from consuming unlimited system resources",
+      "source_url": "https://www.postgresql.org/docs/current/queries-with.html",
+      "publication_date": "2025-02-01",
+      "recency_note": "Official PostgreSQL documentation, current version"
+    },
+    {
+      "text": "PostgreSQL 14+ supports SEARCH DEPTH FIRST/BREADTH FIRST clauses and CYCLE detection for recursive CTEs, enabling safe traversal of cyclic graphs without manual array path tracking",
+      "source_url": "https://www.postgresql.org/docs/current/queries-with.html",
+      "publication_date": "2025-02-01",
+      "recency_note": "PostgreSQL 14 feature, still current"
+    },
+    {
+      "text": "REFRESH MATERIALIZED VIEW without CONCURRENTLY acquires ACCESS EXCLUSIVE lock, blocking all reads and writes. CONCURRENTLY requires a UNIQUE index and is slower but allows concurrent reads",
+      "source_url": "https://www.postgresql.org/docs/current/sql-refreshmaterializedview.html",
+      "publication_date": "2025-02-01",
+      "recency_note": "Official PostgreSQL documentation, current"
+    },
+    {
+      "text": "PostgreSQL 12 introduced automatic CTE inlining: non-recursive, side-effect-free, singly-referenced CTEs are inlined by default and treated as subqueries, removing the optimization fence",
+      "source_url": "https://knowledge.enterprisedb.com/hc/en-us/articles/15157254341276-CTE-materialization-default-behavior-changed-in-PostgreSQL-12",
+      "publication_date": "2025-02-01",
+      "recency_note": "PostgreSQL 12+ behavior, still current"
+    },
+    {
+      "text": "PostgreSQL 17 improves pathkey hoisting for complex CTEs with ORDER BY clauses, allowing more efficient sorting and merge joins in outer queries",
+      "source_url": "https://www.pgedge.com/blog/postgresql-17-a-major-step-forward-in-performance-logical-replication-and-more",
+      "publication_date": "2024-09-26",
+      "recency_note": "PostgreSQL 17 GA release"
+    },
+    {
+      "text": "GIN indexes are 3x faster than GiST for text search. Properly optimized GIN with fastupdate=off achieved 50x speedup on 10-million-row dataset (from ~41301ms to ~877ms)",
+      "source_url": "https://blog.vectorchord.ai/postgresql-full-text-search-fast-when-done-right-debunking-the-slow-myth",
+      "publication_date": "2024-06-15",
+      "recency_note": "2024 benchmark data"
+    },
+    {
+      "text": "JSONB queries can be 2000x slower than normalized relational schemas for structured, high-volume workloads without proper statistics and indexing",
+      "source_url": "https://medium.com/@sruthiganesh/part-2-comparing-normalised-query-performance-in-postgresql-jsonb-vs-join-queries-ed63ef2da7cd",
+      "publication_date": "2024-01-15",
+      "recency_note": "2024 benchmark comparison"
+    },
+    {
+      "text": "JSONB storage requires 2x the disk space of normalized schemas due to repeated key storage in each document",
+      "source_url": "https://www.heap.io/blog/when-to-avoid-jsonb-in-a-postgresql-schema",
+      "publication_date": "2025-02-01",
+      "recency_note": "Storage analysis, foundational"
+    },
+    {
+      "text": "PostgreSQL's planner cannot keep statistics on values within JSONB columns, leading to severe selectivity mis-estimates and suboptimal query plans",
+      "source_url": "https://www.sitepoint.com/postgresql-jsonb-query-performance-indexing/",
+      "publication_date": "2024-08-10",
+      "recency_note": "2024 analysis"
+    },
+    {
+      "text": "Bridge tables (junction tables) connecting two entities with high cardinality disparity can suffer from explosive row growth and expensive multi-way joins",
+      "source_url": "https://www.datacamp.com/blog/many-to-many-relationship",
+      "publication_date": "2024-11-20",
+      "recency_note": "2024 data modeling guide"
+    },
+    {
+      "text": "Full-text search with tsvector decomposes text into lexemes with positions; ts_rank() scoring multiplies base rank by weight factors (A=1.0, B=0.4, C=0.2, D=0.1)",
+      "source_url": "https://www.postgresql.org/docs/current/textsearch-controls.html",
+      "publication_date": "2025-02-01",
+      "recency_note": "Official PostgreSQL documentation"
+    },
+    {
+      "text": "Recursive CTEs with array-based path tracking can detect cycles by checking if a node already appears in the path array accumulated during traversal",
+      "source_url": "https://docs.yugabyte.com/preview/api/ysql/the-sql-language/with-clause/traversing-general-graphs/undirected-cyclic-graph/",
+      "publication_date": "2024-11-15",
+      "recency_note": "YugabyteDB documentation, recent"
+    },
+    {
+      "text": "Materialized views are not incremental — PostgreSQL recomputes the entire underlying query on every refresh, potentially taking minutes for large result sets",
+      "source_url": "https://www.epsio.io/blog/postgres-materialized-view-auto-refresh",
+      "publication_date": "2024-10-22",
+      "recency_note": "2024 comprehensive guide"
+    },
+    {
+      "text": "PostgreSQL 17 propagates column statistics from materialized CTEs upward, fixing mis-estimates in selectivity calculations that previously caused suboptimal plans",
+      "source_url": "https://pganalyze.com/blog/5mins-postgres-17-materialized-cte-scans",
+      "publication_date": "2024-09-20",
+      "recency_note": "PostgreSQL 17 feature release"
+    },
+    {
+      "text": "Type 2 Slowly Changing Dimensions use surrogate keys (not source system primary keys) with effective-date ranges (FromDate/ToDate) to track historical versions of dimension members",
+      "source_url": "https://www.scalefree.com/knowledge/webinars/data-vault-friday/how-to-define-scd-type-2-dimension-keys-in-a-data-vault-solution/",
+      "publication_date": "2024-06-10",
+      "recency_note": "2024 data warehouse pattern reference"
+    },
+    {
+      "text": "WITHOUT CONCURRENTLY requires no index; WITH CONCURRENTLY requires a UNIQUE index (no expressions, no WHERE clauses, must include all rows)",
+      "source_url": "https://www.postgresql.org/docs/current/sql-refreshmaterializedview.html",
+      "publication_date": "2025-02-01",
+      "recency_note": "Official PostgreSQL documentation"
+    },
+    {
+      "text": "PostgreSQL evaluates CTEs only to the extent that rows are actually fetched by the parent query, so LIMIT in the parent can prevent infinite recursion during testing",
+      "source_url": "https://www.postgresql.org/docs/current/queries-with.html",
+      "publication_date": "2025-02-01",
+      "recency_note": "Official PostgreSQL documentation"
+    },
+    {
+      "text": "Materialized view indexes are the highest-leverage tuning step after materialization — without them, every read scans the entire table, eroding the speed advantage",
+      "source_url": "https://www.epsio.io/blog/postgres-materialized-views-basics-tutorial-and-optimization-tips",
+      "publication_date": "2024-10-18",
+      "recency_note": "2024 optimization guide"
+    },
+    {
+      "text": "to_tsvector performs stemming/lemmatization to reduce tokens to lexeme form and removes stop words (the, and, etc.); setweight assigns A-D labels for title/body/section weighting",
+      "source_url": "https://www.postgresql.org/docs/current/textsearch-controls.html",
+      "publication_date": "2025-02-01",
+      "recency_note": "Official PostgreSQL documentation"
+    }
+  ],
+  "examples": [
+    {
+      "company_or_context": "E-commerce order hierarchies",
+      "description": "Using recursive CTEs to traverse bill-of-materials (BOM) structures where a finished product contains assemblies which contain sub-assemblies; recursive CTE expands the full BOM tree to calculate total cost and inventory requirements",
+      "source_url": "https://www.fusionbox.com/blog/detail/graph-algorithms-in-a-database-recursive-ctes-and-topological-sort-with-postgres/620/"
+    },
+    {
+      "company_or_context": "LinkedIn/Glassdoor org charts",
+      "description": "Recursive CTEs for traversing organizational hierarchies to find all subordinates under a manager, calculate reporting depth, or identify sibling teams; SEARCH BREADTH FIRST ensures level-order traversal",
+      "source_url": "https://github.com/anowerhossain/Graph-Traversal-using-Recursive-CTE-in-PostgreSQL"
+    },
+    {
+      "company_or_context": "Social networks (friendship graphs)",
+      "description": "Recursive CTEs to discover hidden friendship paths between users; CYCLE clause prevents revisiting already-traversed friends and blocks infinite loops in undirected friend graphs",
+      "source_url": "https://medium.com/@anowerhossain97/discovering-hidden-friendships-with-recursive-cte-in-postgresql-7806c9885925"
+    },
+    {
+      "company_or_context": "File system traversal",
+      "description": "Recursive CTEs to traverse directory hierarchies, finding all files under a path by joining on parent_id; depth counter prevents runaway recursion in deep directory trees",
+      "source_url": "https://oneuptime.com/blog/post/2026-01-22-postgresql-recursive-cte-queries/view"
+    },
+    {
+      "company_or_context": "Data warehousing (Kimball methodology)",
+      "description": "Bridge tables connecting fact tables to multiple slowly-changing dimensions; performance degrades with high cardinality disparity (e.g., 1M products × 10K suppliers) due to cartesian-product-like row explosion in the bridge",
+      "source_url": "https://www.kimballgroup.com/2012/02/design-tip-142-building-bridges/"
+    },
+    {
+      "company_or_context": "Dashboard queries at scale",
+      "description": "Materialized views for slow aggregation queries (e.g., user-per-cohort counts, revenue by region); refresh on pg_cron schedule every 15min; GIN indexes on filtered dimensions for sub-second drill-downs",
+      "source_url": "https://www.epsio.io/blog/postgres-materialized-view-auto-refresh"
+    },
+    {
+      "company_or_context": "Search-heavy SaaS (e.g., job boards, e-commerce)",
+      "description": "Full-text search with tsvector indexed by GIN; ts_rank() scores results by query relevance; setweight boosts title matches (weight A) over body matches (weight D)",
+      "source_url": "https://tacnode.io/post/full-text-search-postgresql-complete-guide"
+    },
+    {
+      "company_or_context": "PostgreSQL 17 performance improvements",
+      "description": "Query on 100M-row table with complex CTE containing ORDER BY clause now benefits from pathkey hoisting, reducing unnecessary re-sorting in outer query",
+      "source_url": "https://www.pgedge.com/blog/postgresql-17-a-major-step-forward-in-performance-logical-replication-and-more"
+    },
+    {
+      "company_or_context": "SaaS metadata storage",
+      "description": "JSONB used for semi-structured customer attributes; without proper GIN indexing and column statistics awareness, simple filter queries suffered 2000x slowdown vs. normalized schema",
+      "source_url": "https://medium.com/@sruthiganesh/part-2-comparing-normalised-query-performance-in-postgresql-jsonb-vs-join-queries-ed63ef2da7cd"
+    },
+    {
+      "company_or_context": "Financial data warehousing",
+      "description": "Type 2 SCD tracking customer address changes over time; surrogate key + FromDate/ToDate allows fact table to reference exact address version valid on transaction date",
+      "source_url": "https://medium.com/@SaiKarthikaPuttha/understanding-slowly-changing-dimension-scd-type-2-ea1563714bd7"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Recursive CTE vs procedural loop",
+      "analogy": "A recursive CTE is like a breadth-first search queue implemented in pure SQL: the anchor is the initial queue, the recursive term dequeues and enqueues neighbors, and UNION ALL accumulates all visited nodes. No need to loop in application code.",
+      "source": "PostgreSQL documentation and tutorials"
+    },
+    {
+      "concept": "CTE optimization fence vs query barrier",
+      "analogy": "Pre-PostgreSQL 12, a CTE was like a brick wall the query planner couldn't see through: it would materialize the entire CTE result into a temporary table before applying filters from the outer query. Modern inlining punches holes in the wall, letting the planner see through and push predicates inside.",
+      "source": "EDB blog, Crunchy Data blog"
+    },
+    {
+      "concept": "Materialized view staleness vs cached data",
+      "analogy": "A materialized view is like a snapshot photo on a wall — fast to look at, but it was taken 15 minutes ago. If the real scene (source data) changes now, the wall photo doesn't update until you manually take a new photo (REFRESH).",
+      "source": "EPSIO blog"
+    },
+    {
+      "concept": "JSONB vs normalized tables",
+      "analogy": "JSONB is like storing a filing cabinet (all folders and files) as a single photograph. Normalized tables are like organizing the same cabinet into labeled drawers. To find one file in the photograph, you search the entire image; in labeled drawers, you go straight to the right one.",
+      "source": "Heap blog, SitePoint"
+    },
+    {
+      "concept": "Bridge table cardinality explosion",
+      "analogy": "A bridge table connecting products to suppliers is like a cross-reference index in a book. If you have 1M products and 10K suppliers, the index can theoretically have 10 billion entries if every product is sold by every supplier. Real data rarely hits that extreme, but many-to-many relationships create risk of explosive growth.",
+      "source": "DataCamp, SQLBI"
+    },
+    {
+      "concept": "Full-text search relevance ranking",
+      "analogy": "tsvector is like indexing the page numbers where each word appears in a book. ts_rank() is like a relevance score: a book where the query words are dense on a few pages (high rank) beats one where they're scattered. setweight is like putting bookmarks on chapter titles (weight A) vs footnotes (weight D).",
+      "source": "PostgreSQL documentation"
+    },
+    {
+      "concept": "Slowly Changing Dimension Type 2",
+      "analogy": "Type 2 SCD is like a medical record with patient history: instead of overwriting the old address, you add a new record and mark the old one as 'effective through 2024-12-31'. Time-travel queries see the address valid on any date.",
+      "source": "RADACAD, Medium"
+    },
+    {
+      "concept": "GIN index fastupdate=off tuning",
+      "analogy": "Turning off fastupdate is like batching mail instead of checking it 100 times a day: slower writes to update the index, but much faster reads because the index is always optimized.",
+      "source": "VectorChord blog"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Default max_recursive_depth",
+      "value": 1000,
+      "context": "Hard safety limit for recursive CTEs; prevents infinite loops from consuming unbounded resources",
+      "source_url": "https://www.postgresql.org/docs/current/queries-with.html"
+    },
+    {
+      "metric": "GIN index speedup over unoptimized FTS",
+      "value": "50x (41,301ms → 877ms on 10M rows)",
+      "context": "Benchmark on 10-million-row dataset with proper GIN indexing and fastupdate=off",
+      "source_url": "https://blog.vectorchord.ai/postgresql-full-text-search-fast-when-done-right-debunking-the-slow-myth"
+    },
+    {
+      "metric": "GIN vs GiST lookup speed ratio",
+      "value": "3x faster",
+      "context": "GIN indexes are preferred for text search; one lookup in GIN is ~3x faster than GiST",
+      "source_url": "https://pganalyze.com/blog/gin-index"
+    },
+    {
+      "metric": "JSONB worst-case slowdown vs normalized",
+      "value": "2000x slower",
+      "context": "Documented case where unoptimized JSONB queries on structured data without proper indexing/statistics were 2000x slower than normalized relational schema",
+      "source_url": "https://medium.com/@sruthiganesh/part-2-comparing-normalised-query-performance-in-postgresql-jsonb-vs-join-queries-ed63ef2da7cd"
+    },
+    {
+      "metric": "JSONB storage overhead vs normalized",
+      "value": "2x+ disk space",
+      "context": "Normalized schema uses ~50% less disk than JSONB due to repeated key storage in each document",
+      "source_url": "https://www.heap.io/blog/when-to-avoid-jsonb-in-a-postgresql-schema"
+    },
+    {
+      "metric": "ts_rank() weight multipliers",
+      "value": "A=1.0, B=0.4, C=0.2, D=0.1",
+      "context": "Default weights applied to lexeme positions for setweight-based relevance scoring",
+      "source_url": "https://www.postgresql.org/docs/current/textsearch-controls.html"
+    },
+    {
+      "metric": "PostgreSQL 12+ CTE inlining threshold",
+      "value": "Singly referenced, non-recursive, side-effect-free",
+      "context": "CTEs matching these criteria are automatically inlined and treated as subqueries, removing optimization fence",
+      "source_url": "https://knowledge.enterprisedb.com/hc/en-us/articles/15157254341276-CTE-materialization-default-behavior-changed-in-PostgreSQL-12"
+    },
+    {
+      "metric": "Materialized view refresh lock type (non-concurrent)",
+      "value": "ACCESS EXCLUSIVE",
+      "context": "Blocks all reads and writes until refresh completes; can take minutes on large views",
+      "source_url": "https://www.postgresql.org/docs/current/sql-refreshmaterializedview.html"
+    },
+    {
+      "metric": "Concurrent materialized view refresh index requirement",
+      "value": "UNIQUE constraint (no expressions, no WHERE clauses)",
+      "context": "Required to enable CONCURRENTLY option for non-blocking refreshes",
+      "source_url": "https://www.postgresql.org/docs/current/sql-refreshmaterializedview.html"
+    },
+    {
+      "metric": "PostgreSQL 14+ CYCLE detection feature",
+      "value": "CYCLE clause built-in",
+      "context": "Native cycle detection for recursive CTEs without manual array path tracking",
+      "source_url": "https://www.postgresql.org/docs/current/queries-with.html"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Recursive CTEs are always slow because they're materialized",
+      "truth": "PostgreSQL 12+ inlines singly-referenced, non-recursive CTEs by default, removing the optimization fence. Only CTEs referenced multiple times are materialized. Developers can control inlining with MATERIALIZED/NOT MATERIALIZED keywords.",
+      "source_url": "https://knowledge.enterprisedb.com/hc/en-us/articles/15157254341276-CTE-materialization-default-behavior-changed-in-PostgreSQL-12"
+    },
+    {
+      "misconception": "JSONB is always faster than normalized tables because it avoids joins",
+      "truth": "JSONB is 2000x slower in worst case (unstructured, no indexing, high selectivity). Normalized schemas with proper indexes consistently outperform JSONB for structured, high-volume workloads. JSONB shines only when schema flexibility genuinely demands it.",
+      "source_url": "https://medium.com/@sruthiganesh/part-2-comparing-normalised-query-performance-in-postgresql-jsonb-vs-join-queries-ed63ef2da7cd"
+    },
+    {
+      "misconception": "Materialized views are automatically refreshed and always up-to-date",
+      "truth": "PostgreSQL has no built-in auto-refresh. Views are stale until REFRESH runs, which takes an ACCESS EXCLUSIVE lock (blocking all reads) unless CONCURRENTLY is used (which is slower). Refresh must be manually scheduled via pg_cron or external jobs.",
+      "source_url": "https://www.epsio.io/blog/postgres-materialized-view-auto-refresh"
+    },
+    {
+      "misconception": "Full-text search in PostgreSQL is slow and requires Elasticsearch",
+      "truth": "PostgreSQL full-text search with GIN indexes achieves sub-second query times on millions of documents. Benchmark: properly optimized GIN achieved 50x speedup (41s → 877ms). For small-to-medium apps, Postgres FTS often outperforms the complexity and cost of Elasticsearch.",
+      "source_url": "https://blog.vectorchord.ai/postgresql-full-text-search-fast-when-done-right-debunking-the-slow-myth"
+    },
+    {
+      "misconception": "Recursive CTEs can run infinitely without safeguards",
+      "truth": "PostgreSQL enforces max_recursive_depth (default 1000) as a hard limit. Queries exceeding this depth error immediately. The setting can be lowered per session for stricter early warnings.",
+      "source_url": "https://www.postgresql.org/docs/current/queries-with.html"
+    },
+    {
+      "misconception": "Bridge tables connecting many-to-many relationships have predictable size",
+      "truth": "Bridge table size explodes with cardinality disparity. A bridge connecting 1M products to 10K suppliers can theoretically have 10B rows. Many-to-many performance degrades nonlinearly as cardinality grows.",
+      "source_url": "https://www.datacamp.com/blog/many-to-many-relationship"
+    },
+    {
+      "misconception": "Type 1 SCD (overwrite) is sufficient for tracking dimensional changes",
+      "truth": "Type 1 SCD loses historical data. Type 2 SCD maintains full audit trail with surrogate keys and effective-date ranges, enabling time-travel queries and regulatory compliance. Choice depends on historical reporting requirements.",
+      "source_url": "https://medium.com/@SaiKarthikaPuttha/understanding-slowly-changing-dimension-scd-type-2-ea1563714bd7"
+    },
+    {
+      "misconception": "Materialized view indexes are optional, just for minor speedups",
+      "truth": "Indexes on materialized views are the highest-leverage tuning step. Without them, every read scans the entire materialized table, completely eroding the performance benefit of materialization.",
+      "source_url": "https://www.epsio.io/blog/postgres-materialized-views-basics-tutorial-and-optimization-tips"
+    },
+    {
+      "misconception": "CTE MATERIALIZED forces a performance cliff; you should never use it",
+      "truth": "MATERIALIZED is critical for CTEs referenced multiple times. Computing the CTE once and reusing the result is far faster than re-computing it for each reference. Use MATERIALIZED intentionally when the CTE is called 2+ times.",
+      "source_url": "https://boringsql.com/posts/good-cte-bad-cte/"
+    },
+    {
+      "misconception": "PostgreSQL 12+ CTE improvements eliminated all optimization concerns",
+      "truth": "While inlining helps singly-referenced CTEs, materialized CTEs (pre-computed temporary results) and multi-referenced CTEs still carry performance trade-offs. PostgreSQL 17 improves statistics propagation, but query plan analysis via EXPLAIN ANALYZE is essential to verify performance.",
+      "source_url": "https://pganalyze.com/blog/5mins-postgres-17-materialized-cte-scans"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.postgresql.org/docs/current/queries-with.html",
+      "title": "PostgreSQL Documentation: WITH Queries (Common Table Expressions)",
+      "recency": "Current version (2025)"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/sql-refreshmaterializedview.html",
+      "title": "PostgreSQL Documentation: REFRESH MATERIALIZED VIEW",
+      "recency": "Current version (2025)"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/textsearch-controls.html",
+      "title": "PostgreSQL Documentation: Controlling Text Search",
+      "recency": "Current version (2025)"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/datatype-textsearch.html",
+      "title": "PostgreSQL Documentation: Text Search Types",
+      "recency": "Current version (2025)"
+    },
+    {
+      "url": "https://knowledge.enterprisedb.com/hc/en-us/articles/15157254341276-CTE-materialization-default-behavior-changed-in-PostgreSQL-12",
+      "title": "EDB: CTE materialization default behavior changed in PostgreSQL 12",
+      "recency": "Enterprise PostgreSQL support, current"
+    },
+    {
+      "url": "https://www.enterprisedb.com/blog/postgresqls-ctes-are-optimisation-fences",
+      "title": "EDB Blog: PostgreSQL's CTEs are optimisation fences",
+      "recency": "2025"
+    },
+    {
+      "url": "https://www.pgedge.com/blog/postgresql-17-a-major-step-forward-in-performance-logical-replication-and-more",
+      "title": "pgEdge: PostgreSQL 17 — Performance improvements",
+      "recency": "2024-09-26 (PostgreSQL 17 GA)"
+    },
+    {
+      "url": "https://pganalyze.com/blog/5mins-postgres-17-materialized-cte-scans",
+      "title": "pgAnalyze: PostgreSQL 17 — Better Query Plans for Materialized CTE Scans",
+      "recency": "2024-09-20"
+    },
+    {
+      "url": "https://blog.vectorchord.ai/postgresql-full-text-search-fast-when-done-right-debunking-the-slow-myth",
+      "title": "VectorChord Blog: PostgreSQL BM25 Full-Text Search Performance",
+      "recency": "2024-06-15"
+    },
+    {
+      "url": "https://pganalyze.com/blog/gin-index",
+      "title": "pgAnalyze: Understanding Postgres GIN Indexes",
+      "recency": "2025"
+    },
+    {
+      "url": "https://www.epsio.io/blog/postgres-materialized-view-auto-refresh",
+      "title": "Epsio: Postgres Materialized View Auto Refresh",
+      "recency": "2024-10-22"
+    },
+    {
+      "url": "https://www.epsio.io/blog/postgres-materialized-views-basics-tutorial-and-optimization-tips",
+      "title": "Epsio: Postgres Materialized Views Basics and Optimization",
+      "recency": "2024-10-18"
+    },
+    {
+      "url": "https://medium.com/@sruthiganesh/part-2-comparing-normalised-query-performance-in-postgresql-jsonb-vs-join-queries-ed63ef2da7cd",
+      "title": "Medium: JSONB vs Join Queries Performance Comparison (Part 2)",
+      "recency": "2024-01-15"
+    },
+    {
+      "url": "https://www.heap.io/blog/when-to-avoid-jsonb-in-a-postgresql-schema",
+      "title": "Heap: When To Avoid JSONB In A PostgreSQL Schema",
+      "recency": "2025"
+    },
+    {
+      "url": "https://www.sitepoint.com/postgresql-jsonb-query-performance-indexing/",
+      "title": "SitePoint: PostgreSQL JSONB Performance Guide",
+      "recency": "2024-08-10"
+    },
+    {
+      "url": "https://www.datacamp.com/blog/many-to-many-relationship",
+      "title": "DataCamp: Many to Many Relationships — A Guide to Database Design",
+      "recency": "2024-11-20"
+    },
+    {
+      "url": "https://www.kimballgroup.com/2012/02/design-tip-142-building-bridges/",
+      "title": "Kimball Group: Design Tip #142 Building Bridges",
+      "recency": "2012 (foundational data warehouse design)"
+    },
+    {
+      "url": "https://github.com/anowerhossain/Graph-Traversal-using-Recursive-CTE-in-PostgreSQL",
+      "title": "GitHub: Graph Traversal using Recursive CTE in PostgreSQL",
+      "recency": "2024"
+    },
+    {
+      "url": "https://medium.com/@anowerhossain97/discovering-hidden-friendships-with-recursive-cte-in-postgresql-7806c9885925",
+      "title": "Medium: Discovering Hidden Friendships with Recursive CTE",
+      "recency": "2024"
+    },
+    {
+      "url": "https://oneuptime.com/blog/post/2026-01-22-postgresql-recursive-cte-queries/view",
+      "title": "Oneuptime: How to Write Recursive Queries with CTEs",
+      "recency": "2026-01-22"
+    },
+    {
+      "url": "https://www.fusionbox.com/blog/detail/graph-algorithms-in-a-database-recursive-ctes-and-topological-sort-with-postgres/620/",
+      "title": "FusionBox: Postgresql with Recursive CTEs and Graphing Algorithms",
+      "recency": "2024"
+    },
+    {
+      "url": "https://docs.yugabyte.com/preview/api/ysql/the-sql-language/with-clause/traversing-general-graphs/undirected-cyclic-graph/",
+      "title": "YugabyteDB Docs: Traversing Undirected Cyclic Graphs",
+      "recency": "2024-11-15"
+    },
+    {
+      "url": "https://tacnode.io/post/full-text-search-postgresql-complete-guide",
+      "title": "Tacnode: Full-Text Search in PostgreSQL — Complete Guide",
+      "recency": "2024"
+    },
+    {
+      "url": "https://boringsql.com/posts/good-cte-bad-cte/",
+      "title": "BoringSQL: Good CTE, Bad CTE",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.crunchydata.com/blog/with-queries-present-future-common-table-expressions",
+      "title": "Crunchy Data: WITH Queries — Present & Future",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.scalefree.com/knowledge/webinars/data-vault-friday/how-to-define-scd-type-2-dimension-keys-in-a-data-vault-solution/",
+      "title": "ScaleFree: How to Define SCD Type 2 Dimension Keys",
+      "recency": "2024-06-10"
+    },
+    {
+      "url": "https://medium.com/@SaiKarthikaPuttha/understanding-slowly-changing-dimension-scd-type-2-ea1563714bd7",
+      "title": "Medium: Understanding Slowly Changing Dimension (SCD) Type 2",
+      "recency": "2024"
+    }
+  ]
+}

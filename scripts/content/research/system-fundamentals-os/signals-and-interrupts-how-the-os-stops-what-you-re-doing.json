@@ -1,0 +1,492 @@
+{
+  "facts": [
+    {
+      "fact": "Each OS thread on Linux reserves 8 MB of virtual stack space by default, even if it doesn't use all of it.",
+      "source": "https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-overheads-for-linux-threads/",
+      "publication_date": "2018"
+    },
+    {
+      "fact": "A coroutine or lightweight task (in Python/async context) is roughly 1 KB, approximately 8000× smaller than an OS thread's 8 MB stack reservation.",
+      "source": "https://dev.to/_eb7f2a654e97a60ae9f96e/is-asyncio-really-better-than-multithreading-i-tested-100-concurrent-requests-and-the-difference-4hc5",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Context switch overhead on modern x86_64 Linux: 1–10 microseconds under light load; ~1.2–1.5 μs with CPU pinning, ~2.2 μs without pinning.",
+      "source": "https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-overheads-for-linux-threads/",
+      "publication_date": "2018"
+    },
+    {
+      "fact": "L1/L2/L3 cache and TLB invalidation during context switches scrub CPU caches, causing significant performance degradation beyond the raw switching time.",
+      "source": "https://blog.tsunanet.net/2010/11/how-long-does-it-take-to-make-context.html",
+      "publication_date": "2010"
+    },
+    {
+      "fact": "TLB hit latency: 0.5–1 cycle; TLB miss latency: 10–100 cycles; typical miss rate 0.01%–1% in well-tuned applications.",
+      "source": "https://pages.cs.wisc.edu/~remzi/OSTEP/vm-tlbs.pdf",
+      "publication_date": "2015"
+    },
+    {
+      "fact": "Page fault from SSD (NVMe) takes ~0.25–0.030 milliseconds (250 μs–30 μs for 4 KB); HDD page fault takes ~5 milliseconds.",
+      "source": "https://simplyblock.io/glossary/nvme-latency/",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "RAM access latency ~100 nanoseconds; NVMe SSD access ~25–250 microseconds, making disk-based page faults 250–2500× slower than memory access.",
+      "source": "https://gist.github.com/jboner/2841832",
+      "publication_date": "2012"
+    },
+    {
+      "fact": "Virtual address translation uses multi-level page tables (x86-64 uses 4 levels) with Hardware TLB management on modern CPUs to reduce per-access cost.",
+      "source": "https://www.cs.cornell.edu/courses/cs3410/2025fa/notes/vm.html",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Memory Management Unit (MMU) performs virtual-to-physical address translation; offset bits are not translated and pass through unchanged.",
+      "source": "https://operating-system-in-1000-lines.vercel.app/en/11-page-table",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "SIGKILL and SIGSTOP cannot be caught, ignored, or blocked; attempts to block them via sigprocmask() are silently ignored.",
+      "source": "https://man7.org/linux/man-pages/man7/signal.7.html",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Signal handlers are vulnerable to race conditions: if a process enters a signal handler, but before calling sigprocmask(), another signal arrives, it may be lost or delayed.",
+      "source": "https://www.cs.kent.edu/~ruttan/sysprog/lectures/signals.html",
+      "publication_date": "2020"
+    },
+    {
+      "fact": "Mutex functions (pthread_mutex_lock) are NOT async-signal-safe; calling them from a signal handler causes immediate deadlock if the handler was interrupted from a lock holder.",
+      "source": "https://wiki.sei.cmu.edu/confluence/display/c/SIG30-C.+Call+only+asynchronous-safe+functions+within+signal+handlers",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Async-signal-safe functions include: write(), read(), open(), close(), _exit(), fork(), getpid(), kill(), abort(), execve(); excludes printf(), malloc(), pthread_* functions.",
+      "source": "https://man7.org/linux/man-pages/man7/signal-safety.7.html",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Default RLIMIT_NOFILE (per-process file descriptor limit) on Linux is typically 1024 for soft limit; system-wide /proc/sys/fs/file-max is hundreds of thousands.",
+      "source": "https://linuxvox.com/blog/linux-file-descriptor-limit/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "EMFILE (too many open files) error occurs when a process exhausts its per-process FD limit; ENFILE when system-wide limit is reached.",
+      "source": "https://oneuptime.com/blog/post/2026-01-22-nodejs-emfile-too-many-open-files/view",
+      "publication_date": "2026"
+    },
+    {
+      "fact": "epoll on Linux scales O(1) for event notification; select() is O(N) because it scans all file descriptors on each call.",
+      "source": "https://nima101.github.io/io_multiplexing",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "AsyncIO outperforms thread-per-request 25–40× for I/O-heavy workloads; 100 threads take 50.01s vs asyncio in much less time for 10,000 URLs.",
+      "source": "https://medium.com/@romualdoluwatobi/python-concurrency-model-comparison-for-cpu-and-io-bound-execution-asyncio-vs-threads-vs-sync-35c114fc0045",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Event-driven servers (Nginx, Tornado) using epoll() can exceed 10,000 simultaneous connections; thread-per-request bottlenecks at 1000–5000 before memory exhaustion.",
+      "source": "https://en.wikipedia.org/wiki/C10k_problem",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Process isolation enforced via separate virtual address spaces; memory access from process A cannot write to process B's memory.",
+      "source": "https://www.read.seas.harvard.edu/~kohler/class/05s-osp/notes/notes9.html",
+      "publication_date": "2017"
+    },
+    {
+      "fact": "KPTI (Kernel Page-Table Isolation) security mitigation increases context switch overhead to prevent Spectre-variant attacks, trading performance for security.",
+      "source": "https://www.cs.purdue.edu/homes/pfonseca/papers/sp23-uswitch.pdf",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "μSWITCH in-process isolation reduced context-switch overhead by 32.7%–98.4% compared to other isolation techniques in Firefox and HTTP servers.",
+      "source": "https://www.cs.purdue.edu/homes/pfonseca/papers/sp23-uswitch.pdf",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Kubernetes sends SIGTERM to pods, waits 30 seconds (default terminationGracePeriod) before forcing SIGKILL; apps must handle graceful shutdown.",
+      "source": "https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-terminating-with-grace",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Graceful shutdown implementation requires catching SIGTERM/SIGINT, stopping new work acceptance, draining in-flight requests, and exiting within the grace period.",
+      "source": "https://victoriametrics.com/blog/go-graceful-shutdown/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "File descriptor exhaustion can be triggered by buggy applications leaking FDs; proper cleanup (using defer/context managers) is essential.",
+      "source": "https://vps.do/linux-file-descriptors-3/",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "kqueue (BSD/macOS) supports multiple event filters in a single system call; epoll requires separate epoll_ctl() calls per FD update.",
+      "source": "https://thamizhelango.medium.com/freebsd-kqueue-vs-linux-epoll-why-kqueue-often-outperforms-and-its-impact-on-network-1ae39afb6e16",
+      "publication_date": "2023"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "Node.js file watcher hitting EMFILE during `npm run dev`",
+      "context": "Webpack/Vite with many watched files exhausts 1024 FD limit; watch hooks set up thousands of inodes.",
+      "resolution": "Increase ulimit -n to 4096+ or use Watchman instead of libuv file watchers",
+      "source": "https://pushakar.com/2025/05/29/how-to-fix-emfile-too-many-open-files-when-running-npm-run-dev-in-vs-code-on-linux/"
+    },
+    {
+      "scenario": "Thread-per-request web server plateauing at ~1000 concurrent users",
+      "context": "Each thread uses 8 MB stack; 1000 threads = 8 GB virtual memory; adding more threads hits kernel limits or memory exhaustion",
+      "resolution": "Switch to async/await or event-driven (Nginx, FastAPI) architecture; tested async can handle 10K+ concurrencies on modest hardware",
+      "source": "https://dev.to/_eb7f2a654e97a60ae9f96e/is-asyncio-really-better-than-multithreading-i-tested-100-concurrent-requests-and-the-difference-4hc5"
+    },
+    {
+      "scenario": "Python asyncio application making 100 requests to remote API in ~0.6 seconds",
+      "context": "I/O-bound workload with 50 ms network latency per request; 100 threads would take 50 seconds; asyncio schedules them concurrently.",
+      "result": "25–40× speedup; CPU <15%, memory flat at scale",
+      "source": "https://henryonai.github.io/blog/python-async-vs-sync-benchmark"
+    },
+    {
+      "scenario": "Web server deadlock on SIGTERM with signal handler calling printf()",
+      "context": "SIGTERM arrives while main thread holds libc printf() mutex; signal handler calls printf() → attempts to re-acquire same mutex → deadlock",
+      "fix": "Signal handler must only call async-signal-safe functions; use write() instead of printf() for logging",
+      "source": "https://wiki.sei.cmu.edu/confluence/display/c/SIG30-C.+Call+only+asynchronous-safe+functions+within+signal+handlers"
+    },
+    {
+      "scenario": "Docker container graceful shutdown timeout in Kubernetes",
+      "context": "Process ignores SIGTERM; Kubernetes waits 30 seconds (terminationGracePeriod), then forces SIGKILL; client requests are dropped.",
+      "fix": "Implement signal handler that closes listener, drains in-flight requests, flushes logs within ~5-10 second window",
+      "source": "https://oneuptime.com/blog/post/2026-02-09-graceful-shutdown-handlers/view"
+    },
+    {
+      "scenario": "Memory pressure causing page faults on large dataset workload",
+      "context": "50% of accesses trigger disk I/O; NVMe latency ~0.25 ms per fault; workload throughput drops by 50–80%",
+      "indicator": "High majflt/s in vmstat; upgrading to SSD reduces fault resolution time ~8× but doesn't reduce fault count",
+      "source": "https://rigtorp.se/virtual-memory/"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Process isolation via virtual memory",
+      "analogy": "Virtual memory acts like a post office where each process has its own address space. Two different people can both write letters to 'P.O. Box 1000' but refer to completely different physical mailboxes. Process A's memory address 0x10000 and Process B's 0x10000 point to entirely different RAM pages.",
+      "source": "https://www.read.seas.harvard.edu/~kohler/class/05s-osp/notes/notes9.html"
+    },
+    {
+      "concept": "TLB (Translation Lookaside Buffer) as a cache",
+      "analogy": "The TLB is like a phone's address book for frequently-called contacts. If you call a number in your address book (TLB hit), lookup is instant. If it's not there (TLB miss), you must look it up in the full directory (page table), which takes 10–100× longer.",
+      "source": "https://pages.cs.wisc.edu/~remzi/OSTEP/vm-tlbs.pdf"
+    },
+    {
+      "concept": "Context switch as a CPU state save/restore",
+      "analogy": "A context switch is like pausing a movie, writing down exactly where you were (save all CPU registers, memory pointers, cache state), then playing a different movie, then later coming back and resuming from exactly where you left off. The overhead isn't just the save/restore time—it's also that all your previous context (cache data) is now irrelevant.",
+      "source": "https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-overheads-for-linux-threads/"
+    },
+    {
+      "concept": "Async I/O vs. threads for high concurrency",
+      "analogy": "Threads are like hiring a dedicated cashier for each customer (1:1 ratio); with 10,000 customers you need 10,000 cashiers and 80 GB of salaries. Async is like having 4 cashiers who switch between 10,000 customers using a shared queue; they never block waiting for payment processing.",
+      "source": "https://medium.com/@romualdoluwatobi/python-concurrency-model-comparison-for-cpu-and-io-bound-execution-asyncio-vs-threads-vs-sync-35c114fc0045"
+    },
+    {
+      "concept": "File descriptor limit exhaustion",
+      "analogy": "File descriptors are like passport slots at a border control desk. If a desk has 1024 slots and tourists (processes) keep forgetting to return their passports, the desk fills up. New tourists can't cross even though most slots contain expired passports (leaked FDs from crashed apps).",
+      "source": "https://vps.do/linux-file-descriptors-3/"
+    },
+    {
+      "concept": "Signal handler restrictions (async-signal-safe functions only)",
+      "analogy": "Signal handlers are like an emergency intercom that can interrupt you at any moment. You can safely yell back through the intercom (write()), but you cannot safely pick up your desk phone (printf with mutex) because that might require waiting for someone else to hang up, and you're already mid-intercom call.",
+      "source": "https://wiki.sei.cmu.edu/confluence/display/c/SIG30-C.+Call+only+asynchronous-safe+functions+within+signal+handlers"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Default thread stack size on Linux",
+      "value": "8 MB",
+      "context": "Each thread reserves this much virtual memory by default; limits total threads to ~256 on a 2 GB user address space.",
+      "source": "https://linuxvox.com/blog/maximum-number-of-threads-per-process-in-linux/"
+    },
+    {
+      "metric": "Coroutine/async task memory overhead",
+      "value": "~1 KB",
+      "context": "Approximately 8000× smaller than OS thread stacks; allows 10,000+ concurrent tasks on modest hardware.",
+      "source": "https://dev.to/_eb7f2a654e97a60ae9f96e/is-asyncio-really-better-than-multithreading-i-tested-100-concurrent-requests-and-the-difference-4hc5"
+    },
+    {
+      "metric": "Context switch latency (light load, pinned CPU)",
+      "value": "1.2–1.5 microseconds",
+      "context": "Direct kernel-level measurement; cache pollution typically dominates the actual performance impact.",
+      "source": "https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-overheads-for-linux-threads/"
+    },
+    {
+      "metric": "Context switch latency (heavy load or TLB shootdown)",
+      "value": "10–100+ microseconds",
+      "context": "With KPTI, cache invalidation, or multi-processor TLB shootdown, overhead can dominate.",
+      "source": "https://blog.tsunanet.net/2010/11/how-long-does-it-take-to-make-context.html"
+    },
+    {
+      "metric": "TLB hit latency",
+      "value": "0.5–1 CPU cycle",
+      "context": "Fast; address translation is cached in the TLB.",
+      "source": "https://pages.cs.wisc.edu/~remzi/OSTEP/vm-tlbs.pdf"
+    },
+    {
+      "metric": "TLB miss latency",
+      "value": "10–100 CPU cycles",
+      "context": "Requires a page table walk; must access L3 cache or RAM.",
+      "source": "https://pages.cs.wisc.edu/~remzi/OSTEP/vm-tlbs.pdf"
+    },
+    {
+      "metric": "Page fault from NVMe SSD",
+      "value": "0.025–0.25 milliseconds (25–250 microseconds)",
+      "context": "Millions of cycles; 250–2500× slower than RAM access.",
+      "source": "https://simplyblock.io/glossary/nvme-latency/"
+    },
+    {
+      "metric": "Page fault from HDD",
+      "value": "5 milliseconds",
+      "context": "~50× slower than NVMe; devastating for real-time workloads.",
+      "source": "https://simplyblock.io/glossary/nvme-latency/"
+    },
+    {
+      "metric": "RAM access latency",
+      "value": "100 nanoseconds",
+      "context": "Baseline; all disk-based page faults are 250–50,000× slower.",
+      "source": "https://gist.github.com/jboner/2841832"
+    },
+    {
+      "metric": "Default RLIMIT_NOFILE (soft limit)",
+      "value": "1024 file descriptors per process",
+      "context": "Can be increased with ulimit -n; total system limit is /proc/sys/fs/file-max (typically 100,000+).",
+      "source": "https://linuxvox.com/blog/linux-file-descriptor-limit/"
+    },
+    {
+      "metric": "AsyncIO vs threading for 10,000 remote API calls",
+      "value": "3.5× faster (100 threads: 50.01 seconds, asyncio: ~0.6 seconds)",
+      "context": "I/O-bound workload; asyncio schedules concurrently without thread overhead.",
+      "source": "https://medium.com/@romualdoluwatobi/python-concurrency-model-comparison-for-cpu-and-io-bound-execution-asyncio-vs-threads-vs-sync-35c114fc0045"
+    },
+    {
+      "metric": "AsyncIO performance advantage range",
+      "value": "25–40× speedup for I/O-heavy workloads",
+      "context": "Varies by network latency and concurrency level; diminishes for local/high-throughput I/O.",
+      "source": "https://henryonai.github.io/blog/python-async-vs-sync-benchmark"
+    },
+    {
+      "metric": "Thread-per-request server plateau",
+      "value": "1000–5000 concurrent connections",
+      "context": "Limited by 8 MB stack per thread and kernel scheduling overhead.",
+      "source": "https://dev.to/_eb7f2a654e97a60ae9f96e/is-asyncio-really-better-than-multithreading-i-tested-100-concurrent-requests-and-the-difference-4hc5"
+    },
+    {
+      "metric": "Event-driven (epoll/kqueue) server capacity",
+      "value": "10,000+ concurrent connections on modest hardware",
+      "context": "O(1) event notification; memory usage is O(active events), not O(total connections).",
+      "source": "https://nima101.github.io/io_multiplexing"
+    },
+    {
+      "metric": "Kubernetes default terminationGracePeriod",
+      "value": "30 seconds",
+      "context": "Time between SIGTERM and forced SIGKILL; graceful shutdown must complete before this timeout.",
+      "source": "https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-terminating-with-grace"
+    },
+    {
+      "metric": "x86-64 page table levels",
+      "value": "4 levels",
+      "context": "Multi-level page tables reduce per-entry memory overhead while supporting large address spaces.",
+      "source": "https://www.cs.cornell.edu/courses/cs3410/2025fa/notes/vm.html"
+    },
+    {
+      "metric": "μSWITCH isolation overhead reduction",
+      "value": "32.7%–98.4% improvement",
+      "context": "Compared to other in-process isolation techniques; proved on Firefox and HTTP servers.",
+      "source": "https://www.cs.purdue.edu/homes/pfonseca/papers/sp23-uswitch.pdf"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Context switches are just a few microseconds, so thread scheduling overhead is negligible.",
+      "reality": "Raw context switch time (1–2 μs) is dwarfed by cache/TLB invalidation effects. Each switch scrubs L1/L2/L3 caches and flushes TLB entries, causing 10–100 μs of cache misses afterward. The 'hidden cost' of context switching often exceeds the switch time itself.",
+      "source": "https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-overheads-for-linux-threads/"
+    },
+    {
+      "misconception": "Increasing virtual memory via ulimit solves thread scalability problems.",
+      "reality": "Each thread still reserves 8 MB of virtual stack; ulimit doesn't make it smaller, just allows more total threads. After ~200–300 threads, kernel scheduling overhead and cache contention (not FD limits) become the bottleneck. Async is the actual solution for high concurrency.",
+      "source": "https://linuxvox.com/blog/maximum-number-of-threads-per-process-in-linux/"
+    },
+    {
+      "misconception": "Signal handlers are just regular function calls and can call any C library function.",
+      "reality": "Signal handlers interrupt execution at arbitrary points. If interrupted code held a lock (e.g., malloc's lock inside printf), calling that function again causes immediate deadlock. Only async-signal-safe functions are safe (write(), read(), open(), _exit(), etc.; no printf, malloc, pthread_*)",
+      "source": "https://wiki.sei.cmu.edu/confluence/display/c/SIG30-C.+Call+only+asynchronous-safe+functions+within+signal+handlers"
+    },
+    {
+      "misconception": "SIGKILL and SIGTERM are the same; you can ignore either one.",
+      "reality": "SIGTERM can be caught and ignored; SIGKILL cannot. You cannot block SIGKILL. SIGKILL always terminates immediately. SIGTERM is the graceful way; apps should handle it. Ignoring SIGTERM in Kubernetes means forced SIGKILL after 30 seconds and dropped connections.",
+      "source": "https://man7.org/linux/man-pages/man7/signal.7.html"
+    },
+    {
+      "misconception": "A process cannot read or write to another process's memory, so inter-process communication always requires system calls (pipes, sockets).",
+      "reality": "This is actually true and not a misconception. Process isolation via virtual memory is a core security feature. However, the misconception is that this isolation is free—it costs TLB flushes and page table updates during context switches, which is why threads (shared memory) are attractive for low-latency work.",
+      "source": "https://www.read.seas.harvard.edu/~kohler/class/05s-osp/notes/notes9.html"
+    },
+    {
+      "misconception": "Upgrading to an SSD will reduce page faults.",
+      "reality": "SSDs don't reduce the *number* of page faults; they only make each one resolve ~8× faster. If the root cause is memory pressure or poor working set, SSD helps perceived responsiveness but doesn't fix the fundamental problem. You need more RAM or better memory management.",
+      "source": "https://rigtorp.se/virtual-memory/"
+    },
+    {
+      "misconception": "epoll is strictly better than select(). kqueue is just BSD's version of the same idea.",
+      "reality": "epoll has weaknesses: updating 100 file descriptors requires 100 epoll_ctl() system calls. kqueue handles batch updates in a single system call. kqueue also supports richer event filters. The choice depends on the access pattern and platform.",
+      "source": "https://thamizhelango.medium.com/freebsd-kqueue-vs-linux-epoll-why-kqueue-often-outperforms-and-its-impact-on-network-1ae39afb6e16"
+    },
+    {
+      "misconception": "If you increase the per-process file descriptor limit with ulimit -n, you've solved EMFILE errors.",
+      "reality": "Increasing limits only postpones the problem if the root cause is a leaked file descriptor. A buggy process that opens files but never closes them will eventually exhaust the new limit. Fix the leak first; only increase limits as a defense-in-depth measure.",
+      "source": "https://vps.do/linux-file-descriptors-3/"
+    },
+    {
+      "misconception": "All threads on a process share the same file descriptor table, so closing an FD in one thread immediately closes it for all threads.",
+      "reality": "This is true, but it's a source of subtle bugs: if thread A closes a file descriptor and thread B is still using the FD number, thread B will unexpectedly operate on a different file (FD reuse). Proper synchronization or refcounting is required.",
+      "source": "https://linuxvox.com/blog/linux-file-descriptor-limit/"
+    },
+    {
+      "misconception": "Graceful shutdown in Kubernetes is automatic if you handle SIGTERM.",
+      "reality": "Handling SIGTERM is necessary but not sufficient. You must also stop accepting new requests, drain in-flight work, close connections, and exit within ~20 seconds (leaving headroom before the 30-second SIGKILL). A long shutdown leaks connections and causes client timeouts.",
+      "source": "https://oneuptime.com/blog/post/2026-02-09-graceful-shutdown-handlers/view"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.cs.cornell.edu/courses/cs3410/2025fa/notes/syscall_signal_interrupt.html",
+      "title": "System Calls, Signals, & Interrupts - CS 3410 Fall 2025",
+      "recency": "Current university course material (2025)"
+    },
+    {
+      "url": "https://www.cs.cornell.edu/courses/cs3410/2025fa/notes/vm.html",
+      "title": "Virtual Memory - CS 3410 Fall 2025",
+      "recency": "Current university course material (2025)"
+    },
+    {
+      "url": "https://man7.org/linux/man-pages/man7/signal.7.html",
+      "title": "signal(7) - Linux manual page",
+      "recency": "Official Linux documentation (2025)"
+    },
+    {
+      "url": "https://man7.org/linux/man-pages/man7/signal-safety.7.html",
+      "title": "signal-safety(7) - Linux manual page",
+      "recency": "Official Linux documentation (2025)"
+    },
+    {
+      "url": "https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-overheads-for-linux-threads/",
+      "title": "Measuring context switching and memory overheads for Linux threads - Eli Bendersky",
+      "recency": "Technical blog post with benchmarks (2018, still authoritative)"
+    },
+    {
+      "url": "https://medium.com/@romualdoluwatobi/python-concurrency-model-comparison-for-cpu-and-io-bound-execution-asyncio-vs-threads-vs-sync-35c114fc0045",
+      "title": "Python Concurrency Model Comparison For CPU And IO Bound Execution: Asyncio vs Threads vs Sync",
+      "recency": "Recent benchmark article (November 2025)"
+    },
+    {
+      "url": "https://henryonai.github.io/blog/python-async-vs-sync-benchmark",
+      "title": "Python Async vs Sync: 6 Benchmarks That Will Change How You Think About Concurrency",
+      "recency": "Engineering blog with benchmarks (2025)"
+    },
+    {
+      "url": "https://pages.cs.wisc.edu/~remzi/OSTEP/vm-tlbs.pdf",
+      "title": "19 Paging: Faster Translations (TLBs) - Operating Systems: Three Easy Pieces",
+      "recency": "Authoritative textbook material (2015, still current fundamentals)"
+    },
+    {
+      "url": "https://victoriametrics.com/blog/go-graceful-shutdown/",
+      "title": "Graceful Shutdown in Go: Practical Patterns - VictoriaMetrics Blog",
+      "recency": "Engineering best practices blog (2024)"
+    },
+    {
+      "url": "https://oneuptime.com/blog/post/2026-02-09-graceful-shutdown-handlers/",
+      "title": "How to Use Graceful Shutdown Handlers for Long-Running Kubernetes Processes",
+      "recency": "Recent Kubernetes patterns (2026)"
+    },
+    {
+      "url": "https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-terminating-with-grace",
+      "title": "Kubernetes best practices: terminating with grace - Google Cloud Blog",
+      "recency": "Official Kubernetes practices (2023, still current)"
+    },
+    {
+      "url": "https://linuxvox.com/blog/linux-file-descriptor-limit/",
+      "title": "Understanding and Managing Linux File Descriptor Limits",
+      "recency": "Technical blog (2024)"
+    },
+    {
+      "url": "https://vps.do/linux-file-descriptors-3/",
+      "title": "Linux File Descriptors Demystified: Management, Limits & Best Practices",
+      "recency": "System administration guide (2025)"
+    },
+    {
+      "url": "https://nima101.github.io/io_multiplexing",
+      "title": "I/O Multiplexing (select vs. poll vs. epoll/kqueue) - Problems and Algorithms",
+      "recency": "Technical explanation (2023)"
+    },
+    {
+      "url": "https://thamizhelango.medium.com/freebsd-kqueue-vs-linux-epoll-why-kqueue-often-outperforms-and-its-impact-on-network-1ae39afb6e16",
+      "title": "FreeBSD kqueue vs Linux epoll: Why kqueue Often Outperforms",
+      "recency": "Comparative analysis (2023)"
+    },
+    {
+      "url": "https://gist.github.com/jboner/2841832",
+      "title": "Latency Numbers Every Programmer Should Know",
+      "recency": "Classic reference (2012, updated metrics still accurate)"
+    },
+    {
+      "url": "https://wiki.sei.cmu.edu/confluence/display/c/SIG30-C.+Call+only+asynchronous-safe+functions+within+signal+handlers",
+      "title": "SIG30-C: Call only asynchronous-safe functions within signal handlers - SEI CERT C",
+      "recency": "Official security coding standard (2023)"
+    },
+    {
+      "url": "https://www.cs.purdue.edu/homes/pfonseca/papers/sp23-uswitch.pdf",
+      "title": "μSWITCH: Fast Kernel Context Isolation with Implicit Context Switches - Oakland 2023",
+      "recency": "Peer-reviewed security research (2023)"
+    },
+    {
+      "url": "https://operating-system-in-1000-lines.vercel.app/en/11-page-table",
+      "title": "Page Table - Operating System in 1,000 Lines",
+      "recency": "Educational OS implementation (2024)"
+    },
+    {
+      "url": "https://simplyblock.io/glossary/nvme-latency/",
+      "title": "What Is NVMe Latency? Performance Benchmarks Explained",
+      "recency": "Storage performance reference (2025)"
+    },
+    {
+      "url": "https://rigtorp.se/virtual-memory/",
+      "title": "Latency Implications of Virtual Memory - Erik Rigtorp",
+      "recency": "Performance analysis blog (2020s)"
+    },
+    {
+      "url": "https://dev.to/_eb7f2a654e97a60ae9f96e/is-asyncio-really-better-than-multithreading-i-tested-100-concurrent-requests-and-the-difference-4hc5",
+      "title": "Is asyncio Really Better Than Multithreading? I Tested 100 Concurrent Requests",
+      "recency": "Recent benchmark post (2025)"
+    },
+    {
+      "url": "https://pushakar.com/2025/05/29/how-to-fix-emfile-too-many-open-files-when-running-npm-run-dev-in-vs-code-on-linux/",
+      "title": "How to Fix EMFILE: too many open files When Running npm run dev",
+      "recency": "Recent troubleshooting guide (2025)"
+    },
+    {
+      "url": "https://www.read.seas.harvard.edu/~kohler/class/05s-osp/notes/notes9.html",
+      "title": "Operating System Privilege: Protection and Isolation - Harvard CS",
+      "recency": "University course material"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/C10k_problem",
+      "title": "C10k problem - Wikipedia",
+      "recency": "Historical reference with modern context (2024)"
+    },
+    {
+      "url": "https://oneuptime.com/blog/post/2026-01-22-nodejs-emfile-too-many-open-files/view",
+      "title": "How to Fix Error: EMFILE: too many open files in Node.js",
+      "recency": "Recent Node.js troubleshooting (2026)"
+    },
+    {
+      "url": "https://blog.tsunanet.net/2010/11/how-long-does-it-take-to-make-context.html",
+      "title": "How long does it take to make a context switch? - Tsuna's blog",
+      "recency": "Classic systems blog post (2010, fundamentals timeless)"
+    }
+  ]
+}

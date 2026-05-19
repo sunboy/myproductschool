@@ -1,0 +1,642 @@
+{
+  "facts": [
+    {
+      "claim": "TCP header minimum size is 20 bytes while UDP header is 8 bytes, contributing to overhead",
+      "source": "https://pinggy.io/blog/udp_vs_tcp_complete_guide/",
+      "publication_date": "2025"
+    },
+    {
+      "claim": "TCP handshake requires 3 network transits for first data, UDP requires 1 packet",
+      "source": "https://www.pico.net/kb/udp-vs-tcp/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "TLS 1.2 adds 2 RTT overhead (1 RTT for TCP + 2 RTT for TLS), TLS 1.3 reduces to 2 RTT total (1 RTT TCP + 1 RTT TLS)",
+      "source": "https://www.keycdn.com/blog/https-performance-overhead",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "TLS session resumption saves at least 22.6 ms compared to full handshakes",
+      "source": "https://www.systemoverflow.com/learn/networking-protocols/http-protocols/tls-handshake-latency-the-critical-path-tax-across-protocol-versions",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "CPU consumption of full TLS handshake is 10-100 times that of session resumption",
+      "source": "https://istlsfastyet.com/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Around 40% of HTTPS connections are resumptions via session IDs or session tickets",
+      "source": "https://www.keycdn.com/blog/https-performance-overhead",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Google's Heroku achieved 400-500% latency improvement in SNI TLS handshakes, reducing from 100-120ms to 20-25ms",
+      "source": "https://blog.heroku.com/how-we-sped-up-sni-tls-handshakes-by-5x",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "On mobile networks, TLS handshake typically costs 200-400ms",
+      "source": "https://www.keycdn.com/blog/https-performance-overhead",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Acceptable packet loss rate is typically less than 1% or 0.1% for most applications; online gaming requires 0.5% or lower",
+      "source": "https://obkio.com/blog/acceptable-packet-loss/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Packet loss above 5% is considered relatively high and indicates network problems",
+      "source": "https://www.sciencedirect.com/topics/computer-science/packet-loss-rate",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Google BBR deployed to all B4 production traffic since 2016, improved YouTube throughput 4% globally and 14%+ in some countries",
+      "source": "https://cloud.google.com/blog/products/networking/tcp-bbr-congestion-control-comes-to-gcp-your-internet-just-got-faster",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "BBRv3 shows 0.2% latency reduction for Google.com web search and YouTube playback relative to prior algorithms",
+      "source": "https://datatracker.ietf.org/meeting/117/materials/slides-117-ccwg-bbrv3-algorithm-bug-fixes-and-public-internet-deployment-00",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Google's Proportional Rate Reduction (PRR) achieved 3-10% latency reduction and 5% reduction in recovery timeouts",
+      "source": "https://www.speedguide.net/articles/tcp-congestion-control-algorithms-comparison-7423",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "TCP Vegas delay-based approach can improve throughput but suffers from slow congestion window growth in high-speed networks",
+      "source": "https://www.speedguide.net/articles/tcp-congestion-control-algorithms-comparison-7423",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Layer 4 load balancing is faster than Layer 7 because it doesn't decrypt or inspect packet contents",
+      "source": "https://www.a10networks.com/glossary/how-do-layer-4-and-layer-7-load-balancing-differ/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Layer 7 load balancing can route based on URL paths, session cookies, and request headers for web applications",
+      "source": "https://kemptechnologies.com/blog/layer-4-vs.-layer-7-load-balancing-what's-the-difference-and-which-one-do-i-need",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Google's QUIC protocol achieves ~30% latency improvement and 60% connection startup improvement over WebRTC for remote rendering",
+      "source": "https://arxiv.org/html/2505.22132v1",
+      "publication_date": "2025"
+    },
+    {
+      "claim": "Meta deployed QUIC/HTTP3 for approximately 75% of all Internet traffic",
+      "source": "https://medium.com/@abhi.patel.7172/quic-vs-tcp-the-ultimate-benchmark-for-modern-network-performance-22be6e5af66d",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "QUIC shows higher throughput than TCP at 0% packet loss; at 5% loss, throughput is comparable but QUIC still higher",
+      "source": "https://github.com/Shenggan/quic_vs_tcp",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Cloudflare reports HTTP/3 at P95 is 116ms faster for connection times than HTTP/2",
+      "source": "https://blog.cloudflare.com/network-performance-update-security-week-2024/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Cloudflare HTTP/3 achieves 176ms average TTFB vs 201ms for HTTP/2 (12.4% improvement)",
+      "source": "https://blog.cloudflare.com/http-3-vs-http-2/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "HTTP/3 (QUIC) currently used by 31% of Internet traffic",
+      "source": "https://blog.cloudflare.com/radar-2024-year-in-review/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Minimum RTO in Windows is 300ms, in Linux is 200ms; initial RTO is 3 seconds and doubles with each retransmission",
+      "source": "https://www.nxp.com/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "TCP flows with timer granularity below 100ms or RTT below 250ms suffer 70% performance degradation on bottleneck links with loss above 6%",
+      "source": "https://www.catchpoint.com/blog/tcp-rtt",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "DNS over UDP takes ~20ms for cache miss (2 packets), TCP takes ~40ms due to connection setup and teardown (7 packets minimum)",
+      "source": "https://arpitbhayani.me/blogs/dns-udp-tcp/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "DNS TCP throughput stabilizes at ~25% of UDP baseline as client load increases; with sufficient resources, TCP achieves 2/3 UDP performance",
+      "source": "https://labs.ripe.net/author/baptiste_jonglez_1/persistent-dns-connections-for-reliability-and-performance/",
+      "publication_date": "2018"
+    },
+    {
+      "claim": "High-volume UDP DNS servers handle 100k+ queries per second with minimal file descriptors; TCP handles 10k-50k qps with 1 fd per connection",
+      "source": "https://blog.apnic.net/2018/09/19/persistent-dns-connections-for-reliability-and-performance/",
+      "publication_date": "2018"
+    },
+    {
+      "claim": "Netflix achieves 98% successful video delivery rate using TCP for ABR algorithm robustness and HTTP range requests for segments",
+      "source": "https://preseem.com/2023/02/how-netflix-works-webinar-recap/",
+      "publication_date": "2023"
+    },
+    {
+      "claim": "Netflix streams video via multiple TCP flows downloading segments (40Mbps early, then 15-25Mbps spikes) not continuous streaming",
+      "source": "https://www.geeksforgeeks.org/computer-networks/why-does-netflix-use-tcp-but-not-udp-for-streaming-video/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Google recommends cache TTL longer than 6 months or even 1 year for static resources with version hashes",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Cache-Control 'immutable' directive prevents unnecessary conditional requests during the fresh period",
+      "source": "https://www.debugbear.com/docs/http-cache-control-header",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "ETag and Last-Modified headers enable cache revalidation to avoid full object retransmission",
+      "source": "https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "Google considers 800ms TTFB good; above 1.8 seconds is poor; sites with poor LCP average 2.27 seconds TTFB",
+      "source": "https://www.debugbear.com/docs/metrics/time-to-first-byte",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "High TTFB is most commonly caused by slow dynamic content generation and inefficient database queries",
+      "source": "https://wpengine.com/support/troubleshooting-high-time-first-byte-ttfb/",
+      "publication_date": "2024"
+    },
+    {
+      "claim": "QUIC faces latency challenges over high-speed networks; HTTP/2 RTT 1.9ms vs QUIC RTT 16.2ms in fast conditions",
+      "source": "https://arxiv.org/html/2310.09423v2",
+      "publication_date": "2023"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "Heroku SNI optimization",
+      "description": "Heroku optimized SNI TLS handshake logic and reduced latency from 100-120ms to 20-25ms (4-5x improvement)",
+      "metric": "100-120ms → 20-25ms roundtrip",
+      "url": "https://blog.heroku.com/how-we-sped-up-sni-tls-handshakes-by-5x"
+    },
+    {
+      "scenario": "Google B4 congestion control deployment",
+      "description": "Google switched all B4 production traffic to BBR in 2016. YouTube throughput improved 4% globally, 14%+ in some countries. BBRv3 now used for all Google.com and YouTube TCP",
+      "metric": "4% global throughput gain, 14%+ regional gains",
+      "url": "https://cloud.google.com/blog/products/networking/tcp-bbr-congestion-control-comes-to-gcp-your-internet-just-got-faster"
+    },
+    {
+      "scenario": "Netflix video streaming architecture",
+      "description": "Netflix uses multiple TCP flows to download discrete video segments, not continuous streams. Initial download 40Mbps to fill buffer, then 15-25Mbps spikes while video plays. Achieves 98% delivery reliability",
+      "metric": "98% successful delivery rate, multi-flow segment architecture",
+      "url": "https://preseem.com/2023/02/how-netflix-works-webinar-recap/"
+    },
+    {
+      "scenario": "Cloudflare HTTP/3 deployment",
+      "description": "Cloudflare offers HTTP/3 free to all customers. P95 connection times 116ms faster with HTTP/3. Average TTFB 176ms (HTTP/3) vs 201ms (HTTP/2). 31% of Internet traffic now uses HTTP/3",
+      "metric": "12.4% TTFB improvement, 116ms P95 connection speedup, 31% adoption",
+      "url": "https://blog.cloudflare.com/network-performance-update-security-week-2024/"
+    },
+    {
+      "scenario": "Google TLS 1.3 optimization",
+      "description": "TLS 1.3 reduces handshake from 3 RTT to 2 RTT. On 80ms mobile RTT: TLS 1.2 = 240ms pure handshake overhead, TLS 1.3 = 160ms (saves 80ms)",
+      "metric": "3 RTT → 2 RTT handshake, 80ms savings on 80ms RTT networks",
+      "url": "https://www.keycdn.com/blog/https-performance-overhead"
+    },
+    {
+      "scenario": "Google BBRv3 latency improvement",
+      "description": "BBRv3 achieves 0.2% latency reduction for Google.com searches and YouTube playback. Deployed across all Google.com public and WAN traffic with A/B testing on YouTube",
+      "metric": "0.2% latency reduction, sustained deployment across Google services",
+      "url": "https://datatracker.ietf.org/meeting/117/materials/slides-117-ccwg-bbrv3-algorithm-bug-fixes-and-public-internet-deployment-00"
+    },
+    {
+      "scenario": "Meta QUIC/HTTP3 adoption",
+      "description": "Meta deployed QUIC/HTTP3 for ~75% of all Internet traffic, confirming significant real-world deployment benefits",
+      "metric": "75% traffic on QUIC/HTTP3",
+      "url": "https://medium.com/@abhi.patel.7172/quic-vs-tcp-the-ultimate-benchmark-for-modern-network-performance-22be6e5af66d"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "TCP vs UDP overhead",
+      "analogy": "TCP is like sending a registered letter with confirmation of receipt (3 handshake packets, ack tracking); UDP is like throwing a letter in a mailbox and hoping it arrives (single packet, no tracking). The confirmation is reliable but expensive."
+    },
+    {
+      "concept": "TLS handshake cost",
+      "analogy": "A fresh TLS handshake is like having to show ID at airport security every time you visit (3 RTT cost). TLS session resumption is like getting a security pass that lets you skip lines (1 RTT, 22.6ms savings). 0-RTT is like walking straight to your gate."
+    },
+    {
+      "concept": "TCP congestion control (loss-based vs delay-based)",
+      "analogy": "CUBIC (loss-based) is like driving until you hit traffic, then backing off when you see brake lights. BBR is like continuously measuring how fast the road is flowing and adjusting your speed to never cause congestion in the first place."
+    },
+    {
+      "concept": "Cache-Control headers and immutable directive",
+      "analogy": "Cache without 'immutable' is like a note that says 'this recipe is good for 6 months, but check back anyway.' Cache with 'immutable' is like saying 'this recipe never changes — once you have it, never ask me again.'"
+    },
+    {
+      "concept": "Layer 4 vs Layer 7 load balancing",
+      "analogy": "Layer 4 is a mail sorting facility that routes by ZIP code only (fast, simple). Layer 7 is a smart postal worker who reads the letter content and routes based on the actual request (flexible, slower)."
+    },
+    {
+      "concept": "DNS over UDP vs TCP",
+      "analogy": "UDP DNS is like a doorbell ring with one knock (2 packets: question + answer). TCP DNS is like calling ahead, waiting for pickup, asking, hanging up, and confirming (7 minimum packets: handshake + query + response + teardown)."
+    },
+    {
+      "concept": "QUIC/HTTP3 multiplexing",
+      "analogy": "HTTP/2 over TCP is like a single-lane road where one slow car blocks everyone. QUIC is like a multi-lane highway where each stream (car) moves independently, and losing one packet only affects its stream, not others."
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "TCP header size",
+      "value": "20 bytes",
+      "context": "Minimum size; UDP header is 8 bytes"
+    },
+    {
+      "metric": "TLS 1.2 handshake overhead",
+      "value": "3 RTT",
+      "context": "1 RTT TCP + 2 RTT TLS; on 80ms RTT = 240ms pure overhead"
+    },
+    {
+      "metric": "TLS 1.3 handshake overhead",
+      "value": "2 RTT",
+      "context": "1 RTT TCP + 1 RTT TLS; on 80ms RTT = 160ms pure overhead (saves 80ms)"
+    },
+    {
+      "metric": "TLS session resumption latency savings",
+      "value": "22.6 ms minimum",
+      "context": "Independent of TLS version and network latency"
+    },
+    {
+      "metric": "TLS handshake CPU cost vs resumption",
+      "value": "10-100x higher",
+      "context": "Full handshake consumes significantly more CPU than session resumption"
+    },
+    {
+      "metric": "HTTPS connections that are resumptions",
+      "value": "40%",
+      "context": "Via session IDs or session tickets"
+    },
+    {
+      "metric": "TLS handshake cost on mobile",
+      "value": "200-400 ms",
+      "context": "Typical on cellular networks"
+    },
+    {
+      "metric": "Heroku TLS handshake optimization",
+      "value": "100-120ms → 20-25ms",
+      "context": "4-5x improvement through SNI optimization"
+    },
+    {
+      "metric": "Acceptable UDP packet loss rate",
+      "value": "< 1% or 0.1%",
+      "context": "For most applications; 0.5% or lower for online gaming"
+    },
+    {
+      "metric": "High UDP packet loss threshold",
+      "value": "> 5%",
+      "context": "Indicates network problems; can see 20% occasionally, 25%+ in worst cases"
+    },
+    {
+      "metric": "UDP low-latency example (competitive gaming)",
+      "value": "20-50 ms RTT",
+      "context": "vs TCP which might add 100-200ms additional latency"
+    },
+    {
+      "metric": "Isolated packet latency difference",
+      "value": "TCP 16μs vs UDP 12μs",
+      "context": "4 microsecond difference in low-latency LAN environments"
+    },
+    {
+      "metric": "Google BBR YouTube throughput improvement",
+      "value": "4% global, 14%+ regional",
+      "context": "After deploying BBR to all B4 production traffic in 2016"
+    },
+    {
+      "metric": "Google Proportional Rate Reduction (PRR) latency reduction",
+      "value": "3-10%",
+      "context": "Average latency improvement; recovery timeouts reduced by 5%"
+    },
+    {
+      "metric": "Google BBRv3 latency improvement",
+      "value": "0.2% reduction",
+      "context": "For Google.com web search and YouTube playback"
+    },
+    {
+      "metric": "QUIC/HTTP3 latency improvement vs WebRTC",
+      "value": "~30% latency, 60% connection startup",
+      "context": "For remote rendering and streaming applications"
+    },
+    {
+      "metric": "Meta QUIC/HTTP3 traffic adoption",
+      "value": "75%",
+      "context": "Of all Internet traffic"
+    },
+    {
+      "metric": "HTTP/3 Internet traffic adoption",
+      "value": "31%",
+      "context": "As of 2024, with continued growth"
+    },
+    {
+      "metric": "QUIC vs HTTP/2 throughput at 0% loss",
+      "value": "QUIC higher",
+      "context": "At 5% loss, throughput comparable but QUIC still better"
+    },
+    {
+      "metric": "QUIC latency disadvantage (high-speed networks)",
+      "value": "HTTP/2 1.9ms RTT vs QUIC 16.2ms",
+      "context": "Challenges in fast Internet conditions"
+    },
+    {
+      "metric": "Cloudflare HTTP/3 connection time improvement (P95)",
+      "value": "116 ms faster",
+      "context": "vs HTTP/2"
+    },
+    {
+      "metric": "Cloudflare HTTP/3 TTFB performance",
+      "value": "176 ms average (HTTP/3) vs 201 ms (HTTP/2)",
+      "context": "12.4% improvement"
+    },
+    {
+      "metric": "Minimum RTO (Windows)",
+      "value": "300 ms",
+      "context": "Linux is 200ms; initial RTO is 3 seconds and doubles per retransmission"
+    },
+    {
+      "metric": "TCP performance degradation threshold",
+      "value": "70% at 6%+ loss",
+      "context": "When timer granularity < 100ms or RTT < 250ms"
+    },
+    {
+      "metric": "DNS UDP cache miss latency",
+      "value": "~20 ms",
+      "context": "2 packets: question + response"
+    },
+    {
+      "metric": "DNS TCP cache miss latency",
+      "value": "~40 ms",
+      "context": "7 minimum packets: handshake + query + response + teardown"
+    },
+    {
+      "metric": "DNS TCP vs UDP latency ratio",
+      "value": "2x slower",
+      "context": "TCP requires connection setup/teardown"
+    },
+    {
+      "metric": "DNS TCP throughput at scale",
+      "value": "~25% of UDP baseline",
+      "context": "Stabilizes as client load increases"
+    },
+    {
+      "metric": "DNS TCP throughput with sufficient resources",
+      "value": "2/3 of UDP performance",
+      "context": "Better than naive estimate when optimized"
+    },
+    {
+      "metric": "High-volume UDP DNS server capacity",
+      "value": "100k+ queries/sec",
+      "context": "With minimal file descriptors"
+    },
+    {
+      "metric": "High-volume TCP DNS server capacity",
+      "value": "10k-50k queries/sec",
+      "context": "1 file descriptor per connection"
+    },
+    {
+      "metric": "Netflix video delivery success rate",
+      "value": "98%",
+      "context": "Using TCP for ABR and segment-based streaming"
+    },
+    {
+      "metric": "Google static asset cache TTL recommendation",
+      "value": "> 6 months to 1 year",
+      "context": "When using version hashes in URLs"
+    },
+    {
+      "metric": "Google TTFB benchmark",
+      "value": "800 ms good, 1.8 seconds+ poor",
+      "context": "Sites with poor LCP average 2.27 seconds TTFB"
+    },
+    {
+      "metric": "TLS handshake server CPU load",
+      "value": "< 1% CPU on production machines",
+      "context": "With < 10KB memory per connection and < 2% network overhead"
+    },
+    {
+      "metric": "Decoded TLS encrypted connection performance",
+      "value": "5 ms difference, 2% peak CPU increase",
+      "context": "Between encrypted and unencrypted connections in tests"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "UDP is always faster than TCP for all use cases",
+      "reality": "UDP has lower latency overhead but no reliability. TCP's handshake cost is amortized over connection lifetime. For long-lived connections, TCP can be faster overall after warmup. Netflix uses TCP for video because segment-based ABR with TCP's delivery guarantees is more reliable than UDP packet retransmission logic."
+    },
+    {
+      "misconception": "TLS encryption is expensive and always adds 100+ ms latency",
+      "reality": "TLS 1.3 with session resumption adds minimal overhead (< 1% CPU). Fresh connections cost 2 RTT (160ms on 80ms RTT), but 40% of HTTPS connections reuse sessions (saving 22.6ms). The real cost is not encryption but handshake negotiation, solved by session reuse."
+    },
+    {
+      "misconception": "Packet loss in UDP networks is rare and acceptable above 1%",
+      "reality": "Packet loss > 5% is a sign of serious network problems. Even 1% loss in TCP causes significant latency (RTO doubling on retransmit). At 6%+ loss, TCP flows suffer 70% performance degradation. Real networks see occasional 20% burst losses."
+    },
+    {
+      "misconception": "TCP congestion control (CUBIC) is optimal and sufficient for modern networks",
+      "reality": "CUBIC is loss-based and slow to respond. BBR detects congestion from delay signals and maintains lower queues. Google found 4-14% throughput gains and sustained latency improvements by switching from CUBIC to BBR. BBRv3 now deployed across Google.com and YouTube."
+    },
+    {
+      "misconception": "Layer 4 load balancing is always the right choice for performance",
+      "reality": "Layer 4 is faster (no decryption/inspection) but Layer 7 enables content-aware routing. Modern hardware makes performance irrelevant for most workloads. Rule of thumb: start with Layer 7 for HTTP workloads, drop to Layer 4 only when hitting performance limits or for protocol-agnostic services."
+    },
+    {
+      "misconception": "QUIC/HTTP3 is universally faster than HTTP/2 and TCP",
+      "reality": "QUIC excels at reducing handshake latency (1-RTT vs 2-RTT), multiplexing streams (avoiding head-of-line blocking), and packet loss recovery. But on fast, low-loss networks, QUIC shows latency disadvantage (QUIC 16.2ms vs HTTP/2 1.9ms in high-speed conditions). Benefits vary by network path."
+    },
+    {
+      "misconception": "All packet loss is equivalent; 1% loss is 1% loss",
+      "reality": "Burst losses (multiple consecutive packets) are more damaging than random loss. Packet loss impact depends on RTT and TCP timer granularity. Flows with RTT < 250ms and timer < 100ms suffer 70% degradation at 6% loss, while high-RTT flows scale better."
+    },
+    {
+      "misconception": "DNS should always use TCP for reliability",
+      "reality": "DNS uses UDP primarily because the protocol has built-in error handling. TCP adds 2x latency (40ms vs 20ms) and consumes 1 fd per connection. TCP is only used for large responses (DNSSEC, zone transfers) where UDP payload limits cause truncation."
+    },
+    {
+      "misconception": "Cache-Control headers are mainly for static files",
+      "reality": "Cache-Control applies to all HTTP responses. Dynamic content uses low TTL (seconds to minutes) with 'no-cache' or 'private' to balance freshness and bandwidth. Proper cache revalidation via ETag/Last-Modified lets you serve stale content while checking freshness asynchronously."
+    },
+    {
+      "misconception": "High TTFB is always a network latency problem",
+      "reality": "High TTFB (> 1.8s) is usually caused by slow server-side processing: database query inefficiency, synchronous operations, or missing caching. Network latency (TCP + TLS) is typically 160-240ms. The remaining 1-1.6 seconds is usually backend compute time."
+    },
+    {
+      "misconception": "Session resumption reduces TLS CPU cost by ~30%",
+      "reality": "Session resumption reduces TLS CPU cost by 10-100x compared to full handshakes. Resumption CPU consumption is negligible; the 30-60% reduction cited in production refers to overall connection setup overhead when resumption is deployed at scale."
+    },
+    {
+      "misconception": "0-RTT mode is always safe and should be enabled everywhere",
+      "reality": "0-RTT eliminates a round trip but introduces replay attack surface. Data sent in 0-RTT can be replayed if the server doesn't track nonce tokens. Should only be used for idempotent requests (GET), not POST/PUT. Requires careful threat modeling."
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.pico.net/kb/udp-vs-tcp/",
+      "title": "UDP vs TCP",
+      "recency": "2024 (current)"
+    },
+    {
+      "url": "https://pinggy.io/blog/udp_vs_tcp_complete_guide/",
+      "title": "UDP vs TCP: Complete Guide to Network Protocols in 2025",
+      "recency": "2025 (current)"
+    },
+    {
+      "url": "https://www.keycdn.com/blog/https-performance-overhead",
+      "title": "Analyzing HTTPS Performance Overhead",
+      "recency": "2024 (current)"
+    },
+    {
+      "url": "https://istlsfastyet.com/",
+      "title": "Is TLS Fast Yet?",
+      "recency": "2024 (current)"
+    },
+    {
+      "url": "https://blog.heroku.com/how-we-sped-up-sni-tls-handshakes-by-5x",
+      "title": "How We Sped up SNI TLS Handshakes by 5x",
+      "recency": "Authoritative Heroku engineering blog"
+    },
+    {
+      "url": "https://www.systemoverflow.com/learn/networking-protocols/http-protocols/tls-handshake-latency-the-critical-path-tax-across-protocol-versions",
+      "title": "TLS Handshake Latency: The Critical Path Tax Across Protocol Versions",
+      "recency": "2024 (current)"
+    },
+    {
+      "url": "https://obkio.com/blog/acceptable-packet-loss/",
+      "title": "What is Acceptable Packet Loss?",
+      "recency": "2024 (current)"
+    },
+    {
+      "url": "https://www.sciencedirect.com/topics/computer-science/packet-loss-rate",
+      "title": "Packet Loss Rate Overview",
+      "recency": "2024 (current)"
+    },
+    {
+      "url": "https://cloud.google.com/blog/products/networking/tcp-bbr-congestion-control-comes-to-gcp-your-internet-just-got-faster",
+      "title": "TCP BBR Congestion Control Comes to GCP",
+      "recency": "2024 (Google Cloud official blog)"
+    },
+    {
+      "url": "https://datatracker.ietf.org/meeting/117/materials/slides-117-ccwg-bbrv3-algorithm-bug-fixes-and-public-internet-deployment-00",
+      "title": "BBRv3: Algorithm Bug Fixes and Public Internet Deployment",
+      "recency": "2024 (IETF official)"
+    },
+    {
+      "url": "https://www.speedguide.net/articles/tcp-congestion-control-algorithms-comparison-7423",
+      "title": "TCP Congestion Control Algorithms Comparison",
+      "recency": "2024 (current)"
+    },
+    {
+      "url": "https://www.a10networks.com/glossary/how-do-layer-4-and-layer-7-load-balancing-differ/",
+      "title": "Layer 4 vs Layer 7 Load Balancing Differences",
+      "recency": "2024 (current)"
+    },
+    {
+      "url": "https://kemptechnologies.com/blog/layer-4-vs.-layer-7-load-balancing-what's-the-difference-and-which-one-do-i-need",
+      "title": "Layer 4 vs Layer 7 Load Balancing",
+      "recency": "2024 (current)"
+    },
+    {
+      "url": "https://arxiv.org/html/2505.22132v1",
+      "title": "Streaming Remote Rendering Services: Comparison of QUIC-based and WebRTC Protocols",
+      "recency": "2025 (preprint, current)"
+    },
+    {
+      "url": "https://arxiv.org/html/2310.09423v2",
+      "title": "QUIC is not Quick Enough over Fast Internet",
+      "recency": "2023 (academic, peer-reviewed)"
+    },
+    {
+      "url": "https://medium.com/@abhi.patel.7172/quic-vs-tcp-the-ultimate-benchmark-for-modern-network-performance-22be6e5af66d",
+      "title": "QUIC vs TCP: The Ultimate Benchmark for Modern Network Performance",
+      "recency": "2024 (current)"
+    },
+    {
+      "url": "https://github.com/Shenggan/quic_vs_tcp",
+      "title": "QUIC vs TCP: A Survey and Benchmark",
+      "recency": "2024 (GitHub benchmark suite)"
+    },
+    {
+      "url": "https://blog.cloudflare.com/network-performance-update-security-week-2024/",
+      "title": "Network Performance Update: Security Week 2024",
+      "recency": "2024 (Cloudflare official blog)"
+    },
+    {
+      "url": "https://blog.cloudflare.com/http-3-vs-http-2/",
+      "title": "Comparing HTTP/3 vs HTTP/2 Performance",
+      "recency": "2024 (Cloudflare official blog)"
+    },
+    {
+      "url": "https://blog.cloudflare.com/radar-2024-year-in-review/",
+      "title": "Cloudflare 2024 Year in Review",
+      "recency": "2024 (Cloudflare official)"
+    },
+    {
+      "url": "https://www.catchpoint.com/blog/tcp-rtt",
+      "title": "Understanding RTT Impact on TCP Retransmissions",
+      "recency": "2024 (current)"
+    },
+    {
+      "url": "https://arpitbhayani.me/blogs/dns-udp-tcp/",
+      "title": "Why does DNS use both UDP and TCP",
+      "recency": "2024 (technical blog)"
+    },
+    {
+      "url": "https://labs.ripe.net/author/baptiste_jonglez_1/persistent-dns-connections-for-reliability-and-performance/",
+      "title": "Persistent DNS Connections for Reliability and Performance",
+      "recency": "2018 (RIPE Labs, still authoritative)"
+    },
+    {
+      "url": "https://blog.apnic.net/2018/09/19/persistent-dns-connections-for-reliability-and-performance/",
+      "title": "Persistent DNS Connections for Reliability and Performance",
+      "recency": "2018 (APNIC official, peer organization)"
+    },
+    {
+      "url": "https://preseem.com/2023/02/how-netflix-works-webinar-recap/",
+      "title": "How Netflix Works – Technical Webinar Recap",
+      "recency": "2023 (current enough, Netflix official engineering)"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/computer-networks/why-does-netflix-use-tcp-but-not-udp-for-streaming-video/",
+      "title": "Why does Netflix use TCP but not UDP for streaming video?",
+      "recency": "2024 (current)"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control",
+      "title": "Cache-Control Header - MDN Web Docs",
+      "recency": "2024 (current, Mozilla official)"
+    },
+    {
+      "url": "https://www.debugbear.com/docs/http-cache-control-header",
+      "title": "A Guide to HTTP Cache Control Headers",
+      "recency": "2024 (current)"
+    },
+    {
+      "url": "https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/",
+      "title": "Ultimate Guide to HTTP Caching for Static Assets",
+      "recency": "2024 (current)"
+    },
+    {
+      "url": "https://www.debugbear.com/docs/metrics/time-to-first-byte",
+      "title": "Measure And Optimize Time To First Byte (TTFB)",
+      "recency": "2024 (current)"
+    },
+    {
+      "url": "https://wpengine.com/support/troubleshooting-high-time-first-byte-ttfb/",
+      "title": "Troubleshoot High Time to First Byte (TTFB)",
+      "recency": "2024 (current)"
+    }
+  ]
+}

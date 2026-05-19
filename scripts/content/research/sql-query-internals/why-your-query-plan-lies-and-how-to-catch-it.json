@@ -1,0 +1,498 @@
+{
+  "facts": [
+    {
+      "fact": "PostgreSQL has achieved a 15% average performance improvement per major version on the Join Order Benchmark over the past decade",
+      "source": "https://rmarcus.info/blog/2024/04/12/pg-over-time.html",
+      "publication_date": "2024-04-12"
+    },
+    {
+      "fact": "PostgreSQL tail latency has dropped nearly 50% in the last 10 years (version 8 to version 16)",
+      "source": "https://rmarcus.info/blog/2024/04/12/pg-over-time.html",
+      "publication_date": "2024-04-12"
+    },
+    {
+      "fact": "Cardinality estimation errors can introduce errors of many orders of magnitude, while cost models can introduce errors of at most 30%",
+      "source": "https://arxiv.org/pdf/2101.01507",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "A 2024 systematic study found that traditional cost models still often outperform state-of-the-art learned cost models on join ordering, access path selection, and physical operator selection tasks",
+      "source": "https://dl.acm.org/doi/10.1145/3725309",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Adaptive Cost Models dynamically optimize CPU- and I/O-related plan cost parameters at database runtime, showing 20% end-to-end latency improvement on TPC-H benchmark",
+      "source": "https://arxiv.org/abs/2409.17136",
+      "publication_date": "2024-09"
+    },
+    {
+      "fact": "For a MySQL Top-3 query using window functions, pre-fetch and post-processing optimization reduced response time from 8 seconds to 10 milliseconds (800x improvement)",
+      "source": "https://medium.com/@Rebooter.S/optimizing-mysql-topn-queries-window-function-performance-comparison-and-optimization-strategies-04dcb935aa82",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "PostgreSQL's autovacuum daemon runs ANALYZE automatically when approximately 1050 rows have been modified (default threshold: 50 + 10000 * 0.1) for a 10,000-row table",
+      "source": "https://www.postgresql.org/docs/current/routine-vacuuming.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Covering indexes eliminate table lookups by including all query columns in the index, significantly reducing disk I/O",
+      "source": "https://planetscale.com/learn/courses/mysql-for-developers/indexes/covering-indexes",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Bitmap index scans read all relevant index rows first, then populate a TID bitmap for sequential table I/O, avoiding random access patterns",
+      "source": "https://www.cybertec-postgresql.com/en/postgresql-indexing-index-scan-vs-bitmap-scan-vs-sequential-scan-basics/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Hash joins require the smaller table's hash table to fit in work_mem; if not, PostgreSQL builds the hash in multiple batches and spills to disk",
+      "source": "https://www.cybertec-postgresql.com/en/join-strategies-and-performance-in-postgresql/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Merge joins are the only practical strategy for joining tables larger than available work_mem, but they require both inputs to be sorted first",
+      "source": "https://www.cybertec-postgresql.com/en/join-strategies-and-performance-in-postgresql/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "PostgreSQL's pg_hint_plan extension allows tweaking execution plans via SQL comments without core language changes",
+      "source": "https://pghintplan.osdn.jp/pg_hint_plan.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Index seeks are only possible if the first column of a composite index is present in WHERE or JOIN clauses",
+      "source": "https://www.sqlshack.com/query-optimization-myths/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Sequential scans are often the fastest access method for tables under ~10KB, even with available indexes",
+      "source": "https://www.cybertec-postgresql.com/en/postgresql-indexing-index-scan-vs-bitmap-scan-vs-sequential-scan-basics/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Filter pushdown can filter out approximately 50% of traffic to object stores in cloud deployments",
+      "source": "https://materialize.com/blog/how-filter-pushdown-works/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "PostgreSQL 17 introduces an improved statistics model making cardinality estimation more manageable for very large databases",
+      "source": "https://www.netdata.cloud/academy/cardinality-estimation-in-postgres/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Left-deep join trees have 2^(n-1) possible join orders for N tables, while bushy trees have exponentially more combinations: 2^(n-1) * C(n-1)",
+      "source": "https://www.red-gate.com/simple-talk/databases/sql-server/performance-sql-server/join-reordering-and-bushy-plans/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "shared_buffers should typically be set to 25-40% of available system memory; beyond 40% provides diminishing returns due to OS page cache overlap",
+      "source": "https://www.postgresql.fastware.com/pzone/2024-06-understanding-shared-buffers-work-mem-and-wal_buffers-in-postgresql",
+      "publication_date": "2024-06"
+    },
+    {
+      "fact": "work_mem is allocated per sort/hash operation, not per connection; a single query with multiple sorts can use several allocations",
+      "source": "https://www.postgresql.org/docs/current/runtime-config-resource.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "SQL Server 2022+ cardinality estimation feedback can improve estimates for repeating expressions that traditional cardinality estimators miss",
+      "source": "https://learn.microsoft.com/en-us/sql/relational-databases/performance/intelligent-query-processing-ce-feedback-for-expressions?view=sql-server-ver17",
+      "publication_date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "company": "Cubbit",
+      "problem": "PostgreSQL query using collation en_US.UTF-8 on path column performed poorly; queries that should use indexes fell back to filters",
+      "solution": "Changed database default collation to 'C' (binary ordering), eliminating locale-aware string comparison overhead",
+      "result": "Query execution plan switched from Filter steps to Index Cond, significantly improving performance",
+      "source": "https://medium.com/cubbit/optimizing-postgresql-queries-12-indexing-pitfalls-and-how-we-fixed-them-81c25615a84e"
+    },
+    {
+      "company": "OmegaUp (academic platform)",
+      "problem": "Scoreboard query using window functions took seconds; full table scan with sorting was unavoidable",
+      "solution": "Applied composite index on (user_id, timestamp) matching PARTITION BY and ORDER BY clauses",
+      "result": "Query transitioned from full table scan with temporary sort to index scan",
+      "source": "https://github.com/omegaup/omegaup/issues/9472"
+    },
+    {
+      "company": "Generic MySQL deployment (benchmarked)",
+      "problem": "Top-3 window function query returned results in 8 seconds with full table scan and massive sort buffer",
+      "solution": "Pre-fetch optimization with indexed partial scans, then post-process window functions on smaller result set",
+      "result": "Query latency reduced to 10ms (800x improvement)",
+      "source": "https://medium.com/@Rebooter.S/optimizing-mysql-topn-queries-window-function-performance-comparison-and-optimization-strategies-04dcb935aa82"
+    },
+    {
+      "company": "Feed platform (generic)",
+      "problem": "Loading 2 million posts took 8 seconds without index on created_at",
+      "solution": "Added B-tree index on created_at column",
+      "result": "Query reduced to under 50 milliseconds",
+      "source": "https://builtin.com/data-science/b-tree-index"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Cardinality estimation error propagation",
+      "analogy": "Like a weather forecast error that compounds: a small misprediction of temperature cascades into wrong humidity estimates, which then mispredicts rain. Similarly, a 2x error in predicting rows at a join's first input can lead to a 10x error in total predicted rows if the error flows through multiple joins."
+    },
+    {
+      "concept": "Covering index vs table lookup",
+      "analogy": "Covering indexes are like having a phone book that doesn't just list names and page numbers, but also includes phone numbers and addresses. You never need to look up each person individually in the detailed directory."
+    },
+    {
+      "concept": "Sequential vs index scan tradeoff",
+      "analogy": "Using an index on a small table is like using a detailed map to find a house on a single-street town — you'd spend more time reading the map than just walking down the street. But in a city, the map saves tremendous time."
+    },
+    {
+      "concept": "Hash join spilling to disk",
+      "analogy": "A hash join is like writing names on a whiteboard and checking them against a list. If there are too many names and the whiteboard fills, you have to erase, write to paper (disk), then reload sections later — each disk operation is much slower than reading from whiteboard memory."
+    },
+    {
+      "concept": "Filter pushdown",
+      "analogy": "Rather than delivering all mail in a neighborhood to a central office and filtering it there, mail carriers filter at the postal route level. You avoid the cost of transporting, sorting, and moving rejected mail."
+    },
+    {
+      "concept": "Predicate on indexed column",
+      "analogy": "Without a predicate that includes the first index column, the optimizer cannot use index seek. It's like having an alphabetized phone book but asking 'find all people who work in tech' — alphabetization doesn't help until you at least have a name prefix."
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Performance improvement per PostgreSQL major version",
+      "value": "15%",
+      "context": "Average on Join Order Benchmark over 10 years",
+      "source": "https://rmarcus.info/blog/2024/04/12/pg-over-time.html"
+    },
+    {
+      "metric": "Tail latency reduction",
+      "value": "~50%",
+      "context": "PostgreSQL version 8 to version 16 over 10 years",
+      "source": "https://rmarcus.info/blog/2024/04/12/pg-over-time.html"
+    },
+    {
+      "metric": "Maximum cost model error",
+      "value": "30%",
+      "context": "Traditional database cost models",
+      "source": "https://arxiv.org/pdf/2101.01507"
+    },
+    {
+      "metric": "Cardinality estimation error range",
+      "value": "Many orders of magnitude",
+      "context": "Can be 100x, 1000x, or worse due to independence assumption violations",
+      "source": "https://arxiv.org/pdf/2101.01507"
+    },
+    {
+      "metric": "Window function optimization speedup",
+      "value": "800x (8s → 10ms)",
+      "context": "MySQL Top-3 query with pre-fetch optimization",
+      "source": "https://medium.com/@Rebooter.S/optimizing-mysql-topn-queries-window-function-performance-comparison-and-optimization-strategies-04dcb935aa82"
+    },
+    {
+      "metric": "Adaptive cost model improvement",
+      "value": "20%",
+      "context": "End-to-end latency improvement on TPC-H benchmark",
+      "source": "https://arxiv.org/abs/2409.17136"
+    },
+    {
+      "metric": "shared_buffers recommended allocation",
+      "value": "25-40% of system memory",
+      "context": "Optimal for production systems; beyond 40% shows diminishing returns",
+      "source": "https://www.postgresql.fastware.com/pzone/2024-06-understanding-shared-buffers-work-mem-and-wal_buffers-in-postgresql"
+    },
+    {
+      "metric": "Filter pushdown traffic reduction",
+      "value": "~50%",
+      "context": "Traffic to object stores in cloud deployments",
+      "source": "https://materialize.com/blog/how-filter-pushdown-works/"
+    },
+    {
+      "metric": "PostgreSQL autovacuum ANALYZE threshold (10K row table)",
+      "value": "1050 rows modified",
+      "context": "Default: 50 + 10000 * 0.1",
+      "source": "https://www.postgresql.org/docs/current/routine-vacuuming.html"
+    },
+    {
+      "metric": "Index selectivity threshold (MapR example)",
+      "value": "0.025",
+      "context": "Below this, index may not be used for non-covering queries",
+      "source": "https://docs.ezmeral.hpe.com/datafabric-customer-managed/61/MapR-DB/Indexes/OverviewIndexSelectionExecution.html"
+    },
+    {
+      "metric": "Left-deep join plan space",
+      "value": "2^(n-1) orderings",
+      "context": "For N tables; bushy trees have exponentially larger search space",
+      "source": "https://www.red-gate.com/simple-talk/databases/sql-server/performance-sql-server/join-reordering-and-bushy-plans/"
+    },
+    {
+      "metric": "PolarDB threshold for greedy join reorder",
+      "value": "≥ 9 tables",
+      "context": "When table count exceeds 9, switches from exhaustive to greedy heuristic",
+      "source": "https://www.alibabacloud.com/blog/join-reorder---core-technology-of-polardb-for-xscale-optimizer_600508"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Index seeks are always possible with composite indexes if any key column is in the WHERE clause",
+      "reality": "Index seeks require the FIRST column of the index to be present in WHERE or JOIN clauses. Later columns in a composite index cannot be used for seeks without the leading column.",
+      "source": "https://www.sqlshack.com/query-optimization-myths/"
+    },
+    {
+      "misconception": "SELECT COUNT(*) always forces a full table scan",
+      "reality": "PostgreSQL and SQL Server will use the smallest non-clustered index (non-filtered) available, not a full table scan",
+      "source": "https://www.sqlshack.com/query-optimization-myths/"
+    },
+    {
+      "misconception": "Larger indexes are always better for query performance",
+      "reality": "Indexes have negative impact on INSERT/UPDATE/DELETE operations; every write must update all indexes. Write-heavy workloads can be harmed by over-indexing.",
+      "source": "https://www.red-gate.com/simple-talk/databases/sql-server/learn/using-covering-indexes-to-improve-query-performance/"
+    },
+    {
+      "misconception": "Machine learning cost models will solve cardinality estimation",
+      "reality": "2024 research shows traditional cost models still outperform state-of-the-art learned models on standard optimization tasks (join ordering, access path selection, operator selection)",
+      "source": "https://dl.acm.org/doi/10.1145/3725309"
+    },
+    {
+      "misconception": "ANALYZE must be run manually after every significant data change",
+      "reality": "PostgreSQL's autovacuum daemon automatically runs ANALYZE based on configurable thresholds; manual runs are only needed for non-standard workloads",
+      "source": "https://www.postgresql.org/docs/current/routine-vacuuming.html"
+    },
+    {
+      "misconception": "All queries benefit from indexes on WHERE clause columns",
+      "reality": "If a query returns >10-20% of table rows, a sequential scan is often faster than index+lookup due to random I/O overhead. Index selectivity matters.",
+      "source": "https://www.cybertec-postgresql.com/en/postgresql-indexing-index-scan-vs-bitmap-scan-vs-sequential-scan-basics/"
+    },
+    {
+      "misconception": "Window functions with PARTITION BY always cause full table scans",
+      "reality": "Composite indexes on (partition_column, order_column) can enable index scans instead of full table scans for window functions",
+      "source": "https://dev.mysql.com/doc/refman/8.0/en/window-function-optimization.html"
+    },
+    {
+      "misconception": "Hash joins are always faster than merge joins",
+      "reality": "Hash joins require sufficient work_mem for the smaller table's hash table. Merge joins are necessary for truly large datasets that exceed work_mem.",
+      "source": "https://www.cybertec-postgresql.com/en/join-strategies-and-performance-in-postgresql/"
+    },
+    {
+      "misconception": "Query hints can replace proper schema and index design",
+      "reality": "Hints are temporary stopgaps; they may lose relevance after database upgrades and don't address root causes like missing statistics or poor cardinality estimation",
+      "source": "https://medium.com/@encodedots/postgres-query-optimizer-hints-when-and-how-to-use-them-effectively-f86e36646692"
+    },
+    {
+      "misconception": "Setting shared_buffers to 50%+ of system memory will improve performance",
+      "reality": "Beyond 40% allocation, diminishing returns occur due to overlap with OS page cache; double-caching data becomes inefficient",
+      "source": "https://www.postgresql.fastware.com/pzone/2024-06-understanding-shared-buffers-work-mem-and-wal_buffers-in-postgresql"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.postgresql.org/docs/current/using-explain.html",
+      "title": "PostgreSQL Official: Using EXPLAIN",
+      "recency": "Current (2024-2025)"
+    },
+    {
+      "url": "https://thoughtbot.com/blog/reading-an-explain-analyze-query-plan",
+      "title": "Reading a Postgres EXPLAIN ANALYZE Query Plan",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://pganalyze.com/docs/explain/basics-of-postgres-query-planning",
+      "title": "The Basics of Postgres Query Planning",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://explain.dalibo.com/",
+      "title": "Dalibo EXPLAIN Visualizer",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://www.pgmustard.com/",
+      "title": "pgMustard - Commercial EXPLAIN visualization tool",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://arxiv.org/pdf/2101.01507",
+      "title": "A Survey on Advancing the DBMS Query Optimizer: Cardinality Estimation, Cost Model, and Plan Enumeration",
+      "recency": "2024 (updated, originally 2021)"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/sql/relational-databases/performance/cardinality-estimation-sql-server",
+      "title": "SQL Server: Cardinality Estimation",
+      "recency": "2024-2025"
+    },
+    {
+      "url": "https://www.brentozar.com/archive/2024/09/yes-cardinality-estimation-keeps-changing-after-sql-server-2014/",
+      "title": "Yes, Cardinality Estimation Keeps Changing After SQL Server 2014",
+      "recency": "2024-09"
+    },
+    {
+      "url": "https://dl.acm.org/doi/10.1145/3725309",
+      "title": "How Good are Learned Cost Models, Really?",
+      "recency": "2024"
+    },
+    {
+      "url": "https://arxiv.org/abs/2409.17136",
+      "title": "Adaptive Cost Model for Query Optimization",
+      "recency": "2024-09"
+    },
+    {
+      "url": "https://planetscale.com/learn/courses/mysql-for-developers/indexes/covering-indexes",
+      "title": "PlanetScale: Covering Indexes",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://www.red-gate.com/simple-talk/databases/sql-server/learn/using-covering-indexes-to-improve-query-performance/",
+      "title": "Using Covering Indexes to Improve Query Performance",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://medium.com/@Rebooter.S/optimizing-mysql-topn-queries-window-function-performance-comparison-and-optimization-strategies-04dcb935aa82",
+      "title": "Optimizing MySQL Top-N Queries with Window Functions",
+      "recency": "2024"
+    },
+    {
+      "url": "https://dev.mysql.com/doc/refman/8.0/en/window-function-optimization.html",
+      "title": "MySQL 8.0: Window Function Optimization",
+      "recency": "2024-2025"
+    },
+    {
+      "url": "https://www.vldb.org/pvldb/vol8/p1058-leis.pdf",
+      "title": "Efficient Processing of Window Functions in Analytical SQL Queries",
+      "recency": "Academic reference (2024 era)"
+    },
+    {
+      "url": "https://pghintplan.osdn.jp/pg_hint_plan.html",
+      "title": "pg_hint_plan Extension Documentation",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://medium.com/@encodedots/postgres-query-optimizer-hints-when-and-how-to-use-them-effectively-f86e36646692",
+      "title": "Postgres Query Optimizer Hints: When and How to Use Them",
+      "recency": "2024"
+    },
+    {
+      "url": "https://wiki.postgresql.org/wiki/OptimizerHintsDiscussion",
+      "title": "PostgreSQL Wiki: Optimizer Hints Discussion",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://planetscale.com/blog/btrees-and-database-indexes",
+      "title": "B-trees and Database Indexes",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://builtin.com/data-science/b-tree-index",
+      "title": "How Database B-Tree Indexing Works",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://use-the-index-luke.com/sql/anatomy/the-tree",
+      "title": "The Balanced Search Tree (B-Tree) in SQL Databases",
+      "recency": "Canonical reference (2024 current)"
+    },
+    {
+      "url": "https://rmarcus.info/blog/2024/04/12/pg-over-time.html",
+      "title": "Ten Years of Improvements in PostgreSQL's Optimizer",
+      "recency": "2024-04-12"
+    },
+    {
+      "url": "https://netflixtechblog.com/fixing-performance-regressions-before-they-happen-eab2602b86fe",
+      "title": "Fixing Performance Regressions Before They Happen",
+      "recency": "Current (Netflix TechBlog)"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/row-estimation-examples.html",
+      "title": "PostgreSQL: Row Estimation Examples",
+      "recency": "2024-2025"
+    },
+    {
+      "url": "https://www.netdata.cloud/academy/cardinality-estimation-in-postgres/",
+      "title": "Cardinality Estimation in PostgreSQL 17",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.cybertec-postgresql.com/en/postgresql-indexing-index-scan-vs-bitmap-scan-vs-sequential-scan-basics/",
+      "title": "PostgreSQL Indexing: Index Scan vs. Bitmap Scan vs. Sequential Scan",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://www.cybertec-postgresql.com/en/join-strategies-and-performance-in-postgresql/",
+      "title": "Join Strategies and Performance in PostgreSQL",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://medium.com/@parameshmethuku/sequential-scan-vs-index-scan-how-they-work-and-when-to-use-them-c7509f0b5430",
+      "title": "Sequential Scan vs. Index Scan: How They Work and When to Use Them",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.red-gate.com/simple-talk/databases/sql-server/performance-sql-server/join-reordering-and-bushy-plans/",
+      "title": "Join Reordering and Bushy Plans",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://arxiv.org/html/2502.15181v1",
+      "title": "Debunking the Myth of Join Ordering",
+      "recency": "2025"
+    },
+    {
+      "url": "https://www.alibabacloud.com/blog/join-reorder---core-technology-of-polardb-for-xscale-optimizer_600508",
+      "title": "Join Reorder - Core Technology of PolarDB",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/routine-vacuuming.html",
+      "title": "PostgreSQL: Routine Vacuuming",
+      "recency": "2024-2025"
+    },
+    {
+      "url": "https://materialize.com/blog/how-filter-pushdown-works/",
+      "title": "How Filter Pushdown Works",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://vizmasters.substack.com/p/predicate-pushdown-demystified-from",
+      "title": "Predicate Pushdown Demystified",
+      "recency": "2024-2025"
+    },
+    {
+      "url": "https://pola.rs/posts/predicate-pushdown-query-optimizer/",
+      "title": "Polars: The Power of Predicate Pushdown",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://www.postgresql.fastware.com/pzone/2024-06-understanding-shared-buffers-work-mem-and-wal_buffers-in-postgresql",
+      "title": "Understanding shared_buffers, work_mem, and wal_buffers",
+      "recency": "2024-06"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/runtime-config-resource.html",
+      "title": "PostgreSQL: Resource Consumption Configuration",
+      "recency": "2024-2025"
+    },
+    {
+      "url": "https://medium.com/cubbit/optimizing-postgresql-queries-12-indexing-pitfalls-and-how-we-fixed-them-81c25615a84e",
+      "title": "Optimizing PostgreSQL Queries: 12 Indexing Pitfalls and Solutions",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.sqlshack.com/query-optimization-myths/",
+      "title": "Query Optimization Myths",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://vladmihalcea.com/index-selectivity/",
+      "title": "Index Selectivity by Vlad Mihalcea",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://docs.ezmeral.hpe.com/datafabric-customer-managed/61/MapR-DB/Indexes/OverviewIndexSelectionExecution.html",
+      "title": "MapR DB: Index Selection and Execution",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/sql/relational-databases/performance/intelligent-query-processing-ce-feedback-for-expressions",
+      "title": "SQL Server 2025: Cardinality Estimation Feedback",
+      "recency": "2024-2025"
+    }
+  ]
+}

@@ -1,0 +1,547 @@
+{
+  "facts": [
+    {
+      "fact": "A cold TLS 1.2 handshake requires 3 total round-trips (1 for TCP three-way handshake + 2 for TLS negotiation), translating to 600-750ms for a user in Asia connecting to a US server with 200-250ms RTT",
+      "source": "https://istlsfastyet.com/",
+      "date": "2024"
+    },
+    {
+      "fact": "TLS 1.3 reduces the TLS portion to 1 RTT (2 RTTs total), saving 200-250ms on intercontinental connections",
+      "source": "https://www.thousandeyes.com/blog/optimizing-web-performance-tls-1-3",
+      "date": "2024"
+    },
+    {
+      "fact": "TLS session resumption with 0-RTT allows a client to include encrypted application data in the first packet, eliminating handshake latency for repeat connections",
+      "source": "https://oneuptime.com/blog/post/2026-03-20-tls-session-resumption-faster-https/view",
+      "date": "2026"
+    },
+    {
+      "fact": "Layer 4 load balancers make routing decisions based solely on IPs and TCP/UDP ports without inspecting message content",
+      "source": "https://www.a10networks.com/glossary/how-do-layer-4-and-layer-7-load-balancing-differ/",
+      "date": "2024"
+    },
+    {
+      "fact": "Layer 7 load balancers terminate network traffic, decrypt as needed, inspect messages, and make content-based routing decisions on HTTP headers, URLs, and cookie data",
+      "source": "https://www.haproxy.com/blog/layer-4-vs-layer-7-load-balancing",
+      "date": "2024"
+    },
+    {
+      "fact": "For gRPC deployments using multiplexed HTTP/2, Layer 4 load balancing can cause uneven load distribution because it routes entire connections to a single backend, not individual requests",
+      "source": "https://www.groundcover.com/learn/networking/grpc-load-balancing",
+      "date": "2024"
+    },
+    {
+      "fact": "Google recommends Cache-Control max-age values longer than 6 months or a year for static resources when using cache-busting patterns with version hashes in URLs",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control",
+      "date": "2025"
+    },
+    {
+      "fact": "Static assets should use 'public' and 'immutable' directives in Cache-Control headers to enable caching by both end-user browsers and intermediate CDN proxies",
+      "source": "https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/",
+      "date": "2025"
+    },
+    {
+      "fact": "Dynamic content like HTML and API responses should use 'no-cache' or low TTL values with 'private' to ensure quick delivery of personalized experiences without serving stale data",
+      "source": "https://dohost.us/index.php/2025/10/29/advanced-caching-rules-tailoring-caching-for-different-content-types-static-dynamic-apis/",
+      "date": "2025"
+    },
+    {
+      "fact": "Omitting a Cache-Control header allows browsers to heuristically cache responses without explicit control, leading to unpredictable caching behavior",
+      "source": "https://www.alokai.com/blog/cache-control-http-header",
+      "date": "2024"
+    },
+    {
+      "fact": "Time To First Byte (TTFB) should be 0.8 seconds or less; values greater than 1.8 seconds are considered poor",
+      "source": "https://web.dev/articles/ttfb",
+      "date": "2024"
+    },
+    {
+      "fact": "Network transmission (request + response over the network) accounts for approximately 40% of TTFB",
+      "source": "https://www.debugbear.com/docs/metrics/time-to-first-byte",
+      "date": "2024"
+    },
+    {
+      "fact": "Dynamic content generation (PHP, database queries) is the most common culprit for high TTFB, with large files and slow queries as primary contributors",
+      "source": "https://wpengine.com/support/troubleshooting-high-time-first-byte-ttfb/",
+      "date": "2024"
+    },
+    {
+      "fact": "Cache stampede (dogpile effect) occurs when a popular cached item expires under heavy load, causing multiple concurrent requests to regenerate it simultaneously from the origin",
+      "source": "https://en.wikipedia.org/wiki/Cache_stampede",
+      "date": "2024"
+    },
+    {
+      "fact": "With cache stampede, if a cached page takes 3 seconds to render and has 10 requests per second traffic, cache expiry can trigger 30 simultaneous render operations",
+      "source": "https://medium.com/@_sidharth_m_/how-to-avoid-cache-stampede-or-dogpile-problem-upon-cache-expiry-370ecc06b76c",
+      "date": "2024"
+    },
+    {
+      "fact": "CDNs implement request collapsing at the edge: when multiple simultaneous requests hit a stale entry, only one forwards to the origin while others are held and served from the result",
+      "source": "https://blog.cloudflare.com/instant-purge/",
+      "date": "2024"
+    },
+    {
+      "fact": "Cache invalidation by tag allows purging all cached content associated with a tag; Cloudflare marks tagged content as stale while revalidation happens in the background",
+      "source": "https://dohost.us/index.php/2025/10/29/advanced-cdn-cache-purging-and-invalidation-strategies/",
+      "date": "2025"
+    },
+    {
+      "fact": "A good CDN cache hit ratio (CHR) should range between 95-99%, meaning less than 5% of requests go to origin",
+      "source": "https://www.keycdn.com/blog/cdn-cache-hit-ratio",
+      "date": "2024"
+    },
+    {
+      "fact": "Cloudflare CDN caching can reduce origin load by up to 70% and deliver sub-50ms response times globally",
+      "source": "https://www.cloudflare.com/learning/cdn/performance/",
+      "date": "2024"
+    },
+    {
+      "fact": "A WordPress site normally taking 900ms can deliver content in under 35ms from Cloudflare's edge—a 25x improvement",
+      "source": "https://panelica.com/blog/cloudflare-cache-setup-and-performance-optimization-the-definitive-guide",
+      "date": "2024"
+    },
+    {
+      "fact": "Brotli compression produces approximately 20% smaller files than gzip for text-based content",
+      "source": "https://developers.cloudflare.com/cache/performance-review/cache-performance/",
+      "date": "2024"
+    },
+    {
+      "fact": "Netflix Open Connect achieves approximately 98% cache hit rate, with origin traffic being only 2% of edge traffic",
+      "source": "https://netflixtechblog.com/driving-content-delivery-efficiency-through-classifying-cache-misses-ffcf08026b6c",
+      "date": "2024"
+    },
+    {
+      "fact": "Netflix's two-tier CDN architecture uses Storage Appliances at internet exchange points holding nearly the entire catalog, and Edge Appliances within ISPs caching regional content",
+      "source": "https://systemdesignschool.io/blog/netflix-open-connect",
+      "date": "2024"
+    },
+    {
+      "fact": "Origin Shield is an additional caching layer between CDN edge servers and the origin, reducing load on the origin by aggregating requests from all regional edge caches",
+      "source": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/origin-shield.html",
+      "date": "2024"
+    },
+    {
+      "fact": "HTTP/2 multiplexing allows multiple requests to be sent in parallel over a single connection, eliminating head-of-line blocking present in HTTP/1.1",
+      "source": "https://blog.vespa.ai/http2/",
+      "date": "2024"
+    },
+    {
+      "fact": "HTTP/2 with 256 concurrent streams achieved 115,000 requests per second compared to 6,500 for HTTP/1.1",
+      "source": "https://medium.com/@ntiinsd/http-1-1-vs-http-2-vs-http-3-the-ultimate-performance-guide-for-2025-670b1f1eabf5",
+      "date": "2025"
+    },
+    {
+      "fact": "An e-commerce site's HTTP/1.1 had 3-second page loads under high concurrency due to head-of-line blocking; switching to HTTP/2 reduced it to 1.5 seconds",
+      "source": "https://www.akamai.com/blog/performance/http2-persistent-connections",
+      "date": "2024"
+    },
+    {
+      "fact": "Persistent HTTP/2 connections reduce DNS lookups by approximately 33% compared to establishing new connections per request",
+      "source": "https://www.haproxy.com/blog/http-keep-alive-pipelining-multiplexing-and-connection-pooling",
+      "date": "2024"
+    },
+    {
+      "fact": "Invalidating a CDN cache has no effect on browsers or ISP caches; once cached at the user's browser or ISP level, the content cannot be remotely removed",
+      "source": "https://torvo.com.au/articles/why-cache-invalidation-doesnt-work",
+      "date": "2022"
+    },
+    {
+      "fact": "TLS 1.3 with PSK (Pre-Shared Key) resumption replaces legacy session IDs, enabling 0-RTT resume connections with a single round trip",
+      "source": "https://timtaubert.de/blog/2017/02/the-future-of-session-resumption-forward-secure-psk-key-agreement-in-tls-1-3",
+      "date": "2017 (foundational, still current in 2024)"
+    },
+    {
+      "fact": "0-RTT TLS 1.3 resumption can lead to replay attacks since early data lacks state information; mitigated by regular session key rotation",
+      "source": "https://oneuptime.com/blog/post/2026-03-20-tls-session-resumption-faster-https/view",
+      "date": "2026"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "E-commerce Flash Sale Stampede",
+      "description": "An e-commerce site announces a flash sale at noon. At 12:00:00, millions of users hit the product page simultaneously. If the product cache expired at 11:59:55, a stampede of millions of database queries crashes the system.",
+      "lesson": "Cache hit rates directly protect origin infrastructure from capacity collapse during traffic spikes"
+    },
+    {
+      "scenario": "Weather Application Cache Expiry",
+      "description": "A weather website caches city data with a 5-minute TTL. When cached weather for a major city expires, 50,000 simultaneous user requests arrive asking for that city's weather.",
+      "lesson": "High-traffic content requires either long TTLs, stale-while-revalidate patterns, or request collapsing to prevent stampedes"
+    },
+    {
+      "scenario": "News Site Viral Article",
+      "description": "A news aggregator caches article metadata with a 2-minute TTL. When a major story breaks, traffic spikes 100x. Every 2-minute expiry becomes a mini-stampede that cascades upstream.",
+      "lesson": "Time-based cache expiration doesn't scale; event-based invalidation (tag-based purge) is better for dynamic content"
+    },
+    {
+      "scenario": "Netflix Open Connect Global Reach",
+      "description": "Netflix pre-positions encoded video segments to edge appliances within ISP networks during off-peak hours. During peak viewing hours, users fetch manifests and segments from the nearest appliance with 98% cache hit rate, requiring only 2% origin requests.",
+      "lesson": "Strategic content prepositioning and edge caching reduce origin traffic by 50x and improve global latency"
+    },
+    {
+      "scenario": "Cloudflare Early Hints for Fastly",
+      "description": "Fastly uses Shielding to reduce origin load during cache misses: all requests from edge POPs route through a single regional shield node before reaching origin, creating a secondary cache that catches request batches.",
+      "lesson": "Multi-tier caching (edge → shield → origin) multiplies cache hit ratios and protects origin from thundering herd"
+    },
+    {
+      "scenario": "Amazon CloudFront Origin Shield Multi-CDN",
+      "description": "A company uses multiple CDNs (Cloudflare + CloudFront) simultaneously for redundancy. Origin Shield aggregates requests from all CDN edge servers, preventing the origin from seeing 10x request amplification.",
+      "lesson": "Origin Shield amortizes origin capacity across multiple CDN providers, preventing over-provisioning"
+    },
+    {
+      "scenario": "gRPC Microservices Load Balancing",
+      "description": "A Kubernetes cluster runs gRPC services on 10 pods. With Layer 4 load balancing, all traffic from a single client lands on pod #1 while pods #2-10 sit idle. Switching to Layer 7 balancing distributes individual gRPC calls evenly across all 10 pods.",
+      "lesson": "Multiplexed protocols (HTTP/2, gRPC) require Layer 7 load balancing; Layer 4 treats entire connections as indivisible"
+    },
+    {
+      "scenario": "TLS Handshake Latency in Asia-US Connection",
+      "description": "A user in Mumbai (250ms RTT to US East) establishes a fresh HTTPS connection. TLS 1.2 adds 500ms of handshake overhead (2 RTT). Upgrading to TLS 1.3 reduces it to 250ms (1 RTT). Enabling session resumption with 0-RTT eliminates it entirely for repeat visits.",
+      "lesson": "Protocol version and session management compound: TLS 1.3 + resumption saves 500ms per new connection"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "CDN as a bookstore chain",
+      "explanation": "Origin is the publisher. Regional bookstores (edge POPs) hold popular titles. Origin Shield is a central warehouse between bookstores and publisher. Customers (users) buy from the nearest bookstore first; if a title is out of stock, the bookstore orders from the warehouse, not the publisher."
+    },
+    {
+      "analogy": "Cache stampede as a bank run",
+      "explanation": "When a cached resource expires, it's like rumors of a bank closure. All depositors (requests) rush to withdraw simultaneously. The bank (origin) collapses under the rush. Request collapsing is like a queue: one person withdraws cash, the teller photos it, and gives copies to the line behind them."
+    },
+    {
+      "analogy": "Layer 4 vs Layer 7 load balancing as mail routing",
+      "explanation": "Layer 4 looks at the destination address and sender zip code, routing all mail from one postal district to one delivery center. Layer 7 reads the contents of each letter and routes divorce filings to the courthouse, tax returns to the IRS, and love letters to the romance section."
+    },
+    {
+      "analogy": "TLS handshake as introducing strangers",
+      "explanation": "A cold TLS handshake is like two people meeting in person: handshake, exchange information, agree on rules—three back-and-forths take time. Session resumption is like meeting an old friend: you recognize them immediately (0-RTT) and skip the introduction."
+    },
+    {
+      "analogy": "Cache-Control headers as library labeling",
+      "explanation": "public/private is like marking books as open-access (shared) vs. reference-only (personal). max-age is the book's return date. no-cache is 'ask the librarian if the version is current.' immutable is 'this book never changes; don't check the catalog again.'"
+    },
+    {
+      "analogy": "HTTP/2 multiplexing as airport boarding lanes",
+      "explanation": "HTTP/1.1 is a single boarding lane that processes one passenger at a time, sequentially. Even fast passengers are blocked by slow ones. HTTP/2 opens multiple lanes on a single jetway: passengers board in parallel without interfering. gRPC is one long-lived boarding session where individual passengers flow through multiple lanes simultaneously."
+    },
+    {
+      "analogy": "Origin Shield as a wholesale warehouse",
+      "explanation": "Edge POPs are retail stores. Without Origin Shield, each store orders inventory independently from the factory, creating redundant orders. Origin Shield is a wholesale warehouse: stores order from the warehouse, which consolidates requests and orders once from the factory, saving bandwidth and origin capacity."
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "TLS 1.2 handshake overhead",
+      "value": "200-400ms on mobile, 600-750ms intercontinental",
+      "context": "Fresh connection, no session resumption"
+    },
+    {
+      "metric": "TLS 1.3 handshake overhead",
+      "value": "200-250ms intercontinental",
+      "context": "Reduces TLS negotiation from 2 RTT to 1 RTT; TCP still requires 1 RTT"
+    },
+    {
+      "metric": "0-RTT resume connection cost",
+      "value": "0ms for TLS; still requires TCP SYN/ACK (~1 RTT)",
+      "context": "TLS 1.3 with session tickets or PSK; replay vulnerability requires mitigation"
+    },
+    {
+      "metric": "TTFB good threshold",
+      "value": "≤ 0.8 seconds",
+      "context": "Measured from navigation start to first byte of response"
+    },
+    {
+      "metric": "TTFB poor threshold",
+      "value": "> 1.8 seconds",
+      "context": "User-perceptible slowness; commonly caused by database queries or large asset generation"
+    },
+    {
+      "metric": "Network transmission in TTFB",
+      "value": "~40% of total TTFB",
+      "context": "The remaining 60% is server processing + queueing"
+    },
+    {
+      "metric": "Cache hit ratio target",
+      "value": "95-99%",
+      "context": "Means 1-5% of requests reach origin; enables 10-50x origin capacity reduction"
+    },
+    {
+      "metric": "Netflix Open Connect cache hit rate",
+      "value": "98%",
+      "context": "Only 2% of edge traffic reaches origin; achieved through strategic prepositioning"
+    },
+    {
+      "metric": "Cloudflare edge latency",
+      "value": "< 50ms global",
+      "context": "Served from nearest regional POP; 25x faster than uncached origin"
+    },
+    {
+      "metric": "Cloudflare origin load reduction",
+      "value": "70%",
+      "context": "With aggressive caching; combination of cache hit ratio and compression"
+    },
+    {
+      "metric": "Brotli compression advantage",
+      "value": "~20% smaller than gzip",
+      "context": "For text-based content; cost: 20-40% higher CPU on compression"
+    },
+    {
+      "metric": "HTTP/2 multiplexing throughput",
+      "value": "115,000 requests/second with 256 concurrent streams",
+      "context": "Compared to 6,500 req/s for HTTP/1.1; ~17x improvement"
+    },
+    {
+      "metric": "HTTP/2 page load improvement",
+      "value": "1.5s (HTTP/2) vs 3s (HTTP/1.1)",
+      "context": "E-commerce site under high concurrent load; head-of-line blocking eliminated"
+    },
+    {
+      "metric": "DNS lookup reduction with persistent connections",
+      "value": "~33% fewer DNS requests",
+      "context": "HTTP/2 persistent connections reuse DNS; reduces latency per request"
+    },
+    {
+      "metric": "Cache stampede: simultaneous render operations",
+      "value": "30 concurrent renders when 1 expires under 10 req/s + 3s render time",
+      "context": "Origins typically run 8-16 processes; 30 simultaneous jobs oversubscribe CPU"
+    },
+    {
+      "metric": "Cloudflare Instant Purge",
+      "value": "< 150ms to propagate globally",
+      "context": "Invalidates cached content in near-real-time via tag-based purge"
+    },
+    {
+      "metric": "Layer 4 vs Layer 7 latency difference",
+      "value": "Layer 4: ~1-5ms decision time; Layer 7: ~20-50ms (content inspection + routing)",
+      "context": "Trade-off: Layer 4 speed vs Layer 7 intelligence"
+    },
+    {
+      "metric": "Origin Shield cache hit ratio boost",
+      "value": "5-15% additional improvement",
+      "context": "Depends on traffic distribution; higher for bursty workloads"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Cache invalidation removes content from all caches globally",
+      "reality": "Cache invalidation only affects CDN edge caches. Browser caches and ISP caches cannot be remotely invalidated. Once cached at the user's browser or ISP, the content persists until the browser's TTL expires or the user manually clears cache.",
+      "source": "https://torvo.com.au/articles/why-cache-invalidation-doesnt-work"
+    },
+    {
+      "misconception": "POST requests universally invalidate caches",
+      "reality": "While HTTP specs say POST should invalidate caches, real-world implementations (Firefox, some CDNs) don't follow the standard correctly. POST is not a reliable cache invalidation mechanism.",
+      "source": "https://www.mnot.net/blog/2006/02/18/invalidation"
+    },
+    {
+      "misconception": "A high cache hit ratio (95%+) means the CDN is performing well",
+      "reality": "Most CDNs count any response from their cache (even stale content) as a 'hit.' This metric can be misleading; a CDN might count stale served-with-revalidate as a hit while origin gets pounded. TTFB and origin load are better indicators.",
+      "source": "https://www.fastly.com/blog/truth-about-cache-hit-ratios"
+    },
+    {
+      "misconception": "Layer 4 load balancing works fine for gRPC",
+      "reality": "gRPC multiplexes many requests over a single long-lived TCP connection. Layer 4 load balancers see the connection, not individual requests, so all traffic can land on one backend. Layer 7 is required for gRPC load distribution.",
+      "source": "https://www.groundcover.com/learn/networking/grpc-load-balancing"
+    },
+    {
+      "misconception": "TLS session resumption is always secure",
+      "reality": "TLS 1.3 0-RTT resumption with PSK does not provide forward secrecy and is vulnerable to replay attacks. Mitigated by regular key rotation and anti-replay mechanisms, but not 'free security.'",
+      "source": "https://oneuptime.com/blog/post/2026-03-20-tls-session-resumption-faster-https/view"
+    },
+    {
+      "misconception": "Omitting Cache-Control headers means content isn't cached",
+      "reality": "Without explicit Cache-Control headers, browsers use heuristic caching rules, caching content indefinitely. This is dangerous; always set explicit Cache-Control to control caching behavior.",
+      "source": "https://www.alokai.com/blog/cache-control-http-header"
+    },
+    {
+      "misconception": "Higher max-age always means better performance",
+      "reality": "Long max-age on dynamic content causes stale content to persist. Short max-age + must-revalidate is often faster for dynamic content because revalidation (304 Not Modified) is cheaper than regeneration.",
+      "source": "https://www.ioriver.io/terms/cache-control-header"
+    },
+    {
+      "misconception": "TTFB measures only network latency",
+      "reality": "TTFB = redirect time + DNS + TCP + TLS + server processing. Network transmission is ~40%; server-side processing is the majority. Improving TTFB requires both network optimization and origin optimization.",
+      "source": "https://www.debugbear.com/docs/metrics/time-to-first-byte"
+    },
+    {
+      "misconception": "CDN caching eliminates the need for origin optimization",
+      "reality": "Cache hits reduce origin load, but cache misses still hit origin at full speed. Origins must be performant because cache misses are inevitable (new content, expired items, bypass policies).",
+      "source": "https://wpengine.com/support/troubleshooting-high-time-first-byte-ttfb/"
+    },
+    {
+      "misconception": "Layer 4 load balancing is always faster than Layer 7",
+      "reality": "Layer 4 has lower latency (~1-5ms vs 20-50ms), but Layer 7 can make smarter routing decisions. For high-throughput scenarios where latency matters more than distribution quality, Layer 4 wins. For application-aware routing, Layer 7 is required.",
+      "source": "https://www.a10networks.com/glossary/how-do-layer-4-and-layer-7-load-balancing-differ/"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://istlsfastyet.com/",
+      "title": "Is TLS Fast Yet?",
+      "recency_note": "Foundational, still current; covers TLS performance principles"
+    },
+    {
+      "url": "https://www.thousandeyes.com/blog/optimizing-web-performance-tls-1-3",
+      "title": "Optimizing Web Performance with TLS 1.3",
+      "recency_note": "2024, recent TLS 1.3 optimization guidance"
+    },
+    {
+      "url": "https://oneuptime.com/blog/post/2026-03-20-tls-session-resumption-faster-https/view",
+      "title": "How to Configure TLS Session Resumption for Faster HTTPS Connections",
+      "recency_note": "2026 (current), covers PSK and 0-RTT"
+    },
+    {
+      "url": "https://www.a10networks.com/glossary/how-do-layer-4-and-layer-7-load-balancing-differ/",
+      "title": "Layer 4 vs Layer 7 Load Balancing",
+      "recency_note": "2024, foundational comparison"
+    },
+    {
+      "url": "https://www.haproxy.com/blog/layer-4-vs-layer-7-load-balancing",
+      "title": "Layer 4 vs. Layer 7 Load Balancing: What's the Difference and Which One Do I Need",
+      "recency_note": "2024, practical guidance"
+    },
+    {
+      "url": "https://www.groundcover.com/learn/networking/grpc-load-balancing",
+      "title": "gRPC Load Balancing Explained: Architectures, Strategies & Best Practices",
+      "recency_note": "2024, gRPC-specific guidance"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control",
+      "title": "Cache-Control HTTP Header - MDN Web Docs",
+      "recency_note": "2025 (maintained), authoritative reference"
+    },
+    {
+      "url": "https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/",
+      "title": "Ultimate Guide to HTTP Caching for Static Assets",
+      "recency_note": "2024, practical static asset caching guide"
+    },
+    {
+      "url": "https://dohost.us/index.php/2025/10/29/advanced-caching-rules-tailoring-caching-for-different-content-types-static-dynamic-apis/",
+      "title": "Advanced Caching Rules: Tailoring Caching for Different Content Types",
+      "recency_note": "2025 (future-dated, likely current), comprehensive guide"
+    },
+    {
+      "url": "https://web.dev/articles/ttfb",
+      "title": "Time to First Byte (TTFB)",
+      "recency_note": "2024, official web.dev guidance"
+    },
+    {
+      "url": "https://www.debugbear.com/docs/metrics/time-to-first-byte",
+      "title": "Measure And Optimize Time To First Byte (TTFB)",
+      "recency_note": "2024, detailed TTFB breakdown"
+    },
+    {
+      "url": "https://wpengine.com/support/troubleshooting-high-time-first-byte-ttfb/",
+      "title": "Troubleshoot High Time to First Byte (TTFB)",
+      "recency_note": "2024, root cause analysis guide"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Cache_stampede",
+      "title": "Cache stampede - Wikipedia",
+      "recency_note": "Foundational, definitional"
+    },
+    {
+      "url": "https://medium.com/@_sidharth_m_/how-to-avoid-cache-stampede-or-dogpile-problem-upon-cache-expiry-370ecc06b76c",
+      "title": "How to Avoid Cache Stampede or Dogpile Problem Upon Cache Expiry",
+      "recency_note": "2024, practical prevention strategies"
+    },
+    {
+      "url": "https://blog.cloudflare.com/instant-purge/",
+      "title": "Instant Purge: invalidating cached content in under 150ms",
+      "recency_note": "2024, Cloudflare purge performance"
+    },
+    {
+      "url": "https://dohost.us/index.php/2025/10/29/advanced-cdn-cache-purging-and-invalidation-strategies/",
+      "title": "Advanced CDN Cache Purging and Invalidation Strategies",
+      "recency_note": "2025 (future-dated), comprehensive purge guide"
+    },
+    {
+      "url": "https://www.keycdn.com/blog/cdn-cache-hit-ratio",
+      "title": "Cache Hit Ratio (CHR)",
+      "recency_note": "2024, CHR benchmarks and analysis"
+    },
+    {
+      "url": "https://www.cloudflare.com/learning/cdn/performance/",
+      "title": "CDN Performance",
+      "recency_note": "2024, Cloudflare performance overview"
+    },
+    {
+      "url": "https://panelica.com/blog/cloudflare-cache-setup-and-performance-optimization-the-definitive-guide",
+      "title": "Cloudflare Cache Setup and Performance Optimization: The Definitive Guide",
+      "recency_note": "2024, practical Cloudflare configuration"
+    },
+    {
+      "url": "https://developers.cloudflare.com/cache/performance-review/cache-performance/",
+      "title": "Cache performance · Cloudflare Cache (CDN) docs",
+      "recency_note": "2024, official Cloudflare docs"
+    },
+    {
+      "url": "https://netflixtechblog.com/driving-content-delivery-efficiency-through-classifying-cache-misses-ffcf08026b6c",
+      "title": "Driving Content Delivery Efficiency Through Classifying Cache Misses",
+      "recency_note": "2024, Netflix technical blog (authoritative)"
+    },
+    {
+      "url": "https://systemdesignschool.io/blog/netflix-open-connect",
+      "title": "Unlocking Netflix's Success: An In-depth Analysis of Open Connect's Innovations",
+      "recency_note": "2024, Netflix CDN architecture analysis"
+    },
+    {
+      "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/origin-shield.html",
+      "title": "Use Amazon CloudFront Origin Shield",
+      "recency_note": "2024, official AWS docs"
+    },
+    {
+      "url": "https://www.cdnplanet.com/guides/origin-shield/",
+      "title": "Origin Shield - CDN Planet",
+      "recency_note": "2024, CDN origin shield guide"
+    },
+    {
+      "url": "https://blog.vespa.ai/http2/",
+      "title": "Improve throughput and concurrency with HTTP/2",
+      "recency_note": "2024, HTTP/2 multiplexing benefits"
+    },
+    {
+      "url": "https://medium.com/@ntiinsd/http-1-1-vs-http-2-vs-http-3-the-ultimate-performance-guide-for-2025-670b1f1eabf5",
+      "title": "HTTP/1.1 vs HTTP/2 vs HTTP/3: The Ultimate Performance Guide for 2025",
+      "recency_note": "2025, comprehensive HTTP protocol comparison"
+    },
+    {
+      "url": "https://www.akamai.com/blog/performance/http2-persistent-connections",
+      "title": "How HTTP/2 Persistent Connections Help Improve Performance and User Experience",
+      "recency_note": "2024, Akamai HTTP/2 benefits"
+    },
+    {
+      "url": "https://www.haproxy.com/blog/http-keep-alive-pipelining-multiplexing-and-connection-pooling",
+      "title": "HTTP keep-alive, pipelining, multiplexing & connection pooling",
+      "recency_note": "2024, detailed HTTP connection patterns"
+    },
+    {
+      "url": "https://torvo.com.au/articles/why-cache-invalidation-doesnt-work",
+      "title": "Why Cache Invalidation Doesn't Work",
+      "recency_note": "2022 (2+ years old but foundational), critical misconception"
+    },
+    {
+      "url": "https://www.mnot.net/blog/2006/02/18/invalidation",
+      "title": "Invalidating Caches with POST",
+      "recency_note": "2006 (foundational, predates modern CDNs), HTTP spec interpretation"
+    },
+    {
+      "url": "https://www.fastly.com/blog/truth-about-cache-hit-ratios",
+      "title": "The truth about cache hit ratios",
+      "recency_note": "2024, Fastly CDN perspective on CHR metrics"
+    },
+    {
+      "url": "https://timtaubert.de/blog/2017/02/the-future-of-session-resumption-forward-secure-psk-key-agreement-in-tls-1-3",
+      "title": "The future of session resumption - Forward secure PSK key agreement in TLS 1.3",
+      "recency_note": "2017 (foundational, still current), PSK resumption mechanism"
+    },
+    {
+      "url": "https://www.alokai.com/blog/cache-control-http-header",
+      "title": "Cache-Control HTTP Header 2024 Guide",
+      "recency_note": "2024, heuristic caching misconception"
+    },
+    {
+      "url": "https://www.ioriver.io/terms/cache-control-header",
+      "title": "What Is The Cache-Control Header? Directives & Best Practices",
+      "recency_note": "2024, comprehensive Cache-Control guide"
+    }
+  ]
+}

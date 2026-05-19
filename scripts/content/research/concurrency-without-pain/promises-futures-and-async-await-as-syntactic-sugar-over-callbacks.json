@@ -1,0 +1,545 @@
+{
+  "facts": [
+    {
+      "fact": "Promise.all was approximately 3x faster than sequential await for 3 concurrent API calls (~1 second vs ~3 seconds), and the performance advantage doubles with more operations",
+      "source_url": "https://dev.to/dperrymorrow/speed-up-your-code-with-promiseall-3d4i",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "The JavaScript event loop processes all microtasks (Promise callbacks, queueMicrotask) after every macrotask (setTimeout, setInterval, I/O) before rendering",
+      "source_url": "https://javascript.info/event-loop",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "An infinite chain of microtasks will starve the macrotask queue and block rendering entirely in browsers",
+      "source_url": "https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide/In_depth",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Node.js libuv thread pool default size is 4, but can be configured via UV_THREADPOOL_SIZE environment variable up to 1024",
+      "source_url": "https://docs.libuv.org/en/v1.x/threadpool.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Lock-free queues using CAS achieved 15x faster performance and 15x lower latency (consistent 12μs vs 5ms spikes) compared to mutex-based implementations under 8-thread, 1 million operation contention",
+      "source_url": "https://medium.com/@theabhishek.040/building-lock-free-concurrent-queue-rust-atomic-operations-15x-faster-ad4ea325683a",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "RISC-V Zacas extension (ratified November 2023) introduced native CAS instructions for 32-, 64-, and 128-bit operations; CAS support is now ubiquitous in x86, ARM, PowerPC since early 2000s",
+      "source_url": "https://en.wikipedia.org/wiki/Compare-and-swap",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Callbacks were the only natively supported async mechanism in JavaScript until ES2015 (Promises in 2016), and async/await was introduced in ES2017",
+      "source_url": "https://medium.com/dev-hub/callbacks-promises-async-await-concurrency-in-javascript-21191f61c539",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Async/await removes syntactic noise compared to callback-based code for inherently sequential I/O operations and is easier to read and debug",
+      "source_url": "https://medium.com/@michyoung/asynchronous-javascript-from-callback-hell-to-async-and-await-40a5880481f9",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Race conditions occur when two or more threads concurrently access an object and at least one access is a write, requiring synchronization",
+      "source_url": "https://cs.brown.edu/courses/csci0300/2024/notes/l22.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "The four Coffman Conditions are necessary and sufficient for deadlock: mutual exclusion, hold and wait, no preemption, circular wait",
+      "source_url": "https://www.cs.uic.edu/~jbell/CourseNotes/OperatingSystems/7_Deadlocks.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Resource ordering (assigning numeric IDs and requiring processes to request resources in ascending order) prevents circular wait and is the only practical deadlock prevention method",
+      "source_url": "https://cs341.cs.illinois.edu/coursebook/Deadlock",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Timeouts with 'try-lock' operations are effective for deadlock avoidance: threads can release held locks and retry after delay if they cannot acquire all required locks within timeout",
+      "source_url": "https://medium.com/@sylvain.tiset/understanding-mutexes-and-semaphores-preventing-deadlocks-and-starvation-in-concurrent-programming-6bc477b7b7a9",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "A Mutex enforces strict ownership (only the locking thread can unlock), while a Semaphore is a signaling mechanism that can manage multiple threads with a resource count",
+      "source_url": "https://www.geeksforgeeks.org/mutex-vs-semaphore/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "MySQL deadlock detection (innodb_deadlock_detect) rolls back the transaction that modified the least number of records to minimize lock release cost",
+      "source_url": "https://vladmihalcea.com/database-deadlock/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "PostgreSQL uses a wait-for graph to detect deadlocks and logs them with ERROR severity; affected transactions can be found in the error log",
+      "source_url": "https://www.squash.io/detecting-and-resolving-deadlocks-in-postgresql-databases/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Spinlocks are efficient only for short critical sections; a 10-millisecond critical section causes all waiting threads to burn CPU cycles for the entire duration",
+      "source_url": "https://en.wikipedia.org/wiki/Spinlock",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Modern reactive spinlock algorithms automatically adjust backoff delays based on contention levels, eliminating manual parameter tuning",
+      "source_url": "https://developer.arm.com/community/arm-community-blogs/b/architectures-and-processors-blog/posts/multi-threaded-applications-arm",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "NUMA-aware spinlock variants split waiting queues into primary and secondary queues to reduce memory latency by preventing locks from bouncing between NUMA nodes",
+      "source_url": "https://developer.arm.com/community/arm-community-blogs/b/architectures-and-processors-blog/posts/multi-threaded-applications-arm",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "CAS (compare-and-swap) is an atomic CPU instruction that checks if a memory location matches an expected value and only updates if true, enabling lock-free algorithms",
+      "source_url": "https://apoorvsachan.com/blog/lockfree_atomic_queues_with_cas/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Under high contention, CAS operations in lock-free structures experience more retries as multiple threads attempt to update the same variable simultaneously",
+      "source_url": "https://medium.com/@amansri99/benchmarking-lock-free-and-blocking-concurrent-queues-a-deep-dive-into-implementation-and-bf9a2b5c5d10",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "nopCommerce CVE-2024-58248 (before 4.80.0) had a race condition allowing duplicate gift card redemption due to lack of locking on order placement",
+      "source_url": "https://www.yeswehack.com/learn-bug-bounty/ultimate-guide-race-condition-vulnerabilities",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "The 'Smashing the State Machine' research (2023) revealed single-packet attacks that exploit race conditions by completing multiple requests in one packet",
+      "source_url": "https://dev.to/georgekobaidze/how-a-simple-race-condition-can-take-down-even-the-biggest-systems-16l0",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "GitLab had a race condition in email verification that allowed attackers to forge verified emails and take over third-party OAuth accounts",
+      "source_url": "https://dev.to/georgekobaidze/how-a-simple-race-condition-can-take-down-even-the-biggest-systems-16l0",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Firefox Monitor email limits could be bypassed by racing multiple concurrent requests to add email addresses beyond the per-account limit",
+      "source_url": "https://www.yeswehack.com/learn-bug-bounty/ultimate-guide-race-condition-vulnerabilities",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Promise.allSettled, Promise.any, and Array.fromAsync are modern alternatives to Promise.all for specific concurrency patterns (2024-2025)",
+      "source_url": "https://blog.logrocket.com/promise-all-modern-async-patterns/",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Async/await is sequential by default; Promise.all must be explicitly used for concurrent operation of independent I/O tasks",
+      "source_url": "https://dev.to/hamzakhan/asyncawait-vs-promiseall-when-to-use-what-1i6e",
+      "publication_date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "title": "nopCommerce Gift Card Race Condition (CVE-2024-58248)",
+      "description": "nopCommerce versions before 4.80.0 allowed attackers to redeem the same gift card multiple times by submitting concurrent redeem requests during order placement, exploiting missing synchronization locks on the order processing flow",
+      "source_url": "https://www.yeswehack.com/learn-bug-bounty/ultimate-guide-race-condition-vulnerabilities",
+      "company_or_context": "nopCommerce e-commerce platform",
+      "impact": "Gift card fraud through duplicate redemption"
+    },
+    {
+      "title": "GitLab Email Verification OAuth Takeover",
+      "description": "A race condition in GitLab's email verification allowed attackers to race multiple requests and forge verified email addresses, enabling account takeover on third-party services using GitLab as an OAuth provider",
+      "source_url": "https://dev.to/georgekobaidze/how-a-simple-race-condition-can-take-down-even-the-biggest-systems-16l0",
+      "company_or_context": "GitLab authentication system",
+      "impact": "Full account compromise on integrated services"
+    },
+    {
+      "title": "Firefox Monitor Email Bypass",
+      "description": "Firefox Monitor had per-account email address limits that could be bypassed by racing multiple concurrent requests to add email addresses faster than the rate-limiting check could process",
+      "source_url": "https://www.yeswehack.com/learn-bug-bounty/ultimate-guide-race-condition-vulnerabilities",
+      "company_or_context": "Mozilla Firefox Monitor",
+      "impact": "Bypass of platform limits"
+    },
+    {
+      "title": "Node.js I/O Scaling with Default Thread Pool",
+      "description": "A Node.js application handling more than 4 concurrent file system operations (the default libuv thread pool size) experiences queueing delays. Setting UV_THREADPOOL_SIZE=128 for a DNS-heavy workload improves throughput from 2000 req/s to 18000 req/s",
+      "source_url": "https://dev.to/bleedingcode/increase-node-js-performance-with-libuv-thread-pool-5h10",
+      "company_or_context": "Typical Node.js API server",
+      "impact": "10x throughput improvement by tuning thread pool"
+    },
+    {
+      "title": "Database Deadlock in Transaction-Heavy Workload",
+      "description": "MySQL detected a circular wait deadlock: Transaction A holds lock on users table and waits for orders table; Transaction B holds lock on orders table and waits for users table. MySQL rolls back Transaction B (fewer modifications) automatically and logs ERROR in error log",
+      "source_url": "https://vladmihalcea.com/database-deadlock/",
+      "company_or_context": "E-commerce database (MySQL)",
+      "impact": "Automatic recovery with transaction rollback"
+    },
+    {
+      "title": "Promise.all vs Sequential Await Performance",
+      "description": "Three independent API calls: sequential await takes 3 seconds (sum of all calls); Promise.all takes ~1 second (time of slowest call). Benchmark confirms 3x speedup for I/O-bound concurrency",
+      "source_url": "https://dev.to/dperrymorrow/speed-up-your-code-with-promiseall-3d4i",
+      "company_or_context": "Typical Node.js/JavaScript backend",
+      "impact": "3x response time improvement for concurrent I/O"
+    },
+    {
+      "title": "Lock-Free Queue vs Mutex Queue Benchmark",
+      "description": "8-thread contention benchmark with 1 million operations: lock-free CAS-based queue achieves 15x lower latency (consistent 12μs) vs mutex queue (5ms spikes under load). No context switching overhead in lock-free version",
+      "source_url": "https://medium.com/@theabhishek.040/building-lock-free-concurrent-queue-rust-atomic-operations-15x-faster-ad4ea325683a",
+      "company_or_context": "High-frequency trading or messaging system",
+      "impact": "Reduced tail latency by 15x under contention"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Promise as a container for future value",
+      "analogy": "A Promise is like ordering food at a restaurant: you get a receipt (the promise) immediately, which will resolve (fulfilled with food) or reject (kitchen is closed). You don't wait blocking the line; you go sit down and the promise settles later.",
+      "source_url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises",
+      "publication_date": "2024"
+    },
+    {
+      "concept": "Callback hell / pyramid of doom",
+      "analogy": "Nesting callbacks is like Russian nesting dolls (matryoshka dolls) — each level of indentation adds another layer, making the structure hard to visualize and maintain. Each new level requires opening the previous doll to find the next one.",
+      "source_url": "https://medium.com/dsc-srm/javascript-callback-hell-or-pyramid-of-doom-4f786d14b997",
+      "publication_date": "2024"
+    },
+    {
+      "concept": "Mutex as mutual exclusion",
+      "analogy": "A bathroom with one key (mutex) ensures only one person enters at a time. If it's occupied, others wait in line. The key holder has exclusive access until they exit and pass the key to the next person.",
+      "source_url": "https://medium.com/@codecraftclub/mutex-race-conditions-in-java-multi-threading-made-so-simple-with-real-life-analogies-705fb1697c10",
+      "publication_date": "2024"
+    },
+    {
+      "concept": "Semaphore for resource counting",
+      "analogy": "A semaphore is like a parking lot with 10 spaces (count=10). Each car entering decrements the count; when full (count=0), cars wait. When a car leaves, count increments and the next waiting car can enter. Multiple cars can park simultaneously (up to the limit).",
+      "source_url": "https://medium.com/@sylvain.tiset/understanding-mutexes-and-semaphores-preventing-deadlocks-and-starvation-in-concurrent-programming-6bc477b7b7a9",
+      "publication_date": "2024"
+    },
+    {
+      "concept": "Race condition as interleaving",
+      "analogy": "Two people writing on the same whiteboard simultaneously without synchronization: one writes 'A', the other writes 'B', but due to timing, both see a mangled result instead of 'AB'. The 'race' is for who gets to write first, and the outcome depends on timing.",
+      "source_url": "https://cs.brown.edu/courses/csci0300/2024/notes/l22.html",
+      "publication_date": "2024"
+    },
+    {
+      "concept": "Deadlock as circular dependency",
+      "analogy": "Two people need two keys to unlock a box. Person A holds key1 and needs key2 (held by Person B). Person B holds key2 and needs key1 (held by Person A). Both wait forever — neither can proceed. This is circular wait.",
+      "source_url": "https://www.cs.uic.edu/~jbell/CourseNotes/OperatingSystems/7_Deadlocks.html",
+      "publication_date": "2024"
+    },
+    {
+      "concept": "CAS operation in lock-free data structures",
+      "analogy": "CAS is like a 'no-takesies-backsies' rule: you announce your move in advance ('if the value is 5, I'll change it to 6'), and the CPU atomically checks and acts. If someone else changed it to 7 meanwhile, your move fails and you retry. No blocking, no mutex overhead.",
+      "source_url": "https://apoorvsachan.com/blog/lockfree_atomic_queues_with_cas/",
+      "publication_date": "2024"
+    },
+    {
+      "concept": "Event loop processing microtasks before macrotasks",
+      "analogy": "A restaurant processes all customer complaints (microtasks) immediately after each table is served (macrotask) before seating the next table. This ensures urgent items are handled between main tasks.",
+      "source_url": "https://javascript.info/event-loop",
+      "publication_date": "2024"
+    },
+    {
+      "concept": "Spinlock CPU contention",
+      "analogy": "Spinlocks are like standing in a tight hallway constantly checking if a door is unlocked, hoping to slip in. With many people doing this, they waste CPU spinning (heat, wasted cycles) while the door holder can't move. Condition variables are like a buzzer that wakes you only when the door opens.",
+      "source_url": "https://en.wikipedia.org/wiki/Spinlock",
+      "publication_date": "2024"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Promise.all speedup vs sequential await",
+      "value": "3x",
+      "context": "3 concurrent 1-second API calls: 1 second parallel vs 3 seconds sequential",
+      "source_url": "https://dev.to/dperrymorrow/speed-up-your-code-with-promiseall-3d4i",
+      "publication_date": "2024"
+    },
+    {
+      "metric": "Libuv default thread pool size",
+      "value": "4",
+      "context": "Handles file system, DNS lookups, and other I/O operations; can be set up to 1024 via UV_THREADPOOL_SIZE",
+      "source_url": "https://docs.libuv.org/en/v1.x/threadpool.html",
+      "publication_date": "2024"
+    },
+    {
+      "metric": "Lock-free queue latency improvement",
+      "value": "15x",
+      "context": "12μs consistent latency (lock-free CAS) vs 5ms spikes (mutex) under 8-thread, 1M operation contention",
+      "source_url": "https://medium.com/@theabhishek.040/building-lock-free-concurrent-queue-rust-atomic-operations-15x-faster-ad4ea325683a",
+      "publication_date": "2024"
+    },
+    {
+      "metric": "Lock-free queue throughput improvement",
+      "value": "15x",
+      "context": "Throughput comparison under high contention (8 threads, 1M operations)",
+      "source_url": "https://medium.com/@theabhishek.040/building-lock-free-concurrent-queue-rust-atomic-operations-15x-faster-ad4ea325683a",
+      "publication_date": "2024"
+    },
+    {
+      "metric": "Node.js thread pool throughput gain",
+      "value": "9x",
+      "context": "DNS-heavy workload: 2000 req/s with default UV_THREADPOOL_SIZE=4 vs 18000 req/s with UV_THREADPOOL_SIZE=128",
+      "source_url": "https://dev.to/bleedingcode/increase-node-js-performance-with-libuv-thread-pool-5h10",
+      "publication_date": "2024"
+    },
+    {
+      "metric": "Maximum CAS instruction bit width (RISC-V)",
+      "value": "128-bit",
+      "context": "RISC-V Zacas extension (Nov 2023) supports 32, 64, and 128-bit atomic CAS operations",
+      "source_url": "https://en.wikipedia.org/wiki/Compare-and-swap",
+      "publication_date": "2023"
+    },
+    {
+      "metric": "Critical section threshold for spinlock efficiency",
+      "value": "milliseconds",
+      "context": "Spinlocks are wasteful for critical sections exceeding ~10ms; threads burn CPU spinning instead of context switching",
+      "source_url": "https://en.wikipedia.org/wiki/Spinlock",
+      "publication_date": "2024"
+    },
+    {
+      "metric": "JavaScript event loop microtask priority",
+      "value": "100%",
+      "context": "All microtasks in the queue execute before any macrotask, even if new microtasks are enqueued during execution",
+      "source_url": "https://javascript.info/event-loop",
+      "publication_date": "2024"
+    },
+    {
+      "metric": "Microtask starvation risk",
+      "value": "Complete render block",
+      "context": "An infinite chain of microtasks will prevent macrotasks from running and block rendering entirely in browsers",
+      "source_url": "https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide/In_depth",
+      "publication_date": "2024"
+    },
+    {
+      "metric": "Performance gain: 6 concurrent API calls Promise.all vs sequential",
+      "value": "6x",
+      "context": "6 one-second calls: 1 second parallel (Promise.all) vs 6 seconds sequential (await in loop)",
+      "source_url": "https://dev.to/dperrymorrow/speed-up-your-code-with-promiseall-3d4i",
+      "publication_date": "2024"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Async/await provides automatic parallelism for independent operations",
+      "reality": "Async/await is sequential by default. Multiple await calls execute one after another unless explicitly parallelized with Promise.all() or Promise.race()",
+      "source_url": "https://dev.to/hamzakhan/asyncawait-vs-promiseall-when-to-use-what-1i6e",
+      "publication_date": "2024"
+    },
+    {
+      "misconception": "Node.js is fully multi-threaded because it handles thousands of concurrent connections",
+      "reality": "Node.js runs user code on a single JavaScript thread; concurrency for I/O is achieved through event-driven async patterns and libuv's thread pool (default 4 threads) for expensive operations like file I/O",
+      "source_url": "https://medium.com/@codejuggler/why-node-js-is-single-threaded-and-how-it-scales-eb32f3fc4cbc",
+      "publication_date": "2024"
+    },
+    {
+      "misconception": "Promises eliminate race conditions",
+      "reality": "Promises provide syntactic sugar over callbacks but do not prevent race conditions. Race conditions arise from concurrent access to shared mutable state and require explicit synchronization (mutexes, atomics)",
+      "source_url": "https://cs.brown.edu/courses/csci0300/2024/notes/l22.html",
+      "publication_date": "2024"
+    },
+    {
+      "misconception": "All deadlocks can be prevented by avoiding hold-and-wait",
+      "reality": "In practice, eliminating circular wait is the only feasible prevention strategy. Hold-and-wait, mutual exclusion, and no-preemption are often necessary for correctness",
+      "source_url": "https://www.cs.uic.edu/~jbell/CourseNotes/OperatingSystems/7_Deadlocks.html",
+      "publication_date": "2024"
+    },
+    {
+      "misconception": "Mutexes and semaphores are interchangeable",
+      "reality": "Mutexes enforce strict ownership (only the locking thread can unlock) and prevent priority inversion; semaphores are counting mechanisms for resource pools with no ownership enforcement",
+      "source_url": "https://www.geeksforgeeks.org/mutex-vs-semaphore/",
+      "publication_date": "2024"
+    },
+    {
+      "misconception": "CAS (compare-and-swap) operations are always faster than locks",
+      "reality": "CAS is faster under low contention but experiences more retries under high contention as multiple threads fail and retry simultaneously, wasting CPU cycles",
+      "source_url": "https://medium.com/@amansri99/benchmarking-lock-free-and-blocking-concurrent-queues-a-deep-dive-into-implementation-and-bf9a2b5c5d10",
+      "publication_date": "2024"
+    },
+    {
+      "misconception": "Spinlocks are always better than mutexes because they avoid context switching",
+      "reality": "Spinlocks are only efficient for very short critical sections (<1ms). For longer sections, threads waste CPU burning cycles instead of yielding, making mutexes more efficient",
+      "source_url": "https://en.wikipedia.org/wiki/Spinlock",
+      "publication_date": "2024"
+    },
+    {
+      "misconception": "The JavaScript event loop processes macrotasks and microtasks equally",
+      "reality": "Microtasks (Promise callbacks, queueMicrotask) always execute before the next macrotask (setTimeout, I/O). The microtask queue is fully drained before any macrotask runs",
+      "source_url": "https://javascript.info/event-loop",
+      "publication_date": "2024"
+    },
+    {
+      "misconception": "Callbacks are strictly inferior to Promises and async/await",
+      "reality": "Callbacks, Promises, and async/await are abstractions of the same underlying mechanism. Async/await is syntactic sugar over Promises, which are abstractions over callbacks. Trade-offs vary by use case (streams, event handlers still use callbacks effectively)",
+      "source_url": "https://medium.com/@michyoung/asynchronous-javascript-from-callback-hell-to-async-and-await-40a5880481f9",
+      "publication_date": "2024"
+    },
+    {
+      "misconception": "Increasing libuv thread pool size always improves performance",
+      "reality": "Increasing thread pool size helps for I/O-bound tasks but is harmful for CPU-bound tasks (causes excessive context switching and cache misses). CPU-bound work should use Worker Threads instead",
+      "source_url": "https://dev.to/bleedingcode/increase-node-js-performance-with-libuv-thread-pool-5h10",
+      "publication_date": "2024"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://medium.com/dev-hub/callbacks-promises-async-await-concurrency-in-javascript-21191f61c539",
+      "title": "Callbacks, Promises, Async/await — concurrency in javascript",
+      "recency": "2024",
+      "authority": "Medium technical blog"
+    },
+    {
+      "url": "https://blog.logrocket.com/promise-all-modern-async-patterns/",
+      "title": "Is Promise.all still relevant in 2025?",
+      "recency": "2025",
+      "authority": "LogRocket engineering blog"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
+      "title": "Promise - JavaScript - MDN Web Docs",
+      "recency": "2024",
+      "authority": "Official Mozilla documentation"
+    },
+    {
+      "url": "https://javascript.info/event-loop",
+      "title": "Event loop: microtasks and macrotasks",
+      "recency": "2024",
+      "authority": "JavaScript.info (authoritative educational resource)"
+    },
+    {
+      "url": "https://docs.libuv.org/en/v1.x/threadpool.html",
+      "title": "Thread pool work scheduling - libuv documentation",
+      "recency": "2024",
+      "authority": "Official libuv documentation"
+    },
+    {
+      "url": "https://medium.com/@theabhishek.040/building-lock-free-concurrent-queue-rust-atomic-operations-15x-faster-ad4ea325683a",
+      "title": "I Built a Lock-Free Queue That's 15x Faster Than Mutex — Here's How",
+      "recency": "2024",
+      "authority": "Medium technical blog with benchmarks"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Compare-and-swap",
+      "title": "Compare-and-swap - Wikipedia",
+      "recency": "2024",
+      "authority": "Wikipedia computer science"
+    },
+    {
+      "url": "https://cs.brown.edu/courses/csci0300/2024/notes/l22.html",
+      "title": "Race Conditions, Synchronization, Mutexes",
+      "recency": "2024",
+      "authority": "Brown University CS course materials"
+    },
+    {
+      "url": "https://www.cs.uic.edu/~jbell/CourseNotes/OperatingSystems/7_Deadlocks.html",
+      "title": "Operating Systems: Deadlocks",
+      "recency": "2024",
+      "authority": "University of Illinois Chicago CS course notes"
+    },
+    {
+      "url": "https://vladmihalcea.com/database-deadlock/",
+      "title": "A beginner's guide to database deadlock",
+      "recency": "2024",
+      "authority": "Vlad Mihalcea (Java/database expert)"
+    },
+    {
+      "url": "https://dev.to/dperrymorrow/speed-up-your-code-with-promiseall-3d4i",
+      "title": "Speed up your code with Promise.all",
+      "recency": "2024",
+      "authority": "DEV Community technical post"
+    },
+    {
+      "url": "https://medium.com/@sylvain.tiset/understanding-mutexes-and-semaphores-preventing-deadlocks-and-starvation-in-concurrent-programming-6bc477b7b7a9",
+      "title": "Understanding Mutexes and Semaphores",
+      "recency": "2024",
+      "authority": "Medium technical blog"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/mutex-vs-semaphore/",
+      "title": "Mutex vs Semaphore",
+      "recency": "2024",
+      "authority": "GeeksforGeeks computer science reference"
+    },
+    {
+      "url": "https://apoorvsachan.com/blog/lockfree_atomic_queues_with_cas/",
+      "title": "Lockfree Atomic Queues with CAS",
+      "recency": "2024",
+      "authority": "Technical blog with code examples"
+    },
+    {
+      "url": "https://dev.to/bleedingcode/increase-node-js-performance-with-libuv-thread-pool-5h10",
+      "title": "Increase Node JS Performance With Libuv Thread Pool",
+      "recency": "2024",
+      "authority": "DEV Community technical post"
+    },
+    {
+      "url": "https://medium.com/@codejuggler/why-node-js-is-single-threaded-and-how-it-scales-eb32f3fc4cbc",
+      "title": "Why Node.js is Single-Threaded and How It Scales",
+      "recency": "2024",
+      "authority": "Medium technical blog"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide/In_depth",
+      "title": "In depth: Microtasks and the JavaScript runtime environment",
+      "recency": "2024",
+      "authority": "Official Mozilla documentation"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Spinlock",
+      "title": "Spinlock - Wikipedia",
+      "recency": "2024",
+      "authority": "Wikipedia computer science"
+    },
+    {
+      "url": "https://www.yeswehack.com/learn-bug-bounty/ultimate-guide-race-condition-vulnerabilities",
+      "title": "Ultimate Bug Bounty guide to race condition vulnerabilities",
+      "recency": "2024",
+      "authority": "YesWeHack security research"
+    },
+    {
+      "url": "https://dev.to/georgekobaidze/how-a-simple-race-condition-can-take-down-even-the-biggest-systems-16l0",
+      "title": "How a Simple Race Condition Bug Can Take Down Even the Biggest Systems",
+      "recency": "2024",
+      "authority": "DEV Community technical case study"
+    },
+    {
+      "url": "https://medium.com/@michyoung/asynchronous-javascript-from-callback-hell-to-async-and-await-40a5880481f9",
+      "title": "Asynchronous JavaScript: From Callback Hell to Async and Await",
+      "recency": "2024",
+      "authority": "Medium technical blog"
+    },
+    {
+      "url": "https://dev.to/hamzakhan/asyncawait-vs-promiseall-when-to-use-what-1i6e",
+      "title": "Async/Await vs Promise.all() — When to Use What?",
+      "recency": "2024",
+      "authority": "DEV Community technical guide"
+    },
+    {
+      "url": "https://cs341.cs.illinois.edu/coursebook/Deadlock",
+      "title": "CS 341 · Deadlock",
+      "recency": "2024",
+      "authority": "University of Illinois Urbana-Champaign CS course"
+    },
+    {
+      "url": "https://www.squash.io/detecting-and-resolving-deadlocks-in-postgresql-databases/",
+      "title": "Detecting and Resolving Deadlocks in PostgreSQL Databases",
+      "recency": "2024",
+      "authority": "Squash technical blog"
+    },
+    {
+      "url": "https://developer.arm.com/community/arm-community-blogs/b/architectures-and-processors-blog/posts/multi-threaded-applications-arm",
+      "title": "The when, why and how of waiting and backoff in multi-threaded applications",
+      "recency": "2024",
+      "authority": "ARM official community blog"
+    },
+    {
+      "url": "https://medium.com/@amansri99/benchmarking-lock-free-and-blocking-concurrent-queues-a-deep-dive-into-implementation-and-bf9a2b5c5d10",
+      "title": "Benchmarking Lock-Free and Blocking Concurrent Queues",
+      "recency": "2024",
+      "authority": "Medium technical performance analysis"
+    },
+    {
+      "url": "https://medium.com/dsc-srm/javascript-callback-hell-or-pyramid-of-doom-4f786d14b997",
+      "title": "Javascript Callback hell or Pyramid of doom",
+      "recency": "2024",
+      "authority": "Medium technical blog"
+    },
+    {
+      "url": "https://medium.com/@codecraftclub/mutex-race-conditions-in-java-multi-threading-made-so-simple-with-real-life-analogies-705fb1697c10",
+      "title": "Mutex & Race Conditions in Java Multi-Threading made so simple with real-life analogies",
+      "recency": "2024",
+      "authority": "Medium technical blog with analogies"
+    }
+  ]
+}

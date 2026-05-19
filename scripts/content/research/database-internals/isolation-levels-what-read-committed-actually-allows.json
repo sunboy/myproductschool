@@ -1,0 +1,313 @@
+{
+  "facts": [
+    {
+      "fact": "PostgreSQL uses Write-Ahead Logging (WAL) for crash recovery. When a transaction commits, changes are first written to the WAL log before being written to data files. On crash recovery, PostgreSQL replays the WAL starting from the most recent checkpoint's REDO point.",
+      "source": "https://www.postgresql.org/docs/current/wal-intro.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "In READ COMMITTED isolation level, each SQL statement gets a fresh snapshot. This means non-repeatable reads and phantom reads are possible—a SELECT run twice in the same transaction can return different results if other transactions have committed changes.",
+      "source": "https://www.postgresql.org/docs/current/transaction-iso.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "PostgreSQL MVCC stores xmin (transaction ID that created a row) and xmax (transaction ID that deleted it) on every row. A row is visible to a transaction if xmin is committed and less than the snapshot's xmax, and either xmax is null or xmax's transaction was not committed at snapshot time.",
+      "source": "https://dev.to/headf1rst/postgresql-mvcc-internals-from-xminxmax-to-isolation-levels-2g6h",
+      "publication_date": "2023"
+    },
+    {
+      "fact": "Long-running transactions block autovacuum from cleaning dead tuples. Because MVCC keeps old tuple versions for concurrent readers, autovacuum cannot remove tuples a transaction might still need to see, causing table bloat to accumulate.",
+      "source": "https://www.snowflake.com/en/engineering-blog/tuning-postgres-vacuum/",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Hash indexes perform 10-22% faster than B-tree for equality-only queries but support only the = operator. B-tree indexes handle equality, range (< > BETWEEN), and sorting operations.",
+      "source": "https://www.enterprisedb.com/postgres-tutorials/are-hash-indexes-faster-btree-indexes-postgres",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "GiST (Generalized Search Tree) indexes are lossy—they may produce false matches and require checking the actual table row to eliminate them. They are ideal for spatial data (points, polygons, circles via PostGIS) and complex data types.",
+      "source": "https://www.postgresql.org/docs/current/gist.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "WAL segment files are normally 16MB. PostgreSQL's recovery mechanism starts from the REDO point of the most recent checkpoint and replays all WAL records forward, comparing each record's LSN (Log Sequence Number) to the page's LSN to determine which changes have already been applied.",
+      "source": "https://www.cybertec-postgresql.com/en/postgresql-recovery-internals/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "PostgreSQL's Repeatable Read isolation level prevents phantom reads—stronger than the SQL standard requires. In Repeatable Read, the snapshot is taken at the start of the first statement and held for the entire transaction.",
+      "source": "https://www.postgresql.org/docs/current/transaction-iso.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "The pg_blocking_pids(pid) function identifies which session PIDs are blocking a given PID. Query: SELECT pid, pg_blocking_pids(pid) AS blocked_by FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid)) > 0.",
+      "source": "https://www.postgresscripts.com/post/identifying-blocking-postgresql-queries-using-pg-stat-activity/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Serialization anomalies can occur at both Repeatable Read and Serializable isolation levels. Repeatable Read allows serialization anomalies (concurrent reads that produce an inconsistent result), while Serializable prevents them by detecting conflicts.",
+      "source": "https://www.postgresql.org/docs/current/mvcc-serialization-failure-handling.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "The pgstattuple_approx() function estimates table bloat without a full table scan and is available since PostgreSQL 9.5. For exact bloat, pgstattuple() performs a full table scan but is more expensive.",
+      "source": "https://wiki.postgresql.org/wiki/Show_database_bloat",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "B-tree index cost estimation for range scans calculates index page fetch cost as index_size × selectivity. Pages are accessed with random_page_cost per nonsequential fetch, and each index row costs cpu_index_tuple_cost to process.",
+      "source": "https://www.postgresql.org/docs/current/index-cost-estimation.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Autovacuum parameters autovacuum_vacuum_scale_factor and autovacuum_vacuum_threshold control when autovacuum is triggered. For high-churn tables, these should be tuned lower to vacuum more frequently and prevent bloat accumulation.",
+      "source": "https://oneuptime.com/blog/post/2026-01-25-postgresql-autovacuum-tuning-prevent-table-bloat/view",
+      "publication_date": "2026"
+    }
+  ],
+  "examples": [
+    {
+      "title": "Non-repeatable read in READ COMMITTED",
+      "description": "Transaction A reads account balance = $100. Transaction B updates the same account to $150 and commits. Transaction A reads the same account again and sees $150. The same query executed twice returned different results.",
+      "source": "https://www.cybertec-postgresql.com/en/transactions-in-postgresql-read-committed-vs-repeatable-read/",
+      "publication_date": "2024"
+    },
+    {
+      "title": "Phantom read in READ COMMITTED",
+      "description": "Transaction A counts guests in a room (result: 5). Transaction B inserts 2 new guests and commits. Transaction A counts again and gets 7. The set of rows matching the query changed between two executions.",
+      "source": "https://www.postgresql.org/docs/current/transaction-iso.html",
+      "publication_date": "2024"
+    },
+    {
+      "title": "Table bloat from long-running transaction",
+      "description": "A data warehouse query runs for 6 hours. During this time, an OLTP application updates 10 million rows. Autovacuum cannot reclaim these dead tuples because the long query still needs the old versions. Table size grows from 50GB to 120GB. After the long query completes, autovacuum reclaims the space.",
+      "source": "https://www.snowflake.com/en/engineering-blog/tuning-postgres-vacuum/",
+      "publication_date": "2025"
+    },
+    {
+      "title": "Index selection: B-tree vs Hash for equality queries",
+      "description": "A query looks up users by email (WHERE email = ?). Hash index: 123ms (10-22% faster). B-tree index: 134ms. But if the query later adds a range filter (WHERE email LIKE 'admin%'), the B-tree works but the hash index becomes unusable.",
+      "source": "https://www.enterprisedb.com/postgres-tutorials/are-hash-indexes-faster-btree-indexes-postgres",
+      "publication_date": "2024"
+    },
+    {
+      "title": "GiST index for spatial queries in PostGIS",
+      "description": "Finding all restaurants within 5km of a coordinate (40.7128, -74.0060). A B-tree on latitude/longitude is slow. A GiST index on geometry column enables fast overlap (&&) and distance (<->) queries: 45ms vs 8500ms with full table scan.",
+      "source": "https://postgis.net/documentation/faq/spatial-indexes/",
+      "publication_date": "2024"
+    },
+    {
+      "title": "Blocking query diagnosed with pg_stat_activity",
+      "description": "Session 1234 holds a lock on users table, session 5678 waits for it. Query: SELECT pid, pg_blocking_pids(pid) FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid)) > 0. Returns: pid=5678, pg_blocking_pids={1234}. Admin cancels session 1234, session 5678 continues.",
+      "source": "https://www.postgresscripts.com/post/identifying-blocking-postgresql-queries-using-pg-stat-activity/",
+      "publication_date": "2024"
+    },
+    {
+      "title": "WAL replay after power failure",
+      "description": "Database crashes at 14:23:45. Last checkpoint was at 14:15:00. PostgreSQL starts, finds checkpoint record, and replays all WAL entries from 14:15:00 to 14:23:45. Three INSERT transactions were in flight but not yet flushed to data files; WAL replay re-applies them.",
+      "source": "https://www.cybertec-postgresql.com/en/postgresql-recovery-internals/",
+      "publication_date": "2024"
+    },
+    {
+      "title": "Serialization anomaly in Repeatable Read",
+      "description": "Two transactions in Repeatable Read both read the same row (stock = 10). Transaction A decrements to 9, commits. Transaction B decrements to 9, commits. Stock should be 8 but is 9—lost update. PostgreSQL does NOT prevent this in Repeatable Read but DOES in Serializable (would throw 'could not serialize' error).",
+      "source": "https://medium.com/@kaushikgopu1998/a-deep-dive-into-the-could-not-serialize-due-to-concurrent-update-error-a8a3705e4012",
+      "publication_date": "2024"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "MVCC snapshot isolation",
+      "analogy": "Imagine a library where every reader gets a printed catalog as of a specific date. Reader A's catalog lists Book X as in stock. Between when A got the catalog and when A looks for Book X, another patron (transaction B) checks out Book X. Reader A's catalog still says it's in stock because A is using a frozen snapshot from that date. This is MVCC: each transaction sees a consistent view even as the real database changes.",
+      "source": "https://devcenter.heroku.com/articles/postgresql-concurrency"
+    },
+    {
+      "concept": "WAL replay recovery",
+      "analogy": "Think of WAL like a flight recorder (black box). In a crash, the database is damaged and incomplete, but the WAL log has a detailed record of every transaction in order. Recovery is like reconstructing the flight from the black box data: replaying all recorded changes forward to restore the database to its last safe state.",
+      "source": "https://www.cybertec-postgresql.com/en/postgresql-recovery-internals/"
+    },
+    {
+      "concept": "Table bloat from long-running transactions",
+      "analogy": "Imagine a library checkout desk that never discards old checkout records. Every checked-out book creates a record that should be deleted when returned. But if one patron has an outstanding 'return request' from 6 hours ago, the desk can't throw out any records from that time onward—in case that patron needs to see old checkouts. Meanwhile, new checkouts keep piling up. The desk fills with dead records. Only when that patron's request completes can cleanup resume.",
+      "source": "https://www.snowflake.com/en/engineering-blog/tuning-postgres-vacuum/"
+    },
+    {
+      "concept": "Hash vs B-tree indexes",
+      "analogy": "Hash index: a phone book indexed by an exact phone number (fast lookup, but can't find 'starts with 555'). B-tree index: a phone book indexed alphabetically (slightly slower exact lookup, but can find ranges like 'starts with 555').",
+      "source": "https://www.enterprisedb.com/postgres-tutorials/are-hash-indexes-faster-btree-indexes-postgres"
+    },
+    {
+      "concept": "GiST index for spatial queries",
+      "analogy": "Finding a restaurant near a coordinate is like finding a house near an address using a postal zone map. A B-tree indexed on latitude/longitude is like searching through all addresses sequentially. A GiST index is like the zone map: you first find the zone containing your coordinate, then search within that zone.",
+      "source": "https://www.postgresql.org/docs/current/gist.html"
+    },
+    {
+      "concept": "Phantom reads",
+      "analogy": "You count 5 people in a meeting room. Someone enters while you turn to get coffee. You look back and count 6. The 'set of people in the room' (the query result set) changed between two executions, even though you didn't move.",
+      "source": "https://www.postgresql.org/docs/current/transaction-iso.html"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "WAL segment file size",
+      "value": "16 MB",
+      "source": "https://www.postgresql.org/docs/current/wal-intro.html",
+      "context": "Standard size; can be configured at compile time"
+    },
+    {
+      "metric": "Hash index performance advantage over B-tree",
+      "value": "10-22% faster",
+      "source": "https://www.enterprisedb.com/postgres-tutorials/are-hash-indexes-faster-btree-indexes-postgres",
+      "context": "For equality-only queries; advantage disappears with range predicates"
+    },
+    {
+      "metric": "pgstattuple_approx() estimation error for simple tables",
+      "value": "0.5% deviation",
+      "source": "https://wiki.postgresql.org/wiki/Show_database_bloat",
+      "context": "Compared to exact pgstattuple() measurement"
+    },
+    {
+      "metric": "Pure SQL bloat estimation error",
+      "value": "3% deviation",
+      "source": "https://wiki.postgresql.org/wiki/Show_database_bloat",
+      "context": "Estimation method for tables without extension dependencies"
+    },
+    {
+      "metric": "Transaction isolation snapshot lifecycle in Repeatable Read",
+      "value": "Held for entire transaction (all N statements)",
+      "source": "https://www.postgresql.org/docs/current/transaction-iso.html",
+      "context": "Contrast with READ COMMITTED: new snapshot per statement"
+    },
+    {
+      "metric": "Transaction isolation snapshot lifecycle in READ COMMITTED",
+      "value": "New snapshot per statement",
+      "source": "https://www.postgresql.org/docs/current/transaction-iso.html",
+      "context": "Enables higher concurrency but allows non-repeatable reads"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "PostgreSQL prevents dirty reads at READ COMMITTED isolation level.",
+      "truth": "PostgreSQL prevents dirty reads at ALL isolation levels (including the non-standard 'Read Uncommitted' mode, which behaves like Read Committed). Dirty reads are impossible in PostgreSQL due to MVCC.",
+      "source": "https://www.postgresql.org/docs/current/transaction-iso.html"
+    },
+    {
+      "misconception": "Repeatable Read prevents all anomalies except serialization anomalies.",
+      "truth": "Repeatable Read prevents most anomalies (dirty reads, non-repeatable reads, phantom reads) but ALLOWS serialization anomalies (lost updates, read skew). Serializable is needed to prevent those.",
+      "source": "https://medium.com/@kaushikgopu1998/a-deep-dive-into-the-could-not-serialize-due-to-concurrent-update-error-a8a3705e4012"
+    },
+    {
+      "misconception": "Long-running transactions don't affect other transactions.",
+      "truth": "Long-running transactions block autovacuum and prevent reclamation of dead tuples, causing table bloat to accumulate even though autovacuum continues to run on other tables.",
+      "source": "https://www.snowflake.com/en/engineering-blog/tuning-postgres-vacuum/"
+    },
+    {
+      "misconception": "Hash indexes are always faster and should be preferred.",
+      "truth": "Hash indexes are faster only for pure equality queries (10-22% gain). They fail if the query adds range predicates, AND they cannot be used for sorting. B-tree is more flexible and is the default for good reason.",
+      "source": "https://www.enterprisedb.com/postgres-tutorials/are-hash-indexes-faster-btree-indexes-postgres"
+    },
+    {
+      "misconception": "GiST indexes give exact results like B-tree indexes.",
+      "truth": "GiST indexes are lossy—they can return false matches. The actual table row must be checked to eliminate false positives. This is a tradeoff for handling complex data types.",
+      "source": "https://www.postgresql.org/docs/current/gist.html"
+    },
+    {
+      "misconception": "Autovacuum will always clean up bloat immediately after a transaction completes.",
+      "truth": "Autovacuum cleans up bloat only if the table meets its configured thresholds (autovacuum_vacuum_threshold + autovacuum_vacuum_scale_factor). High-churn tables may bloat faster than autovacuum can clean.",
+      "source": "https://oneuptime.com/blog/post/2026-01-25-postgresql-autovacuum-tuning-prevent-table-bloat/view"
+    },
+    {
+      "misconception": "pg_blocking_pids() is cheap to call and can be run on every query.",
+      "truth": "pg_blocking_pids() can be resource-intensive in high-concurrency environments and may impact performance if called on large result sets without filtering.",
+      "source": "https://www.instaclustr.com/blog/mastering-pg-stat-activity-for-real-time-monitoring-in-postgresql/"
+    },
+    {
+      "misconception": "WAL replay always completes quickly after a crash.",
+      "truth": "WAL replay time depends on the volume of transactions since the last checkpoint. A database with large checkpoint intervals or many pending transactions can take minutes or hours to recover.",
+      "source": "https://www.cybertec-postgresql.com/en/postgresql-recovery-internals/"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.postgresql.org/docs/current/wal-intro.html",
+      "title": "PostgreSQL: Documentation: Write-Ahead Logging (WAL)",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/transaction-iso.html",
+      "title": "PostgreSQL: Documentation: Transaction Isolation",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://dev.to/headf1rst/postgresql-mvcc-internals-from-xminxmax-to-isolation-levels-2g6h",
+      "title": "PostgreSQL MVCC Internals: From xmin/xmax to Isolation Levels",
+      "recency": "2023"
+    },
+    {
+      "url": "https://www.snowflake.com/en/engineering-blog/tuning-postgres-vacuum/",
+      "title": "Postgres Vacuum Explained: Autovacuum, Bloat and Tuning",
+      "recency": "2025"
+    },
+    {
+      "url": "https://www.enterprisedb.com/postgres-tutorials/are-hash-indexes-faster-btree-indexes-postgres",
+      "title": "Are Hash Indexes Faster than Btree Indexes in Postgres?",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/gist.html",
+      "title": "PostgreSQL: Documentation: GiST Indexes",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://www.cybertec-postgresql.com/en/postgresql-recovery-internals/",
+      "title": "PostgreSQL Recovery Internals",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.postgresscripts.com/post/identifying-blocking-postgresql-queries-using-pg-stat-activity/",
+      "title": "Identifying Blocking PostgreSQL Queries using pg_stat_activity",
+      "recency": "2024"
+    },
+    {
+      "url": "https://wiki.postgresql.org/wiki/Show_database_bloat",
+      "title": "Show database bloat — PostgreSQL Wiki",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/index-cost-estimation.html",
+      "title": "PostgreSQL: Documentation: Index Cost Estimation Functions",
+      "recency": "Current (2024)"
+    },
+    {
+      "url": "https://oneuptime.com/blog/post/2026-01-25-postgresql-autovacuum-tuning-prevent-table-bloat/view",
+      "title": "How to Prevent Table Bloat with Autovacuum Tuning in PostgreSQL",
+      "recency": "2026"
+    },
+    {
+      "url": "https://www.cybertec-postgresql.com/en/transactions-in-postgresql-read-committed-vs-repeatable-read/",
+      "title": "Transactions in PostgreSQL: READ COMMITTED vs. REPEATABLE READ",
+      "recency": "2024"
+    },
+    {
+      "url": "https://medium.com/@kaushikgopu1998/a-deep-dive-into-the-could-not-serialize-due-to-concurrent-update-error-a8a3705e4012",
+      "title": "A Deep Dive into the 'Could Not Serialize Due to Concurrent Update' Error",
+      "recency": "2024"
+    },
+    {
+      "url": "https://postgis.net/documentation/faq/spatial-indexes/",
+      "title": "How do I use spatial indexes? — PostGIS FAQ",
+      "recency": "2024"
+    },
+    {
+      "url": "https://devcenter.heroku.com/articles/postgresql-concurrency",
+      "title": "PostgreSQL Concurrency with MVCC",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.instaclustr.com/blog/mastering-pg-stat-activity-for-real-time-monitoring-in-postgresql/",
+      "title": "Mastering pg_stat_activity for real-time monitoring in PostgreSQL",
+      "recency": "2024"
+    }
+  ]
+}

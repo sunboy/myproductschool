@@ -1,0 +1,472 @@
+{
+  "facts": [
+    {
+      "fact": "Virtual address to physical address translation uses a multi-level page table walk. A TLB (Translation Lookaside Buffer) hit takes 0.5-1 CPU cycle, while a miss triggers a page walk consuming 100+ cycles depending on hardware.",
+      "source_url": "https://pages.cs.wisc.edu/~remzi/OSTEP/vm-tlbs.pdf",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Minor page fault latency averages 1.27 microseconds (2552 CPU cycles), with tail latency at 3.20 microseconds. Major page faults incur 400x+ overhead due to disk I/O—even SSDs add ~30μs vs 70ns for RAM.",
+      "source_url": "https://rigtorp.se/virtual-memory/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Process isolation guarantees that if one process crashes, other processes are unaffected. Threads within a process share memory—a bug in one thread can crash the entire process.",
+      "source_url": "https://medium.com/@eugenio.andrieu_63440/processes-vs-threads-how-to-choose-the-right-concurrency-model-for-your-application-2bffdbade814",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Linux enforces two file descriptor limits: soft limit (process can temporarily increase up to hard limit) and hard limit (only root can adjust). System-wide limit controlled by kernel parameter fs.file-max.",
+      "source_url": "https://www.cyberciti.biz/faq/linux-increase-the-maximum-number-of-open-files/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Async I/O scales to 10K+ concurrent tasks with ~1KB overhead per task. Thread pools are limited to <100 threads with ~8MB per thread overhead—making async 8000x more memory-efficient for high concurrency.",
+      "source_url": "https://superfastpython.com/threadpoolexecutor-vs-asyncio/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "SIGTERM asks a process to terminate gracefully; the process can catch it and clean up. SIGKILL cannot be caught and forces immediate termination. Kubernetes sends SIGTERM with a grace period before SIGKILL.",
+      "source_url": "https://komodor.com/learn/sigterm-signal-15-exit-code-143-linux-graceful-termination/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Copy-on-write (COW) makes fork() instantaneous by sharing parent memory pages. The kernel marks pages read-only; when a process writes, it triggers a fault, allocates new physical pages, and copies data—only then.",
+      "source_url": "https://medium.com/@Ibraheemcisse/copy-on-write-why-linux-process-creation-is-lightning-fast-90cf08644504",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Linux memory overcommit mode 0 (heuristic) refuses obvious overcommits but allows safe overcommit. Mode 1 (always) permits unlimited allocations. Mode 2 (never) restricts total committed memory to swap + configurable RAM fraction.",
+      "source_url": "https://www.kernel.org/doc/Documentation/vm/overcommit-accounting",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "VSZ (Virtual Memory Size) includes all allocated memory, swapped memory, and shared libraries—not a true usage indicator. RSS (Resident Set Size) counts only physical RAM pages currently in memory.",
+      "source_url": "https://www.baeldung.com/linux/resident-set-vs-virtual-memory-size",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "TLB thrashing occurs when the working set exceeds TLB capacity (typically 64-512 entries), causing new pages to displace pages about to be reused. This alone can cause 10x performance degradation.",
+      "source_url": "https://kindatechnical.com/operating-systems/lesson-55-translation-lookaside-buffer",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Memory-mapped files (mmap) deliver 25x faster access on sequential workloads vs read() syscalls. However, mmap scales to only 8 cores on Linux—direct I/O achieves 7.6 GB/s vs 1.5 GB/s for mmap on fast NVMe.",
+      "source_url": "https://info.varnish-software.com/blog/how-memory-maps-mmap-deliver-25x-faster-file-access-in-go",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "The Linux Multi-Generational LRU (MGLRU) replaces the simple active/inactive list model with generation-based tracking, reducing kswapd CPU usage and improving responsiveness under memory pressure.",
+      "source_url": "https://www.kernel.org/doc/html//v6.2/mm/multigen_lru.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Netflix migrated Zuul from blocking to async/non-blocking (Netty) and saw 10-25% CPU efficiency gains in some clusters, but gains were modest because CPU work within the gateway dominated architectural gains.",
+      "source_url": "https://www.infoq.com/news/2016/10/netflix-zuul-asynch-nonblocking/",
+      "publication_date": "2016"
+    },
+    {
+      "fact": "ASLR (Address Space Layout Randomization) randomizes base addresses of executable, stack, heap, and libraries. Deployed by Linux in 2005 after PaX project's 2001 design, now a baseline defense against ROP/JOP exploits.",
+      "source_url": "https://en.wikipedia.org/wiki/Address_space_layout_randomization",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Cloudflare Workers use V8 isolates to prevent code from accessing memory outside its sandbox—even within the same process. Combined with memory protection keys, this provides defense-in-depth against heap corruption exploits.",
+      "source_url": "https://blog.cloudflare.com/safe-in-the-sandbox-security-hardening-for-cloudflare-workers/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "The C10K problem (handling 10,000 concurrent connections) was solved by event-driven architectures using epoll/kqueue. Nginx uses epoll; thread-per-request would require 10,000 threads with 80GB virtual memory overhead.",
+      "source_url": "https://www.kegel.com/c10k.html",
+      "publication_date": "1999"
+    },
+    {
+      "fact": "Native Linux threads consume minimal memory—10,000 threads use ~40MB of page tables for virtual address mapping but only ~80MB resident memory. JVM threads consume 250MB at 10K threads; coroutines use 10-50KB each.",
+      "source_url": "https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-overheads-for-linux-threads",
+      "publication_date": "2018"
+    },
+    {
+      "fact": "A typical Linux page size is 4KB. A 4GB process running on 2GB physical RAM uses ~1M page table entries (PTEs). The kernel loads only active PTEs into the TLB; unused pages are swapped on demand.",
+      "source_url": "https://www.cs.cornell.edu/courses/cs3410/2025sp/notes/vm.html",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Context switching overhead on modern x86 is 1.3-1.6 microseconds per switch. With 10,000 threads on a 4-core system, context switching alone becomes a bottleneck—async I/O avoids this overhead.",
+      "source_url": "https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-overheads-for-linux-threads",
+      "publication_date": "2018"
+    },
+    {
+      "fact": "Process forking with copy-on-write incurs only the cost of duplicating parent page tables and task structures. Actual memory pages are NOT copied upfront; they are shared until written to (triggering a fault).",
+      "source_url": "https://dev.to/farhadrahimiklie/understanding-fork-in-linux-how-process-creation-really-works-13id",
+      "publication_date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "description": "Nginx handles 10,000+ concurrent connections with epoll (event-driven I/O). Apache with thread-per-request would need 10,000 threads and run out of memory.",
+      "metric": "Nginx: ~3-5MB per 1000 connections; Apache: ~80MB per 1000 connections",
+      "source_url": "https://www.kegel.com/c10k.html"
+    },
+    {
+      "description": "Netflix Zuul gateway migration from blocking to async/non-blocking (Netty) showed modest CPU gains (10-25%) in some clusters because I/O was not the primary bottleneck—CPU work within the gateway dominated.",
+      "metric": "10-25% CPU efficiency improvement; initial expectations were much higher",
+      "source_url": "https://www.infoq.com/news/2016/10/netflix-zuul-asynch-nonblocking/"
+    },
+    {
+      "description": "Cloudflare Workers isolate billions of requests daily using V8 isolates + memory protection keys. A single compromised isolate cannot access memory of neighboring customer code.",
+      "metric": "Billions of requests per day; process isolation prevents cross-tenant data leakage",
+      "source_url": "https://blog.cloudflare.com/safe-in-the-sandbox-security-hardening-for-cloudflare-workers/"
+    },
+    {
+      "description": "Linux C10K: epoll-based event loop handles 10,000+ idle connections on a single thread with minimal memory overhead. Blocking approach needs 10,000 stacks (~80MB each = 800GB virtual).",
+      "metric": "epoll: O(active connections) CPU; select/poll: O(total connections) CPU",
+      "source_url": "https://medium.com/codex/linux-performance-optimization-c10k-and-c1000k-problems-2f77fc3e4784"
+    },
+    {
+      "description": "Google Shakespeare search service hit cascading failure under exceptional load due to file descriptor exhaustion from unclosed connections. FD leak only surfaced at scale.",
+      "metric": "FD limit exhaustion triggered per-request failures across the service",
+      "source_url": "https://groups.google.com/g/vertx/c/MXmy8obIr94/m/uBImG68dBAAJ"
+    },
+    {
+      "description": "Go runtime at 10,000 goroutines consumes ~40MB RSS because goroutines use minimal stacks (2KB initial, growable). Same test with OS threads would fail—each thread needs 8MB stack.",
+      "metric": "Goroutines: 40MB for 10K; OS threads: would require 80GB+ virtual memory",
+      "source_url": "https://matklad.github.io//2021/03/12/goroutines-are-not-significantly-smaller-than-threads.html"
+    },
+    {
+      "description": "Intel TME-Box (2024-2025) addresses in-process isolation for cloud workloads. Previous approach (MPK) supports only 16 protection domains—insufficient for 1000s of isolated tenants in one process.",
+      "metric": "16 protection domains insufficient; TME-MK enables thousands of in-process isolation domains",
+      "source_url": "https://securityboulevard.com/2025/12/ndss-2025-tme-box-scalable-in-process-isolation-through-intel-tme-mk-memory-encryption/"
+    },
+    {
+      "description": "Python asyncio vs threading: asyncio handles 10,000 concurrent tasks in 2 seconds (all run concurrently). Threading with 100 thread pool can take 100+ seconds due to context switching and GIL.",
+      "metric": "asyncio: 10K tasks in 2s; threading: blocked by GIL, limited to ~100 concurrent tasks",
+      "source_url": "https://superfastpython.com/threadpoolexecutor-vs-asyncio/"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Virtual memory is like a library's card catalog. The catalog (page tables) maps book titles (virtual addresses) to shelf locations (physical addresses). The TLB is a small cache of recently looked-up mappings—when you need a book not in the cache, you look it up in the full catalog (page walk).",
+      "concept": "Address translation and TLB caching"
+    },
+    {
+      "analogy": "A process is like a private apartment with its own address system and locks (page tables + MMU hardware protection). Threads are like roommates sharing the same apartment—they share furniture (memory) but can collide if they both try to move the couch (shared data mutation).",
+      "concept": "Process isolation vs thread sharing"
+    },
+    {
+      "analogy": "Copy-on-write during fork is like making a xerox copy that is shared between two people until one person marks it up. Only when one person writes on it does a true physical copy get made—before that, they're looking at the same original.",
+      "concept": "Copy-on-write semantics"
+    },
+    {
+      "analogy": "The LRU page eviction algorithm is like a library shelf that keeps frequently borrowed books at eye level and moves rarely borrowed books to high shelves. When shelf space runs out, the least-recently-borrowed book is removed first.",
+      "concept": "LRU page reclaim and memory pressure"
+    },
+    {
+      "analogy": "SIGTERM is a polite knock on the door asking someone to leave. SIGKILL is breaking down the door and forcing them out. You can ignore a knock but not a forced eviction.",
+      "concept": "OS signals and graceful shutdown"
+    },
+    {
+      "analogy": "Async I/O is like a single cashier who takes your order, moves to the next customer while your food cooks, then serves everyone as their orders finish. Thread-per-request is hiring one cashier per customer and having them stand idle while cooking happens.",
+      "concept": "Async vs thread-per-request concurrency model"
+    },
+    {
+      "analogy": "A file descriptor limit (ulimit) is like a theater with a fixed number of seats. Even if you have 10,000 people wanting to enter, the theater can only admit as many as there are seats. If someone doesn't leave, the next person can't enter.",
+      "concept": "File descriptor limits and resource exhaustion"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "TLB hit latency",
+      "value": "0.5–1 CPU cycle",
+      "context": "Fast path for virtual-to-physical address translation"
+    },
+    {
+      "metric": "TLB miss page walk latency",
+      "value": "100+ CPU cycles",
+      "context": "Requires multiple memory accesses to traverse multi-level page tables"
+    },
+    {
+      "metric": "Minor page fault latency",
+      "value": "1.27 microseconds (2552 cycles)",
+      "context": "Average on modern x86; tail latency 3.20μs"
+    },
+    {
+      "metric": "Major page fault (SSD read)",
+      "value": "30 microseconds + page fault overhead",
+      "context": "400x+ slower than RAM access due to disk I/O"
+    },
+    {
+      "metric": "Context switch overhead",
+      "value": "1.3–1.6 microseconds per switch",
+      "context": "Modern x86 systems; becomes bottleneck at high thread counts"
+    },
+    {
+      "metric": "Per-thread memory overhead",
+      "value": "8 MB (native Linux threads)",
+      "context": "Per-thread stack allocation; varies by implementation"
+    },
+    {
+      "metric": "Per-goroutine memory overhead",
+      "value": "~4 KB initial (growable)",
+      "context": "Go coroutines; 2000x more efficient than OS threads"
+    },
+    {
+      "metric": "Default page size",
+      "value": "4 KB",
+      "context": "x86/x64 standard; affects page table structure"
+    },
+    {
+      "metric": "TLB size typical systems",
+      "value": "64–512 entries",
+      "context": "Varies by CPU; exceeding this causes thrashing"
+    },
+    {
+      "metric": "mmap performance gain (sequential)",
+      "value": "25x faster than read() syscalls",
+      "context": "Large file sequential access; mmap caches bypass"
+    },
+    {
+      "metric": "mmap throughput on Linux",
+      "value": "1.5 GB/s (limited to 8 cores)",
+      "context": "vs. 7.6 GB/s for direct I/O on NVMe; scalability bottleneck"
+    },
+    {
+      "metric": "Default ulimit -n",
+      "value": "1024 (soft), 4096 (hard) on many systems",
+      "context": "Per-process FD limit; can be raised via /etc/security/limits.conf"
+    },
+    {
+      "metric": "Async I/O memory per task",
+      "value": "~1 KB",
+      "context": "Allows 10K+ concurrent tasks with low memory"
+    },
+    {
+      "metric": "Thread pool memory per thread",
+      "value": "~8 MB",
+      "context": "8000x higher overhead than async I/O"
+    },
+    {
+      "metric": "C10K problem threshold",
+      "value": "10,000 concurrent connections",
+      "context": "Single-thread async with epoll solves this; threading approach fails"
+    },
+    {
+      "metric": "VSZ virtual memory for 10K threads",
+      "value": "80 GB",
+      "context": "Virtual memory allocation, not physical; only 80MB RSS"
+    },
+    {
+      "metric": "Page table entries for 4GB address space",
+      "value": "~1 million PTEs (with 4KB pages)",
+      "context": "Affects memory overhead of large processes"
+    },
+    {
+      "metric": "Memory Overcommit Mode 0 (heuristic)",
+      "value": "Typical desktop/server systems",
+      "context": "Balances safety with overcommit benefits"
+    },
+    {
+      "metric": "Grace period before SIGKILL",
+      "value": "Kubernetes default: 30 seconds",
+      "context": "Time for graceful shutdown after SIGTERM"
+    },
+    {
+      "metric": "TLB miss performance degradation",
+      "value": "10–20% typical; 10x in worst case",
+      "context": "Depending on working set size vs TLB capacity"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "A 4GB process always uses 4GB of physical RAM.",
+      "reality": "VSZ (virtual address space) is not RAM usage. Actual physical memory (RSS) depends on page faults, swapping, and what's actually accessed. A 4GB process might use only 100MB of resident memory if most pages are never touched.",
+      "source_url": "https://www.baeldung.com/linux/resident-set-vs-virtual-memory-size"
+    },
+    {
+      "misconception": "Page faults are rare and unimportant.",
+      "reality": "Minor page faults happen on every mmap() call and first write to anonymous memory. At 1.27μs per fault, thousands of faults per second can add up. Major faults (disk I/O) are catastrophic for latency.",
+      "source_url": "https://rigtorp.se/virtual-memory/"
+    },
+    {
+      "misconception": "More threads always mean better parallelism.",
+      "reality": "Context switching becomes a bottleneck at high thread counts. Async I/O avoids this entirely by using a single event loop, scaling to 10K+ concurrent tasks with minimal overhead.",
+      "source_url": "https://superfastpython.com/threadpoolexecutor-vs-asyncio/"
+    },
+    {
+      "misconception": "Copy-on-write means fork() fully copies memory immediately.",
+      "reality": "fork() with COW is nearly instantaneous—pages are shared until written to. Only when a process writes does a fault trigger, allocating new pages. This is why fork-exec is so fast.",
+      "source_url": "https://medium.com/@Ibraheemcisse/copy-on-write-why-linux-process-creation-is-lightning-fast-90cf08644504"
+    },
+    {
+      "misconception": "Raising ulimit -n to unlimited solves 'too many open files' errors.",
+      "reality": "FD exhaustion rarely comes from hitting ulimit—it usually indicates a file leak (unclosed handles). Raising the limit just delays the problem. The real fix is finding and closing the leak.",
+      "source_url": "https://www.robustperception.io/dealing-with-too-many-open-files"
+    },
+    {
+      "misconception": "SIGKILL can be caught and handled for graceful shutdown.",
+      "reality": "SIGKILL cannot be caught, blocked, or ignored. Only SIGTERM/SIGINT can be handled. SIGKILL is a last resort for stubborn processes.",
+      "source_url": "https://komodor.com/learn/sigterm-signal-15-exit-code-143-linux-graceful-termination/"
+    },
+    {
+      "misconception": "Swapping is slow; systems without swap are faster.",
+      "reality": "Swap is better than OOM kill. Without swap, the kernel invokes OOM killer when memory is exhausted, killing processes abruptly. Swap provides a grace period. The real issue is excessive thrashing (swapping more than working).",
+      "source_url": "https://www.scoutapm.com/blog/understanding-page-faults-and-memory-swap-in-out-when-should-you-worry"
+    },
+    {
+      "misconception": "Process isolation is purely a security feature; performance is identical to threads.",
+      "reality": "Processes have inter-process communication (IPC) overhead and memory duplication costs. Threads are faster for shared-memory workloads but less safe. The tradeoff is correctness vs. speed.",
+      "source_url": "https://medium.com/@eugenio.andrieu_63440/processes-vs-threads-how-to-choose-the-right-concurrency-model-for-your-application-2bffdbade814"
+    },
+    {
+      "misconception": "Memory-mapped files are always faster than read() syscalls.",
+      "reality": "mmap excels at sequential access (25x gain) but is single-threaded, scaling to only 8 cores on Linux. Direct I/O is better for random access and scales across all cores on modern NVMe.",
+      "source_url": "https://www.baeldung.com/linux/memory-mapped-vs-system-call"
+    },
+    {
+      "misconception": "Increasing fs.file-max (system-wide FD limit) is a permanent fix.",
+      "reality": "fs.file-max is a symptom band-aid. The actual issue is resource leaks in application code. Fixing the leak is the only permanent solution; raising the limit just hides the problem longer.",
+      "source_url": "https://www.robustperception.io/dealing-with-too-many-open-files"
+    },
+    {
+      "misconception": "ASLR makes memory addresses completely unpredictable.",
+      "reality": "ASLR works by randomizing base addresses at load time. Once loaded, addresses are fixed. Information disclosure vulnerabilities (leaking a pointer) can defeat ASLR. ASLR is one defense layer, not a complete solution.",
+      "source_url": "https://en.wikipedia.org/wiki/Address_space_layout_randomization"
+    },
+    {
+      "misconception": "The OOM killer (out-of-memory killer) only triggers when memory is completely full.",
+      "reality": "OOM killer activates when memory pressure exceeds configured thresholds, not when RAM is fully consumed. Early intervention prevents cascading failures.",
+      "source_url": "https://hostperl.com/kb/tutorials/how-linux-handles-memory-oom-killer-and-swappiness"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.cs.cornell.edu/courses/cs3410/2025sp/notes/vm.html",
+      "recency": "2025 (Spring), recent course material",
+      "relevance": "Virtual memory and address translation fundamentals"
+    },
+    {
+      "url": "https://pages.cs.wisc.edu/~remzi/OSTEP/vm-tlbs.pdf",
+      "recency": "2024+, authoritative academic",
+      "relevance": "TLB operation and cache miss costs"
+    },
+    {
+      "url": "https://rigtorp.se/virtual-memory/",
+      "recency": "2024, engineering blog",
+      "relevance": "Latency of page faults and virtual memory benchmarks"
+    },
+    {
+      "url": "https://docs.kernel.org/mm/page_tables.html",
+      "recency": "2024, official Linux kernel documentation",
+      "relevance": "Linux page table implementation details"
+    },
+    {
+      "url": "https://superfastpython.com/threadpoolexecutor-vs-asyncio/",
+      "recency": "2024, practical benchmark",
+      "relevance": "Threading vs async I/O performance comparison"
+    },
+    {
+      "url": "https://medium.com/@eugenio.andrieu_63440/processes-vs-threads-how-to-choose-the-right-concurrency-model-for-your-application-2bffdbade814",
+      "recency": "2024, engineering education",
+      "relevance": "Process isolation vs thread sharing tradeoffs"
+    },
+    {
+      "url": "https://www.cyberciti.biz/faq/linux-increase-the-maximum-number-of-open-files/",
+      "recency": "2024, systems administration guide",
+      "relevance": "ulimit configuration and file descriptor management"
+    },
+    {
+      "url": "https://komodor.com/learn/sigterm-signal-15-exit-code-143-linux-graceful-termination/",
+      "recency": "2024, Kubernetes operations guide",
+      "relevance": "OS signal handling and graceful shutdown"
+    },
+    {
+      "url": "https://medium.com/@Ibraheemcisse/copy-on-write-why-linux-process-creation-is-lightning-fast-90cf08644504",
+      "recency": "2024, engineering education",
+      "relevance": "Copy-on-write semantics and fork performance"
+    },
+    {
+      "url": "https://www.kernel.org/doc/Documentation/vm/overcommit-accounting",
+      "recency": "2024, official kernel documentation",
+      "relevance": "Memory overcommit modes and behavior"
+    },
+    {
+      "url": "https://www.baeldung.com/linux/resident-set-vs-virtual-memory-size",
+      "recency": "2024, systems programming guide",
+      "relevance": "RSS vs VSZ memory accounting"
+    },
+    {
+      "url": "https://kindatechnical.com/operating-systems/lesson-55-translation-lookaside-buffer",
+      "recency": "2024, educational OS course",
+      "relevance": "TLB thrashing and performance degradation"
+    },
+    {
+      "url": "https://info.varnish-software.com/blog/how-memory-maps-mmap-deliver-25x-faster-file-access-in-go",
+      "recency": "2024, performance engineering blog",
+      "relevance": "mmap vs direct I/O performance comparison"
+    },
+    {
+      "url": "https://www.kernel.org/doc/html//v6.2/mm/multigen_lru.html",
+      "recency": "2024, official kernel documentation",
+      "relevance": "Multi-generational LRU page reclaim algorithm"
+    },
+    {
+      "url": "https://www.infoq.com/news/2016/10/netflix-zuul-asynch-nonblocking/",
+      "recency": "2016 (older but authoritative)",
+      "relevance": "Netflix async migration case study; flag as pre-2024"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Address_space_layout_randomization",
+      "recency": "2024, maintained reference",
+      "relevance": "ASLR history and implementation"
+    },
+    {
+      "url": "https://blog.cloudflare.com/safe-in-the-sandbox-security-hardening-for-cloudflare-workers/",
+      "recency": "2024, engineering blog",
+      "relevance": "In-process isolation using V8 isolates and memory protection keys"
+    },
+    {
+      "url": "https://www.kegel.com/c10k.html",
+      "recency": "1999 (seminal reference, updated)",
+      "relevance": "C10K problem and event-driven I/O solutions"
+    },
+    {
+      "url": "https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-overheads-for-linux-threads",
+      "recency": "2018 (still valid for benchmarks)",
+      "relevance": "Context switching costs and thread memory overhead"
+    },
+    {
+      "url": "https://dev.to/farhadrahimiklie/understanding-fork-in-linux-how-process-creation-really-works-13id",
+      "recency": "2024, educational blog",
+      "relevance": "fork() internals and copy-on-write"
+    },
+    {
+      "url": "https://www.baeldung.com/linux/memory-mapped-vs-system-call",
+      "recency": "2024, systems programming guide",
+      "relevance": "mmap vs syscall I/O performance analysis"
+    },
+    {
+      "url": "https://groups.google.com/g/vertx/c/MXmy8obIr94/m/uBImG68dBAAJ",
+      "recency": "2020+ forum discussion",
+      "relevance": "File descriptor leak and production incident discussion"
+    },
+    {
+      "url": "https://www.robustperception.io/dealing-with-too-many-open-files",
+      "recency": "2024, operations guide",
+      "relevance": "Debugging FD exhaustion and resource leaks"
+    },
+    {
+      "url": "https://securityboulevard.com/2025/12/ndss-2025-tme-box-scalable-in-process-isolation-through-intel-tme-mk-memory-encryption/",
+      "recency": "2025, recent security research",
+      "relevance": "In-process isolation for cloud workloads"
+    },
+    {
+      "url": "https://www.scoutapm.com/blog/understanding-page-faults-and-memory-swap-in-out-when-should-you-worry",
+      "recency": "2024, performance monitoring guide",
+      "relevance": "Page fault diagnosis and swap behavior"
+    },
+    {
+      "url": "https://matklad.github.io//2021/03/12/goroutines-are-not-significantly-smaller-than-threads.html",
+      "recency": "2021 (good case study)",
+      "relevance": "Goroutine vs thread memory comparison"
+    }
+  ]
+}

@@ -1,0 +1,399 @@
+{
+  "facts": [
+    {
+      "fact": "Stripe's idempotency implementation stores the resulting status code and body of the first request made for any given idempotency key, regardless of whether it succeeds or fails. Subsequent requests with the same key return the same result, including 500 errors.",
+      "source": "https://stripe.com/blog/idempotency",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "Stripe's idempotency keys can be removed from the system automatically after they're at least 24 hours old. A new request is generated if a key is reused after the original is pruned.",
+      "source": "https://docs.stripe.com/api/idempotent_requests",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "HTTP POST and PATCH methods are not guaranteed to be idempotent, while GET, PUT, DELETE, HEAD, OPTIONS, and TRACE are idempotent by definition. Do not send idempotency keys in GET and DELETE requests because it has no effect.",
+      "source": "https://developer.mozilla.org/en-US/docs/Glossary/Idempotent",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "The IETF HTTP API Working Group has published a draft RFC standard for idempotency keys (draft-ietf-httpapi-idempotency-key-header-05, May 2024) defining the Idempotency-Key HTTP request header field as a building block for HTTP APIs.",
+      "source": "https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "Square's idempotency implementation returns HTTP 200 status code for successful retries with the same idempotency key and request details, returning the details of the existing resource. If the same idempotency key is used with different request parameters, an error is returned.",
+      "source": "https://developer.squareup.com/docs/build-basics/common-api-patterns/idempotency",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "Cursor-based pagination avoids the 'offset pagination problem' where inserting or deleting records in previous pages causes duplicates or skipped items. Cursor pagination maintains stability under concurrent writes because cursors track specific records, not positions.",
+      "source": "https://www.juststeveking.com/api-guides/cursor-based-pagination-for-stable-lists/",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "Contentful has transitioned to cursor-based pagination across all major content APIs due to superior performance and consistency. Cursor pagination is recommended for datasets with 10,000+ records to deliver optimal performance.",
+      "source": "https://www.contentful.com/blog/cursor-based-pagination/",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "OpenAPI 3.1 supports the 'deprecate: true' keyword to mark endpoints, versions, or fields as deprecated. The HTTP Deprecation header provides runtime warnings to consumers alongside OpenAPI spec annotations.",
+      "source": "https://redocly.com/blog/api-versioning-best-practices",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "Recommended API deprecation timeline includes a 6-month announcement period, 12 months of active migration support, and 18-24 months total before removal. Clear deprecation policies should specify maintenance periods for older versions.",
+      "source": "https://zuplo.com/learning-center/deprecating-rest-apis",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "Best practice for REST resource hierarchy is to limit nesting to 3 levels maximum. Nested URLs like /users/{userId}/posts/{postId}/comments represent relationships but deeper nesting becomes cumbersome and inflexible.",
+      "source": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "HTTP 409 (Conflict) is the correct status code for idempotent requests that encounter duplicate idempotency keys. HTTP 422 (Unprocessable Entity) indicates semantic validation errors. HTTP 429 (Too Many Requests) indicates rate limiting.",
+      "source": "https://httpguides.com/status/409-conflict",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "AWS Builders' Library recommends idempotent service APIs where clients issue requests with an idempotency token, and the service returns a response identical to the first successful response, even if underlying system state has changed.",
+      "source": "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/",
+      "publication_date": "2021",
+      "recency": "still authoritative"
+    },
+    {
+      "fact": "UUID v4 provides 122 random bits with collision risk effectively zero, making it the recommended approach for idempotency key generation. However, keys must be scoped to individual users or accounts to prevent cross-client collisions.",
+      "source": "https://medium.com/@bhagyarana80/top-7-idempotency-key-designs-at-planet-scale-fd856c6c-6b70",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "Server-side idempotency should composite the idempotency key with HTTP method and path to prevent cross-endpoint collisions. If request_hash differs from a stored key's hash, the system should return a 422 error for 'idempotency key reused with different payload'.",
+      "source": "https://nxtbanking.com/idempotency-keys-payment-api-design/",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "OpenAPI Generator (with 50+ client generators) and Swagger Codegen are the primary tools for generating API client libraries and SDKs from OpenAPI specs (v2 and v3). Both support Java, Python, Ruby, JavaScript, TypeScript, Go, Swift, and many other languages.",
+      "source": "https://github.com/openapitools/openapi-generator",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "AWS Powertools for Lambda provides a utility to convert Lambda functions into idempotent operations that are safe to retry. Idempotency handler manages request deduplication and caching of responses.",
+      "source": "https://aws.amazon.com/blogs/compute/handling-lambda-functions-idempotency-with-aws-lambda-powertools/",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "Exponential backoff with jitter solves the 'thundering herd' problem by spreading retries across time instead of synchronized retry waves. Decorrelated jitter is the preferred approach for keeping retry times bounded while breaking up lockstep retries.",
+      "source": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "Recommended backoff cap is 30 seconds maximum. Backoff calculation: 1s, 2s, 4s, 8s, 16s, etc. with added jitter of random(0-X) where X is typically 10-20% of the current delay.",
+      "source": "https://medium.com/@titoadeoye/requests-at-scale-exponential-backoff-with-jitter-with-examples-4d0521891923",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "Cursor-based pagination requires a stable ordering (indexed sort key) to work correctly. Without an index on the sort key, cursor pagination loses its efficiency advantage and may fail to reliably determine next/previous records.",
+      "source": "https://www.milanjovanovic.tech/blog/understanding-cursor-pagination-and-why-its-so-fast-deep-dive",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "fact": "Stripe stores idempotency keys in an in-memory database on the server side and caches the server response after a request is processed. The system queries the in-memory database to check if a request has been processed before executing it.",
+      "source": "https://newsletter.systemdesign.one/p/idempotent-api",
+      "publication_date": "2024",
+      "recency": "current"
+    }
+  ],
+  "examples": [
+    {
+      "company": "Stripe",
+      "scenario": "Payment processing with idempotency keys",
+      "details": "A customer initiates a $100 payment with idempotency key 'txn_abc123'. Network timeout occurs and the payment is processed but customer doesn't receive confirmation. Client retries with the same key. Stripe returns HTTP 409 Conflict with the original $100 charge result instead of charging twice.",
+      "metric": "24-hour TTL for idempotency keys"
+    },
+    {
+      "company": "Square",
+      "scenario": "POS system payment retry",
+      "details": "A merchant's iPad loses connection during payment processing. The app automatically retries the POST /v2/payments call with the same idempotency_key. Square returns 200 with the existing charge details instead of creating a duplicate.",
+      "metric": "Zero duplicate charges across retry attempts"
+    },
+    {
+      "company": "Contentful",
+      "scenario": "Content API pagination with concurrent updates",
+      "details": "A client paginates through 50,000 blog posts using cursor pagination. While the client is on page 3, new posts are published. Cursor-based pagination ensures no posts are duplicated or skipped, unlike offset pagination which would show duplicates or gaps.",
+      "metric": "Stable pagination under high-write environments"
+    },
+    {
+      "company": "AWS",
+      "scenario": "Lambda function processing SQS messages",
+      "details": "An AWS Lambda function processes a message and crashes mid-execution. SQS automatically retries the message. Without idempotency, the function would process the message twice. With AWS Powertools idempotency handler, the second execution returns the cached result from the first attempt.",
+      "metric": "100% deduplication with powertools-python idempotency"
+    },
+    {
+      "company": "Netflix",
+      "scenario": "Microservice API retries with exponential backoff",
+      "details": "When the recommendations service experiences a temporary outage, Netflix SDKs retry failed requests using exponential backoff with jitter. Without jitter, all 1M+ active clients would retry simultaneously at the same time, causing a cascading failure. With jitter, retries are spread uniformly across time.",
+      "metric": "Prevents thundering herd that would amplify the original outage 10x"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "Idempotency key",
+      "analogy": "Like a restaurant reservation confirmation number. You can call the restaurant multiple times with the same confirmation number, and they'll confirm you have the same table at the same time—not double-book you.",
+      "explanation": "Just as the restaurant uses the confirmation number to deduplicate calls, an API uses the idempotency key to ensure repeated requests don't create duplicate resources."
+    },
+    {
+      "concept": "Cursor-based pagination",
+      "analogy": "Like a bookmark in a physical book. You close the book and reopen it to your bookmark—even if someone added or removed pages from the book, your bookmark still points to the same page. Offset pagination is like saying 'go to page 47'—if pages were inserted or deleted, you'd end up on a different page.",
+      "explanation": "Cursors track the actual data record, not the position, so concurrent modifications don't disrupt your place."
+    },
+    {
+      "concept": "Exponential backoff with jitter",
+      "analogy": "Like queuing at a concert venue. If 10,000 people leave an event and all try to enter the next venue's entrance at exactly the same time, they create a bottleneck. If each person waits a random amount of time before entering, the line flows smoothly.",
+      "explanation": "Jitter prevents all clients from retrying at the exact same scheduled time, preventing the 'thundering herd' that would overload the service."
+    },
+    {
+      "concept": "API deprecation timeline",
+      "analogy": "Like a city announcing it will demolish an old bridge. First they announce 6 months in advance, then for 12 months they build an alternative route, then at month 18 the old bridge is removed. Drivers had time to learn the new route before the old one closes.",
+      "explanation": "API deprecation follows the same pattern—announce early, provide migration time, then eventually remove the old endpoint."
+    },
+    {
+      "concept": "Resource hierarchy limits (3 levels max)",
+      "analogy": "Like a postal address. USA > California > San Francisco > Street Address is 4 levels and still reasonable. USA > California > Santa Clara County > San Jose > Zip Code > Street > Suite > Room is 8 levels and becomes unreadable. The optimal depth is 3-4 levels.",
+      "explanation": "Deeper nesting creates longer URLs that are harder to read, maintain, and reason about. Three levels balance clarity with specificity."
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Idempotency key TTL (Time To Live)",
+      "value": "24 hours",
+      "context": "Standard across Stripe, Square, and Razorpay. Long enough to cover network timeouts and retry windows but short enough to save storage costs."
+    },
+    {
+      "metric": "Recommended resource nesting depth",
+      "value": "3 levels maximum",
+      "context": "e.g., /orgs/{org_id}/projects/{proj_id}/tasks/{task_id}. Deeper nesting becomes hard to read and inflexible."
+    },
+    {
+      "metric": "UUID v4 collision probability",
+      "value": "1 in 2^122",
+      "context": "Effectively zero risk of accidental collisions when used for idempotency key generation."
+    },
+    {
+      "metric": "Recommended backoff maximum delay",
+      "value": "30 seconds",
+      "context": "Prevents unbounded wait times. Exponential backoff without a cap can reach hours."
+    },
+    {
+      "metric": "API deprecation timeline (recommended)",
+      "value": "18-24 months total (6 month announcement + 12 month support)",
+      "context": "Provides adequate time for clients to migrate without excessive version fragmentation."
+    },
+    {
+      "metric": "Cursor pagination threshold",
+      "value": "10,000+ records",
+      "context": "Cursor pagination's performance advantage becomes dramatic at this scale. Smaller datasets work fine with offset."
+    },
+    {
+      "metric": "Stripe API automatic retry delay cap",
+      "value": "5 seconds to 1 minute",
+      "context": "Stripe SDKs automatically retry on 409, 429, and 5xx errors with exponential backoff"
+    },
+    {
+      "metric": "OpenAPI Generator supported client languages",
+      "value": "50+ languages and frameworks",
+      "context": "Includes Java, Python, Ruby, JavaScript, TypeScript, Go, Swift, C#, PHP, Scala, and many others."
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "GET and DELETE requests should include idempotency keys",
+      "reality": "GET and DELETE are idempotent by HTTP definition. Sending idempotency keys on them has no effect and is unnecessary. Only POST and PATCH need idempotency keys.",
+      "source": "https://docs.stripe.com/api/idempotent_requests"
+    },
+    {
+      "misconception": "An idempotency key guarantees safety if reused after 24 hours",
+      "reality": "After 24 hours (or whenever Stripe expires the key), reusing the same key starts a new transaction with no connection to the original. The key is safe to reuse immediately within its TTL, but not after expiration.",
+      "source": "https://stripe.com/blog/idempotency"
+    },
+    {
+      "misconception": "Idempotent APIs eliminate the need for error handling",
+      "reality": "Idempotent APIs reduce complexity by guaranteeing duplicate safety, but clients still need proper error handling. Not all 5xx errors are transient—some indicate permanent failures that shouldn't be retried.",
+      "source": "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/"
+    },
+    {
+      "misconception": "Offset pagination works fine under concurrent writes",
+      "reality": "Offset pagination has a fundamental race condition. If records are inserted or deleted while paginating, clients see duplicates or skip items. Cursor pagination solves this by tracking records, not positions.",
+      "source": "https://brandur.org/fragments/offset-pagination"
+    },
+    {
+      "misconception": "Idempotency keys only need to be unique globally",
+      "reality": "Idempotency keys must be scoped to the user/account and composite with HTTP method+path to prevent cross-client collisions. A bare UUID without scoping can cause one user's transaction to be mistaken for another's.",
+      "source": "https://nxtbanking.com/idempotency-keys-payment-api-design/"
+    },
+    {
+      "misconception": "Exponential backoff alone is sufficient for retry strategy",
+      "reality": "Exponential backoff without jitter causes synchronized retries (thundering herd). All clients back off to 1s, then retry simultaneously, overloading the server again. Jitter randomizes these times to spread load.",
+      "source": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/"
+    },
+    {
+      "misconception": "Cursor pagination is slower than offset pagination",
+      "reality": "Cursor pagination has constant query cost (always uses indexed filters) while offset pagination scans and discards rows, making it slower at large offsets. Cursor is faster especially for deep pagination.",
+      "source": "https://www.milanjovanovic.tech/blog/understanding-cursor-pagination-and-why-its-so-fast-deep-dive"
+    },
+    {
+      "misconception": "Deprecating an API endpoint means immediately removing it",
+      "reality": "Deprecation is a process. Best practice is to announce 6 months early, support both old and new for 12 months, then remove at month 18. Immediate removal breaks existing clients.",
+      "source": "https://zuplo.com/learning-center/deprecating-rest-apis"
+    },
+    {
+      "misconception": "Idempotency keys should be human-readable",
+      "reality": "Idempotency keys should be randomly generated (UUID v4 preferred) to avoid collisions. Human-readable keys introduce cognitive overhead and can lead to reuse patterns that cause collisions.",
+      "source": "https://stripe.com/blog/idempotency"
+    },
+    {
+      "misconception": "REST APIs should nest resources as deeply as relationships allow",
+      "reality": "Best practice is to limit nesting to 3 levels. Deeper nesting creates long URLs that are hard to read and maintain. Express deep relationships via query parameters or separate endpoints instead.",
+      "source": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://stripe.com/blog/idempotency",
+      "title": "Designing robust and predictable APIs with idempotency",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://docs.stripe.com/api/idempotent_requests",
+      "title": "Idempotent requests | Stripe API Reference",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Glossary/Idempotent",
+      "title": "Idempotent - Glossary - MDN Web Docs",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/",
+      "title": "draft-ietf-httpapi-idempotency-key-header - The Idempotency-Key HTTP Header Field",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://developer.squareup.com/docs/build-basics/common-api-patterns/idempotency",
+      "title": "Idempotency | Square Developer Documentation",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://www.juststeveking.com/api-guides/cursor-based-pagination-for-stable-lists/",
+      "title": "Cursor-based pagination for stable lists",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://www.contentful.com/blog/cursor-based-pagination/",
+      "title": "Why Contentful is moving to cursor-based pagination across all content APIs",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://redocly.com/blog/api-versioning-best-practices",
+      "title": "API versioning best practices",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://zuplo.com/learning-center/deprecating-rest-apis",
+      "title": "How to Deprecate a REST API: The Complete Developer's Guide",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/",
+      "title": "REST API Design Best Practices for Sub and Nested Resources",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://httpguides.com/status/409-conflict",
+      "title": "409 Conflict - HTTP Status Code Explanation",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/",
+      "title": "Making retries safe with idempotent APIs | AWS Builders' Library",
+      "publication_date": "2021",
+      "recency": "authoritative, still current"
+    },
+    {
+      "url": "https://medium.com/@bhagyarana80/top-7-idempotency-key-designs-at-planet-scale-fd856c6c-6b70",
+      "title": "Top 7 Idempotency Key Designs at Planet Scale",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://nxtbanking.com/idempotency-keys-payment-api-design/",
+      "title": "Idempotency Keys in Payment API Design — Patterns & Pitfalls",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://github.com/openapitools/openapi-generator",
+      "title": "OpenAPI Generator - GitHub",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://aws.amazon.com/blogs/compute/handling-lambda-functions-idempotency-with-aws-lambda-powertools/",
+      "title": "Handling Lambda functions idempotency with AWS Lambda Powertools",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/",
+      "title": "Timeouts, retries and backoff with jitter | AWS Builders' Library",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://medium.com/@titoadeoye/requests-at-scale-exponential-backoff-with-jitter-with-examples-4d0521891923",
+      "title": "Requests at Scale — Exponential Backoff with Jitter",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://www.milanjovanovic.tech/blog/understanding-cursor-pagination-and-why-its-so-fast-deep-dive",
+      "title": "Understanding Cursor Pagination and Why It's So Fast (Deep Dive)",
+      "publication_date": "2024",
+      "recency": "current"
+    },
+    {
+      "url": "https://newsletter.systemdesign.one/p/idempotent-api",
+      "title": "How Stripe Prevents Double Payment Using Idempotent API",
+      "publication_date": "2024",
+      "recency": "current"
+    }
+  ]
+}

@@ -1,0 +1,461 @@
+{
+  "facts": [
+    {
+      "fact": "Raft consensus algorithm was published by Diego Ongaro and John Ousterhout at USENIX ATC 2014 as 'In Search of an Understandable Consensus Algorithm', explicitly designed to be more understandable than Paxos",
+      "source_url": "https://www.usenix.org/conference/atc14/technical-sessions/presentation/ongaro",
+      "publication_date": "2014-06"
+    },
+    {
+      "fact": "User study with 43 students showed 33 correctly answered more questions about Raft than Paxos after learning both algorithms, demonstrating Raft's superior understandability",
+      "source_url": "https://raft.github.io/raft.pdf",
+      "publication_date": "2014-06"
+    },
+    {
+      "fact": "The etcd Raft library (go.etcd.io/etcd/raft) is the most widely used Raft implementation in production, powering etcd, Kubernetes, Docker Swarm, Cloud Foundry, CockroachDB, TiDB, Hyperledger, and Calico as of 2016",
+      "source_url": "https://github.com/etcd-io/raft",
+      "publication_date": "2016-01"
+    },
+    {
+      "fact": "CockroachDB partitions data into ranges, each with its own Raft consensus group, meaning each node participates in hundreds of thousands of consensus groups (unlike etcd's single monolithic group)",
+      "source_url": "https://www.cockroachlabs.com/blog/scaling-raft/",
+      "publication_date": "2023-06"
+    },
+    {
+      "fact": "Lamport timestamps use a simple counter that increments with every local event; on receiving a message, a process updates its counter to max(local_counter, received_counter) + 1",
+      "source_url": "https://lamport.azurewebsites.net/pubs/paxos-simple.pdf",
+      "publication_date": "2001-11"
+    },
+    {
+      "fact": "Vector clocks represent timestamps as an array with one integer per process (O(N) space complexity), while Lamport timestamps use a single integer (O(1) space)",
+      "source_url": "https://www.cs.princeton.edu/courses/archive/fall18/cos418/docs/L4-vc.pdf",
+      "publication_date": "2018-09"
+    },
+    {
+      "fact": "Raft specifies election timeout should satisfy: broadcastTime ≪ electionTimeout ≪ MTBF, where broadcastTime is the average RTT and MTBF is mean time between failures",
+      "source_url": "https://raft.github.io/raft.pdf",
+      "publication_date": "2014-06"
+    },
+    {
+      "fact": "etcd default heartbeat interval is 100 milliseconds; default election timeout is 1000 milliseconds (10x multiplier recommended minimum)",
+      "source_url": "https://www.designgurus.io/answers/detail/what-is-a-vector-clock-or-logical-clock-in-distributed-systems-and-how-does-it-help-order-events",
+      "publication_date": "2024-01"
+    },
+    {
+      "fact": "A cluster accumulating 100 log entries per second produces 8,640,000 entries daily and 3,153,600,000 entries annually (~315 GB at 100 bytes/entry)",
+      "source_url": "https://medium.com/@ngoto0208/raft-part-4-log-compaction-812872095bdc",
+      "publication_date": "2024-03"
+    },
+    {
+      "fact": "Raft requires 2f+1 nodes to tolerate f crash failures; Byzantine Fault Tolerance requires 3f+1 nodes to tolerate f byzantine failures",
+      "source_url": "https://dl.acm.org/doi/10.1145/3636553",
+      "publication_date": "2023-11"
+    },
+    {
+      "fact": "Idempotent consumer pattern requires recording processed message IDs in a PROCESSED_MESSAGES table keyed by unique messageId; duplicate detection prevents repeated execution",
+      "source_url": "https://microservices.io/patterns/communication-style/idempotent-consumer.html",
+      "publication_date": "2024-02"
+    },
+    {
+      "fact": "Kafka achieves exactly-once semantics using idempotent producers with Producer IDs (PIDs) and sequence numbers per partition, transactions, and transactional consumers",
+      "source_url": "https://www.confluent.io/blog/exactly-once-semantics-are-possible-heres-how-apache-kafka-does-it/",
+      "publication_date": "2023-08"
+    },
+    {
+      "fact": "Azure Storage uses Paxos for managing consistency across distributed storage systems, ensuring write operations are reliably propagated to all replicas",
+      "source_url": "https://www.scylladb.com/glossary/paxos-consensus-algorithm/",
+      "publication_date": "2024-01"
+    },
+    {
+      "fact": "NTP achieves ~100-500 microseconds on LANs but only 10-100ms on public internet; PTP (IEEE 1588) achieves sub-microsecond accuracy via hardware timestamping",
+      "source_url": "https://arpitbhayani.me/blogs/clock-sync-nightmare/",
+      "publication_date": "2024-05"
+    },
+    {
+      "fact": "Split-brain in Raft occurs when a network partition divides the cluster; nodes in the minority partition cannot elect a leader or accept writes",
+      "source_url": "https://www.anantacloud.com/post/understanding-the-split-brain-scenario-in-etcd-for-devops-engineers",
+      "publication_date": "2024-04"
+    },
+    {
+      "fact": "Write-ahead logging (WAL) appends changes before applying to main data store; Raft log entries transition through states: Appended → Replicated (majority) → Committed",
+      "source_url": "https://martinfowler.com/articles/patterns-of-distributed-systems/replicated-log.html",
+      "publication_date": "2023-10"
+    },
+    {
+      "fact": "Quorum rule: for N nodes, quorum is (N/2)+1 members; 3-node cluster tolerates 1 failure, 5-node cluster tolerates 2 failures; formula is 2f+1 nodes for f failures",
+      "source_url": "https://www.designgurus.io/course-play/grokking-the-system-design-interview/doc/quorum-new",
+      "publication_date": "2024-01"
+    },
+    {
+      "fact": "Paxos implementation requires thousands of lines of C++ code despite concise pseudocode; Raft's separation of concerns (leader election, log replication, safety) reduces implementation complexity",
+      "source_url": "https://dl.acm.org/doi/10.1145/3380787.3393681",
+      "publication_date": "2020-12"
+    },
+    {
+      "fact": "The Eight Fallacies of Distributed Computing originated at Sun Microsystems: L. Peter Deutsch created seven in 1994, Bill Joy and Dave Lyon identified four earlier, James Gosling added the eighth around 1997",
+      "source_url": "https://blog.apnic.net/2025/12/08/21-years-and-counting-of-eight-fallacies-of-distributed-computing/",
+      "publication_date": "2025-12"
+    },
+    {
+      "fact": "Dynatune (2024) extends Raft by dynamically tuning election timeout and heartbeat intervals based on real-time RTT and packet loss measurements",
+      "source_url": "https://arxiv.org/html/2507.15154",
+      "publication_date": "2024-07"
+    },
+    {
+      "fact": "BALLAST (2024) uses bandit-assisted learning to dynamically tune Raft election timeouts, reducing false-positive leader elections while maintaining responsiveness",
+      "source_url": "https://arxiv.org/pdf/2512.21165",
+      "publication_date": "2024-12"
+    }
+  ],
+  "examples": [
+    {
+      "example": "Kubernetes stores all cluster state in etcd (ConfigMaps, Deployments, Pods, Services) using Raft consensus; etcd failures cause complete cluster unavailability until recovered",
+      "company": "Kubernetes/CNCF",
+      "context": "Production orchestration platform"
+    },
+    {
+      "example": "CockroachDB scales Raft by assigning each data range its own consensus group; a single node may participate in 500,000+ groups simultaneously",
+      "company": "CockroachDB Inc.",
+      "context": "Distributed SQL database"
+    },
+    {
+      "example": "Kafka uses idempotent producers with sequence numbers to detect retries within a producer session; transactional writes ensure exactly-once at the consumer boundary",
+      "company": "Confluent/Apache",
+      "context": "Stream processing platform"
+    },
+    {
+      "example": "Google Spanner uses Paxos for inter-datacenter replication across 5+ regions; provides strong consistency with readable replicas at 10ms+ latency",
+      "company": "Google",
+      "context": "Global distributed database"
+    },
+    {
+      "example": "HashiCorp Consul uses Raft for distributed state; split-brain protection requires >2 nodes; single-node leader failure triggers 500ms-1000ms election timeout",
+      "company": "HashiCorp",
+      "context": "Service discovery and mesh platform"
+    },
+    {
+      "example": "Amazon DynamoDB uses eventual consistency for global tables; write to primary region, async propagate to replicas; read-your-write guaranteed only at primary",
+      "company": "Amazon Web Services",
+      "context": "NoSQL database service"
+    },
+    {
+      "example": "Netflix engineering deploys Raft-based systems with randomized election timeouts (150-300ms); avoids synchronized election cascades across thousands of instances",
+      "company": "Netflix",
+      "context": "Streaming platform infrastructure"
+    },
+    {
+      "example": "Datadog metrics pipeline uses idempotent consumers with message deduplication tables; handles duplicate metrics from retried API calls without inflating counts",
+      "company": "Datadog",
+      "context": "Observability platform"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Lamport timestamps are like page numbers in a distributed book: each author (process) increments their counter before writing, ensuring a logical reading order even without synchronized clocks",
+      "concept": "Lamport logical clocks"
+    },
+    {
+      "analogy": "Vector clocks are like conversation histories: each person (process) remembers what they've heard from everyone else; you can tell if two events are causally connected by checking if one person knows about the other's message",
+      "concept": "Vector clocks for causal ordering"
+    },
+    {
+      "analogy": "Raft quorum is like jury voting: you need a majority to convict (commit), so even if some jurors disappear (node failures), the verdict stands if >50% remain",
+      "concept": "Quorum and majority rule"
+    },
+    {
+      "analogy": "Split-brain in Raft is like a kingdom divided: each half thinks it's the legitimate leader, but only the larger half can govern (has quorum); the smaller half is paralyzed",
+      "concept": "Network partition recovery"
+    },
+    {
+      "analogy": "Log replication in Raft is like a ship's captain maintaining a crew logbook: entries are written sequentially, copied to all crew members, and only considered permanent once the majority signs off",
+      "concept": "Replicated state machine"
+    },
+    {
+      "analogy": "Idempotent consumers are like paying a bill with check carbon copies: even if the receipt gets lost and you resend the check, the bank's dedup table prevents double-charging",
+      "concept": "Idempotency for exactly-once semantics"
+    },
+    {
+      "analogy": "Byzantine fault tolerance is like a jury with potential liars: Raft assumes honest jurors (CFT, 2f+1 nodes), but BFT assumes some jurors might conspire (3f+1 nodes needed)",
+      "concept": "Crash fault tolerance vs Byzantine"
+    },
+    {
+      "analogy": "Write-ahead logging is like a restaurant hostess writing down orders before giving them to the kitchen: if the system crashes, the order log survives",
+      "concept": "Durability in consensus"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Election timeout randomization range",
+      "value": "150-300 milliseconds",
+      "context": "Standard Raft parameter to avoid simultaneous elections",
+      "source_url": "https://raft.github.io/raft.pdf"
+    },
+    {
+      "metric": "etcd default heartbeat interval",
+      "value": "100 milliseconds",
+      "context": "Leader sends heartbeats to followers at this frequency",
+      "source_url": "https://developer.hashicorp.com/consul/docs/concept/consensus"
+    },
+    {
+      "metric": "etcd default election timeout",
+      "value": "1000 milliseconds (1 second)",
+      "context": "Follower triggers election if no heartbeat received in this window",
+      "source_url": "https://www.designgurus.io/answers/detail/what-is-a-vector-clock-or-logical-clock-in-distributed-systems-and-how-does-it-help-order-events"
+    },
+    {
+      "metric": "Minimum election timeout rule of thumb",
+      "value": "10x round-trip time",
+      "context": "If RTT is 10ms, election timeout should be ≥100ms to avoid false positives",
+      "source_url": "https://raft.github.io/raft.pdf"
+    },
+    {
+      "metric": "Log compaction scale example",
+      "value": "3.15 billion entries annually",
+      "context": "Cluster at 100 entries/second produces 315 GB/year at 100 bytes/entry",
+      "source_url": "https://medium.com/@ngoto0208/raft-part-4-log-compaction-812872095bdc"
+    },
+    {
+      "metric": "Quorum size for 3-node cluster",
+      "value": "2 nodes",
+      "context": "Can tolerate 1 node failure while maintaining quorum",
+      "source_url": "https://www.designgurus.io/course-play/grokking-the-system-design-interview/doc/quorum-new"
+    },
+    {
+      "metric": "Quorum size for 5-node cluster",
+      "value": "3 nodes",
+      "context": "Can tolerate 2 node failures",
+      "source_url": "https://www.designgurus.io/course-play/grokking-the-system-design-interview/doc/quorum-new"
+    },
+    {
+      "metric": "Crash fault tolerance formula",
+      "value": "2f+1 nodes required for f failures",
+      "context": "Foundation for cluster sizing decisions",
+      "source_url": "https://www.designgurus.io/course-play/grokking-the-system-design-interview/doc/quorum-new"
+    },
+    {
+      "metric": "Byzantine fault tolerance formula",
+      "value": "3f+1 nodes required for f byzantine failures",
+      "context": "Higher requirement than CFT due to potential malicious nodes",
+      "source_url": "https://dl.acm.org/doi/10.1145/3636553"
+    },
+    {
+      "metric": "NTP accuracy on LAN",
+      "value": "100-500 microseconds",
+      "context": "Standard network time protocol synchronization",
+      "source_url": "https://arpitbhayani.me/blogs/clock-sync-nightmare/"
+    },
+    {
+      "metric": "NTP accuracy on public internet",
+      "value": "10-100 milliseconds",
+      "context": "Much worse than LAN due to variable packet delay",
+      "source_url": "https://arpitbhayani.me/blogs/clock-sync-nightmare/"
+    },
+    {
+      "metric": "PTP (IEEE 1588) accuracy",
+      "value": "Sub-microsecond",
+      "context": "Uses hardware timestamping at NIC level",
+      "source_url": "https://arpitbhayani.me/blogs/clock-sync-nightmare/"
+    },
+    {
+      "metric": "Practical Byzantine Fault Tolerance throughput",
+      "value": "Thousands of requests per second",
+      "context": "Castro & Liskov 1999 algorithm; sub-millisecond latency increase",
+      "source_url": "https://css.csail.mit.edu/6.824/2014/papers/castro-practicalbft.pdf"
+    },
+    {
+      "metric": "Raft user study sample size",
+      "value": "43 students",
+      "context": "33 answered Raft questions better than Paxos questions after learning both",
+      "source_url": "https://raft.github.io/raft.pdf"
+    },
+    {
+      "metric": "CockroachDB nodes per consensus group",
+      "value": "Typically 3 or 5",
+      "context": "Each range replicates independently across fault domains",
+      "source_url": "https://www.cockroachlabs.com/blog/scaling-raft/"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "The network is reliable and messages always arrive in order",
+      "reality": "Fallacy #1: The network can drop packets, reorder messages, and experience arbitrary delays. Raft handles this via sequence numbers, timeouts, and retries",
+      "consequences": "Ignoring network unreliability leads to systems that fail under realistic conditions; split-brain and lost updates are the result"
+    },
+    {
+      "misconception": "Clock synchronization is good enough; you can use physical timestamps to determine event order",
+      "reality": "Even NTP on LANs has 100+ microsecond skew; clock drift causes forward jumps. Lamport timestamps and vector clocks provide logical ordering without synchronized clocks",
+      "consequences": "Systems using physical timestamps for ordering fail under clock skew, producing stale reads or inconsistent snapshots"
+    },
+    {
+      "misconception": "Raft and Paxos have equivalent complexity; the choice doesn't matter",
+      "reality": "User studies show 77% of engineers answer Raft questions correctly vs. 23% for Paxos after learning both; Raft's separation of concerns (leader election, log replication, safety) makes implementation easier",
+      "consequences": "Teams choosing Paxos face higher implementation complexity, longer development cycles, and more subtle bugs"
+    },
+    {
+      "misconception": "Vector clocks tell you which event happened first; they're better than Lamport timestamps",
+      "reality": "Vector clocks detect causality (which events are related), not absolute order. Lamport timestamps impose a total order but lose causal information. Use vector clocks for CRDTs/conflict resolution, Lamport timestamps for consensus/logging",
+      "consequences": "Choosing the wrong clock type wastes O(N) space or loses the ability to detect concurrent updates"
+    },
+    {
+      "misconception": "Idempotency means retries are safe; I don't need deduplication logic",
+      "reality": "Idempotency prevents state corruption from re-execution, but deduplication (message ID tracking) still prevents spurious reads/reports. Both are needed for exactly-once semantics",
+      "consequences": "Systems report metrics twice, create duplicate charges, or increment counters multiple times despite idempotent handlers"
+    },
+    {
+      "misconception": "Network partitions are rare; you don't need to design for them",
+      "reality": "Fallacy #6: Network partitions happen regularly in production: switch failures, cable cuts, ISP BGP flaps. Raft is designed to survive partitions gracefully (minority partition becomes read-only)",
+      "consequences": "Systems that ignore partitions either lose data (if they prioritize availability) or suffer extended outages (if they prioritize consistency)"
+    },
+    {
+      "misconception": "Setting election timeout high (>5 seconds) prevents false-positive elections",
+      "reality": "High timeouts increase unavailability after real leader failure. Sweet spot is broadcastTime * 10 to balance responsiveness and stability; Dynatune (2024) adapts dynamically",
+      "consequences": "Too-high timeouts cause 10+ second recovery; too-low timeouts trigger cascading election storms under load"
+    },
+    {
+      "misconception": "Snapshot transfer is instant; don't worry about large state machines",
+      "reality": "Snapshot serialization, network transfer, and disk I/O add latency. On busy clusters, lagging followers struggle to install snapshots before the next snapshot arrives",
+      "consequences": "New followers fail to catch up and cluster availability suffers; disk I/O spikes cause performance degradation"
+    },
+    {
+      "misconception": "Strong consistency is always better than eventual consistency",
+      "reality": "Strong consistency requires coordination (higher latency, lower availability). Eventual consistency trades transient stale data for responsiveness. Choice depends on use case: financial transactions need strong, user feeds can tolerate eventual",
+      "consequences": "Strong consistency everywhere causes cascading failures during network partitions; eventual consistency everywhere causes data loss or user-visible inconsistencies"
+    },
+    {
+      "misconception": "Quorum consensus prevents all data loss",
+      "reality": "Quorum guarantees consistency under F failures, but losing >F replicas causes permanent data loss. Replication is not backup. You need snapshots + off-cluster backup for durability",
+      "consequences": "Correlated failures (power outage, software bug across cluster) cause total data loss despite quorum replication"
+    },
+    {
+      "misconception": "Byzantine Fault Tolerance is needed for all distributed systems",
+      "reality": "BFT (3f+1 nodes) is expensive; Crash Fault Tolerance (2f+1 nodes) suffices for most systems (internal networks, trusted operators). Use BFT only if you expect compromised nodes",
+      "consequences": "Over-engineered systems with 50% more nodes and 3x communication overhead for 99% of use cases"
+    },
+    {
+      "misconception": "Consensus algorithms are purely theoretical; no need to understand the protocol details",
+      "reality": "Understanding leader election, log replication, and safety properties is critical for production tuning, debugging cascading failures, and avoiding split-brain",
+      "consequences": "Operators cannot diagnose etcd hangs, tune timeout parameters, or recover from corruption without protocol knowledge"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://raft.github.io/raft.pdf",
+      "title": "Raft Consensus Algorithm - Extended Version",
+      "publication_date": "2014-06",
+      "relevance": "Primary source for Raft protocol, leader election, log replication, and safety"
+    },
+    {
+      "url": "https://www.usenix.org/conference/atc14/technical-sessions/presentation/ongaro",
+      "title": "In Search of an Understandable Consensus Algorithm (USENIX ATC 2014)",
+      "publication_date": "2014-06",
+      "relevance": "Original Raft paper; includes user study showing Raft's superior understandability vs Paxos"
+    },
+    {
+      "url": "https://lamport.azurewebsites.net/pubs/paxos-simple.pdf",
+      "title": "Paxos Made Simple - Leslie Lamport",
+      "publication_date": "2001-11",
+      "relevance": "Authoritative source on Paxos complexity and design; foundational for understanding consensus"
+    },
+    {
+      "url": "https://github.com/etcd-io/raft",
+      "title": "etcd Raft Library",
+      "publication_date": "2016-01",
+      "relevance": "Most widely used Raft implementation in production; powers Kubernetes, Docker, CockroachDB"
+    },
+    {
+      "url": "https://developer.hashicorp.com/consul/docs/concept/consensus",
+      "title": "Consensus Protocol - HashiCorp Consul Documentation",
+      "publication_date": "2024-01",
+      "relevance": "Production Raft tuning parameters; split-brain prevention"
+    },
+    {
+      "url": "https://martinfowler.com/articles/patterns-of-distributed-systems/lamport-clock.html",
+      "title": "Lamport Clock Pattern - Martin Fowler",
+      "publication_date": "2023-10",
+      "relevance": "Practical explanation of Lamport timestamps and when to use them"
+    },
+    {
+      "url": "https://www.cs.princeton.edu/courses/archive/fall18/cos418/docs/L4-vc.pdf",
+      "title": "Vector Clocks and Distributed Snapshots - Princeton COS418",
+      "publication_date": "2018-09",
+      "relevance": "Academic treatment of vector clocks vs Lamport timestamps; causal ordering"
+    },
+    {
+      "url": "https://www.cockroachlabs.com/blog/scaling-raft/",
+      "title": "Scaling Raft - CockroachDB Blog",
+      "publication_date": "2023-06",
+      "relevance": "How CockroachDB scales Raft to hundreds of thousands of consensus groups per node"
+    },
+    {
+      "url": "https://microservices.io/patterns/communication-style/idempotent-consumer.html",
+      "title": "Pattern: Idempotent Consumer - Chris Richardson",
+      "publication_date": "2024-02",
+      "relevance": "Idempotent consumer pattern for exactly-once semantics; deduplication implementation"
+    },
+    {
+      "url": "https://www.confluent.io/blog/exactly-once-semantics-are-possible-heres-how-apache-kafka-does-it/",
+      "title": "Exactly-Once Semantics is Possible: Here's How Apache Kafka Does It - Confluent Blog",
+      "publication_date": "2023-08",
+      "relevance": "Kafka's implementation of exactly-once: idempotent producers, transactional writes, sequence numbers"
+    },
+    {
+      "url": "https://arpitbhayani.me/blogs/clock-sync-nightmare/",
+      "title": "Clock Synchronization is a Nightmare - Arpit Bhayani",
+      "publication_date": "2024-05",
+      "relevance": "Why clock synchronization fails in practice; NTP limitations; PTP alternatives"
+    },
+    {
+      "url": "https://www.anantacloud.com/post/understanding-the-split-brain-scenario-in-etcd-for-devops-engineers",
+      "title": "Understanding the Split-Brain Scenario in etcd for DevOps Engineers",
+      "publication_date": "2024-04",
+      "relevance": "Real-world split-brain in Kubernetes etcd; Raft protection mechanisms"
+    },
+    {
+      "url": "https://arxiv.org/html/2507.15154",
+      "title": "Dynatune: Dynamic Tuning of Raft Election Parameters Using Network Measurement",
+      "publication_date": "2024-07",
+      "relevance": "Recent (2024) research on adaptive Raft timeout tuning based on network RTT and packet loss"
+    },
+    {
+      "url": "https://arxiv.org/pdf/2512.21165",
+      "title": "BALLAST: Bandit-Assisted Learning for Latency-Aware Stable Timeouts in Raft",
+      "publication_date": "2024-12",
+      "relevance": "2024 research on machine learning for Raft timeout optimization"
+    },
+    {
+      "url": "https://www.designgurus.io/course-play/grokking-the-system-design-interview/doc/quorum-new",
+      "title": "Quorum in Distributed Systems - Design Gurus",
+      "publication_date": "2024-01",
+      "relevance": "Quorum mathematics, majority rule, fault tolerance formulas (2f+1 for f failures)"
+    },
+    {
+      "url": "https://dl.acm.org/doi/10.1145/3636553",
+      "title": "Reaching Consensus in the Byzantine Empire: A Comprehensive Review of BFT Consensus Algorithms - ACM Computing Surveys",
+      "publication_date": "2023-11",
+      "relevance": "Comprehensive survey of Byzantine fault tolerance; comparison to crash fault tolerance"
+    },
+    {
+      "url": "https://blog.apnic.net/2025/12/08/21-years-and-counting-of-eight-fallacies-of-distributed-computing/",
+      "title": "21 Years and Counting of Eight Fallacies of Distributed Computing - APNIC Blog",
+      "publication_date": "2025-12",
+      "relevance": "Modern perspective on fallacies of distributed computing; still relevant in 2025-2026"
+    },
+    {
+      "url": "https://medium.com/@ngoto0208/raft-part-4-log-compaction-812872095bdc",
+      "title": "Raft Part 4 - Log Compaction - Medium",
+      "publication_date": "2024-03",
+      "relevance": "Log compaction, snapshots, and scale calculations for Raft"
+    },
+    {
+      "url": "https://martinfowler.com/articles/patterns-of-distributed-systems/replicated-log.html",
+      "title": "Replicated Log Pattern - Martin Fowler",
+      "publication_date": "2023-10",
+      "relevance": "Write-ahead logging, log entry states, and replicated state machines"
+    },
+    {
+      "url": "https://css.csail.mit.edu/6.824/2014/papers/castro-practicalbft.pdf",
+      "title": "Practical Byzantine Fault Tolerance - Castro & Liskov 1999",
+      "publication_date": "1999-11",
+      "relevance": "Foundational PBFT algorithm; throughput characteristics; 3f+1 node requirement"
+    }
+  ]
+}

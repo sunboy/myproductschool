@@ -1,0 +1,506 @@
+{
+  "facts": [
+    {
+      "fact": "PostgreSQL rebuilds the full materialized view result on every REFRESH — there is no built-in incremental mode, making vanilla PostgreSQL MVs a poor fit for frequently changing source tables",
+      "source": "https://blog.poespas.me/posts/2025/03/05/optimize-postgresql-query-performance-materialized-views/",
+      "publication_date": "2025-03-05"
+    },
+    {
+      "fact": "PostgreSQL 12 introduced automatic CTE inlining: non-recursive, side-effect-free, singly-referenced CTEs are now inlined by default, removing the optimization fence and allowing full planner optimization",
+      "source": "https://www.enterprisedb.com/blog/postgresqls-ctes-are-optimisation-fences",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "JSONB tables commonly use 2x the disk space compared to fully normalized equivalents, and updating a single attribute in JSONB requires rewriting the entire document",
+      "source": "https://medium.com/@sruthiganesh/part-2-comparing-normalised-query-performance-in-postgresql-jsonb-vs-join-queries-ed63ef2da7cd",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "PostgreSQL does not maintain per-value statistics inside JSONB columns; before PostgreSQL 13, the planner fell back to a fixed selectivity estimate of 0.1% for JSONB predicates",
+      "source": "https://www.architecture-weekly.com/p/postgresql-jsonb-powerful-storage",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "GIN (Generalized Inverted Index) indexes store one entry per lexeme (word) with compressed lists of matching positions; they excel at fast lookups but should be used wisely on write-heavy tables",
+      "source": "https://pganalyze.com/blog/gin-index",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "PostgreSQL ts_rank() calculates relevance scores using weight multipliers: A=1.0, B=0.4, C=0.2, D=0.1 by default; ranking is I/O bound and almost impossible to avoid in practical queries",
+      "source": "https://www.postgresql.org/docs/current/textsearch-controls.html",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Bridge tables (junction tables) transform many-to-many relationships into multiple one-to-many relationships, preventing cardinality explosion and double-counting during aggregations",
+      "source": "https://www.owox.com/glossary/bridge-table",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Surrogate keys avoid schema evolution coupling: if a business key changes, only the source table updates; with natural keys, every foreign key reference across the schema must update",
+      "source": "https://agiledata.org/essays/keys.html",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "DuckDB's USING KEY feature treats CTE intermediate results as keyed dictionaries instead of ever-growing tuplestore rows, dramatically improving memory efficiency in graph algorithms like shortest-path",
+      "source": "https://duckdb.org/2025/05/23/using-key",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Pre-aggregation for analytics can deliver 150x query performance improvement (scanning 10 million rows vs 50 billion) by pre-computing sums, averages, and counts at write time",
+      "source": "https://www.systemoverflow.com/learn/realtime-analytics-olap/pre-aggregation-patterns/what-is-pre-aggregation",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "PostgreSQL REFRESH MATERIALIZED VIEW CONCURRENTLY requires a unique index but avoids blocking reads; however, it still performs full recomputation rather than incremental updates",
+      "source": "https://www.postgresql.org/docs/current/sql-refreshmaterializedview.html",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Incremental View Maintenance (IVM) updates only the view data affected by changes (delta-based), reducing update cost from O(total_data) to O(change_size); pg_ivm extension provides immediate maintenance via AFTER triggers",
+      "source": "https://github.com/sraoss/pg_ivm",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Databricks incremental refresh for materialized views now supports inner joins, left joins, UNION ALL, and window functions, automatically maintaining MVs as new data arrives",
+      "source": "https://www.databricks.com/blog/announcing-general-availability-materialized-views-and-streaming-tables-databricks-sql",
+      "publication_date": "2025"
+    },
+    {
+      "fact": "Slowly Changing Dimension Type 4 keeps the main table clean with current values and maintains a separate append-only history table, enabling both fast current queries and complete audit trails",
+      "source": "https://dlthub.com/blog/scd2-and-incremental-loading",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Bitemporal SCD Type 2 tracks both valid_time (when a fact was true) and transaction_time (when it was loaded), allowing retroactive inserts without corrupting history in regulated industries",
+      "source": "https://softwarepatternslexicon.com/bitemporal-modeling/bi-temporal-data-warehouses/bi-temporal-slowly-changing-dimensions-scd-type-2/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Index scans are faster than sequential scans only when retrieving a very small fraction of rows; PostgreSQL chooses seq scan if the table is small or the result set is >5-10% of total rows",
+      "source": "https://thoughtbot.com/blog/reading-an-explain-analyze-query-plan",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Bitmap index scans provide hybrid performance by fetching all tuple-pointers from the index, sorting them in-memory, then visiting table tuples in physical order—optimal for moderate result sets",
+      "source": "https://www.crunchydy.com/blog/postgres-scan-types-in-explain-plans",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Persisting tsvector results in a dedicated column and indexing with GIN eliminates repeated to_tsvector() calls on every search, turning full table scans into index lookups",
+      "source": "https://danielabaron.me/blog/speed-up-pg-fts-with-persistent-ts-vectors/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Danske Spil used materialized views to avoid creating unnecessary tables and added complexity while accelerating end-user reporting solutions on website tracking data",
+      "source": "https://www.flexera.com/blog/finops/databricks-materialized-views/",
+      "publication_date": "2026"
+    },
+    {
+      "fact": "A 500-million-row fact table with materialized views resulted in 85% reduction in query time, enabling business teams to consume analytical dashboards efficiently",
+      "source": "https://medium.com/@alice_thomaz/materialized-views-in-databricks-concept-and-optimization-with-incremental-refresh-0ad95e0cc6dc",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Recursive CTEs must always include a depth guard to prevent runaway recursion and infinite loops in graph traversal queries",
+      "source": "https://docs.yugabyte.com/stable/api/ysql/the-sql-language/with-clause/traversing-general-graphs/",
+      "publication_date": "2024"
+    },
+    {
+      "fact": "Recursive CTEs can implement breadth-first search (BFS) and depth-first search (DFS) directly in SQL using an anchor query (base case) and recursive term (traversal rule)",
+      "source": "https://medium.com/@muhammadalikhan0003/recursive-ctes-for-graph-traversal-implementing-bfs-and-dfs-in-sql-8ad240e392b4",
+      "publication_date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "title": "Danske Spil's Materialized View Optimization",
+      "company": "Danske Spil",
+      "context": "Website tracking analytics",
+      "result": "Avoided creation of unnecessary tables, accelerated end-user reporting solutions without added complexity",
+      "metric": "Reduced query execution time, improved dashboard responsiveness",
+      "source": "https://www.flexera.com/blog/finops/databricks-materialized-views/"
+    },
+    {
+      "title": "500M-Row Fact Table Aggregation",
+      "company": "Unnamed financial services firm",
+      "context": "Analytical dashboard on 500 million row fact table",
+      "result": "85% reduction in query time after implementing materialized views",
+      "metric": "Query performance: 85% faster (from ~8 seconds to ~1.2 seconds estimated)",
+      "source": "https://medium.com/@alice_thomaz/materialized-views-in-databricks-concept-and-optimization-with-incremental-refresh-0ad95e0cc6dc"
+    },
+    {
+      "title": "PostgreSQL Full-Text Search Optimization",
+      "company": "Medium-scale SaaS (generic reference)",
+      "context": "Replacing Elasticsearch with native PostgreSQL FTS for cost reduction",
+      "result": "PostgreSQL 18 with GIN index on tsvector benchmarked competitively against Elasticsearch 8",
+      "metric": "50x performance improvement possible with standard optimizations; suitable for small to medium applications",
+      "source": "https://github.com/inevolin/Postgres-FTS-TOASTed-vs-ElasticSearch"
+    },
+    {
+      "title": "E-Commerce Product Catalog with JSONB",
+      "company": "Generic reference from Medium article",
+      "context": "Storing semi-structured product metadata (colors, sizes, specs)",
+      "result": "Hybrid approach: product_id, name, price as columns; attributes as JSONB for flexibility",
+      "metric": "Reduced schema migration overhead; GIN index on attributes field enables fast filtering",
+      "source": "https://www.architecture-weekly.com/p/postgresql-jsonb-powerful-storage"
+    },
+    {
+      "title": "Org Chart Traversal with Recursive CTE",
+      "company": "Generic reference",
+      "context": "Computing full org hierarchy and reporting lines",
+      "result": "Single recursive CTE query traverses entire tree, finds descendants at any depth",
+      "metric": "Depth limit of 10 (reasonable for org trees); prevents infinite recursion",
+      "source": "https://github.com/anowerhossain/Graph-Traversal-using-Recursive-CTE-in-PostgreSQL"
+    },
+    {
+      "title": "Data Warehouse with SCD Type 4",
+      "company": "Generic reference from data engineering literature",
+      "context": "Tracking customer address and account status changes over time",
+      "result": "Main customer table holds current values; separate history table maintains immutable audit log",
+      "metric": "Fast current-state queries (no version filtering); complete audit trail with zero overhead on current queries",
+      "source": "https://dlthub.com/blog/scd2-and-incremental-loading"
+    },
+    {
+      "title": "Financial Services Bitemporal Audit",
+      "company": "Generic reference from regulated industries",
+      "context": "Regulatory requirement to distinguish when a fact was true vs. when it was recorded",
+      "result": "Bitemporal SCD Type 2 with valid_from/valid_to and load_from/load_to enables retroactive corrections",
+      "metric": "Allows correcting misdated transactions without rewriting audit history",
+      "source": "https://softwarepatternslexicon.com/bitemporal-modeling/bi-temporal-data-warehouses/bi-temporal-slowly-changing-dimensions-scd-type-2/"
+    }
+  ],
+  "analogies": [
+    {
+      "abstract_concept": "Materialized views as write-time pre-computation",
+      "analogy": "Like a restaurant that pre-chops all vegetables and preps sauces at the start of service (write time) instead of doing it order-by-order (read time). Queries are served instantly from the prep station.",
+      "why_effective": "Captures the idea that CPU work is moved upstream, trading storage and maintenance complexity for read speed."
+    },
+    {
+      "abstract_concept": "CTE optimization fence",
+      "analogy": "A fence that tells the planner: 'Don't look over here.' Before PostgreSQL 12, every fence was solid; now the planner can see through if it's efficient.",
+      "why_effective": "Explains why CTEs sometimes prevent push-down (bad) and why MATERIALIZED keyword explicitly puts the fence back up (good for working around planner bugs)."
+    },
+    {
+      "abstract_concept": "JSONB vs normalized tables",
+      "analogy": "JSONB is like storing a filing cabinet inside a single box (flexible structure, but you have to unpack the whole box to find one file). Normalized is like labeled drawers (fixed structure, but instant access to what you need).",
+      "why_effective": "Intuitive metaphor for flexibility vs. query performance trade-off."
+    },
+    {
+      "abstract_concept": "GIN index on tsvector",
+      "analogy": "Like an inverted index in a book: instead of 'page 42 has the word pyramid,' you flip it to 'pyramid appears on pages 12, 42, 189.' Search hits the index first.",
+      "why_effective": "Explains why GIN is ideal for text search but costly on writes (the index must be updated on every insert)."
+    },
+    {
+      "abstract_concept": "Bridge table for many-to-many",
+      "analogy": "A student-course enrollment list: each row is a student + course pair. Without it, you'd have to store a list of courses inside the student record (cardinality explosion).",
+      "why_effective": "Shows how bridge tables prevent double-counting and schema complexity."
+    },
+    {
+      "abstract_concept": "Recursive CTE with depth guard",
+      "analogy": "Like a hiking trail marked with kilometer markers. You set a max depth (e.g., 'stop after 10km') to prevent hikers from walking forever.",
+      "why_effective": "Emphasizes why depth limits are essential to prevent runaway recursion in graphs with cycles."
+    },
+    {
+      "abstract_concept": "Bitmap index scan",
+      "analogy": "Instead of following index pointers one at a time, collect all of them, sort them by disk location, then visit the table pages in order (like grouping deliveries by route instead of scattered stops).",
+      "why_effective": "Explains why bitmap scans are faster than index scans for medium-sized result sets."
+    },
+    {
+      "abstract_concept": "Surrogate keys vs natural keys",
+      "analogy": "Surrogate key = library book barcode (never changes, purely internal). Natural key = ISBN (has business meaning, can change if standards evolve).",
+      "why_effective": "Shows why surrogate keys isolate schema from business rule changes."
+    },
+    {
+      "abstract_concept": "Slowly Changing Dimension Type 4",
+      "analogy": "Keep a 'current snapshot' on a whiteboard; write all changes to a 'change log' notebook. The whiteboard is always fast to read; the notebook is the audit trail.",
+      "why_effective": "Illustrates the split between fast current queries and complete history."
+    },
+    {
+      "abstract_concept": "Pre-aggregation for dashboards",
+      "analogy": "Instead of counting every grain in a field (50 billion), count pre-packaged sacks (10 million). Same answer, 150x faster.",
+      "why_effective": "Quantifies the performance win of pre-computing summaries."
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "JSONB storage overhead vs normalized",
+      "value": "2x disk space",
+      "context": "Measured against fully normalized equivalent design",
+      "source": "https://medium.com/@sruthiganesh/part-2-comparing-normalised-query-performance-in-postgresql-jsonb-vs-join-queries-ed63ef2da7cd"
+    },
+    {
+      "metric": "PostgreSQL pre-PostgreSQL 13 JSONB selectivity estimate",
+      "value": "0.1%",
+      "context": "Fixed cardinality estimate for JSONB predicates (planner couldn't adapt)",
+      "source": "https://www.architecture-weekly.com/p/postgresql-jsonb-powerful-storage"
+    },
+    {
+      "metric": "GIN index weight multipliers for ts_rank()",
+      "value": "A=1.0, B=0.4, C=0.2, D=0.1",
+      "context": "Default multipliers applied to word positions in tsvector ranking",
+      "source": "https://www.postgresql.org/docs/current/textsearch-controls.html"
+    },
+    {
+      "metric": "Query performance improvement from pre-aggregation",
+      "value": "150x",
+      "context": "Scanning 10 million aggregated rows vs 50 billion raw rows",
+      "source": "https://www.systemoverflow.com/learn/realtime-analytics-olap/pre-aggregation-patterns/what-is-pre-aggregation"
+    },
+    {
+      "metric": "Query time reduction on 500M-row fact table with MVs",
+      "value": "85%",
+      "context": "Analytical dashboard after implementing materialized views",
+      "source": "https://medium.com/@alice_thomaz/materialized-views-in-databricks-concept-and-optimization-with-incremental-refresh-0ad95e0cc6dc"
+    },
+    {
+      "metric": "Performance improvement with baseline optimizations",
+      "value": "50x",
+      "context": "PostgreSQL FTS with standard tuning (GIN index, persistent tsvector, etc.)",
+      "source": "https://blog.vectorchord.ai/postgresql-full-text-search-fast-when-done-right-debunking-the-slow-myth"
+    },
+    {
+      "metric": "Index scan vs seq scan breakpoint",
+      "value": "5-10%",
+      "context": "PostgreSQL chooses seq scan if result set is >5-10% of total rows",
+      "source": "https://thoughtbot.com/blog/reading-an-explain-analyze-query-plan"
+    },
+    {
+      "metric": "Typical CTE recursion depth limit",
+      "value": "10",
+      "context": "Safe depth guard for org charts and hierarchical data",
+      "source": "https://docs.yugabyte.com/stable/api/ysql/the-sql-language/with-clause/traversing-general-graphs/"
+    },
+    {
+      "metric": "Cardinality reduction with bridge table example",
+      "value": "From N×M to N+M rows",
+      "context": "Student-course many-to-many: bridge stores actual enrollments, not Cartesian product",
+      "source": "https://www.owox.com/glossary/bridge-table"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Materialized views automatically maintain themselves",
+      "reality": "PostgreSQL requires explicit REFRESH; vanilla implementation rebuilds the entire view, not just deltas. Manual refresh scheduling is necessary.",
+      "source": "https://www.postgresql.org/docs/current/sql-refreshmaterializedview.html",
+      "impact_if_believed": "Leads to stale data in dashboards and mismatched expectations about refresh latency."
+    },
+    {
+      "misconception": "CTEs are always an optimization fence in modern PostgreSQL",
+      "reality": "PostgreSQL 12+ automatically inlines non-recursive, singly-referenced CTEs, removing the fence. Only multi-referenced or MATERIALIZED CTEs still fence.",
+      "source": "https://www.enterprisedb.com/blog/postgresqls-ctes-are-optimisation-fences",
+      "impact_if_believed": "Engineers use CTEs as a workaround for planner issues that no longer exist, adding unnecessary code."
+    },
+    {
+      "misconception": "JSONB is faster for semi-structured data than normalized design",
+      "reality": "JSONB uses 2x disk space, requires document parsing on every access, and lacks per-field statistics. Normalized design with hybrid columns is usually faster.",
+      "source": "https://medium.com/@sruthiganesh/part-2-comparing-normalised-query-performance-in-postgresql-jsonb-vs-join-queries-ed63ef2da7cd",
+      "impact_if_believed": "Over-use of JSONB leads to slow, hard-to-debug queries and bloated tables."
+    },
+    {
+      "misconception": "Full-text search always requires Elasticsearch",
+      "reality": "PostgreSQL tsvector + GIN index can deliver 50x performance improvement with standard tuning; competitive with Elasticsearch for small to medium applications.",
+      "source": "https://github.com/inevolin/Postgres-FTS-TOASTed-vs-ElasticSearch",
+      "impact_if_believed": "Unnecessary operational complexity and cost from running a separate search system."
+    },
+    {
+      "misconception": "Natural keys are more intuitive and should be preferred",
+      "reality": "Natural keys cause schema evolution cascades: if a business key changes (e.g., customer number format), every FK reference must update. Surrogate keys localize changes.",
+      "source": "https://agiledata.org/essays/keys.html",
+      "impact_if_believed": "Large refactoring projects when business rules change; coupling between tables."
+    },
+    {
+      "misconception": "Index scans are always faster than sequential scans",
+      "reality": "Sequential scans are faster for result sets >5-10% of table, or for small tables. Index scans have overhead (B-tree traversal); seq scan is cache-friendly.",
+      "source": "https://thoughtbot.com/blog/reading-an-explain-analyze-query-plan",
+      "impact_if_believed": "Engineers add indexes that slow down queries instead of speeding them up."
+    },
+    {
+      "misconception": "Recursive CTEs can handle arbitrary graph depth without safeguards",
+      "reality": "Recursive CTEs without depth guards can hit infinite loops, stack overflow, or memory exhaustion on graphs with cycles. Depth limits are mandatory.",
+      "source": "https://docs.yugabyte.com/stable/api/ysql/the-sql-language/with-clause/traversing-general-graphs/",
+      "impact_if_believed": "Production outages from runaway queries on cyclic graphs."
+    },
+    {
+      "misconception": "Many-to-many relationships can be stored directly in one table",
+      "reality": "Storing multiple values in a single column leads to cardinality explosion and double-counting during aggregations. Bridge tables are the standard solution.",
+      "source": "https://www.owox.com/glossary/bridge-table",
+      "impact_if_believed": "Wrong query results, inaccurate dashboards, and schema refactoring debt."
+    },
+    {
+      "misconception": "Slowly Changing Dimension Type 1 is sufficient for all historical tracking",
+      "reality": "SCD Type 1 overwrites history. SCD Type 2 preserves it via separate rows; SCD Type 4 adds a dedicated history table. Choose based on audit requirements.",
+      "source": "https://dlthub.com/blog/scd2-and-incremental-loading",
+      "impact_if_believed": "Inability to audit how data changed over time; compliance violations in regulated industries."
+    },
+    {
+      "misconception": "Pre-aggregation is only for 'slow' dashboards",
+      "reality": "Pre-aggregation is a fundamental OLAP pattern. Scanning 10 million aggregated rows vs 50 billion raw rows is 150x faster, even with modern hardware.",
+      "source": "https://www.systemoverflow.com/learn/realtime-analytics-olap/pre-aggregation-patterns/what-is-pre-aggregation",
+      "impact_if_believed": "Missed opportunity to make analytics fast and cost-effective; overprovisioning infrastructure."
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.postgresql.org/docs/current/rules-materializedviews.html",
+      "title": "PostgreSQL Documentation: Materialized Views",
+      "recency": "2025 (current stable)",
+      "authority": "Official PostgreSQL documentation"
+    },
+    {
+      "url": "https://www.enterprisedb.com/blog/postgresqls-ctes-are-optimisation-fences",
+      "title": "PostgreSQL's CTEs are Optimization Fences",
+      "recency": "2024",
+      "authority": "EDB (PostgreSQL commercial sponsor)"
+    },
+    {
+      "url": "https://blog.poespas.me/posts/2025/03/05/optimize-postgresql-query-performance-materialized-views/",
+      "title": "Optimize PostgreSQL Query Performance with Materialized Views",
+      "recency": "2025-03-05",
+      "authority": "Technical blog post"
+    },
+    {
+      "url": "https://pganalyze.com/blog/gin-index",
+      "title": "Understanding Postgres GIN Indexes: The Good and the Bad",
+      "recency": "2024",
+      "authority": "pganalyze (PostgreSQL monitoring expert)"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/textsearch-controls.html",
+      "title": "PostgreSQL Documentation: Controlling Text Search",
+      "recency": "2025 (current)",
+      "authority": "Official PostgreSQL documentation"
+    },
+    {
+      "url": "https://medium.com/@sruthiganesh/part-2-comparing-normalised-query-performance-in-postgresql-jsonb-vs-join-queries-ed63ef2da7cd",
+      "title": "Comparing Normalized Query Performance: JSONB vs Join Queries",
+      "recency": "2024",
+      "authority": "Technical Medium article"
+    },
+    {
+      "url": "https://www.architecture-weekly.com/p/postgresql-jsonb-powerful-storage",
+      "title": "PostgreSQL JSONB - Powerful Storage for Semi-Structured Data",
+      "recency": "2024",
+      "authority": "Architecture Weekly newsletter"
+    },
+    {
+      "url": "https://agiledata.org/essays/keys.html",
+      "title": "Choosing a Primary Key: Natural or Surrogate?",
+      "recency": "2024",
+      "authority": "Agile Data (Scott Ambler)"
+    },
+    {
+      "url": "https://github.com/sraoss/pg_ivm",
+      "title": "pg_ivm: Incremental View Maintenance for PostgreSQL",
+      "recency": "2024",
+      "authority": "Open-source GitHub project"
+    },
+    {
+      "url": "https://duckdb.org/2025/05/23/using-key",
+      "title": "Using KEY in Recursive CTEs",
+      "recency": "2025-05-23",
+      "authority": "DuckDB official blog"
+    },
+    {
+      "url": "https://www.databricks.com/blog/announcing-general-availability-materialized-views-and-streaming-tables-databricks-sql",
+      "title": "Announcing General Availability of Materialized Views and Streaming Tables",
+      "recency": "2025",
+      "authority": "Databricks official blog"
+    },
+    {
+      "url": "https://dlthub.com/blog/scd2-and-incremental-loading",
+      "title": "Slowly Changing Dimension Type 2: Explanation and Code",
+      "recency": "2024",
+      "authority": "dlt Hub (data loading)"
+    },
+    {
+      "url": "https://softwarepatternslexicon.com/bitemporal-modeling/bi-temporal-data-warehouses/bi-temporal-slowly-changing-dimensions-scd-type-2/",
+      "title": "Bi-Temporal Slowly Changing Dimensions (SCD) Type 2",
+      "recency": "2024",
+      "authority": "Software Patterns Lexicon"
+    },
+    {
+      "url": "https://thoughtbot.com/blog/reading-an-explain-analyze-query-plan",
+      "title": "Reading a Postgres EXPLAIN ANALYZE Query Plan",
+      "recency": "2024",
+      "authority": "Thoughtbot (Rails consultancy)"
+    },
+    {
+      "url": "https://www.crunchydata.com/blog/postgres-scan-types-in-explain-plans",
+      "title": "Postgres Scan Types in EXPLAIN Plans",
+      "recency": "2024",
+      "authority": "Crunchy Data (PostgreSQL consultancy)"
+    },
+    {
+      "url": "https://danielabaron.me/blog/speed-up-pg-fts-with-persistent-ts-vectors/",
+      "title": "Speeding Up PostgreSQL Full-Text Search with Persistent TSVectors",
+      "recency": "2024",
+      "authority": "Technical blog (database consultant)"
+    },
+    {
+      "url": "https://www.owox.com/glossary/bridge-table",
+      "title": "Bridge Table in Data Modeling — Many-to-Many Solved",
+      "recency": "2024",
+      "authority": "OWOX analytics platform"
+    },
+    {
+      "url": "https://www.flexera.com/blog/finops/databricks-materialized-views/",
+      "title": "How to: Use Databricks Materialized Views (2026)",
+      "recency": "2026",
+      "authority": "Flexera FinOps"
+    },
+    {
+      "url": "https://medium.com/@alice_thomaz/materialized-views-in-databricks-concept-and-optimization-with-incremental-refresh-0ad95e0cc6dc",
+      "title": "Materialized Views in Databricks: Concept and Optimization with Incremental Refresh",
+      "recency": "2024",
+      "authority": "Technical Medium article"
+    },
+    {
+      "url": "https://github.com/inevolin/Postgres-FTS-TOASTed-vs-ElasticSearch",
+      "title": "Postgres v18 FTS with TOASTed JSONBs vs Elasticsearch v8",
+      "recency": "2024",
+      "authority": "GitHub benchmark project"
+    },
+    {
+      "url": "https://docs.yugabyte.com/stable/api/ysql/the-sql-language/with-clause/traversing-general-graphs/",
+      "title": "Using a Recursive CTE to Traverse a General Graph",
+      "recency": "2024",
+      "authority": "YugabyteDB official documentation"
+    },
+    {
+      "url": "https://medium.com/@muhammadalikhan0003/recursive-ctes-for-graph-traversal-implementing-bfs-and-dfs-in-sql-8ad240e392b4",
+      "title": "Recursive CTEs for Graph Traversal: Implementing BFS and DFS in SQL",
+      "recency": "2024",
+      "authority": "Technical Medium article"
+    },
+    {
+      "url": "https://www.systemoverflow.com/learn/realtime-analytics-olap/pre-aggregation-patterns/what-is-pre-aggregation",
+      "title": "What is Pre-aggregation? Pre-aggregation & Rollup Patterns",
+      "recency": "2024",
+      "authority": "System Overflow (OLAP learning platform)"
+    },
+    {
+      "url": "https://risingwave.com/blog/incremental-materialized-views-complete-guide/",
+      "title": "Incremental Materialized Views: The Complete Guide (2026)",
+      "recency": "2026",
+      "authority": "RisingWave (streaming database)"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/sql-refreshmaterializedview.html",
+      "title": "PostgreSQL Documentation: REFRESH MATERIALIZED VIEW",
+      "recency": "2025",
+      "authority": "Official PostgreSQL documentation"
+    },
+    {
+      "url": "https://github.com/anowerhossain/Graph-Traversal-using-Recursive-CTE-in-PostgreSQL",
+      "title": "Graph Traversal using Recursive CTE in PostgreSQL",
+      "recency": "2024",
+      "authority": "GitHub educational repository"
+    },
+    {
+      "url": "https://blog.vectorchord.ai/postgresql-full-text-search-fast-when-done-right-debunking-the-slow-myth",
+      "title": "PostgreSQL Full-Text Search: Speed Up Performance with These Tips",
+      "recency": "2024",
+      "authority": "VectorChord (vector database)"
+    }
+  ]
+}

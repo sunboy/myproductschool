@@ -1,0 +1,356 @@
+{
+  "facts": [
+    {
+      "fact": "The four Coffman conditions (mutual exclusion, hold and wait, no preemption, circular wait) were formally described by Edward G. Coffman Jr. in 1971; all four must be present simultaneously for deadlock to occur.",
+      "source": "https://cs341.cs.illinois.edu/coursebook/Deadlock",
+      "date": "2024"
+    },
+    {
+      "fact": "A mutex ensures only one thread can execute a critical section at a time and maintains strict ownership—only the thread that locked it can unlock it.",
+      "source": "https://cs341.cs.illinois.edu/coursebook/Synchronization",
+      "date": "2024"
+    },
+    {
+      "fact": "A semaphore uses a counter to manage access to a resource; it allows a specified number of threads to access a resource concurrently, with the counter decreasing on acquire and increasing on release.",
+      "source": "https://medium.com/@sylvain.tiset/understanding-mutexes-and-semaphores-preventing-deadlocks-and-starvation-in-concurrent-programming-6bc477b7b7a9",
+      "date": "2023"
+    },
+    {
+      "fact": "Binary semaphore does not enforce strict ownership, while mutex strictly requires the owner thread to unlock it.",
+      "source": "https://www.geeksforgeeks.org/mutex-vs-semaphore/",
+      "date": "2024"
+    },
+    {
+      "fact": "asyncio in Python uses a single-threaded event loop that switches between tasks during non-blocking I/O operations, leveraging platform-specific support (epoll on Linux, kqueue on macOS, IOCP on Windows).",
+      "source": "https://realpython.com/async-io-python/",
+      "date": "2024"
+    },
+    {
+      "fact": "The cost of task switching in asyncio is much smaller than thread switching, and asyncio can start significantly more tasks than multithreading can start threads for I/O-bound workloads.",
+      "source": "https://oneuptime.com/blog/post/2025-01-06-python-asyncio-io-bound/view",
+      "date": "2025"
+    },
+    {
+      "fact": "Compare-and-swap (CAS) is an atomic instruction that compares a memory location with a given value and modifies it to a new value only if they match—all as a single atomic operation.",
+      "source": "https://en.wikipedia.org/wiki/Compare-and-swap",
+      "date": "2024"
+    },
+    {
+      "fact": "Most multiprocessor architectures have supported CAS in hardware since at least 2013, making it the most popular synchronization primitive for implementing both lock-based and lock-free concurrent data structures.",
+      "source": "https://en.wikipedia.org/wiki/Compare-and-swap",
+      "date": "2024"
+    },
+    {
+      "fact": "The ABA problem in CAS-based algorithms occurs when a memory location is changed multiple times between reading and CAS attempt, acquiring a bit pattern matching the old value and causing false positive matches.",
+      "source": "https://dilipkumar.medium.com/lock-free-programming-compare-and-swap-cas-4a655c589f0e",
+      "date": "2023"
+    },
+    {
+      "fact": "There are three levels of lock-free guarantees: wait-free (strongest—operations never fail), lock-free (some operations may fail but progress guaranteed in fixed steps), and obstruction-free.",
+      "source": "https://www.internalpointers.com/post/lock-free-multithreading-atomic-operations",
+      "date": "2024"
+    },
+    {
+      "fact": "Preventing circular wait can be achieved by enforcing total resource ordering where each resource has a unique number and processes must request resources in predefined order.",
+      "source": "https://namastedev.com/blog/deadlock-prevention-detection/",
+      "date": "2024"
+    },
+    {
+      "fact": "PostgreSQL extends deadlock detection to distributed systems through FDW (Foreign Data Wrapper) and dblink by representing wait-for-graphs including remote transactions to detect deadlocks across database servers.",
+      "source": "https://wiki.postgresql.org/wiki/Distributed_deadlock_detection",
+      "date": "2024"
+    },
+    {
+      "fact": "Classical counter increment race condition: two threads each incrementing a shared integer by 1 without synchronization can result in final value of 1 instead of expected 2, due to read-modify-write being non-atomic.",
+      "source": "https://javarevisited.blogspot.com/2012/02/what-is-race-condition-in.html",
+      "date": "2024"
+    },
+    {
+      "fact": "Time-of-check to time-of-use (TOCTOU) race condition: checking if a condition exists and acting on that stale observation, where another thread may change state between check and act.",
+      "source": "https://medium.com/@nuwanmadhusankarulz/race-conditions-data-races-the-hidden-traps-in-multithreaded-code-ca6215ba128d",
+      "date": "2023"
+    },
+    {
+      "fact": "Google's KCSAN tool discovered over 300 race bugs in kernel code; Razzer (IEEE S&P 2019) found more than 30 race bugs, demonstrating race conditions as a significant attack vector.",
+      "source": "https://lifeasageek.github.io/papers/yoochan-exprace-bh.pdf",
+      "date": "2019"
+    },
+    {
+      "fact": "Race conditions are difficult to debug because results are nondeterministic and depend on thread timing; symptoms disappear in debug mode or with logging added (Heisenbug phenomenon).",
+      "source": "https://medium.com/@nuwanmadhusankarulz/race-conditions-data-races-the-hidden-traps-in-multithreaded-code-ca6215ba128d",
+      "date": "2023"
+    },
+    {
+      "fact": "Lock-free queues can achieve round-trip latency below 100 nanoseconds in optimal scenarios (same-core producer/consumer), but latency increases 3×+ when threads run on different cores.",
+      "source": "https://medium.com/@amansri99/benchmarking-lock-free-and-blocking-concurrent-queues-a-deep-dive-into-implementation-and-bf9a2b5c5d10",
+      "date": "2023"
+    },
+    {
+      "fact": "Some MPMC (multi-producer multi-consumer) lock-free queues achieve 10× throughput compared to standard mutex-based queues; throughput drops at least 1.5× when producer and consumer run on different cores.",
+      "source": "https://medium.com/@amansri99/benchmarking-lock-free-and-blocking-concurrent-queues-a-deep-dive-into-implementation-and-bf9a2b5c5d10",
+      "date": "2023"
+    },
+    {
+      "fact": "memory_order_seq_cst (sequential consistency) establishes a single total modification order of all atomic operations, requiring full memory fence CPU instructions on multi-core systems and becoming a performance bottleneck.",
+      "source": "https://cppreference.com/cpp/atomic/memory_order",
+      "date": "2024"
+    },
+    {
+      "fact": "Acquire-release semantics allow a release store to synchronize-with an acquire load on the same variable; all memory writes before the store become visible in the acquiring thread.",
+      "source": "https://mara.nl/atomics/memory-ordering.html",
+      "date": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "PostgreSQL simultaneous UPDATE deadlock: two transactions try to update the same rows in different order. Transaction A locks Row 1 then waits for Row 2 (held by Transaction B), while Transaction B holds Row 2 and waits for Row 1 (held by A). PostgreSQL detects and rolls back one transaction.",
+      "source": "https://www.netdata.cloud/academy/effective-strategies-managing-PostgreSQL-deadlocks/",
+      "company": "PostgreSQL"
+    },
+    {
+      "scenario": "Banking ATM withdrawal race condition: Two people with same PIN withdraw $200 simultaneously from account containing $1000. Without synchronization, both may see balance as $1000, both withdraw $200, leaving incorrect balance of $800 instead of $600.",
+      "source": "https://javarevisited.blogspot.com/2012/02/what-is-race-condition-in.html",
+      "company": "Banking systems"
+    },
+    {
+      "scenario": "Node.js event loop handling 10,000 concurrent WebSocket connections: single-threaded async model efficiently handles I/O with epoll/kqueue rather than spawning 10,000 threads, reducing context switch overhead.",
+      "source": "https://medium.com/@codejuggler/why-node-js-is-single-threaded-and-how-it-scales-eb32f3fc4cbc",
+      "company": "Node.js"
+    },
+    {
+      "scenario": "High-frequency trading: Lock-free queue with CAS loop processes 1 million orders/second with sub-100ns latency when producer/consumer share CPU core, enabling real-time trade execution.",
+      "source": "https://medium.com/@amansri99/benchmarking-lock-free-and-blocking-concurrent-queues-a-deep-dive-into-implementation-and-bf9a2b5c5d10",
+      "company": "HFT systems"
+    },
+    {
+      "scenario": "Google KCSAN discovering race conditions in Linux kernel: tool found 300+ data races in kernel code, exposing critical bugs where concurrent access to shared kernel structures could cause corruption or privilege escalation.",
+      "source": "https://lifeasageek.github.io/papers/yoochan-exprace-bh.pdf",
+      "company": "Google/Linux"
+    },
+    {
+      "scenario": "Citus Data distributed PostgreSQL: coordinating locks across multiple worker nodes requires predicate locks on filter conditions (UPDATE .. WHERE key='x') to prevent distributed deadlocks when same rows modified concurrently.",
+      "source": "https://www.citusdata.com/blog/2017/08/31/databases-and-distributed-deadlocks-a-faq",
+      "company": "Citus Data"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Mutex is like a single-occupancy bathroom: only one person (thread) can lock the door and enter at a time. Once inside, they hold the key until they leave. Others must wait.",
+      "source": "https://cs341.cs.illinois.edu/coursebook/Synchronization"
+    },
+    {
+      "analogy": "Semaphore is like a parking garage with 10 parking spaces: the counter starts at 10. Each car (thread) that enters decrements the counter; when count reaches 0, new cars wait. As cars leave, counter increments.",
+      "source": "https://www.geeksforgeeks.org/mutex-vs-semaphore/"
+    },
+    {
+      "analogy": "Circular wait deadlock is like 4 people sitting around a table, each holding one chopstick and needing their neighbor's chopstick to eat. No one can eat because everyone is waiting for someone else to release.",
+      "source": "https://cs341.cs.illinois.edu/coursebook/Deadlock"
+    },
+    {
+      "analogy": "Race condition (TOCTOU) is like checking your bank balance ($1000), deciding to buy something for $200, but a transaction posts between check and purchase, and now you overdraft—the assumption was stale.",
+      "source": "https://medium.com/@nuwanmadhusankarulz/race-conditions-data-races-the-hidden-traps-in-multithreaded-code-ca6215ba128d"
+    },
+    {
+      "analogy": "Lock-free CAS loop is like optimistically assuming you can make a change, but checking at commit time if someone else changed the value underneath. If yes, retry the entire operation.",
+      "source": "https://dilipkumar.medium.com/lock-free-programming-compare-and-swap-cas-4a655c589f0e"
+    },
+    {
+      "analogy": "Event loop in async/await is like a single cashier serving 100 customers, switching between them during idle time (waiting for payment). No new cashier hired; just better utilization of the one cashier.",
+      "source": "https://realpython.com/async-io-python/"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Lock-free queue latency (same core)",
+      "value": "< 100 nanoseconds",
+      "context": "Optimal case with producer and consumer on same CPU core",
+      "source": "https://medium.com/@amansri99/benchmarking-lock-free-and-blocking-concurrent-queues-a-deep-dive-into-implementation-and-bf9a2b5c5d10"
+    },
+    {
+      "metric": "Lock-free queue latency increase (different cores)",
+      "value": "3× or more",
+      "context": "Latency multiplier when producer/consumer run on different cores",
+      "source": "https://medium.com/@amansri99/benchmarking-lock-free-and-blocking-concurrent-queues-a-deep-dive-into-implementation-and-bf9a2b5c5d10"
+    },
+    {
+      "metric": "MPMC queue throughput advantage",
+      "value": "10×",
+      "context": "Throughput of lock-free MPMC queues vs mutex-based queues",
+      "source": "https://medium.com/@amansri99/benchmarking-lock-free-and-blocking-concurrent-queues-a-deep-dive-into-implementation-and-bf9a2b5c5d10"
+    },
+    {
+      "metric": "Throughput drop (different cores)",
+      "value": "1.5×",
+      "context": "Minimum throughput reduction when threads run on different cores",
+      "source": "https://medium.com/@amansri99/benchmarking-lock-free-and-blocking-concurrent-queues-a-deep-dive-into-implementation-and-bf9a2b5c5d10"
+    },
+    {
+      "metric": "Race bugs found by KCSAN (Google)",
+      "value": "300+",
+      "context": "Data races discovered in Linux kernel code",
+      "source": "https://lifeasageek.github.io/papers/yoochan-exprace-bh.pdf"
+    },
+    {
+      "metric": "Race bugs found by Razzer",
+      "value": "30+",
+      "context": "Race bugs discovered in kernel (IEEE S&P 2019)",
+      "source": "https://lifeasageek.github.io/papers/yoochan-exprace-bh.pdf"
+    },
+    {
+      "metric": "CAS hardware support adoption",
+      "value": "Since 2013",
+      "context": "Year when all major multiprocessor architectures supported CAS in hardware",
+      "source": "https://en.wikipedia.org/wiki/Compare-and-swap"
+    },
+    {
+      "metric": "Coffman conditions formalization",
+      "value": "1971",
+      "context": "Year Edward Coffman Jr. formally described the four deadlock conditions",
+      "source": "https://cs341.cs.illinois.edu/coursebook/Deadlock"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "A mutex and binary semaphore are equivalent",
+      "reality": "Mutex enforces strict ownership—only the locking thread can unlock. Binary semaphore (counter=1) has no ownership; any thread can release it. This breaks if an unintended thread releases the semaphore.",
+      "source": "https://www.geeksforgeeks.org/mutex-vs-semaphore/"
+    },
+    {
+      "misconception": "Using more threads always speeds up I/O-bound workloads",
+      "reality": "Event loop models (single-threaded async) often outperform multithreading for I/O because task switching cost is much lower than thread context switch overhead. 10,000 async tasks > 10,000 threads.",
+      "source": "https://oneuptime.com/blog/post/2025-01-06-python-asyncio-io-bound/view"
+    },
+    {
+      "misconception": "Race conditions only happen during concurrent execution—adding logging prevents them",
+      "reality": "Race conditions are Heisenbugs; logging changes timing and makes them disappear, but the bug still exists. Only proper synchronization fixes them.",
+      "source": "https://medium.com/@nuwanmadhusankarulz/race-conditions-data-races-the-hidden-traps-in-multithreaded-code-ca6215ba128d"
+    },
+    {
+      "misconception": "Lock-free algorithms are always faster than mutex-protected critical sections",
+      "reality": "Under high contention, CAS loops retry frequently, wasting CPU cycles. Mutex may perform better with high lock contention because threads sleep instead of spinning.",
+      "source": "https://medium.com/@amansri99/benchmarking-lock-free-and-blocking-concurrent-queues-a-deep-dive-into-implementation-and-bf9a2b5c5d10"
+    },
+    {
+      "misconception": "Breaking one Coffman condition is sufficient to prevent all deadlocks",
+      "reality": "Breaking any ONE of the four conditions prevents deadlock. Common approaches: disable hold-and-wait (request all resources atomically), enable preemption, or enforce resource ordering to prevent circular wait.",
+      "source": "https://cs341.cs.illinois.edu/coursebook/Deadlock"
+    },
+    {
+      "misconception": "Sequential consistency (seq_cst) is always the right memory order for atomics",
+      "reality": "seq_cst requires full memory fences and is expensive. Acquire-release semantics are often sufficient and faster; only use seq_cst when true global ordering is required.",
+      "source": "https://cppreference.com/cpp/atomic/memory_order"
+    },
+    {
+      "misconception": "Distributed deadlock detection works the same as single-machine deadlock detection",
+      "reality": "Distributed deadlock detection requires wait-for-graphs that span multiple database servers via FDW/dblink, with higher latency and partial visibility of global lock state.",
+      "source": "https://wiki.postgresql.org/wiki/Distributed_deadlock_detection"
+    },
+    {
+      "misconception": "CAS is immune to race conditions",
+      "reality": "CAS-based algorithms suffer from the ABA problem where a value changes multiple times, appearing unchanged to the CAS instruction, causing false positive matches.",
+      "source": "https://dilipkumar.medium.com/lock-free-programming-compare-and-swap-cas-4a655c589f0e"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://cs341.cs.illinois.edu/coursebook/Deadlock",
+      "title": "CS 341 - Deadlock (University of Illinois)",
+      "recency": "2024 course material"
+    },
+    {
+      "url": "https://cs341.cs.illinois.edu/coursebook/Synchronization",
+      "title": "CS 341 - Synchronization (University of Illinois)",
+      "recency": "2024 course material"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/mutex-vs-semaphore/",
+      "title": "Mutex vs Semaphore - GeeksforGeeks",
+      "recency": "2024"
+    },
+    {
+      "url": "https://realpython.com/async-io-python/",
+      "title": "Python's asyncio: A Hands-On Walkthrough – Real Python",
+      "recency": "2024"
+    },
+    {
+      "url": "https://oneuptime.com/blog/post/2025-01-06-python-asyncio-io-bound/view",
+      "title": "How to Use asyncio Effectively in Python for I/O-Bound Workloads",
+      "recency": "2025"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Compare-and-swap",
+      "title": "Compare-and-swap - Wikipedia",
+      "recency": "2024"
+    },
+    {
+      "url": "https://dilipkumar.medium.com/lock-free-programming-compare-and-swap-cas-4a655c589f0e",
+      "title": "Lock-free Programming — Compare-And-Swap (CAS)",
+      "recency": "2023"
+    },
+    {
+      "url": "https://namastedev.com/blog/deadlock-prevention-detection/",
+      "title": "Deadlock Prevention & Detection - NamasteDev",
+      "recency": "2024"
+    },
+    {
+      "url": "https://wiki.postgresql.org/wiki/Distributed_deadlock_detection",
+      "title": "Distributed Deadlock Detection - PostgreSQL Wiki",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.netdata.cloud/academy/effective-strategies-managing-PostgreSQL-deadlocks/",
+      "title": "Effective Strategies for Managing PostgreSQL Deadlocks",
+      "recency": "2024"
+    },
+    {
+      "url": "https://javarevisited.blogspot.com/2012/02/what-is-race-condition-in.html",
+      "title": "What is Race Condition in Java Multithreading?",
+      "recency": "2024"
+    },
+    {
+      "url": "https://medium.com/@nuwanmadhusankarulz/race-conditions-data-races-the-hidden-traps-in-multithreaded-code-ca6215ba128d",
+      "title": "Race Conditions & Data Races: The Hidden Traps in Multithreaded Code",
+      "recency": "2023"
+    },
+    {
+      "url": "https://lifeasageek.github.io/papers/yoochan-exprace-bh.pdf",
+      "title": "Exploiting Kernel Races Through Taming Thread Interleaving",
+      "recency": "2019"
+    },
+    {
+      "url": "https://medium.com/@amansri99/benchmarking-lock-free-and-blocking-concurrent-queues-a-deep-dive-into-implementation-and-bf9a2b5c5d10",
+      "title": "Benchmarking Lock-Free and Blocking Concurrent Queues",
+      "recency": "2023"
+    },
+    {
+      "url": "https://cppreference.com/cpp/atomic/memory_order",
+      "title": "std::memory_order - cppreference.com",
+      "recency": "2024"
+    },
+    {
+      "url": "https://mara.nl/atomics/memory-ordering.html",
+      "title": "Rust Atomics and Locks — Chapter 3. Memory Ordering",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.citusdata.com/blog/2017/08/31/databases-and-distributed-deadlocks-a-faq",
+      "title": "Databases and Distributed Deadlocks: A FAQ - Citus Data",
+      "recency": "2017 (foundational but still current)"
+    },
+    {
+      "url": "https://medium.com/@codejuggler/why-node-js-is-single-threaded-and-how-it-scales-eb32f3fc4cbc",
+      "title": "Why Node.js is Single-Threaded and How It Scales",
+      "recency": "2023"
+    },
+    {
+      "url": "https://www.internalpointers.com/post/lock-free-multithreading-atomic-operations",
+      "title": "Lock-free Multithreading with Atomic Operations - Internal Pointers",
+      "recency": "2024"
+    },
+    {
+      "url": "https://medium.com/@sylvain.tiset/understanding-mutexes-and-semaphores-preventing-deadlocks-and-starvation-in-concurrent-programming-6bc477b7b7a9",
+      "title": "Understanding Mutexes and Semaphores - Medium",
+      "recency": "2023"
+    }
+  ]
+}

@@ -1,0 +1,489 @@
+{
+  "facts": [
+    {
+      "fact": "In Unix/Linux, file descriptors are process-unique integer identifiers (0, 1, 2, 3...) that the kernel returns when a process requests access to a file, pipe, socket, or other I/O resource",
+      "source": "https://en.wikipedia.org/wiki/File_descriptor",
+      "published": "2024"
+    },
+    {
+      "fact": "The kernel maintains a three-level file descriptor system: per-process file descriptor table → system-wide file table → inode table. Each FD is a small integer that indexes into the per-process table",
+      "source": "https://github.com/chenshuo/notes/blob/master/docs/kernel/file-descriptor-table.md",
+      "published": "2024"
+    },
+    {
+      "fact": "Everything is a file philosophy: sockets, pipes, devices, regular files, directories, and other I/O resources all use the same read(), write(), seek(), and close() system calls",
+      "source": "https://en.wikipedia.org/wiki/Everything_is_a_file",
+      "published": "2024"
+    },
+    {
+      "fact": "A process can have stdin (FD 0), stdout (FD 1), and stderr (FD 2) automatically; additional file descriptors start at 3 and increment sequentially",
+      "source": "https://www.geeksforgeeks.com/linux-unix/lsof-command-in-linux-with-examples/",
+      "published": "2024"
+    },
+    {
+      "fact": "Default soft limit for open file descriptors per process is typically 1,024; hard limit is often 65,536 or higher, configurable via /etc/security/limits.conf or systemd service files",
+      "source": "https://www.baeldung.com/linux/error-too-many-open-files",
+      "published": "2024"
+    },
+    {
+      "fact": "Context switching between threads of the same process takes ~1-2 microseconds; process context switching takes ~2.7-5.48 microseconds and requires TLB flush overhead",
+      "source": "https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-overheads-for-linux-threads/",
+      "published": "2018"
+    },
+    {
+      "fact": "Each OS thread requires 1-8 MB of stack memory, while a coroutine is ~1 KB. With 1,000 concurrent I/O operations, async uses ~1 MB total, threads use ~1-8 GB",
+      "source": "https://dev.to/_eb7f2a654e97a60ae9f96e/is-asyncio-really-better-than-multithreading-i-tested-100-concurrent-requests-and-the-difference-is-huge-4hc5",
+      "published": "2024"
+    },
+    {
+      "fact": "For 10 file descriptors monitored: select=0.73ms, poll=0.61ms, epoll=0.41ms. For 10,000 FDs: select=930ms, poll=990ms, epoll=0.66ms",
+      "source": "https://devarea.com/linux-io-multiplexing-select-vs-poll-vs-epoll/",
+      "published": "2024"
+    },
+    {
+      "fact": "epoll uses O(1) event retrieval via a red-black tree interest set and linked list for active events; you only pay a cost when events actually occur, not per loop iteration",
+      "source": "https://www.uptime.engineer/p/epoll-vs-poll-vs-select-io-multiplexing-explained",
+      "published": "2024"
+    },
+    {
+      "fact": "Average minor page fault latency: 1.27 microseconds (2,552 CPU cycles); major page fault with SSD: ~30 microseconds; with HDD: ~8 milliseconds (8,000 microseconds)",
+      "source": "https://arxiv.org/pdf/2112.14013",
+      "published": "2021"
+    },
+    {
+      "fact": "The TLB (Translation Lookaside Buffer) is a hardware cache of virtual-to-physical address translations. A process context switch flushes the TLB, incurring 1,000-2,000 CPU cycles of overhead on subsequent memory accesses",
+      "source": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation",
+      "published": "2024"
+    },
+    {
+      "fact": "Page tables on 64-bit Linux use 4 levels to translate virtual addresses to physical pages. The page walk involves multiple memory lookups, ~1-2 microseconds per walk on modern systems",
+      "source": "https://www.kernel.org/doc/gorman/html/understand/understand006.html",
+      "published": "2024"
+    },
+    {
+      "fact": "Virtual address 0x1000 in process A maps to completely different physical memory than 0x1000 in process B; the CPU enforces this isolation in hardware via page tables",
+      "source": "https://cs61.seas.harvard.edu/site/2018/Kernel2/",
+      "published": "2018"
+    },
+    {
+      "fact": "SIGTERM allows a process to perform cleanup; SIGKILL cannot be caught and forces immediate termination. Containers send SIGTERM, wait ~30 seconds (terminationGracePeriodSeconds), then send SIGKILL",
+      "source": "https://www.suse.com/c/observability-sigkill-vs-sigterm-a-developers-guide-to-process-termination/",
+      "published": "2024"
+    },
+    {
+      "fact": "A race condition exists with SIGCHLD: a child can change status and send SIGCHLD before the parent enters select(), causing select() to hang forever. Solutions: signalfd(), pselect(), or self-pipe trick",
+      "source": "https://cs61.seas.harvard.edu/site/2018/Synch1/",
+      "published": "2018"
+    },
+    {
+      "fact": "SIGPIPE is sent when write() to a closed socket or broken pipe occurs; best practice: call signal(SIGPIPE, SIG_IGN) at program start to convert to EPIPE error return instead",
+      "source": "https://docs.oracle.com/cd/E19455-01/806-4750/signals-7/index.html",
+      "published": "2024"
+    },
+    {
+      "fact": "Only async-signal-safe functions (write(), signal(), _exit()) can be safely called from signal handlers. Functions like printf(), malloc(), and pthread_mutex_lock() are NOT async-signal-safe and risk deadlock or corruption",
+      "source": "https://unwiredlearning.com/blog/signal-handling-os",
+      "published": "2024"
+    },
+    {
+      "fact": "File descriptor leaks don't crash the application like memory leaks do—they silently degrade performance. Monitors watch for FD count that increases over time and never decreases, indicating a leak",
+      "source": "https://codingtechroom.com/question/file-descriptor-leak-example",
+      "published": "2024"
+    },
+    {
+      "fact": "Linux kernel epoll load balancing exhibits LIFO behavior: the most-recently-added worker gets most new connections, causing uneven load. Cloudflare patches kernels with EPOLLROUNDROBIN flag to fix this",
+      "source": "https://blog.cloudflare.com/the-sad-state-of-linux-socket-balancing/",
+      "published": "2024"
+    },
+    {
+      "fact": "Async I/O with 100 concurrent I/O-bound requests completes in ~0.6 seconds; multithreading takes much longer due to context switch overhead and thread creation/memory costs",
+      "source": "https://dev.to/_eb7f2a654e97a60ae9f96e/is-asyncio-really-better-than-multithreading-i-tested-100-concurrent-requests-and-the-difference-is-huge-4hc5",
+      "published": "2024"
+    },
+    {
+      "fact": "lsof (List Open Files) command shows all files, sockets, pipes, and devices currently open by any process; critical for diagnosing 'too many open files' and finding leaked FDs",
+      "source": "https://www.geeksforgeeks.com/linux-unix/lsof-command-in-linux-with-examples/",
+      "published": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "scenario": "Node.js HTTP server accumulates open sockets without closing them, eventually hitting the 1,024 FD limit. lsof shows thousands of ESTABLISHED TCP connections. Solution: ensure every socket has close handlers registered",
+      "company_or_context": "Common production issue in microservices",
+      "impact": "Server stops accepting new connections; crashes or becomes unresponsive"
+    },
+    {
+      "scenario": "Nginx worker process receives all new connections due to epoll LIFO load balancing, while other worker processes sit idle. Cloudflare's solution: use REUSEPORT socket option or patch with EPOLLROUNDROBIN flag",
+      "company_or_context": "Cloudflare production infrastructure",
+      "impact": "Uneven CPU load, reduced throughput, tail latency increases on underutilized workers"
+    },
+    {
+      "scenario": "Database connection pool defaults to 10 connections, 50 concurrent HTTP requests each opening a connection. After 10 connections, remaining requests queue indefinitely. Diagnosis: lsof shows exactly 10 TCP connections to DB, all blocked in read()",
+      "company_or_context": "Spring Boot / Django applications",
+      "impact": "Cascade timeouts, requests eventually fail with 'connection pool exhausted'"
+    },
+    {
+      "scenario": "Python asyncio application handles 10,000 WebSocket connections using 4 worker processes. Equivalent multithreading approach would require 10,000 threads × 2 MB = 20 GB memory; asyncio uses ~10 MB total",
+      "company_or_context": "Real-time chat or monitoring platform",
+      "impact": "Asyncio: runs on 2GB RAM; multithreading: OOM crash"
+    },
+    {
+      "scenario": "Linux process makes 100K page faults at 1.27 microseconds each = 127 milliseconds total; a single major page fault (HDD): 8ms. Design: use mlock() or page pool to avoid fault latency in latency-sensitive code",
+      "company_or_context": "High-frequency trading, real-time analytics",
+      "impact": "100-microsecond tail latency becomes 8-millisecond tail latency on page fault"
+    },
+    {
+      "scenario": "Service receives SIGTERM from container orchestrator (Kubernetes, Docker), has 30 seconds (terminationGracePeriodSeconds) to finish in-flight requests and close sockets. Without graceful shutdown, drains timeout and SIGKILL terminates abruptly, losing connections",
+      "company_or_context": "Kubernetes cluster rolling updates",
+      "impact": "Dropped connections during deployment, user-facing errors"
+    },
+    {
+      "scenario": "Go application doesn't call signal.NotifyContext() for SIGTERM; receives signal but doesn't close HTTP server. Kubernetes kills it with SIGKILL after 30s, leaving connections in TIME_WAIT state",
+      "company_or_context": "Common misconfiguration in containerized Go services",
+      "impact": "Slow rolling deployments, ephemeral port exhaustion, eventual connection refusal"
+    },
+    {
+      "scenario": "Event loop implementation calls printf() inside a SIGCHLD handler to log child exit status. If main program is mid-printf() when signal arrives, handler's printf() deadlocks on internal lock",
+      "company_or_context": "C daemon code",
+      "impact": "Entire process deadlocks; monitoring systems may kill it as hung"
+    }
+  ],
+  "analogies": [
+    {
+      "concept": "File descriptor",
+      "analogy": "A file descriptor is like a ticket number at a deli counter. You ask for a service (open a file), get a number (FD 5), and use that number to refer to your transaction (read, write, seek, close). The deli counter's system looks up ticket 5 in its records to find your actual order (the kernel looks up FD 5 to find the inode and file table entry)"
+    },
+    {
+      "concept": "Virtual vs physical memory address",
+      "analogy": "Virtual addresses are like apartment numbers in your building; physical addresses are like actual rooms in a warehouse. The kernel maintains a phonebook (page table) that maps apartment 405 to warehouse room 1729. Your CPU looks up apartment 405 in a cache (TLB) first; if found, it jumps directly to room 1729. If not, it consults the phonebook (page walk), taking much longer"
+    },
+    {
+      "concept": "Process vs thread isolation",
+      "analogy": "A process is like a company with its own office, filing system, and phone number. Threads are like departments within the same office sharing the same filing system. If a contractor destroys one company's office (process crash), the other company is fine. If a department makes a mess of the shared files (thread bug), everyone in the company suffers"
+    },
+    {
+      "concept": "epoll vs select/poll",
+      "analogy": "select() is like calling every customer on a phone list to ask 'are you ready now?' with 10,000 customers taking hours. poll() is slightly smarter, asking in batches. epoll() is having customers text you automatically when ready, so you only check messages that arrived (O(1))"
+    },
+    {
+      "concept": "TLB flush during process context switch",
+      "analogy": "The TLB is a GPS cache in your car. When you switch to driving a different car (process context switch), that car's GPS cache has old routes to the wrong cities (stale address translations). You have to clear the cache (flush), forcing fresh lookups on the next turn (page walk = ~1000 cycles)"
+    },
+    {
+      "concept": "Signal handling race condition",
+      "analogy": "You're waiting at a train station (select()) and asked a friend to wave a flag when a train arrives (SIGCHLD handler sets a flag). But a train could arrive, wave happens, and then you check the flag—too late, you're in select() and miss it. Solution: use a doorbell that rings (signalfd) instead of waving silently"
+    },
+    {
+      "concept": "Graceful shutdown with SIGTERM",
+      "analogy": "SIGTERM is a polite 'please finish your tasks and leave.' SIGKILL is a security guard escorting you out immediately. If you ignore SIGTERM (don't handle it), the guard (SIGKILL) removes you anyway after a timeout. Best practice: when you hear 'please leave,' stop accepting new customers (close the listen socket) but finish serving current customers (wait for in-flight requests)"
+    },
+    {
+      "concept": "Async I/O vs threads under load",
+      "analogy": "Threads are like hiring 1,000 employees to wait at 1,000 cash registers (each costing salary + benefits). Async is hiring 4 employees who move between registers based on customer arrival, spending idle time on other tasks. Under light load, both work. Under heavy load, async is vastly more efficient"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Default soft limit for open file descriptors per process",
+      "value": "1,024",
+      "context": "System call ulimit -n shows this; most modern systems set 65,536 as hard limit"
+    },
+    {
+      "metric": "Process context switch latency",
+      "value": "2.7–5.48 microseconds",
+      "context": "Includes TLB flush and register save/restore; thread context switch is ~1-2 microseconds"
+    },
+    {
+      "metric": "TLB flush overhead during process context switch",
+      "value": "1,000–2,000 CPU cycles",
+      "context": "Roughly 500–1,000 nanoseconds on modern CPUs; forces page walk on next memory access"
+    },
+    {
+      "metric": "Minor page fault latency",
+      "value": "1.27 microseconds (2,552 CPU cycles)",
+      "context": "Average on modern x86; tail latency ~3.2 microseconds"
+    },
+    {
+      "metric": "Major page fault latency (SSD)",
+      "value": "~30 microseconds",
+      "context": "Modern NVMe SSD; hard disk drives: 8 milliseconds (8,000 microseconds)"
+    },
+    {
+      "metric": "Memory per OS thread",
+      "value": "1–8 MB (stack size)",
+      "context": "Linux default pthread stack: 2 MB; configurable but at least 1 MB"
+    },
+    {
+      "metric": "Memory per coroutine/async task",
+      "value": "~1 KB",
+      "context": "Python asyncio, JavaScript async/await; essentially a Python object or JS object"
+    },
+    {
+      "metric": "epoll FD monitoring latency (10 FDs)",
+      "value": "0.41 milliseconds",
+      "context": "vs select 0.73ms, poll 0.61ms"
+    },
+    {
+      "metric": "epoll FD monitoring latency (10,000 FDs)",
+      "value": "0.66 milliseconds",
+      "context": "vs select 930ms, poll 990ms; 1,500× faster than select at scale"
+    },
+    {
+      "metric": "Kubernetes terminationGracePeriodSeconds default",
+      "value": "30 seconds",
+      "context": "Time to complete graceful shutdown before SIGKILL; configurable per pod"
+    },
+    {
+      "metric": "Async I/O completion time for 100 concurrent I/O requests",
+      "value": "~0.6 seconds",
+      "context": "CPU usage <15%, memory flat; multithreading significantly slower"
+    },
+    {
+      "metric": "Page table levels in 64-bit Linux",
+      "value": "4 levels",
+      "context": "PML4 → PDPT → PD → PT; determines depth of page walk on TLB miss"
+    },
+    {
+      "metric": "FD_SETSIZE limit for select()",
+      "value": "1,024 (usually)",
+      "context": "Hard-coded in many systems; a key reason to use poll() or epoll() for many FDs"
+    },
+    {
+      "metric": "Cloudflare EPOLLROUNDROBIN load balancing improvement",
+      "value": "Even distribution vs LIFO spike",
+      "context": "Without: one worker gets 80%+ of traffic; with: load balanced ~evenly"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Increasing ulimit to 1 million solves all 'too many open files' errors",
+      "reality": "If errors persist at high limits, the root cause is a resource leak (unclosed sockets/pipes/files), not the limit. Increasing the limit masks the bug; you must find and close the leak"
+    },
+    {
+      "misconception": "Threads are always faster than async/await",
+      "reality": "For I/O-bound workloads, async is far faster (100× on high concurrency). Threads win only for CPU-bound work (parallelism), where async doesn't help. Conflating the two leads to poor architecture choices"
+    },
+    {
+      "misconception": "You can safely call printf(), malloc(), or pthread locks inside signal handlers",
+      "reality": "Only async-signal-safe functions (write(), signal(), _exit()) are safe. printf() and malloc() use internal locks; calling them in a handler that interrupted a main program lock causes deadlock"
+    },
+    {
+      "misconception": "A SIGCHLD handler that sets a flag is sufficient to handle child process exits",
+      "reality": "Race condition: if SIGCHLD arrives after the flag check but before select(), the flag is set but select() wasn't called yet, causing it to hang indefinitely. Must use signalfd(), pselect(), or self-pipe trick"
+    },
+    {
+      "misconception": "Context switching between threads is free",
+      "reality": "Thread context switch: ~1-2 µs. Process context switch: 2.7-5.48 µs + TLB flush (1,000-2,000 cycles). Neither is free; with 1,000 concurrent operations, context switch overhead becomes significant"
+    },
+    {
+      "misconception": "Virtual memory introduces insignificant latency",
+      "reality": "A single page fault: 1.27 µs. A million page faults: 1.27 seconds. Design matters: use mlock(), page pools, or async to avoid faults in latency-sensitive paths"
+    },
+    {
+      "misconception": "epoll is always faster than select/poll",
+      "reality": "For <10 FDs, select/poll are sometimes faster (lower overhead). epoll dominates at >100 FDs. For true high concurrency (1,000+ FDs), epoll is the only sensible choice"
+    },
+    {
+      "misconception": "SIGKILL can be caught to perform cleanup",
+      "reality": "SIGKILL cannot be caught, blocked, or ignored—it terminates immediately. Only SIGTERM allows cleanup. Always implement SIGTERM handlers for graceful shutdown"
+    },
+    {
+      "misconception": "Writing to a closed socket is silent",
+      "reality": "Sending on a closed/broken socket raises SIGPIPE (which kills the process by default). Must call signal(SIGPIPE, SIG_IGN) at startup to convert to EPIPE error, allowing proper error handling"
+    },
+    {
+      "misconception": "File descriptor 0, 1, 2 are always stdin, stdout, stderr",
+      "reality": "True by convention and in most shells, but not enforced by the kernel. A process can close FD 0 and open a file, or duplicate a socket to FD 1. Assumptions about FD identity are unsafe in general code"
+    },
+    {
+      "misconception": "Increasing thread pool size always improves throughput",
+      "reality": "Beyond a certain point, more threads cause thrashing: excessive context switching, TLB flushing, cache misses, and synchronization contention reduce throughput. Optimal thread count is typically #CPUs for CPU-bound, or far lower for I/O-bound (async wins)"
+    },
+    {
+      "misconception": "Deleting a file immediately reclaims disk space",
+      "reality": "Deleting only removes the directory entry. If a process still has the file open, the inode and data blocks aren't deallocated until the last FD is closed. Disk space is not reclaimed until then"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://en.wikipedia.org/wiki/File_descriptor",
+      "title": "File descriptor - Wikipedia",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Everything_is_a_file",
+      "title": "Everything is a file - Wikipedia",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://man7.org/linux/man-pages/man7/unix.7.html",
+      "title": "unix(7) - Linux manual page",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://www.baeldung.com/linux/error-too-many-open-files",
+      "title": "Fixing the 'Too many open files' Error in Linux | Baeldung on Linux",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://www.howtogeek.com/805629/too-many-open-files-linux/",
+      "title": "How to Solve the 'Too Many Open Files' Error on Linux - How-To Geek",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://oneuptime.com/blog/post/2026-03-04-fix-too-many-open-files-ulimit-error-rhel/view",
+      "title": "How to Fix 'Too Many Open Files' Ulimit Error on RHEL - OneUptime",
+      "published_date": "2026-03-04",
+      "recency": "Current (Within 6 months)"
+    },
+    {
+      "url": "https://dev.to/_eb7f2a654e97a60ae9f96e/is-asyncio-really-better-than-multithreading-i-tested-100-concurrent-requests-and-the-difference-is-huge-4hc5",
+      "title": "Is asyncio Really Better Than Multithreading? I Tested 100 Concurrent Requests - DEV Community",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://devarea.com/linux-io-multiplexing-select-vs-poll-vs-epoll/",
+      "title": "Linux – IO Multiplexing – Select vs Poll vs Epoll - Developers Area",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://medium.com/@seantywork/60b-over-10k-measuring-select-vs-poll-vs-epoll-for-non-blocking-tcp-sockets-38d64f23319f",
+      "title": "60B Over 10K: Measuring select() vs poll() vs epoll() - Medium",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://www.uptime.engineer/p/epoll-vs-poll-vs-select-io-multiplexing-explained",
+      "title": "epoll vs poll vs select - I/O Multiplexing Explained - Uptime Engineer",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://eli.thegreenplace.net/2018/measuring-context-switching-and-memory-overheads-for-linux-threads/",
+      "title": "Measuring context switching and memory overheads for Linux threads - Eli Bendersky",
+      "published_date": "2018",
+      "recency": "Stale (6+ years old, still authoritative for benchmarks)"
+    },
+    {
+      "url": "https://victoriametrics.com/blog/go-graceful-shutdown/",
+      "title": "Graceful Shutdown in Go: Practical Patterns - VictoriaMetrics",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://oneuptime.com/blog/post/2026-01-07-go-graceful-shutdown-kubernetes/view",
+      "title": "How to Implement Graceful Shutdown in Go for Kubernetes - OneUptime",
+      "published_date": "2026-01-07",
+      "recency": "Current"
+    },
+    {
+      "url": "https://www.suse.com/c/observability-sigkill-vs-sigterm-a-developers-guide-to-process-termination/",
+      "title": "SIGKILL vs SIGTERM: Master Process Termination in Linux - SUSE Communities",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://cs61.seas.harvard.edu/site/2018/Synch1/",
+      "title": "Synchronization 1: Signals, race condition, threads – CS 61 2018 - Harvard",
+      "published_date": "2018",
+      "recency": "Stale (6+ years, but authoritative academic source)"
+    },
+    {
+      "url": "https://docs.oracle.com/cd/E19455-01/806-4750/signals-7/index.html",
+      "title": "Catching SIGCHLD (System Interface Guide) - Oracle Documentation",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://unwiredlearning.com/blog/signal-handling-os",
+      "title": "Signal Handling in Operating Systems (Linux/Unix) - Unwired Learning",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://www.systemoverflow.com/learn/os-systems-fundamentals/processes-threads/process-vs-thread-core-architecture-and-isolation",
+      "title": "Process vs Thread: Core Architecture and Isolation - System Overflow",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://cs61.seas.harvard.edu/site/2018/Kernel2/",
+      "title": "Kernel 2: Process isolation and virtual memory – CS 61 2018 - Harvard",
+      "published_date": "2018",
+      "recency": "Stale (6+ years, but foundational)"
+    },
+    {
+      "url": "https://www.kernel.org/doc/gorman/html/understand/understand006.html",
+      "title": "Chapter 3: Page Table Management - Linux Kernel Documentation",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Translation_lookaside_buffer",
+      "title": "Translation lookaside buffer - Wikipedia",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://arxiv.org/pdf/2112.14013",
+      "title": "Reducing Minor Page Fault Overheads through Enhanced Page Walker - arXiv",
+      "published_date": "2021",
+      "recency": "Stale (3+ years, but recent empirical study)"
+    },
+    {
+      "url": "https://rigtorp.se/virtual-memory/",
+      "title": "Latency Implications of Virtual Memory - Erik Rigtorp",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://blog.cloudflare.com/the-sad-state-of-linux-socket-balancing/",
+      "title": "Why does one NGINX worker take all the load? - Cloudflare Blog",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://blog.cloudflare.com/perfect-locality-and-three-epic-systemtap-scripts/",
+      "title": "Perfect locality and three epic SystemTap scripts - Cloudflare Blog",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://github.com/chenshuo/notes/blob/master/docs/kernel/file-descriptor-table.md",
+      "title": "File Descriptor Table - Shuo Chen's Notes",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://www.geeksforgeeks.com/linux-unix/lsof-command-in-linux-with-examples/",
+      "title": "lsof Command in Linux - GeeksforGeeks",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://thelinuxcode.com/lsof-command-in-linux-with-examples-how-i-debug-open-files-ports-and-disk-full-mysteries/",
+      "title": "lsof Command in Linux with Examples: Debugging - TheLinuxCode",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://copyconstruct.medium.com/lsof-f2b224eee7b5",
+      "title": "lsof - Cindy Sridharan (Copy Construct)",
+      "published_date": "2024",
+      "recency": "Current"
+    },
+    {
+      "url": "https://codingtechroom.com/question/file-descriptor-leak-example",
+      "title": "What is a File Descriptor Leak and How Can You Identify It? - CodingTechRoom",
+      "published_date": "2024",
+      "recency": "Current"
+    }
+  ]
+}

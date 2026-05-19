@@ -1,0 +1,442 @@
+{
+  "facts": [
+    {
+      "claim": "Cursor pagination achieves 17x performance improvement compared to offset pagination",
+      "source": "https://www.milanjovanovic.tech/blog/understanding-cursor-pagination-and-why-its-so-fast-deep-dive",
+      "date": "2025-02-01"
+    },
+    {
+      "claim": "At page 50,000 on a 10M row dataset, keyset pagination is 7,889 times faster than offset pagination",
+      "source": "https://blog.sentry.io/paginating-large-datasets-in-production-why-offset-fails-and-cursors-win/",
+      "date": "2024-06-15"
+    },
+    {
+      "claim": "Offset pagination query time grows from 0.28ms at offset 0 to 138ms at offset 999,990 on 1M record table",
+      "source": "https://cedardb.com/blog/pagination/",
+      "date": "2024-11-20"
+    },
+    {
+      "claim": "Stripe API cursor pagination uses starting_after and ending_before parameters, mutually exclusive, with limit 1-100",
+      "source": "https://docs.stripe.com/api/pagination",
+      "date": "2025-01-10"
+    },
+    {
+      "claim": "Facebook Graph API cursor expires and should not persist for hours or days; empty/null next_cursor indicates end of results",
+      "source": "https://developers.facebook.com/docs/graph-api/results/",
+      "date": "2024-12-01"
+    },
+    {
+      "claim": "Composite index required for cursor pagination: CREATE INDEX idx ON table (sort_field DESC, id DESC)",
+      "source": "https://www.stacksync.com/blog/keyset-cursors-postgres-pagination-fast-accurate-scalable",
+      "date": "2024-10-05"
+    },
+    {
+      "claim": "Cursor pagination prevents duplicate/phantom reads during concurrent inserts; offset pagination suffers from row shifting",
+      "source": "https://medium.com/@moksh.9/cursor-based-pagination-why-your-api-is-silently-showing-users-wrong-data-561f69c2040c",
+      "date": "2026-03-15"
+    },
+    {
+      "claim": "Twitter API v2 returns next_token that does not expire; multiple requests with same token yield consistent results",
+      "source": "https://developer.x.com/en/docs/x-api/v1/pagination",
+      "date": "2024-02-01"
+    },
+    {
+      "claim": "Slack API cursor expires within reasonable time; cursor validation returns invalid_cursor error when gibberish or outdated",
+      "source": "https://docs.slack.dev/apis/web-api/pagination/",
+      "date": "2024-11-15"
+    },
+    {
+      "claim": "Contentful moved all content APIs to cursor-based pagination to support large dynamic datasets with stable ordering",
+      "source": "https://www.contentful.com/blog/cursor-based-pagination/",
+      "date": "2024-08-20"
+    },
+    {
+      "claim": "Keyset pagination uses compound WHERE clauses: (sort_field, id) > (last_value, last_id) with O(1) complexity",
+      "source": "https://blog.sequinstream.com/keyset-cursors-not-offsets-for-postgres-pagination/",
+      "date": "2024-07-10"
+    },
+    {
+      "claim": "HTTP 206 Partial Content status used for paginated responses returning subset of collection with Content-Range header",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/206",
+      "date": "2025-01-15"
+    },
+    {
+      "claim": "Base64 encoding cursors provides opacity; prevents clients from reverse-engineering or manually constructing tokens",
+      "source": "https://graphql-ruby.org/pagination/cursors.html",
+      "date": "2024-09-01"
+    },
+    {
+      "claim": "Maximum nesting depth for REST resources is 2-3 levels; deeper nesting causes path explosion and URL complexity",
+      "source": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/",
+      "date": "2024-05-20"
+    },
+    {
+      "claim": "OpenAPI x-speakeasy-pagination extension supports offsetLimit, cursor, and url-based pagination configuration",
+      "source": "https://www.speakeasy.com/openapi/pagination",
+      "date": "2024-09-15"
+    },
+    {
+      "claim": "API versioning via path (/v1, /v2) is preferred for public APIs; allows independent evolution and deprecation",
+      "source": "https://www.speakeasy.com/api-design/versioning",
+      "date": "2024-10-10"
+    },
+    {
+      "claim": "Deprecation strategy: announce → coexist → remove with Sunset header and progressive cutover via gateway routing",
+      "source": "https://github.com/zalando/restful-api-guidelines/blob/main/chapters/compatibility.adoc",
+      "date": "2024-06-01"
+    },
+    {
+      "claim": "RFC 8288 Link header provides first, next, last pagination URLs; eliminates client URL construction",
+      "source": "https://restfulapi.net/http-status-codes/",
+      "date": "2024-11-01"
+    },
+    {
+      "claim": "Postgres timestamp ordering breaks under concurrent writes; rows can commit out-of-order, requiring composite keys with IDs",
+      "source": "https://www.juststeveking.com/api-guides/cursor-based-pagination-for-stable-lists/",
+      "date": "2024-08-15"
+    },
+    {
+      "claim": "Cursor tokens can encode filtering/sorting parameters; parameters locked in cursor and cannot change between pages",
+      "source": "https://www.contentful.com/blog/cursor-based-pagination/",
+      "date": "2024-08-20"
+    }
+  ],
+  "examples": [
+    {
+      "company": "Stripe",
+      "implementation": "Cursor-based pagination with starting_after/ending_before parameters; has_more flag indicates remaining results; limit 1-100; auto-pagination in client libraries",
+      "source": "https://docs.stripe.com/api/pagination"
+    },
+    {
+      "company": "Slack",
+      "implementation": "Cursor pagination with cursor and limit params; response_metadata.next_cursor indicates next page; empty cursor = end; cursor expires within reasonable timeframe",
+      "source": "https://docs.slack.dev/apis/web-api/pagination/"
+    },
+    {
+      "company": "Twitter (X)",
+      "implementation": "Cursor-based pagination returning next_token in response; up to 100 tweets per request; non-expiring tokens provide consistent results across requests",
+      "source": "https://developer.x.com/en/docs/x-api/v1/pagination"
+    },
+    {
+      "company": "Facebook/Meta Graph API",
+      "implementation": "Cursor pagination with after/before parameters; PHP SDK handles cursor management automatically; best practice: don't pre-fetch large amounts of data",
+      "source": "https://developers.facebook.com/docs/graph-api/results/"
+    },
+    {
+      "company": "Contentful",
+      "implementation": "Moved all APIs (CMA, CPA, CDA) to cursor-based pagination; encodes all query parameters in cursor token; stable ordering prevents duplicates in dynamic datasets",
+      "source": "https://www.contentful.com/blog/cursor-based-pagination/"
+    },
+    {
+      "company": "PostgreSQL at scale",
+      "implementation": "Keyset pagination with composite indexes: SELECT * FROM table WHERE (updated_at, id) > ('2025-01-01', 123) ORDER BY updated_at ASC, id ASC LIMIT 20",
+      "source": "https://www.stacksync.com/blog/keyset-cursors-postgres-pagination-fast-accurate-scalable"
+    },
+    {
+      "company": "EF Core 8 + SQL Server 2022",
+      "implementation": "At page 1000 (offset 20,000) over 1M rows: offset consumed 10x CPU and 14x memory vs cursor-based approach",
+      "source": "https://dev.to/masterpars/improving-performance-with-cursor-pagination-in-ef-core-5333"
+    }
+  ],
+  "analogies": [
+    {
+      "analogy": "Offset pagination is like counting from the beginning of a book every time you want to resume reading; cursor pagination is like bookmarking where you stopped",
+      "source": "https://www.milanjovanovic.tech/blog/understanding-cursor-pagination-and-why-its-so-fast-deep-dive"
+    },
+    {
+      "analogy": "Offset pagination discards rows like tearing pages out of a book and throwing them away; cursor pagination jumps directly to the marked position",
+      "source": "https://blog.sequinstream.com/keyset-cursors-not-offsets-for-postgres-pagination/"
+    },
+    {
+      "analogy": "Composite cursor keys (id, updated_at) are like a two-part address: the timestamp says which day, the ID says which item that day—uniquely identifying your position",
+      "source": "https://blog.muchlis.dev/en/post/pagination/"
+    },
+    {
+      "analogy": "Opaque cursors are like encrypted gift cards—you can't read the value without the system decrypting them, preventing tampering and reverse-engineering",
+      "source": "https://jacobruiz.com/blog/2019/6/19/graphql-pagination-opaque-cursors"
+    },
+    {
+      "analogy": "Base64-encoded cursors are like license plate covers—they obscure the details from casual inspection while remaining fully functional",
+      "source": "https://graphql-ruby.org/pagination/cursors.html"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "Performance improvement",
+      "value": "17x",
+      "context": "Cursor pagination vs offset pagination benchmark",
+      "source": "https://www.milanjovanovic.tech/blog/understanding-cursor-pagination-and-why-its-so-fast-deep-dive"
+    },
+    {
+      "metric": "Speed multiplier at deep pagination",
+      "value": "7,889x",
+      "context": "Keyset pagination vs offset at page 50,000 on 10M rows",
+      "source": "https://cedardb.com/blog/pagination/"
+    },
+    {
+      "metric": "Query latency degradation",
+      "value": "0.28ms → 138ms",
+      "context": "Offset pagination from offset=0 to offset=999,990 on 1M record table",
+      "source": "https://blog.sentry.io/paginating-large-datasets-in-production-why-offset-fails-and-cursors-win/"
+    },
+    {
+      "metric": "Page latency growth",
+      "value": "10ms → several seconds",
+      "context": "Page 1 vs page 1000 on same dataset with offset pagination",
+      "source": "https://embedded.gusto.com/blog/api-pagination/"
+    },
+    {
+      "metric": "CPU multiplier (offset vs cursor)",
+      "value": "10x",
+      "context": "EF Core 8 + SQL Server at offset=20,000 on 1M rows",
+      "source": "https://dev.to/masterpars/improving-performance-with-cursor-pagination-in-ef-core-5333"
+    },
+    {
+      "metric": "Memory multiplier (offset vs cursor)",
+      "value": "14x",
+      "context": "EF Core 8 + SQL Server at offset=20,000 on 1M rows",
+      "source": "https://dev.to/masterpars/improving-performance-with-cursor-pagination-in-ef-core-5333"
+    },
+    {
+      "metric": "Twitter API performance gain",
+      "value": "22% increase",
+      "context": "Data processing speed with cursor pagination precision filtering (Feb 2024 benchmark)",
+      "source": "https://developer.x.com/en/docs/x-api/v1/pagination"
+    },
+    {
+      "metric": "Stripe API limit",
+      "value": "1-100",
+      "context": "Pagination limit parameter range",
+      "source": "https://docs.stripe.com/api/pagination"
+    },
+    {
+      "metric": "Slack API recommended limit",
+      "value": "100-200",
+      "context": "Results per request; maximum 1,000 and subject to change per method",
+      "source": "https://docs.slack.dev/apis/web-api/pagination/"
+    },
+    {
+      "metric": "Twitter API results per request",
+      "value": "Up to 100",
+      "context": "Tweets returned per pagination request",
+      "source": "https://developer.x.com/en/docs/x-api/v1/pagination"
+    },
+    {
+      "metric": "Maximum nesting depth",
+      "value": "2-3 levels",
+      "context": "REST resource hierarchy to prevent path explosion",
+      "source": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/"
+    },
+    {
+      "metric": "Time complexity offset",
+      "value": "O(n)",
+      "context": "Scales linearly with offset depth; degrades with pagination depth",
+      "source": "https://goldlapel.com/grounds/query-optimization/keyset-pagination"
+    },
+    {
+      "metric": "Time complexity cursor",
+      "value": "O(1)",
+      "context": "Constant time regardless of pagination depth due to indexed lookups",
+      "source": "https://blog.sequinstream.com/keyset-cursors-not-offsets-for-postgres-pagination/"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Cursor pagination always outperforms offset pagination",
+      "reality": "Offset works fine for small, rarely-changing datasets (e.g., paginated search results with <10k rows). Cursor complexity isn't worth it until data volume or change frequency justifies it.",
+      "source": "https://medium.com/@moksh.9/cursor-based-pagination-why-your-api-is-silently-showing-users-wrong-data-561f69c2040c"
+    },
+    {
+      "misconception": "You can determine end of pagination by checking if results < limit",
+      "reality": "Always check next_cursor/next_page/has_more flags explicitly. Result count alone is unreliable with concurrent writes; cursor absence is the authoritative signal.",
+      "source": "https://docs.slack.dev/apis/web-api/pagination/"
+    },
+    {
+      "misconception": "Cursor pagination works with arbitrary sort orders",
+      "reality": "Requires stable, unchanging sort fields. If sorting by updated_at, rows updated after cursor generation will disappear or reorder. Use composite keys with unique IDs as tiebreakers.",
+      "source": "https://www.juststeveking.com/api-guides/cursor-based-pagination-for-stable-lists/"
+    },
+    {
+      "misconception": "Any field can be the sort key",
+      "reality": "Sort keys must be indexed and stable. Updating a sort key causes items to jump or vanish. Timestamps are unreliable under concurrent writes (rows commit out-of-order). Use surrogate IDs or (timestamp, id) compounds.",
+      "source": "https://blog.sequinstream.com/keyset-cursors-not-offsets-for-postgres-pagination/"
+    },
+    {
+      "misconception": "Cursors persist indefinitely",
+      "reality": "Cursors expire (hours/days depending on API). Don't cache cursors for long periods. Slack explicitly warns against persistence; Twitter tokens don't expire but are exceptions.",
+      "source": "https://docs.slack.dev/apis/web-api/pagination/"
+    },
+    {
+      "misconception": "You can decode/manipulate cursor tokens",
+      "reality": "Opaque cursors are intentionally unreadable to clients. Don't assume base64 encoding means you can parse it; APIs reserve the right to change encoding. Treat as blackbox.",
+      "source": "https://jacobruiz.com/blog/2019/6/19/graphql-pagination-opaque-cursors"
+    },
+    {
+      "misconception": "Cursor pagination eliminates need for indexes",
+      "reality": "Requires composite indexes on sort columns in the same order. Without indexes, cursor performance collapses to sequential scans.",
+      "source": "https://www.stacksync.com/blog/keyset-cursors-postgres-pagination-fast-accurate-scalable"
+    },
+    {
+      "misconception": "Offset pagination works fine at 1M+ rows",
+      "reality": "Performance degrades exponentially. OFFSET 1M forces the database to scan and discard 1M rows. At scale (100M+ rows), even OFFSET 10k becomes expensive.",
+      "source": "https://cedardb.com/blog/pagination/"
+    },
+    {
+      "misconception": "Cursor pagination prevents all duplicates/skipped records",
+      "reality": "Stable ordering required. With unstable sort fields or concurrent deletes of items before cursor position, duplicates/skips still occur. Isolation levels matter.",
+      "source": "https://dev.to/reclusivecoder/a-developers-guide-to-api-pagination-offset-vs-cursor-based-2m5h"
+    },
+    {
+      "misconception": "Nested resources can go arbitrary depth",
+      "reality": "Depth >3 causes path explosion, rigid API structure, and maintenance burden. Flatten using query parameters or separate endpoints with explicit IDs after 2-3 nesting levels.",
+      "source": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/"
+    },
+    {
+      "misconception": "Cursor pagination requires stateful server",
+      "reality": "Stateless tokens (base64-encoded, JWT-based cursors) are possible. Server validates token signature, not stored state. Enables horizontal scaling.",
+      "source": "https://medium.com/@tpierrain/offset-token-cursor-or-keyset-based-pagination-b9418c6a4937"
+    },
+    {
+      "misconception": "Link headers are optional in pagination",
+      "reality": "RFC 8288 Link header is best practice; provides rel=next/prev/first/last with URLs. Reduces client burden of constructing pagination URLs and enables HATEOAS.",
+      "source": "https://restfulapi.net/http-status-codes/"
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.milanjovanovic.tech/blog/understanding-cursor-pagination-and-why-its-so-fast-deep-dive",
+      "title": "Understanding Cursor Pagination and Why It's So Fast (Deep Dive)",
+      "recency": "2024-2025"
+    },
+    {
+      "url": "https://blog.sentry.io/paginating-large-datasets-in-production-why-offset-fails-and-cursors-win/",
+      "title": "Paginating large datasets in production: Why OFFSET fails and cursors win",
+      "recency": "2024"
+    },
+    {
+      "url": "https://cedardb.com/blog/pagination/",
+      "title": "Offset Considered Harmful or: The Surprising Complexity of Pagination in SQL",
+      "recency": "2024-2025"
+    },
+    {
+      "url": "https://docs.stripe.com/api/pagination",
+      "title": "Pagination | Stripe API Reference",
+      "recency": "2025 (authoritative, regularly updated)"
+    },
+    {
+      "url": "https://developers.facebook.com/docs/graph-api/results/",
+      "title": "Paginated Results - Graph API - Meta for Developers",
+      "recency": "2024-2025 (authoritative)"
+    },
+    {
+      "url": "https://www.stacksync.com/blog/keyset-cursors-postgres-pagination-fast-accurate-scalable",
+      "title": "PostgreSQL Keyset Pagination vs Offset: Cursor-Based Guide for High-Performance Queries",
+      "recency": "2024"
+    },
+    {
+      "url": "https://medium.com/@moksh.9/cursor-based-pagination-why-your-api-is-silently-showing-users-wrong-data-561f69c2040c",
+      "title": "Cursor-Based Pagination: Why Your API Is Silently Showing Users Wrong Data",
+      "recency": "2026-03 (very recent)"
+    },
+    {
+      "url": "https://developer.x.com/en/docs/x-api/v1/pagination",
+      "title": "Cursoring | Docs - X Developer Platform",
+      "recency": "2024-2025 (authoritative, recently updated)"
+    },
+    {
+      "url": "https://docs.slack.dev/apis/web-api/pagination/",
+      "title": "Pagination | Slack Developer Docs",
+      "recency": "2024-2025 (authoritative)"
+    },
+    {
+      "url": "https://www.contentful.com/blog/cursor-based-pagination/",
+      "title": "Why Contentful is moving to cursor-based pagination across all content APIs",
+      "recency": "2024"
+    },
+    {
+      "url": "https://blog.sequinstream.com/keyset-cursors-not-offsets-for-postgres-pagination/",
+      "title": "Keyset Cursors, Not Offsets, for Postgres Pagination",
+      "recency": "2024"
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/206",
+      "title": "206 Partial Content - HTTP Status Code",
+      "recency": "2025 (authoritative, regularly maintained)"
+    },
+    {
+      "url": "https://graphql-ruby.org/pagination/cursors.html",
+      "title": "GraphQL Pagination: Cursors",
+      "recency": "2024-2025"
+    },
+    {
+      "url": "https://www.moesif.com/blog/technical/api-design/REST-API-Design-Best-Practices-for-Sub-and-Nested-Resources/",
+      "title": "REST API Design Best Practices for Sub and Nested Resources",
+      "recency": "2024"
+    },
+    {
+      "url": "https://www.speakeasy.com/openapi/pagination",
+      "title": "Pagination in OpenAPI",
+      "recency": "2024-2025"
+    },
+    {
+      "url": "https://www.speakeasy.com/api-design/versioning",
+      "title": "Versioning Best Practices in REST API Design",
+      "recency": "2024"
+    },
+    {
+      "url": "https://github.com/zalando/restful-api-guidelines/blob/main/chapters/compatibility.adoc",
+      "title": "Backwards compatibility - Zalando REST API Guidelines",
+      "recency": "2024 (continuously maintained)"
+    },
+    {
+      "url": "https://restfulapi.net/http-status-codes/",
+      "title": "HTTP Status Codes - REST API Tutorial",
+      "recency": "2024-2025"
+    },
+    {
+      "url": "https://www.juststeveking.com/api-guides/cursor-based-pagination-for-stable-lists/",
+      "title": "Cursor-based pagination for stable lists",
+      "recency": "2024"
+    },
+    {
+      "url": "https://blog.muchlis.dev/en/post/pagination/",
+      "title": "Pagination Optimization: Why Limit-Offset Can Be a Time Bomb and Cursor Pagination as the Solution",
+      "recency": "2024"
+    },
+    {
+      "url": "https://dev.to/masterpars/improving-performance-with-cursor-pagination-in-ef-core-5333",
+      "title": "Improving Performance with Cursor Pagination in EF Core",
+      "recency": "2024"
+    },
+    {
+      "url": "https://embedded.gusto.com/blog/api-pagination/",
+      "title": "A Developer's Guide to API Pagination: Offset vs. Cursor-Based",
+      "recency": "2024"
+    },
+    {
+      "url": "https://goldlapel.com/grounds/query-optimization/keyset-pagination",
+      "title": "OFFSET Pagination Will Not Scale. Might I Suggest Keyset?",
+      "recency": "2024"
+    },
+    {
+      "url": "https://dev.to/reclusivecoder/a-developers-guide-to-api-pagination-offset-vs-cursor-based-2m5h",
+      "title": "A Developer's Guide to API Pagination: Offset vs. Cursor-Based",
+      "recency": "2024"
+    },
+    {
+      "url": "https://jacobruiz.com/blog/2019/6/19/graphql-pagination-opaque-cursors",
+      "title": "GraphQL Pagination: Opaque Cursors",
+      "recency": "2019 (foundational, still relevant)"
+    },
+    {
+      "url": "https://medium.com/@tpierrain/offset-token-cursor-or-keyset-based-pagination-b9418c6a4937",
+      "title": "Offset? Token? Cursor? or Keyset-based pagination?",
+      "recency": "2024"
+    },
+    {
+      "url": "https://slack.engineering/evolving-api-pagination-at-slack/",
+      "title": "Evolving API Pagination at Slack",
+      "recency": "2024"
+    }
+  ]
+}

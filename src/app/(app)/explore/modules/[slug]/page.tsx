@@ -90,6 +90,9 @@ function ChapterList({
                 {ch.title}
               </div>
               <div className="text-[10px] text-on-surface-variant truncate">{ch.subtitle}</div>
+              {ch.hook_text && (
+                <p className="text-xs text-on-surface-variant mt-0.5 line-clamp-2 font-body">{ch.hook_text}</p>
+              )}
             </div>
             {ch.is_completed && !isActive && (
               <span className="material-symbols-outlined text-primary text-sm flex-shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>

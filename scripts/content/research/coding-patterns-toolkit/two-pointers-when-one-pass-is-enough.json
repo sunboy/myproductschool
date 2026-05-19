@@ -1,0 +1,305 @@
+{
+  "facts": [
+    {
+      "text": "Two pointers algorithm achieves O(n) time complexity because pointers start n units apart and move closer by at least one step per iteration, guaranteeing at most n iterations total",
+      "source": "https://www.geeksforgeeks.org/dsa/two-pointers-technique/",
+      "published": "2024"
+    },
+    {
+      "text": "Sliding window converts nested loops from O(n²) or O(n³) time complexity into O(n) by maintaining window state and sliding instead of recalculating",
+      "source": "https://leetcode.com/discuss/post/3722472/sliding-window-technique-a-comprehensive-ix2k/",
+      "published": "2024"
+    },
+    {
+      "text": "Monotonic stack maintains elements in either increasing or decreasing order, with every element entering and exiting the stack exactly once, resulting in guaranteed O(n) time for range queries",
+      "source": "https://codeforces.com/blog/entry/153011",
+      "published": "2024"
+    },
+    {
+      "text": "Prefix sum preprocessing takes O(n) time, then each range query executes in O(1), making total complexity O(n + q) where q is the number of queries",
+      "source": "https://usaco.guide/silver/prefix-sums",
+      "published": "2024"
+    },
+    {
+      "text": "Fixed-size sliding window uses O(1) space complexity by maintaining only aggregate values, while variable-size window requires O(min(window_size)) auxiliary space for hash maps tracking element frequencies",
+      "source": "https://algomap.io/lessons/sliding-window",
+      "published": "2024"
+    },
+    {
+      "text": "2D prefix sum formula: prefix[i][j] = prefix[i-1][j] + prefix[i][j-1] - prefix[i-1][j-1] + arr[i][j], enabling O(1) submatrix sum queries after O(n×m) preprocessing",
+      "source": "https://www.geeksforgeeks.org/dsa/prefix-sum-2d-array/",
+      "published": "2024"
+    },
+    {
+      "text": "Container with Most Water uses convergent two pointers: move the pointer at the shorter line inward because moving the taller line's pointer only reduces width while height cannot increase",
+      "source": "https://www.hellointerview.com/learn/code/two-pointers/container-with-most-water",
+      "published": "2024"
+    },
+    {
+      "text": "Minimum Window Substring combines sliding window with hash map: two pointers visit each character at most twice (right expands, left shrinks), totaling O(m + n) where m and n are string lengths",
+      "source": "https://algomaster.io/learn/dsa/minimum-window-substring",
+      "published": "2024"
+    },
+    {
+      "text": "Longest Substring Without Repeating Characters uses variable-size sliding window with hash map: expand right pointer until duplicate found, then shrink from left until duplicate removed, maintaining O(n) time",
+      "source": "https://neetcode.io/solutions/longest-substring-without-repeating-characters",
+      "published": "2024"
+    },
+    {
+      "text": "Trapping Rain Water problem has three solutions: two pointers (O(n) time, O(1) space), monotonic stack (O(n) time, O(n) space), and dynamic programming (O(n) time, O(n) space)",
+      "source": "https://neetcode.io/solutions/trapping-rain-water",
+      "published": "2024"
+    },
+    {
+      "text": "Next Greater Element uses monotonic decreasing stack to find first larger element to the right in O(n) time: pop smaller elements, record answers before popping, push current element",
+      "source": "https://leetcode.com/problems/next-greater-element-i/",
+      "published": "2024"
+    },
+    {
+      "text": "Monotonic Stack Tree technique uses binary lifting on NGE relationships to answer Range Min/Max queries in O(log n) per query after linear preprocessing, unifying two competitive algorithmic patterns",
+      "source": "https://codeforces.com/blog/entry/153011",
+      "published": "2024"
+    },
+    {
+      "text": "Two pointers requires monotonicity property: for valid pair (i,j), if (i+1,j) is valid then (i,j+1) may be valid, guaranteeing no backtracking and O(n) complexity",
+      "source": "https://www.baeldung.com/java-two-pointer-technique",
+      "published": "2024"
+    },
+    {
+      "text": "LeetCode easy problems typically show 50-70% acceptance rate while medium and hard problems trend much lower, with two-pointer problems common across all difficulty tiers",
+      "source": "https://www.designgurus.io/answers/detail/what-is-a-good-acceptance-rate-on-leetcode",
+      "published": "2024"
+    }
+  ],
+  "examples": [
+    {
+      "name": "Container With Most Water (LeetCode #11)",
+      "description": "Given array of heights, find two lines that form a container with maximum area. Convergent two pointers strategy: move the pointer at the shorter height inward, O(n) time, O(1) space. Appears in Google, Facebook, Amazon interviews.",
+      "metric": "O(n) solution beats 90%+ of submissions"
+    },
+    {
+      "name": "Longest Substring Without Repeating Characters (LeetCode #3)",
+      "description": "Find longest contiguous substring with no duplicate characters in 'zxyzxyz' → answer is 'xyz' (length 3). Variable-size sliding window with hash map tracks character positions. Solution beats ~85% on speed.",
+      "metric": "O(n) time, O(min(alphabet_size)) space ≈ O(26) for ASCII"
+    },
+    {
+      "name": "Minimum Window Substring (LeetCode #76)",
+      "description": "Find smallest substring of s containing all characters of t with correct frequencies. Example: s='ADOBECODEBANC', t='ABC' → 'BANC'. Two pointers + hash map for frequency matching. Frequent Google/Amazon question.",
+      "metric": "O(m + n) time, ~30% acceptance on first attempt"
+    },
+    {
+      "name": "Trapping Rain Water (LeetCode #42)",
+      "description": "Calculate water trapped between elevation bars: heights=[0,1,0,2,1,0,1,3,2,1,2,1] traps 6 units. Solvable via two pointers (O(1) space), monotonic stack (O(n) space), or DP (O(n) space).",
+      "metric": "Two-pointer solution O(n) time, O(1) space most efficient"
+    },
+    {
+      "name": "Next Greater Element (LeetCode #496)",
+      "description": "For each element, find first greater element to the right. Example: nums1=[4,1,2], nums2=[1,3,4,2] → answer=[−1,3,−1]. Monotonic stack ensures each element processed once.",
+      "metric": "O(n) time with monotonic decreasing stack, O(n) space"
+    },
+    {
+      "name": "Two Sum II (LeetCode #167)",
+      "description": "Find two numbers in sorted array summing to target. Numbers are 1-indexed. Convergent two pointers: if sum too small move left pointer right, if too large move right pointer left. O(n) time.",
+      "metric": "One-pass solution, 100% optimal"
+    },
+    {
+      "name": "3Sum (LeetCode #15)",
+      "description": "Find all unique triplets summing to zero in array [-1,0,1,2,-1,-4]. First sort O(n log n), then for each element use two-pointer convergence on remainder. Total O(n²).",
+      "metric": "Must skip duplicates carefully to avoid O(n³) complexity"
+    },
+    {
+      "name": "Longest Repeating Character Replacement (LeetCode #424)",
+      "description": "Find longest substring where all characters are same after replacing at most k characters. Example: s='ABAB', k=2 → 'AAAA' (length 4). Variable window with frequency map.",
+      "metric": "Condition: k + max_frequency ≥ window_length"
+    }
+  ],
+  "analogies": [
+    {
+      "name": "Sliding window as inchworm motion",
+      "description": "Like an inchworm that expands its front half (right pointer) until hitting an obstacle, then retracts its back half (left pointer) to progress forward. The body stays intact (valid window state), never jumping or resetting.",
+      "teaches": "Why variable-size window never needs to restart from the beginning"
+    },
+    {
+      "name": "Two pointers as squeeze play",
+      "description": "Convergent two pointers work like a vise: start wide apart, apply pressure (move inward), and something gets squeezed in between. The key insight is that wider gap never needs revisiting once pointers pass it.",
+      "teaches": "Why O(n) guarantee holds—no backtracking"
+    },
+    {
+      "name": "Monotonic stack as a support beam",
+      "description": "Stack maintains sorted elements like stacked blocks: shorter blocks sit on top, taller blocks below. When a new tall block arrives, shorter ones topple (pop). The stack tracks which blocks 'support' the current block to its right.",
+      "teaches": "Why monotonic stack finds next greater element in one pass"
+    },
+    {
+      "name": "Prefix sum as cumulative score",
+      "description": "Like keeping a running total of points in a game: at each step you know total score from start. Range queries ask 'how many points from step 3 to 7?' → answer is total[7] − total[2], instant lookup.",
+      "teaches": "Trading O(n) preprocessing for O(1) queries"
+    },
+    {
+      "name": "Hash map in sliding window as a cashbox",
+      "description": "The window is a cashbox tracking only items currently held. As right pointer (customer entering) adds items, left pointer (customer leaving) removes them. At any moment, the box's contents must satisfy a rule (no duplicates, frequencies match, etc.).",
+      "teaches": "Why hash map state must stay synchronized with window boundaries"
+    }
+  ],
+  "key_numbers": [
+    {
+      "metric": "O(n) time complexity guarantee",
+      "value": "Pointers start n units apart, move closer each iteration, maximum n iterations total",
+      "context": "Two pointers technique"
+    },
+    {
+      "metric": "Complexity reduction from brute force",
+      "value": "O(n²) or O(n³) → O(n)",
+      "context": "Sliding window optimization, achieves 50-100x speedup on large arrays"
+    },
+    {
+      "metric": "Prefix sum query cost",
+      "value": "O(1) time per query after O(n) preprocessing",
+      "context": "With q queries, total is O(n + q) versus O(n×q) for naive approach"
+    },
+    {
+      "metric": "2D prefix sum construction",
+      "value": "O(n × m) time for n×m matrix",
+      "context": "Single formula: prefix[i][j] = prefix[i-1][j] + prefix[i][j-1] − prefix[i-1][j-1] + arr[i][j]"
+    },
+    {
+      "metric": "Monotonic stack guarantee",
+      "value": "O(n) time, every element enters and exits stack exactly once",
+      "context": "Next greater element, largest rectangle, daily temperatures problems"
+    },
+    {
+      "metric": "Space optimization in sliding window",
+      "value": "O(1) for fixed-size window, O(min(window_size, alphabet_size)) for variable",
+      "context": "Fixed window needs only aggregate (sum/product), variable needs hash map"
+    },
+    {
+      "metric": "Minimum window substring complexity",
+      "value": "Two pointers together visit each character at most twice: O(m + n)",
+      "context": "m = length of text, n = length of pattern"
+    },
+    {
+      "metric": "LeetCode acceptance rates",
+      "value": "Easy 50-70%, Medium 30-50%, Hard <30%",
+      "context": "Two-pointer problems range across difficulties; Container with Most Water (Easy) has higher acceptance than Trapping Rain Water (Hard)"
+    },
+    {
+      "metric": "Trapping rain water space comparison",
+      "value": "Two pointers O(1), stack O(n), DP O(n)",
+      "context": "Two pointers is most space-efficient despite same O(n) time"
+    },
+    {
+      "metric": "Next greater element frequency",
+      "value": "100% of arrays must visit each position exactly once in solution",
+      "context": "Monotonic stack enforces linear pass; no nested loops possible"
+    }
+  ],
+  "common_misconceptions": [
+    {
+      "misconception": "Two pointers only works on sorted arrays",
+      "reality": "Two pointers works on any array where pointers can move toward a valid target without needing to revisit earlier positions. Trapping rain water uses unsorted array via two pointers with O(1) space.",
+      "correction": "The key requirement is monotonicity: if (i+1,j) is valid when (i,j) is valid, then (i,j+1) may be valid. Sortedness enables this but is not necessary."
+    },
+    {
+      "misconception": "Sliding window always requires a hash map",
+      "reality": "Fixed-size windows need only O(1) aggregation (sum, product, count). Hash maps are needed only for variable-size windows where tracking element frequencies matters.",
+      "correction": "Example: maximum sum of k consecutive elements uses no hash map, just add/subtract. But 'longest substring with at most k distinct chars' requires a map."
+    },
+    {
+      "misconception": "Monotonic stack is only for finding next/previous greater element",
+      "reality": "Monotonic stack solves any range query problem where we need to find relationships between elements. Largest rectangle in histogram, trapping rain water, and daily temperatures all use stacks but solve different problems.",
+      "correction": "The pattern: maintain sorted order in stack, pop when order violated, push current element. Works for any problem needing 'first element satisfying condition to the right/left'."
+    },
+    {
+      "misconception": "Prefix sum requires immutable input array",
+      "reality": "Prefix sum is a preprocessing technique. Once computed, the input array is not used again—only the prefix array is queried. Input can be modified after preprocessing without affecting query results.",
+      "correction": "This misunderstanding comes from LeetCode 'immutable' problem variants; in practice, prefix arrays are independent data structures."
+    },
+    {
+      "misconception": "Two pointers and sliding window are the same technique",
+      "reality": "Two pointers is the underlying mechanism; sliding window is a specific application where a window of elements is maintained between two pointers. Not all two-pointer problems are sliding windows (e.g., two sum in sorted array is two pointers but not a sliding window).",
+      "correction": "Sliding window requires maintaining a valid state between pointers. Two pointers just means two independent markers moving through data."
+    },
+    {
+      "misconception": "Prefix sum always saves time compared to naive summation",
+      "reality": "Prefix sum wins when you have many queries (q > 1). With q = 1 query, naive summation is faster: O(n) vs O(n + 1). Prefix sum shines at q >> n.",
+      "correction": "Example: single range sum query on 1M elements is faster with naive sum than building prefix array. But 1K queries on 1M elements makes prefix sum ~1000× faster."
+    },
+    {
+      "misconception": "Monotonic stack requires the input array to be already sorted or partially sorted",
+      "reality": "Monotonic stack works on completely unsorted arrays. It creates order as it processes, not assuming pre-existing order. Example: next greater element [1,2,1] outputs [2,-1,-1].",
+      "correction": "The stack maintains internal sorting, not the input. This is why monotonic stack can solve unsorted problems in O(n)."
+    },
+    {
+      "misconception": "Moving the pointer at the taller line in Container with Most Water is optimal",
+      "reality": "The opposite: move the pointer at the shorter line. Moving the taller line's pointer only reduces width while height cannot increase (limited by shorter line). Moving shorter line's pointer might find a taller line.",
+      "correction": "This is a case where greedy intuition fails. The correct strategy is counterintuitive but mathematically necessary for optimality."
+    },
+    {
+      "misconception": "Sliding window variable-size implementation requires explicit boundary checks inside the loop",
+      "reality": "If you set up the window correctly (expand right until invalid, shrink left until valid), the loop naturally maintains boundaries. Explicit checks often indicate a logic error.",
+      "correction": "Pattern: expand right → shrink left → check if valid. This sequence removes need for defensive coding."
+    },
+    {
+      "misconception": "Prefix sum 2D queries are complex and hard to remember",
+      "reality": "The formula is mechanical: sum(submatrix from (a,b) to (A,B)) = prefix[A][B] − prefix[a-1][B] − prefix[A][b-1] + prefix[a-1][b-1]. It's inclusion-exclusion; memorizing one formula handles all 2D range queries.",
+      "correction": "This is the only 2D range sum formula needed. It's analogous to 1D: prefix[B] − prefix[a-1]. The 2D version just subtracts more overlaps."
+    }
+  ],
+  "source_urls": [
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/two-pointers-technique/",
+      "recency": "Current 2024"
+    },
+    {
+      "url": "https://leetcode.com/discuss/post/3722472/sliding-window-technique-a-comprehensive-ix2k/",
+      "recency": "Current 2024"
+    },
+    {
+      "url": "https://codeforces.com/blog/entry/153011",
+      "recency": "Current 2024, tutorial-quality content"
+    },
+    {
+      "url": "https://usaco.guide/silver/prefix-sums",
+      "recency": "2024 standard curriculum"
+    },
+    {
+      "url": "https://algomap.io/lessons/sliding-window",
+      "recency": "Current 2024"
+    },
+    {
+      "url": "https://www.geeksforgeeks.org/dsa/prefix-sum-2d-array/",
+      "recency": "Current 2024"
+    },
+    {
+      "url": "https://www.hellointerview.com/learn/code/two-pointers/container-with-most-water",
+      "recency": "Current 2024"
+    },
+    {
+      "url": "https://algomaster.io/learn/dsa/minimum-window-substring",
+      "recency": "Current 2024"
+    },
+    {
+      "url": "https://neetcode.io/solutions/longest-substring-without-repeating-characters",
+      "recency": "2024, actively maintained"
+    },
+    {
+      "url": "https://neetcode.io/solutions/trapping-rain-water",
+      "recency": "2024, actively maintained"
+    },
+    {
+      "url": "https://leetcode.com/problems/next-greater-element-i/",
+      "recency": "Current 2024"
+    },
+    {
+      "url": "https://www.baeldung.com/java-two-pointer-technique",
+      "recency": "2024, enterprise-backed tutorial"
+    },
+    {
+      "url": "https://www.designgurus.io/answers/detail/what-is-a-good-acceptance-rate-on-leetcode",
+      "recency": "2024 interview preparation resource"
+    },
+    {
+      "url": "https://medium.com/@chetanshingare2991/mastering-the-prefix-sum-design-pattern-a-step-by-step-guide-a7e369e68ea7",
+      "recency": "2024"
+    }
+  ]
+}
